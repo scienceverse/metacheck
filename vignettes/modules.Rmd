@@ -1,0 +1,226 @@
+---
+title: "Modules"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Modules}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(papercheck)
+```
+
+Modules are user-created patterns for checking a paper or set of papers. Module specifications are written in JSON format. 
+
+``` json
+{
+  "title": "List All P-Values",
+  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table."
+}
+```
+
+## Search Strategies
+
+Modules can use four search strategies, each of which has its own JSON specification. All four types take either a paper object or the resulting search table as input, making it easy to chain modules together. 
+
+### Text Search
+
+For checks that can be done with a simple text search, you can create a module that provides the arguments to the `search_text()` function. The "text" key takes a dictionary of the argumants to the `search_text()` function.
+
+Foe example, the following JSON specification defines the arguments needed to search for all instances of p-values in the text and return just the matched text. 
+
+``` json
+{
+  "title": "List All P-Values",
+  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
+  "text": {
+    "pattern": "(?<=[^a-z])p-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+e?-?\\d*)",
+    "return": "match",
+    "perl": true
+  }
+}
+```
+
+### Code
+
+For checks that require a bit more logic, you can include R code directly or (more likely) reference an external .R file. The "code" key takes a dictionary of the "code" or a "path" to a file containing code. You can optionally list the "packages" required so users can be prompted to install any unavailable packages.
+
+
+```
+{
+  "title": "Check Status of OSF Links",
+  "description": "List all OSF links and whether they are open, closed, or do not exist.",
+  "code": {
+    "packages": ["papercheck", "httr", "dplyr"],
+    "path": "osf-check.R"
+  }
+}
+```
+
+Code must end with a list that contains values to return. The item `table` should be the table of returned values, and the optional item `traffic_light` contains the classification of the result (see below).
+
+
+### Machine Learning
+
+The machine learning aspect of papercheck is under development, but currently uses BERT models to classify text. The "ml" key takes a dictionary of the arguments to `ml()`, with an additional optional setting to filter the output table to only matching resposes.
+
+
+```
+{
+  "title": "Sample Size",
+  "description": "[DEMO] Classify each sentence for whether it contains sample-size information, returning only sentences with probable sample-size info.",
+  "ml" : {
+    "model_dir": "sample-size",
+    "class_col": "has_sample_size",
+    "map": {"0": "no", "1": "yes"},
+    "return_prob": false,
+    "filter": "yes"
+  }
+}
+```
+
+### Generative AI
+
+The "ai" key takes a dictionary of the arguments to the `gpt()` function.
+
+```
+{
+  "title": "Summarise Sections",
+  "description": "Generate a 1-sentence summary for each section",
+  "ai": {
+    "query": "Summarise this section briefly, in one sentence.",
+    "group_by": ["id", "section"]
+  }
+}
+
+```
+
+## Report Info
+
+If you are using your modules to build a report, you need to specify what type of output corresponds to good practice or practice that may need improvement. We do this through "traffic-light" and "report" keys.
+
+### Traffic Lights
+
+There are 5 kinds of traffic lights:
+
+<style>
+  h2.na::before { content: '⚪️ '; }
+  h2.fail::before { content: '⚫️ '; }
+  h2.info::before { content: '🔵 '; }
+  h2.red::before { content: '🔴 '; }
+  h2.yellow::before { content: '🟡 '; }
+  h2.green::before { content: '🟢 '; }
+</style>
+
+
+🟢 no problems detected;<br>
+🟡 something to check;<br>
+🔴 possible problems detected;<br>
+🔵 informational only;<br>
+⚪️ not applicable;<br>
+⚫️ check failed
+
+
+The simplest way to set traffic lights is to specify the meaning of "found" and "not-found". If the module produces more than 0 rows in the output table, then the traffic light takes the "found" value, otherwise the "not-found" value.
+
+```
+{
+  "title": "List All P-Values",
+  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
+  "text": {
+    "pattern": "(?<=[^a-z])p-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+e?-?\\d*)",
+    "return": "match",
+    "perl": true
+  },
+  "traffic_light": {
+    "found": "info",
+    "not-found": "na"
+  }
+}
+```
+
+If you are using the "code" type, you can also specify the traffic light in the returned list.
+
+```{r, eval = FALSE}
+# code for imprecise-p module
+p <- module_run(paper, "all-p-values")$table
+p$p_comp <- gsub("p-?(value)?\\s*|\\s*\\d?\\.\\d+e?-?\\d*", "", p$text)
+p$p_value <- gsub("^p-?(value)?\\s*[<>=≤≥]{1,2}\\s*", "", p$text)
+p$p_value <- suppressWarnings(as.numeric(p$p_value))
+p$imprecise <- p$p_comp == "<" & p$p_value > .001
+p$imprecise <- p$imprecise | p$p_comp == ">"
+p$imprecise <- p$imprecise | is.na(p$p_value)
+cols <- c("text", "section", "header", "div", "p", "s", "id")
+
+if (nrow(p) == 0) {
+  tl <- "na"
+} else if (any(p$imprecise)) {
+  tl <- "red"
+} else if (!all(p$imprecise)) {
+  tl <- "green"
+} else {
+  tl <- "yellow"
+}
+
+list(
+  table = p[p$imprecise, cols],
+  traffic_light = tl
+)
+```
+
+### Report
+
+Any text that you want to include in the report should be specified in the "report" key. You can set different text for each traffic light, and/or text to include in all reports.
+
+```
+{
+  "title": "Reference Consistency",
+  "description": "Check if all references are cited and all citations are referenced",
+  "code": {
+    "packages": ["dplyr"],
+    "path": "ref-consistency.R"
+  },
+  "report": {
+    "all": "This module relies on Grobid correctly parsing the references. There may be some false positives.",
+    "red": "There are references that are not cited or citations that are not referenced",
+    "green": "All references were cited and citations were referenced",
+    "na": "No citations/references were detected"
+  }
+}
+```
+
+### Authors
+
+You can also include author information in the following format:
+
+```
+{
+  "title": "List All P-Values",
+  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
+  "authors": [{
+    "orcid": "0000-0002-7523-5539",
+    "name":{
+      "surname": "DeBruine",
+      "given": "Lisa"
+    },
+    "email": "debruine@gmail.com"
+  }],
+  "text": {
+    "pattern": "(?<=[^a-z])p-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+e?-?\\d*)",
+    "return": "match",
+    "perl": true
+  },
+  "traffic_light": {
+    "found": "info",
+    "not-found": "na"
+  }
+}
+```

@@ -1,0 +1,735 @@
+<?xml version="1.0" encoding="UTF-8"?><TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Will knowledge about more efficient study designs increase the willingness to pre-register?</title>
+				<funder>
+					<orgName type="full">Laura and John Arnold Foundation</orgName>
+					<orgName type="abbreviated">LJAF</orgName>
+					<idno type="DOI" subtype="crossref">10.13039/100009827</idno>
+				</funder>
+				<funder>
+					<orgName type="full">Berkeley Initiative for Transparency in the Social Sciences</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Daniel</forename><surname>Lakens</surname></persName>
+							<email>d.lakens@tue.nl</email>
+							<affiliation key="aff0">
+								<note type="raw_affiliation"><label>1</label> Eindhoven University of Technology</note>
+								<orgName type="institution">Eindhoven University of Technology</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Will knowledge about more efficient study designs increase the willingness to pre-register?</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">64A9CE64B0B15EAED25C3E90BA4D2A2E</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-02T19:43+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Pre-registration</term>
+					<term>One-tailed Tests</term>
+					<term>Sequential Analyses</term>
+					<term>Meta-Science</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p><s>Pre-registration is a straightforward way to make science more transparant, and control Type 1 error rates.</s><s>Pre-registration is often presented as beneficial for science in general, but rarely as a practice that leads to immediate individual benefits for researchers.</s><s>One benefit of pre-registered studies is that they allow for non-conventional research designs that are more efficient than conventional designs.</s><s>For example, by performing one-tailed tests and sequential analyses researchers can perform well-powered studies much more efficiently.</s><s>Here, I examine whether such non-conventional but more efficient designs are considered appropriate by editors under the pre-condition that the analysis plans are pre-registered, and if so, whether researchers are more willing to pre-register their analysis plan to take advantage of the efficiency benefits of non-conventional designs.</s><s>Study 1 shows the large majority of editors judged one-tailed tests and sequential analyses to be appropriate in psychology, but only when such analyses are pre-registered.</s><s>In Study 2 I asked experimental psychologists to indicate their attitude towards pre-registration.</s><s>Half of these researchers first read about the acceptence of one-tailed tests and sequential analyses by editors, and the efficiency gains of using these procedures.</s><s>However, learning about the efficiency benefits associated with one-tailed tests and sequential analyses did not substantially influence researchers' attitudes about benefits and costs of pre-registration, or their willingness to pre-register studies.</s><s>The self-reported likelihood of pre-registering studies in the next two years, as well as the percentage of studies researchers planned to pre-register in the future, was surprisingly high.</s><s>47% of respondents already had experience pre-registering, and 94% of respondents indicating that they would consider pre-registering at least some of their research in the future.</s><s>Given this already strong self-reported willingness to pre-register studies, pointing out immediate individual benefits seems unlikely to be a useful way to increase researchers' willingness to pre-register any further.</s></p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p><s>Will knowledge about more efficient study designs increase the willingness to pre-register?</s><s>Pre-registration of hypotheses has been heralded as a promising solution to improve transparency in science <ref type="bibr" target="#b1">(Chambers, Feredoes, Muthukumaraswamy, &amp; Etchells, 2014;</ref><ref type="bibr" target="#b19">Nosek &amp; Lakens, 2014)</ref>.</s><s>Clearly specifying the rules that will be used to terminate the data collection, and specifying the analysis plan before data is collected, can prevent undesirable research practices such as inflated of Type 1 errors and "hypothesizing after the results are known" <ref type="bibr" target="#b10">(Kerr, 1998)</ref>.</s><s>Controlling alpha levels is beneficial for the scientific community in general, because widely used significance tests are difficult to interpret when the alpha level is not controlled.</s><s>Although the benefits of pre-registration for a more reliable psychological science are clear, pre-registration is typically not advertised as a best-practice that leads to immediate individual benefits for researchers.</s><s>A salient aspect of performing pre-registered studies is that researchers will have to learn where and how to pre-register their study, in addition to the time investment each pre-registration will take.</s><s>However, there are also benefits to pre-registering your research.</s><s>One of the biggest immediate rewards of pre-registered studies is that they allow non-conventional research designs that are more efficient than conventional designs.</s><s>Researchers who pre-register their study design and analysis plan can profit from the immediate individual benefit of collecting data more efficiently by using sequential analyses and one-sided tests where useful and appropriate.</s><s>In a time where researchers are increasingly required to perform high-powered studies to publish in top journals in psychology <ref type="bibr" target="#b15">(Lindsay, 2015;</ref><ref type="bibr" target="#b22">Vazire, 2016)</ref>, researchers can be expected to be motivated to perform high-powered studies efficiently.</s></p><p><s>Both sequential analyses <ref type="bibr" target="#b13">(Lakens, 2014)</ref> and, whenever one has a directional prediction, one-sided tests <ref type="bibr" target="#b12">(Knottnerus &amp; Bouter, 2001;</ref><ref type="bibr" target="#b17">Maner, 2014;</ref><ref type="bibr" target="#b20">Rice &amp; Gaines, 1994</ref>) can increase the efficiency with which researchers perform well-powered studies.</s><s>In one-tailed tests, only predictions in one direction are tested (e.g., mean X will be higher than mean Y).</s><s>In sequential analyses, researchers collect data, analyze it, and depending on the result, collect more data, while controlling their overall Type 1 error rate by using Bonferroni-like (but slightly more efficient) adjustments to the alpha level at each look at the data.</s><s>The efficiency benefit can be substantial: One-sided tests in sequential designs easily require 33% less participants when aiming for 80% power, and benefits increase when researchers aim for higher power or use sequential designs tailored to their research question.</s><s>This is also the reason one-sided tests and sequential analyses are common in medicine, where the efficiency benefit has both a monetary component, but also an ethical component.</s><s>As soon as there is evidence for a beneficial effect, all patients should receive the treatment, and the remaining patients should be enrolled in a new study that examines other possibly beneficial treatments <ref type="bibr" target="#b8">(Jennison &amp; Turnbull, 2000)</ref>.</s></p><p><s>Best practice in medicine requires researchers to pre-register sequential analyses and one-tailed tests.</s><s>It seems plausible (and this assumption is confirmed in Study 1) that editors at journals in psychology would only have a positive attitude toward the use of one-tailed tests and sequential analyses when these procedures are pre-registered.</s><s>When these procedures are not pre-registered, they allow for additional ways to inflate the Type 1 error rate when analyzing data.</s><s>If the time cost of performing pre-registered studies are an important reason why researchers choose not to pre-register their hypotheses, then explaining these immediate benefits of sequential analyses and one-tailed tests to researchers, while adding that these benefits are only likely to be accepted when pre-registered, might provide an incentive to pre-register their research, and facilitate the uptake of pre-registration in psychology.</s></p><p><s>I believe reducing the amount of time spent on data collection might be an immediate reward for many researchers, which could increase the willingness to pre-register studies.</s></p><p><s>The hypothesis that more efficient study designs might increase the willingness to pre-register rests on several requirements.</s><s>First, one-tailed tests and sequential designs should be considered acceptable, at least under some specified circumstances, in psychological science.</s><s>Second, editors at psychology journals should have a positive attitude towards one-tailed tests and sequential designs only when these are pre-registered, and WILLINGNESS TO PRE-REGISTER 5 indicate a negative attitude towards these more efficient designs when they are not pre-registered, thus raising the expectation that researchers can only yield the benefits of one-tailed tests and sequential designs when they pre-register their analysis plan.</s><s>The assumptions of when and whether one-tailed tests are appropriate was examined in an open online discussion with interested researchers, and through a survey sent to editors at three top journals in psychology (Psychological Science, the Journal of Experimental Psychology: General, and Social Psychology and Personality Science).</s></p><p><s>A final assumption is that there is room for improvement.</s><s>Researchers should not already pre-register most of their studies, and the likelihood that researchers will pre-register their analysis plan should not be at a ceiling.</s><s>Data collected by Brett Buttliere and Jelte Wicherts<ref type="foot" target="#foot_0">1</ref> at the end of 2013 from 2302 researchers indicated 75% had never pre-registered a study.</s><s>In a study conducted at the end of 2015 and early 2016, Hanne Watkins<ref type="foot" target="#foot_1">2</ref> found that the likelihood that researchers would pre-register a study in the next 6 months (from 1, very unlikely, to 7, very likely) was on average below the scale midpoint (M = 3.17, SD = 1.94).</s></p><p><s>Based on these data, it seems there is still some room for improvement.</s></p><p><s>To examine whether pointing out the benefits of more efficient study designs would increase the willingness of researchers to pre-register their studies, in Study 2 a short online questionnaire was sent to corresponding authors of articles published in three top journals in psychology (the same three journals whose editors were approached in Study 1).</s><s>Two versions of the questionnaire were created.</s><s>In one, five questions were asked about whether researchers had ever pre-registered a study, the perceived costs and benefits of pre-registering an analysis plan, how likely they were to pre-register a study in the future, and an indication of the percentage of studies they would consider pre-registering.</s><s>In the second condition, these questions were identical, but they were preceded by a short explanation and example of the benefits of one-sided tests and sequential designs, and a summary of the results of the editor survey from Study 1.</s><s>Previous research has shown that making cost-benefit analyses of using statistical approaches explicit can influence researchers' attitudes.</s><s>For example, explicitly pointing out the problematic aspects of performing underpowered research changed researchers perception of job candidates <ref type="bibr" target="#b4">(Gervais, Jewell, Najle, &amp; Ng, 2015)</ref>.</s><s>Study 2 aimed to examine whether more efficient study designs would increase the willingness to pre-register studies, when these benefits were explicitly pointed out.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Are One-tailed Tests and Sequential Analyses Appropriate in Psychology?</head><p><s>The discussion about whether one-tailed tests should be used in psychology has started more than 60 years ago <ref type="bibr" target="#b0">(Burke, 1953;</ref><ref type="bibr" target="#b2">Eysenck, 1960;</ref><ref type="bibr" target="#b6">Goldfried, 1959;</ref><ref type="bibr" target="#b8">Jones, 1952</ref><ref type="bibr" target="#b9">Jones, , 1954;;</ref><ref type="bibr" target="#b11">Kimmel, 1957;</ref><ref type="bibr" target="#b18">Marks, 1953)</ref>, and remains a topic of debate until today.</s><s>It seems likely that the researchers who choose to dedicate their time to publish on this topic are those that have the most extreme opinions, but relatively little is known about the average researcher's attitudes towards one-tailed tests.</s><s>We can see one-tailed tests are rarely used in psychology, maybe because researchers prefer to avoid this discussion during the review process.</s><s>In medicine, one-tailed tests are used more commonly, especially in large randomized controlled Phase III trials.</s><s><ref type="bibr" target="#b7">Greenland, Senn, Rothman, Carlin, Poole, Goodman, and Altman (2016)</ref> respond to the statement that "One should always use two-sided p-values" with a resounding "No!", indicating that when a hypothesis is directional, a one-tailed test is required<ref type="foot" target="#foot_2">3</ref> .</s><s>Since one-sided tests are only appropriate whenever null-hypothesis significance tests are appropriate, we have to assume that a null-hypothesis test answers a question a researcher is interested in, and that the null-hypothesis is both plausible and interesting.</s></p><p><s>Beyond this, both in the scientific literature, as in our online discussion, there was general agreement about the need to pre-register one-sided tests.</s><s>For example, <ref type="bibr" target="#b18">Marks (1953)</ref> notes: "It must be emphasized that the one-tailed test is not justified unless the prediction is made prior to the data'.</s><s><ref type="bibr">Similarly, Dubey (1991)</ref> recommends: "The choice of the test (one-sided or two-sided) should be specified in the protocol, thereby eliminating any possibilities of post hoc manipulations."</s><s>I will briefly mention some general points that researchers considered in our online discussion about whether one-tailed tests are appropriate<ref type="foot" target="#foot_3">4</ref> .</s><s>One-tailed tests have some clear benefits.</s><s>They require a smaller sample size than a two-tailed test to achieve the same power, while keeping the error rate constant (e.g., at 5%).</s><s>This means that one-tailed tests will often be an optimal choice from an Neyman-Pearson perspective, and this efficiency has an ethical component when funding comes from tax money.</s><s>Another benefit of one-tailed tests is that they are logically consistent with the conclusion we want to draw from studies.</s><s>Researchers typically conclude one mean is larger than another after observing a significant result, while the logically correct conclusion after a significant result in a two-tailed test is that the means differ from zero, but the direction in which they differ has not been tested.</s><s>One-tailed tests also have the statistically attractive property that they have a direct Bayesian interpretation.</s></p><p><s>But there are also downsides.</s><s>A smaller sample size means less precise data (i.e., wider confidence intervals), and less evidence.</s><s>Assuming normally distributed data, the Z value required to reach statistical significance is Z = 1.96 for a two-tailed tests, but only 1.645 for a one-tailed test.</s><s>This means that, even though the Type 1 error rate is the same for one-tailed and two-tailed tests, a lower evidence threshold is passed.</s><s>This bothers neo-Fisherians, who interpret p-values as evidence (e.g., see <ref type="bibr" target="#b16">Lombardi &amp; Hurlbert, 2009)</ref>.</s><s>It also means it is slightly easier to find a Type 1 error in the expected direction (e.g., one that confirms one's beliefs).</s><s>Another problem is whether effects in the opposite direction can be described and reported.</s><s>The difference between hypothesis testing and estimation is relevant here -an unexpected effect might not confirm a hypothesis, but the descriptives related to the effect size might still be interesting.</s><s>A final downside of one-tailed tests is that they signal interestedness of a researcher, when disinterestedness might be more desirable.</s></p><p><s>There is almost no work on the acceptance of sequential analyses in psychology.</s></p><p><s>Sequential analyses from a frequentist and Bayesian perspective have been recommended for efficiency gains <ref type="bibr" target="#b13">(Lakens, 2014;</ref><ref type="bibr" target="#b21">Schonbrodt, Wagenmakers, Zehetleitner, &amp; Perugini, 2015)</ref>, and have been recommended in at least one editorial in psychology (Giner-Sorolla, 2016).</s><s>In essence, controlling alpha levels in sequential analyses is exactly the same as controlling for multiple comparisons as a result of comparing more than 2 conditions, or analyzing multiple dependent variables.</s><s>However, since they lead to lower sample sizes (on average) than non-sequential designs, one can again consider a difference in attitudes between researchers who use a Neyman-Pearson error control approach to statistical inferences, and statistical approaches that more strongly value the amount of evidence in the data.</s><s>However, the amount of evidence one desires and the error rate which is deemed acceptable are too different goals, and require a different approach when designing a study.</s></p><p><s>It is perhaps surprising that no one has ever simply asked researchers whether one-tailed tests and sequential analyses are deemed appropriate.</s><s>Even though statistics is not necessarily a democratic enterprise, science relies on peer review, and thus it is arguably of interest to researchers to know what their peers, and especially those working in editorial boards of top journals in their field, think about how appropriate one-tailed tests are.</s></p><p><s>Furthermore, recent developments, such as the ability to pre-register a study, might have influenced these attitudes.</s><s>Therefore, in Study 1 I asked members of the editorial board of three top journals in psychology to answer seven short questions about the appropriateness of one-tailed tests and sequential analyses.</s><s>Psychology and Personality Science) were manually collected.</s><s>All editors received an e-mail on the 21st of February, 2017, and a reminder on the 28th of February, 2017.</s><s>Respondents were informed that for each completed questionnaire $5 would be donated to a charity that aims to advance science education.</s><s>All data received before the 7th of March, 10:00 am GMT+1 was included in the analysis.</s><s>The questionnaire was administered through SurveyMonkey.</s><s>Overall, 327 emails were sent, of which 235 were opened in an e-mail client, and 87 editors completed the survey of seven questions.</s><s>All anonymized data and materials are available from https://osf.io/pwtrh/.</s></p><p><s>Results.</s><s>The first question asked whether one-tailed tests were ever appropriate in psychology.</s><s>There was no perfect agreement, with 80 editors indicating one-tailed tests were appropriate, and 6 editors who were of the opinion that one-tailed tests are never appropriate in psychology (1 editor indicated not to know whether one-tailed tests were ever appropriate).</s><s>It is interesting to see that there is substantial agreement on this issue, as opposed to the often polarized debate in the literature on this topic.</s><s>Even though around 92% of editors accept one-tailed tests, some editors think the use of one-tailed tests is never appropriate.</s><s>Editorial policies do not explicitly state whether and when one-tailed tests are considered appropriate, but the small diversity in answers suggests it might be useful to specify a general policy on the journal level.</s><s>The mean attitude towards one-tailed tests of editors when one-tailed tests were pre-registered was more positive (M = 5.17, SD = 1.56) than when one-tailed tests were not pre-registered (M = 2.70, SD = 1.43, r = 0.35).</s><s>The difference between measurements (M = 2.47, SD = 1.71) was large, t(86) = 13.47,</s><s>p &lt; 0.001, Hedges' g z = 1.43, 95% CI [1.13;1.73],</s><s>see Figure <ref type="figure">1</ref>.</s><s>Notably, although some editors indicated pre-registration did not change their attitude towards one-tailed tests (n = 15), all other editors (n = 72) indicated pre-registration led to a more positive attitude about one-tailed tests.</s><s>The size of the effect of pre-registration is substantial, with the general attitude being negative without pre-registration, but positive with pre-registration.</s><s>A final question in the survey concerned in which percentage of studies where t-tests were reported, editors felt that, on average, one-tailed tests were appropriate.</s><s>We see quite some variation in the responses WILLINGNESS TO PRE-REGISTER 10 (see Figure <ref type="figure">2</ref>), with many editors believing one-tailed tests are rarely appropriate (these include the editors who think one-tailed tests are never appropriate), but with answers ranging across the spectrum (M = 33.30,</s><s>median = 20).</s><s>The mean attitude towards sequential analyses (on a scale from 1, "strongly negative" to 7, "strongly positive") was quite negative when this procedure was not pre-registered (M = 2.85, SD = 1.41) but was quite positive when pre-registered (M = 5.20, SD = 1.29, r = 0.22).</s><s>The difference between measurements (M = 2.35, SD = 1.69) was analyzed with a dependent t-test, t(85) = 12.87, p &lt; 0.001, Hedges' g z = 1.38, 95% CI [1.08;1.67].</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Attitude</head><p><s>Although again some researchers indicated pre-registration did not change their attitude towards sequential analyses (n = 16), all other researchers who answered this question (n = 70) indicated pre-registration led to a more positive attitude about reported sequential analyses (see Figure <ref type="figure" target="#fig_2">3</ref>).</s><s>were greatly dependent upon whether the analysis plan was pre-registered or not, with attitudes being quite negative without pre-registration, and quite positive with pre-registration.</s><s>This suggests that pre-registration might be considered a pre-condition of publishing articles in which one-tailed tests or sequential analyses are reported.</s><s>As a consequence, the efficiency benefit that one-tailed tests and sequential analyses provide might be a strong incentive for researchers to pre-register.</s><s>In Study 2, I examine whether learning about the efficiency benefits of one-tailed tests and sequential analyses, and the acceptance of these procedures by editors when the analyses are pre-registered, might increase the willingness of researchers to pre-register their studies.</s></p><p><s>to answer the same five questions as researchers in the control condition.</s><s>All anonymized data and materials are available from https://osf.io/pwtrh/.</s></p><p><s>Results.</s><s>Of primary interest was whether researchers in the experimental conditions, who learned about the efficiency benefits of one-tailed tests and sequential designs, would judge pre-registering their research as more beneficial, indicate they were more likely to pre-register a study in the future, or plan to perform a greater percentage of pre-registered studies in the future.</s><s>I was especially interested in whether researchers who had never performed a pre-registered experiment in their own lines of research would show a greater willingness to pre-register.</s></p><p><s>There were 223 researchers who had never pre-registered, 59 who had pre-registered a study as part of a collaborative research project, 72 who had pre-registered a study in their own research line, and 49 who had both pre-registered a study in their own research line, and participated in a collaborative research project that was pre-registered.</s><s>Focusing on those researchers who had never pre-registered a study in their own research line, I examined whether hearing about the benefits of one-tailed tests and sequential analyses, and the positive attitude of editors towards these approaches as long as they were pre-registered, influenced the answers researchers gave regarding the benefits and costs of pre-registration, how likely they were to pre-register, and the percentage of studies they planned to pre-register in the future.</s><s>None of the answers to the four questions revealed statistically significant differences between the experimental and control condition (see Table <ref type="table" target="#tab_0">1</ref>).</s></p><p><s>Equivalence tests were performed using the two-one-sided test (TOST) approach, with an upper equivalence bound of Cohen's d = 0.3.</s><s>The smallest effect size of interest is a subjective judgment, and especially difficult to determine when both the population standard deviation and the total sample size is unknown <ref type="bibr" target="#b14">(Lakens, 2017)</ref>.</s><s>Assuming a standard deviation between 1 and 1.5 (not uncommon for a 5 or 7 point scale) the effect size of 0. Four Welch's independent t-tests using the TOST approach indicated statistical equivalence for the difference between conditions for the perceived benefits, t(311.65)</s><s>= -3.45,</s><s>p &lt; 0.001, costs, t(288.61)</s><s>= -2.26,</s><s>p = 0.012, how likely researchers were to pre-register, t(323.68)</s><s>= -4.55,</s><s>p &lt; 0.001, and percentage of studies they planned to pre-register, t(305.34)</s><s>= -2.90,</s><s>p = 0.002.</s><s>We can reject effects large enough to matter in practice, and conclude there is no meaningful effect.</s></p><p><s>Spearman's correlations between the answers to the four questions shows that the likelihood researchers will pre-register in the future, and the percentage of studies the plan to pre-register, are strongly monotonicly related with the perceived benefits of pre-registration (r = 0.57, 95% CI [0.49;0.66],</s><s>and r = 0.54, 95% CI [0.46;0.62],</s><s>respectively), and somewhat less strongly related to the costs (r = -0.26,</s><s>95% CI [-0.33;-0.17],</s><s>and r = -0.28,</s><s>95% CI [-0.37;-0.20],</s><s>respectively).</s><s>Perceived benefits and costs were negatively related, as expected, but not strongly so (r = -0.27,</s><s>95% CI <ref type="bibr">[-0.35;-0.18)</ref>.</s></p><p><s>When exploring difference in responses between previous experience with pre-registration, we see a clear trend where reasearchers who have pre-registered studies in their own research indicate pre-registration is more beneficial, and indicate higher a higher likelihood of pre-registering studies in the future, and higher percentage of studies for which they would consider pre-registering (see Table <ref type="table" target="#tab_1">2</ref>).</s><s>This shows the a-priori idea to focus the main analysis on people who has not yet pre-registered studies in their own lines of research was valid.</s></p><p><s>An interesting observation is that researchers report to be quite likely to pre-register a study in the next two years (M = 5.34, SD = 1.76).</s><s>Even though this percentage must be interpreted in light of possible self-selection, this is a much higher estimate than in the data collected by Watkins (M = 3.17, SD = 1.94), who asked about planned pre-registrations in the next 6 months.</s><s>Perhaps attitudes have changed over the last 12 months, or researchers think it is more likely that pre-registration will be useful for some future study, even when it is not considered very beneficial for the studies they have planned in the next 6 months.</s></p><p><s>Whether people are really more likely to pre-register a study within a two-year time period, compared to a 6 month period, or are simply displaying temporal discounting, would be an interesting topic of research.</s></p><p><s>In the data collected by Buttliere and Wicherts at the end of 2013 only 25% of researchers had experience pre-registering their research.</s><s>In the current data collected in early 2017, 45% of the researchers had experience pre-registering their research, which is a substantial increase in just over three years.</s><s>Although we have to interpret these numbers in light of possible self-selection, both pro-ponents as opponents of pre-registration might have been motivated to participate.</s><s>Only 15 researchers indicated they would not consider to pre-register any of their studies in the future 6 , meaning that 94% of researchers would consider pre-registering at least some of their research.</s><s>The median response to the question which percentage of studies they would consider pre-registering in the future was 50% (see lower right panel of Figure <ref type="figure" target="#fig_3">4</ref>).</s><s>This suggests a surprisingly high self-reported willingness to pre-register studies, especially if we take into account that there is no a-priori reason to assume a pre-registration rate of 100% is necessary.</s><s>Purely descriptive studies where all data is reported might not require pre-registration, small pilot studies to test the feasibility of a paradigm are not designed to test a hypothesis, and some researchers might only publish studies when they have directly replicated every test in an independent sample.</s><s>If this high self-reported willingness to consider pre-registration of analysis plans materializes, this can be considered a substantial change in the way psychological research is done, and there might not be a strong need to further increase the willingness to pre-register studies.</s><s>On the other hand, when we observe an attitude-behvior gap in the future, it may be that immediate efficiency benefits achieved by pre-registering studies would increase pre-registration behavior, even when it did not influence attitudes in this study.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>General Discussion</head><p><s>Based on the current data, it seems unlikely that the efficiency benefit associated with one-tailed tests and sequential analyses are an efficient way to improve the willingness to pre-register studies.</s><s>There are several reasons why this might be the case.</s><s>First of all, data collection might not be too costly for many researchers, making efficiency benefits trivial.</s></p><p><s>Indeed, if data collection is cheap (e.g., when you perform online studies where participants are paid very little) the difference between 172 participants and 230 participants might not be something you care about.</s><s>As an illustration, one researcher contacted me to say that it was more efficient to simply replicate their own experiment, than to pre-register the study.</s></p><p><s>6 An additional 8 researchers skipped this question.</s><s>Because the default slider position was at 0 but not moving the slider was recorded as a non-response in SurveyMonkey, these researchers might also have desired to answer 0%.</s><s>Another possible reason for the lack of an effect of pointing out the efficiency benefits of pre-registration might be that the perceived benefits of pre-registration are less material, and more idealistic, for most researchers.</s><s>If you value transparency in science, pre-registration is a valuable tool, regardless of the time and money it could potentially save.</s><s>As indicated in the grant proposal for this project, I believe that despite the fact that the hypothesis was falsified by the data, the outcome of the project is relevant.</s><s>The current data at least tentatively suggest immediate individual benefits are not the best way to convince people to pre-register their research, and alternative options (e.g., referring to shared norms) might be a more beneficial approach.</s></p><p><s>Researchers indicated it was rather likely that they would pre-register a study in the next two years, to a substantially greater extent than observed by Watkins ( <ref type="formula">2017</ref>) when asked about their plans in the next six months.</s><s>Whether these self-reported expectations really materialize remain to be seen.</s><s>Another possibility is that the difference between how likely researchers think they are to pre-register a study in the next 2 years, versus the next WILLINGNESS TO PRE-REGISTER 20 six months, is an example of temporal discounting <ref type="bibr" target="#b3">(Frederick, Loewenstein, &amp; O'Donoghue, 2002)</ref>.</s><s>A follow-up study a few years from now, where the current respondents are asked which percentage of studies they actually pre-registered, could provide an answer to this question.</s></p><p><s>Although we contacted a representative sample of editorial board members and researchers in studies 1 and 2, one limitation of this research is the possibility that self-selection played a role in the people who chose to complete the questionnaire.</s><s>In the editor survey, only one editor indicated not knowing whether one-tailed tests were appropriate in psychology, which is a rather low number compared to the extensive discussion, and sometimes strong disagreement, in the scientific literature.</s><s>Since the invitation to the questionnaire clearly explained the topic was about one-tailed tests and sequential analyses it is possible only editors interested in, and knowledgeable about, this topic filled in the questionnaire.</s><s>We might expect the inclusion of more individuals without clear preferences to reduce the observed effect sizes somewhat, although given the very large effects observed, this does not seem too problematic.</s></p><p><s>In the researcher survey, there is the possibility that the experimental manipulation might have been most effective on researchers without strong opinions about pre-registration, who might have been less interested in filling out this survey.</s><s>Self-selection might have positively biased answers about the perceived benefits and likelihood researchers would pre-register in the future.</s><s>Furthermore, editors and researchers from only three journals were sampled (even though both Psychological Science and JEP:General publish on a wide range of topics in psychology).</s><s>Although the contacted editors are often in editorial boards of other psychology journals, and the same researchers publish in other psychology journals, the selection of journals limits the generalizability of these results.</s></p><p><s>One-tailed tests and sequential analyses might not increase researchers' willingness to preregister their hypotheses, they still yield an important efficiency benefit.</s><s>The ethical arguments to spend research money as efficiently as possible that have been brought to bear WILLINGNESS TO PRE-REGISTER 21 in medicine <ref type="bibr" target="#b8">(Jennison &amp; Turnbull, 2000;</ref><ref type="bibr" target="#b12">Knottnerus &amp; Bouter, 2001)</ref>, also apply to psychology <ref type="bibr" target="#b13">(Lakens, 2014)</ref>.</s><s>The results from Study 1 suggest that one-tailed tests and sequential analyses are deemed appropriate by most editors in psychology, and whenever researchers have the goal to determine whether the null-hypothesis can be rejected with a certain maximum error rate, their sample size justification should include a careful cost-benefit analysis, where the consideration of one-tailed tests and/or sequential analyses might be warranted.</s></p><p><s>Even though one-tailed tests and sequential analyses were deemed appropriate by most editors contacted in the current survey (as long as these analyses were pre-registered), communicating this efficiency benefit to researchers was not substantial enough to influence their willingness to pre-register.</s><s>It seems most fruitful to explore other avenues to stimulate the adoption of pre-registration in psychology.</s><s>One possibility is to simply require pre-registration, as is the case in other disciplines such as medicine.</s><s>Although it remains to be seen whether the high self-reported willingness to pre-register will materialize in the future, there seems to a positive trend towards a greater willingness to pre-register studies among psychologists.</s></p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head/><label/><figDesc><div><p><s>. All names and e-mail addresses of members listed as members of the complete editorial boards of three top journals in psychology (Psychological Science, the Journal of Experimental Psychology: General, and Social</s></p></div></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 1 .Figure 2 .</head><label>12</label><figDesc><div><p><s>Figure1.</s><s>Attitude one a scale from 1 (very negative) to 7 (very positive) about reporting one-tailed tests when the analysis plan was not pre-registered (top) or pre-registered (bottom).</s></p></div></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 .</head><label>3</label><figDesc><div><p><s>Figure3.</s><s>Attitude one a scale from 1 (very negative) to 7 (very positive) about reporting sequential analyses when the analysis plan was not pre-registered (top) or pre-registered (bottom).</s></p></div></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 4 .</head><label>4</label><figDesc><div><p><s>Figure 4 .</s><s>Frequencies of responses for the four questions about pre-registration.</s></p></div></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1</head><label>1</label><figDesc><div><p><s>Means, standard deviations, and sample sizes for answers to the four survey questions as a</s></p></div></figDesc><table><row><cell>function of condition</cell><cell/><cell/><cell/><cell/><cell/><cell/><cell/></row><row><cell>Question</cell><cell>Condition</cell><cell>Mean</cell><cell>SD</cell><cell>n</cell><cell>t</cell><cell>p</cell><cell>g 95% CI</cell></row><row><cell>Benefits</cell><cell>Control</cell><cell cols="6">3.45 1.13 150 0.74 0.77 -0.08 -0.3;0.14</cell></row><row><cell/><cell>Experimental</cell><cell cols="3">3.36 1.08 180</cell><cell/><cell/><cell/></row><row><cell>Costs</cell><cell>Control</cell><cell cols="6">2.60 1.05 148 0.42 0.34 0.05 -0.17;0.27</cell></row><row><cell/><cell>Experimental</cell><cell cols="3">2.56 0.89 180</cell><cell/><cell/><cell/></row><row><cell>Likely to Preregister</cell><cell>Control</cell><cell cols="6">5.28 1.72 150 1.83 0.97 -0.20 -0.42;0.02</cell></row><row><cell/><cell>Experimental</cell><cell cols="3">4.92 1.83 181</cell><cell/><cell/><cell/></row><row><cell cols="2">Percentage Preregister Control</cell><cell cols="6">46.85 30.56 143 0.23 0.59 -0.03 -0.24;0.19</cell></row><row><cell/><cell cols="4">Experimental 46.07 30.71 180</cell><cell/><cell/><cell/></row><row><cell cols="3">reject effects of this or greater magnitude.</cell><cell/><cell/><cell/><cell/><cell/></row></table><note><p><s>3 would translate into a difference of 0.3 to 0.45 on an answer scale.</s><s>We would need approximately 191 respondents in each condition (or 382 in total) to have 80% power to WILLINGNESS TO PRE-REGISTER 15</s></p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2</head><label>2</label><figDesc><div><p><s>Means, standard deviations, and sample sizes for answers to the four survey questions as</s></p></div></figDesc><table><row><cell cols="2">a function of previous experience with pre-registration</cell><cell/><cell/></row><row><cell>Question</cell><cell>Pre-registration Experience</cell><cell cols="2">Mean SD</cell><cell>N</cell></row><row><cell>Benefits</cell><cell>No Experience</cell><cell>3.29</cell><cell cols="2">1.12 222</cell></row><row><cell/><cell>Collaborative Project</cell><cell>3.15</cell><cell cols="2">1.00 59</cell></row><row><cell/><cell>Own Research</cell><cell>3.93</cell><cell cols="2">0.98 72</cell></row><row><cell/><cell cols="2">Own Research and Collaborative Project 4.16</cell><cell cols="2">0.83 49</cell></row><row><cell>Costs</cell><cell>No Experience</cell><cell>2.65</cell><cell cols="2">0.98 220</cell></row><row><cell/><cell>Collaborative Project</cell><cell>2.64</cell><cell cols="2">0.89 59</cell></row><row><cell/><cell>Own Research</cell><cell>2.32</cell><cell cols="2">0.80 72</cell></row><row><cell/><cell cols="2">Own Research and Collaborative Project 2.16</cell><cell cols="2">0.87 49</cell></row><row><cell cols="2">Likely to Pre-register No Experience</cell><cell>4.60</cell><cell cols="2">1.81 223</cell></row><row><cell/><cell>Collaborative Project</cell><cell>5.49</cell><cell cols="2">1.33 59</cell></row><row><cell/><cell>Own Research</cell><cell>6.54</cell><cell cols="2">0.90 72</cell></row><row><cell/><cell cols="2">Own Research and Collaborative Project 6.82</cell><cell cols="2">0.63 49</cell></row><row><cell>Percent Pre-register</cell><cell>No Experience</cell><cell cols="3">40.68 29.50 215</cell></row><row><cell/><cell>Collaborative Project</cell><cell cols="3">44.95 27.15 59</cell></row><row><cell/><cell>Own Research</cell><cell cols="3">61.31 24.00 72</cell></row><row><cell/><cell cols="4">Own Research and Collaborative Project 73.33 24.97 49</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p><s>Buttliere, B., &amp; Wicherts, J. M. (2015, June 17).</s><s>Repligate survey.</s><s>Retrieved from osf.io/sfkhe</s></p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p><s>Watkins, H. M. (2017, January 23).</s><s>A Survey of Responses to the Replicability Debate in Psychology.Retrieved from osf.io/hjxkq</s></p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="3" xml:id="foot_2"><p><s>Although not all authors of the publication agree (Senn, personal communication, 1-1-2017: https: //twitter.com/stephensenn/status/815583465240494080)</s></p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="4" xml:id="foot_3"><p><s>See http://bit.ly/2lx8r9x.</s><s>I'd like to thank Ian Hussey, Marc Halusic, Derek Berger, Mark Kelson, Gjalt-Jorn Peters, L. J. Zigerell, Rickard Carlsson, and Marcel van Assen for their contributions.</s></p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="5" xml:id="foot_4"><p><s>The course is available, for free, at https://www.coursera.org/learn/statistical-inferences</s></p></note>
+		</body>
+		<back>
+
+			<div type="funding">
+<div><p>Funding for this research was provided by the <rs type="funder">Berkeley Initiative for Transparency in the Social Sciences</rs> and the <rs type="funder">Laura and John Arnold Foundation</rs>.All data and materials are available from https://osf.io/pwtrh/.</p></div>
+			</div>
+			<listOrg type="funding">
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study 2: Researchers</head><p><s>Participants.</s><s>References for the last 1000 published articles in Psychological Science and JEP:General, and all (662) articles in Social Psychological and Personality Psychology, including corresponding authors and e-mail addresses, were downloaded from WebOfScience.</s><s>All names of first authors and e-mail addresses of corresponding authors were automatically retrieved, and manually checked.</s><s>Because the goal was to send personalized email invitations, combinations where the first author's name did not match the e-mail address of the corresponding author were manually deleted, and double entries were removed.</s></p><p><s>All first authors received an e-mail on the 28st of February, 2017, and a reminder on the 7th of March, 2017.</s><s>All data received before the 14th of March, 10:00 am GMT+1 was included in the analysis.</s><s>The questionnaire was administered through SurveyMonkey.</s><s>Overall, 1802 emails were sent, of which 993 were opened in an e-mail client (the low percentage might in part be due to changes in e-mail addresses over time), and 409 researchers completed the survey of 5 questions.</s><s>A total of 6 responses were removed because researchers either did not answer, or answered both "yes" and "no" to the first question asking if they had ever performed a pre-registered study, leaving 184 observations in the control condition, and 219 in the experimental condition.</s><s>Respondents were informed that for each completed questionnaire $2 would be donated to a charity that aims to advance science education.</s></p><p><s>Procedure.</s><s>After an introduction to the questionnaire, and a brief explanation what pre-registration entails, half of the researchers immediately started with the questionnaire (the control condition).</s><s>For the other half of the researchers, the benefit of one-tailed tests and sequential analyses was explained through a numerical example of the average sample size needed for a traditional two-tailed non-sequential design, and a one-tailed sequential design.</s><s>Subsequently, a summary of Study 1 was presented (based on the completed questionnaires after 1 week, which was basically identical to the final results reported above), with the goal to communicate that these practices were deemed appropriate by editors, but only when pre-registered.</s><s>Subsequently, researchers in the experimental condition were asked</s></p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">A brief note on one-tailed tests.</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Burke</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/h0059627</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Bulletin</title>
+		<title level="j" type="abbrev">Psychological Bulletin</title>
+		<idno type="ISSN">0033-2909</idno>
+		<idno type="ISSNe">1939-1455</idno>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="384" to="387"/>
+			<date type="published" when="1953">1953</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Burke, C. J. (1953). A brief note on one-tailed tests. Psychological Bulletin, 50(5), 384-387.</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Instead of “playing the game” it is time to change the rules: Registered Reports at &lt;em&gt;AIMS Neuroscience&lt;/em&gt; and beyond</title>
+		<author>
+			<persName><forename type="first">Christopher</forename><surname>D. Chambers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Eva</forename><surname>Feredoes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Suresh</forename><surname>D. Muthukumaraswamy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Peter</forename><surname>J. Etchells</surname></persName>
+		</author>
+		<idno type="DOI">10.3934/neuroscience.2014.1.4</idno>
+	</analytic>
+	<monogr>
+		<title level="j">AIMS Neuroscience</title>
+		<idno type="ISSN">2373-7972</idno>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="4" to="17"/>
+			<date type="published" when="2014">2014</date>
+			<publisher>American Institute of Mathematical Sciences (AIMS)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Chambers, C. D., Feredoes, E., Muthukumaraswamy, S. D., &amp; Etchells, P. (2014). Instead of" playing the game" it is time to change the rules: Registered Reports at AIMS Neuroscience and beyond. AIMS Neuroscience, 1(1), 4-17.</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">The concept of statistical significance and the controversy about one-tailed tests.</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">J</forename><surname>Eysenck</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/h0048412</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Review</title>
+		<title level="j" type="abbrev">Psychological Review</title>
+		<idno type="ISSN">0033-295X</idno>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="269" to="271"/>
+			<date type="published" when="1960">1960</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Eysenck, H. J. (1960). The concept of statistical significance and the controversy about one-tailed tests. Psychological Review, 67(4), 269.</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Time Discounting and Time Preference: A Critical Review</title>
+		<author>
+			<persName><forename type="first">Shane</forename><surname>Frederick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">George</forename><surname>Loewenstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ted</forename><surname>O’donoghue</surname></persName>
+		</author>
+		<idno type="DOI">10.1257/002205102320161311</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Economic Literature</title>
+		<title level="j" type="abbrev">Journal of Economic Literature</title>
+		<idno type="ISSN">0022-0515</idno>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="351" to="401"/>
+			<date type="published" when="2002-06">2002</date>
+			<publisher>American Economic Association</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Frederick, S., Loewenstein, G., &amp; O'donoghue, T. (2002). Time discounting and time preference: A critical review. Journal of Economic Literature, 40(2), 351-401.</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">A Powerful Nudge? Presenting Calculable Consequences of Underpowered Research Shifts Incentives Toward Adequately Powered Designs</title>
+		<author>
+			<persName><forename type="first">Will</forename><forename type="middle">M</forename><surname>Gervais</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jennifer</forename><forename type="middle">A</forename><surname>Jewell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maxine</forename><forename type="middle">B</forename><surname>Najle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ben</forename><forename type="middle">K L</forename><surname>Ng</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1948550615584199</idno>
+		<ptr target="https://doi.org/10.1177/1948550615584199"/>
+	</analytic>
+	<monogr>
+		<title level="j">Social Psychological and Personality Science</title>
+		<title level="j" type="abbrev">Social Psychological and Personality Science</title>
+		<idno type="ISSN">1948-5506</idno>
+		<idno type="ISSNe">1948-5514</idno>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="847" to="854"/>
+			<date type="published" when="2015-04-27">2015</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gervais, W. M., Jewell, J. A., Najle, M. B., &amp; Ng, B. K. L. (2015). A Powerful Nudge? Presenting Calculable Consequences of Underpowered Research Shifts Incentives Toward Adequately Powered Designs. Social Psychological and Personality Science, 6(7), 847-854. https://doi.org/10.1177/1948550615584199</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Approaching a fair deal for significance and other concerns</title>
+		<author>
+			<persName><forename type="first">Roger</forename><surname>Giner-Sorolla</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jesp.2016.01.010</idno>
+		<ptr target="https://doi.org/10.1016/j.jesp.2016.01.010"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Experimental Social Psychology</title>
+		<title level="j" type="abbrev">Journal of Experimental Social Psychology</title>
+		<idno type="ISSN">0022-1031</idno>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="page" from="1" to="6"/>
+			<date type="published" when="2016-07">2016</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Giner-Sorolla, R. (2016). Approaching a fair deal for significance and other concerns. Journal of Experimental Social Psychology, 65, 1-6. https://doi.org/10.1016/j.jesp.2016.01.010</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">One-tailed tests and "unexpected" results.</title>
+		<author>
+			<persName><forename type="first">Marvin</forename><forename type="middle">R</forename><surname>Goldfried</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/h0038521</idno>
+		<ptr target="https://doi.org/10.1037/h0038521"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Review</title>
+		<title level="j" type="abbrev">Psychological Review</title>
+		<idno type="ISSN">0033-295X</idno>
+		<idno type="ISSNe">1939-1471</idno>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="79" to="80"/>
+			<date type="published" when="1959">1959</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Goldfried, M. R. (1959). One-tailed tests and "unexpected" results. Psychological Review, 66(1), 79-80. https://doi.org/10.1037/h0038521</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Statistical tests, P values, confidence intervals, and power: a guide to misinterpretations</title>
+		<author>
+			<persName><forename type="first">Sander</forename><surname>Greenland</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stephen</forename><forename type="middle">J</forename><surname>Senn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kenneth</forename><forename type="middle">J</forename><surname>Rothman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><forename type="middle">B</forename><surname>Carlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Charles</forename><surname>Poole</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Steven</forename><forename type="middle">N</forename><surname>Goodman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Douglas</forename><forename type="middle">G</forename><surname>Altman</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s10654-016-0149-3</idno>
+		<ptr target="https://doi.org/10.1007/s10654-016-0149-3"/>
+	</analytic>
+	<monogr>
+		<title level="j">European Journal of Epidemiology</title>
+		<title level="j" type="abbrev">Eur J Epidemiol</title>
+		<idno type="ISSN">0393-2990</idno>
+		<idno type="ISSNe">1573-7284</idno>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="337" to="350"/>
+			<date type="published" when="2016-04">2016</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Greenland, S., Senn, S. J., Rothman, K. J., Carlin, J. B., Poole, C., Goodman, S. N., &amp; Altman, D. G. (2016). Statistical tests, P values, confidence intervals, and power: a guide to misinterpretations. European Journal of Epidemiology, 31(4), 337-350. https://doi.org/10.1007/s10654-016-0149-3</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Test of WILLINGNESS TO PRE-REGISTER 23 hypotheses: one-sided vs. two-sided alternatives</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Jennison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">W</forename><surname>Turnbull</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Chapman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">/</forename><surname>Hall</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Crc</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">V</forename><surname>Jones</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/h0056832</idno>
+		<ptr target="https://doi.org/http://dx.doi.org/10.1037/h0056832"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Bulletin</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="43" to="46"/>
+			<date type="published" when="1952">2000. 1952</date>
+			<pubPlace>Boca Raton</pubPlace>
+		</imprint>
+	</monogr>
+	<note>Group sequential methods with applications to clinical trials</note>
+	<note type="raw_reference">Jennison, C., &amp; Turnbull, B. W. (2000). Group sequential methods with applications to clinical trials. Boca Raton: Chapman &amp; Hall/CRC. Jones, L. V. (1952). Test of WILLINGNESS TO PRE-REGISTER 23 hypotheses: one-sided vs. two-sided alternatives. Psychological Bulletin, 49(1), 43-46. https://doi.org/http://dx.doi.org/10.1037/h0056832</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">A rejoinder on one-tailed tests.</title>
+		<author>
+			<persName><forename type="first">Lyle</forename><forename type="middle">V</forename><surname>Jones</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/h0055313</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Bulletin</title>
+		<title level="j" type="abbrev">Psychological Bulletin</title>
+		<idno type="ISSN">0033-2909</idno>
+		<idno type="ISSNe">1939-1455</idno>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="585" to="586"/>
+			<date type="published" when="1954-11">1954</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Jones, L. V. (1954). A rejoinder on one-tailed tests. Psychological Bulletin, 5(6), 585-586.</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">HARKing: Hypothesizing After the Results are Known</title>
+		<author>
+			<persName><forename type="first">Norbert</forename><forename type="middle">L</forename><surname>Kerr</surname></persName>
+		</author>
+		<idno type="DOI">10.1207/s15327957pspr0203_4</idno>
+		<ptr target="https://doi.org/10.1207/s15327957pspr0203_4"/>
+	</analytic>
+	<monogr>
+		<title level="j">Personality and Social Psychology Review</title>
+		<title level="j" type="abbrev">Pers Soc Psychol Rev</title>
+		<idno type="ISSN">1088-8683</idno>
+		<idno type="ISSNe">1532-7957</idno>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="196" to="217"/>
+			<date type="published" when="1998-08">1998</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kerr, N. L. (1998). HARKing: Hypothesizing After the Results are Known. Personality and Social Psychology Review, 2(3), 196-217. https://doi.org/10.1207/s15327957pspr0203_4</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Three criteria for the use of one-tailed tests.</title>
+		<author>
+			<persName><forename type="first">Herbert</forename><forename type="middle">D</forename><surname>Kimmel</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/h0046737</idno>
+		<ptr target="https://doi.org/10.1037/h0046737"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Bulletin</title>
+		<title level="j" type="abbrev">Psychological Bulletin</title>
+		<idno type="ISSN">0033-2909</idno>
+		<idno type="ISSNe">1939-1455</idno>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="351" to="353"/>
+			<date type="published" when="1957">1957</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kimmel, H. D. (1957). Three criteria for the use of one-tailed tests. Psychological Bulletin, 54(4), 351-353. https://doi.org/10.1037/h0046737</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">The ethics of sample size:</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">André</forename><surname>Knottnerus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lex</forename><forename type="middle">M</forename><surname>Bouter</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/s0895-4356(00)00276-6</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Clinical Epidemiology</title>
+		<title level="j" type="abbrev">Journal of Clinical Epidemiology</title>
+		<idno type="ISSN">0895-4356</idno>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="109" to="110"/>
+			<date type="published" when="2001-02">2001</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Knottnerus, J. A., &amp; Bouter, L. M. (2001). The ethics of sample size:: Two-sided testing and one-sided thinking. Journal of Clinical Epidemiology, 54(2), 109-110.</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Performing high‐powered studies efficiently with sequential analyses</title>
+		<author>
+			<persName><forename type="first">Daniël</forename><surname>Lakens</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/ejsp.2023</idno>
+		<ptr target="https://doi.org/10.1002/ejsp.2023"/>
+	</analytic>
+	<monogr>
+		<title level="j">European Journal of Social Psychology</title>
+		<title level="j" type="abbrev">Euro J Social Psych</title>
+		<idno type="ISSN">0046-2772</idno>
+		<idno type="ISSNe">1099-0992</idno>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="701" to="710"/>
+			<date type="published" when="2014-08-15">2014</date>
+			<publisher>Wiley</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lakens, D. (2014). Performing high-powered studies efficiently with sequential analyses: Sequential analyses. European Journal of Social Psychology, 44(7), 701-710. https://doi.org/10.1002/ejsp.2023</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Equivalence Tests</title>
+		<author>
+			<persName><forename type="first">Daniël</forename><surname>Lakens</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1948550617697177</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Social Psychological and Personality Science</title>
+		<title level="j" type="abbrev">Social Psychological and Personality Science</title>
+		<idno type="ISSN">1948-5506</idno>
+		<idno type="ISSNe">1948-5514</idno>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="355" to="362"/>
+			<date type="published" when="2017-05">2017</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lakens, D. (2017). Equivalence tests: A practical primer for t-tests, correlations, and meta-analyses. Social Psychological and Personality Science. DOI: 10.1177/1948550617697177</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Replication in Psychological Science</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Lindsay</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0956797615616374</idno>
+		<ptr target="https://doi.org/10.1177/0956797615616374"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Science</title>
+		<title level="j" type="abbrev">Psychol Sci</title>
+		<idno type="ISSN">0956-7976</idno>
+		<idno type="ISSNe">1467-9280</idno>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="1827" to="1832"/>
+			<date type="published" when="2015-11-09">2015</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lindsay, D. S. (2015). Replication in Psychological Science. Psychological Science, 26(12), 1827-1832. https://doi.org/10.1177/0956797615616374</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Misprescription and misuse of one‐tailed tests</title>
+		<author>
+			<persName><forename type="first">Celia</forename><forename type="middle">M</forename><surname>Lombardi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stuart</forename><forename type="middle">H</forename><surname>Hurlbert</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.1442-9993.2009.01946.x</idno>
+		<ptr target="https://doi.org/10.1111/j.1442-9993.2009.01946.x"/>
+	</analytic>
+	<monogr>
+		<title level="j">Austral Ecology</title>
+		<title level="j" type="abbrev">Austral Ecology</title>
+		<idno type="ISSN">1442-9985</idno>
+		<idno type="ISSNe">1442-9993</idno>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="447" to="468"/>
+			<date type="published" when="2009-05-28">2009</date>
+			<publisher>Wiley</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lombardi, C. M., &amp; Hurlbert, S. H. (2009). Misprescription and misuse of one-tailed tests. Austral Ecology. https://doi.org/10.1111/j.1442-9993.2009.01946.x</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Let’s Put Our Money Where Our Mouth Is</title>
+		<author>
+			<persName><forename type="first">Jon</forename><forename type="middle">K</forename><surname>Maner</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1745691614528215</idno>
+		<ptr target="https://doi.org/10.1177/1745691614528215"/>
+	</analytic>
+	<monogr>
+		<title level="j">Perspectives on Psychological Science</title>
+		<title level="j" type="abbrev">Perspect Psychol Sci</title>
+		<idno type="ISSN">1745-6916</idno>
+		<idno type="ISSNe">1745-6924</idno>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="343" to="351"/>
+			<date type="published" when="2014-05">2014</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Maner, J. K. (2014). Let's Put Our Money Where Our Mouth Is: If Authors Are to Change Their Ways, Reviewers (and Editors) Must Change With Them. Perspectives on Psychological Science, 9(3), 343-351. https://doi.org/10.1177/1745691614528215</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">One- and two-tailed tests.</title>
+		<author>
+			<persName><forename type="first">Melvin</forename><forename type="middle">R</forename><surname>Marks</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/h0054653</idno>
+		<ptr target="https://doi.org/10.1037/h0054653"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Review</title>
+		<title level="j" type="abbrev">Psychological Review</title>
+		<idno type="ISSN">0033-295X</idno>
+		<idno type="ISSNe">1939-1471</idno>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="207" to="208"/>
+			<date type="published" when="1953">1953</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Marks, M. R. (1953). One-and two-tailed tests. Psychological Review, 60(3), 207-208. https://doi.org/10.1037/h0054653</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Registered Reports</title>
+		<author>
+			<persName><forename type="first">Brian</forename><forename type="middle">A</forename><surname>Nosek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daniël</forename><surname>Lakens</surname></persName>
+		</author>
+		<idno type="DOI">10.1027/1864-9335/a000192</idno>
+		<ptr target="https://doi.org/10.1027/1864-9335/a000192"/>
+	</analytic>
+	<monogr>
+		<title level="j">Social Psychology</title>
+		<title level="j" type="abbrev">Social Psychology</title>
+		<idno type="ISSN">1864-9335</idno>
+		<idno type="ISSNe">2151-2590</idno>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="137" to="141"/>
+			<date type="published" when="2014-05-01">2014</date>
+			<publisher>Hogrefe Publishing Group</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Nosek, B. A., &amp; Lakens, D. (2014). Registered reports: A method to increase the credibility of published results. Social Psychology, 45(3), 137-141. https://doi.org/10.1027/1864-9335/a000192</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">‘Heads I win, tails you lose’: testing directional alternative hypotheses in ecological and evolutionary research</title>
+		<author>
+			<persName><forename type="first">William</forename><forename type="middle">R</forename><surname>Rice</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Steven</forename><forename type="middle">D</forename><surname>Gaines</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/0169-5347(94)90258-5</idno>
+		<ptr target="https://doi.org/10.1016/0169-5347(94)90258-5"/>
+	</analytic>
+	<monogr>
+		<title level="j">Trends in Ecology &amp; Evolution</title>
+		<title level="j" type="abbrev">Trends in Ecology &amp; Evolution</title>
+		<idno type="ISSN">0169-5347</idno>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="235" to="237"/>
+			<date type="published" when="1994-06">1994</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rice, W. R., &amp; Gaines, S. D. (1994). "Heads I win, tails you lose": testing directional alternative hypotheses in ecological and evolutionary research. Trends in Ecology &amp; Evolution, 9(6), 235-237. https://doi.org/10.1016/0169-5347(94)90258-5</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Sequential hypothesis testing with Bayes factors: Efficiently testing mean differences.</title>
+		<author>
+			<persName><forename type="first">Felix</forename><forename type="middle">D</forename><surname>Schönbrodt</surname></persName>
+			<idno type="ORCID">0000-0002-8282-3910</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Eric-Jan</forename><surname>Wagenmakers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michael</forename><surname>Zehetleitner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marco</forename><surname>Perugini</surname></persName>
+			<idno type="ORCID">0000-0002-4864-6623</idno>
+		</author>
+		<idno type="DOI">10.1037/met0000061</idno>
+		<ptr target="http://www.ncbi.nlm.nih.gov/pubmed/26651986"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Methods</title>
+		<title level="j" type="abbrev">Psychological Methods</title>
+		<idno type="ISSN">1082-989X</idno>
+		<idno type="ISSNe">1939-1463</idno>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="322" to="339"/>
+			<date type="published" when="2015">2015</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Schonbrodt, F. D., Wagenmakers, E. J., Zehetleitner, M., &amp; Perugini, M. (2015). Sequential Hypothesis Testing With Bayes Factors: Efficiently Testing Mean Differences. Psychological Methods. Retrieved from http://www.ncbi.nlm.nih.gov/pubmed/26651986</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Editorial</title>
+		<author>
+			<persName><forename type="first">Simine</forename><surname>Vazire</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1948550615603955</idno>
+		<ptr target="https://doi.org/10.1177/1948550615603955"/>
+	</analytic>
+	<monogr>
+		<title level="j">Social Psychological and Personality Science</title>
+		<title level="j" type="abbrev">Social Psychological and Personality Science</title>
+		<idno type="ISSN">1948-5506</idno>
+		<idno type="ISSNe">1948-5514</idno>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="3" to="7"/>
+			<date type="published" when="2016">2016</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Vazire, S. (2016). Editorial. Social Psychological and Personality Science, 7(1), 3-7. https://doi.org/10.1177/1948550615603955</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

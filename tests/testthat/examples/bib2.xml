@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main"></title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><roleName>Dr</roleName><forename type="first">Bheemaiah</forename><surname>Anil</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Affiliate Faculty and FOWL Consultancy. Author Note Visiting Faculty Affiliation</orgName>
+								<orgName type="department" key="dep2">Department of Computer Science</orgName>
+								<orgName type="institution" key="instit1">IIT Madras</orgName>
+								<orgName type="institution" key="instit2">IIT Madras</orgName>
+								<address>
+									<postCode>600036</postCode>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Anil</forename><surname>Kumar</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Affiliate Faculty and FOWL Consultancy. Author Note Visiting Faculty Affiliation</orgName>
+								<orgName type="department" key="dep2">Department of Computer Science</orgName>
+								<orgName type="institution" key="instit1">IIT Madras</orgName>
+								<orgName type="institution" key="instit2">IIT Madras</orgName>
+								<address>
+									<postCode>600036</postCode>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">213FA8FDE74F4ACB7283C300D71360E0</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-06-15T21:15+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Active Learning</term>
+					<term>Flip Learning</term>
+					<term>Undergrad instruction</term>
+					<term>Creative thinking</term>
+					<term>critical thinking</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Active learning with Flip learning techniques are described in an active learning course in introductory A.I , taught at IIT Madras Computer Sciences Department, by the author in collaboration with Dr Deepak Khemani. In a methodology of flip learning and inverting the classroom, a system of surprise quizzes as more than an assessment, but a self exploratory flip learning pedagogy, with open ended deadlines. The author describes a flip learning methodology, with preparatory reading and future reading summaries, as part of an open evaluation as part of the course instruction, combined with lectures, eliminating examinations, quizzes and traditional assessment techniques. As a novel approach, the grading is modified to award original contributions, more than a good understanding of the subject matter, with a viva voce for a grading poorer than a B, inspired by Prof Josua Chover of UW Madison. This active learning methodology builds on the methods practiced by Prof V Balakrishnan of the Physics department, IIT Madras, Prof Deepak Khemani of Computer Sciences , IIT Madras and Prof Joshua Chover of the Mathematics Department, UW Madison.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Flip Learning experiments. An introductory course in A.I</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introduction.</head><p>In this book Dr Khemani Deepak, <ref type="bibr">(Khemani et al., n.d.)</ref> a mentor of the author describes with a strong foundation, the basic principles of the strong A.I approach leading to a formulation of procedural A.I as part of unsupervised methodologies, in addition to present supervised techniques, including the universe of deep learning defined in Lie computability in a unified tensor decomposition formulation by the author. <ref type="bibr" target="#b3">(Kumar, 2020)</ref> <ref type="bibr">(ORCID, n.d.)</ref> The use of active learning, particularly flip learning pedagogies, has been practiced by many academia, including Dr Balakrishnana V, Deepak Kheamni and Joshua Chover to mention a few in the authors educational experiences, in this paper the author describes, one such flip learning experiment at IIT Madras, in Spring 2011, in teaching this course with a system of surprise tests, frequently interspersed with instruction.</p><p>The Algorithm.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>"</head><p>Take-home exams in the course content would have open problems with an emphasis on original contributions towards course grading rather than rut learning of facts.</p><p>Thus teaching and development of course content at UW would go a long way towards initiating students to research.</p><p>In fact, if the courses are graded from A to F, An A is reserved for only those </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Assessments and Measures</head><p>Assessments include a fixed number of surprise exams called quizzes, with normal in classroom teaching, a end of the semester open ended quiz and an optional interview, called a viva voce. The distribution in weightage is a 60-40 towards the surprise quizzes and the end semester quizzes, with each quiz being marked out of 10 marks, consisting of three questions for three marks each and a one mark question for an optional puzzle.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>The course was taught with this methodology in collaboration with Dr Khemani at IIT Madras with more than five top grades with original contributions in a learning loop, greater than the authors or the teaching assistants knowledge and published literature, proving the constructivist pedagogy. More than five invaluable contributions, along with several other valuable insights and contributions prove the efficacy of the constructivist approach and the need for inquiry based learning, instead of didactic instruction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Outcome 1</head><p>More than 5 A+ grades were awarded, proving the self guided learning and initiatives of an above average undergraduate community at the indian institute of technology madras, calling for the encouragement of active learning amongst the undergraduate student population.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Outcome 2</head><p>No grades below a B were scored and no viva voce conducted, with every student who participated, being above average with a take home of the minimal comprehension of the active subject matter. The flip aspects, lacking screencasts, only included reading material, with minimal lectures and formal instruction, but requiring a broad grasp, independent study, critical and original thinking and literature reviews, as self exploration, the concept of inversion in the preparatory learning and an internalization and integration of explored and learnt knowledge in the pedagogies of active learning. This system of encouraging original thinking, renouncing the dogmatic and encouraging questioning, leads to a constructivist exploratory pedagogy that as proved by the results of this experiment, very fruitful.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>(RobertTalbert, n.d.)flip learning experiments and resources for future flip learning practitioners.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>students who have original contributions, an AB indicating a grasp of the subject as good as the teaching assistant, and a B indicating a fair comprehension of the subject with a reiteration of the take-home concepts of the course module." Each take home exam would have three questions, a formulation of an overlap in flip learning pedagogies of the past, present and future, The first question relates to a comprehension of the course taught so far, the second on the topic pertinent to the lecture and the third, flip learning on future topics, including an open problem, this eliminates any other traditional assessment technique. The final assessment in the semester is replaced with an original contribution or a review paper on a research problem of one's choosing. Method Participants More than 30 undergraduate and graduate students at the department of computer science, participate in this active learning exercise, in flip learning, with assessments in the form of open ended surprise exams.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>This experiment in active learning adds to several flip learning experiences (Definition of FlippedLearning -Flipped Learning Network Hub, 2016)  as practiced in undergraduate instruction, worldwide, reviewed in [(Uzunboylu &amp; Karagozlu, 2015)([No Title], n.d.)(Al-Samarraie et al., 2019; Uzunboylu &amp; Karagozlu, 2015)], future work would replace the need for instruction through classroom teaching with online flip learning through readings and media, eliminating the need for a lecture based in class instruction, towards complete flip learning pedagogies. A partial approach, towards the ultimate Utopia of academic course work free of homework and traditional assessments, was partially achieved, with open ended clicker questions on the past-prest and future theme, the future being the open blue sky of open research in a learning loop for the faculty, students and the teaching assistants involved.</figDesc></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">A flipped classroom model in higher education: a review of the evidence across disciplines</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Al-Samarraie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Shamsuddin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">I</forename><surname>Alzahrani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Educational Technology Research and Development: ETR &amp; D</title>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1017" to="1051" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Definition of Flipped Learning -Flipped Learning Network Hub</title>
+		<ptr target="https://flippedlearning.org/definition-of-flipped-learning/" />
+		<imprint>
+			<date type="published" when="2016-06-18">2016. June 18</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title/>
+		<author>
+			<persName><forename type="first">D</forename><surname>Khemani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Raina</forename><surname>Shivji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Agarwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Veeru</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Keith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hazra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tomson</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Gayatri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Agathe</forename><surname>Misbah</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shahnaz</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Sujeet</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Akhil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hossain</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Unknown</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Ritika</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sayyed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Das</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Shridhar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">A First Course in Artificial Intelligence</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Computable Continuous Functions, in the design of BEAMOS based auto navigation</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Kumar</surname></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.4038327</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.4038327" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<idno>0000-0001-8223-1993</idno>
+		<ptr target="http://orcid.org/0000-0001-8223-1993" />
+		<title level="m">Anil Kumar Dr Bheemaiah</title>
+		<imprint>
+			<date type="published" when="2021-04-17">April 17, 2021. April 17, 2021</date>
+		</imprint>
+	</monogr>
+	<note>No title</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<author>
+			<persName><surname>Roberttalbert</surname></persName>
+		</author>
+		<ptr target="https://github.com/RobertTalbert/invertedclassroom" />
+		<title level="m">RobertTalbert/invertedclassroom</title>
+		<imprint>
+			<date type="published" when="2021-04-17">April 17, 2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Flipped classroom: A review of recent literature</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Uzunboylu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Karagozlu</surname></persName>
+		</author>
+		<idno type="DOI">10.18844/wjet.v7i2.46</idno>
+		<ptr target="https://doi.org/10.18844/wjet.v7i2.46" />
+	</analytic>
+	<monogr>
+		<title level="j">World Journal on Educational Technology Current Issues</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,282 @@
+---
+title: "papercheck"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{papercheck}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+## Installation
+
+You can install the development version of papercheck from [GitHub](https://github.com/scienceverse/papercheck) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("scienceverse/papercheck")
+```
+
+```{r}
+library(papercheck)
+```
+
+You can launch an interactive shiny app version of the code below with:
+
+``` r
+papercheck_app()
+```
+
+### Load from PDF
+
+The function `pdf2grobid()` can read PDF files and save them in the [TEI](https://tei-c.org/) format created by [grobid](https://grobid.readthedocs.io/). This requires an internet connection and takes a few seconds per paper, so should only be done once and the results saved for later use.
+
+If the server is unavailable, you can [use a grobid web interface](https://huggingface.co/spaces/kermitt2/grobid).
+
+```{r, eval = FALSE}
+pdf_file <- demopdf()
+xml_file <- pdf2grobid(pdf_file)
+```
+
+```{r, include = FALSE}
+xml_file <- demoxml()
+```
+
+You can set up your own local grobid server following instructions from <https://grobid.readthedocs.io/>. The easiest way is to use Docker.
+
+``` bash
+docker run --rm --init --ulimit core=0 -p 8070:8070 lfoppiano/grobid:0.8.1
+```
+
+Then you can set your grobid_url to the local path <http://localhost:8070>.
+
+```{r, eval = FALSE}
+xml_file <- pdf2grobid(pdf_file, grobid_url = "http://localhost:8070")
+```
+
+
+### Load from XML
+
+The function `read_grobid()` can read XML files parsed by grobid.
+
+```{r}
+paper <- read_grobid(xml_file)
+```
+
+### Load from non-PDF document
+
+To take advantage of grobid's ability to parse references and other aspects of papers, for now the best way is to convert your papers to PDF. However, papercheck can read in plain text from a character object or text/docx file with `read_text()`.
+
+```{r}
+text <- "Abstract
+
+This is my very short paper. It has two sentences."
+shortpaper <- read_text(text, id = "shortpaper")
+shortpaper$full_text
+```
+
+
+```{r}
+#| eval: false
+filename <- system.file("extdata/to_err_is_human.docx", 
+                        package = "papercheck")
+paper_from_doc <- read_text(filename)
+```
+
+
+## Full Text
+
+You can access a parsed table of the full text of the paper via `s$full_text`, but you may find it more convenient to use the function `search_text()`. The defaults return a data table of each sentence, with the section type, header, div, paragraph and sentence numbers, and file name. (The section type is a best guess from the headers, so may not always be accurate.)
+
+```{r}
+text <- search_text(paper)
+```
+
+```{r, echo = FALSE}
+dplyr::filter(text, p == 1, s == 1) |>
+  knitr::kable()
+```
+
+### Pattern
+
+You can search for a specific word or phrase by setting the `pattern` argument. The pattern is a regex string by default; set `fixed = TRUE` if you want to find exact text matches.
+
+```{r}
+text <- search_text(paper, pattern = "papercheck")
+```
+
+```{r, echo = FALSE}
+knitr::kable(text)
+```
+
+### Section
+
+Set `section` to a vector of the sections to search in.
+
+```{r}
+text <- search_text(paper, "papercheck", 
+                    section = "abstract")
+```
+
+```{r, echo = FALSE}
+knitr::kable(text)
+```
+
+
+### Return
+
+Set `return` to one of "sentence", "paragraph", "section", or "match" to control what gets returned.
+
+```{r}
+text <- search_text(paper, "papercheck", 
+                    section = "intro", 
+                    return = "paragraph")
+```
+
+```{r, echo = FALSE}
+knitr::kable(text)
+```
+
+### Regex matches
+
+You can also return just the matched text from a regex search by setting `return = "match"`. The extra `...` arguments in `search_text()` are passed to `grep()`, so `perl = TRUE` allows you to use more complex regex, like below.
+
+```{r}
+pattern <- "[a-zA-Z]\\S*\\s*(=|<)\\s*[0-9\\.,-]*\\d"
+text <- search_text(paper, pattern, return = "match", perl = TRUE)
+```
+
+```{r, echo = FALSE}
+knitr::kable(text)
+```
+
+
+
+## ChatGPT
+
+You can query the extracted text of papers with ChatGPT.
+
+### Setup
+
+Run 
+
+```{r, eval = FALSE}
+gpt_setup()
+```
+
+
+You will need to provide your own [API key](https://platform.openai.com/api-keys). You can enter it manually for each call to `gpt()`, or add the following lines in the .Renviron file for your user or project. 
+
+
+``` bash
+CHATGPT_KEY="sk-proj-abcdefghijklmnopqrs0123456789ABCDEFGHIJKLMNOPQRS"
+RETICULATE_PYTHON="~/.virtualenvs/r-reticulate/bin/python"
+```
+
+```{r, eval=FALSE}
+# useful if you aren't sure where this file is
+usethis::edit_r_environ()
+```
+
+### GPT Queries
+
+You can ask ChatGPT to process text. Use `search_text()` first to narrow down the text into what you want to query. Below, we returned the first two papers' introduction sections, and returned the full section. Then we asked ChatGPT "What is the hypothesis of this study?".
+
+```{r, eval = FALSE}
+hypotheses <- search_text(papers[1:2], 
+                          section = "intro", 
+                          return = "section")
+query <- "What is the hypothesis of this study?"
+gpt_hypo <- gpt(hypotheses, query)
+```
+
+```{r, echo = FALSE}
+gpt_hypo <- data.frame(
+  id = c("eyecolor.xml", "incest.xml"), 
+  answer = c("The hypothesis of this study is to test the matching hypothesis, sex-linked heritable preference hypothesis, and positive sexual imprinting hypothesis in relation to eye color and partner selection.", 
+"The hypothesis of this study is that humans possess adaptations to reduce inbreeding, and that the strong moral opposition to incest plays an important role in preventing inbreeding."
+), 
+  cost = c(0.000612, 0.000216), 
+  row.names = NULL
+)
+knitr::kable(gpt_hypo)
+```
+
+
+## Batch Processing
+
+The functions `pdf2grobid()` and `read_grobid()` also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions `search_text()` and `gpt()` also work on a list of paper objects.
+
+```{r}
+grobid_dir <- demodir()
+
+papers <- read_grobid(grobid_dir)
+
+hypotheses <- search_text(papers, "hypothesi", 
+                          section = "intro", 
+                          return = "paragraph")
+```
+
+## Modules
+
+Papercheck is designed modularly, so you can add modules to check for anything. It comes with a set of pre-defined modules, and we hope people will share more modules.
+
+### Module List
+
+You can see the list of built-in modules with the function below.
+
+```{r}
+module_list()
+```
+
+### Running modules
+
+To run a built-in module on a paper, you can reference it by name.
+
+```{r}
+p <- module_run(paper, "all-p-values")
+```
+
+```{r, echo = FALSE}
+knitr::kable(p$table)
+```
+
+### Creating modules
+
+You can create your own modules by specifying the arguments to `search_text()` or `gpt()` in JSON format and/or including R code. Modules can also contain instructions for reporting, to give "traffic lights" for whether a check passed or failed, and to include appropriate text feedback in a report. See the [modules vignette](modules.html) for more details. 
+
+Below is an abbreviated example of the module that detects all p-values in the text and returns the matching text. 
+
+```
+{
+  "title": "List All P-Values",
+  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
+  "text": {
+    "pattern": "(?<=[^a-z])p-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+e?-?\\d*)",
+    "return": "match",
+    "perl": true
+  }
+}
+```
+
+## Reports
+
+
+You can generate a report from any set of modules. The default set is `c("imprecise-p", "marginal", "osf-check", "retractionwatch", "ref-consistency")`
+
+```{r, eval = FALSE}
+report(paper, output_format = "qmd")
+```
+
+See the [example report](report-example.html).
+
+
+
+

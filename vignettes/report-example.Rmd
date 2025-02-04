@@ -1,0 +1,76 @@
+---
+title: "Example Report"
+subtitle: "To Err is Human: An Empirical Investigation"
+output: 
+  rmarkdown::html_vignette:
+    # theme: flatly
+    # toc: true
+    # toc_float: true
+    # toc_location: left
+    df_print: paged
+vignette: >
+  %\VignetteIndexEntry{report-example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<style>
+  h2.na::before { content: '⚪️ '; }
+  h2.fail::before { content: '⚫️ '; }
+  h2.info::before { content: '🔵 '; }
+  h2.red::before { content: '🔴 '; }
+  h2.yellow::before { content: '🟡 '; }
+  h2.green::before { content: '🟢 '; }
+</style>
+
+::: {.column-margin}
+🟢 no problems detected;<br>
+🟡 something to check;<br>
+🔴 possible problems detected;<br>
+🔵 informational only;<br>
+⚪️ not applicable;<br>
+⚫️ check failed
+:::
+
+## Imprecise P-Values {.red}
+
+You may have reported some imprecise p-values
+
+|text    |section |header  | div|  p|  s|
+|:-------|:-------|:-------|---:|--:|--:|
+|p > .05 |results |Results |   3|  2|  2|
+
+## Marginal Significance {.red}
+
+You described effects as marginally/borderline/close to significant. It is better to write 'did not reach the threshold alpha for significance'.
+
+|text                                                                                                                                                                                                                    |section |header  | div|  p|  s|
+|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------|:-------|---:|--:|--:|
+|On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.052. |results |Results |   3|  2|  1|
+
+## Check Status of OSF Links {.red}
+
+We detected closed OSF links
+
+|text                 |section |header                  | div|  p|  s|status |
+|:--------------------|:-------|:-----------------------|---:|--:|--:|:------|
+|osf.io/5tbm9         |method  |Method and Participants |   2|  1|  2|closed |
+|https://osf.io/5tbm9 |results |Results                 |   3|  1|  1|closed |
+|https://osf.io/629bx |results |Results                 |   3|  1|  1|open   |
+
+## RetractionWatch {.yellow}
+
+You cited some papers in the Retraction Watch database; double-check that you are acknowledging their retracted status when citing them.
+
+|bib_id |doi                      |ref |
+|:------|:------------------------|:---|
+|b0     |10.1177/0956797614520714 |NA  |
+
+## Reference Consistency {.red}
+
+There are references that are not cited or citations that are not referenced
+
+|bib_id         |doi                |ref                                                                                         |missing   |
+|:--------------|:------------------|:-------------------------------------------------------------------------------------------|:---------|
+|b1             |10.0000/0123456789 |NA                                                                                          |citation  |
+|(Smithy, 2020) |NA                 |From a human factors perspective, human error is a symptom of a poor design (Smithy, 2020). |reference |

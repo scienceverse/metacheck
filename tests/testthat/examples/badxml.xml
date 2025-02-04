@@ -1,0 +1,348 @@
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Open Letter: Scientists stand up to protect academic whistleblowers and post-publication peer review</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Lonni</forename><surname>Besançon</surname></persName>
+							<email>lonni.bes
+									<country key="FR">
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Thibault</forename><forename type="middle">G</forename><surname>Sana</surname></persName>
+							<email>thibault.sana@inrae.fr</email>
+							<affiliation key="aff2">
+								<orgName type="laboratory">LIPME</orgName>
+								<orgName type="institution" key="instit1">Université de Toulouse</orgName>
+								<orgName type="institution" key="instit2">INRAE</orgName>
+								<orgName type="institution" key="instit3">CNRS</orgName>
+								<address>
+									<postCode>31320</postCode>
+									<settlement>Castanet-Tolosan</settlement>
+									<country key="FR">France</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mathieu</forename><forename type="middle">E</forename><surname>Rebeaud</surname></persName>
+							<email>rebeaud.mat@gmail.com</email>
+							<affiliation key="aff3">
+								<orgName type="department" key="dep1">Department of Plant Molecular Biology</orgName>
+								<orgName type="department" key="dep2">Faculty of Biology and Medicine</orgName>
+								<orgName type="institution">University of Lausanne</orgName>
+								<address>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Anthony</forename><surname>Guihur</surname></persName>
+							<email>anthony.guihur@gmail.com</email>
+							<affiliation key="aff3">
+								<orgName type="department" key="dep1">Department of Plant Molecular Biology</orgName>
+								<orgName type="department" key="dep2">Faculty of Biology and Medicine</orgName>
+								<orgName type="institution">University of Lausanne</orgName>
+								<address>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Marc</forename><surname>Robinson-Rechavi</surname></persName>
+							<affiliation key="aff4">
+								<orgName type="department" key="dep1">Department of Ecology and Evolution</orgName>
+								<orgName type="department" key="dep2">Faculty of Biology and Medicine</orgName>
+								<orgName type="institution">University of Lausanne</orgName>
+								<address>
+									<settlement>Switzerland. marc.robinson</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Nicolas</forename><surname>Le Berre</surname></persName>
+							<email>n.leberre84@gmail.com</email>
+							<affiliation key="aff5">
+								<orgName type="laboratory">Intensive Care Unit</orgName>
+								<orgName type="institution">Thionville Regional Hospital</orgName>
+								<address>
+									<settlement>Metz</settlement>
+									<country key="FR">France</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Matthieu</forename><surname>Mulot</surname></persName>
+							<email>matthieu.mulot@unine.ch</email>
+							<affiliation key="aff6">
+								<orgName type="laboratory">Laboratory of Soil Biodiversity</orgName>
+								<orgName type="institution">University of Neuchâtel</orgName>
+								<address>
+									<postCode>2000</postCode>
+									<settlement>Neuchâtel</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Gideon</forename><surname>Meyerowitz- Katz</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Faculty of Information and Technology</orgName>
+								<orgName type="institution">Monash University</orgName>
+								<address>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Hervé</forename><surname>Maisonneuve</surname></persName>
+							<email>hervemaisonneuve@gmail.com</email>
+							<affiliation key="aff7">
+								<orgName type="department">School of health and society</orgName>
+								<orgName type="institution">University of Wollongong</orgName>
+								<address>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff8">
+								<orgName type="department">Schools of Medicine</orgName>
+								<orgName type="laboratory">Research Integrity Officer</orgName>
+								<orgName type="institution">University of Paris, &amp; Consultant</orgName>
+								<address>
+									<settlement>Paris</settlement>
+									<country key="FR">France</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff9">
+								<orgName type="department">Department of Psychology</orgName>
+								<orgName type="institution">University of Virginia</orgName>
+								<address>
+									<settlement>Charlottesville</settlement>
+									<region>Virginia</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff10">
+								<orgName type="department" key="dep1">Executive Director</orgName>
+								<orgName type="department" key="dep2">Center for Open Science</orgName>
+								<address>
+									<settlement>Charlottesville</settlement>
+									<region>Virginia</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Open Letter: Scientists stand up to protect academic whistleblowers and post-publication peer review</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">030D921502AF98F79D89C37B7D57C8C8</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-06-15T21:48+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract/>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>For years, Dr. Elisabeth Bik has contributed immensely to scientific research through her much needed and difficult work on detecting errors in published scientific communications. She has detected and reported over 4000 image duplications and manipulations, data concerns, plagiarism cases, and human and animal ethics breaches through comments on the postpublication review platform PubPeer, social media, and her website Science Integrity Digest. She has also contacted hundreds of editorial boards of journals to report on errors or potential scientific fraud. Nature credited Dr. Bik as the "public face of image sleuthing" <ref type="bibr" target="#b0">[1]</ref> and her work has been awarded the 2021 Peter Wildy Prize Lecture from the UK Microbiology Society.</p><p>Dr. Bik's work is instrumental to ethical, sound, and reproducible research, but it also introduces her to personal risk as a whistleblower. In one case, she identified image duplication and potential ethical issues in 62 published articles from Prof. Didier Raoult and his institute some of which have also been echoed in published scientific communication <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3,</ref><ref type="bibr" target="#b3">4]</ref>. For several months, Prof. Raoult and some other members of his institute have responded by insulting her on national television, disclosing her personal address on social media, and threatening legal action for harassment and defamation. Prof. Raoult and his team's behaviour toward Dr. Bik and others have been pointed out by many international media outlets such as Times Higher Education or Scientific American. This strategy of harassment and threats creates a chilling effect for whistleblowers and for scholarly criticism more generally <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b6">7]</ref>. Scholarly criticism, particularly on issues of research integrity, is fraught with challenges. This makes it particularly important to maintain focus on addressing such critique with scientific evidence and not attacks on people's appearance, character, or person.</p></div>		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>The authors and the co-signatories of this open letter are scientists dedicated to transparency and integrity of research. We support the work needed to investigate potential errors and possible misconduct and believe the scientific community can do more to protect whistleblowers against harassment and threats. Individual researchers can provide vocal support for whistleblowers and against harassment to shift norms. Journals, funders, policymakers, and institutions can make explicit policies that protect whistleblowers and establish fair, judicious, and transparent processes for addressing potential misconduct that protect all participants. With this letter, we show our support for post-publication peer-review, to <rs type="person">Elisabeth Bik</rs> and her work, and to all the whistleblowers that help maintain quality, honesty, integrity and trustworthiness of scientific advances.</p></div>
+			</div>			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Meet this super-spotter of duplicated images in science papers</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Shen</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/d41586-020-01363-z</idno>
+		<ptr target="https://doi.org/10.1038/d41586-020-01363-z" />
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">581</biblScope>
+			<biblScope unit="issue">7807</biblScope>
+			<biblScope unit="page" from="132" to="136" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Hydroxychloroquine-COVID-19 study did not meet publishing society&apos;s &quot;expected standard</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Marcus</surname></persName>
+		</author>
+		<ptr target="https://retractionwatch.com/2020/04/06/hydroxychlorine-covid-19-study-did-not-meet-publishing-societys-expected-standard/" />
+	</analytic>
+	<monogr>
+		<title level="m">Retraction Watch</title>
+		<imprint>
+			<date type="published" when="2020-05-22">2020. May 22</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Hydroxychloroquine and azithromycin as a treatment of COVID-19: results of an open-label non-randomized clinical trial</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">R</forename><surname>Rosendaal</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Review</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.ijantimicag.2020.106063</idno>
+		<ptr target="https://doi.org/10.1016/j.ijantimicag.2020.106063" />
+	</analytic>
+	<monogr>
+		<title level="j">Int J Antimicrob Agents</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note>Gautret et al. 2020.</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<author>
+			<persName><forename type="first">Lonni</forename><surname>Besançon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nathan</forename><surname>Peiffer-Smadja</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Corentin</forename><surname>Segalas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Haiting</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Paola</forename><surname>Masuzzo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Cooper</forename><surname>Smout</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Eric</forename><surname>Billy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maxime</forename><surname>Deforet</surname></persName>
+		</author>
+		<idno type="DOI">10.1101/2020.08.13.249847</idno>
+		<idno>COVID-19 PandemicbioRxiv 2020.08.13.249847</idno>
+		<ptr target="https://doi.org/10.1101/2020.08.13.249847" />
+		<title level="m">Clémence a. Open Science Saves Lives: Lessons from the</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Cyber harassment of female scientists will not be the new norm</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Samer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lacombe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Calmy</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/s1473-3099(20)30944-0</idno>
+		<ptr target="https://doi.org/10.1016/s1473-3099(20)30944-0" />
+	</analytic>
+	<monogr>
+		<title level="j">The Lancet Infectious Diseases</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="457" to="458" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Hydroxychloroquine and COVID-19: a tale of populism and obscurantism. The Lancet Infectious Diseases</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Peiffer-Smadja</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Rebeaud</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Guihur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Mahamat-Saleh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Fiolet</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S1473-3099(20)30866-5</idno>
+		<ptr target="https://doi.org/10.1016/S1473-3099(20)30866-5" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Death threats after a trial on chloroquine for COVID-19</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Ektorp</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S1473-3099(20)30383-2</idno>
+		<ptr target="https://doi.org/10.1016/S1473-3099(20)30383-2" />
+	</analytic>
+	<monogr>
+		<title level="j">The Lancet. Infectious Diseases</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page">661</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

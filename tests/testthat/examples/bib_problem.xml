@@ -1,0 +1,614 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Sex difference in mate preference based on physical attractiveness in Japan: No longer present or still present?</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Kai</forename><surname>Hiraishi</surname></persName>
+							<email>kaihiraishi@keio.jp</email>
+							<affiliation key="aff0">
+								<orgName type="department">Faculty of Letters</orgName>
+								<orgName type="institution">Keio University</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ayano</forename><surname>Saito</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Faculty of Letters</orgName>
+								<orgName type="institution">Keio University</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Maki</forename><surname>Nishio</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Faculty of Letters</orgName>
+								<orgName type="institution">Keio University</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Nayu</forename><surname>Fujii</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Faculty of Letters</orgName>
+								<orgName type="institution">Keio University</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Takato</forename><surname>Mori</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Faculty of Letters</orgName>
+								<orgName type="institution">Keio University</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Sex difference in mate preference based on physical attractiveness in Japan: No longer present or still present?</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">6B05927A0E975996605270F40EB2FB30</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-06-15T02:13+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Evolutionary psychology</term>
+					<term>Mate preference</term>
+					<term>Sex differences</term>
+					<term>Reviewed pre-registration</term>
+					<term>replication *</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Since <ref type="bibr" target="#b6">Buss (1989)</ref> initiated research in the field, sex differences in preferences for long-term mates have been extensively studied in evolutionary psychology. Numerous studies have reported robust sex differences such as: 1) a preference for a younger mate is stronger in men than women, 2) a preference for an older mate is stronger in women than men, 3) women value traits associated with resource acquisition, such as economic status and educational attainment, more highly than do men, and 4) men value physical attractiveness more highly than women. However, our replication of Bech-Sørensen &amp; Pollet (2016) did not to show a significant sex difference in the preference for physical attractiveness among a Japanese sample while the other sex differences (age differences and resource acquisition abilities) were significant (Study 1). We designed study 2 to test if the non-significance was an artifact of the item used to measure the preference for physical attractiveness. Study 2 showed that the sex differences were not statistically significant. In addition, the effect of sex was significantly smaller than the pre-determined smallest effect size of interest (SESOI).</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>配偶者選好における身体的魅力重視度の男女 差は消えたのか.</head><p>配偶者選好研究 sexual selection theory <ref type="bibr" target="#b10">(Darwin, 1871)</ref> Trivers <ref type="bibr">(1972)</ref> 1 parental investment , female choice intra-sex competition <ref type="bibr" target="#b0">(Andersson &amp; Iwasa, 1996)</ref> 1990</p><p>Buss 37 <ref type="bibr" target="#b6">(Buss, 1989</ref>) <ref type="bibr" target="#b18">(Lovejoy, 1981;</ref><ref type="bibr" target="#b19">Marlowe, 2000)</ref> Buss   </p><formula xml:id="formula_0">1</formula></div><figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="26,70.90,73.40,453.20,634.50" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="27,70.90,72.27,453.20,317.25" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>National Sample. Journal of Personality and Social Psychology, 66(6), 1074-1080. https://doi.org/10.1037/0022-3514.66.6.10740022-3514.66.6.     Trivers, R. L. L. (1972)). Parental investment and sexual selection. In B. Campbell (Ed.), Sexual selection and the descent of man,1871-1971 (pp. 136-179). Chicago: Aldine-Atherton. https://doi.org/10.1002/ajpa.1330400226 World Economic Forum. (2018). The Global Gender Gap Report 2018. Insight Report. Zhang, L., Lee, A. J., DeBruine, L. M., &amp; Jones, B. C. (2019). Are Sex Differences in Preferences for Physical Attractiveness and Good Earning Capacity in Potential Means and effects of sex on mate preference: Comparison with two preceding studies. Data for two preceding studies were from Bech-Sørensen &amp; Pollet (2016) table1. Items with significant sex differences (p &lt; .05) were indicated by bold fonts on the sex with higher score. Japanese version of item 10 was "容姿がよくはない " for pre-test and "容姿がよくない " for main survey.</figDesc><table><row><cell>Table 2</cell><cell></cell><cell></cell></row><row><cell cols="2">Buss (1989)</cell><cell></cell><cell>Buss et al. (2001)</cell></row><row><cell>50</cell><cell></cell><cell></cell></row><row><cell>1990</cell><cell></cell><cell></cell><cell>1</cell></row><row><cell cols="2">Bech-Sørensen &amp; Pollet (2016)</cell><cell>2010</cell></row><row><cell></cell><cell cols="2">Zhang et al. (2019)</cell><cell>2010</cell><cell>36</cell></row><row><cell></cell><cell></cell><cell></cell><cell>1</cell></row><row><cell></cell><cell></cell><cell></cell><cell>, d =</cell></row><row><cell>-0.22 [0.00, -0.44];</cell><cell cols="2">d = -0.10 [0.08, -0.28]</cell></row><row><cell></cell><cell></cell><cell></cell><cell>Buss</cell></row><row><cell>1</cell><cell cols="2">Buss &amp; Schmitt, 2019</cell><cell>Buss</cell></row><row><cell></cell><cell></cell><cell></cell><cell>Buss (1989)</cell></row><row><cell>265</cell><cell></cell><cell cols="2">Good looks</cell></row><row><cell>Buss, 1989, p.10,</cell><cell cols="2">= 1.50 (SD = 0.75),</cell><cell>= 1.09 (SD = .74), t(257) =</cell></row><row><cell cols="2">4.36, p = .000, Hedgeʼs g = 0.55</cell><cell>1</cell><cell>800</cell></row><row><cell></cell><cell></cell><cell></cell><cell>1</cell></row><row><cell></cell><cell></cell><cell></cell><cell>1</cell></row><row><cell></cell><cell></cell><cell></cell><cell>2010</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Detailed resutls for study 1 pre-test and main survey.</figDesc><table><row><cell></cell><cell>Male</cell><cell></cell><cell></cell><cell>Female</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell>95%CI</cell><cell>95%CI</cell><cell></cell><cell>95%CI</cell><cell>95%CI</cell><cell></cell><cell></cell><cell></cell><cell>Hedge's</cell><cell>95%CI</cell><cell>95%CI</cell></row><row><cell>Study 1 Pre-test</cell><cell>mean</cell><cell>lower</cell><cell>upper</cell><cell>mean</cell><cell>lower</cell><cell>upper</cell><cell>t</cell><cell>df</cell><cell>p</cell><cell>g</cell><cell>lower</cell><cell>upper</cell></row><row><cell>1. 自分より5歳以上年上</cell><cell>3.62</cell><cell>3.39</cell><cell>3.86</cell><cell>4.42</cell><cell>4.18</cell><cell>4.66</cell><cell>-4.71</cell><cell>311.7</cell><cell>0.00</cell><cell>-0.53</cell><cell>-0.76</cell><cell>-0.30</cell></row><row><cell>2. 自分より5歳以上年下</cell><cell>4.37</cell><cell>4.15</cell><cell>4.59</cell><cell>3.25</cell><cell>3.02</cell><cell>3.47</cell><cell>7.02</cell><cell>311.4</cell><cell>0.00</cell><cell>0.79</cell><cell>0.56</cell><cell>1.02</cell></row><row><cell>3. 離婚歴がある</cell><cell>3.02</cell><cell>2.81</cell><cell>3.24</cell><cell>2.76</cell><cell>2.55</cell><cell>2.98</cell><cell>1.68</cell><cell>311.9</cell><cell>0.09</cell><cell>0.19</cell><cell>-0.03</cell><cell>0.41</cell></row><row><cell>4. すでに子持ちである</cell><cell>2.63</cell><cell>2.41</cell><cell>2.86</cell><cell>2.31</cell><cell>2.09</cell><cell>2.54</cell><cell>1.96</cell><cell>311.8</cell><cell>0.05</cell><cell>0.22</cell><cell>0.00</cell><cell>0.44</cell></row><row><cell>5. 定職に就きそうにない</cell><cell>2.91</cell><cell>2.69</cell><cell>3.13</cell><cell>1.73</cell><cell>1.53</cell><cell>1.93</cell><cell>7.87</cell><cell>310.3</cell><cell>0.00</cell><cell>0.88</cell><cell>0.65</cell><cell>1.12</cell></row><row><cell>6. 自分と宗教が異なる</cell><cell>3.42</cell><cell>3.22</cell><cell>3.62</cell><cell>2.79</cell><cell>2.58</cell><cell>3.00</cell><cell>4.26</cell><cell>310.0</cell><cell>0.00</cell><cell>0.48</cell><cell>0.26</cell><cell>0.71</cell></row><row><cell>7. 自分と人種が異なる</cell><cell>3.47</cell><cell>3.25</cell><cell>3.68</cell><cell>3.54</cell><cell>3.35</cell><cell>3.73</cell><cell>-0.53</cell><cell>309.2</cell><cell>0.60</cell><cell>-0.06</cell><cell>-0.28</cell><cell>0.16</cell></row><row><cell>8. 自分よりもはるかに収入が低い</cell><cell>3.89</cell><cell>3.73</cell><cell>4.06</cell><cell>2.95</cell><cell>2.75</cell><cell>3.16</cell><cell>6.95</cell><cell>294.9</cell><cell>0.00</cell><cell>0.79</cell><cell>0.56</cell><cell>1.02</cell></row><row><cell>9. 自分よりもはるかに収入が高い</cell><cell>4.24</cell><cell>4.03</cell><cell>4.44</cell><cell>5.42</cell><cell>5.21</cell><cell>5.64</cell><cell>-7.92</cell><cell>309.8</cell><cell>0.00</cell><cell>-0.89</cell><cell>-1.13</cell><cell>-0.66</cell></row><row><cell>10. 容姿がよくはない</cell><cell>3.22</cell><cell>3.02</cell><cell>3.43</cell><cell>3.49</cell><cell>3.32</cell><cell>3.66</cell><cell>-1.96</cell><cell>305.4</cell><cell>0.05</cell><cell>-0.22</cell><cell>-0.44</cell><cell>0.00</cell></row><row><cell>11. 自分より学歴が高い</cell><cell>4.09</cell><cell>3.91</cell><cell>4.28</cell><cell>4.63</cell><cell>4.45</cell><cell>4.81</cell><cell>-4.11</cell><cell>312.0</cell><cell>0.00</cell><cell>-0.46</cell><cell>-0.69</cell><cell>-0.24</cell></row><row><cell>12. 自分より学歴が低い</cell><cell>4.01</cell><cell>3.85</cell><cell>4.17</cell><cell>3.57</cell><cell>3.39</cell><cell>3.74</cell><cell>3.68</cell><cell>308.3</cell><cell>0.00</cell><cell>0.41</cell><cell>0.19</cell><cell>0.64</cell></row><row><cell></cell><cell>male</cell><cell></cell><cell></cell><cell>Female</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell>95%CI</cell><cell>95%CI</cell><cell></cell><cell>95%CI</cell><cell>95%CI</cell><cell></cell><cell></cell><cell></cell><cell>Hedge's</cell><cell>95%CI</cell><cell>95%CI</cell></row><row><cell>Study 1 Main survey</cell><cell>mean</cell><cell>lower</cell><cell>upper</cell><cell>mean</cell><cell>lower</cell><cell>upper</cell><cell>t</cell><cell>df</cell><cell>p</cell><cell>g</cell><cell>lower</cell><cell>upper</cell></row><row><cell>1. 自分より5歳以上年上</cell><cell>3.68</cell><cell>3.50</cell><cell>3.86</cell><cell>4.43</cell><cell>4.25</cell><cell>4.62</cell><cell>-5.76</cell><cell>480.8</cell><cell>0.00</cell><cell>-0.52</cell><cell>-0.70</cell><cell>-0.34</cell></row><row><cell>2. 自分より5歳以上年下</cell><cell>4.44</cell><cell>4.26</cell><cell>4.62</cell><cell>3.35</cell><cell>3.16</cell><cell>3.53</cell><cell>8.36</cell><cell>479.4</cell><cell>0.00</cell><cell>0.76</cell><cell>0.57</cell><cell>0.94</cell></row><row><cell>3. 離婚歴がある</cell><cell>3.11</cell><cell>2.94</cell><cell>3.29</cell><cell>2.82</cell><cell>2.67</cell><cell>2.97</cell><cell>2.48</cell><cell>481.5</cell><cell>0.01</cell><cell>0.22</cell><cell>0.04</cell><cell>0.40</cell></row><row><cell>4. すでに子持ちである</cell><cell>2.84</cell><cell>2.66</cell><cell>3.03</cell><cell>2.33</cell><cell>2.17</cell><cell>2.49</cell><cell>4.19</cell><cell>480.4</cell><cell>0.00</cell><cell>0.38</cell><cell>0.20</cell><cell>0.56</cell></row><row><cell>5. 定職に就きそうにない</cell><cell>3.20</cell><cell>3.03</cell><cell>3.37</cell><cell>1.59</cell><cell>1.45</cell><cell>1.72</cell><cell>14.52</cell><cell>467.6</cell><cell>0.00</cell><cell>1.29</cell><cell>1.10</cell><cell>1.49</cell></row><row><cell>6. 自分と宗教が異なる</cell><cell>3.32</cell><cell>3.14</cell><cell>3.49</cell><cell>2.87</cell><cell>2.69</cell><cell>3.04</cell><cell>3.55</cell><cell>482.1</cell><cell>0.00</cell><cell>0.32</cell><cell>0.14</cell><cell>0.50</cell></row><row><cell>7. 自分と人種が異なる</cell><cell>3.42</cell><cell>3.25</cell><cell>3.58</cell><cell>3.39</cell><cell>3.23</cell><cell>3.56</cell><cell>0.20</cell><cell>483.4</cell><cell>0.85</cell><cell>0.02</cell><cell>-0.16</cell><cell>0.20</cell></row><row><cell>8. 自分よりもはるかに収入が低い</cell><cell>3.63</cell><cell>3.47</cell><cell>3.78</cell><cell>2.41</cell><cell>2.24</cell><cell>2.57</cell><cell>10.64</cell><cell>473.2</cell><cell>0.00</cell><cell>0.97</cell><cell>0.78</cell><cell>1.16</cell></row><row><cell>9. 自分よりもはるかに収入が高い</cell><cell>4.18</cell><cell>4.00</cell><cell>4.35</cell><cell>4.91</cell><cell>4.71</cell><cell>5.11</cell><cell>-5.49</cell><cell>462.5</cell><cell>0.00</cell><cell>-0.50</cell><cell>-0.68</cell><cell>-0.32</cell></row><row><cell>10. 容姿がよくない</cell><cell>3.32</cell><cell>3.16</cell><cell>3.49</cell><cell>3.45</cell><cell>3.30</cell><cell>3.59</cell><cell>-1.10</cell><cell>477.7</cell><cell>0.27</cell><cell>-0.10</cell><cell>-0.28</cell><cell>0.08</cell></row><row><cell>11. 自分より学歴が高い</cell><cell>4.12</cell><cell>3.97</cell><cell>4.27</cell><cell>4.62</cell><cell>4.44</cell><cell>4.79</cell><cell>-4.26</cell><cell>469.3</cell><cell>0.00</cell><cell>-0.39</cell><cell>-0.57</cell><cell>-0.21</cell></row><row><cell>12. 自分より学歴が低い</cell><cell>3.97</cell><cell>3.84</cell><cell>4.10</cell><cell>3.60</cell><cell>3.45</cell><cell>3.75</cell><cell>3.70</cell><cell>467.7</cell><cell>0.00</cell><cell>0.34</cell><cell>0.16</cell><cell>0.52</cell></row></table><note><p><p><p>Note. Where sex differences were significant (p &lt; .05), sex with higher mean score was indicated by bold fonts.</p>Note. Pearson correlation coefficients among each item and age along with the 95% confidence intervals. Items whose CI did not include zero were indicated with bold fonts. The last raw indicates "sum of preferences" which is a sum of deviations from the midpoint (4) on each item.</p>身体的魅力の重視度における男女差は消えたのか</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 4 .</head><label>4</label><figDesc>Mate preference means and effects of sex in study 2.</figDesc><table><row><cell>Male</cell><cell>Female</cell></row></table><note><p><p>Note. Items whose 95%CI of the effects did not include zero were indicated by bold fonts (sex with higher score was idicated).</p>身体的魅力の重視度における男女差は消えたのか</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 5 .</head><label>5</label><figDesc>Correlations among age and score on each item in study 2. Pearson correlation coefficients among each item and age along with the 95% confidence intervals. Items whose CI did not include zero were indicated with bold fonts. The last raw indicates "sum of preferences" which is a sum of deviations from the midpoint (4) on each item.</figDesc><table><row><cell></cell><cell>Study 2</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>Male</cell><cell></cell><cell>95%CIs</cell><cell></cell><cell>Female</cell><cell></cell><cell>95%CIs</cell></row><row><cell>Items</cell><cell>n</cell><cell>r</cell><cell cols="2">lower upper</cell><cell>n</cell><cell>r</cell><cell cols="2">lower upper</cell></row><row><cell>1. 自分より5歳以上年上</cell><cell>244</cell><cell>-0.02</cell><cell>-0.15</cell><cell>0.11</cell><cell></cell><cell>0.04</cell><cell>-0.08</cell><cell>0.16</cell></row><row><cell>2. 自分より5歳以上年下</cell><cell>244</cell><cell>0.14</cell><cell>0.02</cell><cell>0.26</cell><cell></cell><cell>0.11</cell><cell>-0.01</cell><cell>0.23</cell></row><row><cell>3. 離婚歴がある</cell><cell>244</cell><cell>0.05</cell><cell>-0.07</cell><cell>0.18</cell><cell></cell><cell>0.02</cell><cell>-0.11</cell><cell>0.14</cell></row><row><cell>4. すでに子持ちである</cell><cell>244</cell><cell>0.05</cell><cell>-0.08</cell><cell>0.17</cell><cell></cell><cell>0.03</cell><cell>-0.10</cell><cell>0.15</cell></row><row><cell>5. 定職に就きそうにない</cell><cell>244</cell><cell>-0.05</cell><cell>-0.18</cell><cell>0.07</cell><cell></cell><cell>-0.10</cell><cell>-0.22</cell><cell>0.02</cell></row><row><cell>6. 自分と宗教が異なる</cell><cell>244</cell><cell>-0.05</cell><cell>-0.18</cell><cell>0.07</cell><cell></cell><cell>-0.16</cell><cell>-0.28</cell><cell>-0.04</cell></row><row><cell>7. 自分と人種が異なる</cell><cell>244</cell><cell>-0.09</cell><cell>-0.22</cell><cell>0.03</cell><cell></cell><cell>0.01</cell><cell>-0.11</cell><cell>0.14</cell></row><row><cell>8. 自分よりもはるかに収入が低い</cell><cell>244</cell><cell>-0.03</cell><cell>-0.15</cell><cell>0.10</cell><cell></cell><cell>-0.21</cell><cell>-0.32</cell><cell>-0.09</cell></row><row><cell>9. 自分よりもはるかに収入が高い</cell><cell>244</cell><cell>-0.06</cell><cell>-0.18</cell><cell>0.07</cell><cell></cell><cell>0.04</cell><cell>-0.09</cell><cell>0.16</cell></row><row><cell>10. 容姿がよくない</cell><cell>244</cell><cell>-0.06</cell><cell>-0.18</cell><cell>0.07</cell><cell></cell><cell>0.04</cell><cell>-0.09</cell><cell>0.16</cell></row><row><cell>11. 自分より学歴が高い</cell><cell>244</cell><cell>-0.19</cell><cell>-0.31</cell><cell>-0.07</cell><cell></cell><cell>0.01</cell><cell>-0.11</cell><cell>0.13</cell></row><row><cell>12. 自分より学歴が低い</cell><cell>244</cell><cell>-0.08</cell><cell>-0.21</cell><cell>0.04</cell><cell></cell><cell>-0.05</cell><cell>-0.17</cell><cell>0.07</cell></row><row><cell>選好度合計</cell><cell>244</cell><cell>-0.04</cell><cell>-0.16</cell><cell>0.09</cell><cell></cell><cell>0.07</cell><cell>-0.05</cell><cell>0.19</cell></row><row><cell>Note.</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgement</head></div>
+<div><head>JSPS</head><p>15K13122, 19H01750</p></div>
+			</div>			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Sexual selection</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>引用文献一覧 Andersson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Iwasa</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.cub.2010.11.053</idno>
+		<ptr target="https://doi.org/10.1016/j.cub.2010.11.053" />
+	</analytic>
+	<monogr>
+		<title level="j">Trends in Ecology and Evolution</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="53" to="58" />
+			<date type="published" when="1996">1996</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Sex Differences in Mate Preferences: a Replication Study, 20 Years Later</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bech-Sørensen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">V</forename><surname>Pollet</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s40806-016-0048-6</idno>
+		<ptr target="https://doi.org/10.1007/s40806-016-0048-6" />
+	</analytic>
+	<monogr>
+		<title level="j">Evolutionary Psychological Science</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="171" to="176" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Perceiving the facial correlates of sociosexuality: Further evidence</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">G</forename><surname>Boothroyd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">P</forename><surname>Cross</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">W</forename><surname>Gray</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Coombes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Gregson-Curtis</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.paid.2010.10.017</idno>
+		<ptr target="https://doi.org/10.1016/j.paid.2010.10.017" />
+	</analytic>
+	<monogr>
+		<title level="j">Personality and Individual Differences</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="422" to="425" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Facial correlates of sociosexuality</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">G</forename><surname>Boothroyd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">C</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Burt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Debruine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.evolhumbehav.2007.12.009</idno>
+		<ptr target="https://doi.org/10.1016/j.evolhumbehav.2007.12.009" />
+	</analytic>
+	<monogr>
+		<title level="j">Evolution and Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="211" to="218" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Measuring Mate Preferences</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Boxer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Noonan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Whelan</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0192513x13490404</idno>
+		<ptr target="https://doi.org/10.1177/0192513x13490404" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Family Issues</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="163" to="187" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Human universals</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">E</forename><surname>Brown</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1991">1991</date>
+			<publisher>Temple University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Sex differences in human mate preferences: Evolutionary hypotheses tested in 37 cultures</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Buss</surname></persName>
+		</author>
+		<idno type="DOI">10.1017/S0140525X00023992</idno>
+		<ptr target="https://doi.org/10.1017/S0140525X00023992" />
+	</analytic>
+	<monogr>
+		<title level="j">Behavioral and Brain Sciences</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="1" to="49" />
+			<date type="published" when="1989">1989. 1989</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">International preferences in selecting mates: A Study of 37 Cultures</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Buss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Abbott</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Angleitner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Asherian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Biaggio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Blanco-Villasenor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">S</forename><surname>Yang</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0022022190211001</idno>
+		<ptr target="https://doi.org/10.1177/0022022190211001" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Cross-Cultural Psychology</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="5" to="47" />
+			<date type="published" when="1990">1990</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Mate Preferences and Their Behavioral Manifestations</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Buss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Schmitt</surname></persName>
+		</author>
+		<idno type="DOI">10.1146/annurev-psych-010418-103408</idno>
+		<idno>annurev-psych-010418- 103408</idno>
+		<ptr target="https://doi.org/10.1146/annurev-psych-010418-103408" />
+	</analytic>
+	<monogr>
+		<title level="j">Annual Review of Psychology</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">A half century of mate preferences: The cultural evolution of values</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Buss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">K</forename><surname>Shackelford</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Kirkpatrick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Larsen</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.1741-3737.2001.00491.x</idno>
+		<ptr target="https://doi.org/10.1111/j.1741-3737.2001.00491.x" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Marriage and Family</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="491" to="503" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">The descent of man and selection in relation to sex</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Darwin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1871">1871</date>
+			<publisher>John Murray</publisher>
+			<pubPlace>London</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Eagly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wood</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0003-066X.54.6.408</idno>
+		<ptr target="https://doi.org/10.1037/0003-066X.54.6.408" />
+	</analytic>
+	<monogr>
+		<title level="j">American Psychologist</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="408" to="423" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Campus values in mate selection</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hill</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Home Economics</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="554" to="558" />
+			<date type="published" when="1945">1945</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Sex difference in mate preference based on physical attractiveness in Japan: No longer present or still present?</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Hiraishi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Saito</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Nishio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Fujii</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mori</surname></persName>
+		</author>
+		<idno type="DOI">10.31234/OSF.IO/ACY9Z</idno>
+		<ptr target="https://doi.org/10.31234/OSF.IO/ACY9Z" />
+	</analytic>
+	<monogr>
+		<title level="j">PsyArXiv</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">TOST equivalence testing R package (TOSTER) and spreadsheet</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lakens</surname></persName>
+		</author>
+		<ptr target="https://www.r-bloggers.com/tost-equivalence-testing-r-package-toster-and-spreadsheet/" />
+		<imprint>
+			<date type="published" when="2016-04-28">2016. April 28, 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Equivalence Tests: A Practical Primer for t Tests, Correlations, and Meta-Analyses</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lakens</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1948550617697177</idno>
+		<ptr target="https://doi.org/10.1177/1948550617697177" />
+	</analytic>
+	<monogr>
+		<title level="j">Social Psychological and Personality Science</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="355" to="362" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Equivalence Testing for Psychological Research: A Tutorial</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lakens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Scheel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Isager</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/2515245918770963</idno>
+		<ptr target="https://doi.org/10.1177/2515245918770963" />
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Methods and Practices in Psychological Science</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="259" to="269" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">The necessities and luxuries of mate preferences: Testing the tradeoffs</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">P</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">T</forename><surname>Kenrick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Bailey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A W</forename><surname>Linsenmeier</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0022-3514.82.6.947</idno>
+		<ptr target="https://doi.org/10.1037/0022-3514.82.6.947" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Personality and Social Psychology</title>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="947" to="955" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">The origin of man</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">O</forename><surname>Lovejoy</surname></persName>
+		</author>
+		<ptr target="https://doi.org/211/4480/341" />
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="issue">4480</biblScope>
+			<biblScope unit="page" from="341" to="350" />
+			<date type="published" when="1981">1981</date>
+			<pubPlace>New York, N.Y.</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<author>
+			<persName><forename type="first">F</forename><surname>Marlowe</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S0376-6357(00)00118-2三浦麻子&amp;小林哲郎</idno>
+		<ptr target="https://doi.org/10.14966/jssp.31.1̲1" />
+	</analytic>
+	<monogr>
+		<title level="m">Paternal investment and the human mating system. Behavioural Processes</title>
+		<imprint>
+			<date type="published" when="2000">2000. 2015</date>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Menstrual cycle alters face preference</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Penton-Voak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Castles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kobayashi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Burt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">K</forename><surname>Murray</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Minamisawa</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/21557</idno>
+		<ptr target="https://doi.org/10.1038/21557" />
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">399</biblScope>
+			<biblScope unit="issue">6738</biblScope>
+			<biblScope unit="page" from="741" to="742" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

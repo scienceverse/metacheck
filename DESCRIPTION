@@ -1,0 +1,59 @@
+Package: papercheck
+Title: Check Scientific Papers for Best Practices
+Version: 0.0.0.9024
+Date: 2025-01-31
+Authors@R: c(
+  person(  given = "Lisa",
+           family = "DeBruine",
+           role = c("aut", "cre"),
+           email = "debruine@gmail.com",
+           comment = c(ORCID = "0000-0002-7523-5539")),
+  person(  given = "Daniel",
+           family = "Lakens",
+           role = c("aut"),
+           email = "lakens@gmail.com",
+           comment = c(ORCID = "0000-0002-0247-239X")),
+  person(  given = "Cristian",
+           family = "Mesquida",
+           role = c("ctr"),
+           email = "cristianmesquida@gmail.com",
+           comment = c(ORCID = "0000-0002-1542-8355")))
+Description: Automatically check papers for best practices.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Suggests: 
+    rmarkdown,
+    scienceverse (>= 0.0.0.9021),
+    testthat (>= 3.0.0),
+    shiny,
+    shinydashboard,
+    shinyjs,
+    shiny.i18n,
+    DT,
+    waiter
+Config/testthat/edition: 3
+Imports: 
+    dplyr,
+    tidyr,
+    readxl,
+    progress,
+    tidytext,
+    xml2,
+    reticulate,
+    statcheck,
+    httr,
+    jsonlite,
+    quarto,
+    knitr,
+    officer,
+    readtext
+VignetteBuilder: knitr
+URL: https://github.com/debruine/papercheck, https://scienceverse.github.io/papercheck/
+BugReports: https://github.com/debruine/papercheck/issues
+Remotes: 
+    https://github.com/scienceverse/scienceverse
+Depends: 
+    R (>= 2.10)
+LazyData: true

@@ -1,0 +1,120 @@
+---
+title: "Validation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Validation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(papercheck)
+library(dplyr)
+```
+
+This is a demo of the workflow for module validation. We are still piloting this workflow and it is likely to change.
+
+## Validation sample
+
+Set up the papers in your validation sample. You will need a directory of XML files created by `pdf2grobid()`. In this example, we'll set everything up in a temporary directory.
+
+```{r}
+# create validation directory in temp dir
+valdir <- tempdir() |> file.path("validate")
+dir.create(valdir, showWarnings = FALSE)
+
+# copy built-in XML files to xml directory
+xmldir <- file.path(valdir, "xml")
+dir.create(xmldir, showWarnings = FALSE)
+xmls <- list.files(demodir(), "\\.xml$", full.names = TRUE)
+file.copy(xmls, xmldir)
+```
+
+
+## Sample data
+
+Create a data frame with info about each paper. One column must be called "xml" and contain paths to the xml files (relative to the validation file location). Other possible columns are "table", "report", and "traffic_light", which should contain the expects values of those items from the module you're testing. If you want to check more than just the first row of the text column from the return table, omit the table column and use the method in the next section.
+
+```{r}
+sample <- data.frame(
+  xml =  file.path("xml", list.files(xmldir)),
+  table = c("faceresearch.org", "https://osf.io/mwzuq", "https://osf.io/pwtrh"),
+  report = rep("", 3), # this module has no report
+  traffic_light = c("info", "info", "red")
+)
+```
+
+The code above has one inaccurate traffic light ("red") for demonstration purposes.
+
+## Expected Table
+
+If the tables returned by the module you're validating can have more than one row, or you want to check columns other than "text", you will need to add the expected values to a separate data frame. One column must be "xml" to join it to the other table. The other columns should have the same names as the columns returned by the module. You can omit any columns and they will not be checked in the validation. Here, we will only validate the text and header columns (making one mistake in the header column for demonstration purposes).
+
+```{r}
+exp_table <- data.frame(
+  xml = rep(sample$xml, c(2, 3, 2)),
+  text = c("faceresearch.org", "stumbleupon.com",
+           rep("https://osf.io/mwzuq", 3),
+           rep("https://osf.io/pwtrh", 2)),
+  header = c("Participants", "Participants", 
+             "Methods", "Procedure", "Analysis",
+             "Intro", "Attitude")
+)
+
+exp_table
+```
+
+## Run Validation
+
+If you don't include the expected results table, the table check will just check the first result in the text column of the module results and match it to the table column of your sample.
+
+```{r}
+v <- validate("all-urls", sample, path = valdir)
+
+v
+```
+
+If you include the expected results table, it will assess all the data for matching the module results table.
+
+```{r}
+v <- validate("all-urls", sample, exp_table, path = valdir)
+
+v
+```
+
+We can further explore any problems by looking at the sample and returned tables.
+
+```{r}
+# show rows where the traffic light check is false
+v$sample |>
+  dplyr::filter(!tl_check)
+```
+
+The table check is false, and there is one missing and one extra result.
+
+```{r}
+# show rows where the table check is false
+v$sample |>
+  dplyr::filter(!table_check)
+```
+
+You can view the validated results table for that paper...
+
+```{r}
+v$results_table |>
+  dplyr::filter(xml == "xml/prereg.xml")
+```
+
+...and compare it with the expected results.
+
+```{r}
+exp_table |>
+  dplyr::filter(xml == "xml/prereg.xml")
+```

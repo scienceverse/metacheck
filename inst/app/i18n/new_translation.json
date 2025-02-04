@@ -1,0 +1,582 @@
+{
+  "cultural_date_format": "%Y-%m-%d",
+  "languages": [
+    "en",
+    "nl",
+    "zh",
+    "es"
+  ],
+  "translation": [
+    {
+      "en": "Add",
+      "nl": "Toevoeg",
+      "zh": "添加",
+      "es": "Añadir"
+    },
+    {
+      "en": "Delete",
+      "nl": "Verwijder",
+      "zh": "删除",
+      "es": "Eliminar"
+    },
+    {
+      "en": "Clear",
+      "nl": "Ruim Op",
+      "zh": "清除",
+      "es": "Limpiar"
+    },
+    {
+      "en": "Change language",
+      "nl": "Verander de taal",
+      "zh": "更改语言",
+      "es": "Cambiar idioma"
+    },
+    {
+      "en": "Study Info",
+      "nl": "Studie-informatie",
+      "zh": "研究信息",
+      "es": "Información del estudio"
+    },
+    {
+      "en": "Study Name",
+      "nl": "Studienaam",
+      "zh": "研究名称",
+      "es": "Nombre del estudio"
+    },
+    {
+      "en": "Study Description",
+      "nl": "Studiebeschrijving",
+      "zh": "研究描述",
+      "es": "Descripción del estudio"
+    },
+    {
+      "en": "Custom Info",
+      "nl": "Aangepaste Info",
+      "zh": "自定义信息",
+      "es": "Información personalizada"
+    },
+    {
+      "en": "Custom Info Name",
+      "nl": "Aangepaste Info Naam",
+      "zh": "自定义信息名称",
+      "es": "Nombre de información personalizada"
+    },
+    {
+      "en": "Custom Info Value",
+      "nl": "Aangepaste Info Waarde",
+      "zh": "自定义信息值",
+      "es": "Valor de información personalizada"
+    },
+    {
+      "en": "Add Custom Info",
+      "nl": "Aangepaste Info Toevoegen",
+      "zh": "添加自定义信息",
+      "es": "Añadir información personalizada"
+    },
+    {
+      "en": "Authors",
+      "nl": "Auteurs",
+      "zh": "作者",
+      "es": "Autores"
+    },
+    {
+      "en": "Reorder Authors",
+      "nl": "Auteurs opnieuw ordenen",
+      "zh": "重新排序作者",
+      "es": "Reordenar autores"
+    },
+    {
+      "en": "Author Number",
+      "nl": "Auteur nummer",
+      "zh": "作者编号",
+      "es": "Número de autor"
+    },
+    {
+      "en": "Given Name(s) including initials",
+      "nl": "Gegeven naam / namen inclusief initialen",
+      "zh": "名字（包括首字母）",
+      "es": "Nombre(s) incluyendo iniciales"
+    },
+    {
+      "en": "Last Name(s)",
+      "nl": "Achternaam/namen",
+      "zh": "姓氏",
+      "es": "Apellido(s)"
+    },
+    {
+      "en": "ORCiD",
+      "nl": "ORCiD",
+      "zh": "ORCiD",
+      "es": "ORCiD"
+    },
+    {
+      "en": "Contributor Roles",
+      "nl": "Bijdragersrollen",
+      "zh": "贡献者角色",
+      "es": "Roles de los contribuyentes"
+    },
+    {
+      "en": "Add Author",
+      "nl": "Auteur toevoegen",
+      "zh": "添加作者",
+      "es": "Añadir autor"
+    },
+    {
+      "en": "Hypotheses",
+      "nl": "Hypothesen",
+      "zh": "假设",
+      "es": "Hipótesis"
+    },
+    {
+      "en": "Add Hypothesis",
+      "nl": "Hypothese toevoegen",
+      "zh": "添加假设",
+      "es": "Añadir hipótesis"
+    },
+    {
+      "en": "Update Hypothesis",
+      "nl": "Hypothese bijwerken",
+      "zh": "更新假设",
+      "es": "Actualizar hipótesis"
+    },
+    {
+      "en": "Hypothesis ID",
+      "nl": "Hypothese-ID",
+      "zh": "假设ID",
+      "es": "ID de hipótesis"
+    },
+    {
+      "en": "Hypothesis Description",
+      "nl": "Hypothese Beschrijving",
+      "zh": "假设描述",
+      "es": "Descripción de la hipótesis"
+    },
+    {
+      "en": "Criterion ID",
+      "nl": "Criterium-ID",
+      "zh": "标准ID",
+      "es": "ID de criterio"
+    },
+    {
+      "en": "Add Criterion",
+      "nl": "Criterium toevoegen",
+      "zh": "添加标准",
+      "es": "Añadir criterio"
+    },
+    {
+      "en": "Most of the phrases have not been translated; this is just a proof of concept.",
+      "nl": "De meeste zinnen zijn niet vertaald; dit is slechts een proof of concept.",
+      "zh": "大多数短语尚未翻译; 这只是一个概念验证。",
+      "es": "La mayoría de las frases no han sido traducidas; esto es solo una prueba de concepto."
+    },
+    {
+      "en": "Analyses",
+      "nl": "Analyses",
+      "zh": "分析",
+      "es": "Análisis"
+    },
+    {
+      "en": "Data",
+      "nl": "Gegevens",
+      "zh": "数据",
+      "es": "Datos"
+    },
+    {
+      "en": "Results",
+      "nl": "Resultaten",
+      "zh": "结果",
+      "es": "Resultados"
+    },
+    {
+      "en": "CRediT",
+      "nl": "CRediT",
+      "zh": "CRediT",
+      "es": "CRediT"
+    },
+    {
+      "en": "edit",
+      "nl": "uitgeven",
+      "zh": "编辑",
+      "es": "editar"
+    },
+    {
+      "en": "delete",
+      "nl": "verwijderen",
+      "zh": "删除",
+      "es": "eliminar"
+    },
+    {
+      "en": "Reset Study",
+      "nl": "Reset Studie",
+      "zh": "重置研究",
+      "es": "Reiniciar estudio"
+    },
+    {
+      "en": "%d ORCiDs found",
+      "nl": "%d ORCiD's gevonden",
+      "zh": "找到%d个ORCiD",
+      "es": "Se encontraron %d ORCiD"
+    },
+    {
+      "en": "English",
+      "nl": "Engels",
+      "zh": "英语",
+      "es": "Inglés"
+    },
+    {
+      "en": "Dutch",
+      "nl": "Nederlands",
+      "zh": "荷兰语",
+      "es": "Holandés"
+    },
+    {
+      "en": "Abstract",
+      "nl": "Samenvatting",
+      "zh": "摘要",
+      "es": "Resumen"
+    },
+    {
+      "en": "Demo",
+      "nl": "Demo",
+      "zh": "演示",
+      "es": "Demostración"
+    },
+    {
+      "en": "p-values",
+      "nl": "p-waarden",
+      "zh": "p值",
+      "es": "valores p"
+    },
+    {
+      "en": "Pattern",
+      "nl": "Patroon",
+      "zh": "模式",
+      "es": "Patrón"
+    },
+    {
+      "en": "Quit & Return",
+      "nl": "Stoppen & Terugkeren",
+      "zh": "退出并返回",
+      "es": "Salir y regresar"
+    },
+    {
+      "en": "Reset",
+      "nl": "Herstellen",
+      "zh": "重置",
+      "es": "Reiniciar"
+    },
+    {
+      "en": "Return",
+      "nl": "Terugkeren",
+      "zh": "返回",
+      "es": "Regresar"
+    },
+    {
+      "en": "sample size",
+      "nl": "steekproefgrootte",
+      "zh": "样本量",
+      "es": "tamaño de la muestra"
+    },
+    {
+      "en": "Search",
+      "nl": "Zoeken",
+      "zh": "搜索",
+      "es": "Buscar"
+    },
+    {
+      "en": "Section",
+      "nl": "Sectie",
+      "zh": "部分",
+      "es": "Sección"
+    },
+    {
+      "en": "This shiny app is under development; all materials created should be carefully checked.",
+      "nl": "Deze shiny app is in ontwikkeling; alle gemaakte materialen moeten zorgvuldig worden gecontroleerd.",
+      "zh": "这个shiny应用程序正在开发中; 所有创建的材料应仔细检查。",
+      "es": "Esta aplicación shiny está en desarrollo; todos los materiales creados deben ser cuidadosamente revisados."
+    },
+    {
+      "en": "ChatGPT",
+      "nl": "ChatGPT",
+      "zh": "ChatGPT",
+      "es": "ChatGPT"
+    },
+    {
+      "en": "ChatGPT API Key",
+      "nl": "ChatGPT API-sleutel",
+      "zh": "ChatGPT API密钥",
+      "es": "Clave API de ChatGPT"
+    },
+    {
+      "en": "Code",
+      "nl": "Code",
+      "zh": "代码",
+      "es": "Código"
+    },
+    {
+      "en": "Context",
+      "nl": "Context",
+      "zh": "上下文",
+      "es": "Contexto"
+    },
+    {
+      "en": "Defaults",
+      "nl": "Standaardinstellingen",
+      "zh": "默认设置",
+      "es": "Predeterminados"
+    },
+    {
+      "en": "Group By",
+      "nl": "Groepeer op",
+      "zh": "分组依据",
+      "es": "Agrupar por"
+    },
+    {
+      "en": "Info",
+      "nl": "Info",
+      "zh": "信息",
+      "es": "Información"
+    },
+    {
+      "en": "Load Batch Demo",
+      "nl": "Laad batch demo",
+      "zh": "加载批量演示",
+      "es": "Cargar demostración por lotes"
+    },
+    {
+      "en": "Load Demo File",
+      "nl": "Laad demobestand",
+      "zh": "加载演示文件",
+      "es": "Cargar archivo de demostración"
+    },
+    {
+      "en": "Maximum allowed calls",
+      "nl": "Maximaal toegestane oproepen",
+      "zh": "最大允许调用次数",
+      "es": "Máximo de llamadas permitidas"
+    },
+    {
+      "en": "ML",
+      "nl": "ML",
+      "zh": "机器学习",
+      "es": "ML"
+    },
+    {
+      "en": "Paper Name",
+      "nl": "Naam van artikel",
+      "zh": "论文名称",
+      "es": "Nombre del papel"
+    },
+    {
+      "en": "Query",
+      "nl": "Query",
+      "zh": "查询",
+      "es": "Consulta"
+    },
+    {
+      "en": "Run Module",
+      "nl": "Voer module uit",
+      "zh": "运行模块",
+      "es": "Ejecutar módulo"
+    },
+    {
+      "en": "Run Report",
+      "nl": "Rapport uitvoeren",
+      "zh": "运行报告",
+      "es": "Ejecutar informe"
+    },
+    {
+      "en": "Text",
+      "nl": "Tekst",
+      "zh": "文本",
+      "es": "Texto"
+    },
+    {
+      "en": "This app is under development; all materials created should be carefully checked.",
+      "nl": "Deze app is in ontwikkeling; alle gemaakte materialen moeten zorgvuldig worden gecontroleerd.",
+      "zh": "这个应用程序正在开发中; 所有创建的材料应仔细检查。",
+      "es": "Esta aplicación está en desarrollo; todos los materiales creados deben ser cuidadosamente revisados."
+    },
+    {
+      "en": "Check Status of OSF Links",
+      "nl": "Controleer de status van OSF-links",
+      "zh": "检查OSF链接状态",
+      "es": "Verificar el estado de los enlaces de OSF"
+    },
+    {
+      "en": "Chinese",
+      "nl": "Chinees",
+      "zh": "中文",
+      "es": "Chino"
+    },
+    {
+      "en": "Imprecise P-Values",
+      "nl": "Onnauwkeurige P-waarden",
+      "zh": "不精确的P值",
+      "es": "Valores P imprecisos"
+    },
+    {
+      "en": "List All P-Values",
+      "nl": "Lijst van alle P-waarden",
+      "zh": "列出所有P值",
+      "es": "Listar todos los valores P"
+    },
+    {
+      "en": "List All URLs",
+      "nl": "Lijst van alle URL's",
+      "zh": "列出所有网址",
+      "es": "Listar todas las URLs"
+    },
+    {
+      "en": "Marginal Significance",
+      "nl": "Marginale significantie",
+      "zh": "边际显著性",
+      "es": "Significancia marginal"
+    },
+    {
+      "en": "Reference Consistency",
+      "nl": "Referentieconsistentie",
+      "zh": "参考一致性",
+      "es": "Consistencia de referencias"
+    },
+    {
+      "en": "RetractionWatch",
+      "nl": "RetractionWatch",
+      "zh": "撤回观察",
+      "es": "RetractionWatch"
+    },
+    {
+      "en": "Sample Size",
+      "nl": "Steekproefgrootte",
+      "zh": "样本大小",
+      "es": "Tamaño de la muestra"
+    },
+    {
+      "en": "Spanish",
+      "nl": "Spaans",
+      "zh": "西班牙语",
+      "es": "Español"
+    },
+    {
+      "en": "Summarise Sections",
+      "nl": "Samenvatten secties",
+      "zh": "总结部分",
+      "es": "Resumir secciones"
+    },
+    {
+      "en": "abstract",
+      "nl": "abstract",
+      "zh": "摘要",
+      "es": "resumen"
+    },
+    {
+      "en": "all",
+      "nl": "alles",
+      "zh": "全部",
+      "es": "todo"
+    },
+    {
+      "en": "discussion",
+      "nl": "discussie",
+      "zh": "讨论",
+      "es": "discusión"
+    },
+    {
+      "en": "intro",
+      "nl": "introductie",
+      "zh": "介绍",
+      "es": "introducción"
+    },
+    {
+      "en": "match",
+      "nl": "match",
+      "zh": "匹配",
+      "es": "match"
+    },
+    {
+      "en": "method",
+      "nl": "methode",
+      "zh": "方法",
+      "es": "método"
+    },
+    {
+      "en": "paragraph",
+      "nl": "paragraaf",
+      "zh": "段落",
+      "es": "párrafo"
+    },
+    {
+      "en": "results",
+      "nl": "resultaten",
+      "zh": "结果",
+      "es": "resultados"
+    },
+    {
+      "en": "section",
+      "nl": "sectie",
+      "zh": "部分",
+      "es": "sección"
+    },
+    {
+      "en": "sentence",
+      "nl": "zin",
+      "zh": "句子",
+      "es": "oración"
+    },
+    {
+      "en": "Fixed",
+      "nl": "Fixed",
+      "zh": "固定",
+      "es": "Fijo"
+    },
+    {
+      "en": "Ignore Case",
+      "nl": "Negeer hoofdletters",
+      "zh": "忽略大小写",
+      "es": "Ignorar mayúsculas"
+    },
+    {
+      "en": "PERL regex",
+      "nl": "PERL-regex",
+      "zh": "PERL正则表达式",
+      "es": "regex de PERL"
+    },
+    {
+      "en": "Search this table",
+      "nl": "Doorzoek deze tabel",
+      "zh": "搜索此表",
+      "es": "Buscar en esta tabla"
+    },
+    {
+      "en": "Load Files",
+      "nl": "Bestanden laden",
+      "zh": "加载文件",
+      "es": "Cargar archivos"
+    },
+    {
+      "en": "Modules",
+      "nl": "Modules",
+      "zh": "模块",
+      "es": "Módulos"
+    },
+    {
+      "en": "Report",
+      "nl": "Rapport",
+      "zh": "报告",
+      "es": "Informe"
+    },
+    {
+      "en": "Search Text",
+      "nl": "Tekst zoeken",
+      "zh": "搜索文本",
+      "es": "Buscar texto"
+    },
+    {
+      "en": ""
+    },
+    {
+      "en": "StatCheck"
+    }
+  ]
+}
+

@@ -1,0 +1,9 @@
+url: https://scienceverse.github.io/papercheck/
+template:
+  bootstrap: 5
+  bslib:
+    preset: spacelab
+    primary: '#327118'
+  params:
+    ganalytics: UA-160147578-1
+
