@@ -33,7 +33,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9024</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9025</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -466,6 +466,22 @@ complex regex, like below.</p>
 </tbody>
 </table>
 </div>
+<div class="section level3">
+<h3 id="expand-text">Expand Text<a class="anchor" aria-label="anchor" href="#expand-text"></a>
+</h3>
+<p>You can expand the text returned by <code><a href="../reference/search_text.html">search_text()</a></code> or a
+module with <code><a href="../reference/expand_text.html">expand_text()</a></code>.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">marginal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"marginal"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/expand_text.html">expand_text</a></span><span class="op">(</span><span class="va">paper</span>, plus <span class="op">=</span> <span class="fl">1</span>, minus <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">marginal</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"text"</span>, <span class="st">"expanded"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
+<span><span class="co">#&gt;   text                                                                  expanded</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> <span style="color: #949494;">"</span>The paper shows examples of (1) open and closed OSF links; (2) cita… <span style="color: #949494;">"</span>All da…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> <span style="color: #949494;">"</span>On average researchers in the experimental condition found the app … <span style="color: #949494;">"</span>On ave…</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="chatgpt">ChatGPT<a class="anchor" aria-label="anchor" href="#chatgpt"></a>
@@ -475,14 +491,14 @@ complex regex, like below.</p>
 <h3 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h3>
 <p>Run</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">gpt_setup</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>You will need to provide your own <a href="https://platform.openai.com/api-keys" class="external-link">API key</a>. You can enter
 it manually for each call to <code><a href="../reference/gpt.html">gpt()</a></code>, or add the following
 lines in the .Renviron file for your user or project.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="va">CHATGPT_KEY</span><span class="op">=</span><span class="st">"sk-proj-abcdefghijklmnopqrs0123456789ABCDEFGHIJKLMNOPQRS"</span></span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="va">RETICULATE_PYTHON</span><span class="op">=</span><span class="st">"~/.virtualenvs/r-reticulate/bin/python"</span></span></code></pre></div>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="va">CHATGPT_KEY</span><span class="op">=</span><span class="st">"sk-proj-abcdefghijklmnopqrs0123456789ABCDEFGHIJKLMNOPQRS"</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="va">RETICULATE_PYTHON</span><span class="op">=</span><span class="st">"~/.virtualenvs/r-reticulate/bin/python"</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># useful if you aren't sure where this file is</span></span>
 <span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">edit_r_environ</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -494,7 +510,7 @@ first to narrow down the text into what you want to query. Below, we
 returned the first two papers’ introduction sections, and returned the
 full section. Then we asked ChatGPT “What is the hypothesis of this
 study?”.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hypotheses</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">papers</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, </span>
 <span>                          section <span class="op">=</span> <span class="st">"intro"</span>, </span>
 <span>                          return <span class="op">=</span> <span class="st">"section"</span><span class="op">)</span></span>
@@ -539,7 +555,7 @@ to incest plays an important role in preventing inbreeding.</td>
 list of XML file paths or paper objects, respectively. The functions
 <code><a href="../reference/search_text.html">search_text()</a></code> and <code><a href="../reference/gpt.html">gpt()</a></code> also work on a list of
 paper objects.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">grobid_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/demodir.html">demodir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">papers</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_grobid.html">read_grobid</a></span><span class="op">(</span><span class="va">grobid_dir</span><span class="op">)</span></span>
@@ -558,7 +574,7 @@ will share more modules.</p>
 <h3 id="module-list">Module List<a class="anchor" aria-label="anchor" href="#module-list"></a>
 </h3>
 <p>You can see the list of built-in modules with the function below.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/module_list.html">module_list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  * ai-summarise: Generate a 1-sentence summary for each section</span></span>
 <span><span class="co">#&gt;  * all-p-values: List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.</span></span>
@@ -575,7 +591,7 @@ will share more modules.</p>
 </h3>
 <p>To run a built-in module on a paper, you can reference it by
 name.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all-p-values"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -644,7 +660,7 @@ p-values in the text and returns the matching text.</p>
 </h2>
 <p>You can generate a report from any set of modules. The default set is
 <code>c("imprecise-p", "marginal", "osf-check", "retractionwatch", "ref-consistency")</code></p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/report.html">report</a></span><span class="op">(</span><span class="va">paper</span>, output_format <span class="op">=</span> <span class="st">"qmd"</span><span class="op">)</span></span></code></pre></div>
 <p>See the <a href="report-example.html">example report</a>.</p>
 </div>
