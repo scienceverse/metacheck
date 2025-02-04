@@ -3,7 +3,7 @@ library(lineprof)
 devtools::load_all(".")
 #source("profile/stats-custom.R")
 
-files <- list.files("profile/psyarxiv", "xml$", full.names = TRUE)
+files <- list.files("profile/psych_science_xml", "xml$", full.names = TRUE)
 
 lineprof( papers <- read_grobid(files[1:50]) )
 

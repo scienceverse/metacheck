@@ -158,5 +158,3 @@ test_that("openalex", {
   expect_equal(cr$is_retracted, TRUE)
 })
 
-
-

@@ -54,6 +54,9 @@ validate <- function(module, sample, results_table = "table", path = NULL) {
   } else if (is.character(results_table) &&
              file.exists(file.path(path, results_table))) {
     res_match <- file.path(path, results_table) |> read_file()
+  } else {
+    # no match for results - omit results
+    res_match <- data.frame()
   }
 
   # iterate module over the papers in the data frame ----
@@ -77,31 +80,49 @@ validate <- function(module, sample, results_table = "table", path = NULL) {
   }
 
   # organise info and return ----
-  xml <- NULL
-  missing <- dplyr::anti_join(res_match, sample_res,
-                              by = names(res_match)) |>
-    dplyr::count(xml, name = "results_missing")
-  extra <- dplyr::anti_join(res_match, sample_res,
-                              by = names(res_match)) |>
-    dplyr::count(xml, name = "results_extra")
+  tables_matched <- NA
+  if (nrow(res_match) > 0) {
+    xml <- NULL
+    missing <- dplyr::anti_join(res_match, sample_res,
+                                by = names(res_match)) |>
+      dplyr::count(xml, name = "results_missing")
+    extra <- dplyr::anti_join(res_match, sample_res,
+                                by = names(res_match)) |>
+      dplyr::count(xml, name = "results_extra")
 
-  sample <- sample |>
-    dplyr::left_join(missing, by = "xml") |>
-    dplyr::left_join(extra, by = "xml") |>
-    dplyr::mutate(dplyr::across(c("results_missing", "results_extra"),
-                         ~ tidyr::replace_na(.x, 0)))
-  sample$table_check <- (sample$results_missing +
-                           sample$results_extra) == 0
+    sample <- sample |>
+      dplyr::left_join(missing, by = "xml") |>
+      dplyr::left_join(extra, by = "xml") |>
+      dplyr::mutate(dplyr::across(c("results_missing", "results_extra"),
+                           ~ tidyr::replace_na(.x, 0)))
+    sample$table_check <- (sample$results_missing +
+                             sample$results_extra) == 0
 
-  sample$report_check <- sample$report == sample$report_ver
-  sample$tl_check     <- sample$traffic_light == sample$tl_ver
+    tables_matched <- mean(sample$table_check)
+
+    results_table_actual <- sample_res[names(res_match)]
+  } else {
+    results_table_actual <- sample_res
+  }
+
+  reports_matched <- NA
+  if ("report" %in% names(sample)) {
+    sample$report_check <- sample$report == sample$report_ver
+    reports_matched <- mean(sample$report_check)
+  }
+
+  tl_matched <- NA
+  if ("traffic_light" %in% names(sample)) {
+    sample$tl_check     <- sample$traffic_light == sample$tl_ver
+    tl_matched <- mean(sample$tl_check)
+  }
 
   info <- list(
     sample = sample,
-    results_table = sample_res[names(res_match)],
-    tables_matched = mean(sample$table_check),
-    reports_matched = mean(sample$report_check),
-    tl_matched = mean(sample$tl_check)
+    results_table = results_table_actual,
+    tables_matched = tables_matched,
+    reports_matched = reports_matched,
+    tl_matched = tl_matched
   )
   class(info) <- "ppchk_validate"
 

@@ -2,8 +2,8 @@
 
 test_that("exists", {
   expect_true(is.function(papercheck::validate))
-  expect_no_error(help <- help(validate, papercheck))
-  #expect_equal(help$topic, "validate")
+  expect_no_error(helplist <- help(validate, papercheck))
+  #expect_equal(helplist$topic, "validate")
 })
 
 test_that("errors", {
@@ -58,6 +58,7 @@ test_that("basic", {
   expect_equal(v$tables_matched, 1)
   expect_equal(v$reports_matched, 1)
   expect_equal(v$tl_matched, 1)
+  expect_equal(results_table, v$results_table)
 
   # check file types
   samples <- list(file.path(path, "sample.csv"),
@@ -70,7 +71,32 @@ test_that("basic", {
     expect_equal(v$tables_matched, 1)
     expect_equal(v$reports_matched, 1)
     expect_equal(v$tl_matched, 1)
+    expect_equal(results_table, v$results_table)
   }
+})
+
+test_that("partial", {
+  path <- "validate"
+
+  module <- "all-p-values"
+  #paper <- file.path(path, "to_err_is_human.xml") |> read_grobid()
+
+  sample <- data.frame(
+    xml = "to_err_is_human.xml",
+    traffic_light = "info"
+  )
+
+  results_table <- data.frame(
+    xml = "to_err_is_human.xml",
+    text = c("p = 0.005", "p = 0.152", "p > .05")
+  )
+
+  v <- validate(module, sample, path = path)
+  expect_equal(class(v), "ppchk_validate")
+  expect_equal(v$tl_matched, 1)
+  expect_true(is.na(v$tables_matched))
+  expect_true(is.na(v$reports_matched))
+  expect_equal(results_table, v$results_table[ ,c("xml", "text")])
 })
 
 

@@ -171,7 +171,7 @@ set_gpt_max_calls <- function(n = 10) {
 
 gpt_setup <- function(envname = "r-reticulate") {
   if (!reticulate::py_available(TRUE)) {
-    stop("You need to install python")
+    stop("You need to install python (e.g. `reticulate::install_python()` )")
   }
 
   # set up virtual environment

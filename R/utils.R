@@ -134,13 +134,16 @@ print.scivrs_paper <- function(x, ...) {
 #'
 print.ppchk_validate <- function(x, ...) {
   txt <- sprintf("Validated matches from a sample of %i:
-* tables: %i%%
-* reports: %i%%
-* traffic lights: %i%%\n",
+* tables: %i%s
+* reports: %i%s
+* traffic lights: %i%s\n",
     nrow(x$sample),
     round(x$tables_matched * 100),
+    ifelse(is.na(x$tables_matched), "", "%"),
     round(x$reports_matched * 100),
-    round(x$tl_matched * 100)
+    ifelse(is.na(x$reports_matched), "", "%"),
+    round(x$tl_matched * 100),
+    ifelse(is.na(x$tl_matched), "", "%")
   )
   cat("", txt)
 }

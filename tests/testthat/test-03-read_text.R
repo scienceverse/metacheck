@@ -1,5 +1,7 @@
 test_that("exists", {
-  expect_true(is.function(read_text))
+  expect_true(is.function(papercheck::read_text))
+  expect_no_error(helplist <- help(read_text, papercheck))
+  #expect_equal(helplist$topic, "read_text")
 })
 
 test_that("sections", {

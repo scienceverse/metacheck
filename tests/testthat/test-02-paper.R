@@ -1,6 +1,8 @@
 test_that("exists", {
-  expect_true(is.function(paper))
+  expect_true(is.function(papercheck::paper))
+})
 
+test_that("basic", {
   p <- paper()
   expect_s3_class(p, "scivrs_paper")
   exp_names <- c("name", "info", "authors", "full_text", "references", "citations")

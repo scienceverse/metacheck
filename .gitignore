@@ -7,5 +7,5 @@ inst/doc
 .quarto
 docs
 inst/python/constants.py
-profile/psyarxiv*
+profile/psych_science_xml*
 inst/modules/sample-size*
