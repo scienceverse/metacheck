@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?><TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Having other-sex siblings predicts moral attitudes to sibling incest, but not parent-child incest</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Lisa</forename><surname>Debruine</surname></persName>
+							<email>lisa.debruine@glasgow.ac.uk</email>
+							<affiliation key="aff0">
+								<note type="raw_affiliation">Institute of Neuroscience &amp; Psychology, University of Glasgow, UK.</note>
+								<orgName type="department">Institute of Neuroscience &amp; Psychology</orgName>
+								<orgName type="institution">University of Glasgow</orgName>
+								<address>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Benedict</forename><surname>Jones</surname></persName>
+							<affiliation key="aff0">
+								<note type="raw_affiliation">Institute of Neuroscience &amp; Psychology, University of Glasgow, UK.</note>
+								<orgName type="department">Institute of Neuroscience &amp; Psychology</orgName>
+								<orgName type="institution">University of Glasgow</orgName>
+								<address>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Having other-sex siblings predicts moral attitudes to sibling incest, but not parent-child incest</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">711E8A2949E4ABB23B76E5DFA258CB01</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-02T19:40+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p><s>Moral opposition to incest is thought to play an important role in preventing inbreeding.</s><s>Some researchers have proposed that moral opposition to sibling incest is greater for individuals who have other-sex siblings.</s><s>Empirical evidence for this claim is mixed, however.</s><s>Consequently, we compared moral opposition to both third-party sibling and third-party parent-child incest in participants with other-sex siblings only (N=313) and participants with own-sex siblings only (N=269).</s><s>Having other-sex siblings predicted moral attitudes to sibling, but not parent-child, incest.</s><s>These results support the proposal that moral opposition to sibling incest is sensitive to aspects of family structure, specifically the sex of siblings.</s></p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introduction</head><p><s>Inbreeding is damaging to reproductive fitness.</s><s>Consequently, humans (like many other animals) are hypothesized to possess adaptions to reduce inbreeding.</s><s>Some researchers have proposed that the strong moral opposition that people demonstrate to incest plays a particularly important role in preventing inbreeding <ref type="bibr" target="#b0">(Lieberman et al., 2007</ref><ref type="bibr">(Lieberman et al., , 2002))</ref>.</s></p><p><s>Opportunities for incestuous sexual relationships to occur will be linked to family structure.</s><s>Adaptations to reduce inbreeding might then be similarly sensitive to these contextual factors.</s><s>This observation led Lieberman and colleagues to propose that moral opposition to third-party sibling incest may be greater among individuals with other-sex siblings than among individuals who do not have other-sex siblings <ref type="bibr" target="#b0">(Lieberman et al., 2007</ref><ref type="bibr">(Lieberman et al., , 2002))</ref>.</s></p><p><s>Lieberman and colleagues observed precisely this pattern of results in two studies <ref type="bibr" target="#b0">(Lieberman et al., 2007</ref><ref type="bibr">(Lieberman et al., , 2002))</ref>.</s><s>However, more recently, <ref type="bibr" target="#b3">Royzman et al. (2008)</ref> did not replicate Lieberman and colleagues' results.</s><s>Royzman et al's non-replication potentially calls into question the reliability of previously reported links between having an other-sex sibling and moral opposition to third-party sibling incest.</s><s><ref type="bibr" target="#b3">Royzman et al's (2008)</ref> non-replication also potentially calls into question the broader claim that moral opposition to third-party sibling incest is sensitive to contextual factors, such as family structure.</s></p><p><s>In light of the above, we tested whether moral opposition to third-party sibling incest is greater among people who have only other-sex siblings than among people who have only same-sex siblings.</s><s>We also investigated the specificity of this putative effect by testing whether moral opposition to third-party parent-child incest is similarly related to having other-sex siblings.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Methods</head><p><s>Participants 1998 participants took part in this online study (see online supplemental materials, https://osf.io/mwzuq/).</s><s>Of these, 666 were heterosexual men or women and who only have full siblings of a single sex and who completed the moral wrongness task.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Procedure</head><p><s>Participants completed the same moral wrongness task that had been used by Lieberman and colleagues.</s><s>In this task, participants are instructed to rank 19 acts for moral wrongness from most to least morally wrong.</s><s>These acts were: molesting a child, rape, a man killing his wife, a woman killing her husband, sex between a father and daughter (consensual), sex between a mother and son (consensual), father and daughter marriage, mother and son marriage, sex between a brother and sister (consensual), brother and sister marriage, assault with a weapon, robbing a bank, selling cocaine, breaking and entering, embezzlement, smuggling illegal aliens into the country, public drunkenness, speeding on the highway, smoking marijuana.</s></p><p><s>Data-quality checks were carried out comparing the three items with the highest average moral wrongness (molesting a child, rape, a man killing his wife) to the three items with the lowest average moral wrongness (public drunkenness, speeding on the highway, smoking marijuana).</s><s>84 participants were excluded from the data set prior to analyses because these checks indicated they had either reversed the scale or had responded randomly.</s></p><p><s>Participants also reported their sibling composition.</s><s>Analyses were limited to heterosexual men and women with only full brothers (57 men, 242 women) or only full sisters (71 men, 212 women).</s><s>Data from excluded participants are available at https://osf.io/mwzuq/.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Analysis</head><p><s>Following <ref type="bibr" target="#b0">Lieberman et al. (2007</ref><ref type="bibr">Lieberman et al. ( , 2002))</ref>, we calculated the mean ranking for the two sibling incest items (sex between a brother and sister (consensual), brother and sister marriage) from responses in the moral wrongness task for each participant.</s><s>We also calculated the mean task ranking for the two parent-child incest items (for women: sex between a father and daughter (consensual), father and daughter marriage; for men: sex between a mother and son (consensual), mother and son marriage).</s><s>We then scaled and reverse-code the parent incest and sibling incest scores so that positive numbers represent greater aversion.</s><s>These scores were first analyzed with a mixed effects model.</s><s>Our model had the factors incest type (sibling incest or parent incest, effect coded as -0.5 and +0.5, respectively), participant sex (male or female, effect coded as -0.5 and +0.5, respectively), and sibling type (only brothers or only sisters, effect coded as -0.5 and +0.5, respectively).</s><s>Sibling incest and parent-child incest scores were then separately analysed using linear regression in R <ref type="bibr" target="#b2">(R Core Team, 2019)</ref>.</s><s>All data, analysis code, and full results are available at https://osf.io/mwzuq/.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p><s>Our main, omnibus analysis showed a significant three-way interaction among incest type, participant sex, and sibling type (Estimate = 0.285, t(578.003)</s><s>= 2.359, p = 0.019).</s><s>This interaction is illustrated in Figure <ref type="figure" target="#fig_0">1</ref>.</s><s>Next we analyzed scores for sibling and parent-child incest separately.</s></p><p><s>Our analysis of moral wrongness scores for sibling incest scores showed a significant interaction between participant sex and sibling type (Estimate = -0.559,</s><s>t(578) = -2.84,</s><s>p = 0.005).</s><s>Women with brothers only tended to view sibling incest more negatively than did women with sisters only (Estimate = 0.179, t(452) = 2.022, p = 0.044) while men with brothers only tended to view sibling incest less negatively than did men with sisters only (Estimate = -0.38,</s><s>t(126) = -1.933,</s><s>p = 0.055).</s><s>In contrast, our analysis of moral wrongness scores for parental incest scores showed no significant interaction between participant sex and sibling type (Estimate = -0.268,</s><s>t(578) = -1.373,</s><s>p = 0.17).</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p><s>We found that having other-sex siblings is associated with greater moral opposition to sibling incest.</s><s>This replicates the results of Lieberman and colleagues' earlier work <ref type="bibr" target="#b0">(Lieberman et al., 2007</ref><ref type="bibr">(Lieberman et al., , 2002))</ref>, supporting the proposal that moral opposition to sibling incest is sensitive to contextual factors, such as family composition.</s><s>Our results also suggest that the null result for an effect of having other-sex siblings on opposition to sibling incest that was previously reported by <ref type="bibr" target="#b3">Royzman et al. (2008)</ref> may be a false negative.</s></p><p><s>In contrast, having other-sex siblings was not significantly associated with greater moral opposition to parent-child incest.</s><s>This null finding is not compatible with alternative explanation of the original finding for moral opposition to sibling incest, such as people with more other-sex siblings having systematically different moral views on items unrelated to incest.</s><s>For example, if people with other-sex siblings are less likely to oppose drug use, then the relative moral wrongness of all of the incest items should increase, not just sibling incest items.</s></p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc><div><p><s>Figure 1: The three-way interaction among incest type, participant sex, and sibling type.</s><s>Dots mark means and error bars are 95% CI.</s><s>Having other-sex siblings predicted moral opposition to sibling, but not parent-child, incest.</s></p></div></figDesc></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The architecture of human kin detection</title>
+		<author>
+			<persName><forename type="first">Debra</forename><surname>Lieberman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><surname>Tooby</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Leda</forename><surname>Cosmides</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/nature05510</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<title level="j" type="abbrev">Nature</title>
+		<idno type="ISSN">0028-0836</idno>
+		<idno type="ISSNe">1476-4687</idno>
+		<imprint>
+			<biblScope unit="volume">445</biblScope>
+			<biblScope unit="issue">7129</biblScope>
+			<biblScope unit="page" from="727" to="731"/>
+			<date type="published" when="2007-02">2007</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lieberman, D., Tooby, J., &amp; Cosmides, L. (2007). The architecture of human kin detection. Nature, 445(7129),</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Does morality have a biological basis? An empirical test of the factors governing moral sentiments relating to incest</title>
+		<author>
+			<persName><forename type="first">Debra</forename><surname>Lieberman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><surname>Tooby</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Leda</forename><surname>Cosmides</surname></persName>
+		</author>
+		<idno type="DOI">10.1098/rspb.2002.2290</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the Royal Society of London. Series B: Biological Sciences</title>
+		<title level="j" type="abbrev">Proc. R. Soc. Lond. B</title>
+		<idno type="ISSN">0962-8452</idno>
+		<idno type="ISSNe">1471-2954</idno>
+		<imprint>
+			<biblScope unit="volume">270</biblScope>
+			<biblScope unit="issue">1517</biblScope>
+			<biblScope unit="page" from="819" to="826"/>
+			<date type="published" when="1517">2003. 1517</date>
+			<publisher>The Royal Society</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lieberman, D., Tooby, J., &amp; Cosmides, L. (2003). Does morality have a biological basis? An empirical test of the factors governing moral sentiments relating to incest. Proceedings of the Royal Society of London B: Biological Sciences, 270(1517), 819-826.</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Statistical Computing</title>
+		<author>
+			<persName><forename type="first">Team</forename><surname>Core</surname></persName>
+		</author>
+		<idno type="DOI">10.2307/j.ctvc77jrc.13</idno>
+		<ptr target="https://www.R-project.org/"/>
+	</analytic>
+	<monogr>
+		<title level="m">Computing Skills for Biologists</title>
+		<meeting><address><addrLine>Vienna, Austria</addrLine></address></meeting>
+		<imprint>
+			<publisher>Princeton University Press</publisher>
+			<date type="published" when="2019-01-15">2019</date>
+			<biblScope unit="page" from="249" to="299"/>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">R Core Team (2019). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. https://www.R-project.org/.</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">“You make me sick”: Moral dyspepsia as a reaction to third-party sibling incest</title>
+		<author>
+			<persName><forename type="first">Edward</forename><forename type="middle">B</forename><surname>Royzman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Robert</forename><forename type="middle">F</forename><surname>Leeman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><surname>Sabini</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11031-008-9089-x</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Motivation and Emotion</title>
+		<title level="j" type="abbrev">Motiv Emot</title>
+		<idno type="ISSN">0146-7239</idno>
+		<idno type="ISSNe">1573-6644</idno>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="100" to="108"/>
+			<date type="published" when="2008-04-18">2008</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Royzman, E. B., Leeman, R. F., &amp; Sabini, J. (2008). "You make me sick": Moral dyspepsia as a reaction to third-party sibling incest. Motivation and Emotion, 32(2), 100-108.</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

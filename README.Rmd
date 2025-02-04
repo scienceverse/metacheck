@@ -1,0 +1,145 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# papercheck <img src="man/figures/logo.png" align="right" height="120" alt="" />
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of papercheck is to automatically check scientific papers for best practices.
+
+## Installation
+
+You can install the development version of papercheck from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("scienceverse/papercheck")
+```
+
+You can launch an interactive shiny app version of the code below with:
+
+``` r
+papercheck_app()
+```
+
+## Example
+
+```{r}
+library(papercheck)
+```
+
+Convert a PDF to grobid XML format, then read it in as a scienceverse paper object.
+
+```{r, eval = FALSE}
+pdf <- demopdf() # use the path of your own PDF
+grobid <- pdf2grobid(pdf)
+paper <- read_grobid(grobid)
+```
+
+```{r, include = FALSE}
+# load paper without need for grobid server online
+paper <- demoxml() |> read_grobid()
+```
+
+
+### Search Text 
+
+Search the returned text. The regex pattern below searches for text that looks like statistical values (e.g., `N=313` or `p = 0.17`).
+
+```{r}
+pattern <- "[a-zA-Z]\\S*\\s*(=|<)\\s*[0-9\\.-]*\\d"
+text <- search_text(paper, pattern, 
+                    return = "match", 
+                    perl = TRUE)
+```
+
+```{r, echo = FALSE}
+knitr::kable(text)
+```
+
+### ChatGPT
+
+You can ask ChatGPT to process text. Use `search_text()` first to narrow down the text into what you want to query. Below, we returned the first two papers' introduction sections, and returned the full section. Then we asked ChatGPT "What is the hypothesis of this study?".
+
+```{r, eval = FALSE}
+# ask chatGPT a question
+hypotheses <- search_text(papers[1:2], 
+                          section = "intro", 
+                          return = "section")
+query <- "What is the hypothesis of this study?"
+gpt_hypo <- gpt(hypotheses, query)
+```
+
+```{r, echo = FALSE}
+gpt_hypo <- structure(list(id = c("eyecolor.xml", "incest.xml"), answer = c("The hypothesis of this study is to test the sex-linked heritable preference hypothesis and the positive sexual imprinting hypothesis in relation to eye color and partner selection in heterosexual and same-sex couples.", 
+"The hypothesis of this study is that moral opposition to third-party sibling incest may be greater among individuals with other-sex siblings than among individuals who do not have other-sex siblings."
+), cost = c(0.000671, 0.000635)), row.names = c(NA, -2L), class = c("tbl_df", 
+"tbl", "data.frame"))
+
+knitr::kable(gpt_hypo)
+```
+
+### Batch Processing
+
+The functions `pdf2grobid()` and `read_grobid()` also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions `search_text()` and `gpt()` also work on a list of paper objects.
+
+```{r}
+# read in all the XML files in the demo directory
+grobid_dir <- demodir()
+papers <- read_grobid(grobid_dir)
+
+# select sentences in the intros containing the text "previous"
+previous <- search_text(papers, "previous", 
+                        section = "intro", 
+                        return = "sentence")
+```
+
+```{r, echo = FALSE}
+knitr::kable(previous)
+```
+
+### Modules
+
+Papercheck is designed modularly, so you can add modules to check for anything. It comes with a set of pre-defined modules, and we hope people will share more modules.
+
+You can see the list of built-in modules with the function below.
+
+```{r, results='asis'}
+module_list()
+```
+
+To run a built-in module on a paper, you can reference it by name.
+
+```{r}
+p <- module_run(paper, "all-p-values")
+```
+
+
+```{r, echo = FALSE}
+knitr::kable(p$table)
+```
+
+### Reports
+
+You can generate a report from any set of modules. The default set is `c("imprecise-p", "marginal", "osf-check", "retractionwatch", "ref-consistency")`
+
+```{r, eval = FALSE}
+paper_path <- report(paper, output_format = "html")
+```
+
+
+
+

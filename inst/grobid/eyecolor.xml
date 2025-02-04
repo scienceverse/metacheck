@@ -1,0 +1,682 @@
+<?xml version="1.0" encoding="UTF-8"?><TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Positive sexual imprinting for human eye color</title>
+				<funder ref="#_aakVg65">
+					<orgName type="full">European Research Council</orgName>
+					<orgName type="abbreviated">ERC</orgName>
+					<idno type="DOI" subtype="crossref">10.13039/501100000781</idno>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Cold Spring Harbor Laboratory</publisher>
+				<availability status="unknown"><p>Copyright Cold Spring Harbor Laboratory</p>
+				</availability>
+				<date type="published" when="2017-05-08">2017-05-08</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Lisa</forename><forename type="middle">M</forename><surname>Debruine</surname></persName>
+							<email>lisa.debruine@glasgow.ac.uk</email>
+							<idno type="ORCID">0000-0002-7523-5539</idno>
+						</author>
+						<author>
+							<persName><forename type="first">Benedict</forename><forename type="middle">C</forename><surname>Jones</surname></persName>
+							<idno type="ORCID">0000-0001-7777-0220</idno>
+						</author>
+						<author>
+							<persName><forename type="first">Anthony</forename><forename type="middle">C</forename><surname>Little</surname></persName>
+							<idno type="ORCID">0000-0001-9100-1903</idno>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<note type="raw_affiliation">University of Glasgow</note>
+								<orgName type="institution">University of Glasgow</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff1">
+								<note type="raw_affiliation">University of Glasgow</note>
+								<orgName type="institution">University of Glasgow</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff2">
+								<note type="raw_affiliation">University of Bath</note>
+								<orgName type="institution">University of Bath</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff3">
+								<note type="raw_affiliation">Institute of Neuroscience &amp; Psychology University of Glasgow 58 Hillhead Street Glasgow, Scotland, UK G12 8QB</note>
+								<orgName type="department">Institute of Neuroscience &amp; Psychology</orgName>
+								<orgName type="institution">University of Glasgow</orgName>
+								<address>
+									<addrLine>58 Hillhead Street Glasgow</addrLine>
+									<postCode>G12 8QB</postCode>
+									<country key="GB">Scotland, UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Positive sexual imprinting for human eye color</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<publisher>Cold Spring Harbor Laboratory</publisher>
+							<date type="published" when="2017-05-08"/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">3A5535666634214553B903FC2C0C47EE</idno>
+					<idno type="DOI">10.1101/135244</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-02T19:43+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p><s>Human romantic partners tend to have similar physical traits 1 , but the mechanisms causing this homogamy are controversial.</s><s>One potential explanation is direct matching to own characteristics 2,3 .</s><s>Alternatively, studies showing similarity between parent and partner 4,5 support positive sexual imprinting <ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b6">7</ref> , where individuals are more likely to choose mates with the physical characteristics of their other--sex parent.</s><s>This interpretation has been strongly criticized because the same pattern could also be caused by sex-linked heritable preferences 3 , where similarity in appearance between an individual's partner and their other--sex parent is caused by similarity in preferences between the individual and their same--sex parent.</s><s>The relationships among own, parents' and same--sex partner's eye color provide an elegant test of these hypotheses, which each postulate a different best predictor of partner's eye color.</s><s>While the matching hypothesis predicts this will be own eye color, the sex--linked heritable preference hypothesis predicts this will be the other--sex parent's eye color and the positive sexual imprinting hypothesis predicts this will be the partner--sex parent's eye color.</s><s>Here we show that partner eye color was best predicted by the partner--sex parent's eye color.</s><s>Our results provide clear evidence against matching and sex--linked heritable preference hypotheses, and support the positive sexual imprinting hypothesis of the relationship between own and partner's eye color.</s></p><p><s>Humans exhibit homogamy in mate choice and preferences across a range of personality and physical characteristics 1 , including facial appearance 2,8,9 , hair color 4 , and eye color <ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b4">5</ref> .</s><s>Explanations for this phenomenon fall into three main categories: those that emphasize matching to own characteristics 1 , those that emphasize learning from parental models <ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b8">9</ref> , and those that emphasize the transmission of preferences from parents 3 .</s></p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p><s>Two main phenomena relate to directly matching own characteristics: self-referential phenotype matching and assortative mating.</s><s>Self--referential phenotype matching involves sampling one's own phenotype and using it to inform social behavior either positively or negatively.</s><s>For example, cross--fostered ground squirrels raised apart from genetic family members recognize their unfamiliar genetic siblings, but not foster siblings, after hibernation 10 , presumably because of similar phenotypic characteristics such as odor.</s><s>Homogamy can also happen in the absence of a preference for self--similar traits <ref type="bibr" target="#b10">11</ref> .</s><s>For example, if a characteristic is generally preferred, regardless of own phenotype, the most desirable mates are more likely to both have the characteristic and to be able to attract a mate with the characteristic, leading to assortative mating even in the absence of assortative preferences.</s></p><p><s>Positive sexual imprinting can lead to resemblance between mates insofar as offspring are similar to their parents.</s><s>Acquiring mate preferences from a parental model may facilitate speciation <ref type="bibr" target="#b11">12</ref> .</s><s>For example, subspecies of zebra finch have been shown to avoid hybridization by preferring the songs and plumage of their own species <ref type="bibr" target="#b12">13</ref> .</s><s>Additionally, cross--fostered females mated with males who were similar to their foster--fathers <ref type="bibr" target="#b12">13</ref> .</s><s>Parental imprinting can be sex--specific, as elegantly demonstrated by a study of cross--fostered sheep and goats; cross--species fostering had a strong and irreversible effect on male mate choice, while it had a weaker and reversible effect on female mate choice <ref type="bibr" target="#b13">14</ref> .</s><s>This sex difference in ungulate species is likely to be a result of only experiencing maternal care.</s><s>In a bi--parental species such as humans, parental--imprinting--like effects in both men and women have been shown to be relatively specific to the other--sex parent.</s><s>For example, other--sex parental hair and eye color are significantly better predictors of partner hair and eye color than are same--sex parental hair and eye color <ref type="bibr" target="#b3">4</ref> .</s><s>Additionally, studies have found that, for men, their wives' facial appearance is best predicted by their mothers' facial appearance <ref type="bibr" target="#b7">8</ref> , while for women, their husbands' facial appearance is best predicted by their fathers' facial appearance <ref type="bibr" target="#b8">9</ref> .</s></p><p><s>The evidence for positive sexual imprinting in humans has been strongly criticized because sex--linked heritable preferences can also lead to similarity between one's mate and other--sex parent <ref type="bibr" target="#b2">3</ref> .</s><s>While twin studies show evidence for substantial heritability of preferences for some traits such as height, hair color, and physical attractiveness <ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b15">16</ref> , the heritability of realized mate choice (as measured from actual partners) is very low 1 .</s><s>However, this hypothesis is difficult to reconcile with consistent findings that the parent--child relationship affects the strength of preferences for faces that resemble one's other--sex parent <ref type="bibr" target="#b16">17</ref> and the strength of resemblance between that parent and one's spouse <ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b8">9</ref> , as well as husband--father resemblance being observed even among adopted women who were not genetically related to their fathers <ref type="bibr" target="#b8">9</ref> .</s></p><p><s>We tested these three hypotheses by assessing participants' own, parents' and partner's eye color.</s><s>While the matching hypothesis predicts that the best predictor of partner's eye color will be own eye color, the sex--linked heritable preference hypothesis predicts this will be the other--sex parent's eye color and the positive sexual imprinting hypothesis predicts this will be the partner--sex parent's eye color.</s><s>While these latter two predictions lead to the same pattern of results for heterosexual couples, here we also test same--sex couples to distinguish the sex-linked heritable preference hypothesis from the positive sexual imprinting hypothesis.</s><s>We used binomial logistic regression to test three models representing the predictions of our three hypotheses and Akaike Information Criterion <ref type="bibr" target="#b17">18</ref> to compare the models (see Table <ref type="table" target="#tab_0">1</ref>) .</s><s>The best model supported the positive sexual imprinting hypothesis, where maternal eye color significantly predicted the eye color of female partners (B = 0.812, S.E.</s><s>= 0.322, z = 2.52, p = 0.012), but not male partners (B = --0.059,</s><s>S.E.</s><s>= 0.31, z = --0.19,</s><s>p = 0.849) and paternal eye color significantly predicted the eye color of male partners (B = 0.75, S.E.</s><s>= 0.318, z = 2.355, p = 0.019), but not female partners (B = 0.049, S.E.</s><s>= 0.32, z = 0.152, p = 0.879).</s><s>This model was supported 7.455 times more strongly than the model corresponding to the matching hypothesis, where own eye color did not significantly predict partner eye color (B = 0.263, S.E.</s><s>= 0.236, z = 1.113, p = 0.266).</s><s>The imprinting model was also supported 9.655 times more strongly than the model corresponding to the sex--linked heritable preference hypothesis, where maternal eye color did not predict the eye color of men's partners (B = 0.262, S.E.</s><s>= 0.313, z = 0.836, p = 0.403) more than women's partners (B = 0.472, S.E.</s><s>= 0.311, z = 1.515, p = 0.13) and paternal eye color did not predict the eye color of women's partners (B = 0.309, S.E.</s><s>= 0.321, z = 0.96, p = 0.337) more than men's partners (B = 0.511, S.E.</s><s>= 0.311, z = 1.645, p = 0.1).</s><s>Indeed, the opposite of the predicted pattern was found, although none of the individual predictors were significantly related to partner eye color.</s><s>We also repeated these analyses using an 8--level ordinal coding of eye color.</s><s>The model supporting the positive sexual imprinting hypothesis remained the best model (see Table <ref type="table" target="#tab_1">2</ref>).</s><s>Our data provide clear evidence against the sex--linked heritable preferences hypothesis <ref type="bibr" target="#b2">3</ref> , which predicts a relationship between partner's eye color and other-sex parent's eye color.</s><s>In fact, our data show a non--significant trend in the opposite direction, with partner's eye color being better predicted by same--sex parent's eye color.</s><s>Our data also give little support to the matching hypothesis, as own eye color was positively but not significantly related to partner's eye color.</s><s>Our data give clearest support to the positive sexual imprinting hypothesis, where we found that partner's eye color was predicted by maternal eye color for people with female partners and by paternal eye color for people with male partners.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>METHODS</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Participants</head><p><s>We report data from women (n = 150, mean age = 22.9 years, SD = 7.91) and men (n = 150, mean age = 28.3</s><s>years, SD = 10.46) who completed an online questionnaire about eye color.</s><s>Data were limited to individuals who reported own, maternal, paternal and partner eye color, as well as own and partner's sex, and who reported on a biologically related mother and father (e.g., adoptees were excluded).</s><s>Because of differences in the relative proportions of same--sex and different--sex relationships, data were collected continuously until we reached 75 individuals meeting the criteria above in each of four categories: women reporting on a female partner, women reporting on a male partner, men reporting on a female partner, and men reporting on a male partner.</s></p><p><s>Data collection was completed through a custom--built website (faceresearch.org) that participants typically access via social bookmarking links (e.g., stumbleupon.com).</s><s>Participants were not compensated for their participation.</s><s>The study complies with ethical regulations of the British Psychological Society, informed consent was obtained from all participants, and the study's protocol was approved by the University of Glasgow's psychology ethics board.</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Eye color</head><p><s>Following previous work on imprinting and eye color <ref type="bibr" target="#b3">4</ref> , participants were asked to choose eye colors from the following list: black, dark brown, light brown, hazel, green, blue green, blue, and grey.</s><s>For binomial analyses, the first three categories were recoded as "dark" and the last five categories were recoded as "light", following previous work <ref type="bibr" target="#b3">4</ref> .</s></p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statistical tests</head><p><s>Statistical tests were conducted using R 3.3.2 <ref type="bibr" target="#b18">19</ref></s><s>.</s><s>To investigate which factors best predicted partner eye color, we used a set of a priori models based on the three hypotheses of matching, imprinting, and sex--linked heritable preferences.</s><s>We conducted GLMs with binomial error structure.</s><s>The dependent variable in each case was partner eye color.</s><s>The null model included only an intercept.</s><s>The additional predictor for the matching hypothesis was own eye color.</s><s>The additional predictors for the parental imprinting hypothesis were maternal and paternal eye color, both interacting with partner sex.</s><s>The additional predictors for the sex--linked heritable preferences hypothesis were maternal and paternal eye color, both interacting with participant sex.</s><s>We compared these four models using the AICcmodavg package <ref type="bibr" target="#b19">20</ref> .</s><s>We also repeated these analyses using an ordinal coding of eye color (black = 1, dark brown = 2, light brown = 3, hazel = 4, green = 5, blue green = 6, blue = 7, and grey = 8) and GLM with Poisson error structure.</s><s>In addition to the main analyses reported above, we also followed the exact backwards conditional binomial logistic regression analyses from previous work <ref type="bibr" target="#b3">4</ref> , investigating how maternal, paternal and own eye color predicted partner eye color in each group of participants separately.</s><s>We replicated the findings that women's male partners' eye color was best predicted by paternal eye color (B = 1.052,</s><s>S.E.</s><s>= 0.481, Z = 2.188, p = 0.029), while men's female partners' eye color was best predicted by maternal eye color (B = 1.072,</s><s>S.E.</s><s>= 0.486, Z = 2.207, p = 0.027).</s><s>We also found that that men's male partners' eye color was best predicted by paternal eye color (B = 0.847, S.E.</s><s>= 0.478, Z = 1.774, p = 0.076).</s><s>While women's female partners' eye color was best predicted (negatively) by own eye color (B = --0.827,</s><s>S.E.</s><s>= 0.489, Z = 2.188, p = 0.091), maternal eye color was the only positive predictor in the first step of this analysis (B = 0.694, S.E.</s><s>= 0.537, Z = 1.292, p = 0.196).</s></p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .</head><label>1</label><figDesc><div><p><s>Figure 1.</s><s>Model summaries.</s><s>Predicted and actual parameter estimates for all 3 models.</s><s>Boxes show the 50% CI and whiskers show the 95% CI.</s><s>Predicted models are estimated from simulated data with N = 300 and effect sizes from previous research 4 .</s></p></div></figDesc><graphic coords="4,90.30,72.30,432.00,288.00" type="bitmap"/></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 .</head><label>2</label><figDesc><div><p><s>Figure 2. Data for ordinal coding of eye color.</s><s>Blue represents data for male partners, pink represents data for female partners, and dot size represents number of participants (total N = 300).</s></p></div></figDesc><graphic coords="7,90.30,72.30,432.00,240.35" type="bitmap"/></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 . Model comparison for binomial models.</head><label>1</label><figDesc><div><p><s> = the number of parameters in the model;  !</s><s>= change in  !</s><s>from the best model;  !</s><s>= Akaike weight (i.e., the relative likelihood of the model).</s></p></div></figDesc><table><row><cell/><cell/><cell/><cell/><cell>Evidence Ratio w/</cell></row><row><cell>Model</cell><cell>Parameters</cell><cell>𝐾 𝛥 !</cell><cell>𝑤 !</cell><cell>imprinting</cell></row><row><cell cols="2">imprinting maternal:partnersex +</cell><cell>5 0</cell><cell cols="2">0.696 1.00</cell></row><row><cell/><cell>paternal:partnersex</cell><cell/><cell/><cell/></row><row><cell>null</cell><cell>(Intercept)</cell><cell cols="3">1 3.232 0.138 5.033</cell></row><row><cell cols="2">matching own</cell><cell cols="3">2 4.018 0.093 7.455</cell></row><row><cell cols="2">heritable maternal:ownsex +</cell><cell cols="3">5 4.535 0.072 9.655</cell></row><row><cell/><cell>paternal:ownsex</cell><cell/><cell/><cell/></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 . Model comparison for ordinal models.</head><label>2</label><figDesc/><table><row><cell/><cell/><cell/><cell/><cell>Evidence Ratio w/</cell></row><row><cell>Model</cell><cell>Parameters</cell><cell>𝐾 𝛥 !</cell><cell>𝑤 !</cell><cell>imprinting</cell></row><row><cell cols="2">imprinting maternal:partnersex +</cell><cell>11 0</cell><cell cols="2">0.818 1.00</cell></row><row><cell/><cell>paternal:partnersex</cell><cell/><cell/><cell/></row><row><cell cols="2">matching own</cell><cell cols="3">8 4.574 0.083 9.846</cell></row><row><cell>null</cell><cell>(Intercept)</cell><cell cols="3">7 5.491 0.053 15.573</cell></row><row><cell cols="2">heritable maternal:ownsex +</cell><cell cols="3">11 5.743 0.046 17.666</cell></row><row><cell/><cell>paternal:ownsex</cell><cell/><cell/><cell/></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowedgements</head><p>This research was supported by <rs type="funder">ERC</rs> grant #<rs type="grantNumber">647910</rs> KINSHIP to L.M.D.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_aakVg65">
+					<idno type="grant-number">647910</idno>
+				</org>
+			</listOrg>
+
+			<div type="availability">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data availability</head><p><s>All data and reproducible analysis code are available at osf.io/he4ty 21 .</s></p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Author Contributions</head><p><s>L.M.D. designed the study, conducted the analyses, and drafted the paper.</s><s>B.C.J. consulted on theory and revised the paper.</s><s>A.C.L. consulted on theory and analyses, and revised the paper.</s></p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Variation in Human Mate Choice: Simultaneously Investigating Heritability, Parental Influence, Sexual Imprinting, and Assortative Mating</title>
+		<author>
+			<persName><forename type="first">Brendan</forename><forename type="middle">P</forename><surname>Zietsch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Karin</forename><forename type="middle">J H</forename><surname>Verweij</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andrew</forename><forename type="middle">C</forename><surname>Heath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nicholas</forename><forename type="middle">G</forename><surname>Martin</surname></persName>
+		</author>
+		<idno type="DOI">10.1086/659629</idno>
+	</analytic>
+	<monogr>
+		<title level="j">The American Naturalist</title>
+		<title level="j" type="abbrev">The American Naturalist</title>
+		<idno type="ISSN">0003-0147</idno>
+		<idno type="ISSNe">1537-5323</idno>
+		<imprint>
+			<biblScope unit="volume">177</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="605" to="616"/>
+			<date type="published" when="2011-05">2011</date>
+			<publisher>University of Chicago Press</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Zietsch, B. P., Verweij, K. J. H., Heath, A. C. &amp; Martin, N. G. Variation in human mate choice: simultaneously investigating heritability, parental influence, sexual imprinting, and assortative mating. The American Naturalist 177, 605-16 (2011).</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Human Homogamy in Facial Characteristics</title>
+		<author>
+			<persName><forename type="first">Saori</forename><surname>Nojo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Satoshi</forename><surname>Tamura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yasuo</forename><surname>Ihara</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s12110-012-9146-8</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Human Nature</title>
+		<title level="j" type="abbrev">Hum Nat</title>
+		<idno type="ISSN">1045-6767</idno>
+		<idno type="ISSNe">1936-4776</idno>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="323" to="340"/>
+			<date type="published" when="2012-07-08">2012</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Nojo, S., Tamura, S. &amp; Ihara, Y. Human homogamy in facial characteristics: does a sexual--imprinting--like mechanism play a role? Human Nature 23, 323-40 (2012).</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">The role of sexual imprinting and the Westermarck effect in mate choice in humans</title>
+		<author>
+			<persName><forename type="first">Markus</forename><forename type="middle">J</forename><surname>Rantala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Urszula</forename><forename type="middle">M</forename><surname>Marcinkowska</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s00265-011-1145-y</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Behavioral Ecology and Sociobiology</title>
+		<title level="j" type="abbrev">Behav Ecol Sociobiol</title>
+		<idno type="ISSN">0340-5443</idno>
+		<idno type="ISSNe">1432-0762</idno>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="859" to="873"/>
+			<date type="published" when="2011-01-18">2011</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rantala, M. J. &amp; Marcinkowska, U. M. The role of sexual imprinting and the Westermarck effect in mate choice in humans. Behavioral Ecology and Sociobiology 65, 859-873 (2011).</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Investigating an imprinting-like phenomenon in humans</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Little</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Penton-Voak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Burt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/s1090-5138(02)00119-8</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Evolution and Human Behavior</title>
+		<title level="j" type="abbrev">Evolution and Human Behavior</title>
+		<idno type="ISSN">1090-5138</idno>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="43" to="51"/>
+			<date type="published" when="2003-01">2003</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Little, A., Penton--Voak, I., Burt, D. &amp; Perrett, D. Investigating an imprinting--like phenomenon in humans. Evolution and Human Behavior 24, 43-51 (2003).</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Why do blue-eyed men prefer women with the same eye color?</title>
+		<author>
+			<persName><forename type="first">Bruno</forename><surname>Laeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ronny</forename><surname>Mathisen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jan-Are</forename><surname>Johnsen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s00265-006-0266-1</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Behavioral Ecology and Sociobiology</title>
+		<title level="j" type="abbrev">Behav Ecol Sociobiol</title>
+		<idno type="ISSN">0340-5443</idno>
+		<idno type="ISSNe">1432-0762</idno>
+		<imprint>
+			<biblScope unit="volume">61</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="371" to="384"/>
+			<date type="published" when="2007">2007</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Laeng, B., Mathisen, R. &amp; Johnsen, J.--A. Why do blue--eyed men prefer women with the same eye color? Behavioral Ecology and Sociobiology 61, 371-384 (2007).</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Preferences for cousins in Japanese quail</title>
+		<author>
+			<persName><forename type="first">Patrick</forename><surname>Bateson</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/295236a0</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<title level="j" type="abbrev">Nature</title>
+		<idno type="ISSN">0028-0836</idno>
+		<idno type="ISSNe">1476-4687</idno>
+		<imprint>
+			<biblScope unit="volume">295</biblScope>
+			<biblScope unit="issue">5846</biblScope>
+			<biblScope unit="page" from="236" to="237"/>
+			<date type="published" when="1982-01">1982</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bateson, P. Preferences for cousins in Japanese quail. Nature 295, 236-237 (1982).</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Sexual Imprinting and Evolutionary Processes in Birds: A Reassessment</title>
+		<author>
+			<persName><forename type="first">Carel</forename><surname>Ten Cate</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dave</forename><forename type="middle">R</forename><surname>Vos</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/s0065-3454(08)60214-4</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in the Study of Behavior</title>
+		<imprint>
+			<publisher>Elsevier</publisher>
+			<date type="published" when="1999">1999</date>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="1" to="31"/>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">ten Cate, C. &amp; Vos, D. R. Sexual Imprinting and Evolutionary Processes in Birds: A Reassessment. Advances in the Study of Behavior 28, 1-31 (1999).</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Homogamy, genetic similarity, and imprinting; parental influence on mate choice preferences</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Bereczkei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gyuris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Koves</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Bernath</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/s0191-8869(01)00182-9</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Personality and Individual Differences</title>
+		<title level="j" type="abbrev">Personality and Individual Differences</title>
+		<idno type="ISSN">0191-8869</idno>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="677" to="690"/>
+			<date type="published" when="2002-10">2002</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bereczkei, T., Gyuris, P., Koves, P. &amp; Bernath, L. Homogamy, genetic similarity, and imprinting; parental influence on mate choice preferences. Personality and Individual Differences 33, 677-690 (2002).</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Sexual imprinting in human mate choice</title>
+		<author>
+			<persName><forename type="first">Tamas</forename><surname>Bereczkei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Petra</forename><surname>Gyuris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Glenn</forename><forename type="middle">E</forename><surname>Weisfeld</surname></persName>
+		</author>
+		<idno type="DOI">10.1098/rspb.2003.2672</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the Royal Society of London. Series B: Biological Sciences</title>
+		<title level="j" type="abbrev">Proc. R. Soc. Lond. B</title>
+		<idno type="ISSN">0962-8452</idno>
+		<idno type="ISSNe">1471-2954</idno>
+		<imprint>
+			<biblScope unit="volume">271</biblScope>
+			<biblScope unit="issue">1544</biblScope>
+			<biblScope unit="page" from="1129" to="1134"/>
+			<date type="published" when="2004-06-07">2004</date>
+			<publisher>The Royal Society</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bereczkei, T., Gyuris, P. &amp; Weisfeld, G. E. Sexual imprinting in human mate choice. Proceedings of the Royal Society B: Biological Sciences 271, 1129-1134 (2004).</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Self-referent phenotype matching and long-term maintenance of kin recognition</title>
+		<author>
+			<persName><forename type="first">Jill</forename><forename type="middle">M</forename><surname>Mateo</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.anbehav.2010.08.019</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Animal Behaviour</title>
+		<title level="j" type="abbrev">Animal Behaviour</title>
+		<idno type="ISSN">0003-3472</idno>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="929" to="935"/>
+			<date type="published" when="2010-11">2010</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Mateo, J. M. Self--referent phenotype matching and long--term maintenance of kin recognition. Animal Behaviour 80, 929-935 (2010).</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">The meaning of assortative mating</title>
+		<author>
+			<persName><forename type="first">Nancy</forename><forename type="middle">T</forename><surname>Burley</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/0162-3095(83)90009-2</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Ethology and Sociobiology</title>
+		<title level="j" type="abbrev">Ethology and Sociobiology</title>
+		<idno type="ISSN">0162-3095</idno>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="191" to="203"/>
+			<date type="published" when="1983-01">1983</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Burley, N. T. The meaning of assortative mating. Ethology and Sociobiology 4, 191-203 (1983).</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Sexual imprinting, learning and speciation</title>
+		<author>
+			<persName><forename type="first">Darren</forename><forename type="middle">E</forename><surname>Irwin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Trevor</forename><surname>Price</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/sj.hdy.6885270</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Heredity</title>
+		<title level="j" type="abbrev">Heredity</title>
+		<idno type="ISSN">0018-067X</idno>
+		<idno type="ISSNe">1365-2540</idno>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="347" to="354"/>
+			<date type="published" when="1999-04">1999</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Irwin, D. E. &amp; Price, T. Sexual imprinting , learning and speciation. Heredity 82, (1999).</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Assortative mating in zebra finch subspecies,&lt;i&gt;Taeniopygia guttata guttata&lt;/i&gt;and&lt;i&gt;T. g. castanotis&lt;/i&gt;</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">S</forename><surname>Clayton</surname></persName>
+		</author>
+		<idno type="DOI">10.1098/rstb.1990.0205</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Philosophical Transactions of the Royal Society of London. Series B: Biological Sciences</title>
+		<title level="j" type="abbrev">Phil. Trans. R. Soc. Lond. B</title>
+		<idno type="ISSN">0962-8436</idno>
+		<idno type="ISSNe">1471-2970</idno>
+		<imprint>
+			<biblScope unit="volume">330</biblScope>
+			<biblScope unit="issue">1258</biblScope>
+			<biblScope unit="page" from="351" to="370"/>
+			<date type="published" when="1990-12-29">1990</date>
+			<publisher>The Royal Society</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Clayton, N. S. Assortative Mating in Zebra Finch Subspecies, Taeniopygia Guttata Guttata and T. G Castanotis. Philosophical Transactions of the Royal Society B 330, 351-370 (1990).</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Mothers determine sexual preferences</title>
+		<author>
+			<persName><forename type="first">Keith</forename><forename type="middle">M</forename><surname>Kendrick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michael</forename><forename type="middle">R</forename><surname>Hinton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Khia</forename><surname>Atkins</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Martin</forename><forename type="middle">A</forename><surname>Haupt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><forename type="middle">D</forename><surname>Skinner</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/26129</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<title level="j" type="abbrev">Nature</title>
+		<idno type="ISSN">0028-0836</idno>
+		<idno type="ISSNe">1476-4687</idno>
+		<imprint>
+			<biblScope unit="volume">395</biblScope>
+			<biblScope unit="issue">6699</biblScope>
+			<biblScope unit="page" from="229" to="230"/>
+			<date type="published" when="1998-09">1998</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kendrick, K. M., Hinton, M. R., Atkins, K., Haupt, M. A. &amp; Skinner, J. D. Mothers Determine Sexual Preferences. Nature 395, 229-230 (1998).</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Evidence for Genetic Variation in Human Mate Preferences for Sexually Dimorphic Physical Traits</title>
+		<author>
+			<persName><forename type="first">Karin</forename><forename type="middle">J H</forename><surname>Verweij</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andrea</forename><forename type="middle">V</forename><surname>Burri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Brendan</forename><forename type="middle">P</forename><surname>Zietsch</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pone.0049294</idno>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<title level="j" type="abbrev">PLoS ONE</title>
+		<idno type="ISSNe">1932-6203</idno>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page">e49294</biblScope>
+			<date type="published" when="2012-11-14">2012</date>
+			<publisher>Public Library of Science (PLoS)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Verweij, K. J. H., Burri, A. V. &amp; Zietsch, B. P. Evidence for genetic variation in human mate preferences for sexually dimorphic physical traits. PloS one 7, e49294 (2012).</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">HERITABILITY OF PREFERENCES FOR MULTIPLE CUES OF MATE QUALITY IN HUMANS</title>
+		<author>
+			<persName><forename type="first">Brendan</forename><forename type="middle">P</forename><surname>Zietsch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Karin</forename><forename type="middle">J H</forename><surname>Verweij</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andrea</forename><forename type="middle">V</forename><surname>Burri</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.1558-5646.2011.01546.x</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Evolution</title>
+		<idno type="ISSN">0014-3820</idno>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1762" to="1772"/>
+			<date type="published" when="2012-01-13">2012</date>
+			<publisher>Wiley</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Zietsch, B. P., Verweij, K. J. H. &amp; Burri, A. V. Heritability of preferences for multiple cues of mate quality in humans. Evolution 66, 1762-72 (2012).</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Father–daughter relationship as a moderator of sexual imprinting: a facialmetric study</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Wiszewska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Pawlowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">G</forename><surname>Boothroyd</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.evolhumbehav.2007.02.006</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Evolution and Human Behavior</title>
+		<title level="j" type="abbrev">Evolution and Human Behavior</title>
+		<idno type="ISSN">1090-5138</idno>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="248" to="252"/>
+			<date type="published" when="2007-07">2007</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wiszewska, A., Pawlowski, B. &amp; Boothroyd, L. G. Father--daughter relationship as a moderator of sexual imprinting: a facialmetric study. Evolution and Human Behavior 28, 248-252 (2007).</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Model selection and multimodel inference : A practical information--theoretic approach</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">P</forename><surname>Burnham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">R</forename><surname>Anderson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2002">2002</date>
+			<publisher>Springer</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Burnham, K. P. &amp; Anderson, D. R. Model selection and multimodel inference : A practical information--theoretic approach. (Springer, 2002).</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">R: A language and environment for statistical computing</title>
+		<author>
+			<persName><forename type="first">Team</forename><surname>Core</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">R Foundation for Statistical Computing</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">R Core Team. R: A language and environment for statistical computing. (R Foundation for Statistical Computing, 2016).</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Formal Inference From More Than One Model: Multimodel Inference (MMI)</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Mazerolle</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-0-387-22456-5_4</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Model Selection and Multimodel Inference</title>
+		<imprint>
+			<publisher>Springer New York</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="149" to="205"/>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Mazerolle, M. J. AICcmodavg: Model selection and multimodel inference based on (q)AIC(c). (2016).</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Positive sexual imprinting for human eye color</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Debruine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">C</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Little</surname></persName>
+		</author>
+		<idno type="DOI">10.17605/OSF.IO/HE4TY</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Open Science Framework</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">DeBruine, L. M., Jones, B. C. &amp; Little, A. C. Positive sexual imprinting for human eye color. Open Science Framework (2017). doi:10.17605/OSF.IO/HE4TY</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

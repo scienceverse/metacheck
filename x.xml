@@ -1,0 +1,719 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+  <w:body>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Title"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">To</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">Err</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">is</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">Human:</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">An</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">Empirical</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">Investigation</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Author"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">Daniel</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">Lakens</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">&amp;</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">Lisa</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">DeBruine</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Date"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">2024-06-21</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="FirstParagraph"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">This paper demonstrates some good and poor practices for use with the {papercheck} R package and Shiny app. All data are simulated. The paper shows examples of (1) open and closed OSF links; (2) citation of retracted papers; (3) missing/mismatched citations and references; (4) imprecise reporting of p-values; and (5) use of</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">“</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">marginally significant</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">”</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">to describe non-significant findings.</w:t>
+      </w:r>
+    </w:p>
+    <w:bookmarkStart w:id="20" w:name="introduction"/>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">Introduction</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="FirstParagraph"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">Although intentional dishonestly might be a successful way to boost creativity (Gino &amp; Wiltermuth, 2014), it is safe to say most mistakes researchers make are unintentional. From a human factors perspective, human error is a symptom of a poor design (Smithy, 2020). Automation can be use to check for errors in scientific manuscripts, and inform authors about possible corrections. In this study we examine the usefulness of Papercheck to improve best practices.</w:t>
+      </w:r>
+    </w:p>
+    <w:bookmarkEnd w:id="20"/>
+    <w:bookmarkStart w:id="22" w:name="method-and-participants"/>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">Method and Participants</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="FirstParagraph"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">In this study we examine whether automated checks reduce the amount of errors that researchers make in scientific manuscripts. This study was preregistered at</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId21">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">osf.io/5tbm9</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:t xml:space="preserve">. We randomly assigned 50 scientists to a condition where their manuscript was automatically checked for errors, an 50 scientists to a control condition with a checklist. Scientists had the opportunity to make changes to their manuscript based on the feedback of the tool. We subsequently coded all manuscripts for mistakes, and counted the total number of mistakes. We also measured the expertise of researchers (in years) to explore whether the automated tool would be more useful, the less research experience researchers had. We also asked researchers to rate how useful they found the checklist or app on a scale from 1 (not at all) to 7 (extremely useful).</w:t>
+      </w:r>
+    </w:p>
+    <w:bookmarkEnd w:id="22"/>
+    <w:bookmarkStart w:id="32" w:name="results"/>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">Results</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="Table"/>
+        <w:tblW w:type="pct" w:w="5000"/>
+        <w:tblLayout w:type="fixed"/>
+        <w:tblLook w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="0" w:noVBand="0" w:val="0000"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="7920"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:tc>
+          <w:tcPr/>
+          <w:bookmarkStart w:id="26" w:name="fig-sim"/>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Compact"/>
+              <w:jc w:val="center"/>
+            </w:pPr>
+            <w:r>
+              <w:drawing>
+                <wp:inline>
+                  <wp:extent cx="5334000" cy="4267200"/>
+                  <wp:effectExtent b="0" l="0" r="0" t="0"/>
+                  <wp:docPr descr="" title="" id="24" name="Picture"/>
+                  <a:graphic>
+                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                      <pic:pic>
+                        <pic:nvPicPr>
+                          <pic:cNvPr descr="to_err_is_human_files/figure-docx/fig-sim-1.png" id="25" name="Picture"/>
+                          <pic:cNvPicPr>
+                            <a:picLocks noChangeArrowheads="1" noChangeAspect="1"/>
+                          </pic:cNvPicPr>
+                        </pic:nvPicPr>
+                        <pic:blipFill>
+                          <a:blip r:embed="rId23"/>
+                          <a:stretch>
+                            <a:fillRect/>
+                          </a:stretch>
+                        </pic:blipFill>
+                        <pic:spPr bwMode="auto">
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="5334000" cy="4267200"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:noFill/>
+                          <a:ln w="9525">
+                            <a:noFill/>
+                            <a:headEnd/>
+                            <a:tailEnd/>
+                          </a:ln>
+                        </pic:spPr>
+                      </pic:pic>
+                    </a:graphicData>
+                  </a:graphic>
+                </wp:inline>
+              </w:drawing>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+            <w:pPr>
+              <w:jc w:val="start"/>
+              <w:spacing w:before="200"/>
+              <w:pStyle w:val="ImageCaption"/>
+            </w:pPr>
+            <w:r>
+              <w:t xml:space="preserve">Figure 1: The simulated data</w:t>
+            </w:r>
+          </w:p>
+          <w:bookmarkEnd w:id="26"/>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">All data needed to reproduce the analyses in</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:hyperlink w:anchor="tbl-summary">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Table 1</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">is available from</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId21">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">https://osf.io/5tbm9</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">and code is available from</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId27">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">the OSF</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:t xml:space="preserve">.</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="Table"/>
+        <w:tblW w:type="pct" w:w="5000"/>
+        <w:tblLayout w:type="fixed"/>
+        <w:tblLook w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="0" w:noVBand="0" w:val="0000"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="7920"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:tc>
+          <w:tcPr/>
+          <w:bookmarkStart w:id="28" w:name="tbl-summary"/>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+            <w:pPr>
+              <w:jc w:val="start"/>
+              <w:spacing w:before="200"/>
+              <w:pStyle w:val="ImageCaption"/>
+            </w:pPr>
+            <w:r>
+              <w:t xml:space="preserve">Table 1: The average number of mistakes and usefulness score for the control and experimental conditions.</w:t>
+            </w:r>
+          </w:p>
+          <w:tbl>
+            <w:tblPr>
+              <w:tblStyle w:val="Table"/>
+              <w:tblW w:type="auto" w:w="0"/>
+              <w:tblLook w:firstRow="1" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="0" w:noVBand="0" w:val="0020"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="2640"/>
+              <w:gridCol w:w="2640"/>
+              <w:gridCol w:w="2640"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:trPr>
+                <w:tblHeader w:val="on"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr/>
+                <w:p>
+                  <w:pPr>
+                    <w:pStyle w:val="Compact"/>
+                    <w:jc w:val="left"/>
+                    <w:jc w:val="center"/>
+                  </w:pPr>
+                  <w:r>
+                    <w:t xml:space="preserve">Condition</w:t>
+                  </w:r>
+                </w:p>
+              </w:tc>
+              <w:tc>
+                <w:tcPr/>
+                <w:p>
+                  <w:pPr>
+                    <w:pStyle w:val="Compact"/>
+                    <w:jc w:val="right"/>
+                    <w:jc w:val="center"/>
+                  </w:pPr>
+                  <w:r>
+                    <w:t xml:space="preserve">Mistakes</w:t>
+                  </w:r>
+                </w:p>
+              </w:tc>
+              <w:tc>
+                <w:tcPr/>
+                <w:p>
+                  <w:pPr>
+                    <w:pStyle w:val="Compact"/>
+                    <w:jc w:val="right"/>
+                    <w:jc w:val="center"/>
+                  </w:pPr>
+                  <w:r>
+                    <w:t xml:space="preserve">Usefulness</w:t>
+                  </w:r>
+                </w:p>
+              </w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc>
+                <w:tcPr/>
+                <w:p>
+                  <w:pPr>
+                    <w:pStyle w:val="Compact"/>
+                    <w:jc w:val="left"/>
+                    <w:jc w:val="center"/>
+                  </w:pPr>
+                  <w:r>
+                    <w:t xml:space="preserve">control</w:t>
+                  </w:r>
+                </w:p>
+              </w:tc>
+              <w:tc>
+                <w:tcPr/>
+                <w:p>
+                  <w:pPr>
+                    <w:pStyle w:val="Compact"/>
+                    <w:jc w:val="right"/>
+                    <w:jc w:val="center"/>
+                  </w:pPr>
+                  <w:r>
+                    <w:t xml:space="preserve">10.90</w:t>
+                  </w:r>
+                </w:p>
+              </w:tc>
+              <w:tc>
+                <w:tcPr/>
+                <w:p>
+                  <w:pPr>
+                    <w:pStyle w:val="Compact"/>
+                    <w:jc w:val="right"/>
+                    <w:jc w:val="center"/>
+                  </w:pPr>
+                  <w:r>
+                    <w:t xml:space="preserve">4.50</w:t>
+                  </w:r>
+                </w:p>
+              </w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc>
+                <w:tcPr/>
+                <w:p>
+                  <w:pPr>
+                    <w:pStyle w:val="Compact"/>
+                    <w:jc w:val="left"/>
+                    <w:jc w:val="center"/>
+                  </w:pPr>
+                  <w:r>
+                    <w:t xml:space="preserve">experimental</w:t>
+                  </w:r>
+                </w:p>
+              </w:tc>
+              <w:tc>
+                <w:tcPr/>
+                <w:p>
+                  <w:pPr>
+                    <w:pStyle w:val="Compact"/>
+                    <w:jc w:val="right"/>
+                    <w:jc w:val="center"/>
+                  </w:pPr>
+                  <w:r>
+                    <w:t xml:space="preserve">9.12</w:t>
+                  </w:r>
+                </w:p>
+              </w:tc>
+              <w:tc>
+                <w:tcPr/>
+                <w:p>
+                  <w:pPr>
+                    <w:pStyle w:val="Compact"/>
+                    <w:jc w:val="right"/>
+                    <w:jc w:val="center"/>
+                  </w:pPr>
+                  <w:r>
+                    <w:t xml:space="preserve">5.06</w:t>
+                  </w:r>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:bookmarkEnd w:id="28"/>
+          <w:p/>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">On average researchers in the experimental (app) condition made fewer mistakes (</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">M</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">= 9.12) than researchers in the control (checklist) condition (</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">M</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">= 10.9),</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">t</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">(97.7) = 2.9,</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">p</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">= 0.005.</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">On average researchers in the experimental condition found the app marginally significantly more useful (</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">M</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">= 5.06) than researchers in the control condition found the checklist (</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">M</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">= 4.5),</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">t</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">(97.2) = -1.96,</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">p</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">= 0.152.</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+      </w:pPr>
+      <w:r>
+        <w:drawing>
+          <wp:inline>
+            <wp:extent cx="5334000" cy="4267200"/>
+            <wp:effectExtent b="0" l="0" r="0" t="0"/>
+            <wp:docPr descr="" title="" id="30" name="Picture"/>
+            <a:graphic>
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic>
+                  <pic:nvPicPr>
+                    <pic:cNvPr descr="to_err_is_human_files/figure-docx/unnamed-chunk-4-1.png" id="31" name="Picture"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeArrowheads="1" noChangeAspect="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId29"/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="5334000" cy="4267200"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln w="9525">
+                      <a:noFill/>
+                      <a:headEnd/>
+                      <a:tailEnd/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">There was no effect of experience on the reduction in errors when using the tool (</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">p</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">&gt; .05), as the correlation was non-significant.</w:t>
+      </w:r>
+    </w:p>
+    <w:bookmarkEnd w:id="32"/>
+    <w:bookmarkStart w:id="33" w:name="discussion"/>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">Discussion</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="FirstParagraph"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">It seems automated tools can help prevent errors by providing researchers with feedback about potential mistakes, and researchers feel the app is useful. We conclude the use of automated checks has potential to reduce the number of mistakes in scientific manuscripts.</w:t>
+      </w:r>
+    </w:p>
+    <w:bookmarkEnd w:id="33"/>
+    <w:bookmarkStart w:id="34" w:name="references"/>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">References</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="FirstParagraph"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">Gino, F., &amp; Wiltermuth, S. S. (2014). Retracted: Evil Genius? How Dishonesty Can Lead to Greater Creativity. Psychological Science, 25(4), 973–981. https://doi.org/10.1177/0956797614520714</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="BodyText"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">Smith, F. (2021). Human error is a symptom of a poor design. Journal of Journals, 0(0), 0. https://doi.org/10.0000/0123456789</w:t>
+      </w:r>
+    </w:p>
+    <w:bookmarkEnd w:id="34"/>
+    <w:sectPr/>
+  </w:body>
+</w:document>

@@ -1,0 +1,38 @@
+---
+title: PaperCheck Report
+subtitle: Positive sexual imprinting for human eye color
+date: 2024-06-21
+format:
+  html:
+    toc: true
+    toc-float: true
+    df-print: paged
+---
+
+<style>
+  h2.na::before { content: '⚪️ '; }
+  h2.fail::before { content: '⚫️ '; }
+  h2.red::before { content: '🔴 '; }
+  h2.yellow::before { content: '🟡 '; }
+  h2.green::before { content: '🟢 '; }
+</style>
+
+🟢 no problems detected; 🟡 something to check; 🔴 possible problems detected; ⚪️ not applicable; ⚫️ check failed
+
+## Imprecise P-Values {.green}
+
+All p-values were reported with standard precision
+
+## Marginal Significance {.green}
+
+No effects were described as marginally/borderline/close to significant.
+
+## Check Status of OSF Links {.na}
+
+No OSF links were detected
+
+## RetractionWatch {.green}
+
+You cited no papers in the Retraction Watch database
+
+
