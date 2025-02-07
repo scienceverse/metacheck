@@ -51,8 +51,8 @@ Imports:
     officer,
     readtext
 VignetteBuilder: knitr
-URL: https://github.com/debruine/papercheck, https://scienceverse.github.io/papercheck/
-BugReports: https://github.com/debruine/papercheck/issues
+URL: https://github.com/scienceverse/papercheck, https://scienceverse.github.io/papercheck/
+BugReports: https://github.com/scienceverse/papercheck/issues
 Depends: 
     R (>= 2.10)
 LazyData: true

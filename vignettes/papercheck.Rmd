@@ -204,7 +204,7 @@ llm_hypo <- llm(hypotheses, query)
 
 ```{r, echo = FALSE}
 llm_hypo <- data.frame(
-  id = hypotheses$id,
+  id = c("eyecolor.xml", "incest.xml"),
   answer = c("The hypothesis of this study is that humans exhibit positive sexual imprinting, where individuals choose partners with physical characteristics similar to those of their opposite-sex parent.", 
              "The hypothesis is that moral opposition to third-party sibling incest is greater among individuals with other-sex siblings than among individuals with same-sex siblings.")
 )
