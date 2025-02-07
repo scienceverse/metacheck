@@ -4,14 +4,14 @@
 \alias{validate}
 \title{Validate a module}
 \usage{
-validate(module, sample, results_table = "table", path = NULL)
+validate(module, sample, expected = NULL, path = NULL)
 }
 \arguments{
 \item{module}{The name of a module or path to a module}
 
-\item{sample}{A data frame or path to a tabular data file (csv or excel) for the sample to validate against, with columns xml, table, report, traffic_light}
+\item{sample}{A data frame or path to a tabular data file (csv or excel) for the sample to validate against, with required column id, and optional columns table, report, traffic_light}
 
-\item{results_table}{The column name to match the module results table to, or a data frame or the path to a file that contains this info in tabular form}
+\item{expected}{A data frame or the path to a file that contains the expected results table values in tabular form; if NULL, the table column of the sample table will be used or table checks omitted}
 
 \item{path}{The base directory for relative paths in the sample table; if NULL and the sample is a file path, it will use the base directory of the file}
 }

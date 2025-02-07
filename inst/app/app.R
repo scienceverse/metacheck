@@ -4,7 +4,6 @@ suppressPackageStartupMessages({
   library(shinyjs)
   library(shinydashboard)
   library(DT)
-  library(scienceverse)
   library(papercheck)
   library(dplyr)
   library(shiny.i18n)
@@ -556,7 +555,7 @@ server <- function(input, output, session) {
   observeEvent(input$gpt_max_calls, {
     debug_msg("gpt_max_calls")
     if (is.numeric(input$gpt_max_calls)) {
-      set_gpt_max_calls(input$gpt_max_calls)
+      set_llm_max_calls(input$gpt_max_calls)
       newmax <- getOption("papercheck.gpt_max_calls")
       updateNumericInput(session, "gpt_max_calls", value = newmax)
     }
@@ -588,7 +587,7 @@ server <- function(input, output, session) {
         for (i in 1:n) {
           subtext <- dplyr::semi_join(text, groups[i, ,drop = FALSE],
                                       by = input$gpt_group_by)
-          res[[i]] <- gpt(text = subtext,
+          res[[i]] <- llm(text = subtext,
                           query = input$gpt_query,
                           context = input$gpt_context,
                           group_by = input$gpt_group_by,

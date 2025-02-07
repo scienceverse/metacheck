@@ -29,7 +29,7 @@ if (exists("%||%", envir = baseenv())) {
 #' @keywords internal
 #'
 message <- function (..., domain = NULL, appendLF = TRUE) {
-  if (getOption("scienceverse.verbose")) {
+  if (getOption("papercheck.verbose")) {
     if (interactive()) {
       # not in knitr environment
       base::message("\033[32m", ..., "\033[39m",
@@ -68,9 +68,9 @@ site_down <- function(url, msg = "The website %s is not available", error = TRUE
 
 #' Concatenate tables
 #'
-#' Concatenate tables across a list of scienceverse objects
+#' Concatenate tables across a list of paper objects
 #'
-#' @param papers a list of scienceverse study objects
+#' @param papers a list of paper objects
 #' @param name_path a vector of names that get you to the table
 #'
 #' @return a merged table
@@ -82,7 +82,7 @@ site_down <- function(url, msg = "The website %s is not available", error = TRUE
 #' references <- concat_tables(papers, c("refs", "references"))
 concat_tables <- function(papers, name_path) {
   if ("scivrs_paper" %in% class(papers)) {
-    # single scienceverse object
+    # single paper object
     papers <- list(papers)
   }
 

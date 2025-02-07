@@ -5,7 +5,7 @@
 #' @param paper a paper object or a list of paper objects
 #' @param pattern the regex pattern to search for
 #' @param section the section(s) to search in
-#' @param return the kind of text to return, the full sentence, paragraph, or section that the text is in, or just the (regex) match
+#' @param return the kind of text to return, the full sentence, paragraph, div, or section that the text is in, or just the (regex) match
 #' @param ignore.case whether to ignore case when text searching
 #' @param ... additional arguments to pass to `grep()` and `regexpr()`, such as `fixed = TRUE`
 #'
@@ -18,7 +18,7 @@
 #'
 #' search_text(paper, "p\\s*(=|<)\\s*[0-9\\.]+", return = "match")
 search_text <- function(paper, pattern = ".*", section = NULL,
-                        return = c("sentence", "paragraph", "section", "match"),
+                        return = c("sentence", "paragraph", "div",  "section", "match"),
                         ignore.case = TRUE, ...) {
   return <- match.arg(return)
   text <- NULL # hack to stop cmdcheck warning :(
@@ -70,6 +70,7 @@ search_text <- function(paper, pattern = ".*", section = NULL,
   ft_match <- ft[match_rows, ]
 
   # add back the other parts----
+  paragraph_marker <- "<~p~>"
 
   if (return == "sentence") {
     ft_match_all <- ft_match
@@ -81,12 +82,32 @@ search_text <- function(paper, pattern = ".*", section = NULL,
       dplyr::summarise(text = paste(text, collapse = " "),
                        .by = dplyr::all_of(groups))
 
+  } else if (return == "div") {
+    # add in other sentences from matched divs
+    # recombine paragraphs first
+    groups <- c("section", "header", "div", "p", "id")
+    ft_match_p <- dplyr::semi_join(ft, ft_match, by = groups) |>
+      dplyr::summarise(text = paste(text, collapse = " "),
+                       .by = dplyr::all_of(groups))
+
+    # collapse paragraphs
+    groups <- c("section", "header", "div", "id")
+    ft_match_all <- ft_match_p |>
+      dplyr::summarise(text = paste(text, collapse = paragraph_marker),
+                       .by = dplyr::all_of(groups))
+
   } else if (return == "section") {
     # add in other sentences from matched sections
 
-    groups <- c("section", "header", "div", "id")
-    ft_match_all <- dplyr::semi_join(ft, ft_match, by = groups) |>
+    # recombine paragraphs first
+    groups <- c("section", "header", "p", "id")
+    ft_match_p <- dplyr::semi_join(ft, ft_match, by = groups) |>
       dplyr::summarise(text = paste(text, collapse = " "),
+                       .by = dplyr::all_of(groups))
+
+    groups <- c("section", "id")
+    ft_match_all <- ft_match_p |>
+      dplyr::summarise(text = paste(text, collapse = paragraph_marker),
                        .by = dplyr::all_of(groups))
 
   } else if (return == "match") {
@@ -106,6 +127,7 @@ search_text <- function(paper, pattern = ".*", section = NULL,
   if (nrow(ft_match_all) > 0) {
     ft_match_all$text <- gsub("\\s+", " ", ft_match_all$text)
     ft_match_all$text <- gsub(" , ", ", ", ft_match_all$text)
+    ft_match_all$text <- gsub(paragraph_marker, "\n\n", ft_match_all$text)
     missing_cols <- setdiff(all_cols, names(ft_match_all))
     for (mc in missing_cols) {
       ft_match_all[[mc]] <- NA

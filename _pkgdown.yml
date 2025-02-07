@@ -1,9 +1,24 @@
 url: https://scienceverse.github.io/papercheck/
 template:
+  # includes:
+  #   in_header: <!-- inserted at the end of the head -->
+  #   before_body: <!-- inserted at the beginning of the body -->
+  #   after_body: <!-- inserted at the end of the body -->
+  #   before_title: <!-- inserted before the package title in the header ->
+  #   before_navbar: <!-- inserted before the navbar links -->
+  #   after_navbar: <!-- inserted after the navbar links -->
+  light-switch: true
   bootstrap: 5
   bslib:
     preset: spacelab
     primary: '#327118'
   params:
     ganalytics: UA-160147578-1
-
+articles:
+  - title: "Articles"
+    contents:
+      - report-example
+      - batch
+      - metascience
+      - modules
+      - validate

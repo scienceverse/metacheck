@@ -9,12 +9,12 @@
     },
     "email": "debruine@gmail.com"
   }],
-  "ai": {
+  "llm": {
     "query": "Summarise this section briefly, in one sentence.",
     "group_by": ["id", "section"]
   },
   "traffic_light": {
     "found": "info",
-    "not-found": "na"
+    "not_found": "na"
   }
 }

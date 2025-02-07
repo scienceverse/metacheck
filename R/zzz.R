@@ -2,8 +2,8 @@
 .onLoad <- function(libname, pkgname) {
   op <- options()
   op.pkg <- list(
-    scienceverse.verbose = TRUE,
-    papercheck.gpt_max_calls = 100L
+    papercheck.verbose = TRUE,
+    papercheck.llm_max_calls = 30L
   )
   # only set if not already set
   toset <- !(names(op.pkg) %in% names(op))
@@ -11,3 +11,6 @@
 
   invisible()
 }
+
+## quiets concerns of R CMD check re: the .'s that appear in pipelines
+if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))

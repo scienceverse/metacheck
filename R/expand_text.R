@@ -4,7 +4,7 @@
 #'
 #' @param results_table the table to expand
 #' @param paper a papercheck paper object or a list of paper objects to look up the expanded text from
-#' @param expand_to whether to expand to the sentence, paragraph, or section level
+#' @param expand_to whether to expand to the sentence, paragraph, div, or section level
 #' @param plus append additional sentences after the target expansion
 #' @param minus prepend additional sentences before the target expansion
 #'
@@ -23,7 +23,7 @@
 #' expanded <- expand_text(res_tbl, papers, plus = 1, minus = 1)
 expand_text <- function(results_table,
                         paper,
-                        expand_to = c("sentence", "paragraph", "section"),
+                        expand_to = c("sentence", "paragraph", "div", "section"),
                         plus = 0, minus = 0) {
   id <- div <- p <- s <- text <- NULL # ugh cmdcheck
 
@@ -44,12 +44,14 @@ expand_text <- function(results_table,
     by <- c("id", "div", "p", "s")
   } else if (expand_to == "paragraph") {
     by <- c("id", "div", "p")
-  } else if (expand_to == "section") {
+  } else if (expand_to == "div") {
     by <- c("id", "div")
+  } else if (expand_to == "section") {
+    by <- c("id", "section")
   }
 
   # set up full text table ----
-  full_text <- search_text(paper)[, c("id", "div", "p", "s", "text")] |>
+  full_text <- search_text(paper)[, c("id", "section", "div", "p", "s", "text")] |>
     dplyr::summarise(expanded = paste(text, collapse = " "),
                      .by = dplyr::all_of(by))
 

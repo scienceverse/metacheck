@@ -44,23 +44,45 @@ test_that("table as first argument", {
 })
 
 test_that("return", {
-  s <- read_grobid(demoxml())
+  s <- data.frame(
+    text = c("Introduction", "Method",
+             "Participants", paste("Part", 1:3),
+             "Measures", paste("Measures", 1:4)),
+    section = rep(c("abstract", "method"), c(1, 10)),
+    header = rep(c("", "Method", "Participants", "Measures"), c(1, 1, 4, 5)),
+    div = c(1, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4),
+    p = c(1, 2, 3, 4, 4, 4, 5, 6, 6, 6, 6),
+    s = c(1, 1, 1, 1:3, 1, 1:4),
+    id = "id.xml"
+  )
 
-  res_s1 <- search_text(s, "significant")
-  res_s2 <- search_text(s, "significant", return = "sentence")
-  res_p <- search_text(s, "significant", return = "paragraph")
-  res_sec <- search_text(s, "significant", return = "section")
-  res_m <- search_text(s, "significant", return = "match")
+  res_s1 <- search_text(s, section = "method")
+  res_s2 <- search_text(s, section = "method", return = "sentence")
+  res_p <- search_text(s, section = "method", return = "paragraph")
+  res_div <- search_text(s, section = "method", return = "div")
+  res_sec <- search_text(s, section = "method", return = "section")
+  res_m <- search_text(s, "Part [0-9]", section = "method", return = "match")
 
   expect_equal(res_s1$text, res_s2$text)
+  expect_equal(res_s1$text, s$text[2:11])
 
-  expect_equal(nrow(res_s1), 3)
-  expect_equal(nrow(res_p), 2)
-  expect_equal(nrow(res_sec), 2)
-  expect_equal(res_m$text, rep("significant", 3))
+  expect_equal(res_p$p, 2:6)
+  expect_equal(res_p$div, c(2, 3, 3, 4, 4))
+  expect_equal(res_p$text[3], paste("Part", 1:3, collapse = " "))
+  expect_equal(res_p$s, c(NA, NA, NA, NA, NA))
 
-  p <- search_text(s, "p\\s*[><=]{1,2}\\s*[0-9\\.]+\\d", return = "match")
-  expect_equal(p$text[[1]], "p = 0.005")
+  expect_equal(res_div$div, 2:4)
+  expect_equal(res_div$text[2], "Participants\n\nPart 1 Part 2 Part 3")
+  expect_equal(res_div$p, c(NA, NA, NA))
+  expect_equal(res_div$s, c(NA, NA, NA))
+
+  expect_equal(res_sec$section, "method")
+  expect_equal(res_sec$div, NA)
+  expect_equal(res_sec$p, NA)
+  expect_equal(res_sec$s, NA)
+  expect_equal(res_sec$header, NA)
+
+  expect_equal(res_m$text, paste("Part", 1:3))
 })
 
 test_that("iteration", {
@@ -74,3 +96,5 @@ test_that("iteration", {
   classes <- as.character(unique(equal$section))
   expect_equal(classes, "results")
 })
+
+

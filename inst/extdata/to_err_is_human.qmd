@@ -5,6 +5,7 @@ date: "2024-06-21"
 format: 
   html: 
     embed-resources: true
+    minimal: true
   pdf: default
   docx: default
 execute: 
@@ -62,10 +63,10 @@ All data needed to reproduce the analyses in @tbl-summary is available from <htt
 #| label: tbl-summary
 #| tbl-cap: The average number of mistakes and usefulness score for the control and experimental conditions.
 
-average_table <- data %>%
-  group_by(condition) %>%
-  summarise(average_mistakes = mean(mistakes) %>% round(2),
-            average_usefulness = mean(usefulness) %>% round(2))
+average_table <- data |>
+  group_by(condition) |>
+  summarise(average_mistakes = mean(mistakes) |> round(2),
+            average_usefulness = mean(usefulness) |> round(2))
 
 tm <- t.test(mistakes ~ condition, data = data)
 tu <- t.test(usefulness ~ condition, data = data)

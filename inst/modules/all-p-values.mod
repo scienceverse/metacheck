@@ -16,6 +16,6 @@
   },
   "traffic_light": {
     "found": "info",
-    "not-found": "na"
+    "not_found": "na"
   }
 }
