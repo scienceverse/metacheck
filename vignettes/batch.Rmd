@@ -1,0 +1,225 @@
+---
+title: "Batch Processing"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Batch Processing}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>"
+)
+
+mytable <- function(tbl) {
+  DT::datatable(tbl[, c("id", "text")], 
+                rownames = FALSE,
+                filter = "none",
+                options = list(pageLength = 5, dom = "tip")
+  )
+}
+```
+
+```{r}
+#| label: setup
+#| message: false
+library(papercheck)
+library(dplyr) # for data wrangling
+library(readr) # reading and writing CSV files
+```
+
+In this vignette, we will process 250 open access papers from Psychological Science.
+
+## Convert PDFs
+
+Read in all of the PDF files from a directory called "pdf", process them with a local version of grobid, and save the XML files in a directory called "xml". 
+
+```{r}
+#| eval: false
+
+pdf2grobid(filename = "pdf", 
+           save_path = "xml", 
+           grobid_url = "http://localhost:8070")
+```
+
+Then read in the XML files to papercheck and save in an object called `papers`. 
+
+```{r}
+#| eval: false
+papers <- read_grobid("xml")
+```
+
+These steps can take some time if you are processing a lot of papers, and only needs to happen once, so it is often useful to save the `papers` object as an Rds file, comment out the code above, and load `papers` from this object on future runs of your script.
+
+```{r}
+# load from RDS for efficiency
+# saveRDS(papers, "psysci_oa.Rds")
+papers <- readRDS("psysci_oa.Rds")
+```
+
+## Paper Objects
+
+Now `papers` is a list of papercheck paper objects, each of which contains structured information about the paper.
+
+```{r}
+paper <- papers[[10]]
+```
+
+### Name
+
+The `name` is taken from the name of the xml file.
+
+```{r}
+paper$name
+```
+
+### Authors
+
+The `authors` list contains a list of information for each author. For now, CRediT roles are not detected, but this may be added in the future.
+
+```{r}
+paper$authors |> str()
+```
+
+### Info 
+
+The `info` item lists the filename, title, description (abstract), keywords, doi, and submission info. Grobid sometimes makes mistakes with the DOI, so be cautious about using this.
+
+```{r}
+paper$info
+```
+
+### References
+
+The `references` contains the items in the reference list, including an id to link them to citations (bib_id), the DOI if available (doi), and the full reference text (ref).
+
+```{r}
+ref <- paper$references
+
+dplyr::filter(ref, bib_id == "b5")
+```
+
+### Citations
+
+The `citations` contains each citation, including an id to link them to references (bib_id) and the sentence that they are cited in (text).
+
+```{r}
+cite <- paper$citations
+
+dplyr::filter(cite, bib_id == "b5")
+```
+
+### Full Text
+
+The `full_text` item is a table containing each sentence from the main text (`text`). The heading text (`header`) is used to automatically determine if the `section` is abstract, intro, method, results, or discussion. Each section has a unique sequential `div` number, and each paragraph (`p`) within the section and eeach sentence (`s`) within each paragraph are also sequentially numbered (e.g., div = 1, p = 2, s = 3 is the third sentence of the second paragraph of the first section after the abstract).
+
+```{r}
+paper$full_text |> names()
+```
+
+
+## Text Search
+
+The `search_text()` function helps you search the text of a paper or list of papers.
+
+The default arguments give you a data frame containing a row for every sentence in every paper in the set. The data frame has the same column structure as the `full_text` table above, so that you can easily chain text searches.
+
+```{r}
+all_sentences <- search_text(papers)
+```
+
+```{r}
+#| echo: false
+#| label: tbl-sentences
+#| tbl-cap: 10 random values from all the papers 
+rows <- sample(1:nrow(all_sentences), 10)
+mytable(all_sentences[rows, ])
+```
+
+You can customise `search_text()` to return paragraphs or sections instead of sentences. The `section` column contains the automatically classified section types from the options "abstract", "intro", "methods", "results", or "discussion" (this can be inaccurate if grobid doesn't detect headers or the header text doesn't obviously fall in one of these categories).
+
+```{r}
+method_paragraphs <- search_text(papers, section = "method", return = "paragraph")
+```
+
+A random paragraph from a method section.
+
+```{r}
+#| echo: false
+row <- sample(1:nrow(method_paragraphs), 1)
+method_paragraphs$text[row]
+```
+
+### Pattern
+
+You can just code every sentence or paragraph in a set of papers, but this is usually not very efficient, so we can use a search pattern to filter the text.
+
+```{r}
+search <- search_text(papers, pattern = "Scotland")
+```
+
+Here we have `r nrow(search)` results. We'll just show the paper id and text columns of the returned table, but the table also provides the section type, header, and section, paragraph, and sentence numbers (div, p, and s).
+
+```{r}
+#| echo: false
+mytable(search)
+```
+
+### Chaining
+
+You can chain together searches to iteratively narrow down results.
+
+```{r}
+search <- papers |>
+  search_text("DeBruine") |>
+  search_text("2006")
+```
+
+```{r}
+#| echo: false
+mytable(search)
+```
+
+### Regex
+
+You can also use regular expressions to refine your search. The pattern below returns every sentence that contains either "Scotland" or "Scottish".
+
+```{r}
+search <- search_text(papers, pattern = "(Scotland|Scottish)")
+```
+
+```{r}
+#| echo: false
+mytable(search)
+```
+
+
+### Match
+
+You can return just the matching text for a regular expression by setting the results to "match". This pattern searches for text like "p < .25" or p<0.01". 
+
+```{r}
+match <- search_text(papers, 
+                     pattern = "p\\s*>\\s*0?\\.[0-9]+\\b", 
+                     return = "match")
+```
+
+```{r}
+#| echo: false
+mytable(match)
+```
+
+You can expand this to the whole sentence, paragraph, or +/- some number of sentences around the match using `expand_text()`.
+
+```{r}
+expand <- expand_text(results_table = match, 
+                      paper = papers,
+                      expand_to = "sentence",
+                      plus = 0,
+                      minus = 0)
+
+expand$expanded[1]
+```
+

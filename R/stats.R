@@ -1,6 +1,6 @@
 #' Check Stats
 #'
-#' @param text the search table (or list of scienceverse paper objects)
+#' @param text the search table (or list of paper objects)
 #' @param ... arguments to pass to statcheck()
 #'
 #' @return a table of statistics
@@ -19,7 +19,7 @@ stats <- function(text, ...) {
   if (n == 0) return(data.frame())
 
   # set up progress bar ----
-  if (getOption("scienceverse.verbose")) {
+  if (getOption("papercheck.verbose")) {
     pb <- progress::progress_bar$new(
       total = n, clear = FALSE,
       format = "Checking stats [:bar] :current/:total :elapsedfull"
@@ -36,7 +36,7 @@ stats <- function(text, ...) {
     sink_output <- utils::capture.output(
       sc <- statcheck::statcheck(subtext, messages = FALSE, ...)
     )
-    if (getOption("scienceverse.verbose")) pb$tick()
+    if (getOption("papercheck.verbose")) pb$tick()
     if (is.null(sc)) return(data.frame())
     sc$source <- i
 

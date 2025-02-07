@@ -41,7 +41,7 @@ papercheck_app()
 library(papercheck)
 ```
 
-Convert a PDF to grobid XML format, then read it in as a scienceverse paper object.
+Convert a PDF to grobid XML format, then read it in as a paper object.
 
 ```{r, eval = FALSE}
 pdf <- demopdf() # use the path of your own PDF
@@ -70,31 +70,33 @@ text <- search_text(paper, pattern,
 knitr::kable(text)
 ```
 
-### ChatGPT
+## Large Language Models
 
-You can ask ChatGPT to process text. Use `search_text()` first to narrow down the text into what you want to query. Below, we returned the first two papers' introduction sections, and returned the full section. Then we asked ChatGPT "What is the hypothesis of this study?".
+You can query the extracted text of papers with LLMs using [groq](https://console.groq.com/docs/).
+
+Use `search_text()` first to narrow down the text into what you want to query. Below, we returned the first two papers' introduction sections, and returned the full section. Then we asked an LLM "What is the hypothesis of this study?".
 
 ```{r, eval = FALSE}
-# ask chatGPT a question
 hypotheses <- search_text(papers[1:2], 
                           section = "intro", 
                           return = "section")
-query <- "What is the hypothesis of this study?"
-gpt_hypo <- gpt(hypotheses, query)
+query <- "What is the hypothesis of this study? Answer as briefly as possible."
+llm_hypo <- llm(hypotheses, query)
 ```
 
 ```{r, echo = FALSE}
-gpt_hypo <- structure(list(id = c("eyecolor.xml", "incest.xml"), answer = c("The hypothesis of this study is to test the sex-linked heritable preference hypothesis and the positive sexual imprinting hypothesis in relation to eye color and partner selection in heterosexual and same-sex couples.", 
-"The hypothesis of this study is that moral opposition to third-party sibling incest may be greater among individuals with other-sex siblings than among individuals who do not have other-sex siblings."
-), cost = c(0.000671, 0.000635)), row.names = c(NA, -2L), class = c("tbl_df", 
-"tbl", "data.frame"))
+llm_hypo <- data.frame(
+  id = hypotheses$id,
+  answer = c("The hypothesis of this study is that humans exhibit positive sexual imprinting, where individuals choose partners with physical characteristics similar to those of their opposite-sex parent.", 
+             "The hypothesis is that moral opposition to third-party sibling incest is greater among individuals with other-sex siblings than among individuals with same-sex siblings.")
+)
 
-knitr::kable(gpt_hypo)
+knitr::kable(llm_hypo)
 ```
 
 ### Batch Processing
 
-The functions `pdf2grobid()` and `read_grobid()` also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions `search_text()` and `gpt()` also work on a list of paper objects.
+The functions `pdf2grobid()` and `read_grobid()` also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions `search_text()`, `expand_text()` and `llm()` also work on a list of paper objects.
 
 ```{r}
 # read in all the XML files in the demo directory

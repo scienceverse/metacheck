@@ -7,7 +7,7 @@
 stats(text, ...)
 }
 \arguments{
-\item{text}{the search table (or list of scienceverse paper objects)}
+\item{text}{the search table (or list of paper objects)}
 
 \item{...}{arguments to pass to statcheck()}
 }

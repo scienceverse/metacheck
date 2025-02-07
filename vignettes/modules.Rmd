@@ -9,7 +9,7 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
+  collapse = FALSE,
   comment = "#>"
 )
 ```
@@ -87,15 +87,15 @@ The machine learning aspect of papercheck is under development, but currently us
 }
 ```
 
-### Generative AI
+### Large Language Models
 
-The "ai" key takes a dictionary of the arguments to the `gpt()` function.
+The "llm" key takes a dictionary of the arguments to the `llm()` function.
 
 ```
 {
   "title": "Summarise Sections",
   "description": "Generate a 1-sentence summary for each section",
-  "ai": {
+  "llm": {
     "query": "Summarise this section briefly, in one sentence.",
     "group_by": ["id", "section"]
   }
@@ -129,7 +129,7 @@ There are 5 kinds of traffic lights:
 ⚫️ check failed
 
 
-The simplest way to set traffic lights is to specify the meaning of "found" and "not-found". If the module produces more than 0 rows in the output table, then the traffic light takes the "found" value, otherwise the "not-found" value.
+The simplest way to set traffic lights is to specify the meaning of "found" and "not_found". If the module produces more than 0 rows in the output table, then the traffic light takes the "found" value, otherwise the "not_found" value.
 
 ```
 {
@@ -142,7 +142,7 @@ The simplest way to set traffic lights is to specify the meaning of "found" and 
   },
   "traffic_light": {
     "found": "info",
-    "not-found": "na"
+    "not_found": "na"
   }
 }
 ```
@@ -220,7 +220,7 @@ You can also include author information in the following format:
   },
   "traffic_light": {
     "found": "info",
-    "not-found": "na"
+    "not_found": "na"
   }
 }
 ```

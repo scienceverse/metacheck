@@ -101,7 +101,7 @@ RGX_DF1_I_L <- "I|l"
 
 #' Check Stats
 #'
-#' @param text the search table (or list of scienceverse objects)
+#' @param text the search table (or list of paper objects)
 #' @param ... arguments to pass to statcheck()
 #'
 #' @return a table of statistics
@@ -135,7 +135,7 @@ stats <- function(text, ...) {
 
 #' Check p-values
 #'
-#' @param text the search table (or list of scienceverse objects)
+#' @param text the search table (or list of paper objects)
 #'
 #' @return a table of p-values
 #' @export
@@ -183,7 +183,7 @@ statcheck <- function (texts,
 
 
   # set up progress bar ----
-  if (getOption("scienceverse.verbose")) {
+  if (getOption("papercheck.verbose")) {
     pb <- progress::progress_bar$new(
       total = length(texts), clear = FALSE,
       format = "Checking stats [:bar] :current/:total :elapsedfull"
@@ -206,7 +206,7 @@ statcheck <- function (texts,
       Res <- rbind(Res, nhst)
     }
 
-    if (getOption("scienceverse.verbose")) pb$tick()
+    if (getOption("papercheck.verbose")) pb$tick()
   }
 
   # process all values

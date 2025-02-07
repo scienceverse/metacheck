@@ -7,7 +7,7 @@
 module_run_text(paper, args)
 }
 \arguments{
-\item{paper}{the scienceverse paper object (or list of objects)}
+\item{paper}{the paper object (or list of objects)}
 
 \item{args}{a list of arguments to \code{search_text()}}
 }

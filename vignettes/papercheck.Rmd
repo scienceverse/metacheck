@@ -9,7 +9,7 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
+  collapse = FALSE,
   comment = "#>"
 )
 ```
@@ -91,9 +91,9 @@ paper_from_doc <- read_text(filename)
 ```
 
 
-## Full Text
+## Search Text
 
-You can access a parsed table of the full text of the paper via `s$full_text`, but you may find it more convenient to use the function `search_text()`. The defaults return a data table of each sentence, with the section type, header, div, paragraph and sentence numbers, and file name. (The section type is a best guess from the headers, so may not always be accurate.)
+You can access a parsed table of the full text of the paper via `paper$full_text`, but you may find it more convenient to use the function `search_text()`. The defaults return a data table of each sentence, with the section type, header, div, paragraph and sentence numbers, and file name. (The section type is a best guess from the headers, so may not always be accurate.)
 
 ```{r}
 text <- search_text(paper)
@@ -144,6 +144,7 @@ text <- search_text(paper, "papercheck",
 knitr::kable(text)
 ```
 
+
 ### Regex matches
 
 You can also return just the matched text from a regex search by setting `return = "match"`. The extra `...` arguments in `search_text()` are passed to `grep()`, so `perl = TRUE` allows you to use more complex regex, like below.
@@ -170,25 +171,18 @@ marginal[, c("text", "expanded")]
 
 
 
-## ChatGPT
+## Large Language Models
 
-You can query the extracted text of papers with ChatGPT.
+You can query the extracted text of papers with LLMs using [groq](https://console.groq.com/docs/).
 
 ### Setup
 
-Run 
 
-```{r, eval = FALSE}
-gpt_setup()
-```
-
-
-You will need to provide your own [API key](https://platform.openai.com/api-keys). You can enter it manually for each call to `gpt()`, or add the following lines in the .Renviron file for your user or project. 
+You will need to get your own API key from <https://console.groq.com/keys>. To avoid having to type it out, add it to the .Renviron file in the following format (you can use `usethis::edit_r_environ()` to access the .Renviron file). 
 
 
 ``` bash
-CHATGPT_KEY="sk-proj-abcdefghijklmnopqrs0123456789ABCDEFGHIJKLMNOPQRS"
-RETICULATE_PYTHON="~/.virtualenvs/r-reticulate/bin/python"
+GROQ_GPT_KEY="sk-proj-abcdefghijklmnopqrs0123456789ABCDEFGHIJKLMNOPQRS"
 ```
 
 ```{r, eval=FALSE}
@@ -196,34 +190,32 @@ RETICULATE_PYTHON="~/.virtualenvs/r-reticulate/bin/python"
 usethis::edit_r_environ()
 ```
 
-### GPT Queries
+### LLM Queries
 
-You can ask ChatGPT to process text. Use `search_text()` first to narrow down the text into what you want to query. Below, we returned the first two papers' introduction sections, and returned the full section. Then we asked ChatGPT "What is the hypothesis of this study?".
+You can ask an LLM to process text. Use `search_text()` first to narrow down the text into what you want to query. Below, we returned the first two papers' introduction sections, and returned the full section. Then we asked an LLM "What is the hypothesis of this study?".
 
 ```{r, eval = FALSE}
 hypotheses <- search_text(papers[1:2], 
                           section = "intro", 
                           return = "section")
-query <- "What is the hypothesis of this study?"
-gpt_hypo <- gpt(hypotheses, query)
+query <- "What is the hypothesis of this study? Answer as briefly as possible."
+llm_hypo <- llm(hypotheses, query)
 ```
 
 ```{r, echo = FALSE}
-gpt_hypo <- data.frame(
-  id = c("eyecolor.xml", "incest.xml"), 
-  answer = c("The hypothesis of this study is to test the matching hypothesis, sex-linked heritable preference hypothesis, and positive sexual imprinting hypothesis in relation to eye color and partner selection.", 
-"The hypothesis of this study is that humans possess adaptations to reduce inbreeding, and that the strong moral opposition to incest plays an important role in preventing inbreeding."
-), 
-  cost = c(0.000612, 0.000216), 
-  row.names = NULL
+llm_hypo <- data.frame(
+  id = hypotheses$id,
+  answer = c("The hypothesis of this study is that humans exhibit positive sexual imprinting, where individuals choose partners with physical characteristics similar to those of their opposite-sex parent.", 
+             "The hypothesis is that moral opposition to third-party sibling incest is greater among individuals with other-sex siblings than among individuals with same-sex siblings.")
 )
-knitr::kable(gpt_hypo)
+
+knitr::kable(llm_hypo)
 ```
 
 
 ## Batch Processing
 
-The functions `pdf2grobid()` and `read_grobid()` also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions `search_text()` and `gpt()` also work on a list of paper objects.
+The functions `pdf2grobid()` and `read_grobid()` also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions `search_text()`, `expand_text()` and `llm()` also work on a list of paper objects.
 
 ```{r}
 grobid_dir <- demodir()
@@ -261,11 +253,11 @@ knitr::kable(p$table)
 
 ### Creating modules
 
-You can create your own modules by specifying the arguments to `search_text()` or `gpt()` in JSON format and/or including R code. Modules can also contain instructions for reporting, to give "traffic lights" for whether a check passed or failed, and to include appropriate text feedback in a report. See the [modules vignette](modules.html) for more details. 
+You can create your own modules by specifying the arguments to `search_text()` or `llm()` in JSON format and/or including R code. Modules can also contain instructions for reporting, to give "traffic lights" for whether a check passed or failed, and to include appropriate text feedback in a report. See the [modules vignette](modules.html) for more details. 
 
 Below is an abbreviated example of the module that detects all p-values in the text and returns the matching text. 
 
-```
+``` json
 {
   "title": "List All P-Values",
   "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",

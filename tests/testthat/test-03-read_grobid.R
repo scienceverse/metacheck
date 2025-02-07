@@ -134,17 +134,17 @@ test_that("iteration", {
 })
 
 
-# test_that("crossref", {
-#   skip_if_offline("api.labs.crossref.org")
-#
-#   doi <- "10.1177/fake"
-#   expect_message(cr <- crossref(doi))
-#   expect_equal(cr, list())
-#
-#   doi <- "10.1177/0956797614520714"
-#   cr <- crossref(doi)
-#   expect_equal(cr$`cr-labs-updates`[[1]]$`update-nature`, "Retraction")
-# })
+test_that("crossref", {
+  skip_if_offline("api.labs.crossref.org")
+
+  doi <- "10.1177/fake"
+  expect_message(cr <- crossref(doi))
+  expect_equal(cr, list())
+
+  doi <- "10.1177/0956797614520714"
+  cr <- crossref(doi)
+  expect_equal(cr$`cr-labs-updates`[[1]]$`update-nature`, "Retraction")
+})
 
 test_that("openalex", {
   skip_if_offline("api.openalex.org")

@@ -6,7 +6,7 @@ test_that("exists", {
 })
 
 test_that("defaults", {
-  # search list of scienceverse objects
+  # search list of paper objects
   s <- read_grobid(filename)
   stat_table <- stats(s)
   expect_true(is.data.frame(stat_table))

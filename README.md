@@ -31,8 +31,7 @@ papercheck_app()
 library(papercheck)
 ```
 
-Convert a PDF to grobid XML format, then read it in as a scienceverse
-paper object.
+Convert a PDF to grobid XML format, then read it in as a paper object.
 
 ``` r
 pdf <- demopdf() # use the path of your own PDF
@@ -61,35 +60,35 @@ text <- search_text(paper, pattern,
 | M = 5.06        | results | Results |   3 |   2 |   1 | to_err_is_human.xml |
 | M = 4.5         | results | Results |   3 |   2 |   1 | to_err_is_human.xml |
 | t(97.2) = -1.96 | results | Results |   3 |   2 |   1 | to_err_is_human.xml |
-| p = 0.052       | results | Results |   3 |   2 |   1 | to_err_is_human.xml |
+| p = 0.152       | results | Results |   3 |   2 |   1 | to_err_is_human.xml |
 
-### ChatGPT
+### Large Language Models
 
-You can ask ChatGPT to process text. Use `search_text()` first to narrow
+You can ask an LLM to process text. Use `search_text()` first to narrow
 down the text into what you want to query. Below, we returned the first
 two papers’ introduction sections, and returned the full section. Then
-we asked ChatGPT “What is the hypothesis of this study?”.
+we asked an LLM “What is the hypothesis of this study?”.
 
 ``` r
-# ask chatGPT a question
+# ask LLM a question
 hypotheses <- search_text(papers[1:2], 
                           section = "intro", 
                           return = "section")
 query <- "What is the hypothesis of this study?"
-gpt_hypo <- gpt(hypotheses, query)
+llm_hypo <- llm(hypotheses, query)
 ```
 
-| id           | answer                                                                                                                                                                                                                    |     cost |
-|:-------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------:|
+| id | answer | cost |
+|:---|:---|---:|
 | eyecolor.xml | The hypothesis of this study is to test the sex-linked heritable preference hypothesis and the positive sexual imprinting hypothesis in relation to eye color and partner selection in heterosexual and same-sex couples. | 0.000671 |
-| incest.xml   | The hypothesis of this study is that moral opposition to third-party sibling incest may be greater among individuals with other-sex siblings than among individuals who do not have other-sex siblings.                   | 0.000635 |
+| incest.xml | The hypothesis of this study is that moral opposition to third-party sibling incest may be greater among individuals with other-sex siblings than among individuals who do not have other-sex siblings. | 0.000635 |
 
 ### Batch Processing
 
 The functions `pdf2grobid()` and `read_grobid()` also work on a folder
 of files, returning a list of XML file paths or paper objects,
-respectively. The functions `search_text()` and `gpt()` also work on a
-list of paper objects.
+respectively. The functions `search_text()`, `expand_text()` and `llm()`
+also work on a list of paper objects.
 
 ``` r
 # read in all the XML files in the demo directory
@@ -102,11 +101,11 @@ previous <- search_text(papers, "previous",
                         return = "sentence")
 ```
 
-| text                                                                                                                                                                                                                                                                                                                                                                                                                  | section | header       | div |   p |   s | id         |
-|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------|:-------------|----:|----:|----:|:-----------|
-| Royzman et al’s non-replication potentially calls into question the reliability of previously reported links between having an other-sex sibling and moral opposition to third-party sibling incest.                                                                                                                                                                                                                  | intro   | Introduction |   1 |   3 |   3 | incest.xml |
-| Previous research has shown that making cost-benefit analyses of using statistical approaches explicit can influence researchers’ attitudes.                                                                                                                                                                                                                                                                          | intro   | \[div-01\]   |   1 |   8 |   5 | prereg.xml |
-| When exploring difference in responses between previous experience with pre-registration, we see a clear trend where reasearchers who have pre-registered studies in their own research indicate pre-registration is more beneficial, and indicate higher a higher likelihood of pre-registering studies in the future, and higher percentage of studies for which they would consider pre-registering (see Table 2). | intro   | Attitude     |   3 |   7 |   1 | prereg.xml |
+| text | section | header | div | p | s | id |
+|:---|:---|:---|---:|---:|---:|:---|
+| Royzman et al’s non-replication potentially calls into question the reliability of previously reported links between having an other-sex sibling and moral opposition to third-party sibling incest. | intro | Introduction | 1 | 3 | 3 | incest.xml |
+| Previous research has shown that making cost-benefit analyses of using statistical approaches explicit can influence researchers’ attitudes. | intro | \[div-01\] | 1 | 8 | 5 | prereg.xml |
+| When exploring difference in responses between previous experience with pre-registration, we see a clear trend where reasearchers who have pre-registered studies in their own research indicate pre-registration is more beneficial, and indicate higher a higher likelihood of pre-registering studies in the future, and higher percentage of studies for which they would consider pre-registering (see Table 2). | intro | Attitude | 3 | 7 | 1 | prereg.xml |
 
 ### Modules
 
@@ -120,12 +119,12 @@ You can see the list of built-in modules with the function below.
 module_list()
 ```
 
-- ai-summarise: Generate a 1-sentence summary for each section
 - all-p-values: List all p-values in the text, returning the matched
   text (e.g., ‘p = 0.04’) and document location in a table.
 - all-urls: List all the URLs in the main text
 - imprecise-p: List any p-values reported with insufficient precision
   (e.g., p \< .05 or p = n.s.)
+- llm-summarise: Generate a 1-sentence summary for each section
 - marginal: List all sentences that describe an effect as ‘marginally
   significant’.
 - osf-check: List all OSF links and whether they are open, closed, or do
@@ -133,8 +132,10 @@ module_list()
 - ref-consistency: Check if all references are cited and all citations
   are referenced
 - retractionwatch: Flag any cited papers in the RetractionWatch database
-- sample-size-ml: Classify each sentence for whether it contains
-  sample-size information.
+- sample-size-ml: \[DEMO\] Classify each sentence for whether it
+  contains sample-size information, returning only sentences with
+  probable sample-size info.
+- statcheck: Check consistency of p-values and test statistics
 
 To run a built-in module on a paper, you can reference it by name.
 
@@ -145,7 +146,7 @@ p <- module_run(paper, "all-p-values")
 | text      | section | header  | div |   p |   s | id                  |
 |:----------|:--------|:--------|----:|----:|----:|:--------------------|
 | p = 0.005 | results | Results |   3 |   1 |   2 | to_err_is_human.xml |
-| p = 0.052 | results | Results |   3 |   2 |   1 | to_err_is_human.xml |
+| p = 0.152 | results | Results |   3 |   2 |   1 | to_err_is_human.xml |
 | p \> .05  | results | Results |   3 |   2 |   2 | to_err_is_human.xml |
 
 ### Reports

@@ -7,7 +7,7 @@
 module_run_ml(paper, args, module_dir = ".")
 }
 \arguments{
-\item{paper}{the scienceverse paper object (or list of objects)}
+\item{paper}{the paper object (or list of objects)}
 
 \item{args}{a list of arguments}
 

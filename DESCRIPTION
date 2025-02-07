@@ -1,7 +1,7 @@
 Package: papercheck
 Title: Check Scientific Papers for Best Practices
-Version: 0.0.0.9025
-Date: 2025-02-04
+Version: 0.0.0.9027
+Date: 2025-02-07
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -25,14 +25,15 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Suggests: 
     rmarkdown,
-    scienceverse (>= 0.0.0.9021),
     testthat (>= 3.0.0),
     shiny,
     shinydashboard,
     shinyjs,
     shiny.i18n,
     DT,
-    waiter
+    waiter,
+    ggplot2,
+    readr
 Config/testthat/edition: 3
 Imports: 
     dplyr,
@@ -52,8 +53,6 @@ Imports:
 VignetteBuilder: knitr
 URL: https://github.com/debruine/papercheck, https://scienceverse.github.io/papercheck/
 BugReports: https://github.com/debruine/papercheck/issues
-Remotes: 
-    https://github.com/scienceverse/scienceverse
 Depends: 
     R (>= 2.10)
 LazyData: true

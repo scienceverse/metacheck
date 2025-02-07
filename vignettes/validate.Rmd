@@ -14,7 +14,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r}
+#| label: setup
+#| message: false
 library(papercheck)
 library(dplyr)
 ```
@@ -40,11 +42,11 @@ file.copy(xmls, xmldir)
 
 ## Sample data
 
-Create a data frame with info about each paper. One column must be called "xml" and contain paths to the xml files (relative to the validation file location). Other possible columns are "table", "report", and "traffic_light", which should contain the expects values of those items from the module you're testing. If you want to check more than just the first row of the text column from the return table, omit the table column and use the method in the next section.
+Create a data frame with info about each paper. One column must be called "id" and contain paths to the xml files (relative to the validation file location). Other possible columns are "table", "report", and "traffic_light", which should contain the expected values of those items from the module you're testing. If you want to check more than just the first row of the text column from the return table, omit the table column and use the method in the next section.
 
 ```{r}
 sample <- data.frame(
-  xml =  file.path("xml", list.files(xmldir)),
+  id =  file.path("xml", list.files(xmldir)),
   table = c("faceresearch.org", "https://osf.io/mwzuq", "https://osf.io/pwtrh"),
   report = rep("", 3), # this module has no report
   traffic_light = c("info", "info", "red")
@@ -58,8 +60,8 @@ The code above has one inaccurate traffic light ("red") for demonstration purpos
 If the tables returned by the module you're validating can have more than one row, or you want to check columns other than "text", you will need to add the expected values to a separate data frame. One column must be "xml" to join it to the other table. The other columns should have the same names as the columns returned by the module. You can omit any columns and they will not be checked in the validation. Here, we will only validate the text and header columns (making one mistake in the header column for demonstration purposes).
 
 ```{r}
-exp_table <- data.frame(
-  xml = rep(sample$xml, c(2, 3, 2)),
+expected <- data.frame(
+  id = rep(sample$id, c(2, 3, 2)),
   text = c("faceresearch.org", "stumbleupon.com",
            rep("https://osf.io/mwzuq", 3),
            rep("https://osf.io/pwtrh", 2)),
@@ -68,7 +70,7 @@ exp_table <- data.frame(
              "Intro", "Attitude")
 )
 
-exp_table
+expected
 ```
 
 ## Run Validation
@@ -84,7 +86,7 @@ v
 If you include the expected results table, it will assess all the data for matching the module results table.
 
 ```{r}
-v <- validate("all-urls", sample, exp_table, path = valdir)
+v <- validate("all-urls", sample, expected, path = valdir)
 
 v
 ```
@@ -108,13 +110,13 @@ v$sample |>
 You can view the validated results table for that paper...
 
 ```{r}
-v$results_table |>
-  dplyr::filter(xml == "xml/prereg.xml")
+v$table |>
+  dplyr::filter(id == "xml/prereg.xml")
 ```
 
 ...and compare it with the expected results.
 
 ```{r}
-exp_table |>
-  dplyr::filter(xml == "xml/prereg.xml")
+expected |>
+  dplyr::filter(id == "xml/prereg.xml")
 ```

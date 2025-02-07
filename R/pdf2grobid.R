@@ -23,7 +23,7 @@ pdf2grobid <- function(filename, save_path = ".",
     }
 
     # set up progress bar ----
-    if (getOption("scienceverse.verbose")) {
+    if (getOption("papercheck.verbose")) {
       pb <- progress::progress_bar$new(
         total = length(filename), clear = FALSE,
         format = "Processing PDFs [:bar] :current/:total :elapsedfull"
@@ -36,7 +36,7 @@ pdf2grobid <- function(filename, save_path = ".",
     xmls <- lapply(filename, \(pdf) {
       xml <- tryCatch(pdf2grobid(pdf, save_path),
                       error = function(e) { return(FALSE) })
-      if (getOption("scienceverse.verbose")) pb$tick()
+      if (getOption("papercheck.verbose")) pb$tick()
       xml
     })
 

@@ -21,7 +21,7 @@ module_run <- function(paper, module) {
   })
   module_dir <- dirname(module_path)
 
-  mod_chunks <- names(json) %in% c("text", "code", "ml", "ai") |>
+  mod_chunks <- names(json) %in% c("text", "code", "ml", "llm") |>
     which()
 
   results <- paper
@@ -37,8 +37,8 @@ module_run <- function(paper, module) {
       results <- module_run_code(results, json[[chunk]], module_dir)
     } else if (type == "ml") {
       results <- module_run_ml(results, json[[chunk]], module_dir)
-    } else if (type == "ai") {
-      results <- module_run_ai(results, json[[chunk]])
+    } else if (type == "llm") {
+      results <- module_run_llm(results, json[[chunk]])
     } else {
       stop("The module has an invalid type of ", type)
     }
@@ -80,7 +80,7 @@ module_run <- function(paper, module) {
 
 #' Run text module
 #'
-#' @param paper the scienceverse paper object (or list of objects)
+#' @param paper the paper object (or list of objects)
 #' @param args a list of arguments to `search_text()`
 #'
 #' @return data frame
@@ -95,7 +95,7 @@ module_run_text <- function(paper, args) {
 
 #' Run code module
 #'
-#' @param paper the scienceverse paper object (or list of objects)
+#' @param paper the paper object (or list of objects)
 #' @param args a list of arguments
 #' @param module_dir the base directory for the module, in case code is in files with relative paths
 #'
@@ -125,7 +125,7 @@ module_run_code <- function(paper, args, module_dir = ".") {
 
 #' Run machine learning module
 #'
-#' @param paper the scienceverse paper object (or list of objects)
+#' @param paper the paper object (or list of objects)
 #' @param args a list of arguments
 #' @param module_dir the base directory for the module, in case resources are in files with relative paths
 #'
@@ -161,16 +161,16 @@ module_run_ml <- function(paper, args, module_dir = ".") {
   return( list(table = results) )
 }
 
-#' Run AI module
+#' Run LLM module
 #'
-#' @param paper the scienceverse paper object (or list of object)
-#' @param args a list of argumentsto `gpt()`
+#' @param paper the paper object (or list of object)
+#' @param args a list of argumentsto `llm()`
 #'
 #' @return data frame
 #' @keywords internal
-module_run_ai <- function(paper, args) {
+module_run_llm <- function(paper, args) {
   args$text <- search_text(paper)
-  results <- do.call(gpt, args)
+  results <- do.call(llm, args)
 
   return( list(table = results) )
 }
@@ -192,7 +192,7 @@ module_list <- function(module_dir = system.file("modules", package = "paperchec
   json <- lapply(files, jsonlite::read_json, simplifyVector = TRUE)
 
   type <- sapply(json, function(j) {
-    if ("ai" %in% names(j)) return("ai")
+    if ("llm" %in% names(j)) return("llm")
     if ("ml" %in% names(j)) return("ml")
     if ("code" %in% names(j)) return("code")
     if ("text" %in% names(j)) return("text")

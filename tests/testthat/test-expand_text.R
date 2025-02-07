@@ -27,9 +27,9 @@ test_that("basic", {
   expected <- search_text(paper, "p =", return = "paragraph")
   expect_equal(expanded$expanded, expected$text)
 
-  # section (both examples in same section)
-  expanded <- expand_text(res_tbl, paper, expand_to = "section")
-  expected <- search_text(paper, "p =", return = "section")
+  # div (both examples in same div)
+  expanded <- expand_text(res_tbl, paper, expand_to = "div")
+  expected <- search_text(paper, "p =", return = "div")
   expect_equal(expanded$expanded[1], expected$text[1])
   expect_equal(expanded$expanded[2], expected$text[1])
 })

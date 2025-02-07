@@ -7,7 +7,7 @@
 concat_tables(papers, name_path)
 }
 \arguments{
-\item{papers}{a list of scienceverse study objects}
+\item{papers}{a list of paper objects}
 
 \item{name_path}{a vector of names that get you to the table}
 }
@@ -15,7 +15,7 @@ concat_tables(papers, name_path)
 a merged table
 }
 \description{
-Concatenate tables across a list of scienceverse objects
+Concatenate tables across a list of paper objects
 }
 \examples{
 grobid_dir <- system.file("grobid", package = "papercheck")

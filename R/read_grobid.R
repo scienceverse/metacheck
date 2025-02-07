@@ -15,7 +15,7 @@ read_grobid <- function(filename) {
   # handle list of files or a directory----
   if (length(filename) > 1) {
     # set up progress bar ----
-    if (getOption("scienceverse.verbose")) {
+    if (getOption("papercheck.verbose")) {
       pb <- progress::progress_bar$new(
         total = length(filename), clear = FALSE,
         format = "Processing XMLs [:bar] :current/:total :elapsedfull"
@@ -40,7 +40,7 @@ read_grobid <- function(filename) {
 
     p <- lapply(filename, \(x) {
       p1 <- read_grobid(x)
-      if (getOption("scienceverse.verbose")) pb$tick()
+      if (getOption("papercheck.verbose")) pb$tick()
       p1
     })
 
@@ -273,11 +273,7 @@ get_full_text<- function(xml, id = NULL) {
 #' @return an author list
 #' @keywords internal
 get_authors <- function(xml) {
-  if (!requireNamespace("scienceverse", quietly = TRUE)) {
-    return(NULL)
-  }
-
-  s <- scienceverse::study()
+  s <- study()
   authors <- xml2::xml_find_all(xml, "//sourceDesc //author[persName]")
 
   for (a in authors) {
@@ -286,12 +282,12 @@ get_authors <- function(xml) {
     email <- xml2::xml_find_all(a, ".//email") |> xml2::xml_text() |> paste(collapse = ";")
     orcid <- xml2::xml_find_all(a, ".//idno[@type='ORCID']") |> xml2::xml_text()
     # if (is.null(orcid) & !is.null(family)) {
-    #   orcid_lookup <- scienceverse::get_orcid(family, given)
+    #   orcid_lookup <- get_orcid(family, given)
     #   if (length(orcid_lookup) == 1) orcid <- orcid_lookup
     # }
     if (length(orcid) == 0) orcid = NULL
 
-    s <- scienceverse::add_author(s, family, given, orcid, email = email)
+    s <- add_author(s, family, given, orcid, email = email)
   }
 
   return(s$authors)
