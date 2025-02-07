@@ -74,42 +74,6 @@ search_text <- function(paper, pattern = ".*", section = NULL,
 
   if (return == "sentence") {
     ft_match_all <- ft_match
-  } else if (return == "paragraph") {
-    # add in other sentences from matched paragraphs
-    groups <- c("section", "header", "div", "p", "id")
-
-    ft_match_all <- dplyr::semi_join(ft, ft_match, by = groups) |>
-      dplyr::summarise(text = paste(text, collapse = " "),
-                       .by = dplyr::all_of(groups))
-
-  } else if (return == "div") {
-    # add in other sentences from matched divs
-    # recombine paragraphs first
-    groups <- c("section", "header", "div", "p", "id")
-    ft_match_p <- dplyr::semi_join(ft, ft_match, by = groups) |>
-      dplyr::summarise(text = paste(text, collapse = " "),
-                       .by = dplyr::all_of(groups))
-
-    # collapse paragraphs
-    groups <- c("section", "header", "div", "id")
-    ft_match_all <- ft_match_p |>
-      dplyr::summarise(text = paste(text, collapse = paragraph_marker),
-                       .by = dplyr::all_of(groups))
-
-  } else if (return == "section") {
-    # add in other sentences from matched sections
-
-    # recombine paragraphs first
-    groups <- c("section", "header", "p", "id")
-    ft_match_p <- dplyr::semi_join(ft, ft_match, by = groups) |>
-      dplyr::summarise(text = paste(text, collapse = " "),
-                       .by = dplyr::all_of(groups))
-
-    groups <- c("section", "id")
-    ft_match_all <- ft_match_p |>
-      dplyr::summarise(text = paste(text, collapse = paragraph_marker),
-                       .by = dplyr::all_of(groups))
-
   } else if (return == "match") {
     ft_match_all <- ft_match
     matches <- gregexpr(pattern, ft_match$text, ignore.case = ignore.case, ...)
@@ -120,6 +84,23 @@ search_text <- function(paper, pattern = ".*", section = NULL,
     longtext <- unlist(ft_match_all$text)
     ft_match_all <- ft_match_all[rowrep, ]
     ft_match_all$text <- longtext
+  } else {
+    # recombine paragraphs first
+    pgroups <- c("section", "header", "div", "p", "id")
+    ft_p <- dplyr::summarise(ft, text = paste(text, collapse = " "),
+                             .by = dplyr::all_of(pgroups))
+
+    if (return == "paragraph") {
+      groups <- c("section", "header", "div", "p", "id")
+    } else if (return == "div") {
+      groups <- c("section", "header", "div", "id")
+    } else if (return == "section") {
+      groups <- c("section", "id")
+    }
+
+    ft_match_all <- dplyr::semi_join(ft_p, ft_match, by = groups) |>
+      dplyr::summarise(text = paste(text, collapse = paragraph_marker),
+                       .by = dplyr::all_of(groups))
   }
 
   all_cols <- names(ft)

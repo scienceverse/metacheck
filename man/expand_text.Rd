@@ -7,7 +7,7 @@
 expand_text(
   results_table,
   paper,
-  expand_to = c("sentence", "paragraph", "section"),
+  expand_to = c("sentence", "paragraph", "div", "section"),
   plus = 0,
   minus = 0
 )
@@ -17,7 +17,7 @@ expand_text(
 
 \item{paper}{a papercheck paper object or a list of paper objects to look up the expanded text from}
 
-\item{expand_to}{whether to expand to the sentence, paragraph, or section level}
+\item{expand_to}{whether to expand to the sentence, paragraph, div, or section level}
 
 \item{plus}{append additional sentences after the target expansion}
 

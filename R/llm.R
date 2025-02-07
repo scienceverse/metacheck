@@ -16,7 +16,6 @@
 #' @param temperature Controls randomness in responses. Lower values make responses more deterministic. Recommended range: 0.5-0.7 to prevent repetitions or incoherent outputs; valued between 0 inclusive and 2 exclusive
 #' @param top_p Nucleus sampling threshold (between 0 and 1); usually alter this or temperature, but not both
 #' @param seed Set for reproducible responses
-#' @param include_query Whether to include the query string in the returned table
 #' @param API_KEY your API key for the LLM
 #'
 #' @return a list of results
@@ -24,9 +23,10 @@
 #' @export
 #' @examples
 #' \donttest{
-#'   text <- c("hello", "number", "ten", "12")
+#'   text <- c("hello", "number", "ten", 12)
 #'   query <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
 #'   is_number <- llm(text, query)
+#'   is_number
 #' }
 llm <- function(text, query,
                 text_col = "text",
@@ -35,7 +35,6 @@ llm <- function(text, query,
                 temperature = 0.5,
                 top_p = 0.95,
                 seed = sample(1000000:9999999, 1),
-                include_query = FALSE,
                 API_KEY = Sys.getenv("GROQ_API_KEY")) {
   ## error detection ----
   #site_down("api.groq.com")
@@ -68,9 +67,8 @@ llm <- function(text, query,
   }
 
   # set up answer data frame to return ----
-  answer_df <- unique(text[, text_col, drop = FALSE])
-  rownames(answer_df) <- NULL
-  ncalls <- nrow(answer_df)
+  unique_text <- unique(text[[text_col]])
+  ncalls <- length(unique_text)
   if (ncalls == 0) stop("No calls to the LLM")
   maxcalls <- getOption("papercheck.llm_max_calls")
   if (ncalls > maxcalls) {
@@ -79,8 +77,7 @@ llm <- function(text, query,
 
 
   # Set up the llm ----
-
-  responses <- replicate(nrow(text), list(), simplify = FALSE)
+  responses <- replicate(length(unique_text), list(), simplify = FALSE)
   # setup
   url <- "https://api.groq.com/openai/v1/chat/completions"
 
@@ -113,8 +110,8 @@ llm <- function(text, query,
   # interate over the text ----
   # TODO: check rate limits and pause
   # https://console.groq.com/docs/rate-limits
-  for (i in seq_along(text$text)) {
-    bodylist$messages[[2]]$content <- text$text[i]
+  for (i in seq_along(unique_text)) {
+    bodylist$messages[[2]]$content <- unique_text[i]
 
     responses[[i]] <- tryCatch({
 
@@ -148,11 +145,12 @@ llm <- function(text, query,
 
   # add responses to the return df ----
   response_df <- do.call(dplyr::bind_rows, responses)
-  answer_df <- dplyr::bind_cols(answer_df, response_df)
-
-  if (include_query) {
-    answer_df$query = query
-  }
+  response_df[text_col] <- unique_text
+  answer_df <- dplyr::left_join(text, response_df, by = text_col) |>
+    # set time and tokens to 0 if duplicate text
+    dplyr::mutate(time = ifelse(dplyr::row_number() == 1, time, 0),
+                  tokens = ifelse(dplyr::row_number() == 1, tokens, 0),
+                  .by = dplyr::all_of(text_col))
 
   # add metadata about the query ----
   class(answer_df) <- c("ppchk_llm", "data.frame")
@@ -230,38 +228,30 @@ set_llm_max_calls <- function(n = 10) {
 }
 
 
-llm_setup <- function(envname = "r-reticulate") {
-  if (!reticulate::py_available(TRUE)) {
-    stop("You need to install python (e.g. `reticulate::install_python()` )")
-  }
+# python_setup <- function(envname = "r-reticulate") {
+#   if (!reticulate::py_available(TRUE)) {
+#     stop("You need to install python (e.g. `reticulate::install_python()` )")
+#   }
+#
+#   # set up virtual environment
+#   message("Setting up virtual environment ", envname, "...")
+#   req <- system.file("python/requirements.txt", package = "papercheck")
+#   if (!reticulate::virtualenv_exists(envname)) {
+#     reticulate::virtualenv_create(envname, requirements = req)
+#   } else {
+#     reticulate::virtualenv_install(envname, requirements = req)
+#   }
+#
+#   # check for .Renviron
+#   if (Sys.getenv("RETICULATE_PYTHON") == "") {
+#     message <- "Add the following line to your .Renviron file, and restart R:"
+#
+#      message <- sprintf("%s\nRETICULATE_PYTHON=\"%s/%s/bin/python\"",
+#               message, reticulate::virtualenv_root(), envname)
+#
+#     base::message(message)
+#   }
+#
+#   message("Done!")
+# }
 
-  # set up virtual environment
-  message("Setting up virtual environment ", envname, "...")
-  req <- system.file("python/requirements.txt", package = "papercheck")
-  if (!reticulate::virtualenv_exists(envname)) {
-    reticulate::virtualenv_create(envname, requirements = req)
-  } else {
-    reticulate::virtualenv_install(envname, requirements = req)
-  }
-
-  # check for .Renviron
-  rp <- Sys.getenv("RETICULATE_PYTHON") == ""
-  ck <- Sys.getenv("CHATGPT_KEY") == ""
-  if (rp | ck) {
-    message <- "Add the following line to your .Renviron file, and restart R:"
-
-    if (rp & ck) {
-      message <- "Add the following lines to your .Renviron file, and restart R:"
-    }
-    if (rp) {
-      message <- sprintf("%s\nRETICULATE_PYTHON=\"%s/%s/bin/python\"",
-              message, reticulate::virtualenv_root(), envname)
-    }
-    if (ck) {
-      message <- sprintf("%s\nCHATGPT_KEY=\"sk-proj-your-chatgpt-api-key-here\"", message)
-    }
-    base::message(message)
-  }
-
-  message("Done!")
-}

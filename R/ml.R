@@ -47,7 +47,7 @@ ml <- function(text, model_dir,
   # load script
   pyscript <- system.file("python/ml-classifier.py", package = "papercheck")
   tryCatch(reticulate::source_python(pyscript),
-           error = \(e) { stop("Error in ml-classifier.py script, try using `gpt_setup()`")})
+           error = \(e) { stop("Error in ml-classifier.py script, is your reticulate setup correct?")})
 
   # set up progress bar ----
   if (getOption("papercheck.verbose")) {

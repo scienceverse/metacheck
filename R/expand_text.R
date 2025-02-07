@@ -38,36 +38,54 @@ expand_text <- function(results_table,
     }
   }
 
+  # set up full text table ----
+  by <- c("id", "section", "div", "p", "s", "text")
+  ft <- search_text(paper)[, by]
+
+
   # set up expand_to ----
   expand_to <- match.arg(expand_to)
   if (expand_to == "sentence") {
-    by <- c("id", "div", "p", "s")
-  } else if (expand_to == "paragraph") {
-    by <- c("id", "div", "p")
-  } else if (expand_to == "div") {
-    by <- c("id", "div")
-  } else if (expand_to == "section") {
-    by <- c("id", "section")
+    by <- by[1:5]
+    full_text <- ft |>
+      dplyr::summarise(expanded = paste(text, collapse = " "),
+                       .by = dplyr::all_of(by))
+  } else {
+    # collapse sentences within paragraphs separated by spaces
+    by <- by[1:4]
+    full_text_p <- ft |>
+      dplyr::summarise(expanded = paste(text, collapse = " "),
+                       .by = dplyr::all_of(by))
+
+    if (expand_to == "div") {
+      # collapse paragraphs within divs separated by line breaks
+      by <- by[1:3]
+    } else if (expand_to == "section") {
+      # collapse paragraphs within sections separated by line breaks
+      by <- by[1:2]
+    }
+
+    full_text <- full_text_p |>
+      dplyr::summarise(expanded = paste(expanded, collapse = "\n\n"),
+                       .by = dplyr::all_of(by))
   }
 
-  # set up full text table ----
-  full_text <- search_text(paper)[, c("id", "section", "div", "p", "s", "text")] |>
-    dplyr::summarise(expanded = paste(text, collapse = " "),
-                     .by = dplyr::all_of(by))
-
-  if (expand_to == "sentence" & (minus > 0 | plus > 0)) {
-    full_text$expanded <- mapply(function(id1, d1, p1, s1) {
-      srange <- seq(s1 - minus, s1 + plus, 1)
-      pm <- dplyr::filter(full_text,
-                          id == id1, div == d1, p == p1,
-                          s %in% srange)
-      paste(pm$expanded, collapse = " ")
-    }, id1 = full_text$id,
-        d1 = full_text$div,
-        p1 = full_text$p,
-        s1 = full_text$s)
+  if (minus > 0 | plus > 0) {
+    if (expand_to != "sentence") {
+      message("Plus and minus only work when expand_to == 'sentence'")
+    } else {
+      full_text$expanded <- mapply(function(id1, d1, p1, s1) {
+        srange <- seq(s1 - minus, s1 + plus, 1)
+        pm <- dplyr::filter(full_text,
+                            id == id1, div == d1, p == p1,
+                            s %in% srange)
+        paste(pm$expanded, collapse = " ")
+      }, id1 = full_text$id,
+          d1 = full_text$div,
+          p1 = full_text$p,
+          s1 = full_text$s)
+    }
   }
-
 
   # join to results and process
   expanded_table <- results_table |>

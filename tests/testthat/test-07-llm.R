@@ -63,6 +63,38 @@ test_that("basic", {
   skip_if_offline("api.groq.com")
   skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
+  text <- c("hello", "number", "ten", 12)
+  query <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
+  is_number <- llm(text, query, seed = 8675309)
+
+  expect_equal(is_number$text, text)
+  expect_equal(is_number$answer[[1]], "FALSE")
+  expect_equal(is_number$answer[[4]], "TRUE")
+
+  # duplicates should only generate 1 query
+  text <- c("A", "A", 1, 1)
+  query <- "Is this a letter? Answer only 'TRUE' or 'FALSE'"
+  is_letter <- llm(text, query, seed = 12345)
+
+  expect_equal(is_letter$text, text)
+  expect_equal(is_letter$answer[[1]], is_letter$answer[[2]])
+  expect_equal(is_letter$answer[[3]], is_letter$answer[[4]])
+
+  expect_equal(is_letter$time[[2]], 0)
+  expect_equal(is_letter$time[[4]], 0)
+  expect_equal(is_letter$tokens[[2]], 0)
+  expect_equal(is_letter$tokens[[4]], 0)
+  expect_true(is_letter$time[[1]] > 0)
+  expect_true(is_letter$time[[3]] > 0)
+  expect_true(is_letter$tokens[[1]] > 0)
+  expect_true(is_letter$tokens[[3]] > 0)
+})
+
+test_that("sample size", {
+  skip_on_cran()
+  skip_if_offline("api.groq.com")
+  skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
+
   papers <- read_grobid(demodir())
   text <- search_text(papers, section = "method", return = "section")
   query <- "What is the sample size of this study (e.g., the number of participants tested?
@@ -70,13 +102,13 @@ test_that("basic", {
   Please give your answer exactly like this: 'XXX (XX men, XX women)', with the total number first, then any subsets in parentheses. If there is not enough infomation to answer, answer 'NA'"
 
 
-  suppressMessages( res <- llm(text, query, include_query = TRUE) )
+  suppressMessages( res <- llm(text, query) )
 
-  expect_equal(res$query[[1]], query)
   expect_equal(res$text, text$text)
+  expect_equal(res$id, c("eyecolor.xml", "incest.xml"))
   # expect_equal(res$answer[[1]], "300 (150 men, 150 women)")
   # expect_equal(res$answer[[2]], "1998 (666 men, 1332 women)")
-  #expect_equal(res$id, c("eyecolor.xml", "incest.xml"))
+
 
   ## text vector
   text_vector <- text$text[text$id == text$id[[1]]]
