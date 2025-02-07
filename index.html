@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="apple-touch-icon-60x60.png">
-<script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="lightswitch.js"></script><script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -32,11 +32,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9025</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9027</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,21 +47,22 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="articles/papercheck.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/modules.html">Modules</a></li>
-    <li><a class="dropdown-item" href="articles/report-example.html">Example Report</a></li>
-    <li><a class="dropdown-item" href="articles/validate.html">Validation</a></li>
-  </ul>
-</li>
+<li class="nav-item"><a class="nav-link" href="articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/debruine/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
+</li>
       </ul>
 </div>
 
@@ -92,8 +93,8 @@
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/debruine/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span></code></pre></div>
-<p>Convert a PDF to grobid XML format, then read it in as a scienceverse paper object.</p>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span></code></pre></div>
+<p>Convert a PDF to grobid XML format, then read it in as a paper object.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pdf</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/demopdf.html">demopdf</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># use the path of your own PDF</span></span>
 <span><span class="va">grobid</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pdf2grobid.html">pdf2grobid</a></span><span class="op">(</span><span class="va">pdf</span><span class="op">)</span></span>
@@ -191,7 +192,7 @@
 <td align="left">to_err_is_human.xml</td>
 </tr>
 <tr class="even">
-<td align="left">p = 0.052</td>
+<td align="left">p = 0.152</td>
 <td align="left">results</td>
 <td align="left">Results</td>
 <td align="right">3</td>
@@ -202,46 +203,42 @@
 </tbody>
 </table>
 </div>
-<div class="section level3">
-<h3 id="chatgpt">ChatGPT<a class="anchor" aria-label="anchor" href="#chatgpt"></a>
-</h3>
-<p>You can ask ChatGPT to process text. Use <code><a href="reference/search_text.html">search_text()</a></code> first to narrow down the text into what you want to query. Below, we returned the first two papers’ introduction sections, and returned the full section. Then we asked ChatGPT “What is the hypothesis of this study?”.</p>
+</div>
+<div class="section level2">
+<h2 id="large-language-models">Large Language Models<a class="anchor" aria-label="anchor" href="#large-language-models"></a>
+</h2>
+<p>You can query the extracted text of papers with LLMs using <a href="https://console.groq.com/docs/" class="external-link">groq</a>.</p>
+<p>Use <code><a href="reference/search_text.html">search_text()</a></code> first to narrow down the text into what you want to query. Below, we returned the first two papers’ introduction sections, and returned the full section. Then we asked an LLM “What is the hypothesis of this study?”.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># ask chatGPT a question</span></span>
-<span><span class="va">hypotheses</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">papers</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, </span>
+<code class="sourceCode R"><span><span class="va">hypotheses</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">papers</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, </span>
 <span>                          section <span class="op">=</span> <span class="st">"intro"</span>, </span>
 <span>                          return <span class="op">=</span> <span class="st">"section"</span><span class="op">)</span></span>
-<span><span class="va">query</span> <span class="op">&lt;-</span> <span class="st">"What is the hypothesis of this study?"</span></span>
-<span><span class="va">gpt_hypo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/gpt.html">gpt</a></span><span class="op">(</span><span class="va">hypotheses</span>, <span class="va">query</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">query</span> <span class="op">&lt;-</span> <span class="st">"What is the hypothesis of this study? Answer as briefly as possible."</span></span>
+<span><span class="va">llm_hypo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/llm.html">llm</a></span><span class="op">(</span><span class="va">hypotheses</span>, <span class="va">query</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="5%">
-<col width="90%">
-<col width="4%">
+<col width="50%">
+<col width="50%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">id</th>
 <th align="left">answer</th>
-<th align="right">cost</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td align="left">eyecolor.xml</td>
-<td align="left">The hypothesis of this study is to test the sex-linked heritable preference hypothesis and the positive sexual imprinting hypothesis in relation to eye color and partner selection in heterosexual and same-sex couples.</td>
-<td align="right">0.000671</td>
+<td align="left">The hypothesis of this study is that humans exhibit positive sexual imprinting, where individuals choose partners with physical characteristics similar to those of their opposite-sex parent.</td>
 </tr>
 <tr class="even">
 <td align="left">incest.xml</td>
-<td align="left">The hypothesis of this study is that moral opposition to third-party sibling incest may be greater among individuals with other-sex siblings than among individuals who do not have other-sex siblings.</td>
-<td align="right">0.000635</td>
+<td align="left">The hypothesis is that moral opposition to third-party sibling incest is greater among individuals with other-sex siblings than among individuals with same-sex siblings.</td>
 </tr>
 </tbody>
 </table>
-</div>
 <div class="section level3">
 <h3 id="batch-processing">Batch Processing<a class="anchor" aria-label="anchor" href="#batch-processing"></a>
 </h3>
-<p>The functions <code><a href="reference/pdf2grobid.html">pdf2grobid()</a></code> and <code><a href="reference/read_grobid.html">read_grobid()</a></code> also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions <code><a href="reference/search_text.html">search_text()</a></code> and <code><a href="reference/gpt.html">gpt()</a></code> also work on a list of paper objects.</p>
+<p>The functions <code><a href="reference/pdf2grobid.html">pdf2grobid()</a></code> and <code><a href="reference/read_grobid.html">read_grobid()</a></code> also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions <code><a href="reference/search_text.html">search_text()</a></code>, <code><a href="reference/expand_text.html">expand_text()</a></code> and <code><a href="reference/llm.html">llm()</a></code> also work on a list of paper objects.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># read in all the XML files in the demo directory</span></span>
 <span><span class="va">grobid_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/demodir.html">demodir</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -253,13 +250,13 @@
 <span>                        return <span class="op">=</span> <span class="st">"sentence"</span><span class="op">)</span></span></code></pre></div>
 <table style="width:100%;" class="table">
 <colgroup>
-<col width="89%">
-<col width="1%">
-<col width="3%">
-<col width="1%">
-<col width="1%">
-<col width="1%">
-<col width="2%">
+<col width="14%">
+<col width="14%">
+<col width="14%">
+<col width="14%">
+<col width="14%">
+<col width="14%">
+<col width="14%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">text</th>
@@ -309,15 +306,16 @@
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/module_list.html">module_list</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <ul>
-<li>ai-summarise: Generate a 1-sentence summary for each section</li>
 <li>all-p-values: List all p-values in the text, returning the matched text (e.g., ‘p = 0.04’) and document location in a table.</li>
 <li>all-urls: List all the URLs in the main text</li>
 <li>imprecise-p: List any p-values reported with insufficient precision (e.g., p &lt; .05 or p = n.s.)</li>
+<li>llm-summarise: Generate a 1-sentence summary for each section</li>
 <li>marginal: List all sentences that describe an effect as ‘marginally significant’.</li>
 <li>osf-check: List all OSF links and whether they are open, closed, or do not exist.</li>
 <li>ref-consistency: Check if all references are cited and all citations are referenced</li>
 <li>retractionwatch: Flag any cited papers in the RetractionWatch database</li>
-<li>sample-size-ml: Classify each sentence for whether it contains sample-size information.</li>
+<li>sample-size-ml: [DEMO] Classify each sentence for whether it contains sample-size information, returning only sentences with probable sample-size info.</li>
+<li>statcheck: Check consistency of p-values and test statistics</li>
 </ul>
 <p>To run a built-in module on a paper, you can reference it by name.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -352,7 +350,7 @@
 <td align="left">to_err_is_human.xml</td>
 </tr>
 <tr class="even">
-<td align="left">p = 0.052</td>
+<td align="left">p = 0.152</td>
 <td align="left">results</td>
 <td align="left">Results</td>
 <td align="right">3</td>
@@ -384,8 +382,8 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/debruine/papercheck/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/debruine/papercheck/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/scienceverse/papercheck/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/scienceverse/papercheck/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 

@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -29,11 +29,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9025</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9027</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,21 +44,22 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../articles/papercheck.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/modules.html">Modules</a></li>
-    <li><a class="dropdown-item" href="../articles/report-example.html">Example Report</a></li>
-    <li><a class="dropdown-item" href="../articles/validate.html">Validation</a></li>
-  </ul>
-</li>
+<li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/debruine/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
+</li>
       </ul>
 </div>
 
@@ -74,14 +75,14 @@
       <img src="../logo.png" class="logo" alt=""><h1>Modules</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/debruine/papercheck/blob/master/vignettes/modules.Rmd" class="external-link"><code>vignettes/modules.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/scienceverse/papercheck/blob/master/vignettes/modules.Rmd" class="external-link"><code>vignettes/modules.Rmd</code></a></small>
       <div class="d-none name"><code>modules.Rmd</code></div>
     </div>
 
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/debruine/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span></code></pre></div>
 <p>Modules are user-created patterns for checking a paper or set of
 papers. Module specifications are written in JSON format.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">{</span></span>
@@ -157,14 +158,14 @@ resposes.</p>
 }</code></pre>
 </div>
 <div class="section level3">
-<h3 id="generative-ai">Generative AI<a class="anchor" aria-label="anchor" href="#generative-ai"></a>
+<h3 id="large-language-models">Large Language Models<a class="anchor" aria-label="anchor" href="#large-language-models"></a>
 </h3>
-<p>The “ai” key takes a dictionary of the arguments to the
-<code><a href="../reference/gpt.html">gpt()</a></code> function.</p>
+<p>The “llm” key takes a dictionary of the arguments to the
+<code><a href="../reference/llm.html">llm()</a></code> function.</p>
 <pre><code>{
   "title": "Summarise Sections",
   "description": "Generate a 1-sentence summary for each section",
-  "ai": {
+  "llm": {
     "query": "Summarise this section briefly, in one sentence.",
     "group_by": ["id", "section"]
   }
@@ -195,9 +196,9 @@ keys.</p>
 problems detected;<br> 🔵 informational only;<br> ⚪️ not applicable;<br>
 ⚫️ check failed</p>
 <p>The simplest way to set traffic lights is to specify the meaning of
-“found” and “not-found”. If the module produces more than 0 rows in the
+“found” and “not_found”. If the module produces more than 0 rows in the
 output table, then the traffic light takes the “found” value, otherwise
-the “not-found” value.</p>
+the “not_found” value.</p>
 <pre><code>{
   "title": "List All P-Values",
   "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
@@ -208,7 +209,7 @@ the “not-found” value.</p>
   },
   "traffic_light": {
     "found": "info",
-    "not-found": "na"
+    "not_found": "na"
   }
 }</code></pre>
 <p>If you are using the “code” type, you can also specify the traffic
@@ -282,7 +283,7 @@ and/or text to include in all reports.</p>
   },
   "traffic_light": {
     "found": "info",
-    "not-found": "na"
+    "not_found": "na"
   }
 }</code></pre>
 </div>

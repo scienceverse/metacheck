@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -29,11 +29,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9025</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9027</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,21 +44,22 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../articles/papercheck.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/modules.html">Modules</a></li>
-    <li><a class="dropdown-item" href="../articles/report-example.html">Example Report</a></li>
-    <li><a class="dropdown-item" href="../articles/validate.html">Validation</a></li>
-  </ul>
-</li>
+<li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/debruine/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
+</li>
       </ul>
 </div>
 
@@ -74,23 +75,15 @@
       <img src="../logo.png" class="logo" alt=""><h1>Validation</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/debruine/papercheck/blob/master/vignettes/validate.Rmd" class="external-link"><code>vignettes/validate.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/scienceverse/papercheck/blob/master/vignettes/validate.Rmd" class="external-link"><code>vignettes/validate.Rmd</code></a></small>
       <div class="d-none name"><code>validate.Rmd</code></div>
     </div>
 
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/debruine/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     filter, lag</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
 <p>This is a demo of the workflow for module validation. We are still
 piloting this workflow and it is likely to change.</p>
 <div class="section level2">
@@ -115,15 +108,15 @@ example, we’ll set everything up in a temporary directory.</p>
 <h2 id="sample-data">Sample data<a class="anchor" aria-label="anchor" href="#sample-data"></a>
 </h2>
 <p>Create a data frame with info about each paper. One column must be
-called “xml” and contain paths to the xml files (relative to the
+called “id” and contain paths to the xml files (relative to the
 validation file location). Other possible columns are “table”, “report”,
-and “traffic_light”, which should contain the expects values of those
+and “traffic_light”, which should contain the expected values of those
 items from the module you’re testing. If you want to check more than
 just the first row of the text column from the return table, omit the
 table column and use the method in the next section.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  xml <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"xml"</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">xmldir</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  id <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"xml"</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">xmldir</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  table <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"faceresearch.org"</span>, <span class="st">"https://osf.io/mwzuq"</span>, <span class="st">"https://osf.io/pwtrh"</span><span class="op">)</span>,</span>
 <span>  report <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">""</span>, <span class="fl">3</span><span class="op">)</span>, <span class="co"># this module has no report</span></span>
 <span>  traffic_light <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"info"</span>, <span class="st">"info"</span>, <span class="st">"red"</span><span class="op">)</span></span>
@@ -143,8 +136,8 @@ any columns and they will not be checked in the validation. Here, we
 will only validate the text and header columns (making one mistake in
 the header column for demonstration purposes).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">exp_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  xml <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">sample</span><span class="op">$</span><span class="va">xml</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
+<code class="sourceCode R"><span><span class="va">expected</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">sample</span><span class="op">$</span><span class="va">id</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  text <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"faceresearch.org"</span>, <span class="st">"stumbleupon.com"</span>,</span>
 <span>           <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"https://osf.io/mwzuq"</span>, <span class="fl">3</span><span class="op">)</span>,</span>
 <span>           <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"https://osf.io/pwtrh"</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -153,8 +146,8 @@ the header column for demonstration purposes).</p>
 <span>             <span class="st">"Intro"</span>, <span class="st">"Attitude"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">exp_table</span></span>
-<span><span class="co">#&gt;                xml                 text       header</span></span>
+<span><span class="va">expected</span></span>
+<span><span class="co">#&gt;                 id                 text       header</span></span>
 <span><span class="co">#&gt; 1 xml/eyecolor.xml     faceresearch.org Participants</span></span>
 <span><span class="co">#&gt; 2 xml/eyecolor.xml      stumbleupon.com Participants</span></span>
 <span><span class="co">#&gt; 3   xml/incest.xml https://osf.io/mwzuq      Methods</span></span>
@@ -172,46 +165,38 @@ match it to the table column of your sample.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="st">"all-urls"</span>, <span class="va">sample</span>, path <span class="op">=</span> <span class="va">valdir</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">v</span></span>
-<span><span class="co">#&gt;  Validated matches from a sample of 3:</span></span>
-<span><span class="co">#&gt; * tables: 100%</span></span>
-<span><span class="co">#&gt; * reports: 100%</span></span>
-<span><span class="co">#&gt; * traffic lights: 67%</span></span></code></pre></div>
+<span><span class="va">v</span></span></code></pre></div>
 <p>If you include the expected results table, it will assess all the
 data for matching the module results table.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="st">"all-urls"</span>, <span class="va">sample</span>, <span class="va">exp_table</span>, path <span class="op">=</span> <span class="va">valdir</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="st">"all-urls"</span>, <span class="va">sample</span>, <span class="va">expected</span>, path <span class="op">=</span> <span class="va">valdir</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">v</span></span>
-<span><span class="co">#&gt;  Validated matches from a sample of 3:</span></span>
-<span><span class="co">#&gt; * tables: 67%</span></span>
-<span><span class="co">#&gt; * reports: 100%</span></span>
-<span><span class="co">#&gt; * traffic lights: 67%</span></span></code></pre></div>
+<span><span class="va">v</span></span></code></pre></div>
 <p>We can further explore any problems by looking at the sample and
 returned tables.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show rows where the traffic light check is false</span></span>
 <span><span class="va">v</span><span class="op">$</span><span class="va">sample</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="va">tl_check</span><span class="op">)</span></span>
-<span><span class="co">#&gt;              xml                table report traffic_light report_ver tl_ver</span></span>
+<span><span class="co">#&gt;               id                table report traffic_light report_ver tl_ver</span></span>
 <span><span class="co">#&gt; 1 xml/prereg.xml https://osf.io/pwtrh                  red              info</span></span>
-<span><span class="co">#&gt;   results_missing results_extra table_check report_check tl_check</span></span>
-<span><span class="co">#&gt; 1               1             1       FALSE         TRUE    FALSE</span></span></code></pre></div>
+<span><span class="co">#&gt;   misses false_alarms table_check report_check tl_check</span></span>
+<span><span class="co">#&gt; 1      1            1       FALSE         TRUE    FALSE</span></span></code></pre></div>
 <p>The table check is false, and there is one missing and one extra
 result.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show rows where the table check is false</span></span>
 <span><span class="va">v</span><span class="op">$</span><span class="va">sample</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="va">table_check</span><span class="op">)</span></span>
-<span><span class="co">#&gt;              xml                table report traffic_light report_ver tl_ver</span></span>
+<span><span class="co">#&gt;               id                table report traffic_light report_ver tl_ver</span></span>
 <span><span class="co">#&gt; 1 xml/prereg.xml https://osf.io/pwtrh                  red              info</span></span>
-<span><span class="co">#&gt;   results_missing results_extra table_check report_check tl_check</span></span>
-<span><span class="co">#&gt; 1               1             1       FALSE         TRUE    FALSE</span></span></code></pre></div>
+<span><span class="co">#&gt;   misses false_alarms table_check report_check tl_check</span></span>
+<span><span class="co">#&gt; 1      1            1       FALSE         TRUE    FALSE</span></span></code></pre></div>
 <p>You can view the validated results table for that paper…</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">v</span><span class="op">$</span><span class="va">results_table</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">xml</span> <span class="op">==</span> <span class="st">"xml/prereg.xml"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;              xml                 text</span></span>
+<code class="sourceCode R"><span><span class="va">v</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="st">"xml/prereg.xml"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;               id                 text</span></span>
 <span><span class="co">#&gt; 1 xml/prereg.xml https://osf.io/pwtrh</span></span>
 <span><span class="co">#&gt; 2 xml/prereg.xml https://osf.io/pwtrh</span></span>
 <span><span class="co">#&gt;                                                                    header</span></span>
@@ -219,9 +204,9 @@ result.</p>
 <span><span class="co">#&gt; 2                                                                Attitude</span></span></code></pre></div>
 <p>…and compare it with the expected results.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">exp_table</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">xml</span> <span class="op">==</span> <span class="st">"xml/prereg.xml"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;              xml                 text   header</span></span>
+<code class="sourceCode R"><span><span class="va">expected</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="st">"xml/prereg.xml"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;               id                 text   header</span></span>
 <span><span class="co">#&gt; 1 xml/prereg.xml https://osf.io/pwtrh    Intro</span></span>
 <span><span class="co">#&gt; 2 xml/prereg.xml https://osf.io/pwtrh Attitude</span></span></code></pre></div>
 </div>
