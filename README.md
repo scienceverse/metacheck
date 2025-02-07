@@ -62,26 +62,28 @@ text <- search_text(paper, pattern,
 | t(97.2) = -1.96 | results | Results |   3 |   2 |   1 | to_err_is_human.xml |
 | p = 0.152       | results | Results |   3 |   2 |   1 | to_err_is_human.xml |
 
-### Large Language Models
+## Large Language Models
 
-You can ask an LLM to process text. Use `search_text()` first to narrow
-down the text into what you want to query. Below, we returned the first
-two papers’ introduction sections, and returned the full section. Then
-we asked an LLM “What is the hypothesis of this study?”.
+You can query the extracted text of papers with LLMs using
+[groq](https://console.groq.com/docs/).
+
+Use `search_text()` first to narrow down the text into what you want to
+query. Below, we returned the first two papers’ introduction sections,
+and returned the full section. Then we asked an LLM “What is the
+hypothesis of this study?”.
 
 ``` r
-# ask LLM a question
 hypotheses <- search_text(papers[1:2], 
                           section = "intro", 
                           return = "section")
-query <- "What is the hypothesis of this study?"
+query <- "What is the hypothesis of this study? Answer as briefly as possible."
 llm_hypo <- llm(hypotheses, query)
 ```
 
-| id | answer | cost |
-|:---|:---|---:|
-| eyecolor.xml | The hypothesis of this study is to test the sex-linked heritable preference hypothesis and the positive sexual imprinting hypothesis in relation to eye color and partner selection in heterosexual and same-sex couples. | 0.000671 |
-| incest.xml | The hypothesis of this study is that moral opposition to third-party sibling incest may be greater among individuals with other-sex siblings than among individuals who do not have other-sex siblings. | 0.000635 |
+| id | answer |
+|:---|:---|
+| eyecolor.xml | The hypothesis of this study is that humans exhibit positive sexual imprinting, where individuals choose partners with physical characteristics similar to those of their opposite-sex parent. |
+| incest.xml | The hypothesis is that moral opposition to third-party sibling incest is greater among individuals with other-sex siblings than among individuals with same-sex siblings. |
 
 ### Batch Processing
 
