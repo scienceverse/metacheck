@@ -1,0 +1,73 @@
+---
+title: Profiling
+---
+
+```{r}
+#| label: setup
+
+library(lineprof)
+
+devtools::load_all(".")
+#source("profile/stats-custom.R")
+
+files <- list.files("psych_science_xml", "xml$", full.names = TRUE)
+```
+
+
+### read_grobid
+
+```{r}
+lineprof( papers <- read_grobid(files[1:50]) )
+```
+
+
+### concat_tables
+
+```{r}
+lineprof( refs <- concat_tables(papers, "references") )
+lineprof( cite <- concat_tables(papers, "citations") )
+```
+
+### search_text
+
+```{r}
+lineprof( res <- search_text(papers, section = "results") )
+```
+
+### stats
+
+```{r}
+lineprof( sc <- stats(res) )
+```
+
+## Modules
+
+### all-p-values
+
+```{r}
+lineprof( p <- module_run(res, "all-p-values") )
+```
+
+
+
+## Long Paper Lists
+
+```{r}
+ps <- readRDS("../vignettes/psysci_oa.Rds")
+ps <- ps[1:30]
+```
+
+```{r}
+lineprof( text <- search_text(ps, "signif") )
+```
+
+```{r}
+lineprof( exp <- expand_text(text, ps) )
+```
+
+```{r}
+lineprof( exp1 <- expand_text(text, ps, plus = 1) )
+```
+
+
+

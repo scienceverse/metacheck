@@ -70,20 +70,23 @@ expand_text <- function(results_table,
                        .by = dplyr::all_of(by))
   }
 
+  # expand sentences ----
   if (minus > 0 | plus > 0) {
     if (expand_to != "sentence") {
       message("Plus and minus only work when expand_to == 'sentence'")
     } else {
-      full_text$expanded <- mapply(function(id1, d1, p1, s1) {
-        srange <- seq(s1 - minus, s1 + plus, 1)
-        pm <- dplyr::filter(full_text,
-                            id == id1, div == d1, p == p1,
-                            s %in% srange)
-        paste(pm$expanded, collapse = " ")
-      }, id1 = full_text$id,
-          d1 = full_text$div,
-          p1 = full_text$p,
-          s1 = full_text$s)
+      # cut down to relevant sentences
+
+      full_text <- lapply(-minus:plus, function(offset) {
+        coords <- results_table[c("id", "div", "p", "s")]
+        coords$expanded_s <- coords$s + offset
+        coords
+      }) |>
+        do.call(rbind, args = _) |>
+        dplyr::left_join(full_text, by = c("id", "div", "p", "expanded_s" = "s")) |>
+        dplyr::filter(!is.na(expanded)) |>
+        dplyr::summarise(expanded = paste(expanded, collapse = " "),
+                         .by = dplyr::all_of(c("id", "section", "div", "p", "s")))
     }
   }
 
