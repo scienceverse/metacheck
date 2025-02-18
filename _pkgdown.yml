@@ -20,5 +20,6 @@ articles:
       - report-example
       - batch
       - metascience
+      - text_model
       - modules
       - validate
