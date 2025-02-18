@@ -4,16 +4,30 @@
 \alias{text_features}
 \title{Text features}
 \usage{
-text_features(text, words, has_number = TRUE, has_symbol = c(has_equals = "="))
+text_features(
+  text,
+  words,
+  word_count = TRUE,
+  has_number = TRUE,
+  has_symbol = c(has_equals = "="),
+  stem_language = "porter",
+  values = c("presence", "count")
+)
 }
 \arguments{
 \item{text}{a vector of the text strings to extract features from}
 
 \item{words}{a vector of words to find}
 
+\item{word_count}{whether to include word count}
+
 \item{has_number}{whether to code the presence of numbers}
 
 \item{has_symbol}{a named vector of symbols to detect}
+
+\item{stem_language}{the language to use for stemming words, from SnowballC::getStemLanguages(), set to FALSE for no stemming}
+
+\item{values}{whether to return the count of words (0+) in a string or the presence (0/1)}
 }
 \value{
 a data frame of features for each text

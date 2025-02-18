@@ -10,3 +10,5 @@ inst/python/constants.py
 profile/psych_science_xml*
 inst/modules/sample-size*
 tests/testthat/pdf
+/doc/
+/Meta/

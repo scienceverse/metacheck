@@ -41,6 +41,7 @@ Imports:
     readxl,
     progress,
     tidytext,
+    SnowballC,
     xml2,
     reticulate,
     statcheck,

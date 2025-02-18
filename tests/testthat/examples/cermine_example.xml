@@ -1,0 +1,2633 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article xmlns:xlink="http://www.w3.org/1999/xlink">
+  <front>
+    <journal-meta>
+      <journal-title-group>
+        <journal-title>Psychological Science</journal-title>
+      </journal-title-group>
+    </journal-meta>
+    <article-meta>
+      <title-group>
+        <article-title>Ambivalent Sexism and Tolerance of Violence Against Women in India</article-title>
+      </title-group>
+      <contrib-group>
+        <contrib contrib-type="author">
+          <string-name>Nikhil K. Sengupta</string-name>
+          <email>n.sengupta@kent.ac.uk</email>
+          <xref ref-type="aff" rid="aff1">1</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <string-name>Matthew D. Hammond</string-name>
+          <xref ref-type="aff" rid="aff2">2</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <string-name>Chris K. Deak</string-name>
+          <xref ref-type="aff" rid="aff2">2</xref>
+        </contrib>
+        <contrib contrib-type="author">
+          <string-name>Ragini Saira Malhotra</string-name>
+          <xref ref-type="aff" rid="aff0">0</xref>
+        </contrib>
+        <aff id="aff0">
+          <label>0</label>
+          <institution>Department of Criminology, University of Southern Maine</institution>
+          ,
+          <country country="US">USA</country>
+        </aff>
+        <aff id="aff1">
+          <label>1</label>
+          <institution>School of Psychology, University of Kent</institution>
+        </aff>
+        <aff id="aff2">
+          <label>2</label>
+          <institution>School of Psychology, Victoria University of Wellington</institution>
+        </aff>
+      </contrib-group>
+      <volume>35</volume>
+      <issue>7</issue>
+      <fpage>712</fpage>
+      <lpage>721</lpage>
+      <abstract>
+        <p>We examined associations between sexist beliefs and tolerance of violence against women in India using a nationally representative probability sample of adults (n = 133,398). Research consistently indicates that hostile sexism fosters tolerance of violence against women. However, benevolent sexism is sometimes associated with higher tolerance and sometimes with lower tolerance of violence. We proposed that this inconsistency could be resolved by considering the source of violence: Is violence perpetrated by outsiders or intimate partners? Results of a multigroup structural equation model showed that endorsement of hostile sexism was related to greater tolerance of violence regardless of the source. In contrast, endorsement of benevolent sexism was associated with lower tolerance of violence from outsiders but was simultaneously associated with higher tolerance of spousal violence. These opposing processes indicate that although benevolent sexism promises women protection from violence, the very same ideology legitimizes spousal violence, thereby reinforcing men's power within intimate relationships.</p>
+      </abstract>
+      <kwd-group>
+        <kwd>eol&gt;sexism</kwd>
+        <kwd>violence</kwd>
+        <kwd>India</kwd>
+        <kwd>gender</kwd>
+        <kwd>open data</kwd>
+        <kwd>open materials</kwd>
+      </kwd-group>
+    </article-meta>
+  </front>
+  <body>
+    <sec id="sec-1">
+      <title>-</title>
+      <p>
+        Violence against women in India periodically garners
+global attention and sparks local discontent following
+major cases of sexual assault
+        <xref ref-type="bibr" rid="ref34">(Roychowdhury, 2013)</xref>
+        .
+But Indian women also routinely face violence that is
+much less conspicuous: Nearly one in five report
+experiencing sexual harassment in public “often” or “very
+often,” and the estimated lifetime rate of domestic
+violence for women is 41%
+        <xref ref-type="bibr" rid="ref10 ref24">(Kalokhe et al., 2017; Desai &amp;
+Malhotra, 2018)</xref>
+        . This public and private violence occurs
+in a societal context in which sexist beliefs are relatively
+prevalent
+        <xref ref-type="bibr" rid="ref40">(Sreemol, 2018)</xref>
+        . However, no studies have
+examined the link between sexism and tolerance of
+violence against women in India. We fill this gap by
+testing the relationship between two sexist ideologies
+(hostile sexism and benevolent sexism) and tolerance
+of violence from two sources (outsiders and intimate
+partners). Thus, we leverage a unique sample from an
+underrepresented population (n = 133,398) to address
+a long-standing question in gender relations: How do
+ambivalent attitudes toward women (both protective
+and punitive) simultaneously function to maintain
+gender inequality?
+      </p>
+    </sec>
+    <sec id="sec-2">
+      <title>Ambivalent Sexism Theory</title>
+      <p>
+        Ambivalent sexism theory proposes that sexist beliefs
+take two distinct forms—hostile sexism and benevolent
+sexism
+        <xref ref-type="bibr" rid="ref12">(Glick &amp; Fiske, 1996)</xref>
+        . Hostile sexism comprises
+overtly negative beliefs, characterizing women as
+manipulative, power-hungry, and oversensitive.
+Benevolent sexism presents a highly idealized view of women
+as uniquely caring, moral, and deserving of men’s
+admiration and protection.
+      </p>
+      <p>
+        Hostile sexism and benevolent sexism are both
+theorized to legitimize gender inequality and harm women
+in distinct ways. The aggressive content of hostile sexism
+directly enforces norms of men’s power
+        <xref ref-type="bibr" rid="ref3">(Bareket &amp; Fiske,
+2023)</xref>
+        , fostering discrimination against powerful women
+        <xref ref-type="bibr" rid="ref29 ref43">(Masser &amp; Abrams, 2004)</xref>
+        and opposition to
+genderbased policies
+        <xref ref-type="bibr" rid="ref22">(Hideg &amp; Ferris, 2013)</xref>
+        . In contrast, the
+patronizing content of benevolent sexism indirectly
+enforces men’s power through gender-role norms
+        <xref ref-type="bibr" rid="ref3">(Bareket &amp; Fiske, 2023)</xref>
+        , undermining women’s career
+aspirations
+        <xref ref-type="bibr" rid="ref25">(Kuchynka et  al., 2017)</xref>
+        and willingness to
+challenge gender inequality
+        <xref ref-type="bibr" rid="ref19 ref4">(Becker &amp; Wright, 2011;
+Hammond &amp; Sibley, 2011)</xref>
+        .
+      </p>
+    </sec>
+    <sec id="sec-3">
+      <title>Sexism and Violence</title>
+      <p>
+        Of the many gender inequalities, violence against
+women is particularly complex because prejudice
+toward women combines antipathy and idealization.
+One possible consequence of this ambivalence is that
+hostile sexism fosters violence whereas benevolent
+sexism mitigates violence. However, the evidence does
+not bear out this straightforward pattern. In a
+metaanalysis of 152 studies, hostile sexism strongly
+predicted greater tolerance of violence, whereas benevolent
+sexism was a weak predictor of greater tolerance
+        <xref ref-type="bibr" rid="ref2">(Agadullina et al., 2022)</xref>
+        . Some findings show negative
+associations between benevolent sexism and tolerance
+of violence
+        <xref ref-type="bibr" rid="ref37">(Saunders et al., 2017)</xref>
+        , others show positive
+associations
+        <xref ref-type="bibr" rid="ref44">(Yamawaki et al., 2009)</xref>
+        , and many findings
+are null
+        <xref ref-type="bibr" rid="ref3">(Bareket &amp; Fiske, 2023)</xref>
+        .
+      </p>
+      <p>
+        These inconsistent results occur alongside theoretical
+complexity. From one perspective, benevolent sexism
+should engender lower tolerance of violence because
+it prescribes that “women should be cherished and
+protected by men”
+        <xref ref-type="bibr" rid="ref12">(Glick &amp; Fiske, 1996, p. 512)</xref>
+        . However,
+the tenets of ambivalent sexism theory are also
+consistent with the possibility that benevolent sexism fosters
+greater tolerance of violence. For instance, the
+idealization of women sets impossible standards for women’s
+behavior, putting them chronically at risk of being
+judged as behaving “badly”
+        <xref ref-type="bibr" rid="ref13">(Glick &amp; Fiske, 2001)</xref>
+        .
+Accordingly, people who endorse benevolent sexism
+respond punitively to deviations from the “ideal
+woman,” such as legitimizing violence against women
+who are unfaithful
+        <xref ref-type="bibr" rid="ref1 ref43">(Abrams et  al., 2003; Viki et  al.,
+2004)</xref>
+        or being more willing to dissolve romantic
+relationships when partners fall short of their standards
+        <xref ref-type="bibr" rid="ref20">(Hammond &amp; Overall, 2014)</xref>
+        .
+      </p>
+      <p>
+        Thus, an enduring puzzle in sexism research is
+whether benevolent sexism is protective or punitive.
+Previous null findings have been interpreted as
+benevolent sexism promising more than it delivers—it expresses
+that women deserve protection but fails to promote
+protective behavior
+        <xref ref-type="bibr" rid="ref15">(Glick et al., 2002)</xref>
+        . We argue that
+this represents an incomplete picture of benevolent
+      </p>
+    </sec>
+    <sec id="sec-4">
+      <title>Statement of Relevance</title>
+      <p>
+        Violence against women is a major health and
+social-justice issue around the world. But it is an
+especially urgent problem in places with higher
+gender inequality, such as India, where it remains
+understudied. We assessed the sexist beliefs of a
+broad cross-section of Indian society to
+understand how such violence is tolerated and to
+resolve inconsistencies in past research. We found
+that the more overtly sexist beliefs people held,
+the more they tolerated violence perpetrated by
+outsiders and by intimate partners. In contrast,
+the more people held patriarchal beliefs that
+women should be protected by men, the less
+tolerant they were of outsider violence, but the more
+tolerant they were of spousal violence. This
+suggests that to solve the pervasive problem of
+violence against women, it is not just hostile gender
+stereotypes that must be challenged but also the
+seemingly protective yet patriarchal sexist beliefs
+that are prevalent across societies.
+sexism arising from research that (a) overlooks its
+specific role in maintaining men’s access to relational
+intimacy
+        <xref ref-type="bibr" rid="ref18">(Hammond &amp; Overall, 2017)</xref>
+        and (b) overrelies
+on Western, educated, industrialized, rich, and
+developed (WEIRD) samples
+        <xref ref-type="bibr" rid="ref21">(Henrich et al., 2010)</xref>
+        . We
+propose a new model in which benevolent sexism is both
+protective and punitive depending on whether violence
+is committed by outsiders or by intimate partners.
+      </p>
+    </sec>
+    <sec id="sec-5">
+      <title>Sexism and Intimacy</title>
+      <p>
+        Ambivalent sexism theory proposes that gender
+relations are different from other intergroup relations
+because the high-status group’s advantages exist
+alongside intimate interdependence with the low-status
+group. This interdependence is theorized to produce
+ambivalent, rather than purely hostile, sexist beliefs
+        <xref ref-type="bibr" rid="ref13">(Glick &amp; Fiske, 2001)</xref>
+        . Benevolent sexism is theorized
+to facilitate intimacy, whereas hostile sexism maintains
+men’s power. Accordingly, research shows that hostile
+sexism increases men’s societal advantages over time
+        <xref ref-type="bibr" rid="ref6">(Brandt, 2011)</xref>
+        but has relational costs, such as
+undermining heterosexual men’s fulfillment of romantic
+needs
+        <xref ref-type="bibr" rid="ref18">(Hammond &amp; Overall, 2017)</xref>
+        . In contrast,
+benevolent sexism has relational benefits, such as increasing
+men’s relative appeal to women
+        <xref ref-type="bibr" rid="ref5">(Bohner et al., 2010)</xref>
+        and improving relationship satisfaction
+        <xref ref-type="bibr" rid="ref16">(Hammond
+et al., 2020)</xref>
+        .
+      </p>
+      <p>
+        Although the relational nature of benevolent sexism
+is central to ambivalent sexism theory, research has
+often neglected the domain of relationships. However,
+a growing literature now suggests that benevolent
+sexism maintains conventional gender roles via
+interpersonal processes within romantic relationships
+        <xref ref-type="bibr" rid="ref18 ref3">(Bareket
+&amp; Fiske, 2023; Hammond &amp; Overall, 2017)</xref>
+        . Extending
+this idea, we propose that benevolent sexism should
+predict more tolerance of violence in the relationship
+domain.
+      </p>
+      <p>
+        Benevolent sexism frames relationships with men as
+a sanctuary for women
+        <xref ref-type="bibr" rid="ref35">(Sarlet et al., 2012)</xref>
+        , thus
+reinforcing women’s dependence on men
+        <xref ref-type="bibr" rid="ref17 ref39">(Hammond &amp;
+Overall, 2015; Shnabel et al., 2016)</xref>
+        . It heightens
+women’s sensitivity to the threat of stranger violence
+        <xref ref-type="bibr" rid="ref33">(Phelan
+et al., 2010)</xref>
+        , predicts beliefs about men’s duty to protect
+their spouses
+        <xref ref-type="bibr" rid="ref36">(Saucier et  al., 2016)</xref>
+        , and emphasizes
+men’s responsibility to reduce violence toward women
+        <xref ref-type="bibr" rid="ref8">(Brownhalls et  al., 2021)</xref>
+        . These findings suggest that
+benevolent sexism signals safety from threats
+originating outside of traditional heterosexual relationships.
+However, this power dynamic allows the punitive
+effects of benevolent to manifest within such
+relationships. For example, benevolent sexism promotes
+women’s acceptance of their partner’s autocratic behavior
+        <xref ref-type="bibr" rid="ref30">(Moya et al., 2007)</xref>
+        and predicts beliefs that normalize
+men’s power over their partners
+        <xref ref-type="bibr" rid="ref9">(Chen et  al., 2009)</xref>
+        .
+Therefore, we argue benevolent sexism should foster
+protection from outsiders but be punitive toward
+intimate partners.
+      </p>
+    </sec>
+    <sec id="sec-6">
+      <title>Sexism in Context</title>
+      <p>
+        A methodological reason for the mixed
+protective/punitive effects of benevolent sexism is likely the
+overrepresentation of WEIRD samples. Specifically, a key
+feature of WEIRD contexts constrains both the
+protective and punitive potential of benevolent sexism: lower
+interdependence between men and women. First,
+women are less dependent on men for protection
+because there is less societal hostility. Research suggests
+that the appeal of benevolent sexism is particularly
+strong for women when perceived hostility is high
+        <xref ref-type="bibr" rid="ref11 ref14">(Fischer, 2006; Glick et al., 2000)</xref>
+        . This suggests that the
+link with protective norms (i.e., opposition to violence)
+would be weaker in the lower hostility contexts that
+typify prior research.
+      </p>
+      <p>
+        Second, people in WEIRD contexts can more easily
+dissolve unsatisfying relationships. Men who endorse
+benevolent sexism are more willing to end relationships
+because their partners violate their ideals
+        <xref ref-type="bibr" rid="ref20">(Hammond
+&amp; Overall, 2014)</xref>
+        . But when social norms obstruct
+divorce, perhaps men justify punitive violence—aimed
+at aligning women’s behavior with sexist ideals—rather
+than seeking another partner. Indeed, when countries
+make divorce laws more permissive, domestic violence
+falls dramatically
+        <xref ref-type="bibr" rid="ref7">(Brassiolo, 2016)</xref>
+        .
+      </p>
+      <p>
+        Reconciling the seemingly contradictory nature of
+benevolent sexism requires moving beyond the WEIRD
+world. A large probability sample in India affords us a
+unique opportunity. The prevalence of hostility toward
+women in India is relatively high, and norms against
+dissolving unsatisfying relationships are strong
+        <xref ref-type="bibr" rid="ref10 ref40">(Desai &amp;
+Malhotra, 2018; Sreemol, 2018)</xref>
+        . These social conditions—
+prevalent across many non-WEIRD countries—should
+allow the protective and punitive facets of benevolent
+sexism to emerge. On the basis of our argument that
+benevolent sexism connotes both antiviolence norms
+(protection) and violence norms (punishment)
+depending on the source of violence, we tested whether
+benevolent sexism would be (a) negatively associated with
+tolerance of outsider violence and (b) positively
+associated with tolerance of spousal violence. In addition to
+testing these two opposing associations, we also assessed
+hostile sexism, which we expected to be positively related
+to tolerance of both outsider and spousal violence,
+consistent with its overt enforcement of men’s power
+        <xref ref-type="bibr" rid="ref3">(Bareket
+&amp; Fiske, 2023)</xref>
+        .
+      </p>
+    </sec>
+    <sec id="sec-7">
+      <title>Open Practices Statement</title>
+      <p>All questionnaire materials, analysis code, and data
+used for the main analyses are available on the OSF at
+https://osf.io/vq6ud. The study was not preregistered.</p>
+    </sec>
+    <sec id="sec-8">
+      <title>Method</title>
+      <sec id="sec-8-1">
+        <title>Sampling</title>
+        <p>Participants were drawn from the Centre for the
+Monitoring of the Indian Economy’s consumer pyramid
+sample, a representative national sample, as part of the
+Samaj Survey Project. In 2017, this sample consisted of
+161,183 households (112,657 rural and 48,526 urban
+households). Households were selected by dividing the
+states and union territories of India into substate
+“homogeneous regions”—sets of neighboring districts with
+similar climatic conditions and urbanization levels—and
+then randomly sampling villages/blocks of towns and
+households within each region. Seven northeastern
+states were excluded because they lie in mountainous
+regions that are sparsely populated and difficult
+to access: Arunachal Pradesh, Nagaland, Manipur,
+Mizoram, Tripura, Meghalaya, and Sikkim. During
+August and September 2017, interviewers attempted to
+make face-to-face contact with each household. One
+member of the household was asked to volunteer to
+complete the verbally administered survey. In all,
+134,531 people
+interviewers.</p>
+      </sec>
+      <sec id="sec-8-2">
+        <title>Participants</title>
+        <p>
+          were successfully reached by
+Data for the current analysis were drawn from the
+133,398 individuals (56,053 men and 77,345 women)
+who provided complete responses to all measures used
+in our model. Participants had a mean age of 44.26
+years (SD = 13.41). Eighty-nine percent were literate,
+95% were married, and 41% were in some form of
+employment (with a further 48%, 7%, and 3% classifying
+themselves as “homemakers,” retired, and students,
+respectively). Eighty-five percent of the sample were
+Hindu, 10% were Muslim, 3% were Sikh, and 1% were
+Christian; the remaining 1% belonged to other religious
+groups (e.g., Jain, Buddhist). Twenty-four percent of
+the sample were from upper castes, 11% were from
+intermediate castes, 39% were from Other Backward
+Classes (OBCs), and 26% were from Scheduled Castes/
+Scheduled Tribes (SCSTs). OBCs and SCSTs are official
+classifications used by the Indian government for the
+purposes of extending state assistance and
+antidiscrimination protections to historically disadvantaged caste
+groups
+          <xref ref-type="bibr" rid="ref23">( Jodhka, 2012)</xref>
+          . Thus, although the study was
+representative of key demographics such as religion
+and caste, women and people who were literate were
+overrepresented.
+        </p>
+      </sec>
+      <sec id="sec-8-3">
+        <title>Measures</title>
+        <p>Survey characteristics. The large-scale nature of the
+survey necessitated the use of very brief measures for all
+variables in the model. For hostile sexism and
+benevolent sexism, we had only three-item scales available.
+These items were selected from pilot testing of sexism
+items on a subsample of 1,510 people (drawn from the
+same sampling frame as the main survey). We then took
+the three highest loading items each, for hostile sexism
+and benevolent sexism (see below). For tolerance of
+outsider violence and spousal violence, we had only
+singleitem measures available. These items were validated in a
+separate study of 503 Indian people (see the
+measurement validation study below).</p>
+        <p>Validation analyses notwithstanding, short-form
+scales have lower reliability, and their inclusion in our
+analyses is an important caveat. Because of financial
+limitations, we faced the standard trade-off between
+measurement precision and large-scale representation
+of a population, particularly a population as diverse
+and physically dispersed as the Indian population (e.g.,
+60% of the population is rural). Accordingly, our
+approach prioritized measurement for 130,000 people
+with these short scales for the insight it provided into
+the gender attitudes of the world’s largest, yet
+understudied, democracy.</p>
+        <p>Items in the survey were first translated from English
+into nine Indian languages (Hindi/Urdu, Marathi,
+Punjabi, Bengali, Tamil, Telugu, Malayalam, Odiya, and
+Gujarati) and then independently back-translated to
+ensure accuracy. Surveys were administered in
+whichever language the participants were most comfortable
+with (including English). The nature of how language
+was implemented in the survey precluded formal tests
+of measurement invariance across linguistic groups (for
+a full discussion, see the Supplemental Material
+available online). N. K. Sengupta and R. S. Malhotra were
+involved in the initial data collection, in the role of
+advisors on survey content, but all final decisions
+regarding content and administration of the survey
+were made by the Centre for the Monitoring of the
+Indian Economy. Thus, no ethics approval was sought
+or received from an institutional review board.
+Nonetheless, the research followed established practices in
+survey research and is thus consistent with the ethical
+guidelines and legal requirements of the authors’
+universities and complies with Indian law.</p>
+        <p>
+          Ambivalent sexism. Attitudes toward women were
+assessed using six items from the Ambivalent Sexism
+Inventory
+          <xref ref-type="bibr" rid="ref12">(Glick &amp; Fiske, 1996; scale from 1, strongly
+disagree, to 5, strongly agree)</xref>
+          . The three items measuring
+hostile sexism were “Women are too easily offended,”
+“Women seek to gain power by controlling men,” and “In
+a fair competition, if women lose to men, they usually
+complain about being discriminated against.” The three
+items measuring benevolent sexism were “Women, as
+compared to men, tend to have a more refined sense of
+culture and good taste,” “Women should be cherished
+and protected by men,” and “Women are naturally more
+caring and empathetic than men.” Although our analyses
+modeled variables as latent factors to adjust for
+measurement reliability, Cronbach’s alphas for averaged hostile
+sexism (α = .63) and benevolent sexism (α = .68)
+indicated acceptable internal reliability.
+        </p>
+        <p>
+          Tolerance of outsider violence. Participants indicated
+their agreement with the item “Women should accept
+eve-teasing as a normal part of life” (scale from 1, strongly
+disagree, to 5, strongly agree). “Eve-teasing” is a term
+widely used in South Asia to refer to harassment and
+assault perpetrated against women by strangers in public
+spaces
+          <xref ref-type="bibr" rid="ref42">(e.g., obscene remarks on the street or unwanted
+groping on public transport; Talboys et al., 2017)</xref>
+          .
+Tolerance of spousal violence. Participants indicated
+their agreement with the item “A husband has the right to
+discipline his wife” (scale from 1, strongly disagree, to 5,
+strongly agree). This item did not refer to explicit acts of
+violence, but “discipline” connotes forms of physical and
+psychological abuse, including verbal aggression,
+humiliation, restriction of freedom, and economic abuse. All of
+these possible types of discipline constitute spousal
+violence as defined by the United Nations and under Indian
+law. Thus, the concept of a husband disciplining his wife
+constitutes spousal violence by local and international
+standards.
+        </p>
+        <p>
+          The inclusion of these two measures meant that we
+clearly distinguish violence perpetrated by intimate
+partners within the relational domain from violence
+perpetrated by outsiders in the public domain (see also
+“Measurement Validation Study” section below).
+However, the required brevity of the questionnaire meant
+we could not directly examine other forms of violence
+that have been linked to sexism (e.g., explicit sexual
+assault). For example, benevolent sexism is linked to
+higher justification of sexual assault when the
+perpetrator and victim are described as developing a romantic
+connection, with the victim inviting the perpetrator into
+her home (the “acquaintance-rape” condition)
+compared with the perpetrator being a complete stranger
+and following the victim in public
+          <xref ref-type="bibr" rid="ref1 ref43">(the “stranger-rape”
+condition; Abrams et  al., 2003; Viki et  al., 2004)</xref>
+          . The
+acquaintance-rape scenarios in prior research share
+characteristics with tolerance of spousal violence in our
+study (i.e., the implication that the perpetrator of
+violence is involved romantically with the victim and that
+violence occurs in a private setting). Thus,
+notwithstanding the specificity of the current measures, our
+model offers a framework for making predictions about
+other forms of violence by considering the extent to
+which they occur in a relational/private context versus
+outside of it.
+        </p>
+      </sec>
+      <sec id="sec-8-4">
+        <title>Measurement validation study</title>
+        <p>
+          To establish whether the single items for tolerance of
+violence captured the underlying constructs they were
+designed to assess, we conducted a separate
+measurement validation study using an adult convenience
+sample in India (n = 503). In this study, we included our
+single-item measures along with multi-item scales
+measuring tolerance of violence originating outside of
+intimate relationships
+          <xref ref-type="bibr" rid="ref26">(Illinois Sexual Harassment Myth
+Acceptance Scale; Lonsway et al., 2008)</xref>
+          and tolerance
+of violence within intimate relationships
+          <xref ref-type="bibr" rid="ref32">(Domestic
+Violence Myths Scale; Peters, 2008)</xref>
+          . These scales were
+chosen because they come closest to the attitudinal
+nature of our own constructs (as opposed to scales that
+measure the direct commission or experience of
+violence) and because they have been validated and used
+extensively in prior research. The difference in content
+between the two scales also captures the key distinction
+in our study: violence originating from within versus
+outside of the romantic relationship dyad.
+        </p>
+        <p>Full results of this study are presented in the
+Supplemental Material. Results showed that (a) outsider
+violence and spousal violence are distinct constructs, (b)
+our focal items loaded onto their respective latent
+constructs approximately as strongly as the typical item on
+the long-form scales, and (c) our focal items did not
+cross-load onto the undesignated latent construct (see
+Tables S2 and S3 in the Supplemental Material). Overall,
+these findings provide evidence that our items are
+acceptable indices of two constructs previously
+conceptualized to assess tolerance of violence that occurs
+outside of romantic relationships (i.e., sexual
+harassment) and tolerance of violence within romantic
+relationships (i.e., domestic violence).</p>
+      </sec>
+    </sec>
+    <sec id="sec-9">
+      <title>Results</title>
+      <sec id="sec-9-1">
+        <title>Analysis plan</title>
+        <p>
+          We did not conduct an a priori power analysis. Because
+of the extremely large sample size, we determined that
+there was adequate power to detect the hypothesized
+effects, and we selected a more conservative critical
+alpha of p = .01. We conducted all analyses in MPlus
+Version 7.4 (
+          <xref ref-type="bibr" rid="ref31">Muthén &amp; Muthén, 1998</xref>
+          -2017).
+        </p>
+        <p>We first tested the bivariate correlations between all
+variables observed variables. Next, we tested the fit of
+the measurement model (i.e., a confirmatory factor
+analysis modeling hostile sexism and benevolent sexism
+as latent variables). We then tested our hypotheses in
+a multigroup model that simultaneously modeled
+effects for women and for men that regressed tolerance
+of outsider violence and tolerance of spousal violence
+on both latent hostile sexism and latent benevolent
+sexism. Finally, we ran the same model with the
+inclusion of several demographic covariates (see Table S2
+in the Supplemental Material).</p>
+      </sec>
+      <sec id="sec-9-2">
+        <title>Correlations</title>
+        <p>Descriptive statistics and correlations between all
+observed variables in the model are presented in the
+Supplemental Material (see Table S1). The bivariate
+correlations between items measuring sexism and
+violence indicated a pattern in which higher hostile and
+benevolent sexism were related to higher tolerance of
+both outsider violence and spousal violence. Tolerance
+of outsider violence and tolerance of spousal violence
+were also positively correlated with each other. To test
+the degree to which hostile sexism and latent
+benevolent sexism were uniquely related to tolerance of</p>
+        <sec id="sec-9-2-1">
+          <title>Hostile Sexism</title>
+          <p>Women: b = .788
+Men: b = .905</p>
+        </sec>
+        <sec id="sec-9-2-2">
+          <title>Tolerance of</title>
+          <p>Outsider Violence
+WomMenen::bb==−−.3.33681
+different forms of gender violence, we modeled these
+variables as latent constructs in a multigroup structural
+equation model.</p>
+        </sec>
+      </sec>
+      <sec id="sec-9-3">
+        <title>Measurement model</title>
+        <p>First, we examined the local fit of the measurement
+model of the latent factors of hostile sexism and
+benevolent sexism, each constrained to an intercept of 0 and
+variance of 1, while freely estimating three
+parameters—specifically, where Mplus modification indices
+indicated that there may be residual item correlations
+(i.e., items that share variance not shared with the latent
+factor). The measurement model indicated strong and
+significant loadings for all of the items on their
+respective factors (βs = .514 to .681, SEs = .003 to .005, ps &lt;
+.001) and a strong positive association between hostile
+sexism and benevolent sexism (β = .715, SE = .005, p &lt;
+.001). Indicators of the comparative fit index (CFI =
+.946) and standardized root-mean-square residual
+(SRMR = .035) both indicated good fit for the
+measurement model, whereas the Tucker-Lewis Index (TLI =
+.838) and root-mean-square error of approximation
+(RMSEA = .108) were both lower than criteria for good
+fit (i.e., TLI &gt; .90 and RMSEA &lt; .08). We did not consider
+the chi-square test of model fit (χ2 = 7727.967, p &lt; .001)
+because it is too sensitive to the very large sample size.</p>
+        <p>
+          Altogether, we followed guidance to examine
+indicators holistically and in the context of their theoretical
+requirements
+          <xref ref-type="bibr" rid="ref27 ref28">(MacCallum &amp; Austin, 2000; Marsh et al.,
+2004)</xref>
+          and judged the overall fit for the measurement
+model as acceptable. Specifically, two indicators were
+good and two were lower than ideal, and our model
+specification was based in theory that hostile sexism and
+benevolent sexism are distinct, and positively related,
+ideologies
+          <xref ref-type="bibr" rid="ref12">(Glick &amp; Fiske, 1996)</xref>
+          . Thus, we had no
+concerning evidence to indicate a lack of fit or problematic
+degree of error to reject our measurement model.
+        </p>
+      </sec>
+      <sec id="sec-9-4">
+        <title>Multigroup structural equation model</title>
+        <p>We tested our hypotheses by simultaneously regressing
+tolerance of outsider violence and tolerance of spousal
+violence on latent hostile sexism and latent benevolent
+sexism. Parameters for men and women were estimated
+simultaneously in a multigroup model to facilitate
+comparison of the latent slopes. The model provided a good
+fit to the data, χ2(40) = 19451.104, p &lt; .001, SRMR =
+.050, RMSEA = .085, 90% confidence interval (CI) =
+[.084, .086], CFI = .901.</p>
+        <p>Consistent with ambivalent sexism theory, latent
+hostile sexism was positively associated with latent
+benevolent sexism for both men, b = .441, SE = .005,
+p &lt; .001, 99% CI = [.428, .455], and women, b = .375,
+SE = .005, p &lt; .001, 99% CI = [.363, .386]. Accordingly,
+we included these latent variables simultaneously in
+the model to examine their unique patterns of
+covariance with tolerance of violence against women. Overall,
+the model for men explained 16.4% of the variance in
+tolerance of outsider violence and 35.9% of the variance
+in tolerance of spousal violence. The model for women
+explained 16.4% of the variance in tolerance of outsider
+violence and 30.9% of the variance in tolerance of
+spousal violence.</p>
+        <p>Endorsement of hostile sexism was related to greater
+tolerance of outsider violence (Fig. 1), bmen = .905,
+SE = .018, p &lt; .001, 99% CI = [.859, .952]; bwomen = .788,
+SE = .012, p &lt; .001, 99% CI = [.758, .818]. Comparisons
+of parameters between men and women in the
+multigroup model indicated that this association was
+stronger for men, parameter difference = .117, SE = .021, p &lt;
+.001, 99% CI = [.064, .171]. Endorsement of hostile
+sexism was also related to greater tolerance of spousal
+violence, bmen = .184, SE = .013, p &lt; .001, 99% CI = [.152,
+.217]; bwomen = .172, SE = .008, p &lt; .001, 99% CI = [.150,
+.193]. There was no evidence that the effect was
+significantly different by gender, parameter difference =
+.013, SE = .015, p = .400, 99% CI = [−.026, .051]. Thus,
+as hypothesized, endorsement of hostile sexism was
+related to greater tolerance of violence against women
+regardless of whether the source of that violence was
+outsiders or women’s intimate partners.</p>
+        <p>The pattern for benevolent sexism revealed the
+hypothesized opposing effects on tolerance of outsider
+violence versus spousal violence (Fig. 1). Endorsement
+of benevolent sexism was related to lower tolerance of
+outsider violence, bmen = −.381, SE = .016, p &lt; .001, 99%
+CI = [−.422, −.340]; bwomen = −.336, SE = .009, p &lt; .001,
+99% CI = [−.360, −.312]. This effect did not significantly
+differ by gender according to our critical alpha,
+parameter difference = −.045, SE = .018, p = .014, 99% CI =
+[−.092, .002]. In contrast, endorsement of benevolent
+sexism was related to higher tolerance of spousal
+violence, bmen = .750, SE = .012, p &lt; .001, 99% CI = [.719,
+.782]; bwomen = .686, SE = .008, p &lt; .001, 99% CI = [.667,
+.706]. A comparison of the parameters indicated that
+the link between latent benevolent sexism and
+tolerance of spousal violence was slightly stronger for men
+than for women, parameter difference = .064, SE = .014,
+p &lt; .001, 99% CI = [.028, .100].</p>
+        <p>Because hostile and benevolent sexism were both
+positively related to tolerance of spousal violence, we
+conducted an exploratory test of the differences in the
+relative strength of these relationships. The coefficient
+of benevolent sexism was significantly higher than the
+coefficient of hostile sexism for both men, parameter
+difference = .566, SE = .023, p &lt; .001, 99% CI = [.506,
+.627], and women, parameter difference = .515, SE = .015,
+p &lt; .001, 99% CI = [.477, .552]. Thus, endorsement of
+benevolent sexism was related to even more tolerance
+of spousal violence than endorsement of hostile sexism.
+Results remained consistent when testing the model with
+the inclusion of the following demographic covariates:
+age, literacy, employment status, marital status, caste,
+and religion (see the Supplemental Material).</p>
+      </sec>
+    </sec>
+    <sec id="sec-10">
+      <title>Discussion</title>
+      <p>
+        We conducted the first large-scale analysis of sexism
+and tolerance of gender violence in India. As expected,
+hostile sexism was related to greater tolerance of both
+outsider violence and spousal violence
+        <xref ref-type="bibr" rid="ref2">(see Agadullina
+et  al., 2022)</xref>
+        , consistent with its function of directly
+enforcing men’s power
+        <xref ref-type="bibr" rid="ref3">(Bareket &amp; Fiske, 2023)</xref>
+        . In
+contrast, the results for benevolent sexism diverged from,
+and provided an explanation for, null-to-weak effects
+in prior research. Benevolent sexism was simultaneously
+related to lower tolerance of outsider violence and
+higher tolerance of spousal violence. The opposing
+associations that differed on the basis of the source of
+violence illustrate the context-specific harm of
+benevolent sexism, consistent with its sensitivity to relational
+gender-role norms
+        <xref ref-type="bibr" rid="ref3">(Bareket &amp; Fiske, 2023)</xref>
+        . Further,
+effects emerged for both men and women, aligning with
+theory that intergroup ideologies, including sexism, are
+effective at structuring society because their
+prescriptions are consensually shared by both high- and
+lowstatus groups
+        <xref ref-type="bibr" rid="ref38 ref41">(Sengupta et al., 2017; Suppes, 2020)</xref>
+        .
+      </p>
+      <p>Our results provide new evidence for a central
+proposition of ambivalent sexism theory: Hostile and
+benevolent sexism have distinct consequences that
+perpetuate men’s societal power. Hostile sexism reinforces
+such power with overt aggression. By contrast,
+benevolent sexism simultaneously entices women with offers
+of safety while disempowering them with restrictive
+expectations. We demonstrated that this dual nature of
+benevolent sexism applies to violence. Any protection
+from public violence that women gain from benevolent
+sexism also means they are more vulnerable to violence
+committed by their “protectors.” Its protective appeal
+goes hand in hand with the disempowerment of women
+within relationships.</p>
+      <p>
+        Although the disempowering effects of benevolent
+sexism are well documented, the implications for
+women’s power within relationships are underresearched
+        <xref ref-type="bibr" rid="ref18">(Hammond &amp; Overall, 2017)</xref>
+        . Indeed, norms of men’s
+primacy in intimate relationships are weaker in WEIRD
+contexts, in which sexism research is typically conducted
+        <xref ref-type="bibr" rid="ref9">(Chen et al., 2009)</xref>
+        . Thus, prior research typically focused
+on indirect forms of disempowerment
+        <xref ref-type="bibr" rid="ref25">(e.g., benevolent
+sexism undermining women’s career aspirations;
+Kuchynka et al., 2017)</xref>
+        . By going beyond WEIRD
+contexts, our findings show that benevolent sexism is not
+always subtle in bolstering gender inequality. It can
+legitimize men’s power over women directly—at least
+within the traditional relationships that are prevalent in
+non-WEIRD societies such as India. Together with recent
+evidence that a nation’s gender inequality may moderate
+benevolent sexism’s effects on violence
+        <xref ref-type="bibr" rid="ref2">(Agadullina
+et  al., 2022)</xref>
+        , these findings lay the groundwork for
+understanding how sexism functions in non-WEIRD
+contexts on the basis of the sociostructural conditions
+prevalent in these contexts (e.g., a combination of higher
+inequality and higher interdependence).
+      </p>
+      <p>A key strength of this study was its high
+generalizability. Our large, representative sample indexed the
+gender-related attitudes of a broad cross-section of the
+Indian population—a diverse democratic society that
+accounts for one sixth of humanity. High statistical
+power also meant that our estimates of the hypothesized
+associations were very precise. Nonetheless, the data
+still come from a single country, and so more research
+will be needed to confirm whether the findings
+generalize to other non-WEIRD countries with different political
+structures (e.g., nondemocracies), religious traditions
+(e.g., Latin America), and histories of gender relations
+(e.g., postcommunist societies). Moreover, the findings
+are based on the specific questions posed to participants
+in the current survey, and our analysis cannot speak to
+forms of sexism (e.g., old-fashioned sexism) and
+violence (e.g., rape) that were not measured here.</p>
+      <p>
+        Our cross-sectional survey precludes tests of the
+directionality of associations. The rationale that sexist
+attitudes precede violence norms follows prior theory
+and research stating that sexist prescriptions for women
+subsequently legitimize violence in response to
+women’s deviations from those prescriptions
+        <xref ref-type="bibr" rid="ref1 ref2">(Abrams et al.,
+2003; Agadullina et al., 2022)</xref>
+        . Nonetheless, ambivalent
+sexism theory also recognizes that societal conditions,
+including prevalence of violence, foster sexism
+        <xref ref-type="bibr" rid="ref11 ref14">(Fischer,
+2006; Glick et al., 2000)</xref>
+        . Thus, sexist attitudes legitimize
+gender inequality, but in turn, people’s experiences of
+(dis)advantage foster beliefs that rationalize that
+inequality. The current findings likely represent a
+snapshot of a reciprocal process that can be tested in future
+longitudinal research and do not imply that fixing
+pervasive gender violence is as simple as changing
+people’s attitudes.
+      </p>
+    </sec>
+    <sec id="sec-11">
+      <title>Conclusion</title>
+      <p>We drew on ambivalent sexism theory to examine how
+the pervasive violence faced by women in India is
+tolerated. Results showed that understanding this problem
+requires considering not only the hostile beliefs held
+by men but also the combination of aggressive and
+protective norms shared by both men and women.
+Prescriptions that women should be protected from
+outsiders can simultaneously legitimize men’s dominance
+within relationships, thus reinforcing the very
+inequalities that make women more vulnerable to violence.
+Transparency
+Action Editor: Mark Brandt
+Editor: Patricia J. Bauer
+Author Contributions</p>
+      <p>Nikhil K. Sengupta: Conceptualization; Data curation;
+Formal analysis; Investigation; Methodology; Writing –
+original draft; Writing – review &amp; editing.
+Matthew D. Hammond: Conceptualization; Investigation;
+Methodology; Writing – review &amp; editing.</p>
+      <p>Chris K. Deak: Conceptualization; Writing – review &amp;
+editing.</p>
+      <p>Ragini Saira Malhotra: Conceptualization; Data curation;
+Project administration; Validation; Writing – review &amp;
+editing.</p>
+      <p>Declaration of Conflicting Interests</p>
+      <p>The author(s) declared that there were no conflicts of
+interest with respect to the authorship or the publication
+of this article.</p>
+      <p>Open Practices</p>
+      <p>This article has received the badges for Open Data and
+Open Materials. More information about the Open
+Practices badges can be found at http://www.psychological
+science.org/publications/badges.</p>
+      <p>https://orcid.org/0000-0002-5694https://orcid.org/0000-0001ORCID iDs
+Nikhil K. Sengupta
+353X
+Matthew D. Hammond
+8095-6093
+Acknowledgments
+We are grateful to Rajiv B. Lall for conceiving and managing
+the Samaj Survey Project, which provided the data for the
+current study.</p>
+      <p>Supplemental Material
+Additional supporting information can be found at http://
+journals.sagepub.com/doi/suppl/10.1177/09567976241254312</p>
+    </sec>
+  </body>
+  <back>
+    <ref-list>
+      <ref id="ref1">
+        <mixed-citation>
+          <string-name>
+            <surname>Abrams</surname>
+            ,
+            <given-names>D.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Viki</surname>
+            ,
+            <given-names>G. T.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Masser</surname>
+            ,
+            <given-names>B.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Bohner</surname>
+            ,
+            <given-names>G.</given-names>
+          </string-name>
+          (
+          <year>2003</year>
+          ).
+          <article-title>Perceptions of stranger and acquaintance rape: The role of benevolent and hostile sexism in victim blame and rape proclivity</article-title>
+          .
+          <source>Journal of Personality and Social Psychology</source>
+          ,
+          <volume>84</volume>
+          (
+          <issue>1</issue>
+          ),
+          <fpage>111</fpage>
+          -
+          <lpage>125</lpage>
+          . https://doi.org/10.1037/
+          <fpage>0022</fpage>
+          -
+          <lpage>3514</lpage>
+          .
+          <year>84</year>
+          .1.
+          <fpage>111</fpage>
+        </mixed-citation>
+      </ref>
+      <ref id="ref2">
+        <mixed-citation>
+          <string-name>
+            <surname>Agadullina</surname>
+            ,
+            <given-names>E.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Lovakov</surname>
+            ,
+            <given-names>A.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Balezina</surname>
+            ,
+            <given-names>M.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Gulevich</surname>
+            ,
+            <given-names>O. A.</given-names>
+          </string-name>
+          (
+          <year>2022</year>
+          ).
+          <article-title>Ambivalent sexism and violence toward women: A meta-analysis</article-title>
+          .
+          <source>European Journal of Social Psychology</source>
+          ,
+          <volume>52</volume>
+          (
+          <issue>5-6</issue>
+          ),
+          <fpage>819</fpage>
+          -
+          <lpage>859</lpage>
+          . https://doi.org/10.1002/ejsp.2855
+        </mixed-citation>
+      </ref>
+      <ref id="ref3">
+        <mixed-citation>
+          <string-name>
+            <surname>Bareket</surname>
+            ,
+            <given-names>O.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Fiske</surname>
+            ,
+            <given-names>S. T.</given-names>
+          </string-name>
+          (
+          <year>2023</year>
+          ).
+          <article-title>A systematic review of the ambivalent sexism literature: Hostile sexism protects men's power; benevolent sexism guards traditional gender roles</article-title>
+          .
+          <source>Psychological Bulletin</source>
+          ,
+          <volume>149</volume>
+          (
+          <fpage>11</fpage>
+          -
+          <lpage>12</lpage>
+          ),
+          <fpage>637</fpage>
+          -
+          <lpage>698</lpage>
+          . https://doi.org/10.1037/bul0000400
+        </mixed-citation>
+      </ref>
+      <ref id="ref4">
+        <mixed-citation>
+          <string-name>
+            <surname>Becker</surname>
+            ,
+            <given-names>J. C.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Wright</surname>
+            ,
+            <given-names>S. C.</given-names>
+          </string-name>
+          (
+          <year>2011</year>
+          ).
+          <article-title>Yet another dark side of chivalry: Benevolent sexism undermines and hostile sexism motivates collective action for social change</article-title>
+          .
+          <source>Journal of Personality and Social Psychology</source>
+          ,
+          <volume>101</volume>
+          (
+          <issue>1</issue>
+          ),
+          <fpage>62</fpage>
+          -
+          <lpage>77</lpage>
+          . https://doi.org/10.1037/a0022615
+        </mixed-citation>
+      </ref>
+      <ref id="ref5">
+        <mixed-citation>
+          <string-name>
+            <surname>Bohner</surname>
+            ,
+            <given-names>G.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Ahlborn</surname>
+            ,
+            <given-names>K.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Steiner</surname>
+            ,
+            <given-names>R.</given-names>
+          </string-name>
+          (
+          <year>2010</year>
+          ).
+          <article-title>How sexy are sexist men? Women's perception of male response profiles in the Ambivalent Sexism Inventory</article-title>
+          .
+          <source>Sex Roles</source>
+          ,
+          <volume>62</volume>
+          (
+          <issue>7</issue>
+          ),
+          <fpage>568</fpage>
+          -
+          <lpage>582</lpage>
+          . https://doi.org/10.1007/s11199-009-9665-x
+        </mixed-citation>
+      </ref>
+      <ref id="ref6">
+        <mixed-citation>
+          <string-name>
+            <surname>Brandt</surname>
+            ,
+            <given-names>M. J.</given-names>
+          </string-name>
+          (
+          <year>2011</year>
+          ).
+          <article-title>Sexism and gender inequality across 57 societies</article-title>
+          . Psychological Science,
+          <volume>22</volume>
+          (
+          <issue>11</issue>
+          ),
+          <fpage>1413</fpage>
+          -
+          <lpage>1418</lpage>
+          . https://doi.org/10.1177/0956797611420445
+        </mixed-citation>
+      </ref>
+      <ref id="ref7">
+        <mixed-citation>
+          <string-name>
+            <surname>Brassiolo</surname>
+            ,
+            <given-names>P.</given-names>
+          </string-name>
+          (
+          <year>2016</year>
+          ).
+          <article-title>Domestic violence and divorce law: When divorce threats become credible</article-title>
+          .
+          <source>Journal of Labor Economics</source>
+          ,
+          <volume>34</volume>
+          (
+          <issue>2</issue>
+          ),
+          <fpage>443</fpage>
+          -
+          <lpage>477</lpage>
+          . https://doi.org/10 .1086/683666
+        </mixed-citation>
+      </ref>
+      <ref id="ref8">
+        <mixed-citation>
+          <string-name>
+            <surname>Brownhalls</surname>
+            ,
+            <given-names>J.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Duffy</surname>
+            ,
+            <given-names>A.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Eriksson</surname>
+            ,
+            <given-names>L.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Overall</surname>
+            ,
+            <given-names>N.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Sibley</surname>
+            ,
+            <given-names>C. G.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Radke</surname>
+            ,
+            <given-names>H. R. M.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Barlow</surname>
+            ,
+            <given-names>F. K.</given-names>
+          </string-name>
+          (
+          <year>2021</year>
+          ).
+          <article-title>Make it safe at night or teach women to fight? Sexism predicts views on men's and women's responsibility to reduce men's violence toward women</article-title>
+          .
+          <source>Sex Roles</source>
+          ,
+          <volume>84</volume>
+          (
+          <issue>3</issue>
+          ),
+          <fpage>183</fpage>
+          -
+          <lpage>195</lpage>
+          . https://doi.org/10.1007/s11199-020-01159-5
+        </mixed-citation>
+      </ref>
+      <ref id="ref9">
+        <mixed-citation>
+          <string-name>
+            <surname>Chen</surname>
+            ,
+            <given-names>Z.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Fiske</surname>
+            ,
+            <given-names>S. T.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Lee</surname>
+            ,
+            <given-names>T. L.</given-names>
+          </string-name>
+          (
+          <year>2009</year>
+          ).
+          <article-title>Ambivalent sexism and power-related gender-role ideology in marriage</article-title>
+          .
+          <source>Sex Roles</source>
+          ,
+          <volume>60</volume>
+          (
+          <issue>11</issue>
+          ),
+          <fpage>765</fpage>
+          -
+          <lpage>778</lpage>
+          . https://doi.org/10.1007/s11199- 009-9585-9
+        </mixed-citation>
+      </ref>
+      <ref id="ref10">
+        <mixed-citation>
+          <string-name>
+            <surname>Desai</surname>
+            ,
+            <given-names>S.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Malhotra</surname>
+            ,
+            <given-names>S.</given-names>
+          </string-name>
+          (
+          <year>2018</year>
+          , March 8).
+          <article-title>The power of numbers. The Hindu</article-title>
+          . https://www.thehindu.com/opinion/ op-ed/
+          <article-title>the-power-of-numbers/article22970952</article-title>
+          .ece
+        </mixed-citation>
+      </ref>
+      <ref id="ref11">
+        <mixed-citation>
+          <string-name>
+            <surname>Fischer</surname>
+            ,
+            <given-names>A. R.</given-names>
+          </string-name>
+          (
+          <year>2006</year>
+          ).
+          <article-title>Women's benevolent sexism as reaction to hostility</article-title>
+          .
+          <source>Psychology of Women Quarterly</source>
+          ,
+          <volume>30</volume>
+          (
+          <issue>4</issue>
+          ),
+          <fpage>410</fpage>
+          -
+          <lpage>416</lpage>
+          . https://doi.org/10.1111/j.1471-
+          <fpage>6402</fpage>
+          .
+          <year>2006</year>
+          .
+          <volume>00316</volume>
+          .x
+        </mixed-citation>
+      </ref>
+      <ref id="ref12">
+        <mixed-citation>
+          <string-name>
+            <surname>Glick</surname>
+            ,
+            <given-names>P.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Fiske</surname>
+            ,
+            <given-names>S. T.</given-names>
+          </string-name>
+          (
+          <year>1996</year>
+          ).
+          <article-title>The Ambivalent Sexism Inventory: Differentiating hostile and benevolent sexism</article-title>
+          .
+          <source>Journal of Personality and Social Psychology</source>
+          ,
+          <volume>70</volume>
+          (
+          <issue>3</issue>
+          ),
+          <fpage>491</fpage>
+          -
+          <lpage>512</lpage>
+          . https://doi.org/10.1037/
+          <fpage>0022</fpage>
+          -
+          <lpage>3514</lpage>
+          .
+          <year>70</year>
+          .3.
+          <fpage>491</fpage>
+        </mixed-citation>
+      </ref>
+      <ref id="ref13">
+        <mixed-citation>
+          <string-name>
+            <surname>Glick</surname>
+            ,
+            <given-names>P.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Fiske</surname>
+            ,
+            <given-names>S. T.</given-names>
+          </string-name>
+          (
+          <year>2001</year>
+          ).
+          <article-title>An ambivalent alliance: Hostile and benevolent sexism as complementary justifications for gender inequality</article-title>
+          .
+          <source>American Psychologist</source>
+          ,
+          <volume>56</volume>
+          (
+          <issue>2</issue>
+          ),
+          <fpage>109</fpage>
+          -
+          <lpage>118</lpage>
+          . https://doi.org/10.1037/
+          <fpage>0003</fpage>
+          -
+          <lpage>066X</lpage>
+          .
+          <year>56</year>
+          .2.
+          <fpage>109</fpage>
+        </mixed-citation>
+      </ref>
+      <ref id="ref14">
+        <mixed-citation>
+          <string-name>
+            <surname>Glick</surname>
+            ,
+            <given-names>P.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Fiske</surname>
+            ,
+            <given-names>S. T.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Mladinic</surname>
+            ,
+            <given-names>A.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Saiz</surname>
+            ,
+            <given-names>J. L.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Abrams</surname>
+            ,
+            <given-names>D.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Masser</surname>
+            ,
+            <given-names>B.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Adetoun</surname>
+            ,
+            <given-names>B.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Osagie</surname>
+            ,
+            <given-names>J. E.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Akande</surname>
+            ,
+            <given-names>A.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Alao</surname>
+            ,
+            <given-names>A.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Annetje</surname>
+            ,
+            <given-names>B.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Willemsen</surname>
+            ,
+            <given-names>T. M.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Chipeta</surname>
+            ,
+            <given-names>K.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Dardenne</surname>
+            ,
+            <given-names>B.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Dijksterhuis</surname>
+            ,
+            <given-names>A. J.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Wigboldus</surname>
+            ,
+            <given-names>D. H. J.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Eckes</surname>
+            ,
+            <given-names>T.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>SixMaterna</surname>
+          </string-name>
+          , I.,
+          <string-name>
+            <surname>Exposito</surname>
+            ,
+            <given-names>F.</given-names>
+          </string-name>
+          , . . .
+          <string-name>
+            <surname>Lopez</surname>
+            ,
+            <given-names>W.</given-names>
+          </string-name>
+          (
+          <year>2000</year>
+          ).
+          <article-title>Beyond prejudice as simple antipathy: Hostile and benevolent sexism across cultures</article-title>
+          .
+          <source>Journal of Personality and Social Psychology</source>
+          ,
+          <volume>79</volume>
+          ,
+          <fpage>763</fpage>
+          -
+          <lpage>775</lpage>
+          . https://doi.org/10.1037/
+          <fpage>0022</fpage>
+          -
+          <lpage>3514</lpage>
+          .
+          <year>79</year>
+          .5.
+          <fpage>763</fpage>
+        </mixed-citation>
+      </ref>
+      <ref id="ref15">
+        <mixed-citation>
+          <string-name>
+            <surname>Glick</surname>
+            ,
+            <given-names>P.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Sakalli-Ugurlu</surname>
+            ,
+            <given-names>N.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Ferreira</surname>
+            ,
+            <given-names>M. C.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Souza</surname>
+            ,
+            <given-names>M. A. D.</given-names>
+          </string-name>
+          (
+          <year>2002</year>
+          ).
+          <article-title>Ambivalent sexism and attitudes toward wife abuse in Turkey and Brazil</article-title>
+          .
+          <source>Psychology of Women Quarterly</source>
+          ,
+          <volume>26</volume>
+          (
+          <issue>4</issue>
+          ),
+          <fpage>292</fpage>
+          -
+          <lpage>297</lpage>
+          . https://doi.org/10.1111/
+          <fpage>1471</fpage>
+          -
+          <lpage>6402</lpage>
+          .
+          <fpage>t01</fpage>
+          -1
+          <article-title>-00068</article-title>
+        </mixed-citation>
+      </ref>
+      <ref id="ref16">
+        <mixed-citation>
+          <string-name>
+            <surname>Hammond</surname>
+            ,
+            <given-names>M. D.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Cross</surname>
+            ,
+            <given-names>E. J.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Overall</surname>
+            ,
+            <given-names>N. C.</given-names>
+          </string-name>
+          (
+          <year>2020</year>
+          ).
+          <article-title>Relationship (in)security is central to the sources and outcomes of sexist attitudes</article-title>
+          .
+          <source>Social and Personality Psychology Compass</source>
+          ,
+          <volume>14</volume>
+          (
+          <issue>3</issue>
+          ),
+          <year>e12522</year>
+          . https://doi.org/10.1111/spc3.12522
+        </mixed-citation>
+      </ref>
+      <ref id="ref17">
+        <mixed-citation>
+          <string-name>
+            <surname>Hammond</surname>
+            ,
+            <given-names>M. D.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Overall</surname>
+            ,
+            <given-names>N. C.</given-names>
+          </string-name>
+          (
+          <year>2015</year>
+          ).
+          <article-title>Benevolent sexism and support of romantic partner's goals: Undermining women's competence while fulfilling men's intimacy needs</article-title>
+          .
+          <source>Personality and Social Psychology Bulletin</source>
+          ,
+          <volume>41</volume>
+          (
+          <issue>9</issue>
+          ),
+          <fpage>1180</fpage>
+          -
+          <lpage>1194</lpage>
+          . https://doi.org/10.1177/0146167215593492
+        </mixed-citation>
+      </ref>
+      <ref id="ref18">
+        <mixed-citation>
+          <string-name>
+            <surname>Hammond</surname>
+            ,
+            <given-names>M. D.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Overall</surname>
+            ,
+            <given-names>N. C.</given-names>
+          </string-name>
+          (
+          <year>2017</year>
+          ).
+          <article-title>Dynamics within intimate relationships and the causes, consequences, and functions of sexist attitudes</article-title>
+          .
+          <source>Current Directions in Psychological Science</source>
+          ,
+          <volume>26</volume>
+          (
+          <issue>2</issue>
+          ),
+          <fpage>120</fpage>
+          -
+          <lpage>125</lpage>
+          . https://doi.org/ 10.1177/0963721416686213
+        </mixed-citation>
+      </ref>
+      <ref id="ref19">
+        <mixed-citation>
+          <string-name>
+            <surname>Hammond</surname>
+            ,
+            <given-names>M. D.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Sibley</surname>
+            ,
+            <given-names>C. G.</given-names>
+          </string-name>
+          (
+          <year>2011</year>
+          ).
+          <article-title>Why are benevolent sexists happier?</article-title>
+          <source>Sex Roles</source>
+          ,
+          <volume>65</volume>
+          (
+          <issue>5</issue>
+          ),
+          <fpage>332</fpage>
+          -
+          <lpage>343</lpage>
+          . https://doi.org/ 10.1007/s11199-011-0017-2
+        </mixed-citation>
+      </ref>
+      <ref id="ref20">
+        <mixed-citation>
+          <string-name>
+            <surname>Hammond</surname>
+            ,
+            <given-names>M. D.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Overall</surname>
+            ,
+            <given-names>N. C.</given-names>
+          </string-name>
+          (
+          <year>2014</year>
+          ).
+          <article-title>Endorsing benevolent sexism magnifies willingness to dissolve relationships when facing partner-ideal discrepancies</article-title>
+          .
+          <source>Personal Relationships</source>
+          ,
+          <volume>21</volume>
+          (
+          <issue>2</issue>
+          ),
+          <fpage>272</fpage>
+          -
+          <lpage>287</lpage>
+          . https://doi.org/10.1111/ pere.12031
+        </mixed-citation>
+      </ref>
+      <ref id="ref21">
+        <mixed-citation>
+          <string-name>
+            <surname>Henrich</surname>
+            ,
+            <given-names>J.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Heine</surname>
+            ,
+            <given-names>S. J.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Norenzayan</surname>
+            ,
+            <given-names>A.</given-names>
+          </string-name>
+          (
+          <year>2010</year>
+          ).
+          <article-title>Most people are not WEIRD</article-title>
+          .
+          <source>Nature</source>
+          ,
+          <volume>466</volume>
+          , Article 29. https://doi .org/10.1038/466029a
+        </mixed-citation>
+      </ref>
+      <ref id="ref22">
+        <mixed-citation>
+          <string-name>
+            <surname>Hideg</surname>
+            ,
+            <given-names>I.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Ferris</surname>
+            ,
+            <given-names>L.</given-names>
+          </string-name>
+          (
+          <year>2013</year>
+          ).
+          <article-title>Two sides of sexism: How sexist attitudes may undermine and promote gender diversity</article-title>
+          .
+          <source>Academy of Management Proceedings</source>
+          ,
+          <year>2013</year>
+          (
+          <volume>1</volume>
+          ). https:// doi.org/10.5465/ambpp.
+          <year>2013</year>
+          .52
+        </mixed-citation>
+      </ref>
+      <ref id="ref23">
+        <mixed-citation>
+          <string-name>
+            <surname>Jodhka</surname>
+            ,
+            <given-names>S. S.</given-names>
+          </string-name>
+          (
+          <year>2012</year>
+          ). Caste. Oxford University Press.
+        </mixed-citation>
+      </ref>
+      <ref id="ref24">
+        <mixed-citation>
+          <string-name>
+            <surname>Kalokhe</surname>
+            ,
+            <given-names>A.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>del Rio</surname>
+            ,
+            <given-names>C.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Dunkle</surname>
+            ,
+            <given-names>K.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Stephenson</surname>
+            ,
+            <given-names>R.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Metheny</surname>
+            ,
+            <given-names>N.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Paranjape</surname>
+            ,
+            <given-names>A.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Sahay</surname>
+            ,
+            <given-names>S.</given-names>
+          </string-name>
+          (
+          <year>2017</year>
+          ).
+          <article-title>Domestic violence against women in India: A systematic review of a decade of quantitative studies</article-title>
+          .
+          <source>Global Public Health</source>
+          ,
+          <volume>12</volume>
+          (
+          <issue>4</issue>
+          ),
+          <fpage>498</fpage>
+          -
+          <lpage>513</lpage>
+          . https://doi.org/10.1080/17441692.
+          <year>2015</year>
+          .1119293
+        </mixed-citation>
+      </ref>
+      <ref id="ref25">
+        <mixed-citation>
+          <string-name>
+            <surname>Kuchynka</surname>
+            ,
+            <given-names>S. L.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Salomon</surname>
+            ,
+            <given-names>K.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Bosson</surname>
+            ,
+            <given-names>J. K.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>El-Hout</surname>
+            ,
+            <given-names>M.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Kiebel</surname>
+            ,
+            <given-names>E.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Cooperman</surname>
+            ,
+            <given-names>C.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Toomey</surname>
+            ,
+            <given-names>R.</given-names>
+          </string-name>
+          (
+          <year>2017</year>
+          ).
+          <article-title>Hostile and benevolent sexism and college women's STEM outcomes</article-title>
+          .
+          <source>Psychology of Women Quarterly</source>
+          ,
+          <volume>42</volume>
+          (
+          <issue>1</issue>
+          ),
+          <fpage>72</fpage>
+          -
+          <lpage>87</lpage>
+          . https://doi.org/10.1177/0361684317741889
+        </mixed-citation>
+      </ref>
+      <ref id="ref26">
+        <mixed-citation>
+          <string-name>
+            <surname>Lonsway</surname>
+            ,
+            <given-names>K. A.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Cortina</surname>
+            ,
+            <given-names>L. M.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Magley</surname>
+            ,
+            <given-names>V. J.</given-names>
+          </string-name>
+          (
+          <year>2008</year>
+          ).
+          <article-title>Sexual harassment mythology: Definition, conceptualization, and measurement</article-title>
+          .
+          <source>Sex Roles</source>
+          ,
+          <volume>58</volume>
+          (
+          <issue>9</issue>
+          ),
+          <fpage>599</fpage>
+          -
+          <lpage>615</lpage>
+          . https://doi .org/10.1007/s11199-007-9367-1
+        </mixed-citation>
+      </ref>
+      <ref id="ref27">
+        <mixed-citation>
+          <string-name>
+            <surname>MacCallum</surname>
+            ,
+            <given-names>R. C.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Austin</surname>
+            ,
+            <given-names>J. T.</given-names>
+          </string-name>
+          (
+          <year>2000</year>
+          ).
+          <article-title>Applications of structural equation modeling in psychological research</article-title>
+          .
+          <source>Annual Review of Psychology</source>
+          ,
+          <volume>51</volume>
+          ,
+          <fpage>201</fpage>
+          -
+          <lpage>226</lpage>
+          . https://doi.org/ 10.1146/annurev.psych.
+          <volume>51</volume>
+          .1.
+          <fpage>201</fpage>
+        </mixed-citation>
+      </ref>
+      <ref id="ref28">
+        <mixed-citation>
+          <string-name>
+            <surname>Marsh</surname>
+            ,
+            <given-names>H. W.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Hau</surname>
+            ,
+            <given-names>K. T.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Wen</surname>
+            ,
+            <given-names>Z.</given-names>
+          </string-name>
+          (
+          <year>2004</year>
+          ).
+          <article-title>In search of golden rules: Comment on hypothesis-testing approaches to setting cutoff values for fit indexes and dangers in overgeneralizing Hu and Bentler's (1999) findings</article-title>
+          .
+          <source>Structural Equation Modeling: A Multidisciplinary Journal</source>
+          ,
+          <volume>11</volume>
+          (
+          <issue>3</issue>
+          ),
+          <fpage>320</fpage>
+          -
+          <lpage>341</lpage>
+          . https://doi.org/10.1207/s15328007sem1103_
+          <fpage>2</fpage>
+        </mixed-citation>
+      </ref>
+      <ref id="ref29">
+        <mixed-citation>
+          <string-name>
+            <surname>Masser</surname>
+            ,
+            <given-names>B. M.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Abrams</surname>
+            ,
+            <given-names>D.</given-names>
+          </string-name>
+          (
+          <year>2004</year>
+          ).
+          <article-title>Reinforcing the glass ceiling: The consequences of hostile sexism for female managerial candidates</article-title>
+          .
+          <source>Sex Roles</source>
+          ,
+          <volume>51</volume>
+          (
+          <issue>9</issue>
+          ),
+          <fpage>609</fpage>
+          -
+          <lpage>615</lpage>
+          . https:// doi.org/10.1007/s11199-004-5470-8
+        </mixed-citation>
+      </ref>
+      <ref id="ref30">
+        <mixed-citation>
+          <string-name>
+            <surname>Moya</surname>
+            ,
+            <given-names>M.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Glick</surname>
+            ,
+            <given-names>P.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Expósito</surname>
+          </string-name>
+          , F.,
+          <string-name>
+            <surname>de Lemus</surname>
+            ,
+            <given-names>S.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Hart</surname>
+            ,
+            <given-names>J.</given-names>
+          </string-name>
+          (
+          <year>2007</year>
+          ).
+          <article-title>It's for your own good: Benevolent sexism and women's reactions to protectively justified restrictions</article-title>
+          .
+          <source>Personality and Social Psychology Bulletin</source>
+          ,
+          <volume>33</volume>
+          (
+          <issue>10</issue>
+          ),
+          <fpage>1421</fpage>
+          -
+          <lpage>1434</lpage>
+          . https://doi.org/10.1177/0146167207304790
+        </mixed-citation>
+      </ref>
+      <ref id="ref31">
+        <mixed-citation>
+          <string-name>
+            <surname>Muthén</surname>
+            ,
+            <given-names>L. K.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Muthén</surname>
+            ,
+            <given-names>B. O.</given-names>
+          </string-name>
+          (
+          <year>1998</year>
+          -
+          <fpage>2017</fpage>
+          ).
+          <article-title>Mplus User's Guide. Eighth Edition</article-title>
+          . Muthén &amp; Muthén.
+        </mixed-citation>
+      </ref>
+      <ref id="ref32">
+        <mixed-citation>
+          <string-name>
+            <surname>Peters</surname>
+            ,
+            <given-names>J.</given-names>
+          </string-name>
+          (
+          <year>2008</year>
+          ).
+          <article-title>Measuring myths about domestic violence: Development and initial validation of the domestic violence myth acceptance scale</article-title>
+          .
+          <source>Journal of Aggression, Maltreatment &amp; Trauma</source>
+          ,
+          <volume>16</volume>
+          (
+          <issue>1</issue>
+          ),
+          <fpage>1</fpage>
+          -
+          <lpage>21</lpage>
+          . https://doi.org/10 .1080/10926770801917780
+        </mixed-citation>
+      </ref>
+      <ref id="ref33">
+        <mixed-citation>
+          <string-name>
+            <surname>Phelan</surname>
+            ,
+            <given-names>J. E.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Sanchez</surname>
+            ,
+            <given-names>D. T.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Broccoli</surname>
+            ,
+            <given-names>T. L.</given-names>
+          </string-name>
+          (
+          <year>2010</year>
+          ).
+          <article-title>The danger in sexism: The links among fear of crime, benevolent sexism, and well-being</article-title>
+          .
+          <source>Sex Roles</source>
+          ,
+          <volume>62</volume>
+          (
+          <issue>1</issue>
+          ),
+          <fpage>35</fpage>
+          -
+          <lpage>47</lpage>
+          . https:// doi.org/10.1007/s11199-009-9711-8
+        </mixed-citation>
+      </ref>
+      <ref id="ref34">
+        <mixed-citation>
+          <string-name>
+            <surname>Roychowdhury</surname>
+            ,
+            <given-names>P.</given-names>
+          </string-name>
+          (
+          <year>2013</year>
+          ).
+          <article-title>“The Delhi gang rape”: The making of international causes</article-title>
+          .
+          <source>Feminist Studies</source>
+          ,
+          <volume>39</volume>
+          (
+          <issue>1</issue>
+          ),
+          <fpage>282</fpage>
+          -
+          <lpage>292</lpage>
+          .
+        </mixed-citation>
+      </ref>
+      <ref id="ref35">
+        <mixed-citation>
+          <string-name>
+            <surname>Sarlet</surname>
+            ,
+            <given-names>M.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Dumont</surname>
+            ,
+            <given-names>M.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Delacollette</surname>
+            ,
+            <given-names>N.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Dardenne</surname>
+            ,
+            <given-names>B.</given-names>
+          </string-name>
+          (
+          <year>2012</year>
+          ).
+          <article-title>Prescription of protective paternalism for men in romantic and work contexts</article-title>
+          .
+          <source>Psychology of Women Quarterly</source>
+          ,
+          <volume>36</volume>
+          (
+          <issue>4</issue>
+          ),
+          <fpage>444</fpage>
+          -
+          <lpage>457</lpage>
+          . https://doi.org/10.1177/0361684312454842
+        </mixed-citation>
+      </ref>
+      <ref id="ref36">
+        <mixed-citation>
+          <string-name>
+            <surname>Saucier</surname>
+            ,
+            <given-names>D. A.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Stanford</surname>
+            ,
+            <given-names>A. J.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Miller</surname>
+            ,
+            <given-names>S. S.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Martens</surname>
+            ,
+            <given-names>A. L.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Miller</surname>
+            ,
+            <given-names>A. K.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Jones</surname>
+            ,
+            <given-names>T. L.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>McManus</surname>
+            ,
+            <given-names>J. L.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Burns</surname>
+            ,
+            <given-names>M. D.</given-names>
+          </string-name>
+          (
+          <year>2016</year>
+          ).
+          <article-title>Masculine honor beliefs: Measurement and correlates</article-title>
+          .
+          <source>Personality and Individual Differences</source>
+          ,
+          <volume>94</volume>
+          ,
+          <fpage>7</fpage>
+          -
+          <lpage>15</lpage>
+          . https://doi.org/10.1016/j.paid.
+          <year>2015</year>
+          .
+          <volume>12</volume>
+          .049
+        </mixed-citation>
+      </ref>
+      <ref id="ref37">
+        <mixed-citation>
+          <string-name>
+            <surname>Saunders</surname>
+            ,
+            <given-names>B. A.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Scaturro</surname>
+            ,
+            <given-names>C.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Guarino</surname>
+            ,
+            <given-names>C.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Kelly</surname>
+            ,
+            <given-names>E.</given-names>
+          </string-name>
+          (
+          <year>2017</year>
+          ).
+          <article-title>Contending with catcalling: The role of system-justifying beliefs and ambivalent sexism in predicting women's coping experiences with (and men's attributions for) stranger harassment</article-title>
+          .
+          <source>Current Psychology</source>
+          ,
+          <volume>36</volume>
+          (
+          <issue>2</issue>
+          ),
+          <fpage>324</fpage>
+          -
+          <lpage>338</lpage>
+          . https://doi.org/10.1007/s12144-016-9421-7
+        </mixed-citation>
+      </ref>
+      <ref id="ref38">
+        <mixed-citation>
+          <string-name>
+            <surname>Sengupta</surname>
+            ,
+            <given-names>N. K.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Greaves</surname>
+            ,
+            <given-names>L. M.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Osborne</surname>
+            ,
+            <given-names>D.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Sibley</surname>
+            ,
+            <given-names>C. G.</given-names>
+          </string-name>
+          (
+          <year>2017</year>
+          ).
+          <article-title>The sigh of the oppressed: The palliative effects of ideology are stronger for people living in highly unequal neighbourhoods</article-title>
+          .
+          <source>British Journal of Social Psychology</source>
+          ,
+          <volume>56</volume>
+          (
+          <issue>3</issue>
+          ),
+          <fpage>437</fpage>
+          -
+          <lpage>454</lpage>
+          . https://doi.org/10.1111/bjso.12192
+        </mixed-citation>
+      </ref>
+      <ref id="ref39">
+        <mixed-citation>
+          <string-name>
+            <surname>Shnabel</surname>
+            ,
+            <given-names>N.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Bar-Anan</surname>
+            ,
+            <given-names>Y.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Kende</surname>
+            ,
+            <given-names>A.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Bareket</surname>
+            ,
+            <given-names>O.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Lazar</surname>
+            ,
+            <given-names>Y.</given-names>
+          </string-name>
+          (
+          <year>2016</year>
+          ).
+          <article-title>Help to perpetuate traditional gender roles: Benevolent sexism increases engagement in dependency-oriented cross-gender helping</article-title>
+          .
+          <source>Journal of Personality and Social Psychology</source>
+          ,
+          <volume>110</volume>
+          (
+          <issue>1</issue>
+          ),
+          <fpage>55</fpage>
+          -
+          <lpage>75</lpage>
+          . https://doi.org/10.1037/ pspi0000037
+        </mixed-citation>
+      </ref>
+      <ref id="ref40">
+        <mixed-citation>
+          <string-name>
+            <surname>Sreemol</surname>
+            ,
+            <given-names>T. C.</given-names>
+          </string-name>
+          (
+          <year>2018</year>
+          , March 22).
+          <article-title>Women choose subservience, men as family head: Survey. The Times of India</article-title>
+          . https://timesofindia.indiatimes.com/city/kochi/womenchoose
+          <article-title>-subservience-men-as-family-head-survey/article show/63404843</article-title>
+          .cms
+        </mixed-citation>
+      </ref>
+      <ref id="ref41">
+        <mixed-citation>
+          <string-name>
+            <surname>Suppes</surname>
+            ,
+            <given-names>A.</given-names>
+          </string-name>
+          (
+          <year>2020</year>
+          ).
+          <article-title>Do women need to have children in order to be fulfilled? A system justification account of the motherhood norm</article-title>
+          .
+          <source>Social Psychological and Personality Science</source>
+          ,
+          <volume>11</volume>
+          ,
+          <fpage>999</fpage>
+          -
+          <lpage>1010</lpage>
+          . https://doi.org/10.1177/1948550 620909728
+        </mixed-citation>
+      </ref>
+      <ref id="ref42">
+        <mixed-citation>
+          <string-name>
+            <surname>Talboys</surname>
+            ,
+            <given-names>S. L.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Kaur</surname>
+            ,
+            <given-names>M.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>VanDerslice</surname>
+          </string-name>
+          , J.,
+          <string-name>
+            <surname>Gren</surname>
+            ,
+            <given-names>L. H.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Bhattacharya</surname>
+            ,
+            <given-names>H.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Alder</surname>
+            ,
+            <given-names>S. C.</given-names>
+          </string-name>
+          (
+          <year>2017</year>
+          ).
+          <article-title>What is eve teasing? A mixed methods study of sexual harassment of young women in the rural Indian context</article-title>
+          .
+          <source>Sage Open</source>
+          ,
+          <volume>7</volume>
+          (
+          <issue>1</issue>
+          ). https://doi.org/10.1177/2158244017697168
+        </mixed-citation>
+      </ref>
+      <ref id="ref43">
+        <mixed-citation>
+          <string-name>
+            <surname>Viki</surname>
+            ,
+            <given-names>G. T.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Abrams</surname>
+            ,
+            <given-names>D.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Masser</surname>
+            ,
+            <given-names>B.</given-names>
+          </string-name>
+          (
+          <year>2004</year>
+          ).
+          <article-title>Evaluating stranger and acquaintance rape: The role of benevolent sexism in perpetrator blame and recommended sentence length</article-title>
+          .
+          <source>Law and Human Behavior</source>
+          ,
+          <volume>28</volume>
+          (
+          <issue>3</issue>
+          ),
+          <fpage>295</fpage>
+          -
+          <lpage>303</lpage>
+          . https://doi .org/10.1023/B:LAHU.
+          <volume>0000029140</volume>
+          .72880.69
+        </mixed-citation>
+      </ref>
+      <ref id="ref44">
+        <mixed-citation>
+          <string-name>
+            <surname>Yamawaki</surname>
+            ,
+            <given-names>N.</given-names>
+          </string-name>
+          ,
+          <string-name>
+            <surname>Ostenson</surname>
+            ,
+            <given-names>J.</given-names>
+          </string-name>
+          , &amp;
+          <string-name>
+            <surname>Brown</surname>
+            ,
+            <given-names>C. R.</given-names>
+          </string-name>
+          (
+          <year>2009</year>
+          ).
+          <article-title>The functions of gender role traditionality, ambivalent sexism, injury, and frequency of assault on domestic violence perception: A study between Japanese and American college students</article-title>
+          .
+          <source>Violence Against Women</source>
+          ,
+          <volume>15</volume>
+          (
+          <issue>9</issue>
+          ),
+          <fpage>1126</fpage>
+          -
+          <lpage>1142</lpage>
+          . https://doi.org/10.1177/1077801209340758
+        </mixed-citation>
+      </ref>
+    </ref-list>
+  </back>
+</article>
+

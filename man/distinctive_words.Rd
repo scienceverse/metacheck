@@ -4,14 +4,30 @@
 \alias{distinctive_words}
 \title{Get Distinctive Words}
 \usage{
-distinctive_words(text, classification, n = 15)
+distinctive_words(
+  text,
+  classification,
+  n = Inf,
+  stop_words = c(),
+  numbers = c("any", "specific", "remove"),
+  stem_language = "porter",
+  min_total = length(text)/10
+)
 }
 \arguments{
 \item{text}{a vector of text to assess}
 
 \item{classification}{a vector of the classification}
 
-\item{n}{the number of top distnctive words to get}
+\item{n}{the number of top distinctive words to get}
+
+\item{stop_words}{a vector or data frame of words to exclude}
+
+\item{numbers}{what to do with numeric values: "any", "specific", "remove"}
+
+\item{stem_language}{the language to use for stemming words, from SnowballC::getStemLanguages(), set to FALSE for no stemming}
+
+\item{min_total}{the minimum total number of incidences to incude a word, defaults to 10\% of the number of text strings}
 }
 \value{
 a data frame of the words

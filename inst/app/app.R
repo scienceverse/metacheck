@@ -680,7 +680,7 @@ server <- function(input, output, session) {
           tch <- suppressWarnings(
             i18n()$t(names(ch))
           )
-          new_choices <- setNames(ch, tch)
+          new_choices <- stats::setNames(ch, tch)
           #debug_msg(dput(new_choices))
           args$choices <- new_choices
           args$selected <- input[[nm]]

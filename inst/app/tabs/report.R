@@ -4,7 +4,7 @@ modules <- papercheck::module_list()
 mod <- list()
 for (type in c("text", "code", "ml", "ai")) {
   m <- modules[modules$type == type, ]
-  mod[[type]] <- setNames(m$name, m$title)
+  mod[[type]] <- stats::setNames(m$name, m$title)
 }
 
 ### report_tab ----
@@ -20,7 +20,7 @@ report_tab <- tabItem(
   ),
 
   # checkboxGroupInput("report_module_list", NULL,
-  #             setNames(module_list()$name, module_list()$title),
+  #             stats::setNames(module_list()$name, module_list()$title),
   #             c("imprecise-p",
   #               "osf-check",
   #               "retractionwatch",
