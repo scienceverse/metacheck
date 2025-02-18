@@ -21,6 +21,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/demodir.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/demopdf.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/demoxml.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/distinctive_words.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/expand_text.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_authors.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_doi.html</loc></url>
@@ -30,6 +31,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_refs.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_submission.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/index.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/info_table.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/llm.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/llm_models.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/message.html</loc></url>
@@ -51,6 +53,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/print.ppchk_module_output.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/print.ppchk_validate.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/print.scivrs_paper.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/psychsci.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/read_file.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/read_grobid.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/read_grobid_xml.html</loc></url>
@@ -62,6 +65,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/site_down.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/stats.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/study.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/text_features.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/tl_accuracy.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/validate.html</loc></url>
 </urlset>

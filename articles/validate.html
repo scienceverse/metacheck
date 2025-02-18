@@ -33,7 +33,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9027</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9028</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -178,30 +178,26 @@ returned tables.</p>
 <code class="sourceCode R"><span><span class="co"># show rows where the traffic light check is false</span></span>
 <span><span class="va">v</span><span class="op">$</span><span class="va">sample</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="va">tl_check</span><span class="op">)</span></span>
-<span><span class="co">#&gt;               id                table report traffic_light report_ver tl_ver</span></span>
-<span><span class="co">#&gt; 1 xml/prereg.xml https://osf.io/pwtrh                  red              info</span></span>
-<span><span class="co">#&gt;   misses false_alarms table_check report_check tl_check</span></span>
-<span><span class="co">#&gt; 1      1            1       FALSE         TRUE    FALSE</span></span></code></pre></div>
+<span><span class="co">#&gt;           id                table report traffic_light report_ver tl_ver misses</span></span>
+<span><span class="co">#&gt; 1 xml/prereg https://osf.io/pwtrh                  red              info      1</span></span>
+<span><span class="co">#&gt;   false_alarms table_check report_check tl_check</span></span>
+<span><span class="co">#&gt; 1            1       FALSE         TRUE    FALSE</span></span></code></pre></div>
 <p>The table check is false, and there is one missing and one extra
 result.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show rows where the table check is false</span></span>
 <span><span class="va">v</span><span class="op">$</span><span class="va">sample</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="va">table_check</span><span class="op">)</span></span>
-<span><span class="co">#&gt;               id                table report traffic_light report_ver tl_ver</span></span>
-<span><span class="co">#&gt; 1 xml/prereg.xml https://osf.io/pwtrh                  red              info</span></span>
-<span><span class="co">#&gt;   misses false_alarms table_check report_check tl_check</span></span>
-<span><span class="co">#&gt; 1      1            1       FALSE         TRUE    FALSE</span></span></code></pre></div>
+<span><span class="co">#&gt;           id                table report traffic_light report_ver tl_ver misses</span></span>
+<span><span class="co">#&gt; 1 xml/prereg https://osf.io/pwtrh                  red              info      1</span></span>
+<span><span class="co">#&gt;   false_alarms table_check report_check tl_check</span></span>
+<span><span class="co">#&gt; 1            1       FALSE         TRUE    FALSE</span></span></code></pre></div>
 <p>You can view the validated results table for that paper…</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">v</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="st">"xml/prereg.xml"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;               id                 text</span></span>
-<span><span class="co">#&gt; 1 xml/prereg.xml https://osf.io/pwtrh</span></span>
-<span><span class="co">#&gt; 2 xml/prereg.xml https://osf.io/pwtrh</span></span>
-<span><span class="co">#&gt;                                                                    header</span></span>
-<span><span class="co">#&gt; 1 Are One-tailed Tests and Sequential Analyses Appropriate in Psychology?</span></span>
-<span><span class="co">#&gt; 2                                                                Attitude</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] id     text   header</span></span>
+<span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span></code></pre></div>
 <p>…and compare it with the expected results.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expected</span> <span class="op">|&gt;</span></span>
