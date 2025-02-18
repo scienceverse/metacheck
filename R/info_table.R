@@ -1,0 +1,61 @@
+#' Get paper information in a table
+#'
+#' @param paper a paper object or a list of paper objects
+#' @param info a vector of columns to return
+#' @param path whether to return absolute or relative path for the filename
+#'
+#' @returns a data frame with each paper id and info columns
+#' @export
+#'
+#' @examples
+#' paper <- demodir() |> read_grobid()
+#' info_table(paper)
+info_table <- function(paper,
+                       info = c("filename",
+                                "title",
+                                "keywords",
+                                "doi"),
+                       path = c("relative", "absolute")
+                       ) {
+  if (inherits(paper, "scivrs_paper")) {
+    one_paper <- paper
+    paper <- list(one_paper)
+    names(paper) <- one_paper$name
+  }
+
+  infos <- lapply(paper, function(p) {
+    info_table <- list()
+    info_table$id <- p$id
+
+    for (item in info) {
+      value <- p$info[[item]]
+
+      if (length(value) > 1) {
+        value <- unlist(value) |> paste(collapse = "; ")
+      } else if (length(value) == 0) {
+        value <- NULL
+      }
+
+      info_table[[item]] <- value
+    }
+
+    info_table
+  })
+  df <- do.call(dplyr::bind_rows, infos)
+
+  # add in any missing columns and reorder
+  missing_cols <- setdiff(info, names(df))
+  df[, missing_cols] <- NA
+  df <- df[, c("id", info)]
+
+  # set filename to absolute or relative path
+  if ("filename" %in% info) {
+    df$filename <- normalizePath(df$filename)
+    if (match.arg(path) == "relative") {
+      wd <- getwd() |> normalizePath() |> paste0("/")
+      df$filename <- gsub(wd, "", df$filename, fixed = TRUE)
+    }
+  }
+
+  return(df)
+}

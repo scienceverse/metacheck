@@ -5,9 +5,9 @@ test_that("exists", {
 test_that("basic", {
   p <- paper()
   expect_s3_class(p, "scivrs_paper")
-  exp_names <- c("name", "info", "authors", "full_text", "references", "citations")
+  exp_names <- c("id", "info", "authors", "full_text", "references", "citations")
   expect_equal(names(p), exp_names)
-  expect_equal(p$name, "Demo Paper")
+  expect_equal(p$id, "Demo Paper")
   expect_equal(p$info, list())
   expect_equal(length(p$authors), 0)
   expect_s3_class(p$authors, "scivrs_authors")

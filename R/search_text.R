@@ -5,7 +5,7 @@
 #' @param paper a paper object or a list of paper objects
 #' @param pattern the regex pattern to search for
 #' @param section the section(s) to search in
-#' @param return the kind of text to return, the full sentence, paragraph, div, or section that the text is in, or just the (regex) match
+#' @param return the kind of text to return, the full sentence, paragraph, div, or section that the text is in, or just the (regex) match, or all body text
 #' @param ignore.case whether to ignore case when text searching
 #' @param ... additional arguments to pass to `grep()` and `regexpr()`, such as `fixed = TRUE`
 #'
@@ -18,7 +18,7 @@
 #'
 #' search_text(paper, "p\\s*(=|<)\\s*[0-9\\.]+", return = "match")
 search_text <- function(paper, pattern = ".*", section = NULL,
-                        return = c("sentence", "paragraph", "div",  "section", "match"),
+                        return = c("sentence", "paragraph", "div",  "section", "match", "all"),
                         ignore.case = TRUE, ...) {
   return <- match.arg(return)
   text <- NULL # hack to stop cmdcheck warning :(
@@ -96,6 +96,8 @@ search_text <- function(paper, pattern = ".*", section = NULL,
       groups <- c("section", "header", "div", "id")
     } else if (return == "section") {
       groups <- c("section", "id")
+    } else if (return == "all") {
+      groups <- c("id")
     }
 
     ft_match_all <- dplyr::semi_join(ft_p, ft_match, by = groups) |>

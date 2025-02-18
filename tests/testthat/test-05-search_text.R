@@ -62,6 +62,7 @@ test_that("return", {
   res_div <- search_text(s, section = "method", return = "div")
   res_sec <- search_text(s, section = "method", return = "section")
   res_m <- search_text(s, "Part [0-9]", section = "method", return = "match")
+  res_all <- search_text(s, return = "all")
 
   expect_equal(res_s1$text, res_s2$text)
   expect_equal(res_s1$text, s$text[2:11])
@@ -83,6 +84,13 @@ test_that("return", {
   expect_equal(res_sec$header, NA)
 
   expect_equal(res_m$text, paste("Part", 1:3))
+
+  expect_equal(res_all$text, "Introduction\n\nMethod\n\nParticipants\n\nPart 1 Part 2 Part 3\n\nMeasures\n\nMeasures 1 Measures 2 Measures 3 Measures 4")
+  expect_equal(NA, res_all$section)
+  expect_equal(NA, res_all$div)
+  expect_equal(NA, res_all$header)
+  expect_equal(NA, res_all$p)
+  expect_equal(NA, res_all$s)
 })
 
 test_that("iteration", {

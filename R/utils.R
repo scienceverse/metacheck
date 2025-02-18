@@ -113,9 +113,9 @@ concat_tables <- function(papers, name_path) {
 #' @keywords internal
 #'
 print.scivrs_paper <- function(x, ...) {
-  underline <- rep("-", nchar(x$name)) |> paste(collapse="")
+  underline <- rep("-", nchar(x$id)) |> paste(collapse="")
   txt <- sprintf("%s\n%s\n%s\n\n* Sections: %d\n* Sentences: %d\n* References: %d\n* Citations: %d\n\n",
-                 underline, x$name, underline,
+                 underline, x$id, underline,
                  max(c(0, x$full_text$div)),
                  nrow(x$full_text),
                  nrow(x$references),
@@ -214,3 +214,12 @@ demodir <- function() {
   grobid_dir <- system.file("grobid", package="papercheck")
   return(grobid_dir)
 }
+
+
+#' Psychologial Science Open Access Paper Set
+#'
+#' 250 open access papers from Psychological Science.
+#'
+#' @format A list of 250 paper objects
+#' @source \url{https://journals.sagepub.com/home/pss}
+"psychsci"

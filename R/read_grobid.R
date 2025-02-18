@@ -36,7 +36,8 @@ read_grobid <- function(filename) {
       t()
     distinct_vals <- apply(dir_df, 2, unique) |> lapply(length) > 1
     unique_names <- dir_df[ , distinct_vals, drop = FALSE] |>
-      apply(1, paste0, collapse = "/")
+      apply(1, paste0, collapse = "/") |>
+      gsub("\\.xml$", "", x = _)
 
     p <- lapply(filename, \(x) {
       p1 <- read_grobid(x)
@@ -65,6 +66,9 @@ read_grobid <- function(filename) {
     return(p)
   }
 
+  # add .xml if not there
+  filename <- gsub("(\\.xml)?$", "\\.xml", filename)
+
   if (!file.exists(filename)) {
     stop("The file ", filename, " does not exist.")
   }
@@ -82,7 +86,7 @@ read_grobid <- function(filename) {
   # set up paper object ----
   p <- paper()
 
-  p$name <- basename(filename) |>
+  p$id <- basename(filename) |>
     gsub("\\.(xml|pdf)$", "", x = _, ignore.case = TRUE)
   p$info$filename <- filename
   p$info$title <- xml2::xml_find_first(xml, "//titleStmt //title") |>

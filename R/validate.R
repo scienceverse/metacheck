@@ -31,7 +31,12 @@ validate <- function(module, sample, expected = NULL, path = NULL) {
   # check sample is set up right ----
   if (nrow(sample) == 0) stop("The sample has no rows")
   if (!"id" %in% names(sample)) stop("The sample needs a column called id")
-  xml_exist <- file.path(path, sample$id) |> file.exists()
+
+  # strip .xml from sample$id
+  sample$id <- gsub("\\.xml$", "", x = sample$id)
+  xml_exist <- file.path(path, sample$id) |>
+    paste0(".xml") |>
+    file.exists()
   if (all(!xml_exist)) {
     stop("None of the xml files could be found; check the format of your id column, or set the path argument")
   } else if (!all(xml_exist)) {
@@ -43,6 +48,8 @@ validate <- function(module, sample, expected = NULL, path = NULL) {
   # expected ----
   if (is.data.frame(expected)) {
     res_match <- expected
+    # strip .xml from expected$id
+    res_match$id <- gsub("\\.xml$", "", res_match$id)
   } else if (is.null(expected) &&
              "table" %in% names(sample)) {
     res_match <- data.frame(
@@ -63,7 +70,8 @@ validate <- function(module, sample, expected = NULL, path = NULL) {
   sample$tl_ver <- NA
   for (i in 1:nrow(sample)) {
     ## read in the paper ----
-    paper <- file.path(path, sample$id[[i]]) |> read_grobid()
+    paper <- file.path(path, sample$id[[i]]) |>
+      read_grobid()
 
     # run the module
     results <- module_run(paper, module)

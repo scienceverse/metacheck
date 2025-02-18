@@ -1,3 +1,10 @@
+# papercheck 0.0.0.9028 (2025-02-18)
+
+* added `psychsci` dataset of 250 open access papers from Psychological Science
+* added "all" option the the return argument of `search_text()`
+* added `info_table()` to get a dataframe of info from a list of paper objects
+* experimental functions for text prediction: `distinctive_words()`, `text_features()`, and `predict_classification()`
+
 # papercheck 0.0.0.9027 (2025-02-07)
 
 * Removed ChatGPT and added groq support

@@ -13,7 +13,6 @@ llm(
   temperature = 0.5,
   top_p = 0.95,
   seed = sample(1e+06:9999999, 1),
-  include_query = FALSE,
   API_KEY = Sys.getenv("GROQ_API_KEY")
 )
 }
@@ -34,8 +33,6 @@ llm(
 
 \item{seed}{Set for reproducible responses}
 
-\item{include_query}{Whether to include the query string in the returned table}
-
 \item{API_KEY}{your API key for the LLM}
 }
 \value{
@@ -53,8 +50,9 @@ See \url{https://console.groq.com/docs} for more information
 }
 \examples{
 \donttest{
-  text <- c("hello", "number", "ten", "12")
+  text <- c("hello", "number", "ten", 12)
   query <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
   is_number <- llm(text, query)
+  is_number
 }
 }

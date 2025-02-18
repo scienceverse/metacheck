@@ -105,7 +105,7 @@ test_that("sample size", {
   suppressMessages( res <- llm(text, query) )
 
   expect_equal(res$text, text$text)
-  expect_equal(res$id, c("eyecolor.xml", "incest.xml"))
+  expect_equal(res$id, c("eyecolor", "incest"))
   # expect_equal(res$answer[[1]], "300 (150 men, 150 women)")
   # expect_equal(res$answer[[2]], "1998 (666 men, 1332 women)")
 

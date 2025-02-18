@@ -21,15 +21,13 @@ paper <- function(name = "Demo Paper", ...) {
     paper <- read_grobid(xml)
   } else {
     # make empty paper object
-    paper <- c(
-      list(name = name),
-      list(
-        info = list(),
-        authors = list(),
-        full_text = data.frame(),
-        references = data.frame(),
-        citations = data.frame()
-      )
+    paper <- list(
+      id = gsub("\\.(pdf|xml)$", "", name, ignore.case = TRUE),
+      info = list(),
+      authors = list(),
+      full_text = data.frame(),
+      references = data.frame(),
+      citations = data.frame()
     )
 
     class(paper) <- c("scivrs_paper", "list")

@@ -1,7 +1,7 @@
 Package: papercheck
 Title: Check Scientific Papers for Best Practices
-Version: 0.0.0.9027
-Date: 2025-02-07
+Version: 0.0.0.9028
+Date: 2025-02-18
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -54,5 +54,5 @@ VignetteBuilder: knitr
 URL: https://github.com/scienceverse/papercheck, https://scienceverse.github.io/papercheck/
 BugReports: https://github.com/scienceverse/papercheck/issues
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5)
 LazyData: true

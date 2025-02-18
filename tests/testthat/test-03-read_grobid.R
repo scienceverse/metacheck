@@ -7,7 +7,7 @@ test_that("error", {
   expect_error(read_grobid("no.exist"))
 
   # non-grobid XML
-  filename <- tempfile(fileext = "xml")
+  filename <- tempfile(fileext = ".xml")
   xml2::read_html("<p>Hello</p>") |>
     xml2::write_xml(filename, options = "as_xml")
   expect_warning(g1 <- read_grobid(filename))
@@ -39,7 +39,7 @@ test_that("basics", {
   expect_equal(class(s), c("scivrs_paper", "list"))
 
   title <- "To Err is Human: An Empirical Investigation"
-  expect_equal(s$name, "to_err_is_human")
+  expect_equal(s$id, "to_err_is_human")
   expect_equal(s$info$title, title)
 
   expect_equal(substr(s$info$description, 1, 10), "This paper")
@@ -103,14 +103,14 @@ test_that("iteration", {
   file_list <- list.files(grobid_dir, ".xml")
 
   expect_equal(length(s), 3)
-  expect_equal(names(s), file_list)
+  expect_equal(names(s) |> paste0(".xml"), file_list)
   expect_s3_class(s[[1]], "scivrs_paper")
   expect_s3_class(s[[2]], "scivrs_paper")
   expect_s3_class(s[[3]], "scivrs_paper")
 
-  expect_equal(s[[1]]$name, "eyecolor")
-  expect_equal(s[[2]]$name, "incest")
-  expect_equal(s[[3]]$name, "prereg")
+  expect_equal(s[[1]]$id, "eyecolor")
+  expect_equal(s[[2]]$id, "incest")
+  expect_equal(s[[3]]$id, "prereg")
 
   expect_equal(s[[1]]$info$title, "Positive sexual imprinting for human eye color")
   expect_equal(s[[2]]$info$title, "Having other-sex siblings predicts moral attitudes to sibling incest, but not parent-child incest")
@@ -119,17 +119,17 @@ test_that("iteration", {
   # separate xmls
   filenames <- demodir() |> list.files(".xml", full.names = TRUE)
   s <- read_grobid(filenames)
-  expect_equal(names(s), file_list)
+  expect_equal(names(s) |> paste0(".xml"), file_list)
 
   s <- read_grobid(filenames[3:1])
-  expect_equal(names(s), file_list[3:1])
+  expect_equal(names(s) |> paste0(".xml"), file_list[3:1])
 
   # recursive file search
   s <- read_grobid(system.file(package="papercheck"))
-  nested_files <- c("extdata/to_err_is_human.xml",
-                    "grobid/eyecolor.xml",
-                    "grobid/incest.xml",
-                    "grobid/prereg.xml")
+  nested_files <- c("extdata/to_err_is_human",
+                    "grobid/eyecolor",
+                    "grobid/incest",
+                    "grobid/prereg")
   expect_equal(names(s), nested_files)
 })
 

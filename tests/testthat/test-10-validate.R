@@ -3,12 +3,11 @@
 test_that("exists", {
   expect_true(is.function(papercheck::validate))
   expect_no_error(helplist <- help(validate, papercheck))
-  #expect_equal(helplist$topic, "validate")
 })
 
 test_that("errors", {
   sample <- data.frame(
-    id = c("examples/to_err_is_human.xml")
+    id = c("examples/to_err_is_human")
   )
   expect_error(validate("not-a-module", sample),
                "There were no modules that matched not-a-module",
@@ -26,10 +25,10 @@ test_that("errors", {
   expect_error(validate(module, sample), "None of the xml files could be found")
 
   sample <- data.frame(
-    id = c("examples/to_err_is_human.xml", "nope.xml")
+    id = c("examples/to_err_is_human", "nope")
   )
   expect_error(validate(module, sample),
-               "Some (1) of the xml files could not be found: nope.xml",
+               "Some (1) of the xml files could not be found: nope",
                fixed = TRUE)
 })
 
@@ -41,13 +40,13 @@ test_that("basic", {
   res <- module_run(paper, module)
 
   sample <- data.frame(
-    id = "to_err_is_human.xml",
+    id = "to_err_is_human",
     report = res$report,
     traffic_light = res$traffic_light
   )
 
   expected <- data.frame(
-    id = "to_err_is_human.xml",
+    id = "to_err_is_human",
     text = res$table$text
   )
   #write.csv(sample, paste0(path, "/sample.csv"), row.names = FALSE)
@@ -81,12 +80,12 @@ test_that("partial", {
   module <- "all-p-values"
 
   sample <- data.frame(
-    id = "to_err_is_human.xml",
+    id = "to_err_is_human",
     traffic_light = "info"
   )
 
   expected <- data.frame(
-    id = "to_err_is_human.xml",
+    id = "to_err_is_human",
     text = c("p = 0.005", "p = 0.152", "p > .05")
   )
 
@@ -126,8 +125,9 @@ test_that("tables", {
   expect_equal(v$sample$report_check, c(F, F, T))
   expect_equal(v$sample$tl_check, c(T, F, T))
 
-  exp_table <- data.frame(
-    id = rep(list.files(xmldir), c(2, 3, 2)) |> file.path("xml", x = _),
+  expected <- data.frame(
+    id = rep(list.files(xmldir), c(2, 3, 2)) |>
+      file.path("xml", x = _),
     text = c("faceresearch.org", "stumbleupon.com",
              rep("https://osf.io/mwzuq", 3),
              rep("https://osf.io/pwtrh", 2)),
@@ -136,7 +136,7 @@ test_that("tables", {
                "Intro", "Attitude")
   )
 
-  v <- validate("all-urls", sample, exp_table, path = valdir)
+  v <- validate("all-urls", sample, expected, path = valdir)
   expect_equal(names(v$table), c("id", "text", "header"))
   expect_equal(v$table_matched, 2/3)
   expect_equal(v$report_matched, 1/3)
