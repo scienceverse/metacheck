@@ -34,9 +34,27 @@ test_that("errors", {
 test_that("distinctive_words", {
   # default
   words <- distinctive_words(text, classification)
-  expected <- c("medium", "effect", "larg", "small",
-                "an", "###", "of", "size", "x", "y", "z")
+  expected <- c("medium", "effect", "of", "###", "larg", "small",
+                "an", "size", "x", "y", "z")
   expect_equal(words$word, expected)
+  exp_names <- c("word", "n_1", "n_0", "total",
+                 "freq_1", "freq_0", "difference")
+  expect_equal(names(words), exp_names)
+
+  # logical classification
+  words <- distinctive_words(text, as.logical(classification))
+  expect_equal(words$word, expected)
+  exp_names <- c("word", "n_TRUE", "n_FALSE", "total",
+                 "freq_TRUE", "freq_FALSE", "difference")
+  expect_equal(names(words), exp_names)
+
+  # two text value classification
+  class <- ifelse(classification, "B", "A")
+  words <- distinctive_words(text, class)
+  expect_equal(words$word, expected)
+  exp_names <- c("word", "n_B", "n_A", "total",
+                 "freq_B", "freq_A", "difference")
+  expect_equal(names(words), exp_names)
 
   # change n
   words <- distinctive_words(text, classification, n = 5)
@@ -46,19 +64,19 @@ test_that("distinctive_words", {
   stop_words <- c("an", "of","x", "y", "z")
   words <- distinctive_words(text, classification,
                               stop_words = stop_words)
-  expected <- c("medium", "###", "larg", "small", "effect", "size")
+  expected <- c("medium", "effect", "###", "larg", "small", "size")
   expect_equal(words$word, expected)
 
   # change number to remove
   words <- distinctive_words(text, classification, numbers = "remove")
-  expected <- c("medium", "of", "an", "larg", "small",
-                "effect", "size", "x", "y", "z")
+  expected <- c("medium", "effect", "of", "larg", "small",
+                "an", "size", "x", "y", "z")
   expect_equal(words$word, expected)
 
   # change number to specific
   words <- distinctive_words(text, classification, numbers = "specific")
-  expected <- c("medium", "0.4", "effect", "larg", "small",
-                "an", "of", "size", "x", "y", "z")
+  expected <- c("0.4", "medium", "effect", "of", "larg",
+                "small", "an", "size", "x", "y", "z")
   expect_equal(words$word, expected)
 })
 

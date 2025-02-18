@@ -1,0 +1,228 @@
+---
+title: "Text Models"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Text Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+#| message: false
+
+library(papercheck)
+library(dplyr)
+
+set.seed(8675309) 
+```
+
+
+You can build a simple general linear model to predict the classification of text strings.
+
+## Set up ground truth
+
+See the [metascience vignette](metascience.html) for an explanation of how to set up a ground truth table. Here, we're going to split our data into a training and test set.
+
+```{r}
+ground_truth <- readxl::read_excel("power/power_screening_coded.xlsx")
+
+train <- dplyr::slice_sample(ground_truth, prop = 0.5)
+test <- anti_join(ground_truth, train, by = "text")
+```
+
+
+
+
+## Get important words
+
+You can use any method for finding the words you want to use in your model, but papercheck has a built-in function to find the words that are most distinctive in your classification groups. The classification values here are 0 and 1, but can be TRUE/FALSE or any two text values.
+
+`n_X` is the total number of incidents of the word in category X, while `freq_X` is the average number of incidents per text string in category X (so can be higher than 1 if a word tends to be found several times per sentence). The table gives you the top `n` words with the largest absolute difference in frequency.
+
+```{r}
+words <- distinctive_words(
+  text = train$text,
+  classification = train$power_computation,
+  n = 10
+)
+```
+
+```{r, echo = FALSE}
+knitr::kable(words, digits = 2)
+```
+
+
+By default, the function will "stem" words using the "porter" algorithm. For example, "sampl" will match "sample", "samples" and "sampling". If your text is not English, check `SnowballC::getStemLanguages()` for other supported languages, or set `stem_language = FALSE`. 
+
+You can get rid of words that you think will be irrelevant (even if they are predictive of classification in this data set) by adding them to `stop_words`. The `tidytext::stop_words` object gives you a list of common stop words, but this includes words like "above", "according", or "small", so use this with caution. 
+
+The "###" value represents any number (the default setting for the `numbers` argument). We can set the `numbers` argument to "specific" to see if there are any specific numbers associated with power analyses.
+
+```{r}
+words <- distinctive_words(
+  text = train$text,
+  classification = train$power_computation,
+  n = 10,
+  numbers = "specific",
+  stop_words = c("the", "a", "of", "an", "and")
+)
+```
+
+```{r, echo = FALSE}
+knitr::kable(words, digits = 2)
+```
+
+## Code text features
+
+Next, code the features of your ground truth text using `text_features()`. This will give you a data frame that codes 0 or 1 for the absence or presence of each word or feature.
+
+* `word_count` defaults to TRUE, and returns the number of words in each text string. 
+* `has_number` defaults to TRUE, and checks for any number in your text. If "###" is in your words list, this will be automatically set to TRUE. 
+* `has_symbols` is a named vector of non-word strings (use regex) that you want to detect. 
+* `values` defaults to "presence" and returns 0 or 1 for the presence of a word in each text string, while "count" returns the number of incidences of the word per string. 
+
+```{r}
+has_symbols <- c(has_equals = "=", 
+                 has_percent = "%")
+
+features <- text_features(
+  text = train$text, 
+  words = words,
+  word_count = FALSE, 
+  has_number = TRUE,
+  has_symbol = has_symbols, 
+  values = "presence" # presence or count
+)
+
+# show the first row
+features[1, ] |> str()
+```
+
+## Train a model
+
+You can then use this feature data to train a model. Here, we're using a simple binomial logistic regression to predict the classification from all of the features.
+
+```{r}
+# Train logistic regression model
+model <- glm(train$power_computation ~ .,
+             data = features,
+             family = "binomial")
+
+summary(model)
+```
+
+You can use any model you like and any method to assess and choose the best model.
+
+
+## Predict classification
+
+Now you can classify any text using this model. First, we're going to predict the classification of the original training data. Use `text_features()` to get the feature data and `predict()` to return the model response, and compare this result to a threshold (here 0.5) to generate the predicted classification.
+
+```{r}
+train$model_response <- predict(model, features)
+
+train$power_computation_predict <-
+  train$model_response > 0.5
+
+dplyr::count(train, 
+             power_computation, 
+             power_computation_predict)
+```
+
+Now you should test this on a new set of data.
+
+```{r}
+
+test_features <- text_features(
+  text = test$text, 
+  words = words,
+  word_count = FALSE, 
+  has_number = TRUE,
+  has_symbol = has_symbols, 
+  values = "presence" # presence or count
+)
+test$model_response <- predict(model, test_features)
+
+test$power_computation_predict <-
+  test$model_response > 0.5
+
+dplyr::count(test, 
+             power_computation, 
+             power_computation_predict)
+```
+
+
+<!--
+
+### Create a module
+
+To create a module for this, you will need to save your model and create a module with code.
+
+```{r, eval = FALSE}
+saveRDS(model, "power/power_log_model.Rds")
+```
+
+
+```
+{
+  "title": "Classify with Log Model",
+  "description": "",
+  "code": {
+    "packages": ["papercheck"],
+    "code": "power_log_model.R"
+  }
+}
+```
+
+
+```{r, eval = FALSE}
+
+words <- c("size", "effect", "sample", 
+           "participants", "detect", "analysis",
+           "medium", "power", "faul", "respondents", 
+           "α", "cohen's", "research", 
+           "version", "experiment")
+
+has_symbols <- c(has_equals = "=", 
+                 has_percent = "%")
+
+readRDS("power/power_log_model.Rds")
+
+table <- paper |>
+  papercheck::search_text("power(ed)?\\b") |>
+  papercheck::search_text("(\\.[0-9]|[0-9]%)")
+
+features <- papercheck::text_features(
+  table$text, words, has_symbols = has_symbols
+)
+
+table$model_response <- predict(model, features)
+table$model_classification <- table$model_response > 0.5
+
+traffic_light <- "red"
+if (any(table$model_classification)) traffic_light <- "green"
+
+# return
+list(
+  table = table,
+  traffic_light = traffic_light
+)
+
+```
+
+```{r, eval = FALSE}
+v4 <- module_run(psychsci, "power/power_log_model.mod")
+```
+
+
+-->
+
+
+
