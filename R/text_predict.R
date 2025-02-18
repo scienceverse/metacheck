@@ -57,16 +57,25 @@ distinctive_words <- function(text, classification,
     dplyr::count(classification, word, sort = TRUE) |>
     tidyr::pivot_wider(names_from = classification,
                 values_from = n,
-                values_fill = 0) |>
+                values_fill = 0)
+
+  class_cats <- names(word_importance)[2:3]
+
+  word_importance <- word_importance |>
     stats::setNames(c("word", "n_0", "n_1")) |>
     dplyr::mutate(
       total = n_0 + n_1,
-      freq_0 = n_0/sum(n_0),
-      freq_1 = n_1/sum(n_1),
+      freq_0 = n_0/sum(classification == class_cats[1]),
+      freq_1 = n_1/sum(classification == class_cats[2]),
       difference = abs(freq_0 - freq_1)
     ) |>
     dplyr::filter(total >= min_total) |>
-    dplyr::arrange(dplyr::desc(difference))
+    dplyr::arrange(dplyr::desc(difference)) |>
+    stats::setNames(c("word",
+                      paste0("n_", class_cats),
+                      "total",
+                      paste0("freq_", class_cats),
+                      "difference"))
 
   # Return top N most distinctive words
   return(utils::head(word_importance, n))
