@@ -4,6 +4,9 @@
 # papercheck <img src="man/figures/logo.png" align="right" height="120" alt="" />
 
 <!-- badges: start -->
+
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 The goal of papercheck is to automatically check scientific papers for
@@ -62,30 +65,7 @@ text <- search_text(paper, pattern,
 | t(97.2) = -1.96 | results | Results |   3 |   2 |   1 | to_err_is_human.xml |
 | p = 0.152       | results | Results |   3 |   2 |   1 | to_err_is_human.xml |
 
-## Large Language Models
-
-You can query the extracted text of papers with LLMs using
-[groq](https://console.groq.com/docs/).
-
-Use `search_text()` first to narrow down the text into what you want to
-query. Below, we returned the first two papers’ introduction sections,
-and returned the full section. Then we asked an LLM “What is the
-hypothesis of this study?”.
-
-``` r
-hypotheses <- search_text(papers[1:2], 
-                          section = "intro", 
-                          return = "section")
-query <- "What is the hypothesis of this study? Answer as briefly as possible."
-llm_hypo <- llm(hypotheses, query)
-```
-
-| id | answer |
-|:---|:---|
-| eyecolor.xml | The hypothesis of this study is that humans exhibit positive sexual imprinting, where individuals choose partners with physical characteristics similar to those of their opposite-sex parent. |
-| incest.xml | The hypothesis is that moral opposition to third-party sibling incest is greater among individuals with other-sex siblings than among individuals with same-sex siblings. |
-
-### Batch Processing
+## Batch Processing
 
 The functions `pdf2grobid()` and `read_grobid()` also work on a folder
 of files, returning a list of XML file paths or paper objects,
@@ -105,9 +85,32 @@ previous <- search_text(papers, "previous",
 
 | text | section | header | div | p | s | id |
 |:---|:---|:---|---:|---:|---:|:---|
-| Royzman et al’s non-replication potentially calls into question the reliability of previously reported links between having an other-sex sibling and moral opposition to third-party sibling incest. | intro | Introduction | 1 | 3 | 3 | incest.xml |
-| Previous research has shown that making cost-benefit analyses of using statistical approaches explicit can influence researchers’ attitudes. | intro | \[div-01\] | 1 | 8 | 5 | prereg.xml |
-| When exploring difference in responses between previous experience with pre-registration, we see a clear trend where reasearchers who have pre-registered studies in their own research indicate pre-registration is more beneficial, and indicate higher a higher likelihood of pre-registering studies in the future, and higher percentage of studies for which they would consider pre-registering (see Table 2). | intro | Attitude | 3 | 7 | 1 | prereg.xml |
+| Royzman et al’s non-replication potentially calls into question the reliability of previously reported links between having an other-sex sibling and moral opposition to third-party sibling incest. | intro | Introduction | 1 | 3 | 3 | incest |
+| Previous research has shown that making cost-benefit analyses of using statistical approaches explicit can influence researchers’ attitudes. | intro | \[div-01\] | 1 | 8 | 5 | prereg |
+| When exploring difference in responses between previous experience with pre-registration, we see a clear trend where reasearchers who have pre-registered studies in their own research indicate pre-registration is more beneficial, and indicate higher a higher likelihood of pre-registering studies in the future, and higher percentage of studies for which they would consider pre-registering (see Table 2). | intro | Attitude | 3 | 7 | 1 | prereg |
+
+### Large Language Models
+
+You can query the extracted text of papers with LLMs using
+[groq](https://console.groq.com/docs/).
+
+Use `search_text()` first to narrow down the text into what you want to
+query. Below, we limited search to the first two papers’ introduction
+sections, and returned the full section. Then we asked an LLM “What is
+the hypothesis of this study?”.
+
+``` r
+hypotheses <- search_text(papers[1:2], 
+                          section = "intro", 
+                          return = "section")
+query <- "What is the hypothesis of this study? Answer as briefly as possible."
+llm_hypo <- llm(hypotheses, query)
+```
+
+| id | answer |
+|:---|:---|
+| eyecolor | The hypothesis of this study is that people tend to choose romantic partners with eye colors similar to those of their opposite-sex parents, a phenomenon known as positive sexual imprinting. |
+| incest | The hypothesis is that moral opposition to third-party sibling incest is greater among individuals with other-sex siblings than among individuals with same-sex siblings. |
 
 ### Modules
 

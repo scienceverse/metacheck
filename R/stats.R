@@ -19,7 +19,7 @@ stats <- function(text, ...) {
   if (n == 0) return(data.frame())
 
   # set up progress bar ----
-  if (getOption("papercheck.verbose")) {
+  if (verbose()) {
     pb <- progress::progress_bar$new(
       total = n, clear = FALSE,
       format = "Checking stats [:bar] :current/:total :elapsedfull"
@@ -34,9 +34,12 @@ stats <- function(text, ...) {
 
     # statcheck uses cat() to output messages :(
     sink_output <- utils::capture.output(
-      sc <- statcheck::statcheck(subtext, messages = FALSE, ...)
+      sc <- tryCatch(statcheck::statcheck(subtext, messages = FALSE, ...),
+                     error = function(e) {
+                       return(NULL)
+                     }, warning = function(w) {})
     )
-    if (getOption("papercheck.verbose")) pb$tick()
+    if (verbose()) pb$tick()
     if (is.null(sc)) return(data.frame())
     sc$source <- i
 

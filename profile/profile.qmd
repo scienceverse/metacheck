@@ -4,10 +4,12 @@ title: Profiling
 
 ```{r}
 #| label: setup
+#| message: false
 
 library(lineprof)
 
 devtools::load_all(".")
+papercheck::
 #source("profile/stats-custom.R")
 
 files <- list.files("psych_science_xml", "xml$", full.names = TRUE)

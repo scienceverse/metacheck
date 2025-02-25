@@ -2,6 +2,7 @@
 #'
 #' @param paper a paper object or a list of paper objects
 #' @param module the name of a module or path to a module to run on this object
+#' @param ... further arguments to the module (e.g., arguments for the `llm()` function like `seed`)
 #'
 #' @return a list of the returned table and report text
 #' @export
@@ -10,7 +11,7 @@
 #' filename <- demoxml()
 #' paper <- read_grobid(filename)
 #' module_run(paper, "imprecise-p")
-module_run <- function(paper, module) {
+module_run <- function(paper, module, ...) {
   module_path <- module_find(module)
 
   # read in module
@@ -31,14 +32,16 @@ module_run <- function(paper, module) {
       results <- results$table
     }
 
+    args <- c(json[[chunk]], list(...))
+
     if (type == "text") {
-      results <- module_run_text(results, json[[chunk]])
+      results <- module_run_text(results, args)
     } else if (type == "code") {
-      results <- module_run_code(results, json[[chunk]], module_dir)
+      results <- module_run_code(results, args, module_dir)
     } else if (type == "ml") {
-      results <- module_run_ml(results, json[[chunk]], module_dir)
+      results <- module_run_ml(results, args, module_dir)
     } else if (type == "llm") {
-      results <- module_run_llm(results, json[[chunk]])
+      results <- module_run_llm(results, args)
     } else {
       stop("The module has an invalid type of ", type)
     }
@@ -164,7 +167,7 @@ module_run_ml <- function(paper, args, module_dir = ".") {
 #' Run LLM module
 #'
 #' @param paper the paper object (or list of object)
-#' @param args a list of argumentsto `llm()`
+#' @param args a list of arguments to `llm()`
 #'
 #' @return data frame
 #' @keywords internal

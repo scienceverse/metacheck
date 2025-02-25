@@ -45,3 +45,10 @@ test_that("print.scivrs_paper", {
   expect_equal(op, op.sv)
   expect_true(grepl("to_err_is_human", op))
 })
+
+test_that("verbose", {
+  expect_equal(verbose(FALSE), FALSE)
+  expect_equal(verbose(), FALSE)
+  expect_equal(verbose(TRUE), TRUE)
+  expect_equal(verbose(), TRUE)
+})

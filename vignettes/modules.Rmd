@@ -70,7 +70,7 @@ Code must end with a list that contains values to return. The item `table` shoul
 
 ### Machine Learning
 
-The machine learning aspect of papercheck is under development, but currently uses BERT models to classify text. The "ml" key takes a dictionary of the arguments to `ml()`, with an additional optional setting to filter the output table to only matching resposes.
+The machine learning aspect of papercheck is under development, but currently uses BERT models to classify text. The "ml" key takes a dictionary of the arguments to `ml()`, with an additional optional setting to filter the output table to only matching responses.
 
 
 ```
@@ -96,12 +96,12 @@ The "llm" key takes a dictionary of the arguments to the `llm()` function.
   "title": "Summarise Sections",
   "description": "Generate a 1-sentence summary for each section",
   "llm": {
-    "query": "Summarise this section briefly, in one sentence.",
-    "group_by": ["id", "section"]
+    "query": "Summarise this section briefly, in one sentence."
   }
 }
 
 ```
+
 
 ## Report Info
 

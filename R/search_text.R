@@ -76,13 +76,18 @@ search_text <- function(paper, pattern = ".*", section = NULL,
     ft_match_all <- ft_match
   } else if (return == "match") {
     ft_match_all <- ft_match
-    matches <- gregexpr(pattern, ft_match$text, ignore.case = ignore.case, ...)
+    matches <- gregexpr(pattern, ft_match$text,
+                         ignore.case = ignore.case,
+                         ...)
     ft_match_all$text <- regmatches(ft_match$text, matches)
     #ft_match_all <- tidyr::unnest_longer(ft_match_all, text)
     text_lens <- sapply(ft_match_all$text, length)
     rowrep <- rep(seq_along(text_lens), text_lens)
     longtext <- unlist(ft_match_all$text)
     ft_match_all <- ft_match_all[rowrep, ]
+    if (is.null(longtext)) {
+      longtext <- character(0)
+    }
     ft_match_all$text <- longtext
   } else {
     # recombine paragraphs first
@@ -107,7 +112,10 @@ search_text <- function(paper, pattern = ".*", section = NULL,
 
   all_cols <- names(ft)
 
-  if (nrow(ft_match_all) > 0) {
+  if (return == "match") {
+    ft_match_all <- ft_match_all[, all_cols]
+  } else if (nrow(ft_match_all) > 0) {
+    # add back sentence and paragraph markers
     ft_match_all$text <- gsub("\\s+", " ", ft_match_all$text)
     ft_match_all$text <- gsub(" , ", ", ", ft_match_all$text)
     ft_match_all$text <- gsub(paragraph_marker, "\n\n", ft_match_all$text)
@@ -122,7 +130,11 @@ search_text <- function(paper, pattern = ".*", section = NULL,
     ft_match_all <- ft[c(), ]
   }
 
-  ft_match_unique <- unique(ft_match_all) |> dplyr::tibble()
+  if (return == "match") {
+    ft_match_unique <- dplyr::tibble(ft_match_all)
+  } else {
+    ft_match_unique <- unique(ft_match_all) |> dplyr::tibble()
+  }
 
   return(ft_match_unique)
 }

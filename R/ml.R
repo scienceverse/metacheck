@@ -50,7 +50,7 @@ ml <- function(text, model_dir,
            error = \(e) { stop("Error in ml-classifier.py script, is your reticulate setup correct?")})
 
   # set up progress bar ----
-  if (getOption("papercheck.verbose")) {
+  if (verbose()) {
     pb <- progress::progress_bar$new(
       total = nrow(text), clear = FALSE,
       format = "Classifying text [:bar] :current/:total :elapsedfull"
@@ -77,7 +77,7 @@ ml <- function(text, model_dir,
                   error = e$message))
     })
 
-    if (getOption("papercheck.verbose")) pb$tick()
+    if (verbose()) pb$tick()
   }
 
   text[[class_col]] <- sapply(response, \(x) x$classification)

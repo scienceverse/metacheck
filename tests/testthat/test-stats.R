@@ -51,3 +51,11 @@ test_that("statcheck options", {
   all_table <- stats(test_text, AllPValues = TRUE)
   expect_equal(nrow(all_table), nrow(test_text))
 })
+
+test_that("error", {
+  # errored out at 154
+  # Error in missing value where TRUE/FALSE needed
+  paper <- psychsci[100]
+  expect_no_error( stats <- stats(paper) )
+
+})

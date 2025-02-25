@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # papercheck <img src="man/figures/logo.png" align="right" height="120" alt="" />
 
 <!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 The goal of papercheck is to automatically check scientific papers for best practices.
@@ -70,31 +71,8 @@ text <- search_text(paper, pattern,
 knitr::kable(text)
 ```
 
-## Large Language Models
 
-You can query the extracted text of papers with LLMs using [groq](https://console.groq.com/docs/).
-
-Use `search_text()` first to narrow down the text into what you want to query. Below, we returned the first two papers' introduction sections, and returned the full section. Then we asked an LLM "What is the hypothesis of this study?".
-
-```{r, eval = FALSE}
-hypotheses <- search_text(papers[1:2], 
-                          section = "intro", 
-                          return = "section")
-query <- "What is the hypothesis of this study? Answer as briefly as possible."
-llm_hypo <- llm(hypotheses, query)
-```
-
-```{r, echo = FALSE}
-llm_hypo <- data.frame(
-  id = c("eyecolor.xml", "incest.xml"),
-  answer = c("The hypothesis of this study is that humans exhibit positive sexual imprinting, where individuals choose partners with physical characteristics similar to those of their opposite-sex parent.", 
-             "The hypothesis is that moral opposition to third-party sibling incest is greater among individuals with other-sex siblings than among individuals with same-sex siblings.")
-)
-
-knitr::kable(llm_hypo)
-```
-
-### Batch Processing
+## Batch Processing
 
 The functions `pdf2grobid()` and `read_grobid()` also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions `search_text()`, `expand_text()` and `llm()` also work on a list of paper objects.
 
@@ -111,6 +89,30 @@ previous <- search_text(papers, "previous",
 
 ```{r, echo = FALSE}
 knitr::kable(previous)
+```
+
+### Large Language Models
+
+You can query the extracted text of papers with LLMs using [groq](https://console.groq.com/docs/). See `?llm` for details of how to get and set up your API key, choose an LLM, and adjust settings. 
+
+Use `search_text()` first to narrow down the text into what you want to query. Below, we limited search to the first two papers' introduction sections, and returned the full section. Then we asked an LLM "What is the hypothesis of this study?".
+
+```{r, eval = FALSE}
+hypotheses <- search_text(papers[1:2], 
+                          section = "intro", 
+                          return = "section")
+query <- "What is the hypothesis of this study? Answer as briefly as possible."
+llm_hypo <- llm(hypotheses, query, seed = 8675309)
+```
+
+```{r, echo = FALSE}
+llm_hypo <- data.frame(
+  id = c("eyecolor", "incest"),
+  answer = c("The hypothesis of this study is that people's partner choice is influenced by positive sexual imprinting, meaning that they are attracted to partners who resemble their opposite-sex parent.", 
+             "The hypothesis is that moral opposition to third-party sibling incest is greater among people who have other-sex siblings than among people who do not have other-sex siblings.")
+)
+
+knitr::kable(llm_hypo)
 ```
 
 ### Modules

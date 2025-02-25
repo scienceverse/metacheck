@@ -70,17 +70,29 @@ test_that("ml", {
                 "The model directory no-exist could not be found")
 })
 
-test_that("AI", {
-  skip("AI")
-  skip_if_offline()
+test_that("LLM", {
+  skip_on_cran()
+  skip_if_offline("api.groq.com")
 
   paper <- read_grobid(demoxml())
-  hypo <- search_text(paper, "hypothes", return = "paragraph")
+  sec <- search_text(paper,
+                      section = "method",
+                      return = "section")
 
-  mod_output <- module_run(hypo, "ai-summarise")
+  model <- "llama3-70b-8192"
+  mod_output <- module_run(sec, "llm-summarise",
+                           model = model,
+                           seed = 8675309)
 
   expect_equal(names(mod_output$table),
-               c("id", "section", "answer", "cost"))
+               c("text", "section", "header", "div", "p",
+                 "s", "id", "answer", "time", "tokens"))
+  expect_equal(mod_output$table$answer, "This study randomly assigned 50 scientists to use an automated error-checking tool and 50 to use a checklist to examine whether automation reduces errors in scientific manuscripts.")
+
+  # get attributes
+  atts <- attr(mod_output$table, "llm")
+  expect_equal(atts$seed, 8675309)
+  expect_equal(atts$model, model)
 })
 
 test_that("all-p-values", {
@@ -90,6 +102,18 @@ test_that("all-p-values", {
   expect_equal(p$traffic_light, "info")
   expect_equal(nrow(p$table), 3)
   expect_equal(p$module, module)
+
+  # iteration: text modules need no special adaptation
+  paper <- psychsci
+  expect_no_error( mod_output <- module_run(paper, module) )
+  expect_equal(nrow(mod_output$table), 4162)
+
+  # check problem with minus sign at end
+  minus <- mod_output$table$text[grep("-$", mod_output$table$text)]
+  e <- mod_output$table$text[grep("e", mod_output$table$text)]
+
+  expect_equal(length(minus), 0)
+  expect_equal(length(e), 7L)
 })
 
 test_that("all-urls", {
@@ -99,10 +123,17 @@ test_that("all-urls", {
   expect_equal(urls$traffic_light, "info")
   expect_equal(nrow(urls$table), 2)
   expect_equal(urls$module, module)
+
+  # iteration
+  paper <- psychsci[1:20]
+  mod_output <- module_run(paper, module)
+  ids <- mod_output$table$id |> unique()
+  expect_true(all(ids %in% names(paper)))
 })
 
 test_that("osf-check", {
   skip_if_offline("osf.io")
+  module <- "osf-check"
 
   text <- data.frame(
     text = c("https://osf.io/5tbm9/",
@@ -110,20 +141,34 @@ test_that("osf-check", {
     section = NA, # TODO: search_text not require section column
     id = c("private", "public")
   )
-  mo <- module_run(text, "osf-check")
+  mo <- module_run(text, module)
   exp <- c(`https://osf.io/5tbm9` = "closed",
            `https://osf.io/629bx` = "open"
   )
   expect_equal(mo$table$status, exp)
+
+  # iteration
+  paper <- psychsci[1:20]
+  mod_output <- module_run(paper, module)
+  ids <- mod_output$table$id |> unique()
+  expect_equal(ids, c("0956797616631990", "0956797616647519"))
 })
 
 test_that("retractionwatch", {
   paper <- demoxml() |> read_grobid()
+  module <- "retractionwatch"
 
-  mod_output <- module_run(paper, "retractionwatch")
+  mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "yellow")
   expect_equal(mod_output$table$doi, "10.1177/0956797614520714")
   expect_equal(mod_output$report, "You cited some papers in the Retraction Watch database; double-check that you are acknowledging their retracted status when citing them.")
+
+  # iteration
+  paper <- psychsci
+  mod_output <- module_run(paper, module)
+  dois <- mod_output$table$doi |> unique()
+  expect_equal(dois, c("10.1177/0956797612470827",
+                       "10.1186/gb-2013-14-10-r115"))
 })
 
 test_that("imprecise-p", {
@@ -153,6 +198,13 @@ test_that("imprecise-p", {
   expect_equal(mod_output$traffic_light, "red")
   expect_equal(nrow(mod_output$table), 9)
   expect_equal(mod_output$report, "You may have reported some imprecise p-values")
+
+
+  # iteration
+  paper <- psychsci
+  mod_output <- module_run(paper, module)
+  lt05 <- grepl("p < .05", mod_output$table$text) |> sum()
+  expect_equal(lt05, 74)
 })
 
 test_that("marginal", {
@@ -213,5 +265,10 @@ test_that("statcheck", {
   expect_equal(mod_output$traffic_light, "red")
   expect_equal(nrow(mod_output$table), 2)
   expect_equal(mod_output$module, module)
+
+  paper <- psychsci[100:101]
+  expect_no_error(
+    mod_output <- module_run(paper, module)
+  )
 })
 

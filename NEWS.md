@@ -1,3 +1,10 @@
+# papercheck 0.0.0.9029 (2025-02-26)
+
+* Fixed a bug in `search_text()` that omitted duplicate matches in the same sentence when using results = "match"
+* Upgraded the search string for the "all-p-values" module to not error when a numeric value is followed by "-"
+* Error catching for `stats()` related to the above problem (and filed an issue on statcheck)
+* URLs in grobid XML are now converted to "<url>" using the source url, not the text url, which is often mangled
+
 # papercheck 0.0.0.9028 (2025-02-18)
 
 * added `psychsci` dataset of 250 open access papers from Psychological Science

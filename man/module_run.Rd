@@ -4,12 +4,14 @@
 \alias{module_run}
 \title{Run a module}
 \usage{
-module_run(paper, module)
+module_run(paper, module, ...)
 }
 \arguments{
 \item{paper}{a paper object or a list of paper objects}
 
 \item{module}{the name of a module or path to a module to run on this object}
+
+\item{...}{further arguments to the module (e.g., arguments for the \code{llm()} function like \code{seed})}
 }
 \value{
 a list of the returned table and report text

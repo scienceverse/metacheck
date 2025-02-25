@@ -1,6 +1,8 @@
 p <- module_run(paper, "all-p-values")$table
-p$p_comp <- gsub("p-?(value)?\\s*|\\s*\\d?\\.\\d+e?-?\\d*", "", p$text)
-p$p_value <- gsub("^p-?(value)?\\s*[<>=≤≥]{1,2}\\s*", "", p$text)
+p$p_comp <- gsub("p-?(value)?\\s*|\\s*\\d?\\.\\d+e?-?\\d*", "",
+                 p$text, ignore.case = TRUE)
+p$p_value <- gsub("^p-?(value)?\\s*[<>=≤≥]{1,2}\\s*", "",
+                  p$text, ignore.case = TRUE)
 p$p_value <- suppressWarnings(as.numeric(p$p_value))
 p$imprecise <- p$p_comp == "<" & p$p_value > .001
 p$imprecise <- p$imprecise | p$p_comp == ">"

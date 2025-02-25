@@ -35,7 +35,7 @@ report <- function(paper,
   }
 
   # set up progress bar ----
-  if (getOption("papercheck.verbose")) {
+  if (verbose()) {
     pb <- progress::progress_bar$new(
       total = length(modules) + 3,
       clear = FALSE,
@@ -47,7 +47,7 @@ report <- function(paper,
 
   # run each module ----
   module_output <- lapply(modules, \(module) {
-    if (getOption("papercheck.verbose"))
+    if (verbose())
       pb$tick(tokens = list(what = module))
     op <- tryCatch(module_run(paper, module),
              error = function(e) {
@@ -64,7 +64,7 @@ report <- function(paper,
   })
 
   # set up report ----
-  if (getOption("papercheck.verbose"))
+  if (verbose())
     pb$tick(tokens = list(what = "Creating report"))
   if (output_format == "pdf") {
     format <- paste0("  pdf:\n",
@@ -107,7 +107,7 @@ report <- function(paper,
     paste(collapse = "\n\n") |>
     gsub("\\n{3,}", "\n\n", x = _)
 
-  if (getOption("papercheck.verbose"))
+  if (verbose())
     pb$tick(tokens = list(what = "Rendering Report"))
   if (output_format == "qmd") {
     write(paste0(head, body), output_file)
@@ -128,7 +128,7 @@ report <- function(paper,
     file.rename(temp_output, output_file)
     unlink(temp_input) # clean up
   }
-  if (getOption("papercheck.verbose"))
+  if (verbose())
     pb$tick(tokens = list(what = "Report Saved"))
 
   return(output_file)

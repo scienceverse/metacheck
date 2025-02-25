@@ -11,9 +11,7 @@ x \%||\% y
 \item{x, y}{If \code{x} is NULL, will return \code{y}; otherwise returns \code{x}.}
 }
 \description{
-This infix function makes it easy to replace \code{NULL}s with a default
-value. It's inspired by the way that Ruby's or operation (\code{||})
-works.
+This infix function makes it easy to replace \code{NULL}s with a default value. It's inspired by the way that Ruby's or operation (\code{||}) works.
 }
 \examples{
 1 \%||\% 2

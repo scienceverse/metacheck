@@ -9,7 +9,7 @@ module_run_llm(paper, args)
 \arguments{
 \item{paper}{the paper object (or list of object)}
 
-\item{args}{a list of argumentsto \code{llm()}}
+\item{args}{a list of arguments to \code{llm()}}
 }
 \value{
 data frame
