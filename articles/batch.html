@@ -159,6 +159,31 @@ the future.</p>
 <span><span class="co">#&gt;   .. .. ..$ institution: chr "Stanford University"</span></span>
 <span><span class="co">#&gt;   ..- attr(*, "class")= chr [1:2] "scivrs_author" "list"</span></span>
 <span><span class="co">#&gt;  - attr(*, "class")= chr [1:2] "scivrs_authors" "list"</span></span></code></pre>
+<p>You can get the authors as a table for a paper object or list of
+papers.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/author_table.html">author_table</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Glasgow"</span>, <span class="va">affiliation</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 17 × 7</span></span></span>
+<span><span class="co">#&gt;    name.surname name.given  email                  affiliation id        n orcid</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Schyns       Philippe G  <span style="color: #949494;">""</span>                     University… 0956…     3 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> Lages        Martin      <span style="color: #949494;">"</span>martin.lages@glasgow… School of … 0956…     1 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Boyle        Stephanie C <span style="color: #949494;">""</span>                     Institute … 0956…     2 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Jones        Benedict C  <span style="color: #949494;">"</span>ben.jones@glasgow.ac… Institute … 0956…     1 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Fisher       Claire I    <span style="color: #949494;">""</span>                     Institute … 0956…     3 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> Wang         Hongyi      <span style="color: #949494;">""</span>                     Institute … 0956…     4 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Kandrik      Michal      <span style="color: #949494;">""</span>                     Institute … 0956…     5 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> Han          Chengyang   <span style="color: #949494;">""</span>                     Institute … 0956…     6 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Fasolt       Vanessa     <span style="color: #949494;">""</span>                     Institute … 0956…     7 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Morrison     Danielle    <span style="color: #949494;">""</span>                     Institute … 0956…     8 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> Lee          Anthony J   <span style="color: #949494;">""</span>                     Institute … 0956…     9 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> Holzleitner  Iris J      <span style="color: #949494;">""</span>                     Institute … 0956…    10 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> O'shea       Kieran J    <span style="color: #949494;">""</span>                     Institute … 0956…    11 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> Debruine     Lisa M      <span style="color: #949494;">""</span>                     Institute … 0956…    14 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> Jones        Benedict C  <span style="color: #949494;">""</span>                     Institute … 0956…     2 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> Debruine     Lisa M      <span style="color: #949494;">""</span>                     Institute … 0956…     3 <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">17</span> Fasolt       Vanessa     <span style="color: #949494;">""</span>                     Institute … 0956…     5 <span style="color: #BB0000;">NA</span></span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="info">Info<a class="anchor" aria-label="anchor" href="#info"></a>
@@ -166,7 +191,7 @@ the future.</p>
 <p>The <code>info</code> item lists the filename, title, description
 (abstract), keywords, doi, and submission info. Grobid sometimes makes
 mistakes with the DOI, so be cautious about using this.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">info</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; $filename</span></span>
 <span><span class="co">#&gt; [1] "vignettes/xml/0956797615588467.xml"</span></span>
@@ -188,7 +213,7 @@ mistakes with the DOI, so be cautious about using this.</p>
 <span><span class="co">#&gt; [1] "Received 2/2/15; Revision accepted 5/4/15"</span></span></code></pre>
 <p>You can get this as a table for a batch of papers using
 <code><a href="../reference/info_table.html">info_table()</a></code>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/info_table.html">info_table</a></span><span class="op">(</span><span class="va">papers</span>, info <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"doi"</span>, <span class="st">"title"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
@@ -207,7 +232,7 @@ mistakes with the DOI, so be cautious about using this.</p>
 <p>The <code>references</code> contains the items in the reference list,
 including an id to link them to citations (bib_id), the DOI if available
 (doi), and the full reference text (ref).</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ref</span> <span class="op">&lt;-</span> <span class="va">paper</span><span class="op">$</span><span class="va">references</span></span>
 <span></span>
 <span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">ref</span>, <span class="va">bib_id</span> <span class="op">==</span> <span class="st">"b5"</span><span class="op">)</span></span></code></pre></div>
@@ -222,7 +247,7 @@ including an id to link them to citations (bib_id), the DOI if available
 <p>The <code>citations</code> contains each citation, including an id to
 link them to references (bib_id) and the sentence that they are cited in
 (text).</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cite</span> <span class="op">&lt;-</span> <span class="va">paper</span><span class="op">$</span><span class="va">citations</span></span>
 <span></span>
 <span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cite</span>, <span class="va">bib_id</span> <span class="op">==</span> <span class="st">"b5"</span><span class="op">)</span></span></code></pre></div>
@@ -247,7 +272,7 @@ paragraph (<code>p</code>) within the section and eeach sentence
 (<code>s</code>) within each paragraph are also sequentially numbered
 (e.g., div = 1, p = 2, s = 3 is the third sentence of the second
 paragraph of the first section after the abstract).</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">full_text</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; [1] "text"    "section" "header"  "div"     "p"       "s"       "id"</span></span></code></pre>
 </div>
@@ -261,7 +286,7 @@ a paper or list of papers.</p>
 every sentence in every paper in the set. The data frame has the same
 column structure as the <code>full_text</code> table above, so that you
 can easily chain text searches.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_sentences</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">papers</span><span class="op">)</span></span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-ac96cb3ee4656e2e9ec3" style="width:100%;height:auto;"></div>
 <script type="application/json" data-for="htmlwidget-ac96cb3ee4656e2e9ec3">{"x":{"filter":"none","vertical":false,"data":[["09567976241245695","0956797618804501","09567976211048485","0956797620959014","09567976231218640","0956797619835147","0956797620970548","0956797619851753","0956797616665351","09567976231173900"],["Here we report that people who searched a city map for different locations were then better at generating multiple different solutions on an unrelated test of creativity; people who searched the city for a single, targeted location were then better at finding the single best solution to a puzzle.","Finally, BLCSM4 (see Fig. 1) was the full bidirectional couplings model (i.e., with fluid intelligence → Δdepressive symptoms and depressive symptoms → Δfluid intelligence).","Critically, there was a significant interaction, F(1, 39) = 9.99, p = .003, η p 2 = .204, indicating that the LPE depended on search condition (see Fig.","Another study found that age of onset of musical training predicts absolute pitch (Baharloo, Johnston, Service, Gitschier, &amp; Freimer, 1998).","We were able to replicate these results with the original stimuli but not with more standardized stimuli.","The present research examined this question using panel data of approximately 4,400 elderly couples in the United States.","These psychometric tasks were conducted to ensure that our neural and behavioral effects were not driven by conscious awareness of hedonic differences or by the explicit ability to discriminate the odors.","Finally, we tested whether this potential relationship between aggression and congruency effect was modulated by testosterone levels by adding a testosterone-by-aggression interaction term to the model, separately for gender and task conditions.","Similarly, in the case of the Aubert-Fleischl phenomenon, pursuit eye movements lower the reliability of sensory evidence, which causes motion thresholds to increase along with a corresponding slowing of perceived speed (Freeman, Champion, &amp; Warren, 2010).","Thus, normative perspectives suggest that a transgressor who faces punishment immediately should be punished similarly to a transgressor who is punished long after the crime was committed."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>id<\/th>\n      <th>text<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"dom":"tip","columnDefs":[{"name":"id","targets":0},{"name":"text","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script><p>You can customise <code><a href="../reference/search_text.html">search_text()</a></code> to return paragraphs or
@@ -270,7 +295,7 @@ the automatically classified section types from the options “abstract”,
 “intro”, “methods”, “results”, or “discussion” (this can be inaccurate
 if grobid doesn’t detect headers or the header text doesn’t obviously
 fall in one of these categories).</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">method_paragraphs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">papers</span>, section <span class="op">=</span> <span class="st">"method"</span>, return <span class="op">=</span> <span class="st">"paragraph"</span><span class="op">)</span></span></code></pre></div>
 <p>A random paragraph from a method section.</p>
 <pre><code><span><span class="co">#&gt; [1] "SES. Family SES was assessed by measures at first contact when the TEDS twins were 18 months and when they were 7, 9, and 16 years old. At first contact (SES Index 1), age 7 (SES Index 2), and age 16 (SES Index 4), parents reported their highest educational qualifications and occupation. Educational qualifications were assessed on an 8-point scale from 1 (no formal education) to 8 (postgraduate qualifications). Occupation was inferred on the basis of a standard classification (Office of Population and Census Surveys, 1991) that used reports of employment status, job title, employment type, and whether parents needed special qualifications for their role. At 9 years (SES Index 3) and 16 years, family income was assessed; parents reported their annual household income before tax on an 11-point scale from 1 (under £4,500) to 11 (more than £100,000). For SES Indexes 1 through 3, standardized mean scores were calculated and averaged at each assessment age. Previous analyses of these data showed that correlations (r) between these estimates were .77 for SES Index 1 and 2, .55 for SES Indexes 1 and 3, and .57 for SES Indexes 2 and 3 (Hanscombe et al., 2012). Correlations with SES Index 4 have not been previously reported and were .70 with SES Index 1, .76 with SES Index 2, and .65 with SES Index 6 in the current analysis sample. We summed the four indexes to achieve one SES composite score for each participant."</span></span></code></pre>
@@ -280,7 +305,7 @@ fall in one of these categories).</p>
 <p>You can just code every sentence or paragraph in a set of papers, but
 this is usually not very efficient, so we can use a search pattern to
 filter the text.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">search</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">papers</span>, pattern <span class="op">=</span> <span class="st">"Scotland"</span><span class="op">)</span></span></code></pre></div>
 <p>Here we have 4 results. We’ll just show the paper id and text columns
 of the returned table, but the table also provides the section type,
@@ -294,7 +319,7 @@ s).</p>
 </h3>
 <p>You can chain together searches to iteratively narrow down
 results.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">search</span> <span class="op">&lt;-</span> <span class="va">papers</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="st">"DeBruine"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="st">"2006"</span><span class="op">)</span></span></code></pre></div>
@@ -307,7 +332,7 @@ results.</p>
 <p>You can also use regular expressions to refine your search. The
 pattern below returns every sentence that contains either “Scotland” or
 “Scottish”.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">search</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">papers</span>, pattern <span class="op">=</span> <span class="st">"(Scotland|Scottish)"</span><span class="op">)</span></span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-febe03efa1a2d8d52a86" style="width:100%;height:auto;"></div>
 <script type="application/json" data-for="htmlwidget-febe03efa1a2d8d52a86">{"x":{"filter":"none","vertical":false,"data":[["0956797615615584","0956797618804501","0956797619833325","09567976231172500","09567976241243370","09567976241243370"],["The two surveys used identical sampling and interview methods and were administered to nationally representative samples of people who were older than 16 years and resided in England, Scotland, or Wales.","Data for the analyses came from the Lothian Birth Cohort 1936 (LBC1936) study, which is an ongoing follow-up study of some surviving members of the Scottish Mental Survey 1947 (Scottish Council for Research in Education, 1949).","To start, we tested whether neuroticism's bifactor structure replicated in two independent data sets: 8,158 participants in Generation Scotland (Smith et al., 2006) and the 1,434 participants used to develop the EPQ-R (Eysenck et al., 1985).","For one, historian David Hackett Fischer (1991) argued that Scotland's history of frequent warfare led to a short-term cultural orientation, such as not wanting to invest in building more costly houses.","Our study focused only on survey participants living in England, because of the lack of contextual-level information for the Wales, Scotland, and Northern Ireland subsamples.","Individuals were grouped as White if their reported ethnicity was among White British/English/Scottish/Welsh/Northern Irish/ Gypsy or Irish traveler/other White background."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>id<\/th>\n      <th>text<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"dom":"tip","columnDefs":[{"name":"id","targets":0},{"name":"text","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
@@ -318,7 +343,7 @@ pattern below returns every sentence that contains either “Scotland” or
 <p>You can return just the matching text for a regular expression by
 setting the results to “match”. This pattern searches for text like “p
 &lt; .25” or p&lt;0.01”.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">match</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">papers</span>, </span>
 <span>                     pattern <span class="op">=</span> <span class="st">"p\\s*&gt;\\s*0?\\.[0-9]+\\b"</span>, </span>
 <span>                     return <span class="op">=</span> <span class="st">"match"</span><span class="op">)</span></span></code></pre></div>
@@ -326,7 +351,7 @@ setting the results to “match”. This pattern searches for text like “p
 <script type="application/json" data-for="htmlwidget-1fb4450895fe099f74a1">{"x":{"filter":"none","vertical":false,"data":[["0956797614557697","0956797615615584","0956797615615584","0956797616634654","0956797616634665","0956797616657319","0956797616661199","0956797616667447","0956797616667447","0956797616667447","0956797616667447","0956797617692000","0956797617692000","0956797617692000","0956797617692000","0956797617692000","0956797617693326","0956797617693326","0956797617693326","0956797617693326","0956797617705667","0956797617705667","0956797617716922","0956797617716922","0956797617744542","0956797619830326","0956797619830326","0956797619830329","0956797619881134","0956797620929297","0956797620929297","0956797620929297","0956797620929297","0956797620939054","0956797620954815","0956797620954815","0956797620959014","0956797620965520","09567976211018618","09567976221079633","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231179378","09567976231179378","09567976231179378","09567976231179378","09567976231179378","09567976231180881","09567976231192241","09567976231192241","09567976231192241","09567976231192241","09567976241263344"],["p &gt; .29","p &gt; .250","p &gt; .250","p &gt; .23","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .01","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .15","p &gt; .11","p &gt; .6","p &gt; .14","p &gt; .352","p &gt; .999","p &gt; .05","p &gt; .25","p &gt; .15","p &gt; .3","p &gt; .27","p &gt; .12","p &gt; .15","p &gt; .08","p &gt; .1","p &gt; .110","p &gt; .059","p &gt; .33","p &gt; .290","p &gt; .265","p &gt; .103","p &gt; .05","p &gt; .80","p &gt; .28","p &gt; .60","p &gt; .13","p &gt; .05"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>id<\/th>\n      <th>text<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"dom":"tip","columnDefs":[{"name":"id","targets":0},{"name":"text","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script><p>You can expand this to the whole sentence, paragraph, or +/- some
 number of sentences around the match using
 <code><a href="../reference/expand_text.html">expand_text()</a></code>.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/expand_text.html">expand_text</a></span><span class="op">(</span>results_table <span class="op">=</span> <span class="va">match</span>, </span>
 <span>                      paper <span class="op">=</span> <span class="va">papers</span>,</span>
 <span>                      expand_to <span class="op">=</span> <span class="st">"sentence"</span>,</span>

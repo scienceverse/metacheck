@@ -175,17 +175,19 @@ returned tables.</p>
 <span><span class="co">#&gt;           id                table report traffic_light report_ver tl_ver misses</span></span>
 <span><span class="co">#&gt; 1 xml/prereg https://osf.io/pwtrh                  red              info      1</span></span>
 <span><span class="co">#&gt;   false_alarms table_check report_check tl_check</span></span>
-<span><span class="co">#&gt; 1            1       FALSE         TRUE    FALSE</span></span></code></pre></div>
+<span><span class="co">#&gt; 1            3       FALSE         TRUE    FALSE</span></span></code></pre></div>
 <p>The table check is false, and there is one missing and one extra
 result.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show rows where the table check is false</span></span>
 <span><span class="va">v</span><span class="op">$</span><span class="va">sample</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="va">table_check</span><span class="op">)</span></span>
-<span><span class="co">#&gt;           id                table report traffic_light report_ver tl_ver misses</span></span>
-<span><span class="co">#&gt; 1 xml/prereg https://osf.io/pwtrh                  red              info      1</span></span>
-<span><span class="co">#&gt;   false_alarms table_check report_check tl_check</span></span>
-<span><span class="co">#&gt; 1            1       FALSE         TRUE    FALSE</span></span></code></pre></div>
+<span><span class="co">#&gt;             id                table report traffic_light report_ver tl_ver</span></span>
+<span><span class="co">#&gt; 1 xml/eyecolor     faceresearch.org                 info              info</span></span>
+<span><span class="co">#&gt; 2   xml/prereg https://osf.io/pwtrh                  red              info</span></span>
+<span><span class="co">#&gt;   misses false_alarms table_check report_check tl_check</span></span>
+<span><span class="co">#&gt; 1      0            1       FALSE         TRUE     TRUE</span></span>
+<span><span class="co">#&gt; 2      1            3       FALSE         TRUE    FALSE</span></span></code></pre></div>
 <p>You can view the validated results table for that paper…</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">v</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>

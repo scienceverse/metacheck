@@ -41,7 +41,10 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9029" id="papercheck-0009029-2025-02-26">papercheck 0.0.0.9029 (2025-02-26)<a class="anchor" aria-label="anchor" href="#papercheck-0009029-2025-02-26"></a></h2>
-<ul><li>Fixed a bug in <code><a href="../reference/search_text.html">search_text()</a></code> that omitted duplicate matches in the same sentence when using results = “match”</li>
+<ul><li>added <code><a href="../reference/author_table.html">author_table()</a></code> to get a dataframe of author info from a list of paper objects</li>
+<li>fixed a bunch of tests now that multiple matches in a sentence are possible</li>
+<li>added back text (acknowledgements, annex, funding notes) to the full_text of a paper</li>
+<li>Fixed a bug in <code><a href="../reference/search_text.html">search_text()</a></code> that omitted duplicate matches in the same sentence when using results = “match”</li>
 <li>Upgraded the search string for the “all-p-values” module to not error when a numeric value is followed by “-”</li>
 <li>Error catching for <code><a href="../reference/stats.html">stats()</a></code> related to the above problem (and filed an issue on statcheck)</li>
 <li>URLs in grobid XML are now converted to “<url>” using the source url, not the text url, which is often mangled</url></li>
