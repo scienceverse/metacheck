@@ -12,9 +12,11 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="apple-touch-icon-60x60.png">
-<script src="lightswitch.js"></script><script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/Open_Sans-0.4.9/font.css" rel="stylesheet">
+<link href="deps/Fira_Code-0.4.9/font.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Check Scientific Papers for Best Practices">
 <meta name="description" content="A modular, extendable system for automatically checking scientific papers for best practices using text search, R code, machine learning, and/or generative AI queries.">
@@ -32,11 +34,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9028</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9029</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,14 +57,6 @@
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
-  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
-<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
-    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
-    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
-  </ul>
-</li>
       </ul>
 </div>
 
@@ -76,7 +70,7 @@
 </h1>
 </div>
 <!-- badges: start -->
-<!-- badges: end -->
+
 <p>The goal of papercheck is to automatically check scientific papers for best practices.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -205,41 +199,10 @@
 </div>
 </div>
 <div class="section level2">
-<h2 id="large-language-models">Large Language Models<a class="anchor" aria-label="anchor" href="#large-language-models"></a>
+<h2 id="batch-processing">Batch Processing<a class="anchor" aria-label="anchor" href="#batch-processing"></a>
 </h2>
-<p>You can query the extracted text of papers with LLMs using <a href="https://console.groq.com/docs/" class="external-link">groq</a>.</p>
-<p>Use <code><a href="reference/search_text.html">search_text()</a></code> first to narrow down the text into what you want to query. Below, we returned the first two papers’ introduction sections, and returned the full section. Then we asked an LLM “What is the hypothesis of this study?”.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hypotheses</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">papers</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, </span>
-<span>                          section <span class="op">=</span> <span class="st">"intro"</span>, </span>
-<span>                          return <span class="op">=</span> <span class="st">"section"</span><span class="op">)</span></span>
-<span><span class="va">query</span> <span class="op">&lt;-</span> <span class="st">"What is the hypothesis of this study? Answer as briefly as possible."</span></span>
-<span><span class="va">llm_hypo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/llm.html">llm</a></span><span class="op">(</span><span class="va">hypotheses</span>, <span class="va">query</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="50%">
-<col width="50%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">id</th>
-<th align="left">answer</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">eyecolor.xml</td>
-<td align="left">The hypothesis of this study is that humans exhibit positive sexual imprinting, where individuals choose partners with physical characteristics similar to those of their opposite-sex parent.</td>
-</tr>
-<tr class="even">
-<td align="left">incest.xml</td>
-<td align="left">The hypothesis is that moral opposition to third-party sibling incest is greater among individuals with other-sex siblings than among individuals with same-sex siblings.</td>
-</tr>
-</tbody>
-</table>
-<div class="section level3">
-<h3 id="batch-processing">Batch Processing<a class="anchor" aria-label="anchor" href="#batch-processing"></a>
-</h3>
 <p>The functions <code><a href="reference/pdf2grobid.html">pdf2grobid()</a></code> and <code><a href="reference/read_grobid.html">read_grobid()</a></code> also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions <code><a href="reference/search_text.html">search_text()</a></code>, <code><a href="reference/expand_text.html">expand_text()</a></code> and <code><a href="reference/llm.html">llm()</a></code> also work on a list of paper objects.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># read in all the XML files in the demo directory</span></span>
 <span><span class="va">grobid_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/demodir.html">demodir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">papers</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_grobid.html">read_grobid</a></span><span class="op">(</span><span class="va">grobid_dir</span><span class="op">)</span></span>
@@ -275,7 +238,7 @@
 <td align="right">1</td>
 <td align="right">3</td>
 <td align="right">3</td>
-<td align="left">incest.xml</td>
+<td align="left">incest</td>
 </tr>
 <tr class="even">
 <td align="left">Previous research has shown that making cost-benefit analyses of using statistical approaches explicit can influence researchers’ attitudes.</td>
@@ -284,7 +247,7 @@
 <td align="right">1</td>
 <td align="right">8</td>
 <td align="right">5</td>
-<td align="left">prereg.xml</td>
+<td align="left">prereg</td>
 </tr>
 <tr class="odd">
 <td align="left">When exploring difference in responses between previous experience with pre-registration, we see a clear trend where reasearchers who have pre-registered studies in their own research indicate pre-registration is more beneficial, and indicate higher a higher likelihood of pre-registering studies in the future, and higher percentage of studies for which they would consider pre-registering (see Table 2).</td>
@@ -293,7 +256,38 @@
 <td align="right">3</td>
 <td align="right">7</td>
 <td align="right">1</td>
-<td align="left">prereg.xml</td>
+<td align="left">prereg</td>
+</tr>
+</tbody>
+</table>
+<div class="section level3">
+<h3 id="large-language-models">Large Language Models<a class="anchor" aria-label="anchor" href="#large-language-models"></a>
+</h3>
+<p>You can query the extracted text of papers with LLMs using <a href="https://console.groq.com/docs/" class="external-link">groq</a>.</p>
+<p>Use <code><a href="reference/search_text.html">search_text()</a></code> first to narrow down the text into what you want to query. Below, we limited search to the first two papers’ introduction sections, and returned the full section. Then we asked an LLM “What is the hypothesis of this study?”.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hypotheses</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">papers</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, </span>
+<span>                          section <span class="op">=</span> <span class="st">"intro"</span>, </span>
+<span>                          return <span class="op">=</span> <span class="st">"section"</span><span class="op">)</span></span>
+<span><span class="va">query</span> <span class="op">&lt;-</span> <span class="st">"What is the hypothesis of this study? Answer as briefly as possible."</span></span>
+<span><span class="va">llm_hypo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/llm.html">llm</a></span><span class="op">(</span><span class="va">hypotheses</span>, <span class="va">query</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">id</th>
+<th align="left">answer</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">eyecolor</td>
+<td align="left">The hypothesis of this study is that people tend to choose romantic partners with eye colors similar to those of their opposite-sex parents, a phenomenon known as positive sexual imprinting.</td>
+</tr>
+<tr class="even">
+<td align="left">incest</td>
+<td align="left">The hypothesis is that moral opposition to third-party sibling incest is greater among individuals with other-sex siblings than among individuals with same-sex siblings.</td>
 </tr>
 </tbody>
 </table>
@@ -412,7 +406,12 @@
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>

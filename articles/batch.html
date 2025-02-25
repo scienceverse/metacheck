@@ -12,9 +12,11 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
-<script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.9/font.css" rel="stylesheet">
+<link href="../deps/Fira_Code-0.4.9/font.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Batch Processing">
 <!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-160147578-1"></script><script>
@@ -29,11 +31,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9028</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9029</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,14 +54,6 @@
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
-  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
-<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
-    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
-    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
-  </ul>
-</li>
       </ul>
 </div>
 
@@ -139,21 +133,30 @@ the future.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">authors</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; List of 2</span></span>
-<span><span class="co">#&gt;  $ :List of 4</span></span>
-<span><span class="co">#&gt;   ..$ orcid: NULL</span></span>
-<span><span class="co">#&gt;   ..$ name :List of 2</span></span>
+<span><span class="co">#&gt;  $ :List of 5</span></span>
+<span><span class="co">#&gt;   ..$ orcid      : NULL</span></span>
+<span><span class="co">#&gt;   ..$ name       :List of 2</span></span>
 <span><span class="co">#&gt;   .. ..$ surname: chr "Genevsky"</span></span>
 <span><span class="co">#&gt;   .. ..$ given  : chr "Alexander"</span></span>
-<span><span class="co">#&gt;   ..$ roles: NULL</span></span>
-<span><span class="co">#&gt;   ..$ email: chr "genevsky@stanford.edu"</span></span>
+<span><span class="co">#&gt;   ..$ roles      : NULL</span></span>
+<span><span class="co">#&gt;   ..$ email      : chr "genevsky@stanford.edu"</span></span>
+<span><span class="co">#&gt;   ..$ affiliation:List of 1</span></span>
+<span><span class="co">#&gt;   .. ..$ :List of 1</span></span>
+<span><span class="co">#&gt;   .. .. ..$ department: chr "Department of Psychology"</span></span>
 <span><span class="co">#&gt;   ..- attr(*, "class")= chr [1:2] "scivrs_author" "list"</span></span>
-<span><span class="co">#&gt;  $ :List of 4</span></span>
-<span><span class="co">#&gt;   ..$ orcid: NULL</span></span>
-<span><span class="co">#&gt;   ..$ name :List of 2</span></span>
+<span><span class="co">#&gt;  $ :List of 5</span></span>
+<span><span class="co">#&gt;   ..$ orcid      : NULL</span></span>
+<span><span class="co">#&gt;   ..$ name       :List of 2</span></span>
 <span><span class="co">#&gt;   .. ..$ surname: chr "Knutson"</span></span>
 <span><span class="co">#&gt;   .. ..$ given  : chr "Brian"</span></span>
-<span><span class="co">#&gt;   ..$ roles: NULL</span></span>
-<span><span class="co">#&gt;   ..$ email: chr ""</span></span>
+<span><span class="co">#&gt;   ..$ roles      : NULL</span></span>
+<span><span class="co">#&gt;   ..$ email      : chr ""</span></span>
+<span><span class="co">#&gt;   ..$ affiliation:List of 2</span></span>
+<span><span class="co">#&gt;   .. ..$ :List of 1</span></span>
+<span><span class="co">#&gt;   .. .. ..$ department: chr "Department of Psychology"</span></span>
+<span><span class="co">#&gt;   .. ..$ :List of 2</span></span>
+<span><span class="co">#&gt;   .. .. ..$ department : chr "Stanford Neurosciences Institute"</span></span>
+<span><span class="co">#&gt;   .. .. ..$ institution: chr "Stanford University"</span></span>
 <span><span class="co">#&gt;   ..- attr(*, "class")= chr [1:2] "scivrs_author" "list"</span></span>
 <span><span class="co">#&gt;  - attr(*, "class")= chr [1:2] "scivrs_authors" "list"</span></span></code></pre>
 </div>
@@ -179,7 +182,7 @@ mistakes with the DOI, so be cautious about using this.</p>
 <span><span class="co">#&gt; [6] "prosocial"    "human"       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $doi</span></span>
-<span><span class="co">#&gt; [1] "10.1177/0956797615588467pss.sagepub."</span></span>
+<span><span class="co">#&gt; [1] "10.1177/0956797615588467"</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $submission</span></span>
 <span><span class="co">#&gt; [1] "Received 2/2/15; Revision accepted 5/4/15"</span></span></code></pre>
@@ -189,14 +192,14 @@ mistakes with the DOI, so be cautious about using this.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/info_table.html">info_table</a></span><span class="op">(</span><span class="va">papers</span>, info <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"doi"</span>, <span class="st">"title"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
-<span><span class="co">#&gt;   id               doi                                  title                   </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0956797613520608 10.1177/0956797613520608pss.sagepub. Continuous Theta-Burst …</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0956797614522816 10.1177/0956797614522816pss.sagepub. Beyond Gist: Strategic …</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0956797614527830 10.1177/0956797614527830pss.sagepub. Serotonin and Social No…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0956797614557697 10.1177/0956797614557697pss.sagepub. Action-Specific Disrupt…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0956797614560771 10.1177/0956797614560771pss.sagepub. Emotional Vocalizations…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0956797614566469 10.1177/0956797614566469pss.sagepub. Conspiracist Ideation a…</span></span></code></pre>
+<span><span class="co">#&gt;   id               doi                      title                               </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                               </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0956797613520608 10.1177/0956797613520608 Continuous Theta-Burst Stimulation …</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0956797614522816 10.1177/0956797614522816 Beyond Gist: Strategic and Incremen…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0956797614527830 10.1177/0956797614527830 Serotonin and Social Norms: Tryptop…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0956797614557697 10.1177/0956797614557697 Action-Specific Disruption of Perce…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0956797614560771 10.1177/0956797614560771 Emotional Vocalizations Are Cross-C…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0956797614566469 10.1177/0956797614566469 Conspiracist Ideation as a Predicto…</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
@@ -261,7 +264,7 @@ can easily chain text searches.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_sentences</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">papers</span><span class="op">)</span></span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-ac96cb3ee4656e2e9ec3" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-ac96cb3ee4656e2e9ec3">{"x":{"filter":"none","vertical":false,"data":[["09567976241245695","0956797618804501","09567976211048485","0956797620959014","09567976231218640","0956797619835147","0956797620970548","0956797619851753","0956797616665351","09567976231173900"],["Creativity as strategic foraging predicts a systematic and targeted relation between spatial search and subsequent creativity: Participants who searched through space in a dispersed way should perform relatively better on subsequent tests of divergent thinking, whereas those who searched for a single target should perform better on subsequent tests of convergent thinking.","We note that the addition of auto-proportional effects respecified static linear changes in cognitive performance and depressive symptoms as nonlinear or exponential changes.","Miss rates on trials in which a perfect T was present were analyzed with a 2 (search condition: present/ absent or similarity; between subjects) × 2 (target prevalence: 10% or 50%; within subjects) mixed-factors analysis of variance.","If true, this might be because of a so-called sensitive period in early childhood.","If this reasoning was correct, the different results between the two reports should be attributable to the greater memorability of less standardized images employed by Ackerman et al., compared with images from databases in which photos are taken under controlled conditions and standardized instructions to models employed by Gwinn and colleagues.","In addition, happiness has been associated with helping behavior (O'Malley &amp; Andrews, 1983).","On the test day, frozen sweat pads were removed from the freezer (-80° C) approximately 45 min prior to olfactometer delivery in the scanner.","RPQ sum scores, log-transformed testosterone levels, and log-transformed cortisol levels were standardized within each gender group and added as gender-specific and condition-specific covariates, yielding 24 extra regressors.","As sensory evidence becomes less reliable, the likelihood distribution spreads out, which shifts the posterior distribution toward the prior and lowers the speed estimate.","This is because fundamental principles of penal justice suggest that punishments should vary only with regard to the \"moral gravity\" of the alleged wrongdoing, and morally similar cases should be treated alike, regardless of other 1173900P SSXXX10."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>id<\/th>\n      <th>text<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"dom":"tip","columnDefs":[{"name":"id","targets":0},{"name":"text","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script><p>You can customise <code><a href="../reference/search_text.html">search_text()</a></code> to return paragraphs or
+<script type="application/json" data-for="htmlwidget-ac96cb3ee4656e2e9ec3">{"x":{"filter":"none","vertical":false,"data":[["09567976241245695","0956797618804501","09567976211048485","0956797620959014","09567976231218640","0956797619835147","0956797620970548","0956797619851753","0956797616665351","09567976231173900"],["Here we report that people who searched a city map for different locations were then better at generating multiple different solutions on an unrelated test of creativity; people who searched the city for a single, targeted location were then better at finding the single best solution to a puzzle.","Finally, BLCSM4 (see Fig. 1) was the full bidirectional couplings model (i.e., with fluid intelligence → Δdepressive symptoms and depressive symptoms → Δfluid intelligence).","Critically, there was a significant interaction, F(1, 39) = 9.99, p = .003, η p 2 = .204, indicating that the LPE depended on search condition (see Fig.","Another study found that age of onset of musical training predicts absolute pitch (Baharloo, Johnston, Service, Gitschier, &amp; Freimer, 1998).","We were able to replicate these results with the original stimuli but not with more standardized stimuli.","The present research examined this question using panel data of approximately 4,400 elderly couples in the United States.","These psychometric tasks were conducted to ensure that our neural and behavioral effects were not driven by conscious awareness of hedonic differences or by the explicit ability to discriminate the odors.","Finally, we tested whether this potential relationship between aggression and congruency effect was modulated by testosterone levels by adding a testosterone-by-aggression interaction term to the model, separately for gender and task conditions.","Similarly, in the case of the Aubert-Fleischl phenomenon, pursuit eye movements lower the reliability of sensory evidence, which causes motion thresholds to increase along with a corresponding slowing of perceived speed (Freeman, Champion, &amp; Warren, 2010).","Thus, normative perspectives suggest that a transgressor who faces punishment immediately should be punished similarly to a transgressor who is punished long after the crime was committed."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>id<\/th>\n      <th>text<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"dom":"tip","columnDefs":[{"name":"id","targets":0},{"name":"text","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script><p>You can customise <code><a href="../reference/search_text.html">search_text()</a></code> to return paragraphs or
 sections instead of sentences. The <code>section</code> column contains
 the automatically classified section types from the options “abstract”,
 “intro”, “methods”, “results”, or “discussion” (this can be inaccurate
@@ -320,7 +323,7 @@ setting the results to “match”. This pattern searches for text like “p
 <span>                     pattern <span class="op">=</span> <span class="st">"p\\s*&gt;\\s*0?\\.[0-9]+\\b"</span>, </span>
 <span>                     return <span class="op">=</span> <span class="st">"match"</span><span class="op">)</span></span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-1fb4450895fe099f74a1" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-1fb4450895fe099f74a1">{"x":{"filter":"none","vertical":false,"data":[["0956797614557697","0956797615615584","0956797615615584","0956797616634654","0956797616634665","0956797616657319","0956797616661199","0956797616667447","0956797616667447","0956797616667447","0956797616667447","0956797617692000","0956797617692000","0956797617692000","0956797617692000","0956797617692000","0956797617693326","0956797617693326","0956797617693326","0956797617693326","0956797617705667","0956797617705667","0956797617716922","0956797617744542","0956797619830326","0956797619830326","0956797619830329","0956797619881134","0956797620929297","0956797620929297","0956797620929297","0956797620929297","0956797620939054","0956797620954815","0956797620954815","0956797620959014","0956797620965520","09567976211018618","09567976221079633","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231179378","09567976231179378","09567976231179378","09567976231179378","09567976231179378","09567976231180881","09567976231192241","09567976231192241","09567976231192241","09567976231192241","09567976241263344"],["p &gt; .29","p &gt; .250","p &gt; .250","p &gt; .23","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .01","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .15","p &gt; .11","p &gt; .6","p &gt; .14","p &gt; .352","p &gt; .999","p &gt; .05","p &gt; .25","p &gt; .15","p &gt; .3","p &gt; .27","p &gt; .12","p &gt; .15","p &gt; .08","p &gt; .1","p &gt; .110","p &gt; .059","p &gt; .33","p &gt; .290","p &gt; .265","p &gt; .103","p &gt; .05","p &gt; .80","p &gt; .28","p &gt; .60","p &gt; .13","p &gt; .05"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>id<\/th>\n      <th>text<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"dom":"tip","columnDefs":[{"name":"id","targets":0},{"name":"text","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script><p>You can expand this to the whole sentence, paragraph, or +/- some
+<script type="application/json" data-for="htmlwidget-1fb4450895fe099f74a1">{"x":{"filter":"none","vertical":false,"data":[["0956797614557697","0956797615615584","0956797615615584","0956797616634654","0956797616634665","0956797616657319","0956797616661199","0956797616667447","0956797616667447","0956797616667447","0956797616667447","0956797617692000","0956797617692000","0956797617692000","0956797617692000","0956797617692000","0956797617693326","0956797617693326","0956797617693326","0956797617693326","0956797617705667","0956797617705667","0956797617716922","0956797617716922","0956797617744542","0956797619830326","0956797619830326","0956797619830329","0956797619881134","0956797620929297","0956797620929297","0956797620929297","0956797620929297","0956797620939054","0956797620954815","0956797620954815","0956797620959014","0956797620965520","09567976211018618","09567976221079633","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231156413","09567976231179378","09567976231179378","09567976231179378","09567976231179378","09567976231179378","09567976231180881","09567976231192241","09567976231192241","09567976231192241","09567976231192241","09567976241263344"],["p &gt; .29","p &gt; .250","p &gt; .250","p &gt; .23","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .25","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .250","p &gt; .01","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .05","p &gt; .15","p &gt; .11","p &gt; .6","p &gt; .14","p &gt; .352","p &gt; .999","p &gt; .05","p &gt; .25","p &gt; .15","p &gt; .3","p &gt; .27","p &gt; .12","p &gt; .15","p &gt; .08","p &gt; .1","p &gt; .110","p &gt; .059","p &gt; .33","p &gt; .290","p &gt; .265","p &gt; .103","p &gt; .05","p &gt; .80","p &gt; .28","p &gt; .60","p &gt; .13","p &gt; .05"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>id<\/th>\n      <th>text<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"dom":"tip","columnDefs":[{"name":"id","targets":0},{"name":"text","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script><p>You can expand this to the whole sentence, paragraph, or +/- some
 number of sentences around the match using
 <code><a href="../reference/expand_text.html">expand_text()</a></code>.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
