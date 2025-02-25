@@ -30,8 +30,14 @@ test_that("exists", {
              fixed = TRUE)
 
 
-  expect_error(module_run(paper, "modules/error.mod"),
+  expect_error(module_run(paper, "modules/badjson.mod"),
                "The module has a problem with JSON format")
+})
+
+test_that("errors", {
+  paper <- psychsci[1]
+  module <- "modules/error.mod"
+  expect_error( module_run(paper, module) )
 })
 
 test_that("text", {
@@ -121,7 +127,7 @@ test_that("all-urls", {
   module <- "all-urls"
   urls <- module_run(paper, module)
   expect_equal(urls$traffic_light, "info")
-  expect_equal(nrow(urls$table), 2)
+  expect_equal(nrow(urls$table), 3)
   expect_equal(urls$module, module)
 
   # iteration

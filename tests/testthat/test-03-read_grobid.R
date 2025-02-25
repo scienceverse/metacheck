@@ -55,7 +55,8 @@ test_that("urls", {
 
   # check for <url> style
   osf <- search_text(s, "(?<=<)[^>]+(?=>)", return = "match", perl = TRUE)
-  expect_equal(osf$text, "https://osf.io/5tbm9")
+  expect_equal(osf$text, c("https://osf.io/5tbm9",
+                           "https://osf.io/629bx"))
 })
 
 
@@ -76,6 +77,14 @@ test_that("read_grobid_xml", {
   title <- xml2::xml_find_first(xml, "//title") |> xml2::xml_text()
   exp <- "To Err is Human: An Empirical Investigation"
   expect_equal(title, exp)
+})
+
+test_that("get_full_text", {
+  xml <- read_grobid_xml("examples/0956797613520608.xml")
+  body <- get_full_text(xml, "test")
+  sections <- c("abstract", "intro", "method", "results",
+                "discussion", "acknowledgement","funding", "annex")
+  expect_equal(unique(body$section), sections)
 })
 
 test_that("get_authors", {

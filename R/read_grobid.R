@@ -197,12 +197,49 @@ get_full_text<- function(xml, id = NULL) {
     )
   })
 
+  # back matter ----
+  back <- xml2::xml_find_all(xml, "//back //div")
+  types <- xml2::xml_attr(back, "type") |>
+    setdiff(c(NA, "references"))
+  back_text <- lapply(types, function(t) {
+    str <- paste0("//back //div[@type='", t, "'] //div")
+    divs <- xml2::xml_find_all(xml, str)
+    b_text <- lapply(seq_along(divs), \(i){
+      div <- divs[[i]]
+      header <- xml2::xml_find_first(div, ".//head") |> xml2::xml_text()
+      #if (is.na(header)) header <- sprintf("[div-%02d]", i)
+      paragraphs <- xml2::xml_find_all(div, ".//p") |>
+        xml2::xml_text()
+      df <- data.frame(
+        header = header,
+        text = c(header, paragraphs),
+        div = NA,
+        p = c(0, seq_along(paragraphs)),
+        section = t
+      )
+    })
+
+    do.call(rbind, b_text)
+  }) |> do.call(rbind, args = _)
+
+  # make divs increment (this is gross code)
+  if (!is.null(back_text)) {
+    start <- length(div_text) + 1
+    end <- sum(back_text$p == 0) + start - 1
+    back_text$div[back_text$p == 0] <- start:end
+    back_text <- tidyr::fill(back_text, div)
+  }
+
   ## tokenize sentences ----
   # TODO: get tidytext to stop breaking sentences at "S.E. ="
   text <- NULL # hack to stop cmdcheck warning :(
-  alltext <- do.call(rbind, c(list(abst_table), div_text))
+  alltext <- do.call(dplyr::bind_rows, c(list(abst_table),
+                                         div_text,
+                                         list(back_text)))
   if (nrow(alltext) > 0) {
     ft <- alltext |>
+      # stop initials getting parsed as sentences
+      dplyr::mutate(text = gsub("\\b([A-Z])\\.", "\\1", text)) |>
       tidytext::unnest_sentences(text, text, to_lower = FALSE) |>
       dplyr::mutate(s = dplyr::row_number(), .by = c("div", "p"))
     ft$id <- id
@@ -223,6 +260,8 @@ get_full_text<- function(xml, id = NULL) {
     gsub("\\}\\}", ">", x = _)
 
   # classify headers ----
+  back <- !is.na(ft$section)
+  back_sections <- ft$section[back]
   abstract <- grepl("abstract", ft$header, ignore.case = TRUE)
   intro <- grepl("intro", ft$header, ignore.case = TRUE)
   method <- grepl("method", ft$header, ignore.case = TRUE)
@@ -234,6 +273,7 @@ get_full_text<- function(xml, id = NULL) {
   ft$section[method] <- "method"
   ft$section[discussion] <- "discussion"
   ft$section[results] <- "results"
+  ft$section[back] <- back_sections
 
   # beginning sections after abstract with no header labelled intro
   non_blanks <- which(!is.na(ft$section) & ft$section != "abstract")
@@ -394,10 +434,6 @@ get_refs <- function(xml) {
 #' @return a DOI
 #' @keywords internal
 get_doi <- function(xml) {
-  if (!requireNamespace("xml2", quietly = TRUE)) {
-    return(NULL)
-  }
-
   # Find the DOI using its ID type attribute
   doi <- xml2::xml_find_all(xml, "//sourceDesc //idno[@type='DOI']") |>
     xml2::xml_text() |>
@@ -418,10 +454,6 @@ get_doi <- function(xml) {
 #' @return a submission
 #' @keywords internal
 get_submission <- function(xml) {
-  if (!requireNamespace("xml2", quietly = TRUE)) {
-    return(NULL)
-  }
-
   # Find the DOI using its ID type attribute
   submission <- xml2::xml_find_all(xml, "//sourceDesc //note[@type='submission']") |>
     xml2::xml_text() |>

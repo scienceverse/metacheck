@@ -1,7 +1,11 @@
 {
-  "title": "Error",
-  "text": {
-    pattern: "significant"
+  "title": "Returns an error",
+  "code": {
+    "code": "if (length(paper) > 0) stop()"
   },
-  traffic_light: [
+  "report": {
+    "found": "found it",
+    "not_found": "",
+    "details": "Further details..."
+  }
 }

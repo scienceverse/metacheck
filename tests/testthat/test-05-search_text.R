@@ -98,7 +98,7 @@ test_that("iteration", {
 
   # search full text
   sig <- search_text(s, "significant")
-  expect_equal(nrow(sig), 13)
+  expect_equal(nrow(sig), 12)
 
   equal <- search_text(s, "=", section = "results")
   classes <- as.character(unique(equal$section))

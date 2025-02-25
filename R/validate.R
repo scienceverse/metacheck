@@ -46,12 +46,13 @@ validate <- function(module, sample, expected = NULL, path = NULL) {
   }
 
   # expected ----
+  onerow <- is.null(expected) && "table" %in% names(sample)
+
   if (is.data.frame(expected)) {
     res_match <- expected
     # strip .xml from expected$id
     res_match$id <- gsub("\\.xml$", "", res_match$id)
-  } else if (is.null(expected) &&
-             "table" %in% names(sample)) {
+  } else if (onerow) {
     res_match <- data.frame(
       id = sample$id,
       text = sample$table
@@ -75,6 +76,9 @@ validate <- function(module, sample, expected = NULL, path = NULL) {
 
     # run the module
     results <- module_run(paper, module)
+    if (onerow && nrow(results$table) > 1) {
+      results$table <- results$table[1, ]
+    }
 
     # add sample verification results ----
     sample$report_ver[i] <- results$report

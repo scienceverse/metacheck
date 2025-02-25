@@ -59,3 +59,36 @@ info_table <- function(paper,
 
   return(df)
 }
+
+
+#' Get author information in a table
+#'
+#' @param paper a paper object or a list of paper objects
+#'
+#' @returns a data frame of author information
+#' @export
+#'
+#' @examples
+#' paper <- psychsci[1:2]
+#' author_table(paper)
+author_table <- function(paper) {
+  if (inherits(paper, "scivrs_paper")) {
+    paper <- list(paper)
+    names(paper) <- paper[[1]]$id
+  }
+
+  dfs <- lapply(paper, function(p) {
+    u <- lapply(p$authors, function(a) {
+      a$affiliation <- sapply(a$affiliation, paste, collapse = ", ") |>
+        paste(collapse = "; ")
+      unlist(a)
+    })
+    df <- do.call(dplyr::bind_rows, u)
+    df$id <- rep(p$id, nrow(df))
+    df$n <- seq_along(df$id)
+
+    df
+  })
+
+  do.call(dplyr::bind_rows, dfs)
+}

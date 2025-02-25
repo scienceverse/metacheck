@@ -110,7 +110,8 @@ test_that("tables", {
   file.copy(xmls, xmldir)
 
   sample <- data.frame(
-    id =  file.path("xml", list.files(xmldir)),
+    id =  file.path("xml", list.files(xmldir)) |>
+      gsub("\\.xml", "", x = _),
     table = c("faceresearch.org", "https://osf.io/mwzuq", "https://osf.io/pwtrh"),
     report = c("a", "s", ""), # this module has no report
     traffic_light = c("info", "red", "info")
@@ -118,22 +119,23 @@ test_that("tables", {
 
   v <- validate("all-urls", sample, path = valdir)
   expect_equal(names(v$table), c("id", "text"))
-  expect_equal(v$table_matched, 2/3)
+  expect_equal(v$table_matched, 3/3)
   expect_equal(v$report_matched, 1/3)
   expect_equal(v$tl_matched, 2/3)
-  expect_equal(v$sample$table_check, c(F, T, T))
+  expect_equal(v$sample$table_check, c(T, T, T))
   expect_equal(v$sample$report_check, c(F, F, T))
   expect_equal(v$sample$tl_check, c(T, F, T))
 
   expected <- data.frame(
-    id = rep(list.files(xmldir), c(2, 3, 2)) |>
-      file.path("xml", x = _),
-    text = c("faceresearch.org", "stumbleupon.com",
+    id = rep(list.files(xmldir), c(3, 3, 3)) |>
+      file.path("xml", x = _) |>
+      gsub("\\.xml", "", x = _),
+    text = c("faceresearch.org", "stumbleupon.com", "osf.io/he4ty",
              rep("https://osf.io/mwzuq", 3),
-             rep("https://osf.io/pwtrh", 2)),
-    header = c("Participants", "Participants",
+            rep("https://osf.io/pwtrh", 3)),
+    header = c("Participants", "Participants", "Data availability",
                "Methods", "Procedure", "Analysis",
-               "Intro", "Attitude")
+               "X", "Attitude", NA)
   )
 
   v <- validate("all-urls", sample, expected, path = valdir)

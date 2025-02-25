@@ -1,5 +1,8 @@
 # papercheck 0.0.0.9029 (2025-02-26)
 
+* added `author_table()` to get a dataframe of author info from a list of paper objects
+* fixed a bunch of tests now that multiple matches in a sentence are possible
+* added back text (acknowledgements, annex, funding notes) to the full_text of a paper
 * Fixed a bug in `search_text()` that omitted duplicate matches in the same sentence when using results = "match"
 * Upgraded the search string for the "all-p-values" module to not error when a numeric value is followed by "-"
 * Error catching for `stats()` related to the above problem (and filed an issue on statcheck)
