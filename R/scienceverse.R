@@ -146,7 +146,7 @@ check_orcid <- function(orcid) {
   baseDigits <- gsub("[^0-9X]", "", orcid)
 
   if (nchar(baseDigits) != 16) {
-    if (getOption("papercheck.verbose")) {
+    if (verbose()) {
       warning("The ORCiD ", orcid, " is not valid.")
     }
     return(FALSE)
@@ -168,7 +168,7 @@ check_orcid <- function(orcid) {
           substr(baseDigits, 13, 16),
           sep = "-")
   } else {
-    if (getOption("papercheck.verbose")) {
+    if (verbose()) {
       warning("The ORCiD ", orcid, " is not valid.")
     }
     return(FALSE)

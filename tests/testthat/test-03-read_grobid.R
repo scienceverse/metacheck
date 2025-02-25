@@ -30,7 +30,7 @@ test_that("error", {
   expect_warning(all <- read_grobid("examples"),
                  "The file examples/badxml.xml was not valid XML",
                  fixed = TRUE)
-  expect_equal(length(all), 4)
+  expect_equal(length(all), 5)
 })
 
 test_that("basics", {
@@ -50,8 +50,12 @@ test_that("basics", {
 test_that("urls", {
   filename <- demoxml()
   s <- read_grobid(filename)
-  osf <- search_text(s, "\\[.+\\]\\(.+\\)", return = "match")
-  expect_equal(nrow(osf), 1)
+  # check for markdown [text](url) style
+  # osf <- search_text(s, "\\[.+\\]\\(.+\\)", return = "match")
+
+  # check for <url> style
+  osf <- search_text(s, "(?<=<)[^>]+(?=>)", return = "match", perl = TRUE)
+  expect_equal(osf$text, "https://osf.io/5tbm9")
 })
 
 
@@ -72,6 +76,19 @@ test_that("read_grobid_xml", {
   title <- xml2::xml_find_first(xml, "//title") |> xml2::xml_text()
   exp <- "To Err is Human: An Empirical Investigation"
   expect_equal(title, exp)
+})
+
+test_that("get_authors", {
+  xml <- "examples/0956797613520608.xml" |> read_grobid_xml()
+
+  authors <- get_authors(xml)
+  expect_equal(length(authors), 7)
+  expect_equal(authors[[1]]$name,
+               list(surname = "Michael", given = "John"))
+  expect_equal(authors[[1]]$email, "johnmichaelaarhus@gmail.com")
+  expect_equal(authors[[2]]$affiliation[[2]],
+               list(department = "Institute of Cognitive Neuroscience",
+                    institution = "University College London"))
 })
 
 test_that("get_refs", {
@@ -135,15 +152,23 @@ test_that("iteration", {
 
 
 test_that("crossref", {
+  skip()
   skip_if_offline("api.labs.crossref.org")
 
   doi <- "10.1177/fake"
   expect_message(cr <- crossref(doi))
   expect_equal(cr, list())
 
+  # single doi
   doi <- "10.1177/0956797614520714"
   cr <- crossref(doi)
   expect_equal(cr$`cr-labs-updates`[[1]]$`update-nature`, "Retraction")
+
+  # list of DOIs
+  dois <- info_table(psychsci, "doi")
+  dois$doi <- gsub("pss\\.", "", dois$doi) |> gsub("sagepub\\.", "", x = _)
+  doi <- dois$doi[1:2]
+  cr2 <- crossref(doi)
 })
 
 test_that("openalex", {

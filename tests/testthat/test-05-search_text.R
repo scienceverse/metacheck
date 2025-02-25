@@ -105,4 +105,20 @@ test_that("iteration", {
   expect_equal(classes, "results")
 })
 
+test_that("odd errors", {
+  # p < .001-and problem
+  # (multiple identical matches in the same sentence)
+  paper <- search_text(psychsci$`09567976231156413`, ".001-and")
+  pattern <- "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?"
+  x <- search_text(paper, pattern, perl = TRUE, return = "match")
+  expect_equal(nrow(x), 7)
+
+  # undefined columns selected
+  # handle no returns in match
+  paper <- psychsci[[6]]
+  x <- search_text(paper, pattern, perl = TRUE, return = "match")
+  expect_equal(names(x), c("text", "section", "header", "div", "p", "s", "id"))
+  expect_equal(nrow(x), 0)
+})
+
 

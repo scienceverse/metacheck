@@ -99,7 +99,7 @@ llm <- function(text, query,
   )
 
   # set up progress bar ----
-  if (getOption("papercheck.verbose")) {
+  if (verbose()) {
     pb <- progress::progress_bar$new(
       total = ncalls, clear = FALSE, show_after = 0,
       format = "Querying LLM [:bar] :current/:total :elapsedfull"
@@ -140,7 +140,7 @@ llm <- function(text, query,
       ))
     })
 
-    if (getOption("papercheck.verbose")) pb$tick()
+    if (verbose()) pb$tick()
   }
 
   # add responses to the return df ----

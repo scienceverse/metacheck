@@ -183,7 +183,7 @@ statcheck <- function (texts,
 
 
   # set up progress bar ----
-  if (getOption("papercheck.verbose")) {
+  if (verbose()) {
     pb <- progress::progress_bar$new(
       total = length(texts), clear = FALSE,
       format = "Checking stats [:bar] :current/:total :elapsedfull"
@@ -206,7 +206,7 @@ statcheck <- function (texts,
       Res <- rbind(Res, nhst)
     }
 
-    if (getOption("papercheck.verbose")) pb$tick()
+    if (verbose()) pb$tick()
   }
 
   # process all values

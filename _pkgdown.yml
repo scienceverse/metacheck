@@ -7,11 +7,14 @@ template:
   #   before_title: <!-- inserted before the package title in the header ->
   #   before_navbar: <!-- inserted before the navbar links -->
   #   after_navbar: <!-- inserted after the navbar links -->
-  light-switch: true
+  # light-switch: true
   bootstrap: 5
   bslib:
     preset: spacelab
     primary: '#327118'
+    base_font: {google: "Open Sans"}
+    heading_font: {google: "Open Sans"}
+    code_font: {google: "Fira Code"}
   params:
     ganalytics: UA-160147578-1
 articles:

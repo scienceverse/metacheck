@@ -15,7 +15,7 @@ read_grobid <- function(filename) {
   # handle list of files or a directory----
   if (length(filename) > 1) {
     # set up progress bar ----
-    if (getOption("papercheck.verbose")) {
+    if (verbose()) {
       pb <- progress::progress_bar$new(
         total = length(filename), clear = FALSE,
         format = "Processing XMLs [:bar] :current/:total :elapsedfull"
@@ -41,7 +41,7 @@ read_grobid <- function(filename) {
 
     p <- lapply(filename, \(x) {
       p1 <- read_grobid(x)
-      if (getOption("papercheck.verbose")) pb$tick()
+      if (verbose()) pb$tick()
       p1
     })
 
@@ -140,8 +140,10 @@ read_grobid_xml <- function(filename) {
     gsub(' xmlns="http://www.tei-c.org/ns/1.0"', "",
          x = _, fixed = TRUE) |>
     # replace URL links with markdown style
+    # gsub("<ref type=\"url\" target=\"([^\"]+)\">([^<]+)</ref>",
+    #      "[\\2](\\1)", x = _)
     gsub("<ref type=\"url\" target=\"([^\"]+)\">([^<]+)</ref>",
-         "[\\2](\\1)", x = _)
+       "{{\\1}}", x = _)
 
   xml <- tryCatch(xml2::read_xml(xml_text), error = function(e) {
     stop("The file ", filename, " could not be read as XML")
@@ -214,6 +216,11 @@ get_full_text<- function(xml, id = NULL) {
       id = character(0)
     )
   }
+
+  # convert link notation to <url>
+  ft$text <- ft$text |>
+    gsub("\\{\\{", "<", x = _) |>
+    gsub("\\}\\}", ">", x = _)
 
   # classify headers ----
   abstract <- grepl("abstract", ft$header, ignore.case = TRUE)
@@ -291,7 +298,16 @@ get_authors <- function(xml) {
     # }
     if (length(orcid) == 0) orcid = NULL
 
-    s <- add_author(s, family, given, orcid, email = email)
+    affs <- xml2::xml_find_all(a, ".//affiliation")
+    affiliation <- lapply(affs, function(aff) {
+      org <- xml2::xml_find_all(aff, ".//orgName")
+      names <- xml2::xml_attr(org, "type")
+      vals <- xml2::xml_text(org)
+      stats::setNames(as.list(vals), names)
+    })
+
+    s <- add_author(s, family, given, orcid, email = email,
+                    affiliation = affiliation)
   }
 
   return(s$authors)

@@ -10,8 +10,7 @@
     "email": "debruine@gmail.com"
   }],
   "llm": {
-    "query": "Summarise this section briefly, in one sentence.",
-    "group_by": ["id", "section"]
+    "query": "Summarise this section briefly, in one sentence."
   },
   "traffic_light": {
     "found": "info",

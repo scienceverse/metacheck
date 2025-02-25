@@ -1,8 +1,6 @@
 #' Default value for `NULL`
 #'
-#' This infix function makes it easy to replace `NULL`s with a default
-#' value. It's inspired by the way that Ruby's or operation (`||`)
-#' works.
+#' This infix function makes it easy to replace `NULL`s with a default value. It's inspired by the way that Ruby's or operation (`||`) works.
 #'
 #' @param x,y If `x` is NULL, will return `y`; otherwise returns `x`.
 #' @export
@@ -29,7 +27,7 @@ if (exists("%||%", envir = baseenv())) {
 #' @keywords internal
 #'
 message <- function (..., domain = NULL, appendLF = TRUE) {
-  if (getOption("papercheck.verbose")) {
+  if (verbose()) {
     if (interactive()) {
       # not in knitr environment
       base::message("\033[32m", ..., "\033[39m",
@@ -38,6 +36,23 @@ message <- function (..., domain = NULL, appendLF = TRUE) {
       base::message(..., domain = domain, appendLF = appendLF)
     }
   }
+}
+
+#' Set or get papercheck verbosity
+#'
+#' @param verbose if logical, sets whether to show verbose output messages and progress bars
+#'
+#' @returns the current option value (logical)
+#' @export
+#'
+#' @examples
+#' verbose()
+verbose <- function(verbose = NULL) {
+  if (is.logical(verbose)) {
+    options(papercheck.verbose = verbose)
+  }
+
+  return(getOption("papercheck.verbose"))
 }
 
 

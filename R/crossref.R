@@ -12,7 +12,28 @@
 crossref <- function(doi) {
   site_down("api.labs.crossref.org", error = FALSE)
 
-  url <- sprintf("https://api.labs.crossref.org/works/%s?mailto=debruine@gmail.com", doi)
+  if (inherits(doi, "scivrs_paper") ||
+      inherits(doi[[1]], "scivrs_paper")) {
+    papers <- doi
+    doi <- info_table(papers, "doi")$doi
+  }
+
+  if (length(doi > 1)) {
+    # iterate over DOIs
+    crossref_list <- lapply(doi, crossref)
+    names(crossref_list) <- doi
+    return(crossref_list)
+  }
+
+  # check for well-formed DOI
+  pattern <- "^10\\.\\d{3,9}\\/[-._;()/:A-Za-z0-9]*[A-Za-z0-9]$"
+  if (!grepl(pattern, doi, perl = TRUE)){
+    message(doi, " is not a well-formed DOI\\n")
+    return(list())
+  }
+
+  url <- sprintf("https://api.labs.crossref.org/works/%s?mailto=%s",
+                 doi, "debruine@gmail.com")
   j <- jsonlite::read_json(url)
 
   if (j$status == "ok") {
