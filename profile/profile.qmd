@@ -9,7 +9,7 @@ title: Profiling
 library(lineprof)
 
 devtools::load_all(".")
-papercheck::
+verbose(FALSE)
 #source("profile/stats-custom.R")
 
 files <- list.files("psych_science_xml", "xml$", full.names = TRUE)

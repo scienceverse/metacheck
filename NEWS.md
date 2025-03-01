@@ -1,3 +1,11 @@
+# papercheck 0.0.0.9030 (2025-03-01)
+
+* modules are now updated for clearer output, and added a new module vignette
+* `llm()` no longer returns NA when the rate limit is hit, but slows down queries accordingly
+* `read_grobid()` now includes back matter (e.g., acknowledgements, COI statements) in the full_text, so is searchable with `search_text()`
+* references are now converted to bibtex format, so are more complete and consistent
+* Machine-learning module types are removed (the python/reticulate setup was too complex for many users), and instructions for how to create simple text feature models is included in the metascience vignette
+
 # papercheck 0.0.0.9029 (2025-02-26)
 
 * added `author_table()` to get a dataframe of author info from a list of paper objects

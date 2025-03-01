@@ -48,11 +48,14 @@ message <- function (..., domain = NULL, appendLF = TRUE) {
 #' @examples
 #' verbose()
 verbose <- function(verbose = NULL) {
-  if (is.logical(verbose)) {
-    options(papercheck.verbose = verbose)
+  if (is.null(verbose)) {
+    return(getOption("papercheck.verbose"))
+  } else if (as.logical(verbose) %in% c(TRUE, FALSE)) {
+    options(papercheck.verbose = as.logical(verbose))
+    invisible(getOption("papercheck.verbose"))
+  } else {
+    stop("set verbose with TRUE or FALSE")
   }
-
-  return(getOption("papercheck.verbose"))
 }
 
 
@@ -96,19 +99,16 @@ site_down <- function(url, msg = "The website %s is not available", error = TRUE
 #' papers <- read_grobid(grobid_dir)
 #' references <- concat_tables(papers, c("refs", "references"))
 concat_tables <- function(papers, name_path) {
-  if ("scivrs_paper" %in% class(papers)) {
-    # single paper object
-    papers <- list(papers)
-  }
+  if (!is_paper_list(papers)) papers <- list(papers)
 
-  table_list <- papers
+  table_list <- papers #
   for (name in name_path) {
     table_list <- lapply(table_list, `[[`, name)
   }
   for (i in seq_along(papers)) {
     x <- table_list[[i]]
     if (is.data.frame(x) && nrow(x) > 0) {
-      table_list[[i]]$id <- papers[[i]]$info$filename
+      table_list[[i]]$id <- papers[[i]]$id
     }
   }
 
@@ -118,6 +118,21 @@ concat_tables <- function(papers, name_path) {
   merged_table
 }
 
+#' Detect a list of paper objects
+#'
+#' @param paper the object to test
+#'
+#' @returns logical
+#' @export
+#' @keywords internal
+is_paper_list <- function(paper) {
+  if (!is.list(paper)) return(FALSE)
+
+  is_paper <- sapply(paper, inherits, what = "scivrs_paper")
+  if (all(is_paper)) return(TRUE)
+
+  return(FALSE)
+}
 
 #' Print Paper Object
 #'
@@ -129,8 +144,9 @@ concat_tables <- function(papers, name_path) {
 #'
 print.scivrs_paper <- function(x, ...) {
   underline <- rep("-", nchar(x$id)) |> paste(collapse="")
-  txt <- sprintf("%s\n%s\n%s\n\n* Sections: %d\n* Sentences: %d\n* References: %d\n* Citations: %d\n\n",
+  txt <- sprintf("%s\n%s\n%s\n\n%s\n\n* Sections: %d\n* Sentences: %d\n* References: %d\n* Citations: %d\n\n",
                  underline, x$id, underline,
+                 x$info$title %||% "{No title}",
                  max(c(0, x$full_text$div)),
                  nrow(x$full_text),
                  nrow(x$references),
@@ -179,13 +195,21 @@ print.ppchk_module_list <- function(x, ...) {
 #' Print Module Output
 #'
 #' @param x The ppchk_module_output object
-#' @param ... Additional parameters for print
+#' @param ... Additional parameters for `module_report()`
 #'
 #' @export
 #' @keywords internal
 #'
 print.ppchk_module_output <- function(x, ...) {
-  txt <- module_report(x, 3)
+  args <- list(...)
+  args$module_output <- x
+
+  # set defaults
+  if (!"header" %in% names(args)) args$header = ""
+  if (!"maxrows" %in% names(args)) args$maxrows = 20
+  if (!"trunc_cell" %in% names(args)) args$trunc_cell = 100
+
+  txt <- do.call(module_report, args)
   cat(txt)
 }
 
@@ -199,7 +223,7 @@ print.ppchk_module_output <- function(x, ...) {
 #' demopdf()
 demopdf <- function() {
   grobid_dir <- system.file("extdata", package="papercheck")
-  pattern <- "\\.pdf$"
+  pattern <- "to_err_is_human\\.pdf$"
   file <- list.files(grobid_dir, pattern, full.names = TRUE)
   return(file)
 }
@@ -213,7 +237,7 @@ demopdf <- function() {
 #' demoxml()
 demoxml <- function() {
   grobid_dir <- system.file("extdata", package="papercheck")
-  pattern <- "\\.xml$"
+  pattern <- "to_err_is_human\\.xml$"
   file <- list.files(grobid_dir, pattern, full.names = TRUE)
   return(file)
 }

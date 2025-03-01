@@ -7,7 +7,9 @@
 #' @param section the section(s) to search in
 #' @param return the kind of text to return, the full sentence, paragraph, div, or section that the text is in, or just the (regex) match, or all body text
 #' @param ignore.case whether to ignore case when text searching
-#' @param ... additional arguments to pass to `grep()` and `regexpr()`, such as `fixed = TRUE`
+#' @param fixed logical. If TRUE, pattern is a string to be matched as is. Overrides all conflicting arguments.
+#' @param perl logical. Should Perl-compatible regexps be used?
+#' @param ... ignore further arguments
 #'
 #' @return a data frame of matches
 #' @export
@@ -19,41 +21,34 @@
 #' search_text(paper, "p\\s*(=|<)\\s*[0-9\\.]+", return = "match")
 search_text <- function(paper, pattern = ".*", section = NULL,
                         return = c("sentence", "paragraph", "div",  "section", "match", "all"),
-                        ignore.case = TRUE, ...) {
+                        ignore.case = TRUE,
+                        fixed = FALSE, perl = FALSE, ...) {
   return <- match.arg(return)
   text <- NULL # hack to stop cmdcheck warning :(
 
   # test pattern for errors (TODO: deal with warnings + errors)
   test_pattern <- tryCatch(
-    grep(pattern, "test", ignore.case = ignore.case, ...),
+    grep(pattern, "test", ignore.case = ignore.case,
+         perl = perl, fixed = fixed),
     error = function(e) {
       stop("Check the pattern argument:\n", e$message, call. = FALSE)
     })
 
   if (is.data.frame(paper)) {
     full_text <- paper
-  } else if ("scivrs_paper" %in% class(paper)) {
+  } else if (inherits(paper, "scivrs_paper")) {
     full_text <- paper$full_text
-  } else if (is.list(paper)) {
-    contains_scivrs <- lapply(paper, class) |>
-      sapply(\(x) "scivrs_paper" %in% x)
-    # handle list of scivrs objects ----
-    if (all(contains_scivrs)) {
-      matches <- lapply(paper, \(x) {
-        tryCatch({
-          search_text(x, pattern, section, return, ignore.case, ...)
-        }, error = function(e) {
-          warning(e)
-        })
-      })
-      matches_agg <- do.call(rbind, matches)
-      return(matches_agg)
-    } else {
-      stop("The paper argument doesn't seem to be a scivrs_paper object or a list of paper objects")
-    }
+  } else if (is_paper_list(paper)) {
+    full_text <- concat_tables(paper, "full_text")
+  } else if (is.vector(paper) && is.character(paper)) {
+    full_text <- data.frame(text = paper)
   } else {
     stop("The paper argument doesn't seem to be a scivrs_paper object or a list of paper objects")
   }
+  # make sure
+  required_cols <- c("text", "section", "header", "div", "p", "s", "id")
+  missing_cols <- setdiff(required_cols, names(full_text))
+  full_text[missing_cols] <- NA
 
   # filter full text----
   section_filter <- seq_along(full_text$section)
@@ -63,7 +58,8 @@ search_text <- function(paper, pattern = ".*", section = NULL,
 
   # get all rows with a match----
   match_rows <- tryCatch(
-    grep(pattern, ft$text, ignore.case = ignore.case, ...),
+    grep(pattern, ft$text, ignore.case = ignore.case,
+         perl = perl, fixed = fixed),
     error = function(e) { stop(e) },
     warning = function(w) {}
   )
@@ -77,17 +73,14 @@ search_text <- function(paper, pattern = ".*", section = NULL,
   } else if (return == "match") {
     ft_match_all <- ft_match
     matches <- gregexpr(pattern, ft_match$text,
-                         ignore.case = ignore.case,
-                         ...)
+                        ignore.case = ignore.case,
+                        perl = perl, fixed = fixed)
     ft_match_all$text <- regmatches(ft_match$text, matches)
-    #ft_match_all <- tidyr::unnest_longer(ft_match_all, text)
     text_lens <- sapply(ft_match_all$text, length)
     rowrep <- rep(seq_along(text_lens), text_lens)
     longtext <- unlist(ft_match_all$text)
     ft_match_all <- ft_match_all[rowrep, ]
-    if (is.null(longtext)) {
-      longtext <- character(0)
-    }
+    if (is.null(longtext)) longtext <- character(0)
     ft_match_all$text <- longtext
   } else {
     # recombine paragraphs first

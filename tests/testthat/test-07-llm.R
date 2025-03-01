@@ -31,20 +31,20 @@ test_that("exists", {
                fixed = TRUE)
 })
 
-test_that("max calls", {
-  expect_true(is.function(set_llm_max_calls))
+test_that("llm_max_calls", {
+  expect_true(is.function(llm_max_calls))
 
   n <- getOption("papercheck.llm_max_calls")
   expect_true(is.integer(n))
   expect_true(n > 0)
 
-  expect_error(set_llm_max_calls("a"), "n must be a number")
+  expect_error(llm_max_calls("a"), "n must be a number")
   expect_equal(getOption("papercheck.llm_max_calls"), n)
 
-  expect_warning(set_llm_max_calls(0), "n must be greater than 0")
+  expect_warning(llm_max_calls(0), "n must be greater than 0")
   expect_equal(getOption("papercheck.llm_max_calls"), n)
 
-  expect_no_error(set_llm_max_calls(8))
+  expect_no_error(llm_max_calls(8))
   expect_equal(getOption("papercheck.llm_max_calls"), 8)
 
   text <- data.frame(
@@ -55,7 +55,9 @@ test_that("max calls", {
                "This would make 20 calls to the LLM")
 
   # return to original value
-  expect_no_error(set_llm_max_calls(n))
+  expect_no_error(llm_max_calls(n))
+
+  expect_equal(llm_max_calls(), n)
 })
 
 test_that("basic", {
@@ -65,7 +67,7 @@ test_that("basic", {
 
   text <- c("hello", "number", "ten", 12)
   query <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
-  is_number <- llm(text, query, seed = 8675309)
+  expect_message( is_number <- llm(text, query, seed = 8675309) )
 
   expect_equal(is_number$text, text)
   expect_equal(is_number$answer[[1]], "FALSE")
@@ -74,7 +76,7 @@ test_that("basic", {
   # duplicates should only generate 1 query
   text <- c("A", "A", 1, 1)
   query <- "Is this a letter? Answer only 'TRUE' or 'FALSE'"
-  is_letter <- llm(text, query, seed = 12345)
+  expect_message( is_letter <- llm(text, query, seed = 12345) )
 
   expect_equal(is_letter$text, text)
   expect_equal(is_letter$answer[[1]], is_letter$answer[[2]])
@@ -102,19 +104,72 @@ test_that("sample size", {
   Please give your answer exactly like this: 'XXX (XX men, XX women)', with the total number first, then any subsets in parentheses. If there is not enough infomation to answer, answer 'NA'"
 
 
-  suppressMessages( res <- llm(text, query) )
+  expect_message( res <- llm(text, query) )
 
   expect_equal(res$text, text$text)
   expect_equal(res$id, c("eyecolor", "incest"))
   # expect_equal(res$answer[[1]], "300 (150 men, 150 women)")
   # expect_equal(res$answer[[2]], "1998 (666 men, 1332 women)")
 
-
   ## text vector
   text_vector <- text$text[text$id == text$id[[1]]]
-  suppressMessages( res2 <- llm(text_vector, query) )
+  expect_message( res2 <- llm(text_vector, query) )
   expect_equal(names(res2), c("text", "answer", "time", "tokens"))
   expect_equal(res2$answer[[1]], res$answer[[1]])
 })
 
+test_that("exceeds tokens", {
+  skip_on_cran()
+  skip_if_offline("api.groq.com")
+  skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
+  ## big text
+  text <- psychsci[[1]] |> search_text(return = "all")
+  query <- "Respond with the exact text"
+  expect_message(
+    expect_warning(
+      answer <- llm(text, query),
+      "tokens/rate_limit_exceeded", fixed = TRUE),
+    "requests left", fixed = TRUE)
+})
+
+test_that("rate limiting", {
+  skip("Very long test")
+  skip_on_cran()
+  skip_if_offline("api.groq.com")
+  skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
+
+  text <- c(LETTERS, 0:7)
+  query <- "Respond with the exact text"
+
+  # rate limited at 30 RPM
+  llm_max_calls(40)
+  expect_message( answer <- llm(text, query) )
+  expect_true(all(!is.na(answer$answer)))
+
+  llm_max_calls(30)
+})
+
+test_that("llm_model", {
+  orig_model <- llm_model()
+
+  expect_error(llm_model(T))
+  expect_equal(orig_model, llm_model())
+
+  model <- "llama3-8b-8192"
+  llm_model(model)
+  expect_equal(llm_model(), model)
+
+  llm_model(orig_model)
+  expect_equal(llm_model(), orig_model)
+})
+
+test_that("llm_model_list", {
+  skip_on_cran()
+  skip_if_offline("api.groq.com")
+  skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
+
+  models <- llm_model_list()
+  expect_equal(names(models), c("id", "owned_by", "created", "context_window"))
+  expect_true(llm_model() %in% models$id)
+})

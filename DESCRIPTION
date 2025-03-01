@@ -1,7 +1,7 @@
 Package: papercheck
 Title: Check Scientific Papers for Best Practices
-Version: 0.0.0.9029
-Date: 2025-02-26
+Version: 0.0.0.9030
+Date: 2025-03-01
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -18,7 +18,7 @@ Authors@R: c(
            role = c("ctb"),
            email = "cristianmesquida@gmail.com",
            comment = c(ORCID = "0000-0002-1542-8355")))
-Description: A modular, extendable system for automatically checking scientific papers for best practices using text search, R code, machine learning, and/or generative AI queries.
+Description: A modular, extendable system for automatically checking scientific papers for best practices using text search, R code, and/or generative AI queries.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -43,7 +43,6 @@ Imports:
     tidytext,
     SnowballC,
     xml2,
-    reticulate,
     statcheck,
     httr,
     jsonlite,
@@ -57,3 +56,4 @@ BugReports: https://github.com/scienceverse/papercheck/issues
 Depends: 
     R (>= 3.5)
 LazyData: true
+LazyDataCompression: xz

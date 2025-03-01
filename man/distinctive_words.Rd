@@ -27,7 +27,7 @@ distinctive_words(
 
 \item{stem_language}{the language to use for stemming words, from SnowballC::getStemLanguages(), set to FALSE for no stemming}
 
-\item{min_total}{the minimum total number of incidences to incude a word, defaults to 10\% of the number of text strings}
+\item{min_total}{the minimum total number of incidences to include a word, defaults to 10\% of the number of text strings}
 }
 \value{
 a data frame of the words

@@ -18,7 +18,7 @@
     "email": "debruine@gmail.com"
   }],
   "code": {
-    "packages": ["papercheck", "httr", "dplyr"],
+    "packages": ["papercheck", "httr", "dplyr", "progressbar"],
     "path": "osf-check.R"
   },
   "report": {

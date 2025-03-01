@@ -138,6 +138,8 @@ report <- function(paper,
 #'
 #' @param module_output the output of a `module_run()`
 #' @param header header level (default 2)
+#' @param maxrows the maximum number of table rows to print
+#' @param trunc_cell truncate any cell to this number of characters
 #'
 #' @return text
 #' @export
@@ -147,20 +149,61 @@ report <- function(paper,
 #' paper <- read_grobid(filename)
 #' op <- module_run(paper, "imprecise-p")
 #' module_report(op) |> cat()
-module_report <- function(module_output, header = 2) {
+module_report <- function(module_output,
+                          header = 2,
+                          maxrows = Inf,
+                          trunc_cell = Inf) {
+  # set up table
   tab <- module_output$table
+  rowwarning <- ""
   if (is.data.frame(tab)) {
-    tab$id <- NULL
-    if (nrow(tab) == 0) {
+    # get rid of the id column if only one ID
+    if (unique(tab$id) |> length() < 2) tab$id <- NULL
+    # get rid of all columns with only NA
+    keep <- sapply(tab, \(col) {!all(is.na(col))})
+    tab <- tab[, keep, drop = FALSE]
+
+    if (nrow(tab) == 0 || ncol(tab) == 0) {
       tab <- ""
     } else {
-      tab <- knitr::kable(tab, format = "markdown") |>
+      # truncate
+      rows <- min(maxrows, nrow(tab))
+      rowwarning <- paste("\n\nShowing", rows, "of", nrow(tab), "rows")
+      tab <- tab[1:rows, ]
+      if (trunc_cell < Inf) {
+          char_cols <- names(tab)[sapply(tab, is.character)]
+          for (col in char_cols) {
+            needs_trunc <- which(nchar(tab[[col]]) > trunc_cell)
+            tab[[col]][needs_trunc] <- tab[[col]][needs_trunc] |>
+              substr(1, trunc_cell-3) |>
+              paste0("...")
+          }
+      }
+
+      tab <- tab |>
+        knitr::kable(format = "markdown") |>
         as.character() |>
         paste(collapse = "\n")
     }
   }
-  head <- rep("#", header) |> paste(collapse = "")
-  paste0(head, " ", module_output$title,
-         " {.", module_output$traffic_light, "}\n\n",
-         module_output$report, "\n\n", tab)
+
+  # set up header
+  if (is.null(header) || header == "") {
+    head <- ""
+  } else if (header == 0) {
+    head <- paste(module_output$title, "\n\n")
+  } else if (header %in% 1:6) {
+    head <- rep("#", header) |> paste(collapse = "") |>
+      paste0(" ", module_output$title,
+             " {.", module_output$traffic_light, "}\n\n")
+  } else {
+    head <- paste0(header, "\n\n")
+  }
+
+  # set up report
+  report <- ""
+  if (module_output$report != "")
+    report <- paste0(module_output$report, "\n\n")
+
+  paste0(head, report, tab, rowwarning)
 }

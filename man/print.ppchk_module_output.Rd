@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{The ppchk_module_output object}
 
-\item{...}{Additional parameters for print}
+\item{...}{Additional parameters for \code{module_report()}}
 }
 \description{
 Print Module Output

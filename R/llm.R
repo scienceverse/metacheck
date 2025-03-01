@@ -11,7 +11,7 @@
 #' @param text The text to send to the LLM (vector of strings, or data frame with the text in a column)
 #' @param query The query to ask of the LLM
 #' @param text_col The name of the text column if text is a data frame
-#' @param model the LLM model name (see `llm_models()`)
+#' @param model the LLM model name (see `llm_model_list()`)
 #' @param maxTokens The maximum integer of completion tokens returned per query
 #' @param temperature Controls randomness in responses. Lower values make responses more deterministic. Recommended range: 0.5-0.7 to prevent repetitions or incoherent outputs; valued between 0 inclusive and 2 exclusive
 #' @param top_p Nucleus sampling threshold (between 0 and 1); usually alter this or temperature, but not both
@@ -30,7 +30,7 @@
 #' }
 llm <- function(text, query,
                 text_col = "text",
-                model = "llama3-70b-8192",
+                model = llm_model(),
                 maxTokens = 1024,
                 temperature = 0.5,
                 top_p = 0.95,
@@ -43,9 +43,9 @@ llm <- function(text, query,
     stop("You need to include the argument API_KEY or set the variable GROQ_API_KEY in your Renviron")
   }
 
-  models <- llm_models(API_KEY)
+  models <- llm_model_list(API_KEY)
   if (!model %in% models$id) {
-    stop("The model '", model, "' is not available, see `llm_models()`")
+    stop("The model '", model, "' is not available, see `llm_model_list()`")
   }
 
   if (!is.numeric(temperature)) {
@@ -70,9 +70,8 @@ llm <- function(text, query,
   unique_text <- unique(text[[text_col]])
   ncalls <- length(unique_text)
   if (ncalls == 0) stop("No calls to the LLM")
-  maxcalls <- getOption("papercheck.llm_max_calls")
-  if (ncalls > maxcalls) {
-    stop("This would make ", ncalls, " calls to the LLM, but your maximum number of calls is set to ", maxcalls, ". Use `set_llm_max_calls()` to change this.")
+  if (ncalls > llm_max_calls()) {
+    stop("This would make ", ncalls, " calls to the LLM, but your maximum number of calls is set to ", llm_max_calls(), ". Use `llm_max_calls()` to change this.")
   }
 
 
@@ -120,21 +119,41 @@ llm <- function(text, query,
         body = bodylist,
         encode = "json")
 
+      if (response$status_code == 429) {
+        # request limit exceeded
+        sleep <- response$headers$`retry-after` |>
+          as.numeric() |> ceiling()
+        # message("Request limit exceeded. Retrying in ",
+        #         sleep, "seconds")
+        Sys.sleep(sleep)
+
+        response <- httr::POST(
+          url, config,
+          body = bodylist,
+          encode = "json")
+      }
+
       content <- httr::content(response)
 
       if (!response$status_code %in% 200:299) {
         # TODO: better error messages
-        stop(response$status_code)
+        stop(content$error$type, "/",
+             content$error$code, "\n\n",
+             content$error$message)
       }
 
+      answer <- content$choices[[1]]$message$content |> trimws()
+
       list(
-        answer = content$choices[[1]]$message$content |> trimws(),
+        answer = answer,
         time = content$usage$total_time,
         tokens = content$usage$total_tokens
       )
     }, error = function(e) {
       return(list(
         answer = NA,
+        time = NA,
+        tokens = NA,
         error = TRUE,
         error_msg = e$message
       ))
@@ -143,9 +162,22 @@ llm <- function(text, query,
     if (verbose()) pb$tick()
   }
 
+  # print final ratelimit values
+  if (verbose()) {
+    sprintf("You have %s of %s requests left (reset in %s) and %s of %s tokens left (reset in %s).",
+            response$headers$`x-ratelimit-remaining-requests`,
+            response$headers$`x-ratelimit-limit-requests`,
+            response$headers$`x-ratelimit-reset-requests`,
+            response$headers$`x-ratelimit-remaining-tokens`,
+            response$headers$`x-ratelimit-limit-tokens`,
+            response$headers$`x-ratelimit-reset-tokens`) |>
+      message()
+  }
+
   # add responses to the return df ----
   response_df <- do.call(dplyr::bind_rows, responses)
   response_df[text_col] <- unique_text
+  time <- tokens <- NULL  # ugh cmdcheck
   answer_df <- dplyr::left_join(text, response_df, by = text_col) |>
     # set time and tokens to 0 if duplicate text
     dplyr::mutate(time = ifelse(dplyr::row_number() == 1, time, 0),
@@ -175,7 +207,7 @@ llm <- function(text, query,
 
 #' List Available LLM Models
 #'
-#' Returns a list of available models in groq, excluding whisper models (for audio) and sorting by creation date. See <https://console.groq.com/docs/models> for more information.
+#' Returns a list of available models in groq, excluding whisper and vision models (for audio and images) and sorting by creation date. See <https://console.groq.com/docs/models> for more information.
 #'
 #' @param API_KEY groq API key from <https://console.groq.com/keys>
 #'
@@ -184,9 +216,9 @@ llm <- function(text, query,
 #'
 #' @examples
 #' \donttest{
-#'   llm_models()
+#'   llm_model_list()
 #' }
-llm_models <- function(API_KEY = Sys.getenv("GROQ_API_KEY")) {
+llm_model_list <- function(API_KEY = Sys.getenv("GROQ_API_KEY")) {
   url <- "https://api.groq.com/openai/v1/models"
   config <- httr::add_headers(
     Authorization = paste("Bearer", API_KEY)
@@ -200,10 +232,10 @@ llm_models <- function(API_KEY = Sys.getenv("GROQ_API_KEY")) {
                     httr::content(response)$data) |>
     data.frame()
 
-  active <- dplyr::filter(models, active,
-                          !grepl("whisper", id)) |>
-    dplyr::select(id, owned_by, created, context_window) |>
-    dplyr::arrange(dplyr::desc(created))
+  rows <- models$active & !grepl("whisper|vision", models$id)
+  cols <- c("id", "owned_by", "created", "context_window")
+  active <- models[rows, cols]
+  #active <- sort_by(active, rev(active$created))
   active$created <- as.POSIXct(active$created) |> format("%Y-%m-%d")
   return(active)
 }
@@ -215,8 +247,10 @@ llm_models <- function(API_KEY = Sys.getenv("GROQ_API_KEY")) {
 #' @return NULL
 #' @export
 #'
-set_llm_max_calls <- function(n = 10) {
+llm_max_calls <- function(n = NULL) {
+  if (is.null(n)) return(getOption("papercheck.llm_max_calls"))
   if (!is.numeric(n)) stop("n must be a number")
+
   n <- as.integer(n)
   if (n < 1) {
     warning("n must be greater than 0; it was not changed from ", getOption("papercheck.llm_max_calls"))
@@ -224,7 +258,27 @@ set_llm_max_calls <- function(n = 10) {
     options(papercheck.llm_max_calls = n)
   }
 
-  invisible()
+  invisible(getOption("papercheck.llm_max_calls"))
+}
+
+#' Set the default LLM model
+#'
+#' Use `llm_model_list()` to get a list of available models
+#'
+#' @param model the name of the model
+#'
+#' @return NULL
+#' @export
+#'
+llm_model <- function(model = NULL) {
+  if (is.null(model)) {
+    return(getOption("papercheck.llm.model"))
+  } else if (is.character(model)) {
+    options(papercheck.llm.model = model)
+    invisible(getOption("papercheck.llm.model"))
+  } else {
+    stop("set llm_model with the name of a model, use `llm_model_list()` to get available models")
+  }
 }
 
 

@@ -11,9 +11,9 @@
 #' papers <- read_grobid(filename)
 #' stats(papers)
 stats <- function(text, ...) {
-  if (!is.data.frame(text)) {
-    text <- search_text(text)
-  }
+  # lines with stats must have at least one number
+  text <- search_text(text, "[0-9]")
+
 
   n <- nrow(text)
   if (n == 0) return(data.frame())

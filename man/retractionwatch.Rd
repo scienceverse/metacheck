@@ -18,6 +18,6 @@ A data frame with 44784 rows and 2 columns:
 retractionwatch
 }
 \description{
-DOIs and nature of statements from the RetractionWatch database (downloaded 2024-05-23)
+DOIs and nature of statements from the RetractionWatch database (downloaded 2025-02-28)
 }
 \keyword{datasets}

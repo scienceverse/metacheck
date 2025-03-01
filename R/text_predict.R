@@ -6,7 +6,7 @@
 #' @param stop_words a vector or data frame of words to exclude
 #' @param numbers what to do with numeric values: "any", "specific", "remove"
 #' @param stem_language the language to use for stemming words, from SnowballC::getStemLanguages(), set to FALSE for no stemming
-#' @param min_total the minimum total number of incidences to incude a word, defaults to 10% of the number of text strings
+#' @param min_total the minimum total number of incidences to include a word, defaults to 10% of the number of text strings
 #'
 #' @returns a data frame of the words
 #' @export
@@ -16,6 +16,9 @@ distinctive_words <- function(text, classification,
                               numbers = c("any", "specific", "remove"),
                               stem_language = "porter",
                               min_total = length(text)/10) {
+  word <- n_0 <- n_1 <- freq_0 <- freq_1 <-
+    total <- difference <- NULL  # ugh cmdcheck
+
   ground_truth <- data.frame(
     text = text,
     classification = classification
@@ -99,6 +102,8 @@ text_features <- function(text, words,
                           has_symbol = c(has_equals = "="),
                           stem_language = "porter",
                           values = c("presence", "count")) {
+  word <- id <- n <- NULL  # ugh cmdcheck
+
   if (is.data.frame(words)) {
     words <- words$word
   }

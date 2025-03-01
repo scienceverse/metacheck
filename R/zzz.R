@@ -3,7 +3,8 @@
   op <- options()
   op.pkg <- list(
     papercheck.verbose = TRUE,
-    papercheck.llm_max_calls = 30L
+    papercheck.llm_max_calls = 30L,
+    papercheck.llm.model = "llama3-70b-8192"
   )
   # only set if not already set
   toset <- !(names(op.pkg) %in% names(op))

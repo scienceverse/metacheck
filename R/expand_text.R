@@ -25,7 +25,7 @@ expand_text <- function(results_table,
                         paper,
                         expand_to = c("sentence", "paragraph", "div", "section"),
                         plus = 0, minus = 0) {
-  id <- div <- p <- s <- text <- NULL # ugh cmdcheck
+  id <- div <- p <- s <- text <- expanded <- NULL # ugh cmdcheck
 
   # check results_table and extract table if object
   if (!is.data.frame(results_table)) {

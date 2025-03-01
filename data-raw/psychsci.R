@@ -1,6 +1,9 @@
 ## code to prepare `psychsci` dataset goes here
 
-psychsci <- read_grobid("vignettes/xml")
+# make relative filename make sense
+setwd("vignettes/xml")
+psychsci <- read_grobid(".")
+setwd("../../")
 
 # for (i in seq_along(psychsci)) {
 #   psychsci[[1]]$info$doi <- psychsci[[1]]$info$doi |>
@@ -8,4 +11,5 @@ psychsci <- read_grobid("vignettes/xml")
 #     gsub("sagepub\\.", "", x = _)
 # }
 
-usethis::use_data(psychsci, overwrite = TRUE)
+usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")
+

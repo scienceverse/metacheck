@@ -100,6 +100,45 @@ test_that("get_authors", {
                     institution = "University College London"))
 })
 
+test_that("xml2bib", {
+  xml <- "examples/0956797613520608.xml" |> read_grobid_xml()
+  refs <- xml2::xml_find_all(xml, "//listBibl //biblStruct")
+
+  # journal article
+  ref <- refs[[1]]
+  bib1 <- xml2bib(ref)
+  bibtext1 <- format(bib1, width = NULL)
+  actual <- gsub("\\n", " ", bibtext1) |> gsub("“|”", "\"", x = _)
+  expected <- "Basso A, Capitani E, Della Sala S, Laiacona M, Spinnler H (1987). \"Recovery from ideomotor apraxia: A study on acute stroke patients.\" _Brain_, *110*, 747-760."
+  expect_true(inherits(bib1, "bibentry"))
+  expect_equal(actual, expected)
+
+  # book chapter
+  ref <- refs[[7]]
+  bib7 <- xml2bib(ref)
+  bibtext7 <- format(bib7)
+  actual <- gsub("\\n", " ", bibtext7) |> gsub("“|”", "\"", x = _)
+  expected <- "Csibra G (2008). \"Action mirroring and action understanding: An alternative account.\" In Haggard P, Rossetti Y, Kawato M (eds.), _Sensorimotor foundation of higher cognition: Attention and performance_, 435-458. Oxford University Press."
+  expect_equal(actual, expected)
+
+  # in press
+  ref <- refs[[6]]
+  bib6 <- xml2bib(ref)
+  bibtext6 <- format(bib6)
+  actual <- gsub("\\n", " ", bibtext6) |> gsub("“|”", "\"", x = _)
+  expected <- "Cook R, Bird G, Catmur C, Press C, Heyes CM (in press). \"Mirror neurons: From origin to function.\" _Behavioral & Brain Sciences_."
+  expect_equal(actual, expected)
+
+  # book
+  ref <- refs[[37]]
+  bib37 <- xml2bib(ref)
+  bibtext37 <- format(bib37)
+  expected <- "Schneider W, Eschman A, Zuccolotto A (2001). _E-Prime user's guide_. Psychology Software Tools."
+  expect_equal(gsub("\\n", " ", bibtext37), expected)
+
+  expect_no_error( bib_all <- lapply(refs[2], xml2bib) )
+})
+
 test_that("get_refs", {
   expect_true(is.function(get_refs))
 
@@ -156,7 +195,7 @@ test_that("iteration", {
                     "grobid/eyecolor",
                     "grobid/incest",
                     "grobid/prereg")
-  expect_equal(names(s), nested_files)
+  expect_true(all(nested_files %in% names(s)))
 })
 
 

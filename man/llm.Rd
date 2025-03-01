@@ -8,7 +8,7 @@ llm(
   text,
   query,
   text_col = "text",
-  model = "llama3-70b-8192",
+  model = llm_model(),
   maxTokens = 1024,
   temperature = 0.5,
   top_p = 0.95,
@@ -23,7 +23,7 @@ llm(
 
 \item{text_col}{The name of the text column if text is a data frame}
 
-\item{model}{the LLM model name (see \code{llm_models()})}
+\item{model}{the LLM model name (see \code{llm_model_list()})}
 
 \item{maxTokens}{The maximum integer of completion tokens returned per query}
 

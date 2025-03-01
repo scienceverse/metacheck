@@ -19,7 +19,7 @@ retractionwatch <- utils::read.csv(tmp) |>
 
 count(retractionwatch, retractionwatch)
 
-usethis::use_data(retractionwatch, overwrite = TRUE)
+usethis::use_data(retractionwatch, overwrite = TRUE, compress = "xz")
 
 
 

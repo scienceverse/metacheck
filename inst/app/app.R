@@ -555,8 +555,8 @@ server <- function(input, output, session) {
   observeEvent(input$gpt_max_calls, {
     debug_msg("gpt_max_calls")
     if (is.numeric(input$gpt_max_calls)) {
-      set_llm_max_calls(input$gpt_max_calls)
-      newmax <- getOption("papercheck.gpt_max_calls")
+      llm_max_calls(input$gpt_max_calls)
+      newmax <- llm_max_calls()
       updateNumericInput(session, "gpt_max_calls", value = newmax)
     }
   })

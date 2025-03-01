@@ -10,6 +10,8 @@ search_text(
   section = NULL,
   return = c("sentence", "paragraph", "div", "section", "match", "all"),
   ignore.case = TRUE,
+  fixed = FALSE,
+  perl = FALSE,
   ...
 )
 }
@@ -24,7 +26,11 @@ search_text(
 
 \item{ignore.case}{whether to ignore case when text searching}
 
-\item{...}{additional arguments to pass to \code{grep()} and \code{regexpr()}, such as \code{fixed = TRUE}}
+\item{fixed}{logical. If TRUE, pattern is a string to be matched as is. Overrides all conflicting arguments.}
+
+\item{perl}{logical. Should Perl-compatible regexps be used?}
+
+\item{...}{ignore further arguments}
 }
 \value{
 a data frame of matches

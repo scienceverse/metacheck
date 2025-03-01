@@ -50,7 +50,7 @@ info_table <- function(paper,
 
   # set filename to absolute or relative path
   if ("filename" %in% info) {
-    df$filename <- normalizePath(df$filename)
+    df$filename <- normalizePath(df$filename, mustWork = FALSE)
     if (match.arg(path) == "relative") {
       wd <- getwd() |> normalizePath() |> paste0("/")
       df$filename <- gsub(wd, "", df$filename, fixed = TRUE)

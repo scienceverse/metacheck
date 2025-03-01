@@ -11,7 +11,8 @@ if (nrow(refs) == 0 & nrow(cites) == 0) {
   if (nrow(missing_refs)) missing_refs$missing <- "reference"
   names(missing_refs) <- names(missing_refs) |> sub("text", "ref", x = _)
 
-  table <- dplyr::bind_rows(missing_cites, missing_refs)
+  table <- dplyr::bind_rows(missing_cites, missing_refs) |>
+    dplyr::arrange(id, bib_id)
 
   if (nrow(table) == 0) {
     traffic_light <- "green"

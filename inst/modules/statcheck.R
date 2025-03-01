@@ -9,6 +9,6 @@ if (nrow(stat_table) == 0) {
 }
 
 list(
-  table = stat_table,
+  table = stat_table[stat_table$error, ],
   traffic_light = tl
 )

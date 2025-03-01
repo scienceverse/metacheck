@@ -9,8 +9,11 @@
     },
     "email": "debruine@gmail.com"
   }],
+  "text": {
+    "return": "section"
+  },
   "llm": {
-    "query": "Summarise this section briefly, in one sentence."
+    "query": "Summarise this section briefly, in one sentence. Do not include any preamble explaining what you are going to do, just give the sentence."
   },
   "traffic_light": {
     "found": "info",

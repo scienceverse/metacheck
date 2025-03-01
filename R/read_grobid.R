@@ -166,6 +166,8 @@ read_grobid_xml <- function(filename) {
 #' @keywords internal
 #'
 get_full_text<- function(xml, id = NULL) {
+  div <- NULL  # ugh cmdcheck
+
   ## abstract ----
   abstract <- xml2::xml_find_all(xml, "//abstract //p") |>
     xml2::xml_text()
@@ -368,15 +370,10 @@ get_refs <- function(xml) {
     )
     ref_table$doi <- xml2::xml_find_first(refs, ".//analytic //idno[@type='DOI']") |>
       xml2::xml_text()
-    ref_table$ref <- xml2::xml_find_first(refs, ".//note[@type='raw_reference']") |>
-      xml2::xml_text()
 
-    # handle if raw_reference is missing
-    ref_is_na <- is.na(ref_table$ref)
-    ref_table$ref[ref_is_na] <- refs[ref_is_na] |>
-      xml2::xml_text() |>
-      gsub("(\\n|\\t)+", " ", x = _) |>
-      trimws()
+    ref_table$ref <- lapply(refs, xml2bib) |>
+      sapply(format) |>
+      gsub("\\n", " ", x = _)
 
   } else {
     ref_table <- data.frame(
@@ -467,3 +464,103 @@ get_submission <- function(xml) {
   return(submission)
 }
 
+
+#' Parse XML bib format to bibtex
+#'
+#' @param ref the biblStruct xml object
+#'
+#' @returns a bibentry
+#' @export
+#' @keywords internal
+xml2bib <- function(ref) {
+  b <- list(bibtype = "misc")
+
+  b$doi <- xml2::xml_find_first(ref, ".//idno[@type='DOI']") |>
+    xml2::xml_text()
+
+  b$title <- xml2::xml_find_first(ref, ".//title[@level='a']") |>
+    xml2::xml_text()
+
+  b$author <- xml2::xml_find_all(ref, ".//author //persName") |>
+    lapply(\(a) {
+      forename <- xml2::xml_find_all(a, ".//forename") |> xml2::xml_text()
+      surname <- xml2::xml_find_all(a, ".//surname") |> xml2::xml_text()
+
+      utils::person(given = forename,
+                    family = surname)
+    }) |> do.call(c, args = _)
+
+  b$editor <- xml2::xml_find_all(ref, ".//editor //persName") |>
+    lapply(\(a) {
+      forename <- xml2::xml_find_all(a, ".//forename") |> xml2::xml_text()
+      surname <- xml2::xml_find_all(a, ".//surname") |> xml2::xml_text()
+
+      utils::person(given = forename,
+                    family = surname)
+    }) |> do.call(c, args = _)
+
+  b$journal <- xml2::xml_find_first(ref, ".//title[@level='j']") |>
+    xml2::xml_text() |>
+    gsub("\\s+", " ", x = _) |> trimws()
+
+  b$booktitle <- xml2::xml_find_first(ref, ".//title[@level='m']") |>
+    xml2::xml_text()
+
+  # imprint
+  imprint <- xml2::xml_find_first(ref, ".//imprint")
+  b$publisher <-  xml2::xml_find_first(imprint, ".//publisher") |>
+    xml2::xml_text()
+  b$year <-  xml2::xml_find_first(imprint, ".//date[@type='published']") |>
+    xml2::xml_text()
+  b$volume <- xml2::xml_find_first(imprint, ".//biblScope[@unit='volume']") |>
+    xml2::xml_text()
+  b$number <- xml2::xml_find_first(imprint, ".//biblScope[@unit='issue']") |>
+    xml2::xml_text()
+  page_unit <- xml2::xml_find_first(imprint, ".//biblScope[@unit='page']")
+  if (!is.na(page_unit)) {
+    pages <- xml2::xml_text(page_unit)
+    if (pages == "") {
+      pages <- xml2::xml_attrs(page_unit)
+      if (!is.na(pages[[1]])) {
+        b$pages <- paste(pages[["from"]], pages[["to"]], sep = "-")
+      }
+    } else {
+      b$pages <- pages
+    }
+  }
+
+  b[is.na(b)] <- NULL
+  if (!is.null(b$journal)) {
+    b$bibtype <- "article"
+    if (is.null(b$year)) {
+      # b$bibtype <- "unpublished"
+      note <- xml2::xml_find_first(ref, ".//note") |> xml2::xml_text()
+      b$year <- note %||% "no year"
+    }
+  } else if (!is.null(b$booktitle)) {
+    b$bibtype <- "incollection"
+    if (is.null(b$title)) {
+      b$bibtype <- "book"
+      b$title <- b$booktitle
+      b$booktitle <- NULL
+    }
+  }
+
+  bib <- tryCatch(do.call(utils::bibentry, b),
+                  error = function(e) {
+                    b$bibtype <- "misc"
+                    bib <- do.call(utils::bibentry, b)
+                    return(bib)
+
+                    # pull visible text on error
+                    # txt <- xml2::xml_text(ref) |>
+                    #   gsub("\\s+", " ", x = _) |>
+                    #   trimws()
+
+                    # TODO: fix more types
+                    #warning(e$message, "\\n")
+                    #return(txt)
+                  })
+
+  bib
+}
