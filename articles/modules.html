@@ -35,7 +35,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9029</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9030</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,209 +76,1386 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span></code></pre></div>
-<p>Modules are user-created patterns for checking a paper or set of
-papers. Module specifications are written in JSON format.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="dt">"title"</span><span class="fu">:</span> <span class="st">"List All P-Values"</span><span class="fu">,</span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="dt">"description"</span><span class="fu">:</span> <span class="st">"List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table."</span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
+<p>Papercheck is designed modularly, so you can add modules to check for
+anything. It comes with a set of pre-defined modules, and we hope people
+will share more modules.</p>
 <div class="section level2">
-<h2 id="search-strategies">Search Strategies<a class="anchor" aria-label="anchor" href="#search-strategies"></a>
+<h2 id="module-list">Module List<a class="anchor" aria-label="anchor" href="#module-list"></a>
 </h2>
-<p>Modules can use four search strategies, each of which has its own
-JSON specification. All four types take either a paper object or the
-resulting search table as input, making it easy to chain modules
-together.</p>
-<div class="section level3">
-<h3 id="text-search">Text Search<a class="anchor" aria-label="anchor" href="#text-search"></a>
-</h3>
-<p>For checks that can be done with a simple text search, you can create
-a module that provides the arguments to the <code><a href="../reference/search_text.html">search_text()</a></code>
-function. The “text” key takes a dictionary of the argumants to the
-<code><a href="../reference/search_text.html">search_text()</a></code> function.</p>
-<p>Foe example, the following JSON specification defines the arguments
-needed to search for all instances of p-values in the text and return
-just the matched text.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="dt">"title"</span><span class="fu">:</span> <span class="st">"List All P-Values"</span><span class="fu">,</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="dt">"description"</span><span class="fu">:</span> <span class="st">"List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table."</span><span class="fu">,</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="dt">"text"</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>    <span class="dt">"pattern"</span><span class="fu">:</span> <span class="st">"(?&lt;=[^a-z])p-?(value)?</span><span class="ch">\\</span><span class="st">s*[&lt;&gt;=≤≥]{1,2}</span><span class="ch">\\</span><span class="st">s*(n</span><span class="ch">\\</span><span class="st">.?s</span><span class="ch">\\</span><span class="st">.?|</span><span class="ch">\\</span><span class="st">d?</span><span class="ch">\\</span><span class="st">.</span><span class="ch">\\</span><span class="st">d+e?-?</span><span class="ch">\\</span><span class="st">d*)"</span><span class="fu">,</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>    <span class="dt">"return"</span><span class="fu">:</span> <span class="st">"match"</span><span class="fu">,</span></span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>    <span class="dt">"perl"</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="fu">}</span></span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="code">Code<a class="anchor" aria-label="anchor" href="#code"></a>
-</h3>
-<p>For checks that require a bit more logic, you can include R code
-directly or (more likely) reference an external .R file. The “code” key
-takes a dictionary of the “code” or a “path” to a file containing code.
-You can optionally list the “packages” required so users can be prompted
-to install any unavailable packages.</p>
-<pre><code>{
-  "title": "Check Status of OSF Links",
-  "description": "List all OSF links and whether they are open, closed, or do not exist.",
-  "code": {
-    "packages": ["papercheck", "httr", "dplyr"],
-    "path": "osf-check.R"
-  }
-}</code></pre>
-<p>Code must end with a list that contains values to return. The item
-<code>table</code> should be the table of returned values, and the
-optional item <code>traffic_light</code> contains the classification of
-the result (see below).</p>
-</div>
-<div class="section level3">
-<h3 id="machine-learning">Machine Learning<a class="anchor" aria-label="anchor" href="#machine-learning"></a>
-</h3>
-<p>The machine learning aspect of papercheck is under development, but
-currently uses BERT models to classify text. The “ml” key takes a
-dictionary of the arguments to <code><a href="../reference/ml.html">ml()</a></code>, with an additional
-optional setting to filter the output table to only matching
-responses.</p>
-<pre><code>{
-  "title": "Sample Size",
-  "description": "[DEMO] Classify each sentence for whether it contains sample-size information, returning only sentences with probable sample-size info.",
-  "ml" : {
-    "model_dir": "sample-size",
-    "class_col": "has_sample_size",
-    "map": {"0": "no", "1": "yes"},
-    "return_prob": false,
-    "filter": "yes"
-  }
-}</code></pre>
-</div>
-<div class="section level3">
-<h3 id="large-language-models">Large Language Models<a class="anchor" aria-label="anchor" href="#large-language-models"></a>
-</h3>
-<p>The “llm” key takes a dictionary of the arguments to the
-<code><a href="../reference/llm.html">llm()</a></code> function.</p>
-<pre><code>{
-  "title": "Summarise Sections",
-  "description": "Generate a 1-sentence summary for each section",
-  "llm": {
-    "query": "Summarise this section briefly, in one sentence."
-  }
-}
-</code></pre>
-</div>
+<p>You can see the list of built-in modules with the function below.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/module_list.html">module_list</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<ul>
+<li>all-p-values: List all p-values in the text, returning the matched
+text (e.g., ‘p = 0.04’) and document location in a table.</li>
+<li>all-urls: List all the URLs in the main text</li>
+<li>imprecise-p: List any p-values reported with insufficient precision
+(e.g., p &lt; .05 or p = n.s.)</li>
+<li>llm-summarise: Generate a 1-sentence summary for each section</li>
+<li>marginal: List all sentences that describe an effect as ‘marginally
+significant’.</li>
+<li>osf-check: List all OSF links and whether they are open, closed, or
+do not exist.</li>
+<li>ref-consistency: Check if all references are cited and all citations
+are referenced</li>
+<li>retractionwatch: Flag any cited papers in the RetractionWatch
+database</li>
+<li>statcheck: Check consistency of p-values and test statistics</li>
+</ul>
 </div>
 <div class="section level2">
-<h2 id="report-info">Report Info<a class="anchor" aria-label="anchor" href="#report-info"></a>
+<h2 id="built-in-modules">Built-in Modules<a class="anchor" aria-label="anchor" href="#built-in-modules"></a>
 </h2>
-<p>If you are using your modules to build a report, you need to specify
-what type of output corresponds to good practice or practice that may
-need improvement. We do this through “traffic-light” and “report”
-keys.</p>
+<p>Below, we will demonstrate the use of each built-in module, first on
+a single paper and then a list of papers, the <code>psychsci</code> list
+of 250 open-access papers from Psychological Science.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="va">psychsci</span><span class="op">$</span><span class="va">`0956797620955209`</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="traffic-lights">Traffic Lights<a class="anchor" aria-label="anchor" href="#traffic-lights"></a>
+<h3 id="all-p-values">all-p-values<a class="anchor" aria-label="anchor" href="#all-p-values"></a>
 </h3>
-<p>There are 5 kinds of traffic lights:</p>
-<style>
-  h2.na::before { content: '⚪️ '; }
-  h2.fail::before { content: '⚫️ '; }
-  h2.info::before { content: '🔵 '; }
-  h2.red::before { content: '🔴 '; }
-  h2.yellow::before { content: '🟡 '; }
-  h2.green::before { content: '🟢 '; }
-</style>
-<p>🟢 no problems detected;<br> 🟡 something to check;<br> 🔴 possible
-problems detected;<br> 🔵 informational only;<br> ⚪️ not applicable;<br>
-⚫️ check failed</p>
-<p>The simplest way to set traffic lights is to specify the meaning of
-“found” and “not_found”. If the module produces more than 0 rows in the
-output table, then the traffic light takes the “found” value, otherwise
-the “not_found” value.</p>
-<pre><code>{
-  "title": "List All P-Values",
-  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
-  "text": {
-    "pattern": "(?&lt;=[^a-z])p-?(value)?\\s*[&lt;&gt;=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+e?-?\\d*)",
-    "return": "match",
-    "perl": true
-  },
-  "traffic_light": {
-    "found": "info",
-    "not_found": "na"
-  }
-}</code></pre>
-<p>If you are using the “code” type, you can also specify the traffic
-light in the returned list.</p>
+<p>List all p-values in the text, returning the matched text (e.g., ‘p =
+0.04’) and document location in a table.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">all_p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all-p-values"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">all_p</span> <span class="co"># print table</span></span></code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left">text</th>
+<th align="left">section</th>
+<th align="left">header</th>
+<th align="right">div</th>
+<th align="right">p</th>
+<th align="right">s</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">p = .003</td>
+<td align="left">method</td>
+<td align="left">Questionnaires</td>
+<td align="right">6</td>
+<td align="right">2</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">p = .08</td>
+<td align="left">method</td>
+<td align="left">Questionnaires</td>
+<td align="right">6</td>
+<td align="right">2</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">p &lt; .001</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">p &lt; .025</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .040</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">p = .173</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .006</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">p = .02</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .691</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">p = .303</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .023</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">p &lt; .001</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .006</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">p = .037</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .038</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">p = .358</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">p &lt; .001</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">4</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">p = .127</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">4</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .062</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">4</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">p = .047</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">4</td>
+<td align="right">3</td>
+</tr>
+</tbody>
+</table>
+<p>Showing 20 of 20 rows</p>
+<p>If you run this module on all 250 papers, you will get more rows than
+you probably want to print, so the default just shows you the first 20
+rows.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">all_p_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"all-p-values"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">all_p_ps</span> <span class="co"># print table</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="13%">
+<col width="11%">
+<col width="35%">
+<col width="5%">
+<col width="4%">
+<col width="4%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">text</th>
+<th align="left">section</th>
+<th align="left">header</th>
+<th align="right">div</th>
+<th align="right">p</th>
+<th align="right">s</th>
+<th align="left">id</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">p &lt; .001</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">8</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">0956797613520608</td>
+</tr>
+<tr class="even">
+<td align="left">p &lt; .001</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">8</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="left">0956797613520608</td>
+</tr>
+<tr class="odd">
+<td align="left">p &lt; .001</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">8</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="left">0956797613520608</td>
+</tr>
+<tr class="even">
+<td align="left">p = .016</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">8</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="left">0956797613520608</td>
+</tr>
+<tr class="odd">
+<td align="left">p &lt; .001</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">8</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="left">0956797613520608</td>
+</tr>
+<tr class="even">
+<td align="left">p &lt; .001</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">8</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="left">0956797613520608</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .005</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">7</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="even">
+<td align="left">p &lt; .001</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">7</td>
+<td align="right">2</td>
+<td align="right">2</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .153</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">7</td>
+<td align="right">2</td>
+<td align="right">2</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="even">
+<td align="left">p &lt; .001</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">7</td>
+<td align="right">2</td>
+<td align="right">6</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="odd">
+<td align="left">p &lt; .001</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">7</td>
+<td align="right">2</td>
+<td align="right">7</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="even">
+<td align="left">p = .315</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">7</td>
+<td align="right">2</td>
+<td align="right">7</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .024</td>
+<td align="left">results</td>
+<td align="left">Eye movement strategies</td>
+<td align="right">8</td>
+<td align="right">2</td>
+<td align="right">2</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="even">
+<td align="left">p = .008</td>
+<td align="left">results</td>
+<td align="left">Eye movement strategies</td>
+<td align="right">8</td>
+<td align="right">3</td>
+<td align="right">2</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .09</td>
+<td align="left">results</td>
+<td align="left">Eye movement strategies</td>
+<td align="right">8</td>
+<td align="right">3</td>
+<td align="right">2</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="even">
+<td align="left">p = .028</td>
+<td align="left">results</td>
+<td align="left">Eye movement strategies</td>
+<td align="right">8</td>
+<td align="right">3</td>
+<td align="right">2</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .122</td>
+<td align="left">results</td>
+<td align="left">Eye movement strategies</td>
+<td align="right">8</td>
+<td align="right">3</td>
+<td align="right">3</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="even">
+<td align="left">p = .001</td>
+<td align="left">results</td>
+<td align="left">Eye movement strategies</td>
+<td align="right">8</td>
+<td align="right">3</td>
+<td align="right">4</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="odd">
+<td align="left">p = .237</td>
+<td align="left">results</td>
+<td align="left">Eye movement strategies</td>
+<td align="right">8</td>
+<td align="right">3</td>
+<td align="right">5</td>
+<td align="left">0956797614522816</td>
+</tr>
+<tr class="even">
+<td align="left">p = .008</td>
+<td align="left">results</td>
+<td align="left">Gaze patterns</td>
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="left">0956797614522816</td>
+</tr>
+</tbody>
+</table>
+<p>Showing 20 of 4190 rows</p>
+<p>You can access the full table for further processing.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">all_p_ps</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">text</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
+<span><span class="co">#&gt;   text          n</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> p &lt; .001   <span style="text-decoration: underline;">1</span>355</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> p = .001    116</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> p = .002     94</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> p &lt; .01      90</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> p &lt; .0001    79</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> p &lt; .05      72</span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="all-urls">all-urls<a class="anchor" aria-label="anchor" href="#all-urls"></a>
+</h3>
+<p>List all the URLs in the main text. There will, of course, be a few
+false positives when text in the paper is formatted as a valid URL.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># code for imprecise-p module</span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all-p-values"</span><span class="op">)</span><span class="op">$</span><span class="va">table</span></span>
-<span><span class="va">p</span><span class="op">$</span><span class="va">p_comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"p-?(value)?\\s*|\\s*\\d?\\.\\d+e?-?\\d*"</span>, <span class="st">""</span>, <span class="va">p</span><span class="op">$</span><span class="va">text</span><span class="op">)</span></span>
-<span><span class="va">p</span><span class="op">$</span><span class="va">p_value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"^p-?(value)?\\s*[&lt;&gt;=≤≥]{1,2}\\s*"</span>, <span class="st">""</span>, <span class="va">p</span><span class="op">$</span><span class="va">text</span><span class="op">)</span></span>
-<span><span class="va">p</span><span class="op">$</span><span class="va">p_value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">p</span><span class="op">$</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">p</span><span class="op">$</span><span class="va">imprecise</span> <span class="op">&lt;-</span> <span class="va">p</span><span class="op">$</span><span class="va">p_comp</span> <span class="op">==</span> <span class="st">"&lt;"</span> <span class="op">&amp;</span> <span class="va">p</span><span class="op">$</span><span class="va">p_value</span> <span class="op">&gt;</span> <span class="fl">.001</span></span>
-<span><span class="va">p</span><span class="op">$</span><span class="va">imprecise</span> <span class="op">&lt;-</span> <span class="va">p</span><span class="op">$</span><span class="va">imprecise</span> <span class="op">|</span> <span class="va">p</span><span class="op">$</span><span class="va">p_comp</span> <span class="op">==</span> <span class="st">"&gt;"</span></span>
-<span><span class="va">p</span><span class="op">$</span><span class="va">imprecise</span> <span class="op">&lt;-</span> <span class="va">p</span><span class="op">$</span><span class="va">imprecise</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">p</span><span class="op">$</span><span class="va">p_value</span><span class="op">)</span></span>
-<span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"text"</span>, <span class="st">"section"</span>, <span class="st">"header"</span>, <span class="st">"div"</span>, <span class="st">"p"</span>, <span class="st">"s"</span>, <span class="st">"id"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">all_urls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all-urls"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">tl</span> <span class="op">&lt;-</span> <span class="st">"na"</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="va">p</span><span class="op">$</span><span class="va">imprecise</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">tl</span> <span class="op">&lt;-</span> <span class="st">"red"</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">p</span><span class="op">$</span><span class="va">imprecise</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">tl</span> <span class="op">&lt;-</span> <span class="st">"green"</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>  <span class="va">tl</span> <span class="op">&lt;-</span> <span class="st">"yellow"</span></span>
-<span><span class="op">}</span></span>
+<span><span class="va">all_urls</span> <span class="co"># print table</span></span></code></pre></div>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="62%">
+<col width="8%">
+<col width="16%">
+<col width="4%">
+<col width="3%">
+<col width="3%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">text</th>
+<th align="left">section</th>
+<th align="left">header</th>
+<th align="right">div</th>
+<th align="right">p</th>
+<th align="right">s</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">3.9.1.7</td>
+<td align="left">method</td>
+<td align="left">Participants</td>
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left"><a href="https://osf.io/k2dbf" class="external-link uri">https://osf.io/k2dbf</a></td>
+<td align="left">method</td>
+<td align="left">Analyses</td>
+<td align="right">8</td>
+<td align="right">1</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left"><a href="https://osf.io/k2dbf" class="external-link uri">https://osf.io/k2dbf</a></td>
+<td align="left">funding</td>
+<td align="left">Open Practices</td>
+<td align="right">14</td>
+<td align="right">1</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left"><a href="https://osf.io/k2dbf" class="external-link uri">https://osf.io/k2dbf</a></td>
+<td align="left">funding</td>
+<td align="left">Open Practices</td>
+<td align="right">14</td>
+<td align="right">2</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left"><a href="http://www.psychologicalscience.org/publications/badges" class="external-link uri">http://www.psychologicalscience.org/publications/badges</a></td>
+<td align="left">funding</td>
+<td align="left">Open Practices</td>
+<td align="right">14</td>
+<td align="right">2</td>
+<td align="right">3</td>
+</tr>
+</tbody>
+</table>
+<p>Showing 5 of 5 rows</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">all_urls_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"all-urls"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  table <span class="op">=</span> <span class="va">p</span><span class="op">[</span><span class="va">p</span><span class="op">$</span><span class="va">imprecise</span>, <span class="va">cols</span><span class="op">]</span>,</span>
-<span>  traffic_light <span class="op">=</span> <span class="va">tl</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># show the most common URLs</span></span>
+<span><span class="va">all_urls_ps</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">text</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
+<span><span class="co">#&gt;   text                                                        n</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> http://www.psychologicalscience.org/publications/badges   126</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> http://pss.sagepub.com/content/by/supplemental-data        28</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> https://osf.io/sh8qg                                       11</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> https://osf.io/2j6ne                                       10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> https://osf.io/79kbm                                       10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> http://pss.sagepub.com/content/25/1/3.full                  9</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="report">Report<a class="anchor" aria-label="anchor" href="#report"></a>
+<h3 id="imprecise-p">imprecise-p<a class="anchor" aria-label="anchor" href="#imprecise-p"></a>
 </h3>
-<p>Any text that you want to include in the report should be specified
-in the “report” key. You can set different text for each traffic light,
-and/or text to include in all reports.</p>
-<pre><code>{
-  "title": "Reference Consistency",
-  "description": "Check if all references are cited and all citations are referenced",
-  "code": {
-    "packages": ["dplyr"],
-    "path": "ref-consistency.R"
-  },
-  "report": {
-    "all": "This module relies on Grobid correctly parsing the references. There may be some false positives.",
-    "red": "There are references that are not cited or citations that are not referenced",
-    "green": "All references were cited and citations were referenced",
-    "na": "No citations/references were detected"
-  }
-}</code></pre>
+<p>List any p-values that may have been reported with insufficient
+precision (e.g., p &lt; .05 or p = n.s.).</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">imprecise</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"imprecise-p"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">imprecise</span> <span class="co"># print table</span></span></code></pre></div>
+<p>You may have reported some imprecise p-values</p>
+<table class="table">
+<thead><tr class="header">
+<th align="left">text</th>
+<th align="left">section</th>
+<th align="left">header</th>
+<th align="right">div</th>
+<th align="right">p</th>
+<th align="right">s</th>
+</tr></thead>
+<tbody><tr class="odd">
+<td align="left">p &lt; .025</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">3</td>
+</tr></tbody>
+</table>
+<p>Showing 1 of 1 rows</p>
+<p>You can use the <code><a href="../reference/expand_text.html">expand_text()</a></code> function to get the full
+sentence or paragraph for context. Here you can see that “p &lt; .025”
+was not an imprecisely reported p-value, but a description of the
+preregistered alpha threshold.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/expand_text.html">expand_text</a></span><span class="op">(</span><span class="va">imprecise</span>, <span class="va">paper</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">exp</span><span class="op">$</span><span class="va">expanded</span> <span class="co"># print expanded text</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] "The main effect of illness recency did not meet our preregistered threshold (p &lt; .025)-recently ill: M = 661 ms, SD = 197; not recently ill: M = 626 ms, SD = 153, F(1, 400) = 4.23, η p 2 = .010, 90% CI = [.000, .039], p = .040-nor did the interaction between illness recency and face type (disfigured vs. typical), F(1, 400) = 1.87, η p 2 = .005, 90% CI = [.000, .027], p = .173."</span></span></code></pre>
+<p>We can investigate the most common imprecise p-values in the PsychSci
+set. “p &lt; .01” and “p &lt; .05” are probably often describing figures
+or tables, but what is the deal with “p &gt; .25”?</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">imprecise_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"imprecise-p"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">imprecise_ps</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">text</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p> [38;5;246m# A tibble: 6 × 2 [39m text n  [3m [38;5;246m<chr> [39m [23m
+ [3m [38;5;246m<int> [39m [23m  [38;5;250m1 [39m p &lt; .01 90  [38;5;250m2 [39m
+p &lt; .05 72  [38;5;250m3 [39m p &gt; .250 13  [38;5;250m4 [39m p &gt; .05
+11  [38;5;250m5 [39m p &gt; .25 10  [38;5;250m6 [39m p &lt; .005 8</int></chr></p>
+<p>We can expand the text to check the context for “p &gt; .25”.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">gt.25</span> <span class="op">&lt;-</span> <span class="va">imprecise_ps</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"\\.25"</span>, <span class="va">text</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/expand_text.html">expand_text</a></span><span class="op">(</span>paper <span class="op">=</span> <span class="va">psychsci</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">gt.25</span><span class="op">$</span><span class="va">expanded</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span> <span class="co"># look at the first 3</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] "Time increased negative attitudes among liberal participants, b = 0.13, SE = 0.06, 95% CI = [0.02, 0.24], t(1922) = 2.34, p = .020, but did not affect attitudes among conservative participants, b = -0.04, SE = 0.06, 95% CI = [-0.15, 0.07], t(1922) = -0.64, p &gt; .250."                                                      </span></span>
+<span><span class="co">#&gt; [2] "Time increased negative attitudes among liberal participants, b = 0.22, SE = 0.06, 95% CI = [0.10, 0.33], t(1922) = 3.63, p &lt; .001, but did not affect attitudes among conservative participants, b = 0.03, SE = 0.06, 95% CI = [-0.09, 0.14], t(1922) = 0.45, p &gt; .250."                                                        </span></span>
+<span><span class="co">#&gt; [3] "The twoway interactions between knowledge distance and search effort (odds ratio = 1.67, p = .080) and between knowledge distance and search variation (odds ratio = 0.65, p = .077) were marginally significant, whereas the interaction between search effort and variation was not significant (odds ratio = 1.01, p &gt; .250)."</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="authors">Authors<a class="anchor" aria-label="anchor" href="#authors"></a>
+<h3 id="llm-summarise">llm-summarise<a class="anchor" aria-label="anchor" href="#llm-summarise"></a>
 </h3>
-<p>You can also include author information in the following format:</p>
-<pre><code>{
-  "title": "List All P-Values",
-  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
-  "authors": [{
-    "orcid": "0000-0002-7523-5539",
-    "name":{
-      "surname": "DeBruine",
-      "given": "Lisa"
-    },
-    "email": "debruine@gmail.com"
-  }],
-  "text": {
-    "pattern": "(?&lt;=[^a-z])p-?(value)?\\s*[&lt;&gt;=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+e?-?\\d*)",
-    "return": "match",
-    "perl": true
-  },
-  "traffic_light": {
-    "found": "info",
-    "not_found": "na"
-  }
-}</code></pre>
+<p>Generate a 1-sentence summary for each section. This uses the
+<code><a href="../reference/llm.html">llm()</a></code> function with the query “summarise this section
+briefly, in one sentence” and returns a one-sentence summary of each
+major section (abstract, intro, method, results, discussion,
+acknowledgements, appendices)</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">summaries</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"llm-summarise"</span>, seed <span class="op">=</span> <span class="fl">8675309</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">summaries</span> <span class="co"># print default table</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="43%">
+<col width="4%">
+<col width="43%">
+<col width="4%">
+<col width="3%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">text</th>
+<th align="left">section</th>
+<th align="left">answer</th>
+<th align="right">time</th>
+<th align="right">tokens</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Across taxa, animals possess a number of behavioral
+adaptations that function to mitigate the cos…</td>
+<td align="left">abstract</td>
+<td align="left">Humans have evolved behavioral adaptations to detect
+and avoid infectious microorganisms, includi…</td>
+<td align="right">0.1327031</td>
+<td align="right">373</td>
+</tr>
+<tr class="even">
+<td align="left">the evolutionary-biology literature, which highlights
+the fact that organisms neutralize pathogen…</td>
+<td align="left">intro</td>
+<td align="left">The study aimed to replicate a previous finding that
+people who have recently been ill are more a…</td>
+<td align="right">0.2404155</td>
+<td align="right">1406</td>
+</tr>
+<tr class="odd">
+<td align="left">Method Except where noted, all methodological
+details-including all stimuli and dot-probe procedu…</td>
+<td align="left">method</td>
+<td align="left">The study replicated the methodological details of
+Miller and Maner (2011) to test the interactio…</td>
+<td align="right">0.3714075</td>
+<td align="right">2314</td>
+</tr>
+<tr class="even">
+<td align="left">Results On the basis of our preregistered exclusion
+criteria, we removed the 9 participants with …</td>
+<td align="left">results</td>
+<td align="left">The study found a main effect of face type, with slower
+responses to disfigured faces, but no mai…</td>
+<td align="right">0.2508097</td>
+<td align="right">1227</td>
+</tr>
+<tr class="odd">
+<td align="left">Discussion The study replicated here has been
+interpreted as a key piece of evidence supporting a…</td>
+<td align="left">discussion</td>
+<td align="left">This study’s null findings do not provide strong
+evidence that pathogen avoidance does not vary a…</td>
+<td align="right">0.2339141</td>
+<td align="right">904</td>
+</tr>
+<tr class="even">
+<td align="left">NA Funding This work was supported by Horizon 2020
+European Research Council Grant No. StG-2015 6…</td>
+<td align="left">funding</td>
+<td align="left">This study was funded by a Horizon 2020 European
+Research Council Grant and has made its data, an…</td>
+<td align="right">0.1644160</td>
+<td align="right">210</td>
+</tr>
+<tr class="odd">
+<td align="left">Declaration of Conflicting Interests The author(s)
+declared that there were no conflicts of inter…</td>
+<td align="left">annex</td>
+<td align="left">The author(s) declared that there were no conflicts of
+interest with respect to the authorship or…</td>
+<td align="right">0.0778079</td>
+<td align="right">101</td>
+</tr>
+</tbody>
+</table>
+<p>Showing 7 of 7 rows</p>
+<p>The default table isn’t very helpful here, so let’s customise the
+output. The object returned from a module usually contains a table. We
+just want to show the section and answer columns here.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">summaries</span><span class="op">$</span><span class="va">table</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"section"</span>, <span class="st">"answer"</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;      section</span></span>
+<span><span class="co">#&gt; 1   abstract</span></span>
+<span><span class="co">#&gt; 2      intro</span></span>
+<span><span class="co">#&gt; 3     method</span></span>
+<span><span class="co">#&gt; 4    results</span></span>
+<span><span class="co">#&gt; 5 discussion</span></span>
+<span><span class="co">#&gt; 6    funding</span></span>
+<span><span class="co">#&gt; 7      annex</span></span>
+<span><span class="co">#&gt;                                                                                                                                                                                                                                                                                                                    answer</span></span>
+<span><span class="co">#&gt; 1                                                            Humans possess behavioral adaptations that help mitigate the costs of infectious microorganisms, including sensitivity to cues related to pathogens, which influence various psychological phenomena such as food learning, stigmatization, and mate choice.</span></span>
+<span><span class="co">#&gt; 2                                                        The study aimed to replicate a previous finding that people who have recently been ill are more attentive to visual cues of pathogens, and to explore whether this effect is related to self-reported disgust sensitivity and visual attention to pathogen cues.</span></span>
+<span><span class="co">#&gt; 3                                     The study replicated the methodological details of Miller and Maner (2011) to test the interaction between illness recency and face type on attentional biases, using a dot-probe task with 413 participants and identical stimuli, procedures, and analyses as the original study.</span></span>
+<span><span class="co">#&gt; 4 The study found a main effect of face type, with slower responses to disfigured faces, but no main effect of illness recency or interaction between illness recency and face type, and failed to replicate the original study's finding of attentional bias towards disfigured faces only in recently ill participants.</span></span>
+<span><span class="co">#&gt; 5              This study's null findings do not provide strong evidence that pathogen avoidance does not vary as a function of immunological resistance due to methodological limitations, and the field would benefit from better developing the validity of measures used to test behavioral-immune system hypotheses.</span></span>
+<span><span class="co">#&gt; 6                                                                                                               This study was funded by a Horizon 2020 European Research Council Grant and has made its data, analysis code, and design/analysis plans publicly available, earning Open Data and Preregistration badges.</span></span>
+<span><span class="co">#&gt; 7                                                                                                                                                                                      The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.</span></span></code></pre>
+<p>If you try to run this on the whole PsychSci set, you will get an
+error message because the number of LLM calls is much higher than the
+maximum number, which is set by default to 30 (the per-minute rate limit
+for the default model on a free groq account). You can increase the
+maximum allowable calls (<code><a href="../reference/llm.html">llm()</a></code> manages your rate limit, so
+this would take nearly an hour at 30 calls per minute) using
+<code><a href="../reference/llm_max_calls.html">llm_max_calls()</a></code>, but we aren’t going to do this here.</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">summaries_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"llm-summarise"</span>, seed <span class="op">=</span> <span class="fl">8675309</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; Error in (function (text, query, text_col = "text", model = llm_model(), : You need to include the argument API_KEY or set the variable GROQ_API_KEY in your Renviron</span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="marginal">marginal<a class="anchor" aria-label="anchor" href="#marginal"></a>
+</h3>
+<p>List all sentences that describe an effect as ‘marginally
+significant’.</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">marginal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"marginal"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">marginal</span> <span class="co"># print table</span></span></code></pre></div>
+<p>No effects were described as marginally/borderline/close to
+significant.</p>
+<p>Let’s check how many are in the full set.</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">marginal_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"marginal"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">marginal_ps</span> <span class="co"># print table</span></span></code></pre></div>
+<p>You described effects as marginally/borderline/close to significant.
+It is better to write ‘did not reach the threshold alpha for
+significance’.</p>
+<table class="table">
+<colgroup>
+<col width="52%">
+<col width="5%">
+<col width="27%">
+<col width="2%">
+<col width="1%">
+<col width="1%">
+<col width="8%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">text</th>
+<th align="left">section</th>
+<th align="left">header</th>
+<th align="right">div</th>
+<th align="right">p</th>
+<th align="right">s</th>
+<th align="left">id</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Although the PTSD group showed a significant
+facilitation effect (M = 0.68), F(1, 15) = 5.575, p …</td>
+<td align="left">results</td>
+<td align="left">Details.</td>
+<td align="right">11</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="left">0956797615569889</td>
+</tr>
+<tr class="even">
+<td align="left">A marginally significant negative correlation was found
+between suppression-induced forgetting on…</td>
+<td align="left">results</td>
+<td align="left">Posttraumatic Stress Diagnostic Scale</td>
+<td align="right">13</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="left">0956797615569889</td>
+</tr>
+<tr class="odd">
+<td align="left">When we more closely matched depression symptoms by
+comparing the low-BDI-II PTSD group with the …</td>
+<td align="left">results</td>
+<td align="left">The effects of depressive symptoms</td>
+<td align="right">14</td>
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="left">0956797615569889</td>
+</tr>
+<tr class="even">
+<td align="left">In that analysis, the group difference in
+suppression-induced forgetting only approached signific…</td>
+<td align="left">results</td>
+<td align="left">Conditionalized final-test data</td>
+<td align="right">15</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="left">0956797615569889</td>
+</tr>
+<tr class="odd">
+<td align="left">The Congruency × Alignment interaction was marginally
+significant for faces, F(1, 19) = 4.12, p =…</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">7</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="left">0956797615617779</td>
+</tr>
+<tr class="even">
+<td align="left">The twoway interactions between knowledge distance and
+search effort (odds ratio = 1.67, p = .080…</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">6</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="left">0956797616634665</td>
+</tr>
+<tr class="odd">
+<td align="left">An omnibus 3 (sex ratio) × 2 (participant sex) ANOVA on
+vaccine-investment variance revealed a ma…</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">15</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="left">0956797616636631</td>
+</tr>
+<tr class="even">
+<td align="left">Given the unexpected nature of the finding and the
+marginally significant trend, we will not inte…</td>
+<td align="left">annex</td>
+<td align="left">Supplemental Material</td>
+<td align="right">20</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="left">0956797617716922</td>
+</tr>
+<tr class="odd">
+<td align="left">A marginally significant fit effect was found for
+conscientiousness, but this Response surface in…</td>
+<td align="left">results</td>
+<td align="left">Actual Personality</td>
+<td align="right">7</td>
+<td align="right">4</td>
+<td align="right">6</td>
+<td align="left">0956797617724435</td>
+</tr>
+<tr class="even">
+<td align="left">A fit bonus was not calculated for emotional stability
+because the a4 parameter did not reach the…</td>
+<td align="left">results</td>
+<td align="left">Actual Personality</td>
+<td align="right">7</td>
+<td align="right">4</td>
+<td align="right">12</td>
+<td align="left">0956797617724435</td>
+</tr>
+<tr class="odd">
+<td align="left">The fit bonus is reported only for those traits that
+had at least a marginally significant a4 par…</td>
+<td align="left">discussion</td>
+<td align="left">Discussion</td>
+<td align="right">8</td>
+<td align="right">3</td>
+<td align="right">8</td>
+<td align="left">0956797617724435</td>
+</tr>
+<tr class="even">
+<td align="left">Participant height (added as a fixed effect to the
+interceptonly model) had a marginally signific…</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">6</td>
+<td align="right">1</td>
+<td align="left">0956797618772822</td>
+</tr>
+<tr class="odd">
+<td align="left">There was a marginally significant interaction between
+participant height and opponent height on …</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">7</td>
+<td align="right">2</td>
+<td align="left">0956797618772822</td>
+</tr>
+<tr class="even">
+<td align="left">SES was marginally significantly related to coins kept
+for self in the dictator game versus the u…</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">10</td>
+<td align="right">6</td>
+<td align="left">0956797618772822</td>
+</tr>
+<tr class="odd">
+<td align="left">Subsequently, opponent height was added to the model,
+which was marginally significantly related …</td>
+<td align="left">results</td>
+<td align="left">Studies 1 and 2: Combined Data Analysis</td>
+<td align="right">14</td>
+<td align="right">2</td>
+<td align="right">2</td>
+<td align="left">0956797618772822</td>
+</tr>
+<tr class="even">
+<td align="left">However, results revealed a marginally significant
+interaction between implicit partner evaluatio…</td>
+<td align="left">results</td>
+<td align="left">Implicit partner evaluations and nonverbal
+behaviors</td>
+<td align="right">13</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="left">0956797618785899</td>
+</tr>
+<tr class="odd">
+<td align="left">Although the main effect of implicit partner
+evaluations on nonverbal behavior remained significa…</td>
+<td align="left">results</td>
+<td align="left">Implicit partner evaluations and nonverbal
+behaviors</td>
+<td align="right">13</td>
+<td align="right">3</td>
+<td align="right">3</td>
+<td align="left">0956797618785899</td>
+</tr>
+<tr class="even">
+<td align="left">Following up on the debate on the use of significance
+levels in psychology, we empirically examin…</td>
+<td align="left">abstract</td>
+<td align="left">Abstract</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="left">0956797619830326</td>
+</tr>
+<tr class="odd">
+<td align="left">More specifically, we examined the percentage of p
+values between .05 and .10 that is reported in…</td>
+<td align="left">abstract</td>
+<td align="left">Abstract</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">2</td>
+<td align="left">0956797619830326</td>
+</tr>
+<tr class="even">
+<td align="left">On the way, we also reexamined Pritschet, Powell, and
+Horne’s (2016) claims that marginally signi…</td>
+<td align="left">abstract</td>
+<td align="left">Abstract</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="left">0956797619830326</td>
+</tr>
+</tbody>
+</table>
+<p>Showing 20 of 91 rows</p>
+<p>You can see that the default shows only the first 20 rows and
+truncates long lines. We can adjust this by explicitly calling the print
+function and setting <code>maxrows</code> and
+<code>trunc_cell</code>.</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">marginal_ps</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span>maxrows <span class="op">=</span> <span class="fl">5</span>, trunc_cell <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></code></pre></div>
+<p>You described effects as marginally/borderline/close to significant.
+It is better to write ‘did not reach the threshold alpha for
+significance’.</p>
+<table class="table">
+<colgroup>
+<col width="82%">
+<col width="1%">
+<col width="9%">
+<col width="0%">
+<col width="0%">
+<col width="0%">
+<col width="4%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">text</th>
+<th align="left">section</th>
+<th align="left">header</th>
+<th align="right">div</th>
+<th align="right">p</th>
+<th align="right">s</th>
+<th align="left">id</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Although the PTSD group showed a significant
+facilitation effect (M = 0.68), F(1, 15) = 5.575, p = .032, η p 2 =
+.271, and the control group showed only a marginally significant effect
+(M = 0.56), F(1, 15) = 4.368, p = .054, η p 2 = .226, the difference
+between the groups was not significant, F(1, 30) = 0.100, p = .754, η p
+2 = .003 (Fig. 3c).</td>
+<td align="left">results</td>
+<td align="left">Details.</td>
+<td align="right">11</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="left">0956797615569889</td>
+</tr>
+<tr class="even">
+<td align="left">A marginally significant negative correlation was found
+between suppression-induced forgetting on the details measure and PDS
+scores in the PTSD group (Kendall’s τ = -.33, p = .07; Fig. 4b).</td>
+<td align="left">results</td>
+<td align="left">Posttraumatic Stress Diagnostic Scale</td>
+<td align="right">13</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="left">0956797615569889</td>
+</tr>
+<tr class="odd">
+<td align="left">When we more closely matched depression symptoms by
+comparing the low-BDI-II PTSD group with the high-BDI-II control group,
+we observed a marginally significant group-by-condition interaction for
+the details measure, F(1, 16) = 4.032, p = .062, η p 2 = .201.</td>
+<td align="left">results</td>
+<td align="left">The effects of depressive symptoms</td>
+<td align="right">14</td>
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="left">0956797615569889</td>
+</tr>
+<tr class="even">
+<td align="left">In that analysis, the group difference in
+suppression-induced forgetting only approached significance, F(1, 30) =
+3.869, p = .058, η p 2 = .114.</td>
+<td align="left">results</td>
+<td align="left">Conditionalized final-test data</td>
+<td align="right">15</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="left">0956797615569889</td>
+</tr>
+<tr class="odd">
+<td align="left">The Congruency × Alignment interaction was marginally
+significant for faces, F(1, 19) = 4.12, p = .057, η p 2 = .18, and
+significant for line patterns, F(1, 19) = 85.53, p &lt; .001, η p 2 =
+.82.</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">7</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="left">0956797615617779</td>
+</tr>
+</tbody>
+</table>
+<p>Showing 5 of 91 rows</p>
+</div>
+<div class="section level3">
+<h3 id="osf-check">osf-check<a class="anchor" aria-label="anchor" href="#osf-check"></a>
+</h3>
+<p>List all OSF links and whether they are open, closed, or do not
+exist. This requires an internet connection to check the status of the
+link.</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">osf_check</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"osf-check"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">osf_check</span> <span class="co"># print table</span></span></code></pre></div>
+<p>All OSF links are open</p>
+<table class="table">
+<thead><tr class="header">
+<th align="left">text</th>
+<th align="left">section</th>
+<th align="left">header</th>
+<th align="right">div</th>
+<th align="right">p</th>
+<th align="right">s</th>
+<th align="left">status</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left"><a href="https://osf.io/k2dbf" class="external-link uri">https://osf.io/k2dbf</a></td>
+<td align="left">method</td>
+<td align="left">Analyses</td>
+<td align="right">8</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">open</td>
+</tr>
+<tr class="even">
+<td align="left"><a href="https://osf.io/k2dbf" class="external-link uri">https://osf.io/k2dbf</a></td>
+<td align="left">funding</td>
+<td align="left">Open Practices</td>
+<td align="right">14</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">open</td>
+</tr>
+<tr class="odd">
+<td align="left"><a href="https://osf.io/k2dbf" class="external-link uri">https://osf.io/k2dbf</a></td>
+<td align="left">funding</td>
+<td align="left">Open Practices</td>
+<td align="right">14</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="left">open</td>
+</tr>
+</tbody>
+</table>
+<p>Showing 3 of 3 rows</p>
+<p>This would take a while to run for the 341 unique OSF links found in
+the PsychSci set (usually 1-2 seconds per link), so we will skip it here
+(but can reveal we found 10 closed links).</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">osf_check_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"osf-check"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="ref-consistency">ref-consistency<a class="anchor" aria-label="anchor" href="#ref-consistency"></a>
+</h3>
+<p>Check if all references are cited and all citations are
+referenced.</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ref_consistency</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"ref-consistency"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ref_consistency</span> <span class="co"># print table</span></span></code></pre></div>
+<p>This module relies on Grobid correctly parsing the references. There
+may be some false positives. There are references that are not cited or
+citations that are not referenced</p>
+<table class="table">
+<colgroup>
+<col width="5%">
+<col width="86%">
+<col width="7%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">bib_id</th>
+<th align="left">ref</th>
+<th align="left">missing</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">b0</td>
+<td align="left">(Illness recency. 95 .05 .03 .06 .08 5. Latencies
+(typical faces; ms) 633.90 163.50. 06 .03 .07 ….</td>
+<td align="left">citation</td>
+</tr>
+<tr class="even">
+<td align="left">b17</td>
+<td align="left">Jones BC, Hahn AC, Fisher CI, Wang H, Kandrik M, Tybur
+JM, Debruine LM (2018). “Hormonal correlat…</td>
+<td align="left">citation</td>
+</tr>
+<tr class="odd">
+<td align="left">b18</td>
+<td align="left">Jones BC, Hahn AC, Fisher CI, Wang H, Kandrik M, Tybur
+JM, Debruine LM (2018). “Reply to Fleischm…</td>
+<td align="left">citation</td>
+</tr>
+<tr class="even">
+<td align="left">b32</td>
+<td align="left">Tybur JM, Inbar Y, Aarøe L, Barclay P, Barlow FK, De
+Barra M, Žeželj .., I (2016). “Parasite stre…</td>
+<td align="left">citation</td>
+</tr>
+<tr class="odd">
+<td align="left">b35</td>
+<td align="left">Tybur JM, Lieberman D, Kurzban R, Descioli P (2013).
+“Disgust: Evolved function and structure.” _…</td>
+<td align="left">citation</td>
+</tr>
+</tbody>
+</table>
+<p>Showing 5 of 5 rows</p>
+<p>It looks like there are some references with missing citations. The
+first one doesn’t look like a reference, and grobid often parses tables
+oddly. You’d need to look at the original PDF to see if the others are
+actually missing or false positives. Here, they are all false positives,
+based on grobid not being able to match the in-text citation to the
+reference list.</p>
+</div>
+<div class="section level3">
+<h3 id="retractionwatch">retractionwatch<a class="anchor" aria-label="anchor" href="#retractionwatch"></a>
+</h3>
+<p>Flag any cited papers in the RetractionWatch database. It takes a
+substantial time to make calls to crossref for each reference, so we
+provide a summary of the database in papercheck, which is updated
+regularly (last 2025-02-28).</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"retractionwatch"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">rw</span> <span class="co"># print table</span></span></code></pre></div>
+<p>You cited no papers in the Retraction Watch database (as of
+2025-02-28)</p>
+<p>In the full PsychSci set, we find three papers in the RetractionWatch
+database cited, one with a retraction and two with corrections.</p>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rw_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"retractionwatch"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">rw_ps</span>, trunc_cell <span class="op">=</span> <span class="fl">30</span><span class="op">)</span> <span class="co"># print table</span></span></code></pre></div>
+<p>You cited some papers in the Retraction Watch database (as of
+2025-02-28). These may be retracted, have corrections, or expressions of
+concern.</p>
+<table class="table">
+<colgroup>
+<col width="5%">
+<col width="20%">
+<col width="23%">
+<col width="13%">
+<col width="12%">
+<col width="23%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">bib_id</th>
+<th align="left">doi</th>
+<th align="left">ref</th>
+<th align="left">id</th>
+<th align="left">retractionwatch</th>
+<th align="left">text</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">b15</td>
+<td align="left">10.1177/0956797612470827</td>
+<td align="left">Kok BE, Coffey KA, Cohn MA,…</td>
+<td align="left">09567976221150616</td>
+<td align="left">Correction</td>
+<td align="left">The vagus nerve controls re…</td>
+</tr>
+<tr class="even">
+<td align="left">b26</td>
+<td align="left">10.1186/gb-2013-14-10-r115</td>
+<td align="left">Horvath S (2013). “DNA meth…</td>
+<td align="left">09567976231194221</td>
+<td align="left">Correction</td>
+<td align="left">Epigenetic aging is one suc…</td>
+</tr>
+<tr class="odd">
+<td align="left">b34</td>
+<td align="left">10.1038/s41562-023-01749-9</td>
+<td align="left">Protzko J, Krosnick J, Nels…</td>
+<td align="left">09567976241249183</td>
+<td align="left">Retraction</td>
+<td align="left">One may also ask whether ou…</td>
+</tr>
+<tr class="even">
+<td align="left">b25</td>
+<td align="left">10.1186/gb-2013-14-10-r115</td>
+<td align="left">Horvath S (2013). “DNA meth…</td>
+<td align="left">09567976241260247</td>
+<td align="left">Correction</td>
+<td align="left">Discrepancies between someo…</td>
+</tr>
+<tr class="odd">
+<td align="left">b25</td>
+<td align="left">10.1186/gb-2013-14-10-r115</td>
+<td align="left">Horvath S (2013). “DNA meth…</td>
+<td align="left">09567976241260247</td>
+<td align="left">Correction</td>
+<td align="left">EAA from the Horvath PanTis…</td>
+</tr>
+<tr class="even">
+<td align="left">b25</td>
+<td align="left">10.1186/gb-2013-14-10-r115</td>
+<td align="left">Horvath S (2013). “DNA meth…</td>
+<td align="left">09567976241260247</td>
+<td align="left">Correction</td>
+<td align="left">The replication of results …</td>
+</tr>
+</tbody>
+</table>
+<p>Showing 6 of 6 rows</p>
+<p>Check the context of the citations in the text column:</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rw_ps</span><span class="op">$</span><span class="va">table</span><span class="op">$</span><span class="va">text</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] "The vagus nerve controls respiratory sinus arrhythmia (RSA), the covariation of heart rate and respiration, known to be an index of cardiac health and predictor of enhanced capacity for emotion regulation (Butler et al., 2006;Kok et al., 2013)."</span></span>
+<span><span class="co">#&gt; [2] "Epigenetic aging is one such indicator of accelerated biological aging (Horvath, 2013)."                                                                                                                                                             </span></span>
+<span><span class="co">#&gt; [3] "One may also ask whether our results can be generalized from our CloudResearch and student samples to broader populations in the United States or elsewhere (Hanel &amp; Vione, 2016;Protzko et al., 2023)."                                             </span></span>
+<span><span class="co">#&gt; [4] "Discrepancies between someone's biological and chronological age translate into \"age acceleration,\" with older biological age relative to chronological age indicating greater acceleration (Horvath, 2013)."                                      </span></span>
+<span><span class="co">#&gt; [5] "EAA from the Horvath PanTissue clock (Horvath, 2013) was calculated using the methylclock package (Pelegí-Sisó et al., 2021)."                                                                                                                       </span></span>
+<span><span class="co">#&gt; [6] "The replication of results across the PedBE and Horvath PanTissue clocks increases our confidence in study findings because these tools share no overlapping DNAm sites (Horvath, 2013;L."</span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="statcheck">statcheck<a class="anchor" aria-label="anchor" href="#statcheck"></a>
+</h3>
+<p>Check consistency of p-values and test statistics using functions
+from <a href="https://github.com/MicheleNuijten/statcheck" class="external-link">statcheck</a>.</p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">statcheck</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"statcheck"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">statcheck</span> <span class="co"># print table</span></span></code></pre></div>
+<p>We detected possible errors in test statistics</p>
+<table class="table">
+<colgroup>
+<col width="3%">
+<col width="2%">
+<col width="3%">
+<col width="4%">
+<col width="2%">
+<col width="4%">
+<col width="4%">
+<col width="9%">
+<col width="2%">
+<col width="5%">
+<col width="6%">
+<col width="4%">
+<col width="37%">
+<col width="2%">
+<col width="2%">
+<col width="1%">
+<col width="1%">
+<col width="1%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">test_type</th>
+<th align="right">df2</th>
+<th align="left">test_comp</th>
+<th align="right">test_value</th>
+<th align="left">p_comp</th>
+<th align="right">reported_p</th>
+<th align="right">computed_p</th>
+<th align="left">raw</th>
+<th align="left">error</th>
+<th align="left">decision_error</th>
+<th align="left">one_tailed_in_txt</th>
+<th align="right">apa_factor</th>
+<th align="left">text</th>
+<th align="left">section</th>
+<th align="left">header</th>
+<th align="right">div</th>
+<th align="right">p</th>
+<th align="right">s</th>
+</tr></thead>
+<tbody><tr class="odd">
+<td align="left">t</td>
+<td align="right">248.4</td>
+<td align="left">=</td>
+<td align="right">2.01</td>
+<td align="left">=</td>
+<td align="right">0.023</td>
+<td align="right">0.0455124</td>
+<td align="left">t(248.4) = 2.01, p = .023</td>
+<td align="left">TRUE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="right">1</td>
+<td align="left">Yes-the 90% confidence intervals of the difference in
+attentional bias for participants who were …</td>
+<td align="left">results</td>
+<td align="left">Results</td>
+<td align="right">9</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr></tbody>
+</table>
+<p>Showing 1 of 1 rows</p>
+<p>Here we see a false positive, where the paper reported the results of
+an equivalence test, which are meant to be one-tailed, but statcheck did
+not detect that this was one-tailed.</p>
+<p>In the full PsychSci set, there are more than 27K sentences with
+numbers to check, so this takes about a minute to run.</p>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">statcheck_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"statcheck"</span><span class="op">)</span></span></code></pre></div>
+<p>There will be, of course, some false positives in the full set of 151
+flagged values. Let’s look just at the flagged values where the computed
+p-value is about double the reported p-value, and this changes the
+significance decision (at an alpha of 0.05).</p>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">statcheck_ps</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">decision_error</span>, </span>
+<span>         <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">computed_p</span><span class="op">/</span><span class="va">reported_p</span>, <span class="fl">1</span><span class="op">)</span> <span class="op">==</span> <span class="fl">2.0</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">reported_p</span>, <span class="va">computed_p</span>, <span class="va">raw</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>computed_p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">computed_p</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;   reported_p computed_p                        raw</span></span>
+<span><span class="co">#&gt; 1     0.0290     0.0589 F(1, 361) = 3.59, p = .029</span></span>
+<span><span class="co">#&gt; 2     0.0470     0.0947     t(24) = 1.74, p = .047</span></span>
+<span><span class="co">#&gt; 3     0.0270     0.0547     t(24) = 2.02, p = .027</span></span>
+<span><span class="co">#&gt; 4     0.0400     0.0797     t(24) = 1.83, p = .040</span></span>
+<span><span class="co">#&gt; 5     0.0480     0.0962    t(240) = 1.67, p = .048</span></span>
+<span><span class="co">#&gt; 6     0.0460     0.0915     t(32) = 1.74, p = .046</span></span>
+<span><span class="co">#&gt; 7     0.0420     0.0846     t(21) = 1.81, p = .042</span></span>
+<span><span class="co">#&gt; 8     0.0343     0.0686    t(10) = 2.04, p = .0343</span></span>
+<span><span class="co">#&gt; 9     0.0330     0.0654     t(55) = 1.88, p = .033</span></span></code></pre>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

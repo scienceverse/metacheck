@@ -35,7 +35,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9029</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9030</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -481,6 +481,8 @@ module with <code><a href="../reference/expand_text.html">expand_text()</a></cod
 <h2 id="large-language-models">Large Language Models<a class="anchor" aria-label="anchor" href="#large-language-models"></a>
 </h2>
 <p>You can query the extracted text of papers with LLMs using <a href="https://console.groq.com/docs/" class="external-link">groq</a>.</p>
+<p><a href="https://groq.com" target="_blank" rel="noopener noreferrer" class="external-link">
+<img src="https://groq.com/wp-content/uploads/2024/03/PBG-mark1-color.svg" alt="Powered by Groq for fast inference."></a></p>
 <div class="section level3">
 <h3 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h3>
@@ -492,6 +494,115 @@ file).</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># useful if you aren't sure where this file is</span></span>
 <span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">edit_r_environ</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>You can get or set the default LLM model with
+<code><a href="../reference/llm_model.html">llm_model()</a></code> and access a list of the current available
+models using <code><a href="../reference/llm_model_list.html">llm_model_list()</a></code>.</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="37%">
+<col width="30%">
+<col width="13%">
+<col width="18%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">id</th>
+<th align="left">owned_by</th>
+<th align="left">created</th>
+<th align="right">context_window</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">mistral-saba-24b</td>
+<td align="left">Mistral AI</td>
+<td align="left">2025-02-19</td>
+<td align="right">32768</td>
+</tr>
+<tr class="even">
+<td align="left">qwen-2.5-coder-32b</td>
+<td align="left">Alibaba Cloud</td>
+<td align="left">2025-02-14</td>
+<td align="right">131072</td>
+</tr>
+<tr class="odd">
+<td align="left">deepseek-r1-distill-qwen-32b</td>
+<td align="left">DeepSeek / Alibaba Cloud</td>
+<td align="left">2025-02-07</td>
+<td align="right">131072</td>
+</tr>
+<tr class="even">
+<td align="left">qwen-2.5-32b</td>
+<td align="left">Alibaba Cloud</td>
+<td align="left">2025-02-05</td>
+<td align="right">131072</td>
+</tr>
+<tr class="odd">
+<td align="left">deepseek-r1-distill-llama-70b</td>
+<td align="left">DeepSeek / Meta</td>
+<td align="left">2025-01-26</td>
+<td align="right">131072</td>
+</tr>
+<tr class="even">
+<td align="left">llama-3.3-70b-specdec</td>
+<td align="left">Meta</td>
+<td align="left">2024-12-06</td>
+<td align="right">8192</td>
+</tr>
+<tr class="odd">
+<td align="left">llama-3.3-70b-versatile</td>
+<td align="left">Meta</td>
+<td align="left">2024-12-06</td>
+<td align="right">32768</td>
+</tr>
+<tr class="even">
+<td align="left">llama-3.2-3b-preview</td>
+<td align="left">Meta</td>
+<td align="left">2024-09-25</td>
+<td align="right">8192</td>
+</tr>
+<tr class="odd">
+<td align="left">llama-3.2-1b-preview</td>
+<td align="left">Meta</td>
+<td align="left">2024-09-25</td>
+<td align="right">8192</td>
+</tr>
+<tr class="even">
+<td align="left">llama-guard-3-8b</td>
+<td align="left">Meta</td>
+<td align="left">2023-09-03</td>
+<td align="right">8192</td>
+</tr>
+<tr class="odd">
+<td align="left">mixtral-8x7b-32768</td>
+<td align="left">Mistral AI</td>
+<td align="left">2023-09-03</td>
+<td align="right">32768</td>
+</tr>
+<tr class="even">
+<td align="left">llama-3.1-8b-instant</td>
+<td align="left">Meta</td>
+<td align="left">2023-09-03</td>
+<td align="right">131072</td>
+</tr>
+<tr class="odd">
+<td align="left">llama3-8b-8192</td>
+<td align="left">Meta</td>
+<td align="left">2023-09-03</td>
+<td align="right">8192</td>
+</tr>
+<tr class="even">
+<td align="left">gemma2-9b-it</td>
+<td align="left">Google</td>
+<td align="left">2023-09-03</td>
+<td align="right">8192</td>
+</tr>
+<tr class="odd">
+<td align="left">llama3-70b-8192</td>
+<td align="left">Meta</td>
+<td align="left">2023-09-03</td>
+<td align="right">8192</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="llm-queries">LLM Queries<a class="anchor" aria-label="anchor" href="#llm-queries"></a>
@@ -533,6 +644,19 @@ among individuals with same-sex siblings.</td>
 </tbody>
 </table>
 </div>
+<div class="section level3">
+<h3 id="rate-limiting">Rate Limiting<a class="anchor" aria-label="anchor" href="#rate-limiting"></a>
+</h3>
+<p>Remember, the <code><a href="../reference/llm.html">llm()</a></code> function makes a separate query for
+each row in a data frame from <code><a href="../reference/search_text.html">search_text()</a></code>. Free GROQ
+accounts are rate limited, so we set the default limits to 30 queries,
+but you can change this:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/llm_max_calls.html">llm_max_calls</a></span><span class="op">(</span><span class="fl">30</span><span class="op">)</span></span></code></pre></div>
+<p>If you hit your rate limit, the <code><a href="../reference/llm.html">llm()</a></code> function will add
+a short delay between calls, so don’t worry if you notice the query
+speed slowing down after the first 30 calls.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="batch-processing">Batch Processing<a class="anchor" aria-label="anchor" href="#batch-processing"></a>
@@ -542,7 +666,7 @@ among individuals with same-sex siblings.</td>
 list of XML file paths or paper objects, respectively. The functions
 <code><a href="../reference/search_text.html">search_text()</a></code>, <code><a href="../reference/expand_text.html">expand_text()</a></code> and
 <code><a href="../reference/llm.html">llm()</a></code> also work on a list of paper objects.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">grobid_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/demodir.html">demodir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">papers</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_grobid.html">read_grobid</a></span><span class="op">(</span><span class="va">grobid_dir</span><span class="op">)</span></span>
@@ -561,7 +685,7 @@ will share more modules.</p>
 <h3 id="module-list">Module List<a class="anchor" aria-label="anchor" href="#module-list"></a>
 </h3>
 <p>You can see the list of built-in modules with the function below.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/module_list.html">module_list</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt;  * all-p-values: List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.</span></span>
 <span><span class="co">#&gt;  * all-urls: List all the URLs in the main text</span></span>
@@ -578,7 +702,7 @@ will share more modules.</p>
 </h3>
 <p>To run a built-in module on a paper, you can reference it by
 name.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all-p-values"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -631,15 +755,15 @@ to give “traffic lights” for whether a check passed or failed, and to
 include appropriate text feedback in a report. See the <a href="modules.html">modules vignette</a> for more details.</p>
 <p>Below is an abbreviated example of the module that detects all
 p-values in the text and returns the matching text.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>  <span class="dt">"title"</span><span class="fu">:</span> <span class="st">"List All P-Values"</span><span class="fu">,</span></span>
-<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>  <span class="dt">"description"</span><span class="fu">:</span> <span class="st">"List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table."</span><span class="fu">,</span></span>
-<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>  <span class="dt">"text"</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a>    <span class="dt">"pattern"</span><span class="fu">:</span> <span class="st">"(?&lt;=[^a-z])p-?(value)?</span><span class="ch">\\</span><span class="st">s*[&lt;&gt;=≤≥]{1,2}</span><span class="ch">\\</span><span class="st">s*(n</span><span class="ch">\\</span><span class="st">.?s</span><span class="ch">\\</span><span class="st">.?|</span><span class="ch">\\</span><span class="st">d?</span><span class="ch">\\</span><span class="st">.</span><span class="ch">\\</span><span class="st">d+e?-?</span><span class="ch">\\</span><span class="st">d*)"</span><span class="fu">,</span></span>
-<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a>    <span class="dt">"return"</span><span class="fu">:</span> <span class="st">"match"</span><span class="fu">,</span></span>
-<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a>    <span class="dt">"perl"</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb25-8"><a href="#cb25-8" tabindex="-1"></a>  <span class="fu">}</span></span>
-<span id="cb25-9"><a href="#cb25-9" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>  <span class="dt">"title"</span><span class="fu">:</span> <span class="st">"List All P-Values"</span><span class="fu">,</span></span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>  <span class="dt">"description"</span><span class="fu">:</span> <span class="st">"List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table."</span><span class="fu">,</span></span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a>  <span class="dt">"text"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a>    <span class="dt">"pattern"</span><span class="fu">:</span> <span class="st">"(?&lt;=[^a-z])p-?(value)?</span><span class="ch">\\</span><span class="st">s*[&lt;&gt;=≤≥]{1,2}</span><span class="ch">\\</span><span class="st">s*(n</span><span class="ch">\\</span><span class="st">.?s</span><span class="ch">\\</span><span class="st">.?|</span><span class="ch">\\</span><span class="st">d?</span><span class="ch">\\</span><span class="st">.</span><span class="ch">\\</span><span class="st">d+e?-?</span><span class="ch">\\</span><span class="st">d*)"</span><span class="fu">,</span></span>
+<span id="cb26-6"><a href="#cb26-6" tabindex="-1"></a>    <span class="dt">"return"</span><span class="fu">:</span> <span class="st">"match"</span><span class="fu">,</span></span>
+<span id="cb26-7"><a href="#cb26-7" tabindex="-1"></a>    <span class="dt">"perl"</span><span class="fu">:</span> <span class="kw">true</span></span>
+<span id="cb26-8"><a href="#cb26-8" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb26-9"><a href="#cb26-9" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -647,7 +771,7 @@ p-values in the text and returns the matching text.</p>
 </h2>
 <p>You can generate a report from any set of modules. The default set is
 <code>c("imprecise-p", "marginal", "osf-check", "retractionwatch", "ref-consistency")</code></p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/report.html">report</a></span><span class="op">(</span><span class="va">paper</span>, output_format <span class="op">=</span> <span class="st">"qmd"</span><span class="op">)</span></span></code></pre></div>
 <p>See the <a href="report-example.html">example report</a>.</p>
 </div>

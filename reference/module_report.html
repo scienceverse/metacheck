@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9029</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9030</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,7 +46,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">module_report</span><span class="op">(</span><span class="va">module_output</span>, header <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">module_report</span><span class="op">(</span><span class="va">module_output</span>, header <span class="op">=</span> <span class="fl">2</span>, maxrows <span class="op">=</span> <span class="cn">Inf</span>, trunc_cell <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -59,6 +59,14 @@
 
 <dt id="arg-header">header<a class="anchor" aria-label="anchor" href="#arg-header"></a></dt>
 <dd><p>header level (default 2)</p></dd>
+
+
+<dt id="arg-maxrows">maxrows<a class="anchor" aria-label="anchor" href="#arg-maxrows"></a></dt>
+<dd><p>the maximum number of table rows to print</p></dd>
+
+
+<dt id="arg-trunc-cell">trunc_cell<a class="anchor" aria-label="anchor" href="#arg-trunc-cell"></a></dt>
+<dd><p>truncate any cell to this number of characters</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -79,6 +87,8 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> |text    |section |header  | div|  p|  s|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |:-------|:-------|:-------|---:|--:|--:|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |p &gt; .05 |results |Results |   3|  2|  2|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Showing 1 of 1 rows</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

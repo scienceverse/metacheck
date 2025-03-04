@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9029</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9030</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,7 +62,7 @@
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>further arguments to the module (e.g., arguments for the <code><a href="llm.html">llm()</a></code> function like <code>seed</code>)</p></dd>
+<dd><p>further arguments to the module (e.g., arguments for the <code><a href="llm.html">llm()</a></code> function like <code>seed</code>); these will override any arguments in the module</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -75,13 +75,13 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">filename</span> <span class="op">&lt;-</span> <span class="fu"><a href="demoxml.html">demoxml</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_grobid.html">read_grobid</a></span><span class="op">(</span><span class="va">filename</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">module_run</span><span class="op">(</span><span class="va">paper</span>, <span class="st">"imprecise-p"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ### Imprecise P-Values {.red}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> You may have reported some imprecise p-values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |text    |section |header  | div|  p|  s|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |:-------|:-------|:-------|---:|--:|--:|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |p &gt; .05 |results |Results |   3|  2|  2|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Showing 1 of 1 rows</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

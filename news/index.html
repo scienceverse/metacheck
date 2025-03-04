@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9029</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9030</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,17 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.0.9030" id="papercheck-0009030-2025-03-01">papercheck 0.0.0.9030 (2025-03-01)<a class="anchor" aria-label="anchor" href="#papercheck-0009030-2025-03-01"></a></h2>
+<ul><li>modules are now updated for clearer output, and added a new module vignette</li>
+<li>
+<code><a href="../reference/llm.html">llm()</a></code> no longer returns NA when the rate limit is hit, but slows down queries accordingly</li>
+<li>
+<code><a href="../reference/read_grobid.html">read_grobid()</a></code> now includes back matter (e.g., acknowledgements, COI statements) in the full_text, so is searchable with <code><a href="../reference/search_text.html">search_text()</a></code>
+</li>
+<li>references are now converted to bibtex format, so are more complete and consistent</li>
+<li>Machine-learning module types are removed (the python/reticulate setup was too complex for many users), and instructions for how to create simple text feature models is included in the metascience vignette</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9029" id="papercheck-0009029-2025-02-26">papercheck 0.0.0.9029 (2025-02-26)<a class="anchor" aria-label="anchor" href="#papercheck-0009029-2025-02-26"></a></h2>
 <ul><li>added <code><a href="../reference/author_table.html">author_table()</a></code> to get a dataframe of author info from a list of paper objects</li>
 <li>fixed a bunch of tests now that multiple matches in a sentence are possible</li>
@@ -61,7 +72,7 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9027" id="papercheck-0009027-2025-02-07">papercheck 0.0.0.9027 (2025-02-07)<a class="anchor" aria-label="anchor" href="#papercheck-0009027-2025-02-07"></a></h2>
 <ul><li>Removed ChatGPT and added groq support</li>
-<li>Updated <code><a href="../reference/llm.html">llm()</a></code> and associated functions like <code><a href="../reference/llm_models.html">llm_models()</a></code>
+<li>Updated <code><a href="../reference/llm.html">llm()</a></code> and associated functions like <code>llm_models()</code>
 </li>
 <li>Working on div vs section aggregation for <code><a href="../reference/search_text.html">search_text()</a></code>
 </li>

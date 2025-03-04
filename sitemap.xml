@@ -3,6 +3,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/LICENSE-text.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/LICENSE.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/articles/batch.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/articles/creating_modules.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/articles/index.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/articles/metascience.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/articles/modules.html</loc></url>
@@ -34,17 +35,18 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_submission.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/index.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/info_table.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/is_paper_list.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/llm.html</loc></url>
-<url><loc>https://scienceverse.github.io/papercheck/reference/llm_models.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/llm_max_calls.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/llm_model.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/llm_model_list.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/message.html</loc></url>
-<url><loc>https://scienceverse.github.io/papercheck/reference/ml.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/module_find.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/module_list.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/module_report.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/module_run.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/module_run_code.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/module_run_llm.html</loc></url>
-<url><loc>https://scienceverse.github.io/papercheck/reference/module_run_ml.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/module_run_text.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/op-null-default.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/openalex.html</loc></url>
@@ -63,7 +65,6 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/report.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/retractionwatch.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/search_text.html</loc></url>
-<url><loc>https://scienceverse.github.io/papercheck/reference/set_llm_max_calls.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/site_down.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/stats.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/study.html</loc></url>
@@ -71,5 +72,6 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/tl_accuracy.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/validate.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/verbose.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/xml2bib.html</loc></url>
 </urlset>
 
