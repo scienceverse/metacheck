@@ -128,43 +128,43 @@ module_run_code <- function(paper, args, module_dir = ".") {
   return(results)
 }
 
-#' #' Run machine learning module
-#' #'
-#' #' @param paper the paper object (or list of objects)
-#' #' @param args a list of arguments
-#' #' @param module_dir the base directory for the module, in case resources are in files with relative paths
-#' #'
-#' #' @return data frame
-#' #' @keywords internal
-#' module_run_ml <- function(paper, args, module_dir = ".") {
-#'   model_dir <- file.path(module_dir, args$model_dir)
-#'   if (!file.exists(model_dir)) {
-#'     stop("The model directory ", args$model_dir, " could not be found; make sure the module specification file is using a relative path to the directory")
-#'   }
-#'
-#'   if (is.vector(paper)) {
-#'     text <- data.frame(text = paper)
-#'   } else if (is.data.frame(paper)) {
-#'     text <- paper
-#'   } else {
-#'     text <- search_text(paper, return = "sentence")
-#'   }
-#'
-#'   class_col <- args$class_col %||% "class"
-#'   return_prob <- args$return_prob %||% FALSE
-#'
-#'   results <- ml(text, model_dir,
-#'      class_col = class_col,
-#'      map = args$map,
-#'      return_prob = return_prob)
-#'
-#'   if (!is.null(args$filter)) {
-#'     keep <- results[[class_col]] %in% args$filter
-#'     results <- results[keep, ]
-#'   }
-#'
-#'   return( list(table = results) )
-#' }
+# ' Run machine learning module
+# '
+# ' @param paper the paper object (or list of objects)
+# ' @param args a list of arguments
+# ' @param module_dir the base directory for the module, in case resources are in files with relative paths
+# '
+# ' @return data frame
+# ' @keywords internal
+# module_run_ml <- function(paper, args, module_dir = ".") {
+#   model_dir <- file.path(module_dir, args$model_dir)
+#   if (!file.exists(model_dir)) {
+#     stop("The model directory ", args$model_dir, " could not be found; make sure the module specification file is using a relative path to the directory")
+#   }
+#
+#   if (is.vector(paper)) {
+#     text <- data.frame(text = paper)
+#   } else if (is.data.frame(paper)) {
+#     text <- paper
+#   } else {
+#     text <- search_text(paper, return = "sentence")
+#   }
+#
+#   class_col <- args$class_col %||% "class"
+#   return_prob <- args$return_prob %||% FALSE
+#
+#   results <- ml(text, model_dir,
+#      class_col = class_col,
+#      map = args$map,
+#      return_prob = return_prob)
+#
+#   if (!is.null(args$filter)) {
+#     keep <- results[[class_col]] %in% args$filter
+#     results <- results[keep, ]
+#   }
+#
+#   return( list(table = results) )
+# }
 
 #' Run LLM module
 #'
