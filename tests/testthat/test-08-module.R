@@ -257,7 +257,7 @@ test_that("marginal", {
 #   expect_equal(mod_output$traffic_light, "green")
 #   expect_equal(nrow(mod_output$table), 2)
 #   expect_equal(mod_output$module, module)
-})
+# })
 
 test_that("ref-consistency", {
   paper <- demoxml() |> read_grobid()
