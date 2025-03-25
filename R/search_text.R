@@ -9,7 +9,6 @@
 #' @param ignore.case whether to ignore case when text searching
 #' @param fixed logical. If TRUE, pattern is a string to be matched as is. Overrides all conflicting arguments.
 #' @param perl logical. Should Perl-compatible regexps be used?
-#' @param ... ignore further arguments
 #'
 #' @return a data frame of matches
 #' @export
@@ -22,7 +21,7 @@
 search_text <- function(paper, pattern = ".*", section = NULL,
                         return = c("sentence", "paragraph", "div",  "section", "match", "all"),
                         ignore.case = TRUE,
-                        fixed = FALSE, perl = FALSE, ...) {
+                        fixed = FALSE, perl = FALSE) {
   return <- match.arg(return)
   text <- NULL # hack to stop cmdcheck warning :(
 

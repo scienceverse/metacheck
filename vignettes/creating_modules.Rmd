@@ -29,11 +29,11 @@ Modules are user-created patterns for checking a paper or set of papers. Module 
 
 ## Search Strategies
 
-Modules can use four search strategies, each of which has its own JSON specification. All four types take either a paper object or the resulting search table as input, making it easy to chain modules together. 
+Modules can use three search strategies, each of which has its own JSON specification. All three types take either a paper object or the resulting search table as input, making it easy to chain modules together. 
 
 ### Text Search
 
-For checks that can be done with a simple text search, you can create a module that provides the arguments to the `search_text()` function. The "text" key takes a dictionary of the argumants to the `search_text()` function.
+For checks that can be done with a simple text search, you can create a module that provides the arguments to the `search_text()` function. The "text" key takes a dictionary of the arguments to the `search_text()` function.
 
 Foe example, the following JSON specification defines the arguments needed to search for all instances of p-values in the text and return just the matched text. 
 
@@ -42,7 +42,7 @@ Foe example, the following JSON specification defines the arguments needed to se
   "title": "List All P-Values",
   "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
   "text": {
-    "pattern": "(?<=[^a-z])p-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+e?-?\\d*)",
+    "pattern": "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?",
     "return": "match",
     "perl": true
   }
@@ -77,12 +77,29 @@ The "llm" key takes a dictionary of the arguments to the `llm()` function.
   "title": "Summarise Sections",
   "description": "Generate a 1-sentence summary for each section",
   "llm": {
-    "query": "Summarise this section briefly, in one sentence."
+    "query": "Summarise this section briefly, in one sentence. Do not include any preamble explaining what you are going to do, just give the sentence."
   }
 }
 
 ```
 
+## Chaining Modules
+
+You can run a chain of modules by including them in order. The first module will take the paper(s) as input, and the rest will take the returned table as input. Here, we want to group the text by section before sending it to the llm. 
+
+```
+{
+  "title": "Summarise Sections",
+  "description": "Generate a 1-sentence summary for each section",
+  "text": {
+    "return": "section"
+  },
+  "llm": {
+    "query": "Summarise this section briefly, in one sentence. Do not include any preamble explaining what you are going to do, just give the sentence."
+  }
+}
+
+```
 
 ## Report Info
 
@@ -117,7 +134,7 @@ The simplest way to set traffic lights is to specify the meaning of "found" and 
   "title": "List All P-Values",
   "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
   "text": {
-    "pattern": "(?<=[^a-z])p-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+e?-?\\d*)",
+    "pattern": "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?",
     "return": "match",
     "perl": true
   },
@@ -195,7 +212,7 @@ You can also include author information in the following format:
     "email": "debruine@gmail.com"
   }],
   "text": {
-    "pattern": "(?<=[^a-z])p-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+e?-?\\d*)",
+    "pattern": "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?",
     "return": "match",
     "perl": true
   },

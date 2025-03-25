@@ -123,11 +123,11 @@ test_that("module_report", {
   module_output <- module_run(psychsci[1:4], "all-p-values")
 
   report <- module_report(module_output)
-  expect_true(grepl("Showing 81 of 81 rows", report))
+  expect_true(grepl("Showing 85 of 85 rows", report))
   expect_true(grepl("^## List All P-Values \\{\\.info\\}", report))
 
   report <- module_report(module_output, header = 3, maxrows = 20, trunc_cell = 10)
-  expect_true(grepl("Showing 20 of 81 rows", report))
+  expect_true(grepl("Showing 20 of 85 rows", report))
   expect_true(grepl("^### List All P-Values \\{\\.info\\}", report))
   expect_true(grepl("Eye mov...", report, fixed = TRUE))
 
@@ -136,6 +136,6 @@ test_that("module_report", {
 
   op <- capture_output(print(module_output))
   expect_true(grepl("^\\|text     \\|section \\|header ", op))
-  expect_true(grepl("\n\nShowing 20 of 81 rows$", op))
+  expect_true(grepl("\n\nShowing 20 of 85 rows$", op))
   expect_true(grepl("p = \\.237 \\|results \\|Eye movement strategies", op))
 })

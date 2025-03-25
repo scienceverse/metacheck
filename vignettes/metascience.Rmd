@@ -174,7 +174,7 @@ Second, a table of the expected text matches. You can get this by filtering your
 ```{r}
 ground_truth <- readxl::read_excel("power/power_screening_coded.xlsx")
 
-ground_truth$text <- text_3$text # fix problem with excel and special chars
+# ground_truth$text <- text_3$text # fix problem with excel and special chars
 
 expected <- ground_truth |>
   filter(power_computation == 1) |>

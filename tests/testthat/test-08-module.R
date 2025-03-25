@@ -115,14 +115,14 @@ test_that("all-p-values", {
   # iteration: text modules need no special adaptation
   paper <- psychsci
   expect_no_error( mod_output <- module_run(paper, module) )
-  expect_equal(nrow(mod_output$table), 4190)
+  expect_equal(nrow(mod_output$table), 4683)
 
   # check problem with minus sign at end
   minus <- mod_output$table$text[grep("-$", mod_output$table$text)]
   e <- mod_output$table$text[grep("e", mod_output$table$text)]
 
   expect_equal(length(minus), 0)
-  expect_equal(length(e), 7L)
+  expect_equal(length(e), 9L)
 })
 
 test_that("all-urls", {
@@ -141,6 +141,7 @@ test_that("all-urls", {
 })
 
 test_that("osf-check", {
+  skip_on_ci()
   skip_if_offline("osf.io")
   module <- "osf-check"
 
@@ -216,7 +217,7 @@ test_that("imprecise-p", {
   paper <- psychsci
   mod_output <- module_run(paper, module)
   lt05 <- grepl("p < .05", mod_output$table$text) |> sum()
-  expect_equal(lt05, 74)
+  expect_equal(lt05, 156)
 })
 
 test_that("marginal", {

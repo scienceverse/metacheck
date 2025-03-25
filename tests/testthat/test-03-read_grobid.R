@@ -83,8 +83,37 @@ test_that("get_full_text", {
   xml <- read_grobid_xml("examples/0956797613520608.xml")
   body <- get_full_text(xml, "test")
   sections <- c("abstract", "intro", "method", "results",
-                "discussion", "acknowledgement","funding", "annex")
+                "discussion", "acknowledgement","funding",
+                "annex", "fig", "tab")
   expect_equal(unique(body$section), sections)
+})
+
+test_that("get figures ", {
+  xml <- read_grobid_xml("examples/0956797613520608.xml")
+  text <- get_full_text(xml)
+  figs <- sum(text$section == "fig")
+  tabs <- sum(text$section == "tab")
+  fig_ids <- text$div[text$section == "fig"] |> unique()
+
+  expect_equal(figs, 22)
+  expect_equal(tabs, 1)
+  expect_equal(fig_ids, 0:3)
+})
+
+test_that("get notes ", {
+  xml <- read_grobid_xml("footnotes/3544548.3580942.xml")
+  text <- get_full_text(xml)
+  notes <- sum(text$section == "foot")
+  note_ids <- text$div[text$section == "foot"] |> unique()
+
+  expect_equal(notes, 8)
+  expect_equal(note_ids, 0:7)
+
+  xml <- read_grobid_xml("examples/0956797613520608.xml")
+  text <- get_full_text(xml)
+  notes <- sum(text$section == "foot")
+
+  expect_equal(notes, 0)
 })
 
 test_that("get_authors", {

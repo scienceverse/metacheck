@@ -304,7 +304,7 @@ Below is an abbreviated example of the module that detects all p-values in the t
   "title": "List All P-Values",
   "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
   "text": {
-    "pattern": "(?<=[^a-z])p-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+e?-?\\d*)",
+    "pattern": "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?",
     "return": "match",
     "perl": true
   }

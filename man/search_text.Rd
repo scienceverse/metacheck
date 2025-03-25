@@ -11,8 +11,7 @@ search_text(
   return = c("sentence", "paragraph", "div", "section", "match", "all"),
   ignore.case = TRUE,
   fixed = FALSE,
-  perl = FALSE,
-  ...
+  perl = FALSE
 )
 }
 \arguments{
@@ -29,8 +28,6 @@ search_text(
 \item{fixed}{logical. If TRUE, pattern is a string to be matched as is. Overrides all conflicting arguments.}
 
 \item{perl}{logical. Should Perl-compatible regexps be used?}
-
-\item{...}{ignore further arguments}
 }
 \value{
 a data frame of matches

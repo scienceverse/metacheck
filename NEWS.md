@@ -1,3 +1,9 @@
+# papercheck 0.0.0.9031
+
+* `read_grobid()` now includes figure and table captions, plus footnotes, in the full_text table
+* the `psychsci` paper list object is updated to include the above
+* The functions that `module_run()` delegates to now check and only pass valid arguments
+
 # papercheck 0.0.0.9030 (2025-03-01)
 
 * modules are now updated for clearer output, and added a new module vignette
