@@ -4,7 +4,7 @@
 \alias{get_full_text}
 \title{Add section info to full text table}
 \usage{
-get_full_text(xml, id = NULL)
+get_full_text(xml, id = "")
 }
 \arguments{
 \item{xml}{The grobid XML}

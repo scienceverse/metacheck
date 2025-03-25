@@ -91,6 +91,11 @@ module_run <- function(paper, module, ...) {
 #' @return data frame
 #' @keywords internal
 module_run_text <- function(paper, args) {
+  # make sure you only send valid arguments
+  valid_args <- formals(search_text) |> names()
+  text_args <- intersect(names(args), valid_args)
+  args <- args[text_args]
+
   args$paper <- paper
   list(
     table = do.call(search_text, args)
@@ -174,6 +179,11 @@ module_run_code <- function(paper, args, module_dir = ".") {
 #' @return data frame
 #' @keywords internal
 module_run_llm <- function(paper, args) {
+  # make sure you only send valid arguments
+  valid_llm_args <- formals(llm) |> names()
+  llm_args <- intersect(names(args), valid_llm_args)
+  args <- args[llm_args]
+
   args$text <- search_text(paper)
   results <- do.call(llm, args)
   # attr(results, "llm")
