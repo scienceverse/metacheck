@@ -35,7 +35,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9030</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9031</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -759,7 +759,7 @@ p-values in the text and returns the matching text.</p>
 <span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>  <span class="dt">"title"</span><span class="fu">:</span> <span class="st">"List All P-Values"</span><span class="fu">,</span></span>
 <span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>  <span class="dt">"description"</span><span class="fu">:</span> <span class="st">"List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table."</span><span class="fu">,</span></span>
 <span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a>  <span class="dt">"text"</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a>    <span class="dt">"pattern"</span><span class="fu">:</span> <span class="st">"(?&lt;=[^a-z])p-?(value)?</span><span class="ch">\\</span><span class="st">s*[&lt;&gt;=≤≥]{1,2}</span><span class="ch">\\</span><span class="st">s*(n</span><span class="ch">\\</span><span class="st">.?s</span><span class="ch">\\</span><span class="st">.?|</span><span class="ch">\\</span><span class="st">d?</span><span class="ch">\\</span><span class="st">.</span><span class="ch">\\</span><span class="st">d+e?-?</span><span class="ch">\\</span><span class="st">d*)"</span><span class="fu">,</span></span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a>    <span class="dt">"pattern"</span><span class="fu">:</span> <span class="st">"</span><span class="ch">\\</span><span class="st">bp-?(value)?</span><span class="ch">\\</span><span class="st">s*[&lt;&gt;=≤≥]{1,2}</span><span class="ch">\\</span><span class="st">s*(n</span><span class="ch">\\</span><span class="st">.?s</span><span class="ch">\\</span><span class="st">.?|</span><span class="ch">\\</span><span class="st">d?</span><span class="ch">\\</span><span class="st">.</span><span class="ch">\\</span><span class="st">d+)(e-</span><span class="ch">\\</span><span class="st">d+)?"</span><span class="fu">,</span></span>
 <span id="cb26-6"><a href="#cb26-6" tabindex="-1"></a>    <span class="dt">"return"</span><span class="fu">:</span> <span class="st">"match"</span><span class="fu">,</span></span>
 <span id="cb26-7"><a href="#cb26-7" tabindex="-1"></a>    <span class="dt">"perl"</span><span class="fu">:</span> <span class="kw">true</span></span>
 <span id="cb26-8"><a href="#cb26-8" tabindex="-1"></a>  <span class="fu">}</span></span>

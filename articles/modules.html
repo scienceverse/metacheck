@@ -35,7 +35,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9030</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9031</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -504,7 +504,7 @@ rows.</p>
 </tr>
 </tbody>
 </table>
-<p>Showing 20 of 4190 rows</p>
+<p>Showing 20 of 4683 rows</p>
 <p>You can access the full table for further processing.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_p_ps</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
@@ -513,12 +513,12 @@ rows.</p>
 <pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
 <span><span class="co">#&gt;   text          n</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> p &lt; .001   <span style="text-decoration: underline;">1</span>355</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> p = .001    116</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> p = .002     94</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> p &lt; .01      90</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> p &lt; .0001    79</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> p &lt; .05      72</span></span></code></pre>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> p &lt; .001   <span style="text-decoration: underline;">1</span>511</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> p &lt; .05     152</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> p &lt; .01     143</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> p = .001    123</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> p = .002     99</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> p &lt; .0001    91</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="all-urls">all-urls<a class="anchor" aria-label="anchor" href="#all-urls"></a>
@@ -655,9 +655,10 @@ or tables, but what is the deal with “p &gt; .25”?</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">text</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p> [38;5;246m# A tibble: 6 × 2 [39m text n  [3m [38;5;246m<chr> [39m [23m
- [3m [38;5;246m<int> [39m [23m  [38;5;250m1 [39m p &lt; .01 90  [38;5;250m2 [39m
-p &lt; .05 72  [38;5;250m3 [39m p &gt; .250 13  [38;5;250m4 [39m p &gt; .05
-11  [38;5;250m5 [39m p &gt; .25 10  [38;5;250m6 [39m p &lt; .005 8</int></chr></p>
+ [3m [38;5;246m<int> [39m [23m  [38;5;250m1 [39m p &lt; .05 152
+ [38;5;250m2 [39m p &lt; .01 143  [38;5;250m3 [39m p &lt; .005 15
+ [38;5;250m4 [39m p &gt; .05 13  [38;5;250m5 [39m p &gt; .250 13
+ [38;5;250m6 [39m p &gt; .25 12</int></chr></p>
 <p>We can expand the text to check the context for “p &gt; .25”.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gt.25</span> <span class="op">&lt;-</span> <span class="va">imprecise_ps</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
@@ -905,6 +906,26 @@ vaccine-investment variance revealed a ma…</td>
 <td align="left">0956797616636631</td>
 </tr>
 <tr class="even">
+<td align="left">Further, we observed a marginally significant indirect
+effect of target condition on endorsement …</td>
+<td align="left">fig</td>
+<td align="left"></td>
+<td align="right">3</td>
+<td align="right">NA</td>
+<td align="right">2</td>
+<td align="left">0956797617692000</td>
+</tr>
+<tr class="odd">
+<td align="left">The dagger and asterisks indicate marginally
+significant and significant paths ( † p &lt; .10, **p &lt;…</td>
+<td align="left">fig</td>
+<td align="left">Fig. 5 .</td>
+<td align="right">5</td>
+<td align="right">NA</td>
+<td align="right">7</td>
+<td align="left">0956797617692000</td>
+</tr>
+<tr class="even">
 <td align="left">Given the unexpected nature of the finding and the
 marginally significant trend, we will not inte…</td>
 <td align="left">annex</td>
@@ -1016,29 +1037,9 @@ levels in psychology, we empirically examin…</td>
 <td align="right">1</td>
 <td align="left">0956797619830326</td>
 </tr>
-<tr class="odd">
-<td align="left">More specifically, we examined the percentage of p
-values between .05 and .10 that is reported in…</td>
-<td align="left">abstract</td>
-<td align="left">Abstract</td>
-<td align="right">0</td>
-<td align="right">2</td>
-<td align="right">2</td>
-<td align="left">0956797619830326</td>
-</tr>
-<tr class="even">
-<td align="left">On the way, we also reexamined Pritschet, Powell, and
-Horne’s (2016) claims that marginally signi…</td>
-<td align="left">abstract</td>
-<td align="left">Abstract</td>
-<td align="right">0</td>
-<td align="right">2</td>
-<td align="right">3</td>
-<td align="left">0956797619830326</td>
-</tr>
 </tbody>
 </table>
-<p>Showing 20 of 91 rows</p>
+<p>Showing 20 of 97 rows</p>
 <p>You can see that the default shows only the first 20 rows and
 truncates long lines. We can adjust this by explicitly calling the print
 function and setting <code>maxrows</code> and
@@ -1130,7 +1131,7 @@ significant for line patterns, F(1, 19) = 85.53, p &lt; .001, η p 2 =
 </tr>
 </tbody>
 </table>
-<p>Showing 5 of 91 rows</p>
+<p>Showing 5 of 97 rows</p>
 </div>
 <div class="section level3">
 <h3 id="osf-check">osf-check<a class="anchor" aria-label="anchor" href="#osf-check"></a>
