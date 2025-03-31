@@ -4,6 +4,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/LICENSE.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/articles/batch.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/articles/creating_modules.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/articles/github.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/articles/index.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/articles/metascience.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/articles/modules.html</loc></url>
@@ -26,6 +27,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/demoxml.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/distinctive_words.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/expand_text.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/file_types.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_authors.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_doi.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_full_text.html</loc></url>
@@ -33,6 +35,12 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_orcid.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_refs.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_submission.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/github_config.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/github_files.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/github_info.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/github_languages.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/github_readme.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/github_repo.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/index.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/info_table.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/is_paper_list.html</loc></url>
