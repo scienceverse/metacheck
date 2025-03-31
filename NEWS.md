@@ -1,3 +1,8 @@
+# papercheck 0.0.0.9032
+
+* New functions for exploring github repositories: `github_repo()`, `github_readme()`, `github_languages()`, `github_files()`, `github_info()`
+* A new vignette about github functions
+
 # papercheck 0.0.0.9031
 
 * `read_grobid()` now includes figure and table captions, plus footnotes, in the full_text table
