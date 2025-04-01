@@ -18,6 +18,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/add_author.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/author.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/author_table.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/cermine2bib.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/check_orcid.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/concat_tables.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/credit_roles.html</loc></url>
@@ -29,6 +30,9 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/expand_text.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/file_types.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_authors.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/get_cermine_authors.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/get_cermine_full_text.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/get_cermine_refs.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_doi.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_full_text.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/get_idx.html</loc></url>
@@ -66,6 +70,8 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/print.ppchk_validate.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/print.scivrs_paper.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/psychsci.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/read_cermine.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/read_cermine_xml.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/read_file.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/read_grobid.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/read_grobid_xml.html</loc></url>
