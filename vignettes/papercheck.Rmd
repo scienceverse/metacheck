@@ -71,6 +71,15 @@ The function `read_grobid()` can read XML files parsed by grobid.
 paper <- read_grobid(xml_file)
 ```
 
+The function `read_cermine()` can read XML files parsed by [cermine](http://cermine.ceon.pl). This is not as good as grobid at parsing papers, and omits figure and table captions.
+
+```{r}
+#| eval: false
+cermine_xml_file <- system.file("psychsci/0956797620955209.cermine.xml",
+                                package = "papercheck")
+paper <- read_cermine(cermine_xml_file)
+```
+
 ### Load from non-PDF document
 
 To take advantage of grobid's ability to parse references and other aspects of papers, for now the best way is to convert your papers to PDF. However, papercheck can read in plain text from a character object or text/docx file with `read_text()`.

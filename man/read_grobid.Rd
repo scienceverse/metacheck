@@ -18,5 +18,4 @@ You can create a grobid XML file from a paper PDF at https://huggingface.co/spac
 \examples{
 filename <- demoxml()
 paper <- read_grobid(filename)
-
 }
