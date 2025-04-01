@@ -10,7 +10,7 @@ get_refs(xml)
 \item{xml}{The grobid XML}
 }
 \value{
-a list with a data frame of referencesand a data frame of citation sentences
+a list with a data frame of references and a data frame of citation sentences
 }
 \description{
 Get references from grobid XML

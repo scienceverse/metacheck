@@ -1,3 +1,7 @@
+# papercheck 0.0.0.9033
+
+* added `read_cermine()` as associated internal functions for reading cermine-formatted XMLs
+
 # papercheck 0.0.0.9032
 
 * New functions for exploring github repositories: `github_repo()`, `github_readme()`, `github_languages()`, `github_files()`, `github_info()`
