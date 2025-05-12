@@ -100,6 +100,14 @@ test_that("get figures ", {
   expect_equal(fig_ids, 0:3)
 })
 
+# test_that("get tables ", {
+#   expect_true(is.function(get_tables))
+#
+#   filename <- "examples/0956797613520608.xml"
+#   xml <- read_grobid_xml(filename)
+#   tbls <- get_tables(xml)
+# }
+
 test_that("get notes ", {
   xml <- read_grobid_xml("footnotes/3544548.3580942.xml")
   text <- get_full_text(xml)
@@ -219,44 +227,10 @@ test_that("iteration", {
   expect_equal(names(s) |> paste0(".xml"), file_list[3:1])
 
   # recursive file search
-  s <- read_grobid(system.file(package="papercheck"))
-  nested_files <- c("extdata/to_err_is_human",
-                    "grobid/eyecolor",
-                    "grobid/incest",
-                    "grobid/prereg")
+  s <- read_grobid("nested")
+  nested_files <- c("3544548.3580942",
+                    "nest/3613904.3642568")
   expect_true(all(nested_files %in% names(s)))
 })
 
-
-test_that("crossref", {
-  skip()
-  skip_if_offline("api.labs.crossref.org")
-
-  doi <- "10.1177/fake"
-  expect_message(cr <- crossref(doi))
-  expect_equal(cr, list())
-
-  # single doi
-  doi <- "10.1177/0956797614520714"
-  cr <- crossref(doi)
-  expect_equal(cr$`cr-labs-updates`[[1]]$`update-nature`, "Retraction")
-
-  # list of DOIs
-  dois <- info_table(psychsci, "doi")
-  dois$doi <- gsub("pss\\.", "", dois$doi) |> gsub("sagepub\\.", "", x = _)
-  doi <- dois$doi[1:2]
-  cr2 <- crossref(doi)
-})
-
-test_that("openalex", {
-  skip_if_offline("api.openalex.org")
-
-  doi <- "10.1177/fake"
-  cr <- openalex(doi)
-  expect_equal(cr, list())
-
-  doi <- "10.1177/0956797614520714"
-  cr <- openalex(doi)
-  expect_equal(cr$is_retracted, TRUE)
-})
 

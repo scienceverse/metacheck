@@ -22,6 +22,9 @@ test_that("errors", {
   expect_error(github_languages(bad_arg))
   expect_error(github_files(bad_arg))
 
+  skip_on_cran()
+  skip_if_offline("github.com")
+
   expect_error(github_repo("scienceverse/norepo"))
   expect_error(github_info("scienceverse/norepo"))
   expect_error(github_readme("scienceverse/norepo"))
@@ -30,6 +33,8 @@ test_that("errors", {
 })
 
 test_that("github_repo", {
+  skip_if_offline("github.com")
+
   urls <- c(
     "scienceverse/papercheck",
     "https://github.com/scienceverse/papercheck",

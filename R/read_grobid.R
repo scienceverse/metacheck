@@ -35,7 +35,8 @@ read_grobid <- function(filename) {
       t()
     distinct_vals <- apply(dir_df, 2, unique) |> lapply(length) > 1
     unique_names <- dir_df[ , distinct_vals, drop = FALSE] |>
-      apply(1, paste0, collapse = "/") |>
+      apply(1, \(x) x[!is.na(x)]) |>
+      sapply(paste0, collapse = "/") |>
       gsub("\\.xml$", "", x = _)
 
     p <- lapply(filename, \(x) {
@@ -450,6 +451,27 @@ get_refs <- function(xml) {
   ))
 }
 
+
+#' Get Tables from Grobid XML
+#'
+#' @param xml The grobid XML
+#'
+#' @return a list of tables
+#' @keywords internal
+get_tables <- function(xml) {
+  tables <- xml2::xml_find_all(xml, "//figure[@type='table']")
+
+  if (length(tables) == 0) return (list())
+
+  ids <- tables |> xml2::xml_attr("id")
+
+  tab <- xml2::xml_find_all(tables[[1]], ".//table //row") |>
+    lapply(xml2::xml_find_all, xpath = ".//cell") |>
+    lapply(xml2::xml_text)
+  tab_header <- tab[[1]]
+
+  return(list())
+}
 
 
 #' Get DOI info from XML

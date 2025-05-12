@@ -46,7 +46,66 @@ crossref <- function(doi) {
 
 #' Get OpenAlex info
 #'
+#' See details for a list of root-level fields that can be selected.
+#'
+#' See <https://docs.openalex.org/api-entities/works/work-object> for explanations of the informationyou can retrieve about works.
+#'
+#' Root-level fields for the select argument:
+#'
+#' * id
+#' * doi
+#' * title
+#' * display_name
+#' * publication_year
+#' * publication_date
+#' * ids
+#' * language
+#' * primary_location
+#' * type
+#' * type_crossref
+#' * indexed_in
+#' * open_access
+#' * authorships
+#' * institution_assertions
+#' * countries_distinct_count
+#' * institutions_distinct_count
+#' * corresponding_author_ids
+#' * corresponding_institution_ids
+#' * apc_list
+#' * apc_paid
+#' * fwci
+#' * has_fulltext
+#' * fulltext_origin
+#' * cited_by_count
+#' * citation_normalized_percentile
+#' * cited_by_percentile_year
+#' * biblio
+#' * is_retracted
+#' * is_paratext
+#' * primary_topic
+#' * topics
+#' * keywords
+#' * concepts
+#' * mesh
+#' * locations_count
+#' * locations
+#' * best_oa_location
+#' * sustainable_development_goals
+#' * grants
+#' * datasets
+#' * versions
+#' * referenced_works_count
+#' * referenced_works
+#' * related_works
+#' * abstract_inverted_index
+#' * abstract_inverted_index_v3
+#' * cited_by_api_url
+#' * counts_by_year
+#' * updated_date
+#' * created_date
+#'
 #' @param doi the DOI of the paper to get info for
+#' @param select a vector of fields to return, NULL returns all
 #'
 #' @return a list of values
 #' @export
@@ -56,15 +115,26 @@ crossref <- function(doi) {
 #' \dontrun{
 #'   oa_info <- openalex(doi)
 #' }
-openalex <- function(doi) {
+openalex <- function(doi, select = NULL) {
+  # handle papers, paperlists, and vectors of multiple dois
+  if (inherits(doi, "scivrs_paper")) {
+    doi <- doi$info$doi
+  } else if (is_paper_list(doi) || length(doi) > 1) {
+    info <- lapply(doi, openalex)
+    return(info)
+  }
+
   url <- sprintf("https://api.openalex.org/works/https://doi.org/%s?mailto=%s",
                  doi, "debruine@gmail.com")
-  j <- tryCatch( suppressWarnings( jsonlite::read_json(url) ),
+
+  info <- tryCatch( suppressWarnings( jsonlite::read_json(url) ),
                  error = function(e) {
-                   return(list())
+                   if (verbose())
+                     warning(doi, " not found in OpenAlex", call. = FALSE)
+                   return(list(error = doi))
                  })
 
-  return(j)
+  return(info)
 }
 
 ref_info <- function(paper) {

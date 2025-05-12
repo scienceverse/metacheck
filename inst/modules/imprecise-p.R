@@ -7,7 +7,7 @@ p$p_value <- suppressWarnings(as.numeric(p$p_value))
 p$imprecise <- p$p_comp == "<" & p$p_value > .001
 p$imprecise <- p$imprecise | p$p_comp == ">"
 p$imprecise <- p$imprecise | is.na(p$p_value)
-cols <- c("text", "section", "header", "div", "p", "s", "id")
+cols <- c("text", "p_comp", "p_value", "section", "header", "div", "p", "s", "id")
 
 if (nrow(p) == 0) {
   tl <- "na"

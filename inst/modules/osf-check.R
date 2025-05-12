@@ -32,6 +32,8 @@ if (papercheck:::site_down("osf.io", error = FALSE)) {
       txt <- httr::content(resp, "text")
       if (grepl("Sign in with your OSF account to continue", txt)) {
         "closed"
+      } else if (grepl("view-only link", txt)) {
+        "view-only"
       } else {
         "open"
       }
