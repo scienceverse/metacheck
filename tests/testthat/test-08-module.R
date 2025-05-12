@@ -218,6 +218,8 @@ test_that("imprecise-p", {
   mod_output <- module_run(paper, module)
   lt05 <- grepl("p < .05", mod_output$table$text) |> sum()
   expect_equal(lt05, 156)
+  expect_equal(mod_output$table$p_comp[[1]], "<")
+  expect_equal(mod_output$table$p_value[[1]], 0.05)
 })
 
 test_that("marginal", {

@@ -4,16 +4,76 @@
 \alias{openalex}
 \title{Get OpenAlex info}
 \usage{
-openalex(doi)
+openalex(doi, select = NULL)
 }
 \arguments{
 \item{doi}{the DOI of the paper to get info for}
+
+\item{select}{a vector of fields to return, NULL returns all}
 }
 \value{
 a list of values
 }
 \description{
-Get OpenAlex info
+See details for a list of root-level fields that can be selected.
+}
+\details{
+See \url{https://docs.openalex.org/api-entities/works/work-object} for explanations of the informationyou can retrieve about works.
+
+Root-level fields for the select argument:
+\itemize{
+\item id
+\item doi
+\item title
+\item display_name
+\item publication_year
+\item publication_date
+\item ids
+\item language
+\item primary_location
+\item type
+\item type_crossref
+\item indexed_in
+\item open_access
+\item authorships
+\item institution_assertions
+\item countries_distinct_count
+\item institutions_distinct_count
+\item corresponding_author_ids
+\item corresponding_institution_ids
+\item apc_list
+\item apc_paid
+\item fwci
+\item has_fulltext
+\item fulltext_origin
+\item cited_by_count
+\item citation_normalized_percentile
+\item cited_by_percentile_year
+\item biblio
+\item is_retracted
+\item is_paratext
+\item primary_topic
+\item topics
+\item keywords
+\item concepts
+\item mesh
+\item locations_count
+\item locations
+\item best_oa_location
+\item sustainable_development_goals
+\item grants
+\item datasets
+\item versions
+\item referenced_works_count
+\item referenced_works
+\item related_works
+\item abstract_inverted_index
+\item abstract_inverted_index_v3
+\item cited_by_api_url
+\item counts_by_year
+\item updated_date
+\item created_date
+}
 }
 \examples{
 doi <- "10.7717/peerj.4375"

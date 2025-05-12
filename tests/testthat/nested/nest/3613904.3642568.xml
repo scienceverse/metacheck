@@ -1,0 +1,1476 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Your Avatar Seems Hesitant to Share About Yourself: How People Perceive Others&apos; Avatars in the Transparent System</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yeonju</forename><surname>Jang</surname></persName>
+							<idno type="ORCID">0000-0003-1606-874X</idno>
+						</author>
+						<author>
+							<persName><forename type="first">Taenyun</forename><surname>Kim</surname></persName>
+							<email>kimtaeny@msu.edu</email>
+							<idno type="ORCID">0000-0001-7817-5036</idno>
+						</author>
+						<author>
+							<persName><forename type="first">Huisung</forename><surname>Kwon</surname></persName>
+							<email>huisungk@kaist.ac.kr</email>
+						</author>
+						<author>
+							<persName><forename type="first">Ki</forename><forename type="middle">Joon</forename><surname>Kim</surname></persName>
+							<email>kj.kim@cityu.edu.hk</email>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Information Science</orgName>
+								<orgName type="institution">Cornell University Ithaca</orgName>
+								<address>
+									<settlement>New York</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Media and Information</orgName>
+								<orgName type="institution">Michigan State University East</orgName>
+								<address>
+									<settlement>Lansing</settlement>
+									<region>Michigan</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff2">
+								<orgName type="department">Department of Industrial Design</orgName>
+								<orgName type="institution">KAIST Daejeon</orgName>
+								<address>
+									<country key="KR">Republic of Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff3">
+								<orgName type="department">Interdisciplinary Course for Service Design Convergence</orgName>
+								<orgName type="institution" key="instit1">Hyemin Park</orgName>
+								<orgName type="institution" key="instit2">Sungkyunkwan University Suwon</orgName>
+								<address>
+									<settlement>Gyeonggi</settlement>
+									<country key="KR">Republic of Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff4">
+								<orgName type="department">Department of Media and Communication</orgName>
+								<orgName type="institution">City University of Hong Kong Hong Kong</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Your Avatar Seems Hesitant to Share About Yourself: How People Perceive Others&apos; Avatars in the Transparent System</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">6CE93A0FEF78F54BA8D472ED80BEEBE8</idno>
+					<idno type="DOI">10.1145/3613904.3642568</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2025-02-05T18:15+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Human-centered computing → Empirical studies in HCI; Laboratory experiments avatar-mediated communication</term>
+					<term>receiver</term>
+					<term>sender</term>
+					<term>transparent system</term>
+					<term>self-disclosure</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>In avatar-mediated communications, users often cannot identify how others' avatars are created, which is one of the important information they need to evaluate others. Thus, we tested a social virtual world that is transparent about others' avatar-creation methods and investigated how knowing about others' avatar-creation methods shapes users' perceptions of others and their self-disclosure. We conducted a 2x2 mixed-design experiment with system design (nontransparent vs. transparent system) as a between-subjects and avatar-creation method (customized vs. personalized avatar) as a CHI '24, May 11-16, 2024, Honolulu, HI, USA Jang and Kim, et al.</p><p>within-subjects variable with 60 participants. The results revealed that personalized avatars in the transparent system were viewed less positively than customized avatars in the transparent system or avatars in the nontransparent system. These avatars appeared less comfortable and honest in their self-disclosure and less competent. Interestingly, avatars in the nontransparent system attracted more followers. Our results suggest being cautious when creating a social virtual world that discloses the avatar-creation process.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Figure <ref type="figure">1</ref>: Study Overview. IV1 is an avatar-creation method. Avatars were created with either users' own selfes (i.e., personalization) or a customization process. IV2 is the system design. In the nontransparent system, the avatar creation methods of each avatar are not identifed. In the transparent system, the avatar-creation method of each avatar is identifed with identifers. The camera symbol indicator signifes personalized avatars, and the fnger symbol indicator signifes customized avatars.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">INTRODUCTION</head><p>In avatar-mediated communication (AMC), avatars are the frst interface that users encounter when interacting with others <ref type="bibr" target="#b29">[30]</ref>. Users create avatars to express their identities by making their avatars look like them or explore them by creating avatars completely diferent from them <ref type="bibr" target="#b20">[21,</ref><ref type="bibr" target="#b34">35,</ref><ref type="bibr" target="#b35">36]</ref>. On the other hand, when users see someone else's avatar, they are one of the early cues that help the users form others' frst impressions <ref type="bibr" target="#b16">[17,</ref><ref type="bibr" target="#b28">29]</ref>.</p><p>Understanding this, many companies and researchers are exploring various ways to create avatars for users to express themselves better or to have more agency in creating procedures. Recently to enhance users' representation, their focus has been on advancing developing technologies for creating personalized and photorealistic avatars, driven by the belief that such avatars will facilitate interactions and engagements in AMC. For instance, Apple's recent unveiling of Vision Pro<ref type="foot" target="#foot_0">foot_0</ref> ofers the option to create avatars that resemble the users' own faces through scanning <ref type="bibr" target="#b1">[2]</ref>. Other commercial products like Spatial.io<ref type="foot" target="#foot_1">foot_1</ref> and Zepeto<ref type="foot" target="#foot_2">foot_2</ref> also use graphic engines to predict avatar vectors and render images from pre-defned 3D assets <ref type="bibr" target="#b43">[44,</ref><ref type="bibr" target="#b52">53]</ref>. In addition, various companies also provide avatarcreation methods that users can customize their appearance based on what they want, as users may also wish to create avatars that are diferent from themselves <ref type="bibr" target="#b35">[36]</ref>.</p><p>To fully understand how people use avatars in a virtual social world, it is important to study how avatars afect the way others see users and how they impact users' own image. While it is comparably well-studied how users' avatars infuence their attitudes and behaviors (e.g., Proteus Efect; See <ref type="bibr" target="#b41">[42]</ref> for the review and metaanalysis), it is rather understudied how others see the one behind their avatars (cf. <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b27">28]</ref>), which is a signifcant research gap in our understanding.</p><p>In AMC, compared to face-to-face (FtF) interaction, the user's true identity is often hidden behind the avatars <ref type="bibr" target="#b13">[14]</ref>. Thus, users often rely on even small cues to judge others because there is not much contextual information in the virtual environments <ref type="bibr" target="#b50">[51]</ref>. Hence, whether one personalizes the avatars using their own face or customizes them by choosing various appearance options would also be an important source for users to evaluate others. However, users do not have the capability to identify which method others have used to create their avatars if the system does not allow them. This may not be benefcial in terms of system transparency because it limits the information that users need to have to evaluate others. We also found a lack of research on how users' perceptions of others change when they can identify how others' avatars are created, particularly in the context of multiple avatar-creation methods available in the system.</p><p>Thus, our study investigated the impact of avatar-creation methods and the transparent system that can identify others' avatarcreation methods on users' perceptions of others and their selfdisclosure. We found that users with personalized avatars in a transparent system received less favorable evaluations from others compared to those with customized avatars or in the non-transparent system. We also found that users are more likely to engage in future interactions when the avatar creation method is not known.</p><p>These fndings were somewhat unexpected, especially for those who believe that a transparent system and an avatar that resembles the user would facilitate interaction in AMC. We suggest that users have focused on the minimal cue of avatar personalization and assumed that the senders would be reluctant to self-disclose because they themselves would also be hesitant to talk about themselves when the anonymity is low in an online environment in light of the hyperpersonal model <ref type="bibr" target="#b50">[51]</ref> and the theory of mind <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b39">40]</ref>. Furthermore, our study provides practical implications for developers to fnd an optimal balance in transparency about avatar creation, as it can infuence user perceptions and interactions within virtual platforms.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">RELATED WORKS 2.1 Self-Disclosure in AMC</head><p>In AMC, just like FtF interactions, users talk about themselves when they meet for the frst time <ref type="bibr" target="#b16">[17,</ref><ref type="bibr" target="#b28">29]</ref>. Indeed, self-disclosure is one of the important factors that lead to social attractiveness <ref type="bibr" target="#b48">[49]</ref> and future interaction <ref type="bibr" target="#b8">[9]</ref>, which is no exception in AMC. However, selfdisclosures in AMC are also diferent from those in FtF interactions, as users are less comfortable talking about topics that harm their anonymity, such as their actual name and more private details about themselves <ref type="bibr" target="#b47">[48]</ref>. Extant research has demonstrated that avatar design infuences their self-disclosure via anonymity <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b19">20]</ref>, especially in terms of similarity between users and avatars. For instance, Ichino and colleagues <ref type="bibr" target="#b16">[17]</ref> showed that users disclose themselves more when they use avatars that look diferent from themselves compared to the ones that look similar to themselves. Additionally, Kang and Yang <ref type="bibr" target="#b19">[20]</ref> showed that if avatars look similar to an individual's physical self, they tend to disclose themselves less, and when they represent their ideal self, they are willing to disclose more about themselves.</p><p>The online disinhibition efect may explain the underlying mechanism of why avatar creation methods might impact self-disclosure via anonymity. According to the online disinhibition efect <ref type="bibr" target="#b46">[47]</ref>, online users can choose to modify or conceal their identities, which enables them to be anonymous more easily. This anonymity allows users to express themselves more freely than they might in FtF interactions. In AMC, avatars serve as identities that manage the level of users' anonymity. If users opt for avatars mirroring their physical features, their identities become less anonymous. Conversely, selecting avatars that difer signifcantly enhances anonymity. This concept of visual anonymity, defned as the extent to which an individual's physical appearance remains unobservable <ref type="bibr" target="#b44">[45]</ref>, acts as a mediating factor in how the avatar-creation method infuences users' self-disclosure. Hooi and his colleagues <ref type="bibr" target="#b15">[16]</ref> support this notion, revealing that the personalization of avatars infuences users' self-disclosure, mediated by their anonymity. However, the benefts of users' anonymity, being open to others, come with a tradeof where the users may be perceived as less trustworthy by the recipient of their self-disclosure <ref type="bibr" target="#b21">[22]</ref>. This dynamic underscores the delicate balance between the freedom of expression that anonymity afords and the potential skepticism it may generate regarding the authenticity or reliability of the shared content.</p><p>There are several seminal papers that point out the mutual infuence of receiver and sender in virtual environment <ref type="bibr" target="#b40">[41,</ref><ref type="bibr" target="#b50">51]</ref>. Especially, the hyperpersonal model posits that users in virtual environments often rely on slight cues to evaluate others, as there is not much contextual information compared to FtF interaction, and sometimes make premature judgments <ref type="bibr" target="#b50">[51]</ref>. For instance, in the experiment conducted in the study of Machneva and colleagues <ref type="bibr" target="#b27">[28]</ref>, individuals formed frst impressions of others' trustworthiness solely based on their avatars. Interestingly, there was agreement upon which avatar users seemed trustworthy and which did not, although they were inaccurate about who is truly trustworthy. Also, an interview conducted in the study by Freeman and Maloney <ref type="bibr" target="#b12">[13]</ref> showed that users evaluate others based on their avatars by bringing stereotypes and prejudice they already have in the real world.</p><p>However, compared to the abundance of literature on how avatar designs afect users (e.g., Proteus Efect <ref type="bibr" target="#b41">[42]</ref>) and their selfdisclosure (e.g., <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b47">48]</ref>), less attention has been given to avatar design infuencing others' perceptions of users and their self-disclosure. To our knowledge, no studies investigate how receivers perceive senders and their self-disclosure in AMC. However, it is highly likely that the users' (i.e., senders) choice of avatars infuences how others (i.e., receivers) think about them and their self-disclosure. To fll this research gap, this study will investigate how people perceive others and others' self-disclosure based on the information about their avatar from the receivers' perspective.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Avatar as System Design</head><p>Avatars can be created through diferent methods. One of the most common ways to create avatars is through customization. In this method, users get to choose their avatar's attribute in a set of options allowed to them. Research consistently indicates that ofering users the freedom to tailor their avatar's appearance enhances their sense of presence, embodiment, and enjoyment compared to generic avatars <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b11">12]</ref>. Consequently, customization options are now broadly acknowledged as the better standard in avatar design <ref type="bibr" target="#b22">[23]</ref>.</p><p>Recently, there has been growing attention and expectations on personalization options for avatars in both industry and academia <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b42">43,</ref><ref type="bibr" target="#b49">50]</ref>. Recent advancements in computer graphics have enabled the creation of photorealistic and personalized avatars to be more convenient and accessible <ref type="bibr" target="#b42">[43]</ref>. Users can create their avatars by scanning themselves or using ordinary camera photos across platforms, from the social virtual world to virtual reality and augmented reality. Such personalized avatars are found to enhance users' embodiment and self-identifcation <ref type="bibr" target="#b14">[15]</ref>.</p><p>It is important to note that personalization is diferent from photorealism. Despite the frequent overlap in teminology <ref type="bibr" target="#b14">[15]</ref>, personalization refers to embedding individual traits in avatars, while photorealism pertains to the quality and fdelity of avatar representation <ref type="bibr" target="#b14">[15]</ref>. Avatars can be photorealistic without refecting individual traits, and conversely, they can embody individual traits in a less realistic manner. This dichotomy can intensify the perceived gap between senders who are aware of how their avatars are created and receivers who form perceptions of the avatars.</p><p>From the receiver's perspective, evaluating the level of anonymity and self-representation embodied by an avatar with diferent avatar-creation methods can be challenging, as these characteristics are not always overtly observable <ref type="bibr" target="#b44">[45]</ref>. While some personalized avatar-creation methods produce highly realistic avatars that are easily distinguishable from avatars created through customization using pre-existing design elements, some methods generate avatars that have a similar level of abstraction to those created through customization, even after it is personalized. In this case, users may struggle to discern whether they are interacting with a personalized or customized avatar. This can restrict the information users require to assess others.</p><p>System design of platforms can help reduce such uncertainty experienced by receivers regarding senders' avatar-creation method and moderate anonymity and self-disclosure <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b47">48]</ref>. Although it is not widely applied to AMC, platforms can be designed to reveal or conceal the sender's identity, which in turn leads to a diferent level of self-disclosure. For example, online community sites that only allow real-name usage reduce anonymity levels, afecting self-disclosure behaviors. On the other hand, platforms that provide anonymity through user IDs enable individuals to feel less burdened and engage in greater self-disclosure, detached from their real-world identity <ref type="bibr" target="#b26">[27]</ref>.</p><p>Similarly, system design indicating the avatar-creation methods of each avatar would infuence how receivers perceive senders and their self-disclosure within virtual environments. Extensive research has delved into avatar design from the standpoint of individual choices (e.g., why individuals choose a particular avatar <ref type="bibr" target="#b12">[13]</ref>) and technical capabilities (e.g., methods to create realistic avatars <ref type="bibr" target="#b43">[44,</ref><ref type="bibr" target="#b52">53]</ref>); however, it remains relatively unexplored to consider the system design of avatars with its impact on users' perception. This study extends the scope of avatar design from individual choices across customization and personalization to encompass system-level design considerations. In light of these considerations, we tested a transparent system that allows users to identify two distinct avatar-creation methods-personalized or customized avatars and explored receivers' perception toward senders and their self-disclosure when the system design is transparent about the avatar-creation method of the senders with the following research questions.</p><p>• RQ1: How does the transparent system design of the avatarcreation method infuence how receivers perceive senders and their self-disclosure? • RQ2: How does the avatar-creation method infuence how receivers perceive senders and their self-disclosure? • RQ3: How does the avatar-creation method infuence receivers' perceptions of senders and their self-disclosure, contingent upon transparent system design?</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">METHOD</head><p>We conducted a 2 x 2 mixed-design experiment with an avatarcreation method (customized vs. personalized avatar) as a withinsubjects and system design (nontransparent vs. transparent system) as a between-subjects variable to explore how avatar-creation method and its system designs infuence receivers' perceptions and interpretations of others' self-disclosure (Figure <ref type="figure">1</ref>). All selfintroduction videos were generated by senders under the same experimental conditions and were not perceived diferently across conditions in the preliminary study (See Section 3.4 for details).</p><p>Both the preliminary study and main experiment were approved by the University IRB in South Korea, and participants were compensated for their participation with a gift card equivalent to 5,500 won (4.15 US dollars).</p><p>We opted for a social virtual world where users have the opportunity to engage with strangers in public spaces. The chosen setting allows users to unexpectedly encounter strangers in public areas. The experiment focused on participants watching self-introduction videos of strangers to observe how they would perceive these unfamiliar individuals. The selection of scenarios involving userstranger interactions was deliberate for two main reasons: 1) the use of avatar plays a pivotal role when users would like to maintain anonymity in online interaction <ref type="bibr" target="#b47">[48]</ref>, and 2) the initial information exchange with strangers is crucial in forming a frst impression, with the avatar serving as one of the primary pieces of information users receive about the strangers.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Participants</head><p>A total of 76 participants completed the study through an online recruitment platform in South Korea. All participants received informed consent before beginning the study. Two attention-check questions were included, and sixteen participants who did not successfully answer these questions were excluded. As a result, 60 participants were included in the fnal analysis with 30 each in nontransparent and transparent system conditions. No a priori power analysis was conducted due to the exploratory nature of this study. However, post-hoc power analysis with observed small to medium efect size ( 2 = .052, Cohen's = 0.23) indicates that a sample size of 58 would be sufcient with 80 % power. The demographic data of 13 participants was not recorded due to technical issues. The participants' average age was 32.61 years old ( () = 15.95). Among them, 53.2 % ( = 25) were female, 42.6% ( = 20) were male, 4.3% ( = 2) preferred not to say.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Procedure</head><p>We conducted a mixed-design experiment (2x2) to investigate the infuence of avatar-creation methods and system designs on receivers' perceptions and interpretations of others' self-disclosure (Figure <ref type="figure">1</ref>). Each participant was randomly assigned to either the nontransparent or transparent system design and viewed two self-introduction videos of the senders whose avatars were either manually customized by them (i.e., customized avatar-creation method) or created automatically by their selfe (i.e., personalized avatar-creation method). The order of these two videos, representing the two avatarcreation methods, was randomized.</p><p>Prior to viewing the self-introduction videos, all participants watched two explanation videos tailored to their respective experimental conditions (Figure <ref type="figure" target="#fig_0">2</ref>). The frst video introduced the concept of the social virtual world, illustrating how avatars can interact within virtual spaces, engage in activities like chatting or following others, and watch self-introduction videos on hypothetical profles designed for the experiment. Only the participants in the transparent system condition watched the avatars with a small badge positioned in front of their usernames, indicating an avatar-creation method used for each avatar in the frst video. The badge was not shown to the participants in the nontransparent condition during the video. The second video explained how users could create their avatars by either customizing their avatars through various options (customized avatars) or uploading their selfes (personalized avatars).</p><p>Participants assigned to the transparent system condition watched an additional video about the system design. They learned how to identify the senders' avatar-creation method through a small badge left to the sender's name. A pointing fnger-shaped badge indicates that the avatar was created through customization, whereas a camera-shaped badge signifes that the avatar was created through the personalization process.</p><p>Following the viewing of the senders' self-introduction videos, participants completed questionnaires about the self-introduction videos and the senders. Both explanations videos and selfintroduction videos used in this study are uploaded in OSF<ref type="foot" target="#foot_3">foot_3</ref> .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Measures</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.1">Manipulation</head><p>Check for System Design. We did not ask participants about their awareness of the system's transparency regarding avatar-creation methods. This choice was deliberate since asking about transparency to participants in the nontransparent system condition can prompt them to speculate about the avatar-creation method. We wanted to grant them the freedom to either actively guess the avatar-creation method or remain indiferent to it. To make sure participants in the transparent system condition were aware of the system's transparency, they watched an additional video explaining the badges that identify avatar-creation methods. In addition, all profles were displayed with the badges throughout the explanation videos and introduction videos of others to reinforce their awareness about the transparency. an avatar-creation method video. In the transparent system, participants watched 1. an introduction video, 2. an avatar-creation method video, and 3. an identifcation video. In 1. an introduction video, participants were introduced to the social virtual world. In 2. an avatar-creation method video, participants were explained about two avatar-creation methods available here. In 3. an identifcation video, participants were explained about how avatar-creation methods for each avatar are identifed.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.2">Atention</head><p>Check. After watching the videos, participants were asked about their perception of the sender and the sender's self-introduction. During this questionnaire, we used two attentioncheck questions recommended by Abbey &amp; Meloy <ref type="bibr" target="#b0">[1]</ref> ("World War II happened before World War I" and "At some point in my life, I have had to consume water in some form.") to make sure that participants were not distracted while they were answering the questionnaire.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.3">Anonymity.</head><p>Since previous works revealed the potential role of anonymity in the efect of the avatar-creation method on selfdisclosure <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b21">22]</ref>, we measured anonymity (Cronbach's alpha []= .94, [] = 4.62, = 1.45) of the sender by using a scale developed by Wang <ref type="bibr" target="#b51">[52]</ref>. We originally measured four items, but after dropping the items with internal consistency issues, only two were retained (i.e., "I didn't know the counterpart in this video." and "I can identify the counterpart in the video."). Participants answered on a 7-point Likert scale ranging from 1 to 7 (1 = Strongly Disagree; 7 = Strongly Agree).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.4">Credibility.</head><p>We assessed credibility, considering that the anonymity of the sender may diminish the credibility of them perceived by the receiver <ref type="bibr" target="#b21">[22]</ref>. Credibility has three dimensions: trustworthiness, competence, and goodwill <ref type="bibr" target="#b31">[32]</ref>. We measured the credibility of the sender using a scale by McCroskey and Teven <ref type="bibr" target="#b31">[32]</ref>.</p><p>Participants were asked to answer how they felt about the sender on a semantic diferential scale. Trustworthiness ( = .90, = 4.85, = 0.85) was measured on six items (e.g., dishonest -honest). Competence ( = .90, = 4.41, = 1.08) was measured on fve items (e.g., unintelligent -intelligent). Goodwill ( = .74, = 4.24, = 0.77) was measured on fve items (e.g., doesn't care about me -care about me).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.5">Social</head><p>Atraction. Social attraction is identifed as one of the primary outcomes resulting from self-disclosure <ref type="bibr" target="#b48">[49]</ref>. Social attraction ( = .94, = 4.50, = 1.33) of the sender was measured using a modifed version of McCroskey and Richmond's <ref type="bibr" target="#b32">[33]</ref> scale. Participants were asked to rate their level of social attraction towards the sender on three specifc items as follows: "I would like to have a friendly chat with them. ", "I think they could be friends of mine.", "They are easy to get along with.". Each of them was measured on a 7-point Likert scale (1 = Strongly Disagree; 7 = Strongly Agree).</p><p>3.3.6 Self Disclosure. Self-disclosure perceived by receivers was measured by the extent to which disclosed personal information was felt by the receivers (perceived breadth) and their perception of comfort and honesty in the senders' self-disclosure.</p><p>Perceived breadth of self-disclosure ( = 2.95, = 1.81) of the sender was measured by asking participants to indicate whether the senders mentioned each of 10 topics of self-disclosure on a binary scale (mentioned -not mentioned). The topic was selected based on McCornack and Steven <ref type="bibr" target="#b30">[31]</ref> three-layer framework. The topics include 'Age or height information,' 'Hometown,' 'Major or occupation,' 'Personal habits,' 'Things I have done which I feel guilty about, ' 'My deepest feelings, ' 'What I like and dislike about myself,' 'What is important to me in life,' 'My worst fears' and 'Close relationships with other people. <ref type="bibr">'</ref> Upon the topics that participants reported that senders mentioned, they were asked to answer whether they thought that the senders were comfortable and honest in each topic of their selfdisclosure.</p><p>Perceived comfort of self-disclosure ( = 4.82, = 1.36) was rated on a 7-point scale of whether the senders seemed comfortable talking about each topic (1 = Not at all comfortable; 7 = Completely comfortable). The score participants reported on each topic was averaged and made up a perceived comfortableness measure. If participants reported that senders did not mention any of the topics, it was regarded that participants thought senders were "not at all comfortable" in their self-disclosure on every topic.</p><p>Perceived honesty of self-disclosure ( = 5.41, = 1.26) was rated on a 7-point Likert scale of whether the senders seemed honest about each topic (1 = Not at all honest; 7 = Completely honest). The score participants reported on each topic was averaged and made up a perceived honesty measure. If participants reported that senders did not mention any of the topics, it was regarded that participants thought senders were "not at all honest" in their self-disclosure on every topic.</p><p>3.3.7 Willingness to Follow. Finally, as an indicator of potential outcomes from self-disclosure <ref type="bibr" target="#b8">[9]</ref> along with social attraction, willingness to follow the sender ( = 0.61, = 0.49) was measured by asking participants whether they would follow the sender after watching the self-introduction video on a binary scale (i.e., I would/would not follow the counterpart).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Stimuli</head><p>In order to enhance the external validity of stimuli that receivers would watch, we ran a preliminary study to obtain authentic selfintroduction videos of users in a social virtual world platform (Section 3.4.1). A 2 x 2 between-design experiment with avatar-creation method (customized vs. personalized avatar) and system design (nontransparent vs. transparent system) with 55 participants as senders who introduced themselves with their avatars.</p><p>Then, to check whether video contents collected in four diferent conditions are perceived diferently by receivers without any information about the system design, we additionally checked how receivers would perceive the self-introduction videos in four diferent conditions (Section 3.4.2). A total of 65 participants were recruited as receivers with a 2x2 mixed-design online experiment with an avatar-creation method (customized vs. personalized avatar) as a within-subjects variable and a system design (nontransparent vs. transparent system) as the between-subjects variable, same design as our main study.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4.1">Collecting Self-Introduction Videos.</head><p>Participants. A total of 55 participants took part in the study, recruited through an online platform and from one of the South Korean universities. Out of these, 33 participants submitted their self-introduction videos. Among these videos, six used personalized avatars in a transparent system, six with customized avatars in a transparent system, ten with personalized avatars in a nontransparent system, and 11 with customized avatars in a transparent system. We excluded videos that were shorter in length than Q1(29.25s), those that were not properly recorded such as showing the participants' faces or low-quality screens, or those that did not follow instructions on limitations of clothing options. Additionally, videos were excluded if participants did not pass the manipulation check or mentioned the study explicitly during their self-introduction (e.g., "I am a subject participating in the metaverse experiment"). We fnally selected a total of eight videos, two for each condition. We included summary of detailed information for each video in Table <ref type="table" target="#tab_0">1</ref>.</p><p>Procedure. Participants were randomly assigned to one of four conditions and followed instructions step by step. In transparent system, participants were told that their avatar-created method would be identifed by the system while in the nontransparent condition, they were told that their avatar-created method would not be identifed by the system. Then, we asked participants to create their avatars in a designated method (customized vs. personalized avatar) and then introduce themselves with their avatars. Participants assigned to the personalized avatar-creation method created their avatars using their own selfes. In contrast, participants assigned to the customized avatar-creation method had the freedom to customize various aspects of their avatars as they desired. They could customize their avatar's facial features such as skin color, hair, eyes, and eyebrow shapes, regardless of their actual appearance. However, to maintain consistency between the two conditions, they were not allowed to directly customize clothes.</p><p>Then, they were encouraged to spend time in spatial.io with their avatars to become familiar with the virtual social world. We used spatial.io metaverse via web, which allows people to create avatars and virtual spaces and communicate with others (or with more than 700K monthly visitors). We selected this platform because it allows users to encounter one another in various virtual environments. Additionally, it utilizes ReadyPlayerMe<ref type="foot" target="#foot_4">foot_4</ref> for avatar creation, which supports two distinct methods of avatar creation while maintaining a consistent level of avatar abstraction.</p><p>In the subsequent step, the participants recorded a selfintroduction video through avatar and their voices in the metaverse to show to the new people they would meet there. They could move around the room and use a few animations (e.g., sending hearts, waving hands, jumping, dancing). At the end of the step, they uploaded the video and were asked about manipulation check questions and their self-disclosure. We asked whether they disclosed each of the ten personal information listed to measure breadth of self-disclosure on a binary scale (See details in Appendix A.4 below). Upon the topics that they disclosed, they were asked whether they were comfortable and honest on a 7-point Likert scale.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4.2">Evaluating Content Diferences of Self-Introduction Videos.</head><p>Participants and Procedure. Sixty-fve participants were recruited through the same platform with a similar process to the main study. Following the same screening process with the attention check questions, 59 participants were included in the baseline analysis, with an average age of 31.07 years ( = 14.70). 27 (45.8 %) were female, 29 (49.2%) were male, and 2 (3.3%) did not provide demographic information. Participants watched two self-introduction videos of one personalized avatar and one customized avatar that were recorded in either a transparent or nontransparent system. They were not informed about the avatar-creation methods and identifcation. All the videos were provided without identifers, even if they were originally recorded in a transparent system.</p><p>Analysis. We conducted a 2-way mixed ANOVA with avatarcreation as a within-subjects variable and identifcation system as between-subjects variable for all analyses except for the following intention, which used a generalized linear mixed model with avatarcreation as a within-subjects variable and identifcation system as between-subjects variables given the binary nature of the variable. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">RESULTS</head><p>To see if receivers' perceptions, attitudes, and behavior vary depending on the conditions, we conducted a 2-way mixed ANOVA with avatar-creation methods as a within-subjects variable and transparent system design as a between-subjects variable for all analyses except for the following intention. For the following intention, we used a generalized linear mixed model with avatar-creation as a within-subjects variable and identifcation system as betweensubjects variables given the binary nature of the variable-either receiver chooses or chooses not to follow the sender (See Table <ref type="table" target="#tab_1">2</ref> and Figure <ref type="figure" target="#fig_2">3</ref> for Results). We also applied Bonferroni correction to adjust for type 1 error when performing multiple t-tests as a post-hoc analysis after a signifcant main efect of ANOVA.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Anonymity</head><p>The results of anonymity showed no signifcant main efect of the transparent system design ( [1, 58] = 0.16, = .69, ;</p><p>[ 2 ] = .002) nor avatar-creation method ( [1, 58] = 0.68, = .16, 2 &lt; .001). There was also no interaction efect among the factors ( [1, 58] = 0.99, = .32, 2 = .002). These results answer our RQs that neither transparent system design (RQ1) nor avatar creation method (RQ2) infuenced senders' anonymity perceived by receivers as well as interaction (RQ3).</p><p>Additionally, to ascertain any potential diferences between the videos within each condition, a pairwise t-test with Bonferroni correction was conducted for each condition on anonymity to see if there was any diference between the videos. The results showed no signifcant diferences between the videos in each condition ( = 1.0).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Credibility</head><p>Regarding the receivers' credibility of the senders, none of the main or interaction efects were signifcant concerning trustworthiness and goodwill (all &gt; .24). In terms of competence, there was a signifcant interaction efect between the transparent system design and avatar-creation method ( [1, 58] = 4.73, = .034, 2 &lt; .027).</p><p>Post-hoc tests with Bonferroni corrections revealed that receivers perceive the senders with the personalized avatars in the transparent system ( = 3.83, 95% <ref type="bibr">[3.47, 4.20]</ref>) as signifcantly less competent than those with the customized ( = 4.64, 95% [4.25, 5.03], = .022) or personalized avatars ( = 4.76, 95% [4.39, 5.13], = .004) in the nontransparent system. Other pairs were all non-signifcant (all &gt; .08).</p><p>There was also a main efect of the transparent system design ( [1, 58] = 7.41, = .009, 2 &lt; .077), as receivers perceived the competence of the senders in nontransparent system ( = 4.70, 95% [4.39, 5.01]) to be signifcantly higher than that of the senders in a transparent system ( = 4.11, 95% <ref type="bibr">[3.81, 4.42]</ref>). The main efect of the avatar-creation method was not signifcant ( [1, 58] = 1.98, = .17, 2 &lt; .012). These results answer our RQs that perceived competence, among dimensions of credibility, was the factor that was infuenced by the transparent system design (RQ1), but not by avatar creation method (RQ2), while the avatar creation method infuenced perceived competence when the system design was transparent (RQ3).</p><p>Additionally, to ascertain any potential diferences between the videos within each condition, a pairwise t-test with Bonferroni correction was conducted for each condition on trustworthiness, competence, and goodwill to see if there was any diference between the videos. The results showed no signifcant diferences between the videos in each condition on trustworthiness (all &gt; .12) and competence (all &gt; .46). However, in terms of goodwill, there was a signifcant diference between A5 ( = 4.56, = 0.76) and A3 ( = 3.69, = 0.35), the videos of the senders using personalized avatars in the transparent systems ( [22] = 4.16, = 0.000, ℎ ′ = 1.46). Videos in other conditions were not signifcantly diferent </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Social Attractiveness</head><p>Regarding social attraction, there was no signifcant main efect of the transparent system design ( [1, 58] = 0.03, = .86, 2 &lt; .001). Also, no main efect of the avatar-creation method was found ( [1, 58] = 0.39, = .54, 2 &lt; .002). The interaction efect among the factors was also not signifcant ( [1, 58] = 0.90, = .35, 2 = .005). These results answer our RQs that neither transparent system design (RQ1) nor avatar creation method (RQ2) infuenced receivers' social attractiveness toward senders as well as interaction (RQ3).</p><p>Additionally, to ascertain any potential diferences between the videos within each condition, a pairwise t-test with Bonferroni correction was conducted for each condition on social attractiveness to see if there was any diference between the videos. The results showed no signifcant diferences between the videos in each condition ( = .49).   <ref type="bibr" target="#b14">15)</ref>. These results answer our RQs that the perceived breadth of self-disclosure by the avatar creation method only when the system design was transparent (RQ3), while there was no diference depending on the transparent system design (RQ1) or avatar creation method (RQ2). Furthermore, to make sure to identify any potential diferences between the videos within each condition, a pairwise t-test with Bonferroni correction was conducted for each condition on perceived breadth to see if there was any diference between the videos. The results showed a signifcant diference between B2 ( = 4.37, = 1.74 ) and B4 ( = 2.27, = 1.49), the videos of the senders using customized avatars in the transparent systems ( [24] = 3.49, = 0.008, ℎ ′ = 1.27). Also, there was a signifcant diference between D4 ( = 3.31, = 1.14) and D6 ( = 1.93, = 1.27), the videos of senders using customized avatars in the nontransparent systems ( [26] = 3.13, = 0.016, ℎ ′ = 1.15). Videos in other conditions were not signifcantly diferent (all &gt; .06). Thus, the result of perceived breath should be interpreted with caution. 4.4.2 Perceived Comfort of Self-disclosure. In terms of the perceived comfort of the self-disclosure, there was a 2-way interaction of the transparent system design and avatar-creation method ( [1, 58] = 6.13, = .016, 2 = .051) as well as the main effect of transparent system design ( [1, 58] = 7.02, = .010, 2 = .056) and avatar-creation ( [1, 58] = 7.40, = .009, 2 = .061). The result showed that senders using personalized avatars ( = 4.51, 95% [4.14, 4.88]) were perceived as less comfortable in their self-disclosure than those in customized avatars ( = 5.14, 95% [4.86, 5.42]). Also, senders in transparent systems were perceived ( = 4.52, 95% [4.2, 4.85]) less comfortable in their self-disclosure than those in nontransparent systems ( = 5.13, 95% <ref type="bibr">[4.8, 5.45]</ref>). The post-hoc test revealed that receivers perceive that the senders with personalized avatars in the transparent system ( = 3.91, 95% [3.39, 4.44]) were signifcantly less comfortable in disclosing themselves than those with personalized avatars in the nontransparent system ( = 5.10, 95% [4.58, 5.62], = .013), customized avatars in transparent ( = 5.13, 95% [4.74, 5.52], = .003) or nontransparent system ( = 5.16, 95% [4.76, 5.55], = .002). These results answer our RQs that the perceived comfort of self-disclosure was infuenced by both the transparent system design (RQ1) and avatar creation method (RQ2). The efect of the avatar creation method was also contingent upon the system design (RQ3). Additionally, to see if there are any potential diferences between the videos within each condition, a pairwise t-test with Bonferroni correction was conducted for each condition on perceived comfort to see if there was any diference between the videos. The results showed no signifcant diferences between the videos in each condition ( = .45).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Self-disclosure</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>4.4.</head><p>3 Perceived Honesty of Self-disclosure. In terms of the perceived honesty of the self-disclosure, a 2-way interaction of the transparent system design and avatar-creation method ( [1, 58] = 6.02, = .017, 2 = .042) was found. The main efect of transparent system design ( [1, 58] = 4.64, = .035, 2 = .044) and avatarcreation method ( [1, 58] = 7.98, = .006, 2 = .055) was also signifcant. The result demonstrated that senders using personalized avatars ( = 5.13, 95% [4.75, 5.51]) were perceived as less honest in their self-disclosure than those in customized avatars ( = 5.69, 95% [5.48, 5.90]) and those in transparent systems ( = 5.16, 95% [4.82, 5.49]) were less honest in their self-disclosure than those in nontransparent systems ( = 5.66, 95% [5.33, 5.99]). The post-hoc test revealed that receivers perceive that the senders with personalized avatars in the transparent system ( = 4.63, 95% [4.09, 5.17]) conditions were signifcantly less honest in disclosing themselves than those with customized avatars in the transparent system ( = 5.68, 95% <ref type="bibr">[5.38, 5</ref>.98], = .003) or those with customized avatars in the nontransparent system ( = 5.70, 95% [5.40, 6.00], = .006). These results answer our RQs that the perceived honesty of self-disclosure was infuenced by both the transparent system design (RQ1) and avatar creation method (RQ2). The efect of the avatar creation method was also contingent upon the system design (RQ3).</p><p>Furthermore, to identify any potential diferences between the videos within each condition, a pairwise t-test with Bonferroni correction was conducted for each condition on perceived honesty to see if there was any diference between the videos. The results showed no signifcant diferences between the videos in each condition ( = .20).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5">Following Intention</head><p>The generalized linear mixed model was ftted with a binomial distribution using the logit link function. The model's goodness of ft is represented by an AIC of 163.6 and a BIC of 177.5. The result showed a signifcant main efect of the transparent system design ( = -0.46, 95% [-0.83, -0.09], = .017). The main efect of the avatar-creation method ( = .63) or interaction efect ( = .37) was not signifcant. The result showed that receivers were 2.54 times less likely to follow the senders in a transparent system ( = 0.50, 95% [0.36, 0.64]) compared to those in the nontransparent system ( = 0.72, 95% [0.60, 0.84]). These results answer our RQs that the transparent system design infuences the following intention (RQ1), but not the avatar creation method (RQ2) or their interaction (RQ3).</p><p>Additionally, to make sure there were no potential diferences between the videos within each condition, a pairwise t-test with Bonferroni correction was conducted for each condition with the following intention to see if there was any diference between the videos. The results showed no signifcant diferences between the videos in each condition ( = .54).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">DISCUSSION</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Knowing that Senders Used Personalized Avatar Colors Receivers' Perception</head><p>Our study showed that the receivers' attitudes toward the sender and their self-disclosure were colored by their knowledge of how the sender's avatars were created. Only in the transparent system did receivers perceive that the senders using personalized avatars were less broad, less comfortable, and less honest about self-disclosure than those who identifed using customized avatars. While the online disinhibition efect <ref type="bibr" target="#b46">[47]</ref> provides an explanation about why senders would self-disclose more when using customized rather than personalized avatars, it cannot explain why receivers perceived the senders are disclosing themselves less broadly, less comfortably, and less honestly. In order to understand these results, we need other psychological theories or communication models that focus on the receivers' perception and interpretation of online interactions.</p><p>According to the hyperpersonal model <ref type="bibr" target="#b50">[51]</ref>, individuals in virtual environments often focus on subtle cues, given the reduced context compared to FtF interactions. These minimal cues can greatly infuence impression formation. In our study, avatars, particularly how they were created, acted as these crucial cues, and receivers might have focused on these avatar cues to make judgments about senders' self-disclosure. Indeed, Machneva and colleagues <ref type="bibr" target="#b27">[28]</ref> suggest that receivers shape the frst impression of the senders' solely based on their avatars, although inaccurate. Moreover, while evaluating others by their avatars, they bring their pre-existing expectation or knowledge they already have in face-to-face communication <ref type="bibr" target="#b12">[13]</ref>.</p><p>In face-to-face communication, the most accessible pre-existing expectation or knowledge individuals can refer to is how they themselves think or behave. The theory of mind (ToM) posits that individuals can predict how others will behave by understanding and anticipating the thoughts, beliefs, and emotions of others, essentially placing themselves in another's position <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b39">40]</ref>. Drawing from ToM, receivers in our study might have applied their own feelings and experiences regarding personalized avatars. If they believed that a personalized avatar would make them less comfortable with self-disclosure as it resembles the sender too much, they might have projected that belief onto the sender.</p><p>Previous research supports this projection. Studies have indicated that individuals are more reluctant to disclose their personal information when they feel easily identifable <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b15">16]</ref>. Notably, if the avatar closely mirrors one's real appearance, they are more hesitant to disclose themselves <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b18">19]</ref>. Thus, it stands to reason that receivers believed senders with personalized avatars would be less honest, as they themselves might feel the same discomfort in a similar situation.</p><p>However, it does not guarantee that the receivers' beliefs are correct, even though they use their own feelings to understand the senders' situation. When evaluating others based on their avatars, receivers often bring their own stereotypes and prejudices <ref type="bibr" target="#b12">[13]</ref>. People also have egocentric biases in understanding others' situations and have difculty acknowledging that someone else's perceptions can be diferent from, rather than similar to, their own. Although people initially adjust their thoughts about others to take into account their situation more, they often stop this adjustment once they reach a plausible estimation <ref type="bibr" target="#b10">[11]</ref>. As a result, receivers often do not obtain enough accuracy in estimating others' characteristics based on their avatars. For instance, Machneva and colleagues <ref type="bibr" target="#b27">[28]</ref> showed that while individuals' evaluation of trustworthiness based on others' avatars had consensus among users, their accuracy of predicting actual behavior was very poor.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Not Knowing Sender's Avatar Creation</head><p>Method Leads to More Future Interaction</p><p>Our study also showed that receivers were less inclined to follow senders when the method behind the avatar creation was known compared to when it was undisclosed. This can potentially be attributed to the fact that we sometimes allure to the unknown in online space <ref type="bibr" target="#b33">[34,</ref><ref type="bibr" target="#b40">41]</ref>. While it is generally understood that additional information can boost attractiveness, this efect is modulated by the quality and desirability of the information <ref type="bibr" target="#b40">[41]</ref>. Specifcally, when certain details are perceived as unnecessary or even unwanted, their disclosure might negatively afect user behavior. For instance, when an anonymous gaming YouTuber known as DREAM revealed his face, he encountered a wave of derogatory comments on social media, with users trending phrases such as "He's Ugly" and "#PutTheMaskBackOn. " As a result, DREAM's YouTube views had signifcantly decreased, with his average sitting around fve million views compared to his previous tens of millions. Eventually, DREAM had to wear his mask again to alleviate the public outrage. It appears that the mask has become an essential element of his persona, and the public is unwilling to separate him from it <ref type="bibr" target="#b17">[18]</ref>. The story of the YouTuber DREAM reveals how revealing certain previously concealed details, like his face, can negatively impact public perception and engagement, as his audience preferred his masked, mysterious persona. This is consistent with our fndings. As a result of our study, it is possible that avatars with undisclosed creation methods may have gathered more followers, as they were allured to the unknown in digital environments.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">Practical Implication</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.1">Dilemma of Avatar Personalization.</head><p>Our study also provides some practical implications for applying personalized avatars. Our fndings indicate that the fact that others use personalized avatars may make users perceive that others are less comfortable and honest about self-disclosure. Thus, if creating a personalized avatar is the sole method of avatar creation on a virtual platform, users' selfdisclosure will not be perceived as comfortable and honest by others. It will potentially result in a negative impact on their interactions.</p><p>Thus, platform developers are encouraged to provide both personalized and customized avatar creation options to consider bidirectional social platforms. With a customized avatar option, individuals are more likely to have comfortable interactions with others. Although some studies report a positive impact of personalized avatars on users' experiences <ref type="bibr" target="#b42">[43]</ref>, our fnding that receivers responded less favorably to personalized avatars should be taken into account, given the bidirectional nature of the interaction.</p><p>Furthermore, our study provides design guidelines for applying avatars in the Metaverse <ref type="foot" target="#foot_5">6</ref> . The Metaverse will transcend being merely an entertainment space to encompass a comprehensive realm that includes education <ref type="bibr" target="#b23">[24]</ref>, healthcare <ref type="bibr" target="#b2">[3]</ref>, and daily life, among others. Particularly in felds where building trust is crucial, our research suggests to users of the Metaverse that it may be more advantageous to opt for customized avatars over personalized ones.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.2">Dilemma of Transparency via System.</head><p>Our study also provides practical implications for how to design transparency in the platform, especially in the Metaverse. Our research indicates that transparency, while generally being valued to enhance trust and interaction quality <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b38">39]</ref>, can sometimes infuence user perceptions negatively when applied to certain situations. In our study, receivers viewed the senders behind the avatar diferently in the transparent system. They perceived senders with personalized avatars as less competent, less comfortable, and less honest about their selfdisclosure. This means that senders can sometimes be victims of the prejudice accompanied by the avatar-creation method.</p><p>While being open and clear about the people who are in interactions can be benefcial to the receivers in a way that they are fully told about the information they need to judge others online, it also highlights an important dilemma. If transparency operates in a way that penalizes the senders for no reason, its value comes into question. In a virtual platform, senders sometimes do not want to reveal themselves fully, and receivers, too, do not want to know the senders fully <ref type="bibr" target="#b33">[34,</ref><ref type="bibr" target="#b40">41]</ref>. This is because knowing too much can diminish the little mystery or surprise they have about the senders. Thus, for platform developers, it is not merely about providing complete transparency. Instead, fnding the right balance with transparency is crucial.</p><p>A potential approach to designing transparency between the sender and receivers via a system could be giving users the autonomy to decide whether they want to disclose details about their avatar creation method. Instead of transparency of the individual's avatar-creation method being determined by a system, the system can provide options to users on whether and when they would like to reveal their avatar-creation methods. This way, users can decide for themselves what they are comfortable with. This aligns with prior fndings that users' desire to be open varies across various types of relationships, ranging from superfcial to deep connections <ref type="bibr" target="#b37">[38,</ref><ref type="bibr" target="#b38">39]</ref>.</p><p>However, this approach should be implemented with caution. In this context, choosing not to share their avatar-creation method could also inadvertently work as cues, subjecting the senders to potential prejudice that they are hiding something because they do not reveal their avatar-creation methods.</p><p>Therefore, if the designers of Metaverse have decided to prioritize the transparency of the avatar-creation method, they should consider allowing users to choose whether or not to disclose how their avatar was created. Moreover, the designers should let the users know the potential infuence of their choice of disclosure (or non-disclosure) on receivers' perception. In this way, designers will be able to fnd the optimal balance between transparency and user agency. This approach could grant users greater autonomy and positively infuence individual expression and trust-building within the Metaverse. In summary, while transparency remains a commendable principle, its application needs to be nuanced, ensuring that it complements user preferences and enhances their online experience.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">LIMITATIONS &amp; FUTURE WORKS</head><p>Our study presents several limitations. Firstly, while we tried to select video stimuli that could capture the uniqueness of each condition, some diferences between the videos within the conditions were observed, particularly in goodwill and the perceived breadth of self-disclosure in our nested design. This indicates that the video stimuli may not completely capture how senders might behave in each circumstance. Importantly, when the video stimuli were compared without any explanation about the manipulations, no diferences in the receivers' perceptions of the sender were found. This suggests that the manipulations had a greater impact than the video content itself.</p><p>Secondly, we conducted our research on a hypothetical social virtual world platform, which may lead to concerns about ecological validity. The nature of interaction in our study was unidirectional; receivers only viewed pre-recorded self-introductions of the senders. Such a dynamic might not truly represent the interactive nature of real-world virtual platforms. Thus, future studies should explore our fndings in more natural and bidirectional interactions to more accurately capture real-world scenarios. Also, our study only focused on strangers without prospecting future interaction. However, social virtual worlds vary in their interaction types, scale, and accessibility <ref type="bibr" target="#b25">[26]</ref>. For example, acquaintances tend to interact in social virtual worlds such as Gather Town where support conference-type interactions. As results may vary in existing relationships where future interactions are expected, future studies need to explore how receivers' perceptions change when future interactions are expected.</p><p>Furthermore, our study was about a web-based social virtual world where users interact using avatars. It is worth noting that if users were to engage in a more immersive virtual reality (VR) experience utilizing advanced hardware like head-mounted displays (HMDs), they might experience enhanced physical, social, and self-presence-" a psychological state in which virtual (paraauthentic or artifcial) [social actors, physical objects, and selves] are experienced as if [they are real] in either sensory or nonsensory ways <ref type="bibr" target="#b24">[25]</ref>." In such a setting, both the sender and receiver might perceive and behave diferently during their interactions. Therefore, future studies should explore the applicability of our fndings in immersive VR settings that employ HMDs and similar devices.</p><p>Finally, it is important to consider the potential confounding variables of our study. For instance, individuals more accustomed to AMC platforms and avatar customization (or personalization) might have diferent expectations and comfort levels, impacting how they perceive and engage with avatars in both transparent and nontransparent systems. Similarly, prior experience in creating avatars could afect users' evaluations of others' avatars as well as their own self-disclosure behaviors. Furthermore, individuals' demographic information, such as gender and age, can infuence how they self-disclose in the digital environment. While these questions were not addressed in this study, the diverse experiences and backgrounds of social virtual world users are also important factors to consider in studying AMC. Therefore, our fndings must be interpreted with caution and call for future studies to investigate the efects of familiarity and prior experience with AMC on the evaluations of self and others in AMC, as well as diferences in gender and age.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7">CONCLUSION</head><p>In conclusion, this study ofers valuable insights into AMC, indicating that even small factors like creating an avatar can have a big impact on how people perceive and interact with each other online. The study also shows that designers and developers should be careful when making a social online world that is transparent about the avatar-creation method. The fndings provide a foundation for future studies on the complex dynamics of online communication, sharing personal information, and the psychological aspects of anonymity.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: Explanation Videos for Conditions. In the nontransparent system, participants watched 1. an introduction video and 2.an avatar-creation method video. In the transparent system, participants watched 1. an introduction video, 2. an avatar-creation method video, and 3. an identifcation video. In 1. an introduction video, participants were introduced to the social virtual world. In 2. an avatar-creation method video, participants were explained about two avatar-creation methods available here. In 3. an identifcation video, participants were explained about how avatar-creation methods for each avatar are identifed.</figDesc><graphic coords="5,53.80,83.69,504.40,171.24" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>Anonymity ( = .57, = 4.80, = 1.28), trustworthiness ( = .91, = 4.50, = 1.33), competence ( = .87, = 4.50, = 1.33), goodwill ( = .71, = 4.50, = 1.33), social attractiveness ( = .95, = 4.22, = 1.39), perceived breadth ( = 2.86, = 1.56), comfortableness ( = 4.89, = 1.16) and honesty ( = 5.26, = 1.02) of self-disclosure, follow ( = 0.53, = 0.50) was all not signifcant (all &gt; .09).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Interaction plot results of Post-hoc test with Bonferroni corrections, indicating which groups have statistically signifcant diferences. Shared letters denote no signifcant diference, while distinct letters indicate signifcant group diferences. Asterisk(*) on the constructs indicates that they were signifcant main or interaction efects. EMM = Estimated Marginal Means</figDesc><graphic coords="8,53.80,83.69,504.41,406.74" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>4. 4 . 1</head><label>41</label><figDesc>Perceived Breadth of Self-disclosure. In terms of the perceived breadth of the self-disclosure, an interaction between the transparent system design and avatar-creation method was found ( [1, 58] = 10.40, = .002, 2 = .054). The main efect of the transparent system design ( [1, 58] = 0.07, = .79, 2 &lt;</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="1,61.36,297.35,489.28,237.06" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 :</head><label>1</label><figDesc>Summary of Selected Self-introduction stimuli. *Participant D6 swapped the gender of the avatar, and **responses about the self-disclosure of participant C8 were not collected. ***Details of self-disclosure are as follows: a. age or height information, b. hometown, c. major or occupation, d. my personal traits, e. what I like and dislike about myself, f. what is important to me in life, and g. my close relationships.</figDesc><table><row><cell cols="2">Conditions</cell><cell></cell><cell>Video</cell><cell cols="2">Demographic</cell><cell></cell><cell cols="3">Self-reported self-disclosure</cell></row><row><cell>System design</cell><cell cols="9">Avatar-creation method ID Length (m:ss) Gender Age Breadth Comfort Honesty Descriptions ***</cell></row><row><cell>Transparent</cell><cell>Personalized Customized</cell><cell>A3 A5 B2 B4</cell><cell>0:47 0:38 0:36 0:38</cell><cell>M F M F</cell><cell>40 37 29 37</cell><cell>2 1 5 1</cell><cell>6 5 5.8 5</cell><cell>7 6 7 6</cell><cell>a, b, c a, b a, b, c, d, e, f c, e</cell></row><row><cell>Nontransparent</cell><cell>Personalized Customized</cell><cell>C4 C8 D4 D6</cell><cell>0:48 0:39 2:39 0:42</cell><cell>M M M M*</cell><cell>25 24 28 25</cell><cell>3 NC** 4 2</cell><cell>5.3 NC 4.75 6</cell><cell>7 NC 5 6</cell><cell>d, g, h NC a, b, c, e, f a, b, e</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 :</head><label>2</label><figDesc>Summary of results. NS denotes nonsignifcant results, while Asterisk (*) indicates signifcant results (* at the ≤ .05 level and ** at the ≤ .01 level). T stands for Transparent System, NT for Nontransparent System, P for Personalized Avatars, C for Customized Avatars. Variables with † require cautious interpretation due to video diferences..001) and avatar-creation method ( [1, 58] = 2.01, = .16,</figDesc><table /><note><p>2 = .011) was not signifcant. The post-hoc analysis with Bonferroni corrections showed that the receivers perceived senders with personalized avatars in the transparent system ( = 2.40, 95% [1.71, 3.09]) disclosed signifcantly more about themselves than those with customized avatars in the transparent system ( = 3.60, 95% [2.99, 4.21], = .010). Other pairs were not signifcantly diferent (all &gt; .</p></note></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>https://www.apple.com/apple-vision-pro/</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>http://spatial.io/</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="3" xml:id="foot_2"><p>http://web.zepeto.me</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="4" xml:id="foot_3"><p>https://osf.io/ft2ga/?view_only=123cc665d845423daeb9c02470cfb381</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="5" xml:id="foot_4"><p>https://readyplayer.me/</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="6" xml:id="foot_5"><p>The term Metaverse, frst coined by Neal Stephenson<ref type="bibr" target="#b45">[46]</ref> and initially gained attention through platforms such as Second Life, surged again with immersive technologies (e.g., VR, AR, XR), notably illustrated by Facebook's rebranding to Meta. Despite the academic world still converging towards a unifed defnition of the Metaverse, as evidenced by the ongoing discussions referenced by Xu and colleagues<ref type="bibr" target="#b53">[54]</ref>, there's a general agreement that its essence lies in merging virtual technologies with the physical world<ref type="bibr" target="#b47">[48]</ref>. Park and colleagues<ref type="bibr" target="#b36">[37]</ref> have also contributed to this discourse by examining the Metaverse workspace functioning without immersive hardware. In this line of understanding of the Metaverse, our fndings on avatar personalization and system transparency can provide signifcant design suggestions in the Metaverse while also acknowledging the need to consider variations in immersive experiences.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>ACKNOWLEDGMENTS</head><p>We thank <rs type="person">Juyeob Lee</rs>, <rs type="person">Seungjoon Son</rs>, <rs type="person">Taebin Lim</rs>, and <rs type="person">Yejin Lee</rs> from <rs type="affiliation">Sungkyunkwan University</rs> for helping organize and proctor experiments. We also thank anonymous reviewers for providing valuable feedback to improve this paper.</p></div>
+			</div>			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A MEASURES A.1 Credibility</head><p>How do you feel about the counterpart? </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A.2 Social attraction</head><p>How do you feel about the counterpart?</p><p>(1 = Strongly disagree -7 = Strongly agree).</p><p>(1) I would like to have a friendly chat with her/him.</p><p>(2) I think they could be a friend of mine.</p><p>(3) They are easy to get along with.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A.3 Anonymity</head><p>Please respond to the following questions. (1 = Strongly disagree -7 = Strongly agree)</p><p>(1) The counterpart in the video was anonymous to me.</p><p>(2) I didn't know the counterpart in this video.</p><p>(3) I can identify the counterpart in the video. * (4) The actual identity of the counterpart in the video was hidden within their avatar.</p><p>Jang and Kim, et al. How comfortable did the counterpart seem when talking about the following topic?</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A.4 Self-disclosure</head><p>(1 = Not at all comfortable -7 = Completely comfortable)</p><p>Perceived honesty of self-disclosure Did the counterpart seem truthful when discussing the following topic?</p><p>( 1 = Not at all honest -7 = Completely honest )</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A.5 Willingness to follow</head><p>Would you follow the counterpart?</p><p>• Yes, I would • No, I wouldn't * These items were excluded in the fnal analysis.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Attention by design: Using attention checks to detect inattentive respondents and improve data quality</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>James</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Margaret</forename><forename type="middle">G</forename><surname>Abbey</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Meloy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Operations Management</title>
+		<imprint>
+			<biblScope unit="volume">53</biblScope>
+			<biblScope unit="page" from="63" to="70" />
+			<date type="published" when="2017">2017. 2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<author>
+			<persName><surname>Apple</surname></persName>
+		</author>
+		<ptr target="https://www.youtube.com/watch?v=TX9qSaGXFyg" />
+		<title level="m">Introducing Apple Vision Pro</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Healthcare in metaverse: A survey on current metaverse applications in healthcare</title>
+		<author>
+			<persName><forename type="first">Gaurang</forename><surname>Bansal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Karthik</forename><surname>Rajgopal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vinay</forename><surname>Chamola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zehui</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dusit</forename><surname>Niyato</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ieee Access</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="119914" to="119946" />
+			<date type="published" when="2022">2022. 2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Does the autistic child have a &quot;theory of mind</title>
+		<author>
+			<persName><forename type="first">Simon</forename><surname>Baron-Cohen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alan</forename><forename type="middle">M</forename><surname>Leslie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Uta</forename><surname>Frith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cognition</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="37" to="46" />
+			<date type="published" when="1985">1985. 1985</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Designing transparency cues in online news platforms to promote trust: Journalists&apos;&amp; consumers&apos; perspectives</title>
+		<author>
+			<persName><forename type="first">Hayden</forename><surname>Md Momen Bhuiyan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michael</forename><surname>Whitley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sang</forename><forename type="middle">Won</forename><surname>Horning</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tanushree</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Mitra</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the ACM on Human-Computer Interaction</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="1" to="31" />
+			<date type="published" when="2021">2021. 2021</date>
+		</imprint>
+	</monogr>
+	<note>CSCW</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Impression management, social desirability, and computer administration of attitude questionnaires: Does the computer make a diference</title>
+		<author>
+			<persName><forename type="first">Stephanie</forename><surname>Booth-Kewley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jack</forename><forename type="middle">E</forename><surname>Edwards</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Paul</forename><surname>Rosenfeld</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Applied Psychology</title>
+		<imprint>
+			<biblScope unit="volume">77</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page">562</biblScope>
+			<date type="published" when="1992">1992. 1992</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Theory of mind: Mechanisms, methods, and new directions</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lindsey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bilge</forename><surname>Byom</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Mutlu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in human neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page">413</biblScope>
+			<date type="published" when="2013">2013. 2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Anonymity and online self-disclosure: A meta-analysis</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Cathlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nicholas</forename><forename type="middle">D</forename><surname>Clark-Gordon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alan</forename><forename type="middle">K</forename><surname>Bowman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alyssa</forename><surname>Goodboy</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Wright</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communication Reports</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="98" to="111" />
+			<date type="published" when="2019">2019. 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Self-disclosure</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Valerian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sandra</forename><surname>Derlega</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sandra</forename><surname>Metts</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stephen</forename><forename type="middle">T</forename><surname>Petronio</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Margulis</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1993">1993</date>
+			<publisher>Sage Publications, Inc</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Body and mind: a study of avatar personalization in three virtual worlds</title>
+		<author>
+			<persName><forename type="first">Nicolas</forename><surname>Ducheneaut</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ming-Hui</forename><surname>Wen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nicholas</forename><surname>Yee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Greg</forename><surname>Wadley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the SIGCHI conference on human factors in computing systems</title>
+		<meeting>the SIGCHI conference on human factors in computing systems</meeting>
+		<imprint>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="page" from="1151" to="1160" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Perspective taking as egocentric anchoring and adjustment</title>
+		<author>
+			<persName><forename type="first">Nicholas</forename><surname>Epley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Boaz</forename><surname>Keysar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Leaf</forename><surname>Van Boven</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Thomas</forename><surname>Gilovich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of personality and social psychology</title>
+		<imprint>
+			<biblScope unit="volume">87</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page">327</biblScope>
+			<date type="published" when="2004">2004. 2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Dancing with the Avatars: Minimal Avatar Customisation Enhances Learning in a Psychomotor Task</title>
+		<author>
+			<persName><forename type="first">Isabel</forename><surname>Fitton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christopher</forename><surname>Clarke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jeremy</forename><surname>Dalton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michael</forename><forename type="middle">J</forename><surname>Proulx</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christof</forename><surname>Lutteroth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2023 CHI Conference on Human Factors in Computing Systems</title>
+		<meeting>the 2023 CHI Conference on Human Factors in Computing Systems</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="1" to="16" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Body, avatar, and me: The presentation and perception of self in social virtual reality</title>
+		<author>
+			<persName><forename type="first">Guo</forename><surname>Freeman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Divine</forename><surname>Maloney</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the ACM on humancomputer interaction 4</title>
+		<meeting>the ACM on humancomputer interaction 4</meeting>
+		<imprint>
+			<date type="published" when="2021">2021. 2021</date>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="1" to="27" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">My body, my avatar: How people perceive their avatars in social virtual reality</title>
+		<author>
+			<persName><forename type="first">Guo</forename><surname>Freeman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Samaneh</forename><surname>Zamanifard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Divine</forename><surname>Maloney</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alexandra</forename><surname>Adkins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Extended Abstracts of the 2020 CHI Conference on Human Factors in Computing Systems</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1" to="8" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Avatar and sense of embodiment: Studying the relative preference between appearance, control and point of view</title>
+		<author>
+			<persName><forename type="first">Rebecca</forename><surname>Fribourg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ferran</forename><surname>Argelaguet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Anatole</forename><surname>Lécuyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ludovic</forename><surname>Hoyet</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE transactions on visualization and computer graphics</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="2062" to="2072" />
+			<date type="published" when="2020">2020. 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Avatar-driven self-disclosure: The virtual me is the actual me</title>
+		<author>
+			<persName><forename type="first">Rosalie</forename><surname>Hooi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hichang</forename><surname>Cho</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computers in Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="page" from="20" to="28" />
+			<date type="published" when="2014">2014. 2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">I&apos;ve talked without intending to&quot;: Self-disclosure and Reciprocity via Embodied Avatar</title>
+		<author>
+			<persName><forename type="first">Junko</forename><surname>Ichino</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Masahiro</forename><surname>Ide</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hitomi</forename><surname>Yokoyama</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hirotoshi</forename><surname>Asano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hideo</forename><surname>Miyachi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daisuke</forename><surname>Okabe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the ACM on Human-Computer Interaction</title>
+		<meeting>the ACM on Human-Computer Interaction</meeting>
+		<imprint>
+			<date type="published" when="2022">2022. 2022</date>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="1" to="23" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<author>
+			<persName><forename type="first">Moises</forename><surname>Mendez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">I</forename></persName>
+		</author>
+		<ptr target="https://time.com/6286572/youtube-dream-face-mask-back-on/" />
+		<title level="m">What to know about dream concealing his identity again</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Self-disclosure in computer-mediated communication: The role of self-awareness and visual anonymity</title>
+		<author>
+			<persName><surname>Adam N Joinson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">European journal of social psychology</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="177" to="192" />
+			<date type="published" when="2001">2001. 2001</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">The efect of anonymity on the usage of avatar: Comparison of Internet relay chat and instant messenger</title>
+		<author>
+			<persName><forename type="first">Hye-Seung</forename><surname>Kang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hee-Dong</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AMCIS 2004 Proceedings</title>
+		<imprint>
+			<date type="published" when="2004">2004. 2004</date>
+			<biblScope unit="page">327</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">The visual characteristics of avatars in computer-mediated communication: Comparison of Internet Relay Chat and Instant Messenger as of 2003</title>
+		<author>
+			<persName><forename type="first">Hye-Seung</forename><surname>Kang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hee-Dong</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">International Journal of Human-Computer Studies</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="page" from="1173" to="1183" />
+			<date type="published" when="2006">2006. 2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Why do people seek anonymity on the internet? Informing policy and design</title>
+		<author>
+			<persName><forename type="first">Ruogu</forename><surname>Kang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stephanie</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sara</forename><surname>Kiesler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the SIGCHI conference on human factors in computing systems</title>
+		<meeting>the SIGCHI conference on human factors in computing systems</meeting>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="page" from="2657" to="2666" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Understanding emerging design practices for avatar systems in the commercial social vr ecology</title>
+		<author>
+			<persName><forename type="first">Anya</forename><surname>Kolesnichenko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Joshua</forename><surname>Mcveigh-Schultz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Katherine</forename><surname>Isbister</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2019 on Designing Interactive Systems Conference</title>
+		<meeting>the 2019 on Designing Interactive Systems Conference</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="241" to="252" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Educational applications of metaverse: possibilities and limitations</title>
+		<author>
+			<persName><forename type="first">Bokyung</forename><surname>Kye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nara</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Eunji</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yeonjeong</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Soyoung</forename><surname>Jo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of educational evaluation for health professions</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<date type="published" when="2021">2021. 2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Presence, explicated</title>
+		<author>
+			<persName><forename type="first">Lee</forename><surname>Kwan Min</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communication theory</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="27" to="50" />
+			<date type="published" when="2004">2004. 2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Social VR: A new medium for remote communication and collaboration</title>
+		<author>
+			<persName><forename type="first">Jie</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vinoba</forename><surname>Vinayagamoorthy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Julie</forename><surname>Williamson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">David</forename><forename type="middle">A</forename><surname>Shamma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pablo</forename><surname>Cesar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Extended Abstracts of the 2021 CHI Conference on Human Factors in Computing Systems</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1" to="6" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Anonymity, intimacy and selfdisclosure in social media</title>
+		<author>
+			<persName><forename type="first">Xiao</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jef</forename><surname>Hancock</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mor</forename><surname>Naaman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2016 CHI conference on human factors in computing systems</title>
+		<meeting>the 2016 CHI conference on human factors in computing systems</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="3857" to="3869" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Consensus and (lack of) accuracy in perceptions of avatar trustworthiness</title>
+		<author>
+			<persName><forename type="first">Maria</forename><surname>Machneva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Anthony</forename><forename type="middle">M</forename><surname>Evans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Olga</forename><surname>Stavrova</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computers in Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">126</biblScope>
+			<biblScope unit="page">107017</biblScope>
+			<date type="published" when="2022">2022. 2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Anonymity vs. familiarity: Self-disclosure and privacy in social virtual reality</title>
+		<author>
+			<persName><forename type="first">Divine</forename><surname>Maloney</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Samaneh</forename><surname>Zamanifard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Guo</forename><surname>Freeman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 26th ACM Symposium on Virtual Reality Software and Technology</title>
+		<meeting>the 26th ACM Symposium on Virtual Reality Software and Technology</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1" to="9" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">The value of virtual assets: the role of game characters in MMOGs</title>
+		<author>
+			<persName><forename type="first">Tony</forename><surname>Manninen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tomi</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">International Journal of Business Science &amp; Applied Management (IJBSAM)</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="21" to="33" />
+			<date type="published" when="2007">Kujanpää. 2007. 2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">Interpersonal communication and you: An introduction</title>
+		<author>
+			<persName><forename type="first">Steven</forename><surname>Mccornack</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+			<publisher>Macmillan Higher Education</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Goodwill: A reexamination of the construct and its measurement</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>James</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jason</forename><forename type="middle">J</forename><surname>Mccroskey</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Teven</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications Monographs</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="90" to="103" />
+			<date type="published" when="1999">1999. 1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Analysis and improvement of the measurement of interpersonal attraction and homophily</title>
+		<author>
+			<persName><forename type="first">Linda</forename><forename type="middle">L</forename><surname>Mccroskey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">James</forename><forename type="middle">C</forename><surname>Mccroskey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Virginia</forename><forename type="middle">P</forename><surname>Richmond</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communication Quarterly</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="31" />
+			<date type="published" when="2006">2006. 2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Anonymity is part of the magic&quot;: Individual manipulation of computer-mediated communication contexts</title>
+		<author>
+			<persName><forename type="first">David</forename><surname>Myers</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Qualitative Sociology</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="251" to="266" />
+			<date type="published" when="1987">1987. 1987</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Choosing Buddy Icons that look like me or represent my personality: Using Buddy Icons for social presence</title>
+		<author>
+			<persName><forename type="first">Kristine</forename><forename type="middle">L</forename><surname>Nowak</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computers in Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1456" to="1464" />
+			<date type="published" when="2013">2013. 2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Avatars and computer-mediated communication: a review of the defnitions, uses, and efects of digital representations</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kristine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jesse</forename><surname>Nowak</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Fox</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Review of Communication Research</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="30" to="53" />
+			<date type="published" when="2018">2018. 2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Towards a Metaverse Workspace: Opportunities, Challenges, and Design Implications</title>
+		<author>
+			<persName><forename type="first">Hyanghee</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daehwan</forename><surname>Ahn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Joonhwan</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2023 CHI Conference on Human Factors in Computing Systems</title>
+		<meeting>the 2023 CHI Conference on Human Factors in Computing Systems</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="1" to="20" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Who gets to know what when: confguring privacy permissions in an awareness application</title>
+		<author>
+			<persName><forename type="first">Sameer</forename><surname>Patil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jennifer</forename><surname>Lai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the SIGCHI conference on Human factors in computing systems</title>
+		<meeting>the SIGCHI conference on Human factors in computing systems</meeting>
+		<imprint>
+			<date type="published" when="2005">2005</date>
+			<biblScope unit="page" from="101" to="110" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Foundations of organizational trust: What matters to diferent stakeholders?</title>
+		<author>
+			<persName><forename type="first">Michael</forename><surname>Pirson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Deepak</forename><surname>Malhotra</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Organization science</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1087" to="1104" />
+			<date type="published" when="2011">2011. 2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Does the chimpanzee have a theory of mind?</title>
+		<author>
+			<persName><forename type="first">David</forename><surname>Premack</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Guy</forename><surname>Woodruf</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Behavioral and brain sciences</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="515" to="526" />
+			<date type="published" when="1978">1978. 1978</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">To identify or not to identify: A theoretical model of receiver responses to anonymous communication</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Stephen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Craig</forename><forename type="middle">R</forename><surname>Rains</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Scott</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communication Theory</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="61" to="91" />
+			<date type="published" when="2007">2007. 2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Avatar characteristics induce users&apos; behavioral conformity with small-to-medium efect sizes: a meta-analysis of the proteus efect</title>
+		<author>
+			<persName><forename type="first">Rabindra</forename><surname>Ratan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">David</forename><surname>Beyea</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Benjamin</forename><forename type="middle">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Luis</forename><surname>Graciano</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Media Psychology</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="651" to="675" />
+			<date type="published" when="2020">2020. 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Meeting Your Virtual Twin: Efects of Photorealism and Personalization on Embodiment, Self-Identifcation and Perception of Self-Avatars in Virtual Reality</title>
+		<author>
+			<persName><forename type="first">Anca</forename><surname>Salagean</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Eleanor</forename><surname>Crellin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Martin</forename><surname>Parsons</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Darren</forename><surname>Cosker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Danaë</forename><surname>Stanton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fraser</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2023 CHI Conference on Human Factors in Computing Systems</title>
+		<meeting>the 2023 CHI Conference on Human Factors in Computing Systems</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="1" to="16" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Agileavatar: Stylized 3d avatar creation via cascaded domain bridging</title>
+		<author>
+			<persName><forename type="first">Shen</forename><surname>Sang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tiancheng</forename><surname>Zhi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Guoxian</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Minghao</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chunpong</forename><surname>Lai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jing</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xiang</forename><surname>Wen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">James</forename><surname>Davis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Linjie</forename><surname>Luo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGGRAPH Asia 2022 Conference Papers</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1" to="8" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Dis) connections in anonymous communication theory: Exploring conceptualizations of anonymity in communication research</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Craig</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stephen</forename><forename type="middle">A</forename><surname>Scott</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Rains</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Annals of the International Communication Association</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="385" to="400" />
+			<date type="published" when="2020">2020. 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<monogr>
+		<title level="m" type="main">Snow crash</title>
+		<author>
+			<persName><forename type="first">Neal</forename><surname>Stephenson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1994">1994</date>
+			<publisher>Penguin UK</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">The online disinhibition efect</title>
+		<author>
+			<persName><forename type="first">John</forename><surname>Suler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cyberpsychology &amp; behavior</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="321" to="326" />
+			<date type="published" when="2004">2004. 2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Something personal from the metaverse: goals, topics, and contextual factors of selfdisclosure in commercial social VR</title>
+		<author>
+			<persName><forename type="first">Philipp</forename><surname>Sykownik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Divine</forename><surname>Maloney</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Guo</forename><surname>Freeman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maic</forename><surname>Masuch</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2022 CHI Conference on Human Factors in Computing Systems</title>
+		<meeting>the 2022 CHI Conference on Human Factors in Computing Systems</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1" to="17" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Getting acquainted: The relationship of self-disclosure and social attraction to positive afect</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Jefrey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Craig</forename><forename type="middle">S</forename><surname>Vittengl</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Holt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Social and Personal Relationships</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="53" to="66" />
+			<date type="published" when="2000">2000. 2000</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">The impact of avatar personalization and immersion on virtual body ownership, presence, and emotional response</title>
+		<author>
+			<persName><forename type="first">Thomas</forename><surname>Waltemate</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dominik</forename><surname>Gall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daniel</forename><surname>Roth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mario</forename><surname>Botsch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marc</forename><forename type="middle">Erich</forename><surname>Latoschik</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE transactions on visualization and computer graphics</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1643" to="1652" />
+			<date type="published" when="2018">2018. 2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Computer-mediated communication: Impersonal, interpersonal, and hyperpersonal interaction</title>
+		<author>
+			<persName><forename type="first">Walther</forename><surname>Joseph</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communication research</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="3" to="43" />
+			<date type="published" when="1996">1996. 1996</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">The infuence of anonymity and incivility on perceptions of user comments on news websites</title>
+		<author>
+			<persName><forename type="first">Sai</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mass Communication and Society</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="912" to="936" />
+			<date type="published" when="2020">2020. 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">SwiftAvatar: Efcient Auto-Creation of Parameterized Stylized Character on Arbitrary Avatar Engines</title>
+		<author>
+			<persName><forename type="first">Shizun</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Weihong</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xu</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hao</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Li</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chuang</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ming</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yi</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yunzhao</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Min</forename><surname>Zheng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artifcial Intelligence</title>
+		<meeting>the AAAI Conference on Artifcial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="6101" to="6109" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Metaverse: the vision for the future</title>
+		<author>
+			<persName><forename type="first">Jiangnan</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Konstantinos</forename><surname>Papangelis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><surname>Dunham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jorge</forename><surname>Goncalves</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nicolas</forename><surname>James Lalone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alan</forename><surname>Chamberlain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ioanna</forename><surname>Lykourentzou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Federica</forename><forename type="middle">L</forename><surname>Vinella</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">David</forename><forename type="middle">I</forename><surname>Schwartz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CHI Conference on Human Factors in Computing Systems Extended Abstracts</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1" to="3" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

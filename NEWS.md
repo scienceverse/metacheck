@@ -1,3 +1,9 @@
+# papercheck 0.0.0.9034
+
+* `openalex()` takes paper objects, paper lists, and vectors of DOIs as input, not just a single DOI
+* fixed paper object naming problem when nested files are not all at the same depth
+
+
 # papercheck 0.0.0.9033
 
 * added `read_cermine()` as associated internal functions for reading cermine-formatted XMLs
