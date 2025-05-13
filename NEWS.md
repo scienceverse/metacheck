@@ -1,3 +1,7 @@
+# papercheck 0.0.0.9035
+
+* updated the shiny app for recent changes
+
 # papercheck 0.0.0.9034
 
 * `openalex()` takes paper objects, paper lists, and vectors of DOIs as input, not just a single DOI

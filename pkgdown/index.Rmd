@@ -19,7 +19,8 @@ knitr::opts_chunk$set(
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-The goal of papercheck is to automatically check scientific papers for best practices.
+PaperCheck provides extendanble and integrated tools for automatically checking scientific papers for best practices, developed by Lisa DeBruine and Daniel Lakens in 2024 during Lisa’s visiting professorship at the Eindhoven Artificial Intelligence Systems Institute (EAISI). 
+
 
 ## Installation
 

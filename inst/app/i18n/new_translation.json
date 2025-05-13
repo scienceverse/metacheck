@@ -575,6 +575,18 @@
       "en": ""
     },
     {
+      "en": "div"
+    },
+    {
+      "en": "GROQ API Key"
+    },
+    {
+      "en": "id"
+    },
+    {
+      "en": "LLM"
+    },
+    {
       "en": "StatCheck"
     }
   ]

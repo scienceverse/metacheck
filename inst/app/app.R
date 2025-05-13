@@ -17,7 +17,7 @@ source("i18n/trans.R")
 ## Interface Tab Items ----
 source("tabs/load.R")
 source("tabs/text.R")
-source("tabs/gpt.R")
+source("tabs/llm.R")
 source("tabs/mod.R")
 source("tabs/report.R")
 
@@ -36,7 +36,7 @@ ui <- dashboardPage(
                icon = icon("database")),
       menuItem("Search Text", tabName = "text_tab",
                icon = icon("magnifying-glass")),
-      menuItem("ChatGPT", tabName = "gpt_tab",
+      menuItem("LLM", tabName = "llm_tab",
                icon = icon("robot"))
     ),
     actionButton("demo", "Load Demo File"),
@@ -65,7 +65,7 @@ ui <- dashboardPage(
       mod_tab,
       report_tab,
       text_tab,
-      gpt_tab
+      llm_tab
     )
   )
 )
@@ -73,16 +73,16 @@ ui <- dashboardPage(
 
 ## server ----
 server <- function(input, output, session) {
-  updateNumericInput(session, "gpt_max_calls", value = getOption("papercheck.gpt_max_callsl"))
+  updateNumericInput(session, "llm_max_calls", value = papercheck::llm_max_calls())
 
-  if (Sys.getenv("CHATGPT_KEY") != "") hide("gpt_api")
+  if (Sys.getenv("GROQ_API_KEY") != "") hide("llm_api")
 
   ## reactiveVals ----
   debug_msg("----reactiveVals----")
 
   my_paper <- reactiveVal( list() )
   text_table <- reactiveVal( data.frame() )
-  gpt_table <- reactiveVal( data.frame() )
+  llm_table <- reactiveVal( data.frame() )
   mod_table <- reactiveVal( data.frame() )
   mod_report <- reactiveVal( "" )
   mod_title <- reactiveVal( "" )
@@ -121,7 +121,7 @@ server <- function(input, output, session) {
 
   ### on text_table() change ----
   observe({
-    needs_text_table <- c("download_table", "gpt_submit", "search_text",
+    needs_text_table <- c("download_table", "llm_submit", "search_text",
                           "run_statcheck", "check_p_values")
     if (nrow(text_table()) == 0) {
       lapply(needs_text_table, shinyjs::disable)
@@ -131,13 +131,13 @@ server <- function(input, output, session) {
     }
   })
 
-  ### on gpt_table() change ----
+  ### on llm_table() change ----
   observe({
-    needs_gpt_table <- "download_gpt"
-    if (nrow(gpt_table()) == 0) {
-      lapply(needs_gpt_table, shinyjs::disable)
+    needs_llm_table <- "download_llm"
+    if (nrow(llm_table()) == 0) {
+      lapply(needs_llm_table, shinyjs::disable)
     } else {
-      lapply(needs_gpt_table, shinyjs::enable)
+      lapply(needs_llm_table, shinyjs::enable)
     }
   })
 
@@ -207,7 +207,7 @@ server <- function(input, output, session) {
     debug_msg("update_from_paper")
 
     text_table(data.frame())
-    gpt_table(data.frame())
+    llm_table(data.frame())
     mod_table(data.frame())
     mod_report("")
     mod_title("")
@@ -290,10 +290,19 @@ server <- function(input, output, session) {
                         perl = "perl" %in% input$search_options
       )
       text_table(tt)
-      updateCheckboxGroupInput(session, "gpt_group_by",
+
+      # update interface elements
+      updateCheckboxGroupInput(session, "llm_group_by",
                                choices = names(tt),
                                selected = "file",
                                inline = TRUE)
+
+      sec <- unique(tt$section)
+      sec <- sec[!is.na(sec)] |> sort()
+      sec <- c("all", sec)
+      updateSelectInput(session, "search_section",
+                        choices = sec,
+                        selected = "all")
     }, error = function(e) {
       shinyjs::alert(e$message)
     })
@@ -540,7 +549,7 @@ server <- function(input, output, session) {
     mod_report()
   })
 
-  ## gpt ----
+  ## llm ----
 
   output$total_cost <- renderValueBox({
     valueBox(
@@ -551,65 +560,68 @@ server <- function(input, output, session) {
     )
   })
 
-  ### gpt_max_calls----
-  observeEvent(input$gpt_max_calls, {
-    debug_msg("gpt_max_calls")
-    if (is.numeric(input$gpt_max_calls)) {
-      llm_max_calls(input$gpt_max_calls)
+  ### llm_max_calls----
+  observeEvent(input$llm_max_calls, {
+    debug_msg("llm_max_calls")
+    if (is.numeric(input$llm_max_calls)) {
+      llm_max_calls(input$llm_max_calls)
       newmax <- llm_max_calls()
-      updateNumericInput(session, "gpt_max_calls", value = newmax)
+      updateNumericInput(session, "llm_max_calls", value = newmax)
     }
   })
 
-  ### gpt_submit----
-  observeEvent(input$gpt_submit, {
-    debug_msg("gpt_submit")
+  ### llm_submit----
+  observeEvent(input$llm_submit, {
+    debug_msg("llm_submit")
 
     text <- text_table()
-    groups <- unique(text[, input$gpt_group_by, drop = FALSE])
+    groups <- unique(text[, input$llm_group_by, drop = FALSE])
 
-    if (nrow(groups) > input$gpt_max_calls) {
+    if (nrow(groups) > input$llm_max_calls) {
       showModal(modalDialog(
         title = "Too many calls",
-        paste("This will create", nrow(groups), "calls to ChatGPT. Set the maximum number allowed higher if this is OK."),
+        paste("This will create", nrow(groups), "calls to the LLM. Set the maximum number allowed higher if this is OK."),
         easyClose = TRUE,
         footer = tagList(
           modalButton("Dismiss")
         )
       ))
     } else {
-      n <- nrow(groups)
-      res <- vector("list", n)
-      withProgress(message = 'Querying ChatGPT', value = 0, {
-        detail <- paste(groups[1, ], collapse = ":") |>
-          paste("1/", n, " (", x = _, ")")
-        incProgress(0, detail = detail)
-        for (i in 1:n) {
-          subtext <- dplyr::semi_join(text, groups[i, ,drop = FALSE],
-                                      by = input$gpt_group_by)
-          res[[i]] <- llm(text = subtext,
-                          query = input$gpt_query,
-                          context = input$gpt_context,
-                          group_by = input$gpt_group_by,
-                          CHATGPT_KEY = input$gpt_api)
-          if (i < n) {
-            detail <- paste(groups[i+1, ], collapse = ":") |>
-              paste(i+1, "/", n, " (", x = _, ")")
-          }
-          incProgress(1/n, detail = detail)
-        }
-      })
-
-      res <- do.call(rbind, res)
-      gpt_table(res)
+      subtext <- search_text(text, return = input$llm_group_by)
+      res <- llm(text = subtext,
+                      query = input$llm_query,
+                      API_KEY = input$llm_api)
+      #
+      # n <- nrow(groups)
+      # res <- vector("list", n)
+      # withProgress(message = 'Querying LLM', value = 0, {
+      #   detail <- paste(groups[1, ], collapse = ":") |>
+      #     paste("1/", n, " (", x = _, ")")
+      #   incProgress(0, detail = detail)
+      #   for (i in 1:n) {
+      #     subtext <- dplyr::semi_join(text, groups[i, ,drop = FALSE],
+      #                                 by = input$llm_group_by)
+      #     res[[i]] <- llm(text = subtext,
+      #                     query = input$llm_query,
+      #                     API_KEY = input$llm_api)
+      #     if (i < n) {
+      #       detail <- paste(groups[i+1, ], collapse = ":") |>
+      #         paste(i+1, "/", n, " (", x = _, ")")
+      #     }
+      #     incProgress(1/n, detail = detail)
+      #   }
+      # })
+      #
+      # res <- do.call(rbind, res)
+      llm_table(res)
     }
   })
 
-  ### gpt_table ----
-  output$gpt_table <- renderDT({
-    debug_msg("gpt_table")
+  ### llm_table ----
+  output$llm_table <- renderDT({
+    debug_msg("llm_table")
 
-    gt <- gpt_table()
+    gt <- llm_table()
 
     if (!is.null(gt$cost)) {
       total_cost(sum(gt$cost))
@@ -623,14 +635,14 @@ server <- function(input, output, session) {
   options = dt_options
   )
 
-  ### download_gpt ----
-  output$download_gpt <- downloadHandler(
+  ### download_llm ----
+  output$download_llm <- downloadHandler(
     filename = function() {
-      debug_msg("download_gpt")
-      paste0("gpt.csv")
+      debug_msg("download_llm")
+      paste0("llm.csv")
     },
     content = function(file) {
-      write.csv(gpt_table(), file, row.names = FALSE)
+      write.csv(llm_table(), file, row.names = FALSE)
     }
   )
 

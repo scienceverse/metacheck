@@ -127,7 +127,7 @@ test_that("exceeds tokens", {
   skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
   ## big text
-  text <- psychsci[[1]] |> search_text(return = "all")
+  text <- psychsci[[1]] |> search_text(return = "id")
   query <- "Respond with the exact text"
   expect_message(
     expect_warning(

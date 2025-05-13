@@ -8,8 +8,8 @@ text_tab <- tabItem(
         column(width = 12, textAreaInput("search_pattern", "Pattern", "*", "100%"))
       ),
       fluidRow(
-        column(width = 4, selectInput("search_section", "Section", c("all", "abstract", "intro", "method", "results", "discussion"))),
-        column(width = 4, selectInput("search_return", "Return", c("sentence", "paragraph", "section", "match"))),
+        column(width = 4, selectInput("search_section", "Section", c("all"))),
+        column(width = 4, selectInput("search_return", "Return", c("sentence", "paragraph", "div", "section", "match", "id"))),
         column(width = 4, div(
           checkboxGroupInput("search_options", NULL,
                              c("Search this table" = "table",

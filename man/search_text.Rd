@@ -8,7 +8,7 @@ search_text(
   paper,
   pattern = ".*",
   section = NULL,
-  return = c("sentence", "paragraph", "div", "section", "match", "all"),
+  return = c("sentence", "paragraph", "div", "section", "match", "id"),
   ignore.case = TRUE,
   fixed = FALSE,
   perl = FALSE
@@ -21,7 +21,7 @@ search_text(
 
 \item{section}{the section(s) to search in}
 
-\item{return}{the kind of text to return, the full sentence, paragraph, div, or section that the text is in, or just the (regex) match, or all body text}
+\item{return}{the kind of text to return, the full sentence, paragraph, div, or section that the text is in, or just the (regex) match, or all body text for a paper (id)}
 
 \item{ignore.case}{whether to ignore case when text searching}
 

@@ -2,7 +2,7 @@
 
 modules <- papercheck::module_list()
 mod <- list()
-for (type in c("text", "code", "ml", "ai")) {
+for (type in c("text", "code", "ml", "llm")) {
   m <- modules[modules$type == type, ]
   mod[[type]] <- stats::setNames(m$name, m$title)
 }
@@ -13,10 +13,10 @@ report_tab <- tabItem(
   actionButton("report_info", "Info"),
   actionButton("report_defaults", "Defaults"),
   fluidRow(
-    column(width = 3, checkboxGroupInput("module_text", "Text", mod$text)),
-    column(width = 3, checkboxGroupInput("module_code", "Code", mod$code)),
-    column(width = 3, checkboxGroupInput("module_ml", "ML", mod$ml)),
-    column(width = 3, checkboxGroupInput("module_ai", "ChatGPT", mod$ai))
+    column(width = 6, checkboxGroupInput("module_text", "Text", mod$text)),
+    column(width = 6, checkboxGroupInput("module_code", "Code", mod$code))
+    #column(width = 3, checkboxGroupInput("module_ml", "ML", mod$ml)),
+    #column(width = 3, checkboxGroupInput("module_llm", "LLM", mod$llm))
   ),
 
   # checkboxGroupInput("report_module_list", NULL,
