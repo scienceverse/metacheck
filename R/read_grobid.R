@@ -232,32 +232,33 @@ get_full_text<- function(xml, id = "") {
   ## add figures and tables ----
   # TODO: get sentences with internal refs to figs
   figs <- xml2::xml_find_all(xml, "//figure")
-  figtbl <- data.frame()
-  if (length(figs) > 0) {
-    figids <- xml2::xml_attr(figs, "id")
-    figtbl <- data.frame(
-      header = xml2::xml_find_all(figs, ".//head") |>
+  figtbl <- lapply(figs, \(fig) {
+    figid <- xml2::xml_attr(fig, "id")
+
+    data.frame(
+      header = xml2::xml_find_first(fig, ".//head") |>
         xml2::xml_text(),
-      text = xml2::xml_find_all(figs, ".//figDesc") |>
+      text = xml2::xml_find_first(fig, ".//figDesc") |>
         xml2::xml_text(),
-      section = sub("_\\d+$", "", x = figids),
-      div = sub("^(fig|tab)_", "", x = figids) |> as.numeric()
+      section = sub("_\\d+$", "", x = figid),
+      div = sub("^(fig|tab)_", "", x = figid) |> as.numeric()
     )
-  }
+  }) |> do.call(rbind, args = _)
+  figtbl <- figtbl %||% data.frame()
 
   ## add footnotes ----
   # TODO: find and example to finish and test this
   notes <- xml2::xml_find_all(xml, "//note[@place='foot']")
-  notetbl <- data.frame()
-  if (length(notes) > 0) {
-    noteids <- xml2::xml_attr(notes, "id")
-    notetbl <- data.frame(
+  notetbl <- lapply(notes, \(note) {
+    noteid <- xml2::xml_attr(note, "id")
+    data.frame(
       header = "",
-      text = xml2::xml_find_all(notes, ".//p") |> xml2::xml_text(),
-      section = sub("_\\d+$", "", x = noteids),
-      div = sub("^foot_", "", x = noteids) |> as.numeric()
+      text = xml2::xml_text(note),
+      section = sub("_\\d+$", "", x = noteid),
+      div = sub("^foot_", "", x = noteid) |> as.numeric()
     )
-  }
+  }) |> do.call(rbind, args = _)
+  notetbl <- notetbl %||% data.frame()
 
   ## tokenize sentences ----
   # TODO: get tidytext to stop breaking sentences at "S.E. ="

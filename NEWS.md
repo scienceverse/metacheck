@@ -1,3 +1,7 @@
+# papercheck 0.0.0.9036
+
+* Now reads in grobid XMLs with badly parsed figures
+
 # papercheck 0.0.0.9035
 
 * updated the shiny app for recent changes

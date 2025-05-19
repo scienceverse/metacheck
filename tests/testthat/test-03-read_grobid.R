@@ -234,3 +234,118 @@ test_that("iteration", {
 })
 
 
+test_that("grobid-versions", {
+  filename <- list.files("grobid-test/full", full.names = TRUE)
+
+  # read_grobid_xml
+  xml <- read_grobid_xml(filename[[1]])
+  expect_s3_class(xml, "xml_document")
+
+  # read_grobid
+  paper <- read_grobid(filename)
+
+  # small
+  sfilename <- list.files("grobid-test/small", full.names = TRUE)
+  sxml <- read_grobid_xml(sfilename[[1]])
+  spaper <- read_grobid(sfilename)
+
+  skip("Grobid version testing: failures expected")
+
+  # paper 1
+  p <- 1
+  pinfo <- paper$info[[p]]
+  pinfo$filename <- NULL
+  sinfo <- spaper$info[[p]]
+  sinfo$filename <- NULL
+  expect_equal(pinfo, sinfo)
+  expect_equal(paper[[p]]$references, spaper[[p]]$references)
+  expect_equal(paper[[p]]$citations, spaper[[p]]$citations)
+
+  mismatch <- sapply(1:nrow(paper[[p]]$full_text), \(i) {
+    !all(paper[[p]]$full_text[i, "text"] == spaper[[p]]$full_text[i, "text"]) |> isTRUE()
+  }) |> which()
+
+  paper[[p]]$full_text[25, "text"]
+  spaper[[p]]$full_text[25, "text"]
+
+  # full parsed DOI better and sentence 25
+  # short parsed Fig 3 correctly
+
+  # paper 2
+  p <- 2
+  pinfo <- paper$info[[p]]
+  pinfo$filename <- NULL
+  sinfo <- spaper$info[[p]]
+  sinfo$filename <- NULL
+  expect_equal(pinfo, sinfo)
+  expect_equal(paper[[p]]$references, spaper[[p]]$references)
+  expect_equal(paper[[p]]$citations, spaper[[p]]$citations)
+
+  mismatch <- sapply(1:nrow(paper[[p]]$full_text), \(i) {
+    !all(paper[[p]]$full_text[i, "text"] == spaper[[p]]$full_text[i, "text"]) |> isTRUE()
+  }) |> which()
+
+  paper[[p]]$full_text[125, "text"]
+  spaper[[p]]$full_text[125, "text"]
+
+  # small read line 125 correctly (full added fig 6 text)
+  # full read 129 correctly
+
+  # paper 3
+  p <- 3
+  pinfo <- paper$info[[p]]
+  pinfo$filename <- NULL
+  sinfo <- spaper$info[[p]]
+  sinfo$filename <- NULL
+  expect_equal(pinfo, sinfo)
+  expect_equal(paper[[p]]$references, spaper[[p]]$references)
+  expect_equal(paper[[p]]$citations, spaper[[p]]$citations)
+
+  mismatch <- sapply(1:nrow(paper[[p]]$full_text), \(i) {
+    !all(paper[[p]]$full_text[i, "text"] == spaper[[p]]$full_text[i, "text"]) |> isTRUE()
+  }) |> which()
+
+  paper[[p]]$full_text[2, "text"]
+  spaper[[p]]$full_text[2, "text"]
+
+  # short: better citation 10, did not miss the whole abstract!
+  # long: absolutely mangled identifying the abstract, one citation problem because of this
+
+  # paper 4
+  p <- 4
+  pinfo <- paper$info[[p]]
+  pinfo$filename <- NULL
+  sinfo <- spaper$info[[p]]
+  sinfo$filename <- NULL
+  expect_equal(pinfo, sinfo)
+  expect_equal(paper[[p]]$references, spaper[[p]]$references)
+  expect_equal(paper[[p]]$citations, spaper[[p]]$citations)
+
+  mismatch <- sapply(1:nrow(paper[[p]]$full_text), \(i) {
+    !all(paper[[p]]$full_text[i, "text"] == spaper[[p]]$full_text[i, "text"]) |> isTRUE()
+  }) |> which()
+
+  paper[[p]]$full_text[149, "text"]
+  spaper[[p]]$full_text[147, "text"]
+  View(paper[[p]]$full_text)
+  View(spaper[[p]]$full_text)
+
+  # short parsed 97 better
+  # long: Parsed 103 better, added irrelevant table text line 149
+
+  # paper 5
+  p <- 5
+  pinfo <- paper$info[[p]]
+  pinfo$filename <- NULL
+  sinfo <- spaper$info[[p]]
+  sinfo$filename <- NULL
+  expect_equal(pinfo, sinfo)
+  expect_equal(paper[[p]]$references, spaper[[p]]$references)
+  expect_equal(paper[[p]]$citations, spaper[[p]]$citations)
+
+  mismatch <- sapply(1:nrow(paper[[p]]$full_text), \(i) {
+    !all(paper[[p]]$full_text[i, "text"] == spaper[[p]]$full_text[i, "text"]) |> isTRUE()
+  }) |> which()
+
+  # no mismatch!
+})
