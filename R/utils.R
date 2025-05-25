@@ -134,6 +134,8 @@ is_paper_list <- function(paper) {
   return(FALSE)
 }
 
+
+
 #' Print Paper Object
 #'
 #' @param x The scivrs_paper list
@@ -153,6 +155,31 @@ print.scivrs_paper <- function(x, ...) {
                  nrow(x$citations))
 
   cat(txt)
+}
+
+#' Print PaperList Object
+#'
+#' @param x The scivrs_paperlist object
+#' @param ... Additional parameters for print
+#'
+#' @export
+#' @keywords internal
+print.scivrs_paperlist <- function(x, ...) {
+  txt <- info_table(x, c("title", "doi"))
+
+  print(txt)
+}
+
+#' Subset PaperList Object
+#'
+#' @param x The scivrs_paperlist object
+#' @param ... Additional parameters for print
+#' @param drop relevant for matrices and arrays. If TRUE the result is coerced to the lowest possible dimension (see the examples).
+#'
+#' @export
+#' @keywords internal
+`[.scivrs_paperlist` <- function(x, ..., drop=TRUE) {
+  paperlist(NextMethod())
 }
 
 #' Print Validation List Object

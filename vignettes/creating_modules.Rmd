@@ -18,96 +18,167 @@ knitr::opts_chunk$set(
 library(papercheck)
 ```
 
-Modules are user-created patterns for checking a paper or set of papers. Module specifications are written in JSON format. 
+Modules are user-created patterns for checking a paper or set of papers. Module specifications are written in the same format as functions in R packages, using roxygen2 for documentation. 
 
-``` json
-{
-  "title": "List All P-Values",
-  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table."
+```{r, echo = FALSE, comment = ""}
+code_lines <- system.file("module_example.R", package = "papercheck") |>
+  readLines()
+cat(paste0(code_lines, collapse = "\n"))
+```
+
+## Roxygen Documentation
+
+The module file starts with standard function documentation using roxygen2. Roxygen documentation always starts with `#' `.
+
+### Title
+
+On the first line, give your module a short title, which will be used as a section header in reports.
+
+```{r}
+#' Module Name
+```
+
+### Description
+
+You can skip a line and write a 1-sentence description, which will be shown in `module_list()`, or optionally start this with `@description`.
+
+```{r}
+#' @description
+#' A short description of the module
+```
+
+### Details
+
+You can write more detailed help under the tag `@details`, which will be shown when calling `module_help()`. This is optional. 
+
+```{r}
+#' @details
+#' Here is more information about the module to help you use or understand it.
+#' 
+#' You can skip more lines to break up paragraphs.
+#' 
+#' * make a list
+#' * check it twice
+```
+
+If you have experience writing R functions with roxygen, you can also omit the `@description` and `@details` tags and rely on paragraph spacing to distinguish description from details.
+
+### Author
+
+Include the module authors so they can get credit! Adda new `@author` tag for each author, and optionally add ther emailaddress.
+
+```{r}
+#' @author Lisa DeBruine (\email{debruine@gmail.com})
+#' @author Daniel Lakens (\email{lakens@gmail.com})
+```
+
+### References
+
+Optionally include references that you would want available to users. If you are building a module that uses citable resources, please list them here. 
+
+```{r}
+#' @references
+#' The Retraction Watch Database [Internet].
+#' New York: The Center for Scientific Integrity. 2018.
+#' ISSN: 2692-4579. [Cited 2025-05-20].
+#' Available from: http://retractiondatabase.org/.
+```
+
+### Import
+
+If you are using packages other than `papercheck`, add each with an `@import` statement.
+
+```{r}
+#' @import dplyr
+#' @import tidyr
+```
+
+Technically, you can then use functions from these packages in your function code without the package name prefix, but it is still best practice to use the package name prefix for all functions, like `dplyr::case_when()`. 
+
+### Parameters
+
+Each argument should be defined for a function. All papercheck modules require the first argument to be `paper`. The last argument can optionally be `...`. This allows the `module_run()` function to pass any arguments, and your code can use them by name (e.g., `extra_args <- list(...)`).
+
+```{r}
+#' @param paper a paper object or paperlist object
+#' @param ... further arguments (not used)
+```
+
+### Returns
+
+It is good practice to explain what your function returns. This is usually the default list with table, summary, traffic light, and report text, but you can edit this. It's just a human-readable string.
+
+```{r}
+#' @returns a list with table, summary, traffic light, and report text
+```
+
+### Examples
+
+You can add an example of how to use this module with the `module_run()` function. Give a paper or list of papers in the example so you can demonstrate the purpose of this module and it doesn't take too much tme to run the example. 
+
+```{r}
+#' @examples
+#' module_run(psychsci, "module_name")
+```
+
+## Function Code
+
+The module function is written like any R package function, with the requirement that the first argument be `paper`. Set `module_name` to your module name, which must be a valid R variable name. Your module script should also have the same name, with a .R suffix (e.g., `module_name.R`).
+
+```{r}
+module_name <- function(paper, ...) {
+  # detailed table of results ----
+  # summary output for paperlists ----
+  # determine the traffic light ----
+  # report text for each possible traffic light ----
+  # return a list ----
 }
 ```
 
-## Search Strategies
+You can define helper functions below your main module functions, but the first functions defined in the script is what will be run on the paper object. 
 
-Modules can use three search strategies, each of which has its own JSON specification. All three types take either a paper object or the resulting search table as input, making it easy to chain modules together. 
+A module can technically do anything you want with the paper input, but you will need to follow the template below for your module to work automatically with reports and the metascience workflow. 
 
-### Text Search
+If you are using your modules to build a report, you need to specify what type of output corresponds to good practice or practice that may need improvement. We do this through "traffic_light" and "report".
 
-For checks that can be done with a simple text search, you can create a module that provides the arguments to the `search_text()` function. The "text" key takes a dictionary of the arguments to the `search_text()` function.
+### Table
 
-Foe example, the following JSON specification defines the arguments needed to search for all instances of p-values in the text and return just the matched text. 
+Most modules will need to structure their output in a table that can be shown in a report. The `search_text()` function below creates a table with a row for each sentence that contains to word "significant". 
 
-``` json
-{
-  "title": "List All P-Values",
-  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
-  "text": {
-    "pattern": "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?",
-    "return": "match",
-    "perl": true
-  }
-}
+```{r, eval = FALSE}
+  # detailed table of results ----
+  pattern <- "significant"
+  table <- search_text(paper, pattern)
 ```
 
-### Code
+You will need to make sure that your module works with both single paper object sand lists of paper objects. The papercheck functions `search_text()` and `llm()` are already vectorised for paper lists. 
 
-For checks that require a bit more logic, you can include R code directly or (more likely) reference an external .R file. The "code" key takes a dictionary of the "code" or a "path" to a file containing code. You can optionally list the "packages" required so users can be prompted to install any unavailable packages.
+### Summary
 
+For the metascience workflow, it is useful to create a table with a row for each paper in a list, and some columns that summarise the results. You can use nested tables if you want some of your cells to contain multiple values.
 
-```
-{
-  "title": "Check Status of OSF Links",
-  "description": "List all OSF links and whether they are open, closed, or do not exist.",
-  "code": {
-    "packages": ["papercheck", "httr", "dplyr"],
-    "path": "osf-check.R"
-  }
-}
+```{r, eval = FALSE}
+  # summary output for paperlists ----
+  # must have id column as the id of each paper, one row per paper
+  # further columns to be added to a master summary table
+  summary_table <- dplyr::count(table, id, name = "n_significant")
 ```
 
-Code must end with a list that contains values to return. The item `table` should be the table of returned values, and the optional item `traffic_light` contains the classification of the result (see below).
+Your summary table might omit some papers from the whole list because no relevant text was found. You don't have to add them into your table, as the `module_run()` function will do that automatically for you. However, you may want the values of your summary variables to be something other than `NA` for these missing papers. You can set the value of `na_replace` in the return list (below) to this default value. For example, if you are returning a summary of the count of sentences with the word "significant", you can replace `NA`s with 0. 
 
+If you are returning more than one summary column and have different replacement values, use a named list.
 
-### Large Language Models
-
-The "llm" key takes a dictionary of the arguments to the `llm()` function.
-
-```
-{
-  "title": "Summarise Sections",
-  "description": "Generate a 1-sentence summary for each section",
-  "llm": {
-    "query": "Summarise this section briefly, in one sentence. Do not include any preamble explaining what you are going to do, just give the sentence."
-  }
-}
-
+```{r}
+na_replace <- list(
+  n_significant = 0,
+  paper_type = "unknown"
+)
 ```
 
-## Chaining Modules
 
-You can run a chain of modules by including them in order. The first module will take the paper(s) as input, and the rest will take the returned table as input. Here, we want to group the text by section before sending it to the llm. 
+### Traffic Light
 
-```
-{
-  "title": "Summarise Sections",
-  "description": "Generate a 1-sentence summary for each section",
-  "text": {
-    "return": "section"
-  },
-  "llm": {
-    "query": "Summarise this section briefly, in one sentence. Do not include any preamble explaining what you are going to do, just give the sentence."
-  }
-}
-
-```
-
-## Report Info
-
-If you are using your modules to build a report, you need to specify what type of output corresponds to good practice or practice that may need improvement. We do this through "traffic-light" and "report" keys.
-
-### Traffic Lights
-
-There are 5 kinds of traffic lights:
+The traffic lights are used in single-paper reports to give a quick visual overview of the module results. There are 5 kinds of traffic lights:
 
 <style>
   h2.na::before { content: '⚪️ '; }
@@ -126,99 +197,42 @@ There are 5 kinds of traffic lights:
 ⚪️ not applicable;<br>
 ⚫️ check failed
 
-
-The simplest way to set traffic lights is to specify the meaning of "found" and "not_found". If the module produces more than 0 rows in the output table, then the traffic light takes the "found" value, otherwise the "not_found" value.
-
-```
-{
-  "title": "List All P-Values",
-  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
-  "text": {
-    "pattern": "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?",
-    "return": "match",
-    "perl": true
-  },
-  "traffic_light": {
-    "found": "info",
-    "not_found": "na"
-  }
-}
-```
-
-If you are using the "code" type, you can also specify the traffic light in the returned list.
+You will need to write some code to determine which traffic lights apply to your case. If you don't include a traffic light, but do include a `table` in the returned list, the following rule will be applied for the traffic light.
 
 ```{r, eval = FALSE}
-# code for imprecise-p module
-p <- module_run(paper, "all-p-values")$table
-p$p_comp <- gsub("p-?(value)?\\s*|\\s*\\d?\\.\\d+e?-?\\d*", "", p$text)
-p$p_value <- gsub("^p-?(value)?\\s*[<>=≤≥]{1,2}\\s*", "", p$text)
-p$p_value <- suppressWarnings(as.numeric(p$p_value))
-p$imprecise <- p$p_comp == "<" & p$p_value > .001
-p$imprecise <- p$imprecise | p$p_comp == ">"
-p$imprecise <- p$imprecise | is.na(p$p_value)
-cols <- c("text", "section", "header", "div", "p", "s", "id")
-
-if (nrow(p) == 0) {
-  tl <- "na"
-} else if (any(p$imprecise)) {
-  tl <- "red"
-} else if (!all(p$imprecise)) {
-  tl <- "green"
-} else {
-  tl <- "yellow"
-}
-
-list(
-  table = p[p$imprecise, cols],
-  traffic_light = tl
-)
+  # determine the traffic light ----
+  # possible values: na, info, red, yellow, green, fail
+  tl <- if (nrow(table)) "info" else "na"
 ```
 
-### Report
+### Report Text
 
-Any text that you want to include in the report should be specified in the "report" key. You can set different text for each traffic light, and/or text to include in all reports.
+Reports need to explain concepts or give resources for further learning. This is often specific to the outcome of a check, so you can use the pattern below to customise the report text for each traffic light. 
 
-```
-{
-  "title": "Reference Consistency",
-  "description": "Check if all references are cited and all citations are referenced",
-  "code": {
-    "packages": ["dplyr"],
-    "path": "ref-consistency.R"
-  },
-  "report": {
-    "all": "This module relies on Grobid correctly parsing the references. There may be some false positives.",
-    "red": "There are references that are not cited or citations that are not referenced",
-    "green": "All references were cited and citations were referenced",
-    "na": "No citations/references were detected"
-  }
-}
+```{r, eval = FALSE}
+  # report text for each possible traffic light ----
+  report <- c(
+    na = "Not applicable",
+    info = "This table is provided for your information",
+    red = "This is a potential problem",
+    yellow = "There may be a problem",
+    green = "No problems found",
+    fail = "The check failed, sorry"
+  )
 ```
 
-### Authors
+### Return
 
-You can also include author information in the following format:
+Structure the returned values in a list, with the names `table`, `summary`, `na_replace`, `traffic_light` and `report`.
 
+```{r, eval = FALSE}
+  # return a list ----
+  list(
+    table = table,
+    summary = summary_table,
+    na_replace = 0,
+    traffic_light = tl,
+    report = report[[tl]]
+  )
 ```
-{
-  "title": "List All P-Values",
-  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
-  "authors": [{
-    "orcid": "0000-0002-7523-5539",
-    "name":{
-      "surname": "DeBruine",
-      "given": "Lisa"
-    },
-    "email": "debruine@gmail.com"
-  }],
-  "text": {
-    "pattern": "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?",
-    "return": "match",
-    "perl": true
-  },
-  "traffic_light": {
-    "found": "info",
-    "not_found": "na"
-  }
-}
-```
+

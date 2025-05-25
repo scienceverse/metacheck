@@ -21,8 +21,8 @@ report_tab <- tabItem(
 
   # checkboxGroupInput("report_module_list", NULL,
   #             stats::setNames(module_list()$name, module_list()$title),
-  #             c("imprecise-p",
-  #               "osf-check",
+  #             c("imprecise_p",
+  #               "osf_check",
   #               "retractionwatch",
   #               "marginal")),
   actionButton("report_run", "Run Report"),

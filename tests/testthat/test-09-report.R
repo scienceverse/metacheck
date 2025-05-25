@@ -120,7 +120,7 @@ test_that("module_report", {
   expect_error(module_report())
 
   # set up module output
-  module_output <- module_run(psychsci[1:4], "all-p-values")
+  module_output <- module_run(psychsci[1:4], "all_p_values")
 
   report <- module_report(module_output)
   expect_true(grepl("Showing 85 of 85 rows", report))

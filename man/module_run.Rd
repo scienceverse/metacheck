@@ -20,7 +20,5 @@ a list of the returned table and report text
 Run a module
 }
 \examples{
-filename <- demoxml()
-paper <- read_grobid(filename)
-module_run(paper, "imprecise-p")
+module_run(psychsci[[1]], "all_p_values")
 }

@@ -61,6 +61,22 @@ test_that("print.scivrs_paper", {
   expect_true(grepl("to_err_is_human", op))
 })
 
+test_that("print.scivrs_paperlist", {
+  x <- psychsci[1:3]
+  op <- capture_output(print(x))
+  op.sv <- capture_output(print.scivrs_paperlist(x))
+
+  expect_true(grepl("# A tibble: 3", op, fixed = TRUE))
+  expect_equal(op, op.sv)
+})
+
+test_that("[.scivrs_paperlist", {
+  # subsetting maintains class
+  x <- psychsci[1:3]
+  expect_s3_class(psychsci, "scivrs_paperlist")
+  expect_s3_class(x, "scivrs_paperlist")
+})
+
 test_that("verbose", {
   expect_equal(verbose(FALSE), FALSE)
   expect_equal(verbose(), FALSE)

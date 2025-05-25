@@ -129,7 +129,7 @@ module_list()
 To run a built-in module on a paper, you can reference it by name.
 
 ```{r}
-p <- module_run(paper, "all-p-values")
+p <- module_run(paper, "all_p_values")
 ```
 
 
@@ -139,7 +139,7 @@ knitr::kable(p$table)
 
 ### Reports
 
-You can generate a report from any set of modules. The default set is `c("imprecise-p", "marginal", "osf-check", "retractionwatch", "ref-consistency")`
+You can generate a report from any set of modules. The default set is `c("imprecise_p", "marginal", "osf_check", "retractionwatch", "ref_consistency")`
 
 ```{r, eval = FALSE}
 paper_path <- report(paper, output_format = "html")

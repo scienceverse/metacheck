@@ -38,26 +38,26 @@ paper <- psychsci$`0956797620955209`
 ```
 
 
-### all-p-values
+### all_p_values
 
 List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.
 
-```{r, results='asis'}
-all_p <- module_run(paper, "all-p-values")
+```{r}
+all_p <- module_run(paper, "all_p_values")
 
-all_p # print table
+all_p$table # print table
 ```
 
 
-If you run this module on all 250 papers, you will get more rows than you probably want to print, so the default just shows you the first 20 rows.
+If you run this module on all 250 papers, you will get more rows than you probably want to print in the full table one row for every p-value in each paper), so you can print the summary table, which gives you one row per paper.
 
-```{r, results='asis'}
-all_p_ps <- module_run(psychsci, "all-p-values")
+```{r}
+all_p_ps <- module_run(psychsci, "all_p_values")
 
-all_p_ps # print table
+all_p_ps$summary
 ```
 
-You can access the full table for further processing.
+You can still access the full table for further processing.
 
 ```{r}
 all_p_ps$table |>
@@ -66,48 +66,45 @@ all_p_ps$table |>
 ```
 
 
-### all-urls
+### all_urls
 
 List all the URLs in the main text. There will, of course, be a few false positives when text in the paper is formatted as a valid URL. 
 
-```{r, results='asis'}
-all_urls <- module_run(paper, "all-urls")
+```{r}
+all_urls <- module_run(paper, "all_urls")
 
-all_urls # print table
+all_urls$table
 ```
 
 
 ```{r}
-all_urls_ps <- module_run(psychsci, "all-urls")
+all_urls_ps <- module_run(psychsci, "all_urls")
 
-# show the most common URLs
-all_urls_ps$table |>
-  count(text, sort = TRUE) |>
-  head()
+all_urls_ps$summary
 ```
 
-### imprecise-p
+### imprecise_p
 
 List any p-values that may have been reported with insufficient precision (e.g., p < .05 or p = n.s.). 
 
-```{r, results='asis'}
-imprecise <- module_run(paper, "imprecise-p")
+```{r}
+imprecise <- module_run(paper, "imprecise_p")
 
-imprecise # print table
+imprecise$table # print table
 ```
 
 You can use the `expand_text()` function to get the full sentence or paragraph for context. Here you can see that "p < .025" was not an imprecisely reported p-value, but a description of the preregistered alpha threshold. 
 
 ```{r}
-exp <- expand_text(imprecise, paper)
+exp <- expand_text(imprecise$table, paper)
 
 exp$expanded # print expanded text
 ```
 
 We can investigate the most common imprecise p-values in the PsychSci set. "p < .01" and "p < .05" are probably often describing figures or tables, but what is the deal with "p > .25"?
 
-```{r, results='asis'}
-imprecise_ps <- module_run(psychsci, "imprecise-p")
+```{r}
+imprecise_ps <- module_run(psychsci, "imprecise_p")
 
 imprecise_ps$table |>
   count(text, sort = TRUE) |>
@@ -125,14 +122,14 @@ gt.25$expanded[1:3] # look at the first 3
 ```
 
 
-### llm-summarise
+### llm_summarise
 
 Generate a 1-sentence summary for each section. This uses the `llm()` function with the query "summarise this section briefly, in one sentence" and returns a one-sentence summary of each major section (abstract, intro, method, results, discussion, acknowledgements, appendices)
 
-```{r, results='asis', eval = FALSE}
-summaries <- module_run(paper, "llm-summarise", seed = 8675309)
+```{r, eval = FALSE}
+summaries <- module_run(paper, "llm_summarise", seed = 8675309)
 
-summaries # print default table
+summaries
 ```
 
 
@@ -164,7 +161,7 @@ summaries$table[, c("section", "answer")]
 If you try to run this on the whole PsychSci set, you will get an error message because the number of LLM calls is much higher than the maximum number, which is set by default to 30 (the per-minute rate limit for the default model on a free groq account). You can increase the maximum allowable calls (`llm()` manages your rate limit, so this would take nearly an hour at 30 calls per minute) using `llm_max_calls()`, but we aren't going to do this here. 
 
 ```{r, error = TRUE}
-summaries_ps <- module_run(psychsci, "llm-summarise", seed = 8675309)
+summaries_ps <- module_run(psychsci, "llm_summarise", seed = 8675309)
 ```
 
 ### marginal
@@ -179,42 +176,36 @@ marginal # print table
 
 Let's check how many are in the full set.
 
-```{r, results='asis'}
+```{r}
 marginal_ps <- module_run(psychsci, "marginal")
 
-marginal_ps # print table
+marginal_ps$table # print table
 ```
 
-You can see that the default shows only the first 20 rows and truncates long lines. We can adjust this by explicitly calling the print function and setting `maxrows` and `trunc_cell`.
-
-```{r, results='asis'}
-marginal_ps |> print(maxrows = 5, trunc_cell = Inf)
-```
-
-### osf-check
+### osf_check
 
 List all OSF links and whether they are open, closed, or do not exist. This requires an internet connection to check the status of the link.
 
-```{r, results='asis'}
-osf_check <- module_run(paper, "osf-check")
+```{r}
+osf_check <- module_run(paper, "osf_check")
 
-osf_check # print table
+osf_check$table
 ```
 
 This would take a while to run for the 341 unique OSF links found in the PsychSci set (usually 1-2 seconds per link), so we will skip it here (but can reveal we found 10 closed links).
 
 ```{r, eval = FALSE}
-osf_check_ps <- module_run(psychsci, "osf-check")
+osf_check_ps <- module_run(psychsci, "osf_check")
 ```
 
-### ref-consistency
+### ref_consistency
 
 Check if all references are cited and all citations are referenced.
 
-```{r, results='asis'}
-ref_consistency <- module_run(paper, "ref-consistency")
+```{r}
+ref_consistency <- module_run(paper, "ref_consistency")
 
-ref_consistency # print table
+ref_consistency$table
 ```
 
 It looks like there are some references with missing citations. The first one doesn't look like a reference, and grobid often parses tables oddly. You'd need to look at the original PDF to see if the others are actually missing or false positives. Here, they are all false positives, based on grobid not being able to match the in-text citation to the reference list. 
@@ -224,18 +215,18 @@ It looks like there are some references with missing citations. The first one do
 
 Flag any cited papers in the RetractionWatch database. It takes a substantial time to make calls to crossref for each reference, so we provide a summary of the database in papercheck, which is updated regularly (last 2025-02-28). 
 
-```{r, results='asis'}
+```{r}
 rw <- module_run(paper, "retractionwatch")
 
-rw # print table
+rw$table
 ```
 
 In the full PsychSci set, we find three papers in the RetractionWatch database cited, one with a retraction and two with corrections.  
 
-```{r, results='asis'}
+```{r}
 rw_ps <- module_run(psychsci, "retractionwatch")
 
-print(rw_ps, trunc_cell = 30) # print table
+rw_ps$table
 ```
 
 Check the context of the citations in the text column:
@@ -248,10 +239,10 @@ rw_ps$table$text
 
 Check consistency of p-values and test statistics using functions from [statcheck](https://github.com/MicheleNuijten/statcheck).
 
-```{r, results='asis'}
+```{r}
 statcheck <- module_run(paper, "statcheck")
 
-statcheck # print table
+statcheck$table
 ```
 
 Here we see a false positive, where the paper reported the results of an equivalence test, which are meant to be one-tailed, but statcheck did not detect that this was one-tailed.
@@ -276,6 +267,19 @@ statcheck_ps$table |>
          round(computed_p/reported_p, 1) == 2.0) |>
   select(reported_p, computed_p, raw) |>
   mutate(computed_p = round(computed_p, 4))
+```
+
+## Chaining Modules
+
+Modules return a `summary` table as well as the detailed results `table`, which is automatically added to the summary if you chain modules.
+
+```{r}
+ps_metascience <- psychsci[1:10] |>
+  module_run("all_p_values") |>
+  module_run("imprecise_p") |>
+  module_run("marginal")
+
+ps_metascience$summary
 ```
 
 

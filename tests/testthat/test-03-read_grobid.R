@@ -193,6 +193,15 @@ test_that("get_refs", {
   # no raw_references
   expect_no_error(g <- read_grobid("examples/bib2.xml"))
   expect_true( all(!is.na(g$references$ref)) )
+
+
+  # exclude <bibr> with no type
+  filename <- "psychsci/light/0956797613520608.xml"
+  xml <- read_grobid_xml(filename)
+  refs <- get_refs(xml)
+
+  start_b <- refs$citations$bib_id |> grepl("^b", x = _)
+  expect_true(all(start_b))
 })
 
 test_that("iteration", {
@@ -206,6 +215,7 @@ test_that("iteration", {
 
   expect_equal(length(s), 3)
   expect_equal(names(s) |> paste0(".xml"), file_list)
+  expect_s3_class(s, "scivrs_paperlist")
   expect_s3_class(s[[1]], "scivrs_paper")
   expect_s3_class(s[[2]], "scivrs_paper")
   expect_s3_class(s[[3]], "scivrs_paper")
@@ -221,15 +231,21 @@ test_that("iteration", {
   # separate xmls
   filenames <- demodir() |> list.files(".xml", full.names = TRUE)
   s <- read_grobid(filenames)
+  expect_s3_class(s, "scivrs_paperlist")
   expect_equal(names(s) |> paste0(".xml"), file_list)
 
   s <- read_grobid(filenames[3:1])
+  expect_s3_class(s, "scivrs_paperlist")
   expect_equal(names(s) |> paste0(".xml"), file_list[3:1])
 
   # recursive file search
   s <- read_grobid("nested")
+  expect_s3_class(s, "scivrs_paperlist")
   nested_files <- c("3544548.3580942",
-                    "nest/3613904.3642568")
+                    "3613904.3642568")
+  expect_equal(s[[1]]$info$filename, "nested/3544548.3580942.xml")
+  expect_equal(s[[2]]$info$filename, "nested/nest/3613904.3642568.xml")
+  s[[2]]$info$filename
   expect_true(all(nested_files %in% names(s)))
 })
 

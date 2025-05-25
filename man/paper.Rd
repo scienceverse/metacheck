@@ -12,7 +12,7 @@ paper(name = "Demo Paper", ...)
 \item{...}{further arguments to add}
 }
 \value{
-A study object with class scivrs_paper
+An object with class scivrs_paper
 }
 \description{
 Create a new paper object or load a paper from PDF or XML

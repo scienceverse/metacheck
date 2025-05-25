@@ -295,7 +295,7 @@ module_list()
 To run a built-in module on a paper, you can reference it by name.
 
 ```{r}
-p <- module_run(paper, "all-p-values")
+p <- module_run(paper, "all_p_values")
 ```
 
 ```{r, echo = FALSE}
@@ -304,26 +304,12 @@ knitr::kable(p$table)
 
 ### Creating modules
 
-You can create your own modules by specifying the arguments to `search_text()` or `llm()` in JSON format and/or including R code. Modules can also contain instructions for reporting, to give "traffic lights" for whether a check passed or failed, and to include appropriate text feedback in a report. See the [modules vignette](modules.html) for more details. 
+You can create your own modules using R code. Modules can also contain instructions for reporting, to give "traffic lights" for whether a check passed or failed, and to include appropriate text feedback in a report. See the [modules vignette](modules.html) for more details. 
 
-Below is an abbreviated example of the module that detects all p-values in the text and returns the matching text. 
-
-``` json
-{
-  "title": "List All P-Values",
-  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
-  "text": {
-    "pattern": "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?",
-    "return": "match",
-    "perl": true
-  }
-}
-```
 
 ## Reports
 
-
-You can generate a report from any set of modules. The default set is `c("imprecise-p", "marginal", "osf-check", "retractionwatch", "ref-consistency")`
+You can generate a report from any set of modules. The default set is `c("imprecise_p", "marginal", "osf_check", "retractionwatch", "ref_consistency")`
 
 ```{r, eval = FALSE}
 report(paper, output_format = "qmd")
