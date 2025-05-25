@@ -54,7 +54,7 @@ read_grobid <- function(filename) {
 
     # remove NULLs
     valid <- !sapply(p, is.null)
-    return(p[valid])
+    return(paperlist(p[valid]))
   } else if (dir.exists(filename)) {
     xmls <- list.files(filename, "\\.xml",
                        full.names = TRUE,
@@ -415,7 +415,7 @@ get_refs <- function(xml) {
 
   # get in-text citation ----
   #textrefs <- xml2::xml_find_all(xml, "//body //ref[@type='bibr']")
-  textrefs <- xml2::xml_find_all(xml, "//ref[@type='bibr']")
+  textrefs <- xml2::xml_find_all(xml, "//ref[@type='bibr'][@target]")
 
   if (length(textrefs) > 0) {
     # get parent paragraphs of all in-text references and parse into sentences
@@ -429,9 +429,13 @@ get_refs <- function(xml) {
     matches <- gregexpr("(?<=ref type=\"bibr\" target=\"#)b\\d+",
                         textrefp$text, perl = TRUE) |>
       regmatches(textrefp$text, m = _)
+    # textrefp$bib_id <- sapply(matches, paste, collapse = ";")
     no_targets <- gregexpr("(?<=ref type=\"bibr\">)[^</ref>]*(?=</ref>)",
                            textrefp$text, perl = TRUE) |>
-      regmatches(textrefp$text, m = _)
+      regmatches(textrefp$text, m = _) |>
+      # only keep non-target refs that might be author names
+      lapply(\(x) x[grepl("[a-zA-Z]{2,}", x)])
+
     textrefp$bib_id <- mapply(c, matches, no_targets, SIMPLIFY = FALSE) |>
       sapply(paste, collapse = ";")
 

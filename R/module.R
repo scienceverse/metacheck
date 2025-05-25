@@ -8,226 +8,107 @@
 #' @export
 #'
 #' @examples
-#' filename <- demoxml()
-#' paper <- read_grobid(filename)
-#' module_run(paper, "imprecise-p")
+#' module_run(psychsci[[1]], "all_p_values")
 module_run <- function(paper, module, ...) {
   module_path <- module_find(module)
+  info <- module_info(module_path)
 
-  # read in module
-  json <- tryCatch({
-    jsonlite::read_json(module_path, simplifyVector = TRUE)
-  }, error = function(e) {
-    stop("The module has a problem with JSON format:\n", e$message, call. = FALSE)
-  })
-  module_dir <- dirname(module_path)
+  # handle ppchk_module_output in pipeline
+  if (inherits(paper, "ppchk_module_output")) {
+    summary_table <- paper$summary
+    paper <- paper$paper
+  } else if (is_paper_list(paper)) {
+    summary_table <- data.frame(id = names(paper))
+  } else {
+    summary_table <- data.frame(id = paper$id)
+  }
 
-  mod_chunks <- names(json) %in% c("text", "code", "llm") |>
-    which()
-
-  results <- paper
-  for (chunk in mod_chunks) {
-    type <- names(json)[[chunk]]
-    if ("table" %in% names(results) && is.data.frame(results$table)) {
-      results <- results$table
-    }
-
-    args <- json[[chunk]]
-    override_args <- list(...)
-    args[names(override_args)] <- override_args
-
-    if (type == "text") {
-      results <- module_run_text(results, args)
-    } else if (type == "code") {
-      results <- module_run_code(results, args, module_dir)
-    # } else if (type == "ml") {
-    #   results <- module_run_ml(results, args, module_dir)
-    } else if (type == "llm") {
-      results <- module_run_llm(results, args)
-    } else {
-      stop("The module has an invalid type of ", type)
+  # load required libraries
+  for (pkg in info[["import"]]) {
+    if (!require(pkg, quietly = TRUE,
+                 warn.conflicts = FALSE,
+                 character.only = TRUE)) {
+      stop("The '", pkg, "' package is required but not installed.")
     }
   }
 
-  # traffic light ----
-  if (is.null(results$traffic_light) &&
-      !is.null(json$traffic_light)) {
-    results$traffic_light <- ifelse(
-      nrow(results$table) == 0,
-      json$traffic_light$not_found,
-      json$traffic_light$found
-    )
-  }
-
-  results$traffic_light <- results$traffic_light %||% "na"
-
-  # report text ----
-  if (is.null(results$report) && !is.null(json$report)) {
-    results$report <- paste(
-      json$report[["all"]],
-      json$report[[results$traffic_light]]
-    ) |> trimws()
-  }
-  results$report <- results$report %||% ""
-
-  report_items <- list(
-    module = module,
-    title = json$title,
-    table = results$table,
-    report = results$report,
-    traffic_light = results$traffic_light
-  )
-  class(report_items) <- "ppchk_module_output"
-
-  return(report_items)
-}
-
-
-#' Run text module
-#'
-#' @param paper the paper object (or list of objects)
-#' @param args a list of arguments to `search_text()`
-#'
-#' @return data frame
-#' @keywords internal
-module_run_text <- function(paper, args) {
-  # make sure you only send valid arguments
-  valid_args <- formals(search_text) |> names()
-  text_args <- intersect(names(args), valid_args)
-  args <- args[text_args]
-
-  args$paper <- paper
-  list(
-    table = do.call(search_text, args)
-  )
-}
-
-
-#' Run code module
-#'
-#' @param paper the paper object (or list of objects)
-#' @param args a list of arguments
-#' @param module_dir the base directory for the module, in case code is in files with relative paths
-#'
-#' @return data frame
-#' @keywords internal
-module_run_code <- function(paper, args, module_dir = ".") {
-  if (!is.null(args$path)) {
-    filepath <- file.path(module_dir, args$path)
-    if (!file.exists(filepath)) {
-      stop("The code file ", args$path, " could not be found")
+  # loading required functions
+  for (pkg in info[["importFrom"]]) {
+    for (arg in pkg[-1]) {
+      if (!require(pkg[[1]], quietly = TRUE,
+                   warn.conflicts = FALSE,
+                   character.only = TRUE,
+                   include.only = arg)) {
+        stop("The '", pkg[[1]], "' package is required but not installed.")
+      }
     }
-    args$code <- readLines(filepath)
   }
-  code <- paste(args$code, collapse = "\n")
 
-  results <- tryCatch(eval(parse(text = code)),
+  tryCatch(source(module_path, local = TRUE),
            error = function(e) {
-             stop("The function has errors:", e$message)
+             stop("The module code has errors: ", e$message)
            })
+
+  if (list(...) |> length()) {
+    code <- sprintf("%s(paper, ...)", info$func_name)
+  } else {
+    code <- sprintf("%s(paper)", info$func_name)
+  }
+  results <- tryCatch(eval(parse(text = code)),
+                      error = function(e) {
+                        stop("Running the module produced errors: ", e$message)
+                      })
 
   if (is.data.frame(results)) {
     results <- list(table = results)
   }
 
-  return(results)
-}
+  # add defaults
+  if (is.null(results$traffic_light) & is.data.frame(results$table)) {
+    results$traffic_light = ifelse(nrow(results$table), "info", "na")
+  }
 
-# ' Run machine learning module
-# '
-# ' @param paper the paper object (or list of objects)
-# ' @param args a list of arguments
-# ' @param module_dir the base directory for the module, in case resources are in files with relative paths
-# '
-# ' @return data frame
-# ' @keywords internal
-# module_run_ml <- function(paper, args, module_dir = ".") {
-#   model_dir <- file.path(module_dir, args$model_dir)
-#   if (!file.exists(model_dir)) {
-#     stop("The model directory ", args$model_dir, " could not be found; make sure the module specification file is using a relative path to the directory")
-#   }
-#
-#   if (is.vector(paper)) {
-#     text <- data.frame(text = paper)
-#   } else if (is.data.frame(paper)) {
-#     text <- paper
-#   } else {
-#     text <- search_text(paper, return = "sentence")
-#   }
-#
-#   class_col <- args$class_col %||% "class"
-#   return_prob <- args$return_prob %||% FALSE
-#
-#   results <- ml(text, model_dir,
-#      class_col = class_col,
-#      map = args$map,
-#      return_prob = return_prob)
-#
-#   if (!is.null(args$filter)) {
-#     keep <- results[[class_col]] %in% args$filter
-#     results <- results[keep, ]
-#   }
-#
-#   return( list(table = results) )
-# }
+  results$report <- results$report %||% ""
 
-#' Run LLM module
-#'
-#' @param paper the paper object (or list of object)
-#' @param args a list of arguments to `llm()`
-#'
-#' @return data frame
-#' @keywords internal
-module_run_llm <- function(paper, args) {
-  # make sure you only send valid arguments
-  valid_llm_args <- formals(llm) |> names()
-  llm_args <- intersect(names(args), valid_llm_args)
-  args <- args[llm_args]
+  # process summary table
+  if (!is.null(results$summary)) {
+    suffix <- module_path |> basename() |>
+      sub("\\.(r|R)$", "", x = _,) |>
+      paste0(".", x = _)
 
-  args$text <- search_text(paper)
-  results <- do.call(llm, args)
-  # attr(results, "llm")
+    summary_table <- summary_table |>
+      dplyr::left_join(results$summary, by = "id",
+                       suffix = c("", suffix))
 
-  return( list(table = results) )
-}
+    if (!is.null(results$na_replace)) {
+      # replace NAs
+      narep <- results$na_replace
+      cols <- colnames(summary_table)
+      if (is.null(names(narep))) {
+        narep <- rep_len(narep, length(cols))
+        names(narep) <- cols
+      }
+      narep <- narep[intersect(names(narep), cols)]
+      for (col in names(narep)) {
+        summary_table[is.na(summary_table[[col]]), col] <- narep[[col]]
+      }
+    }
+  }
 
-
-#' List modules
-#'
-#' @param module_dir the directory to search for modules (defaults to the built-in modules)
-#
-#' @return a data frame of modules
-#' @export
-#'
-#' @examples
-#' module_list()
-module_list <- function(module_dir = system.file("modules", package = "papercheck")) {
-  files <- list.files(module_dir, "\\.mod$",
-                      full.names = TRUE,
-                      recursive = TRUE)
-  json <- lapply(files, jsonlite::read_json, simplifyVector = TRUE)
-
-  type <- sapply(json, function(j) {
-    if ("llm" %in% names(j)) return("llm")
-    if ("ml" %in% names(j)) return("ml")
-    if ("code" %in% names(j)) return("code")
-    if ("text" %in% names(j)) return("text")
-  })
-
-  display <- data.frame(
-    name = basename(files) |> sub("\\.mod$", "", x = _),
-    title = sapply(json, `[[`, "title"),
-    description = sapply(json, `[[`, "description") |>
-      sapply(\(x) x %||% ""),
-    type = type,
-    path = files
+  report_items <- list(
+    module = module,
+    title = info$title,
+    table = results$table,
+    report = results$report,
+    traffic_light = results$traffic_light,
+    summary = summary_table,
+    paper = paper
   )
-  class(display) <- c("ppchk_module_list", "data.frame")
-  rownames(display) <- NULL
 
-  return(display)
+  class(report_items) <- "ppchk_module_output"
+
+  return(report_items)
 }
-
 
 #' Find a module by name or path
 #'
@@ -239,7 +120,7 @@ module_find <- function(module) {
   # search for module in built-in directory
   module_libs <- system.file("modules", package = "papercheck")
   module_paths <- sapply(module_libs, list.files, full.names = TRUE, recursive = TRUE)
-  module_names <- basename(module_paths) |> sub("\\.mod$", "", x = _)
+  module_names <- basename(module_paths) |> sub("\\.R$", "", x = _)
 
   which_mod <- which(module_names == module)
   if (length(which_mod) == 1) {
@@ -247,8 +128,119 @@ module_find <- function(module) {
   } else if (file.exists(module)) {
     module_path <- module
   } else {
-    stop("There were no modules that matched ", module)
+    stop("There were no modules that matched ", module, "; use module_list() to see a list of built-in modules.")
   }
 
   return(module_path)
+}
+
+#' List modules
+#'
+#' @param module_dir the directory to search for modules (defaults to the built-in modules)
+#
+#' @return a data frame of modules
+#' @export
+#'
+#' @examples
+#' module_list()
+module_list <- function(module_dir = system.file("modules", package = "papercheck")) {
+  files <- list.files(module_dir, "\\.R$",
+                      full.names = TRUE,
+                      recursive = TRUE)
+  txt <- lapply(files, module_info)
+
+  display <- data.frame(
+    name = basename(files) |> sub("\\.R$", "", x = _),
+    title = sapply(txt, \(x) x[["title"]][[1]]),
+    description = sapply(txt, `[[`, "description") |>
+      sapply(\(x) x[[1]] %||% ""),
+    path = files
+  )
+  class(display) <- c("ppchk_module_list", "data.frame")
+  rownames(display) <- NULL
+
+  return(display)
+}
+
+#' Get module information
+#'
+#' @param module the name of a module or path to a module
+#'
+#' @returns a list of module info
+#' @export
+#'
+#' @examples
+#' module_info("all_p_values")
+module_info <- function(module) {
+  module_path <- module_find(module)
+  tryCatch({
+    roxy <- roxygen2::parse_file(module_path, env = NULL)
+  }, error = function(e) {
+    stop("The module code has errors: ", e$message)
+  })
+
+  tags <- roxy[[1]]$tags
+  vals <- lapply(tags, \(x) x$val)
+  names <- sapply(tags, \(x) x$tag)
+  info <- list()
+  for (n in unique(names)) {
+    val <- vals[names == n]
+    if (length(val) == 1) val <- val[[1]]
+    info[[n]] <- val
+  }
+
+  # get function name
+  lines <- readLines(module_path)
+  pattern <- "^\\s*([a-zA-Z0-9\\._]+)\\s*(<-|=)\\s*function\\b"
+  funcs <- grepl(pattern, lines) |> which()
+  match <- regexec(pattern, lines[funcs[1]])
+  info$func_name <- regmatches(lines[funcs[1]], match)[[1]][2]
+
+  info
+}
+
+
+#' Get Module Help
+#'
+#' See the help files for a module by name (get a list of names from `module_list()`)
+#'
+#' @param module the name of a module or path to a module
+#'
+#' @returns the help text
+#' @export
+#'
+#' @examples
+#' module_help("marginal")
+module_help <- function(module) {
+  info <- module_info(module)
+
+  help <- info[c("title", "description", "details", "examples")]
+  help[sapply(help, is.null)] <- NULL
+  class(help) <- "ppchk_module_help"
+
+  return(help)
+}
+
+#' Print Module Help Object
+#'
+#' @param x The ppchk_module_help object
+#' @param ... Additional parameters for print
+#'
+#' @export
+#' @keywords internal
+#'
+print.ppchk_module_help <- function(x, ...) {
+  examples <- ""
+  if (!is.null(x$examples)) {
+    examples <- sprintf("``` r\n%s\n```", x$examples)
+  }
+
+  sprintf("%s\n\n%s\n\n%s\n\n%s",
+          x$title %||% "{no title}",
+          x$description %||% "{no description}",
+          x$details %||% "",
+          examples) |>
+    gsub("\n{2,}", "\n\n", x = _) |>
+    trimws() |>
+    cat()
 }

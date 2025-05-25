@@ -413,11 +413,11 @@ server <- function(input, output, session) {
   observeEvent(input$report_defaults, {
     debug_msg("report_defaults")
 
-    modules <- c("imprecise-p",
+    modules <- c("imprecise_p",
                  "marginal",
-                 "osf-check",
+                 "osf_check",
                  "retractionwatch",
-                 "ref-consistency")
+                 "ref_consistency")
 
     update_report_modules(modules)
   })
@@ -425,7 +425,7 @@ server <- function(input, output, session) {
   observeEvent(input$report_info, {
     debug_msg("report_info")
 
-    modules <- c("all-p-values", "all-urls")
+    modules <- c("all_p_values", "all_urls")
 
     update_report_modules(modules)
   })

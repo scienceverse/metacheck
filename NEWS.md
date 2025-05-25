@@ -1,6 +1,18 @@
+# papercheck 0.0.0.9037
+
+* The way modules are created has been majorly changed -- it is now very similar to R package functions, using roxygen for documentation, instead of JSON format. There is no longer a need to distinguish text search, code, and LLM types of modules, they all use code. The vignettes have been updated to reflect this.
+* Modules now return a `summary` table that is appended to a master summary table if you chain modules like `psychsci |> module_run("all_p_values") |> module_run("marginal")`
+* The `validate()` function is temporarily removed to adapt the workflow to the new summary tables.
+* new `module_help()` function and some help/examples in modules
+* new `module_info()` helper function
+* new `paperlist()` function to create paper list objects
+* paper lists now print as a table of IDs, titles, and DOIs
+* updated `read_grobid()` to have fewer false positives for citations
+* updated `retractionwatch`
+
 # papercheck 0.0.0.9036
 
-* Now reads in grobid XMLs with badly parsed figures
+* Now reads in grobid XMLs that have badly parsed figures
 
 # papercheck 0.0.0.9035
 
