@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9036</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9037</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -87,17 +87,17 @@ will share more modules.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/module_list.html">module_list</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <ul>
-<li>all-p-values: List all p-values in the text, returning the matched
+<li>all_p_values: List all p-values in the text, returning the matched
 text (e.g., ‘p = 0.04’) and document location in a table.</li>
-<li>all-urls: List all the URLs in the main text</li>
-<li>imprecise-p: List any p-values reported with insufficient precision
+<li>all_urls: List all the URLs in the main text.</li>
+<li>imprecise_p: List any p-values reported with insufficient precision
 (e.g., p &lt; .05 or p = n.s.)</li>
-<li>llm-summarise: Generate a 1-sentence summary for each section</li>
+<li>llm_summarise: Generate a 1-sentence summary for each section</li>
 <li>marginal: List all sentences that describe an effect as ‘marginally
 significant’.</li>
-<li>osf-check: List all OSF links and whether they are open, closed, or
+<li>osf_check: List all OSF links and whether they are open, closed, or
 do not exist.</li>
-<li>ref-consistency: Check if all references are cited and all citations
+<li>ref_consistency: Check if all references are cited and all citations
 are referenced</li>
 <li>retractionwatch: Flag any cited papers in the RetractionWatch
 database</li>
@@ -113,399 +113,298 @@ of 250 open-access papers from Psychological Science.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="va">psychsci</span><span class="op">$</span><span class="va">`0956797620955209`</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="all-p-values">all-p-values<a class="anchor" aria-label="anchor" href="#all-p-values"></a>
+<h3 id="all_p_values">all_p_values<a class="anchor" aria-label="anchor" href="#all_p_values"></a>
 </h3>
 <p>List all p-values in the text, returning the matched text (e.g., ‘p =
 0.04’) and document location in a table.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">all_p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all-p-values"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">all_p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all_p_values"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">all_p</span> <span class="co"># print table</span></span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left">text</th>
-<th align="left">section</th>
-<th align="left">header</th>
-<th align="right">div</th>
-<th align="right">p</th>
-<th align="right">s</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">p = .003</td>
-<td align="left">method</td>
-<td align="left">Questionnaires</td>
-<td align="right">6</td>
-<td align="right">2</td>
-<td align="right">3</td>
-</tr>
-<tr class="even">
-<td align="left">p = .08</td>
-<td align="left">method</td>
-<td align="left">Questionnaires</td>
-<td align="right">6</td>
-<td align="right">2</td>
-<td align="right">3</td>
-</tr>
-<tr class="odd">
-<td align="left">p &lt; .001</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">2</td>
-<td align="right">1</td>
-</tr>
-<tr class="even">
-<td align="left">p &lt; .025</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">2</td>
-<td align="right">3</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .040</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">2</td>
-<td align="right">3</td>
-</tr>
-<tr class="even">
-<td align="left">p = .173</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">2</td>
-<td align="right">3</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .006</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">2</td>
-<td align="right">4</td>
-</tr>
-<tr class="even">
-<td align="left">p = .02</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">2</td>
-<td align="right">4</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .691</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">2</td>
-<td align="right">5</td>
-</tr>
-<tr class="even">
-<td align="left">p = .303</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">2</td>
-<td align="right">5</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .023</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">3</td>
-<td align="right">3</td>
-</tr>
-<tr class="even">
-<td align="left">p &lt; .001</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">3</td>
-<td align="right">3</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .006</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">4</td>
-<td align="right">2</td>
-</tr>
-<tr class="even">
-<td align="left">p = .037</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">4</td>
-<td align="right">2</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .038</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">4</td>
-<td align="right">2</td>
-</tr>
-<tr class="even">
-<td align="left">p = .358</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">4</td>
-<td align="right">2</td>
-</tr>
-<tr class="odd">
-<td align="left">p &lt; .001</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">4</td>
-<td align="right">3</td>
-</tr>
-<tr class="even">
-<td align="left">p = .127</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">4</td>
-<td align="right">3</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .062</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">4</td>
-<td align="right">3</td>
-</tr>
-<tr class="even">
-<td align="left">p = .047</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">4</td>
-<td align="right">3</td>
-</tr>
-</tbody>
-</table>
-<p>Showing 20 of 20 rows</p>
+<span><span class="va">all_p</span><span class="op">$</span><span class="va">table</span> <span class="co"># print table</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 7</span></span></span>
+<span><span class="co">#&gt;    text     section header           div     p     s id              </span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> p = .003 method  Questionnaires     6     2     3 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> p = .08  method  Questionnaires     6     2     3 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> p &lt; .001 results Results            9     2     1 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> p &lt; .025 results Results            9     2     3 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> p = .040 results Results            9     2     3 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> p = .173 results Results            9     2     3 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> p = .006 results Results            9     2     4 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> p = .02  results Results            9     2     4 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> p = .691 results Results            9     2     5 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> p = .303 results Results            9     2     5 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> p = .023 results Results            9     3     3 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> p &lt; .001 results Results            9     3     3 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> p = .006 results Results            9     4     2 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> p = .037 results Results            9     4     2 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> p = .038 results Results            9     4     2 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> p = .358 results Results            9     4     2 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">17</span> p &lt; .001 results Results            9     4     3 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">18</span> p = .127 results Results            9     4     3 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">19</span> p = .062 results Results            9     4     3 0956797620955209</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">20</span> p = .047 results Results            9     4     3 0956797620955209</span></span></code></pre>
 <p>If you run this module on all 250 papers, you will get more rows than
-you probably want to print, so the default just shows you the first 20
-rows.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">all_p_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"all-p-values"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">all_p_ps</span> <span class="co"># print table</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="13%">
-<col width="11%">
-<col width="35%">
-<col width="5%">
-<col width="4%">
-<col width="4%">
-<col width="25%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">text</th>
-<th align="left">section</th>
-<th align="left">header</th>
-<th align="right">div</th>
-<th align="right">p</th>
-<th align="right">s</th>
-<th align="left">id</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">p &lt; .001</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">8</td>
-<td align="right">1</td>
-<td align="right">1</td>
-<td align="left">0956797613520608</td>
-</tr>
-<tr class="even">
-<td align="left">p &lt; .001</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">8</td>
-<td align="right">1</td>
-<td align="right">2</td>
-<td align="left">0956797613520608</td>
-</tr>
-<tr class="odd">
-<td align="left">p &lt; .001</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">8</td>
-<td align="right">1</td>
-<td align="right">3</td>
-<td align="left">0956797613520608</td>
-</tr>
-<tr class="even">
-<td align="left">p = .016</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">8</td>
-<td align="right">1</td>
-<td align="right">4</td>
-<td align="left">0956797613520608</td>
-</tr>
-<tr class="odd">
-<td align="left">p &lt; .001</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">8</td>
-<td align="right">2</td>
-<td align="right">1</td>
-<td align="left">0956797613520608</td>
-</tr>
-<tr class="even">
-<td align="left">p &lt; .001</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">8</td>
-<td align="right">2</td>
-<td align="right">1</td>
-<td align="left">0956797613520608</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .005</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">7</td>
-<td align="right">2</td>
-<td align="right">1</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="even">
-<td align="left">p &lt; .001</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">7</td>
-<td align="right">2</td>
-<td align="right">2</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .153</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">7</td>
-<td align="right">2</td>
-<td align="right">2</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="even">
-<td align="left">p &lt; .001</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">7</td>
-<td align="right">2</td>
-<td align="right">6</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="odd">
-<td align="left">p &lt; .001</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">7</td>
-<td align="right">2</td>
-<td align="right">7</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="even">
-<td align="left">p = .315</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">7</td>
-<td align="right">2</td>
-<td align="right">7</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .024</td>
-<td align="left">results</td>
-<td align="left">Eye movement strategies</td>
-<td align="right">8</td>
-<td align="right">2</td>
-<td align="right">2</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="even">
-<td align="left">p = .008</td>
-<td align="left">results</td>
-<td align="left">Eye movement strategies</td>
-<td align="right">8</td>
-<td align="right">3</td>
-<td align="right">2</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .09</td>
-<td align="left">results</td>
-<td align="left">Eye movement strategies</td>
-<td align="right">8</td>
-<td align="right">3</td>
-<td align="right">2</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="even">
-<td align="left">p = .028</td>
-<td align="left">results</td>
-<td align="left">Eye movement strategies</td>
-<td align="right">8</td>
-<td align="right">3</td>
-<td align="right">2</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .122</td>
-<td align="left">results</td>
-<td align="left">Eye movement strategies</td>
-<td align="right">8</td>
-<td align="right">3</td>
-<td align="right">3</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="even">
-<td align="left">p = .001</td>
-<td align="left">results</td>
-<td align="left">Eye movement strategies</td>
-<td align="right">8</td>
-<td align="right">3</td>
-<td align="right">4</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="odd">
-<td align="left">p = .237</td>
-<td align="left">results</td>
-<td align="left">Eye movement strategies</td>
-<td align="right">8</td>
-<td align="right">3</td>
-<td align="right">5</td>
-<td align="left">0956797614522816</td>
-</tr>
-<tr class="even">
-<td align="left">p = .008</td>
-<td align="left">results</td>
-<td align="left">Gaze patterns</td>
-<td align="right">9</td>
-<td align="right">2</td>
-<td align="right">1</td>
-<td align="left">0956797614522816</td>
-</tr>
-</tbody>
-</table>
-<p>Showing 20 of 4683 rows</p>
-<p>You can access the full table for further processing.</p>
+you probably want to print in the full table one row for every p-value
+in each paper), so you can print the summary table, which gives you one
+row per paper.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">all_p_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"all_p_values"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">all_p_ps</span><span class="op">$</span><span class="va">summary</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;                    id p_values</span></span>
+<span><span class="co">#&gt; 1    0956797613520608        6</span></span>
+<span><span class="co">#&gt; 2    0956797614522816       39</span></span>
+<span><span class="co">#&gt; 3    0956797614527830       13</span></span>
+<span><span class="co">#&gt; 4    0956797614557697       27</span></span>
+<span><span class="co">#&gt; 5    0956797614560771        4</span></span>
+<span><span class="co">#&gt; 6    0956797614566469        0</span></span>
+<span><span class="co">#&gt; 7    0956797615569001       25</span></span>
+<span><span class="co">#&gt; 8    0956797615569889       26</span></span>
+<span><span class="co">#&gt; 9    0956797615583071       24</span></span>
+<span><span class="co">#&gt; 10   0956797615588467       20</span></span>
+<span><span class="co">#&gt; 11   0956797615603702        8</span></span>
+<span><span class="co">#&gt; 12   0956797615615584       18</span></span>
+<span><span class="co">#&gt; 13   0956797615617779       34</span></span>
+<span><span class="co">#&gt; 14   0956797615620784        9</span></span>
+<span><span class="co">#&gt; 15   0956797615625973       11</span></span>
+<span><span class="co">#&gt; 16   0956797616631990        8</span></span>
+<span><span class="co">#&gt; 17   0956797616634654       22</span></span>
+<span><span class="co">#&gt; 18   0956797616634665       18</span></span>
+<span><span class="co">#&gt; 19   0956797616636631       26</span></span>
+<span><span class="co">#&gt; 20   0956797616647519        8</span></span>
+<span><span class="co">#&gt; 21   0956797616657319       17</span></span>
+<span><span class="co">#&gt; 22   0956797616661199       13</span></span>
+<span><span class="co">#&gt; 23   0956797616663878        5</span></span>
+<span><span class="co">#&gt; 24   0956797616665351        8</span></span>
+<span><span class="co">#&gt; 25   0956797616667447       17</span></span>
+<span><span class="co">#&gt; 26   0956797616669994        2</span></span>
+<span><span class="co">#&gt; 27   0956797616671327       37</span></span>
+<span><span class="co">#&gt; 28   0956797616671712       25</span></span>
+<span><span class="co">#&gt; 29   0956797617692000       39</span></span>
+<span><span class="co">#&gt; 30   0956797617693326       30</span></span>
+<span><span class="co">#&gt; 31   0956797617694867       51</span></span>
+<span><span class="co">#&gt; 32   0956797617702501        0</span></span>
+<span><span class="co">#&gt; 33   0956797617702699        3</span></span>
+<span><span class="co">#&gt; 34   0956797617705391       16</span></span>
+<span><span class="co">#&gt; 35   0956797617705667       31</span></span>
+<span><span class="co">#&gt; 36   0956797617707270        8</span></span>
+<span><span class="co">#&gt; 37   0956797617710785       16</span></span>
+<span><span class="co">#&gt; 38   0956797617714811        1</span></span>
+<span><span class="co">#&gt; 39   0956797617716922       14</span></span>
+<span><span class="co">#&gt; 40   0956797617716929       22</span></span>
+<span><span class="co">#&gt; 41   0956797617724435        1</span></span>
+<span><span class="co">#&gt; 42   0956797617736886       12</span></span>
+<span><span class="co">#&gt; 43   0956797617737129       37</span></span>
+<span><span class="co">#&gt; 44   0956797617739368        6</span></span>
+<span><span class="co">#&gt; 45   0956797617740685        9</span></span>
+<span><span class="co">#&gt; 46   0956797617744542       15</span></span>
+<span><span class="co">#&gt; 47   0956797618755322        5</span></span>
+<span><span class="co">#&gt; 48   0956797618760197        3</span></span>
+<span><span class="co">#&gt; 49   0956797618772822       49</span></span>
+<span><span class="co">#&gt; 50   0956797618773095        1</span></span>
+<span><span class="co">#&gt; 51   0956797618785899       26</span></span>
+<span><span class="co">#&gt; 52   0956797618795679       17</span></span>
+<span><span class="co">#&gt; 53   0956797618796480        7</span></span>
+<span><span class="co">#&gt; 54   0956797618804501        0</span></span>
+<span><span class="co">#&gt; 55   0956797618815482        4</span></span>
+<span><span class="co">#&gt; 56   0956797618815488       22</span></span>
+<span><span class="co">#&gt; 57   0956797618823540        0</span></span>
+<span><span class="co">#&gt; 58   0956797619830326       14</span></span>
+<span><span class="co">#&gt; 59   0956797619830329       32</span></span>
+<span><span class="co">#&gt; 60   0956797619831964       21</span></span>
+<span><span class="co">#&gt; 61   0956797619833325        0</span></span>
+<span><span class="co">#&gt; 62   0956797619835147       41</span></span>
+<span><span class="co">#&gt; 63   0956797619837981        5</span></span>
+<span><span class="co">#&gt; 64   0956797619841265        7</span></span>
+<span><span class="co">#&gt; 65   0956797619842261       58</span></span>
+<span><span class="co">#&gt; 66   0956797619842550       39</span></span>
+<span><span class="co">#&gt; 67   0956797619844231       36</span></span>
+<span><span class="co">#&gt; 68   0956797619851753       21</span></span>
+<span><span class="co">#&gt; 69   0956797619866625       26</span></span>
+<span><span class="co">#&gt; 70   0956797619866627        3</span></span>
+<span><span class="co">#&gt; 71   0956797619869905       24</span></span>
+<span><span class="co">#&gt; 72   0956797619876260        9</span></span>
+<span><span class="co">#&gt; 73   0956797619881134       30</span></span>
+<span><span class="co">#&gt; 74   0956797619890619        0</span></span>
+<span><span class="co">#&gt; 75   0956797620903716        9</span></span>
+<span><span class="co">#&gt; 76   0956797620904450       14</span></span>
+<span><span class="co">#&gt; 77   0956797620904990        0</span></span>
+<span><span class="co">#&gt; 78   0956797620915887        1</span></span>
+<span><span class="co">#&gt; 79   0956797620916521       27</span></span>
+<span><span class="co">#&gt; 80   0956797620916782        4</span></span>
+<span><span class="co">#&gt; 81   0956797620927648       32</span></span>
+<span><span class="co">#&gt; 82   0956797620927967       11</span></span>
+<span><span class="co">#&gt; 83   0956797620929297       16</span></span>
+<span><span class="co">#&gt; 84   0956797620929302       21</span></span>
+<span><span class="co">#&gt; 85   0956797620931108        8</span></span>
+<span><span class="co">#&gt; 86   0956797620939054       21</span></span>
+<span><span class="co">#&gt; 87   0956797620941840        0</span></span>
+<span><span class="co">#&gt; 88   0956797620948821       17</span></span>
+<span><span class="co">#&gt; 89   0956797620951115        0</span></span>
+<span><span class="co">#&gt; 90   0956797620954815       36</span></span>
+<span><span class="co">#&gt; 91   0956797620955209       20</span></span>
+<span><span class="co">#&gt; 92   0956797620957625       54</span></span>
+<span><span class="co">#&gt; 93   0956797620958638       94</span></span>
+<span><span class="co">#&gt; 94   0956797620958650       37</span></span>
+<span><span class="co">#&gt; 95   0956797620959014       18</span></span>
+<span><span class="co">#&gt; 96   0956797620959594        4</span></span>
+<span><span class="co">#&gt; 97   0956797620960011       18</span></span>
+<span><span class="co">#&gt; 98   0956797620963615       25</span></span>
+<span><span class="co">#&gt; 99   0956797620965520       18</span></span>
+<span><span class="co">#&gt; 100  0956797620965536       32</span></span>
+<span><span class="co">#&gt; 101  0956797620967261        9</span></span>
+<span><span class="co">#&gt; 102  0956797620968789       15</span></span>
+<span><span class="co">#&gt; 103  0956797620970548       27</span></span>
+<span><span class="co">#&gt; 104  0956797620970559       10</span></span>
+<span><span class="co">#&gt; 105  0956797620971298       41</span></span>
+<span><span class="co">#&gt; 106  0956797620971652        0</span></span>
+<span><span class="co">#&gt; 107  0956797620972116       61</span></span>
+<span><span class="co">#&gt; 108  0956797620972688        6</span></span>
+<span><span class="co">#&gt; 109  0956797620975781       29</span></span>
+<span><span class="co">#&gt; 110  0956797620984464       52</span></span>
+<span><span class="co">#&gt; 111  0956797620985832       27</span></span>
+<span><span class="co">#&gt; 112 09567976211001317        0</span></span>
+<span><span class="co">#&gt; 113 09567976211005465       33</span></span>
+<span><span class="co">#&gt; 114 09567976211005767        1</span></span>
+<span><span class="co">#&gt; 115 09567976211007414       10</span></span>
+<span><span class="co">#&gt; 116 09567976211007788       18</span></span>
+<span><span class="co">#&gt; 117 09567976211010718       15</span></span>
+<span><span class="co">#&gt; 118 09567976211011969       33</span></span>
+<span><span class="co">#&gt; 119 09567976211013045       11</span></span>
+<span><span class="co">#&gt; 120 09567976211015941        1</span></span>
+<span><span class="co">#&gt; 121 09567976211015942       32</span></span>
+<span><span class="co">#&gt; 122 09567976211016395        6</span></span>
+<span><span class="co">#&gt; 123 09567976211016410       11</span></span>
+<span><span class="co">#&gt; 124 09567976211017870       17</span></span>
+<span><span class="co">#&gt; 125 09567976211018618       22</span></span>
+<span><span class="co">#&gt; 126 09567976211019950        0</span></span>
+<span><span class="co">#&gt; 127 09567976211024259       12</span></span>
+<span><span class="co">#&gt; 128 09567976211024260        2</span></span>
+<span><span class="co">#&gt; 129 09567976211024535       23</span></span>
+<span><span class="co">#&gt; 130 09567976211026983       40</span></span>
+<span><span class="co">#&gt; 131 09567976211028978       10</span></span>
+<span><span class="co">#&gt; 132 09567976211030630       43</span></span>
+<span><span class="co">#&gt; 133 09567976211032224       11</span></span>
+<span><span class="co">#&gt; 134 09567976211032676       14</span></span>
+<span><span class="co">#&gt; 135 09567976211037971       21</span></span>
+<span><span class="co">#&gt; 136 09567976211040491        8</span></span>
+<span><span class="co">#&gt; 137 09567976211040803        5</span></span>
+<span><span class="co">#&gt; 138 09567976211043426        0</span></span>
+<span><span class="co">#&gt; 139 09567976211043428        6</span></span>
+<span><span class="co">#&gt; 140 09567976211046884        0</span></span>
+<span><span class="co">#&gt; 141 09567976211048485       17</span></span>
+<span><span class="co">#&gt; 142 09567976211049439       13</span></span>
+<span><span class="co">#&gt; 143 09567976211051272        2</span></span>
+<span><span class="co">#&gt; 144 09567976211052476        2</span></span>
+<span><span class="co">#&gt; 145 09567976211055375       24</span></span>
+<span><span class="co">#&gt; 146 09567976211059801       32</span></span>
+<span><span class="co">#&gt; 147 09567976211061321       39</span></span>
+<span><span class="co">#&gt; 148 09567976211068045        0</span></span>
+<span><span class="co">#&gt; 149 09567976211068070       27</span></span>
+<span><span class="co">#&gt; 150 09567976211068880       41</span></span>
+<span><span class="co">#&gt; 151  0956797621991137       32</span></span>
+<span><span class="co">#&gt; 152  0956797621991548       14</span></span>
+<span><span class="co">#&gt; 153  0956797621995197       47</span></span>
+<span><span class="co">#&gt; 154  0956797621995202       32</span></span>
+<span><span class="co">#&gt; 155  0956797621996660       23</span></span>
+<span><span class="co">#&gt; 156  0956797621996667       46</span></span>
+<span><span class="co">#&gt; 157  0956797621997350        6</span></span>
+<span><span class="co">#&gt; 158  0956797621997366        2</span></span>
+<span><span class="co">#&gt; 159  0956797621998312        0</span></span>
+<span><span class="co">#&gt; 160 09567976221079633       18</span></span>
+<span><span class="co">#&gt; 161 09567976221082637        2</span></span>
+<span><span class="co">#&gt; 162 09567976221082938       31</span></span>
+<span><span class="co">#&gt; 163 09567976221082941        6</span></span>
+<span><span class="co">#&gt; 164 09567976221083219       22</span></span>
+<span><span class="co">#&gt; 165 09567976221086513       66</span></span>
+<span><span class="co">#&gt; 166 09567976221089599       15</span></span>
+<span><span class="co">#&gt; 167 09567976221094036       29</span></span>
+<span><span class="co">#&gt; 168 09567976221094782       46</span></span>
+<span><span class="co">#&gt; 169 09567976221101045        0</span></span>
+<span><span class="co">#&gt; 170 09567976221114055       35</span></span>
+<span><span class="co">#&gt; 171 09567976221116816        1</span></span>
+<span><span class="co">#&gt; 172 09567976221116892       30</span></span>
+<span><span class="co">#&gt; 173 09567976221116893        1</span></span>
+<span><span class="co">#&gt; 174 09567976221119391       14</span></span>
+<span><span class="co">#&gt; 175 09567976221121348       52</span></span>
+<span><span class="co">#&gt; 176 09567976221131519       15</span></span>
+<span><span class="co">#&gt; 177 09567976221131520       30</span></span>
+<span><span class="co">#&gt; 178 09567976221134476       19</span></span>
+<span><span class="co">#&gt; 179 09567976221139496       16</span></span>
+<span><span class="co">#&gt; 180 09567976221140326        0</span></span>
+<span><span class="co">#&gt; 181 09567976221140341       24</span></span>
+<span><span class="co">#&gt; 182 09567976221145316        5</span></span>
+<span><span class="co">#&gt; 183 09567976221147258        8</span></span>
+<span><span class="co">#&gt; 184 09567976221147259       29</span></span>
+<span><span class="co">#&gt; 185 09567976221150616       31</span></span>
+<span><span class="co">#&gt; 186 09567976231151581       27</span></span>
+<span><span class="co">#&gt; 187 09567976231154804       24</span></span>
+<span><span class="co">#&gt; 188 09567976231156413       61</span></span>
+<span><span class="co">#&gt; 189 09567976231156793        4</span></span>
+<span><span class="co">#&gt; 190 09567976231158288        6</span></span>
+<span><span class="co">#&gt; 191 09567976231158570       24</span></span>
+<span><span class="co">#&gt; 192 09567976231160098       26</span></span>
+<span><span class="co">#&gt; 193 09567976231160702        5</span></span>
+<span><span class="co">#&gt; 194 09567976231161565        1</span></span>
+<span><span class="co">#&gt; 195 09567976231164553        0</span></span>
+<span><span class="co">#&gt; 196 09567976231165267       30</span></span>
+<span><span class="co">#&gt; 197 09567976231170878       16</span></span>
+<span><span class="co">#&gt; 198 09567976231172500       27</span></span>
+<span><span class="co">#&gt; 199 09567976231173900       57</span></span>
+<span><span class="co">#&gt; 200 09567976231173902       14</span></span>
+<span><span class="co">#&gt; 201 09567976231177968       23</span></span>
+<span><span class="co">#&gt; 202 09567976231179378       30</span></span>
+<span><span class="co">#&gt; 203 09567976231180578        8</span></span>
+<span><span class="co">#&gt; 204 09567976231180588        9</span></span>
+<span><span class="co">#&gt; 205 09567976231180881       16</span></span>
+<span><span class="co">#&gt; 206 09567976231184887        5</span></span>
+<span><span class="co">#&gt; 207 09567976231185127       20</span></span>
+<span><span class="co">#&gt; 208 09567976231185129        1</span></span>
+<span><span class="co">#&gt; 209 09567976231188107       23</span></span>
+<span><span class="co">#&gt; 210 09567976231188124        0</span></span>
+<span><span class="co">#&gt; 211 09567976231190546       30</span></span>
+<span><span class="co">#&gt; 212 09567976231192241       28</span></span>
+<span><span class="co">#&gt; 213 09567976231194221       11</span></span>
+<span><span class="co">#&gt; 214 09567976231194590       25</span></span>
+<span><span class="co">#&gt; 215 09567976231196145        7</span></span>
+<span><span class="co">#&gt; 216 09567976231198194       18</span></span>
+<span><span class="co">#&gt; 217 09567976231198435       30</span></span>
+<span><span class="co">#&gt; 218 09567976231199440       13</span></span>
+<span><span class="co">#&gt; 219 09567976231203139        0</span></span>
+<span><span class="co">#&gt; 220 09567976231204035       20</span></span>
+<span><span class="co">#&gt; 221 09567976231207095       21</span></span>
+<span><span class="co">#&gt; 222 09567976231213572        4</span></span>
+<span><span class="co">#&gt; 223 09567976231217508        0</span></span>
+<span><span class="co">#&gt; 224 09567976231218640       35</span></span>
+<span><span class="co">#&gt; 225 09567976231220902        8</span></span>
+<span><span class="co">#&gt; 226 09567976231221789       32</span></span>
+<span><span class="co">#&gt; 227 09567976231222288        0</span></span>
+<span><span class="co">#&gt; 228 09567976231222836        1</span></span>
+<span><span class="co">#&gt; 229 09567976231223130       67</span></span>
+<span><span class="co">#&gt; 230 09567976231223410       18</span></span>
+<span><span class="co">#&gt; 231 09567976241227411       45</span></span>
+<span><span class="co">#&gt; 232 09567976241228504       23</span></span>
+<span><span class="co">#&gt; 233 09567976241232891       14</span></span>
+<span><span class="co">#&gt; 234 09567976241235931       28</span></span>
+<span><span class="co">#&gt; 235 09567976241235932        0</span></span>
+<span><span class="co">#&gt; 236 09567976241239932       12</span></span>
+<span><span class="co">#&gt; 237 09567976241239935       17</span></span>
+<span><span class="co">#&gt; 238 09567976241242105        3</span></span>
+<span><span class="co">#&gt; 239 09567976241243370       11</span></span>
+<span><span class="co">#&gt; 240 09567976241245695        0</span></span>
+<span><span class="co">#&gt; 241 09567976241246561       41</span></span>
+<span><span class="co">#&gt; 242 09567976241249183       21</span></span>
+<span><span class="co">#&gt; 243 09567976241254312       15</span></span>
+<span><span class="co">#&gt; 244 09567976241258149       20</span></span>
+<span><span class="co">#&gt; 245 09567976241260247        8</span></span>
+<span><span class="co">#&gt; 246 09567976241263344       25</span></span>
+<span><span class="co">#&gt; 247 09567976241263347       53</span></span>
+<span><span class="co">#&gt; 248 09567976241266516       33</span></span>
+<span><span class="co">#&gt; 249 09567976241267854       42</span></span>
+<span><span class="co">#&gt; 250 09567976241279291        3</span></span></code></pre>
+<p>You can still access the full table for further processing.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_p_ps</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">text</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -520,150 +419,320 @@ rows.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> p &lt; .0001    91</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="all-urls">all-urls<a class="anchor" aria-label="anchor" href="#all-urls"></a>
+<h3 id="all_urls">all_urls<a class="anchor" aria-label="anchor" href="#all_urls"></a>
 </h3>
 <p>List all the URLs in the main text. There will, of course, be a few
 false positives when text in the paper is formatted as a valid URL.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">all_urls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all-urls"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">all_urls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all_urls"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">all_urls</span> <span class="co"># print table</span></span></code></pre></div>
-<table style="width:100%;" class="table">
-<colgroup>
-<col width="62%">
-<col width="8%">
-<col width="16%">
-<col width="4%">
-<col width="3%">
-<col width="3%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">text</th>
-<th align="left">section</th>
-<th align="left">header</th>
-<th align="right">div</th>
-<th align="right">p</th>
-<th align="right">s</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">3.9.1.7</td>
-<td align="left">method</td>
-<td align="left">Participants</td>
-<td align="right">3</td>
-<td align="right">1</td>
-<td align="right">5</td>
-</tr>
-<tr class="even">
-<td align="left"><a href="https://osf.io/k2dbf" class="external-link uri">https://osf.io/k2dbf</a></td>
-<td align="left">method</td>
-<td align="left">Analyses</td>
-<td align="right">8</td>
-<td align="right">1</td>
-<td align="right">1</td>
-</tr>
-<tr class="odd">
-<td align="left"><a href="https://osf.io/k2dbf" class="external-link uri">https://osf.io/k2dbf</a></td>
-<td align="left">funding</td>
-<td align="left">Open Practices</td>
-<td align="right">14</td>
-<td align="right">1</td>
-<td align="right">1</td>
-</tr>
-<tr class="even">
-<td align="left"><a href="https://osf.io/k2dbf" class="external-link uri">https://osf.io/k2dbf</a></td>
-<td align="left">funding</td>
-<td align="left">Open Practices</td>
-<td align="right">14</td>
-<td align="right">2</td>
-<td align="right">1</td>
-</tr>
-<tr class="odd">
-<td align="left"><a href="http://www.psychologicalscience.org/publications/badges" class="external-link uri">http://www.psychologicalscience.org/publications/badges</a></td>
-<td align="left">funding</td>
-<td align="left">Open Practices</td>
-<td align="right">14</td>
-<td align="right">2</td>
-<td align="right">3</td>
-</tr>
-</tbody>
-</table>
-<p>Showing 5 of 5 rows</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">all_urls_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"all-urls"</span><span class="op">)</span></span>
+<span><span class="va">all_urls</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 7</span></span></span>
+<span><span class="co">#&gt;   text                                    section header   div     p     s id   </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3.9.1.7                                 method  Parti…     3     1     5 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> https://osf.io/k2dbf                    method  Analy…     8     1     1 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> https://osf.io/k2dbf                    funding Open …    14     1     1 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> https://osf.io/k2dbf                    funding Open …    14     2     1 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> http://www.psychologicalscience.org/pu… funding Open …    14     2     3 0956…</span></span></code></pre>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">all_urls_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"all_urls"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># show the most common URLs</span></span>
-<span><span class="va">all_urls_ps</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">text</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
-<span><span class="co">#&gt;   text                                                        n</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> http://www.psychologicalscience.org/publications/badges   126</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> http://pss.sagepub.com/content/by/supplemental-data        28</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> https://osf.io/sh8qg                                       11</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> https://osf.io/2j6ne                                       10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> https://osf.io/79kbm                                       10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> http://pss.sagepub.com/content/25/1/3.full                  9</span></span></code></pre>
+<span><span class="va">all_urls_ps</span><span class="op">$</span><span class="va">summary</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;                    id urls</span></span>
+<span><span class="co">#&gt; 1    0956797613520608    0</span></span>
+<span><span class="co">#&gt; 2    0956797614522816    0</span></span>
+<span><span class="co">#&gt; 3    0956797614527830    1</span></span>
+<span><span class="co">#&gt; 4    0956797614557697    6</span></span>
+<span><span class="co">#&gt; 5    0956797614560771    0</span></span>
+<span><span class="co">#&gt; 6    0956797614566469    5</span></span>
+<span><span class="co">#&gt; 7    0956797615569001    6</span></span>
+<span><span class="co">#&gt; 8    0956797615569889    2</span></span>
+<span><span class="co">#&gt; 9    0956797615583071    4</span></span>
+<span><span class="co">#&gt; 10   0956797615588467    2</span></span>
+<span><span class="co">#&gt; 11   0956797615603702    0</span></span>
+<span><span class="co">#&gt; 12   0956797615615584    2</span></span>
+<span><span class="co">#&gt; 13   0956797615617779    1</span></span>
+<span><span class="co">#&gt; 14   0956797615620784    4</span></span>
+<span><span class="co">#&gt; 15   0956797615625973    4</span></span>
+<span><span class="co">#&gt; 16   0956797616631990    6</span></span>
+<span><span class="co">#&gt; 17   0956797616634654    2</span></span>
+<span><span class="co">#&gt; 18   0956797616634665    1</span></span>
+<span><span class="co">#&gt; 19   0956797616636631    5</span></span>
+<span><span class="co">#&gt; 20   0956797616647519    7</span></span>
+<span><span class="co">#&gt; 21   0956797616657319    3</span></span>
+<span><span class="co">#&gt; 22   0956797616661199    5</span></span>
+<span><span class="co">#&gt; 23   0956797616663878    4</span></span>
+<span><span class="co">#&gt; 24   0956797616665351    5</span></span>
+<span><span class="co">#&gt; 25   0956797616667447    1</span></span>
+<span><span class="co">#&gt; 26   0956797616669994    1</span></span>
+<span><span class="co">#&gt; 27   0956797616671327    2</span></span>
+<span><span class="co">#&gt; 28   0956797616671712    1</span></span>
+<span><span class="co">#&gt; 29   0956797617692000    6</span></span>
+<span><span class="co">#&gt; 30   0956797617693326    1</span></span>
+<span><span class="co">#&gt; 31   0956797617694867    8</span></span>
+<span><span class="co">#&gt; 32   0956797617702501    6</span></span>
+<span><span class="co">#&gt; 33   0956797617702699    4</span></span>
+<span><span class="co">#&gt; 34   0956797617705391    3</span></span>
+<span><span class="co">#&gt; 35   0956797617705667    5</span></span>
+<span><span class="co">#&gt; 36   0956797617707270    2</span></span>
+<span><span class="co">#&gt; 37   0956797617710785    4</span></span>
+<span><span class="co">#&gt; 38   0956797617714811    1</span></span>
+<span><span class="co">#&gt; 39   0956797617716922    3</span></span>
+<span><span class="co">#&gt; 40   0956797617716929   10</span></span>
+<span><span class="co">#&gt; 41   0956797617724435    9</span></span>
+<span><span class="co">#&gt; 42   0956797617736886    1</span></span>
+<span><span class="co">#&gt; 43   0956797617737129    9</span></span>
+<span><span class="co">#&gt; 44   0956797617739368    9</span></span>
+<span><span class="co">#&gt; 45   0956797617740685    3</span></span>
+<span><span class="co">#&gt; 46   0956797617744542    3</span></span>
+<span><span class="co">#&gt; 47   0956797618755322    6</span></span>
+<span><span class="co">#&gt; 48   0956797618760197    4</span></span>
+<span><span class="co">#&gt; 49   0956797618772822    4</span></span>
+<span><span class="co">#&gt; 50   0956797618773095    1</span></span>
+<span><span class="co">#&gt; 51   0956797618785899    8</span></span>
+<span><span class="co">#&gt; 52   0956797618795679    3</span></span>
+<span><span class="co">#&gt; 53   0956797618796480    5</span></span>
+<span><span class="co">#&gt; 54   0956797618804501    1</span></span>
+<span><span class="co">#&gt; 55   0956797618815482    0</span></span>
+<span><span class="co">#&gt; 56   0956797618815488    3</span></span>
+<span><span class="co">#&gt; 57   0956797618823540    2</span></span>
+<span><span class="co">#&gt; 58   0956797619830326   17</span></span>
+<span><span class="co">#&gt; 59   0956797619830329    9</span></span>
+<span><span class="co">#&gt; 60   0956797619831964    7</span></span>
+<span><span class="co">#&gt; 61   0956797619833325    2</span></span>
+<span><span class="co">#&gt; 62   0956797619835147    8</span></span>
+<span><span class="co">#&gt; 63   0956797619837981    1</span></span>
+<span><span class="co">#&gt; 64   0956797619841265    8</span></span>
+<span><span class="co">#&gt; 65   0956797619842261    6</span></span>
+<span><span class="co">#&gt; 66   0956797619842550    5</span></span>
+<span><span class="co">#&gt; 67   0956797619844231    7</span></span>
+<span><span class="co">#&gt; 68   0956797619851753    3</span></span>
+<span><span class="co">#&gt; 69   0956797619866625    6</span></span>
+<span><span class="co">#&gt; 70   0956797619866627    8</span></span>
+<span><span class="co">#&gt; 71   0956797619869905    5</span></span>
+<span><span class="co">#&gt; 72   0956797619876260   11</span></span>
+<span><span class="co">#&gt; 73   0956797619881134    7</span></span>
+<span><span class="co">#&gt; 74   0956797619890619    7</span></span>
+<span><span class="co">#&gt; 75   0956797620903716   20</span></span>
+<span><span class="co">#&gt; 76   0956797620904450    2</span></span>
+<span><span class="co">#&gt; 77   0956797620904990   11</span></span>
+<span><span class="co">#&gt; 78   0956797620915887   16</span></span>
+<span><span class="co">#&gt; 79   0956797620916521    2</span></span>
+<span><span class="co">#&gt; 80   0956797620916782   14</span></span>
+<span><span class="co">#&gt; 81   0956797620927648    3</span></span>
+<span><span class="co">#&gt; 82   0956797620927967    8</span></span>
+<span><span class="co">#&gt; 83   0956797620929297    1</span></span>
+<span><span class="co">#&gt; 84   0956797620929302    7</span></span>
+<span><span class="co">#&gt; 85   0956797620931108    4</span></span>
+<span><span class="co">#&gt; 86   0956797620939054   14</span></span>
+<span><span class="co">#&gt; 87   0956797620941840    6</span></span>
+<span><span class="co">#&gt; 88   0956797620948821   20</span></span>
+<span><span class="co">#&gt; 89   0956797620951115    6</span></span>
+<span><span class="co">#&gt; 90   0956797620954815    0</span></span>
+<span><span class="co">#&gt; 91   0956797620955209    5</span></span>
+<span><span class="co">#&gt; 92   0956797620957625    8</span></span>
+<span><span class="co">#&gt; 93   0956797620958638    2</span></span>
+<span><span class="co">#&gt; 94   0956797620958650    3</span></span>
+<span><span class="co">#&gt; 95   0956797620959014    2</span></span>
+<span><span class="co">#&gt; 96   0956797620959594   15</span></span>
+<span><span class="co">#&gt; 97   0956797620960011    6</span></span>
+<span><span class="co">#&gt; 98   0956797620963615    9</span></span>
+<span><span class="co">#&gt; 99   0956797620965520    2</span></span>
+<span><span class="co">#&gt; 100  0956797620965536    5</span></span>
+<span><span class="co">#&gt; 101  0956797620967261    5</span></span>
+<span><span class="co">#&gt; 102  0956797620968789    2</span></span>
+<span><span class="co">#&gt; 103  0956797620970548    5</span></span>
+<span><span class="co">#&gt; 104  0956797620970559    3</span></span>
+<span><span class="co">#&gt; 105  0956797620971298    8</span></span>
+<span><span class="co">#&gt; 106  0956797620971652    4</span></span>
+<span><span class="co">#&gt; 107  0956797620972116    4</span></span>
+<span><span class="co">#&gt; 108  0956797620972688    2</span></span>
+<span><span class="co">#&gt; 109  0956797620975781    5</span></span>
+<span><span class="co">#&gt; 110  0956797620984464    5</span></span>
+<span><span class="co">#&gt; 111  0956797620985832    9</span></span>
+<span><span class="co">#&gt; 112 09567976211001317    6</span></span>
+<span><span class="co">#&gt; 113 09567976211005465    3</span></span>
+<span><span class="co">#&gt; 114 09567976211005767    7</span></span>
+<span><span class="co">#&gt; 115 09567976211007414   16</span></span>
+<span><span class="co">#&gt; 116 09567976211007788   13</span></span>
+<span><span class="co">#&gt; 117 09567976211010718    9</span></span>
+<span><span class="co">#&gt; 118 09567976211011969   11</span></span>
+<span><span class="co">#&gt; 119 09567976211013045    0</span></span>
+<span><span class="co">#&gt; 120 09567976211015941    5</span></span>
+<span><span class="co">#&gt; 121 09567976211015942    4</span></span>
+<span><span class="co">#&gt; 122 09567976211016395    1</span></span>
+<span><span class="co">#&gt; 123 09567976211016410    8</span></span>
+<span><span class="co">#&gt; 124 09567976211017870    9</span></span>
+<span><span class="co">#&gt; 125 09567976211018618   16</span></span>
+<span><span class="co">#&gt; 126 09567976211019950   11</span></span>
+<span><span class="co">#&gt; 127 09567976211024259   17</span></span>
+<span><span class="co">#&gt; 128 09567976211024260    4</span></span>
+<span><span class="co">#&gt; 129 09567976211024535   11</span></span>
+<span><span class="co">#&gt; 130 09567976211026983    7</span></span>
+<span><span class="co">#&gt; 131 09567976211028978    3</span></span>
+<span><span class="co">#&gt; 132 09567976211030630    4</span></span>
+<span><span class="co">#&gt; 133 09567976211032224    6</span></span>
+<span><span class="co">#&gt; 134 09567976211032676    5</span></span>
+<span><span class="co">#&gt; 135 09567976211037971    7</span></span>
+<span><span class="co">#&gt; 136 09567976211040491   14</span></span>
+<span><span class="co">#&gt; 137 09567976211040803   12</span></span>
+<span><span class="co">#&gt; 138 09567976211043426    6</span></span>
+<span><span class="co">#&gt; 139 09567976211043428    4</span></span>
+<span><span class="co">#&gt; 140 09567976211046884    3</span></span>
+<span><span class="co">#&gt; 141 09567976211048485    1</span></span>
+<span><span class="co">#&gt; 142 09567976211049439   16</span></span>
+<span><span class="co">#&gt; 143 09567976211051272    8</span></span>
+<span><span class="co">#&gt; 144 09567976211052476    8</span></span>
+<span><span class="co">#&gt; 145 09567976211055375   13</span></span>
+<span><span class="co">#&gt; 146 09567976211059801    5</span></span>
+<span><span class="co">#&gt; 147 09567976211061321   14</span></span>
+<span><span class="co">#&gt; 148 09567976211068045    2</span></span>
+<span><span class="co">#&gt; 149 09567976211068070    2</span></span>
+<span><span class="co">#&gt; 150 09567976211068880    3</span></span>
+<span><span class="co">#&gt; 151  0956797621991137    3</span></span>
+<span><span class="co">#&gt; 152  0956797621991548    6</span></span>
+<span><span class="co">#&gt; 153  0956797621995197    9</span></span>
+<span><span class="co">#&gt; 154  0956797621995202   14</span></span>
+<span><span class="co">#&gt; 155  0956797621996660    7</span></span>
+<span><span class="co">#&gt; 156  0956797621996667    8</span></span>
+<span><span class="co">#&gt; 157  0956797621997350    4</span></span>
+<span><span class="co">#&gt; 158  0956797621997366   11</span></span>
+<span><span class="co">#&gt; 159  0956797621998312    5</span></span>
+<span><span class="co">#&gt; 160 09567976221079633    2</span></span>
+<span><span class="co">#&gt; 161 09567976221082637    7</span></span>
+<span><span class="co">#&gt; 162 09567976221082938   11</span></span>
+<span><span class="co">#&gt; 163 09567976221082941   11</span></span>
+<span><span class="co">#&gt; 164 09567976221083219   10</span></span>
+<span><span class="co">#&gt; 165 09567976221086513    4</span></span>
+<span><span class="co">#&gt; 166 09567976221089599    7</span></span>
+<span><span class="co">#&gt; 167 09567976221094036   12</span></span>
+<span><span class="co">#&gt; 168 09567976221094782    9</span></span>
+<span><span class="co">#&gt; 169 09567976221101045    9</span></span>
+<span><span class="co">#&gt; 170 09567976221114055    9</span></span>
+<span><span class="co">#&gt; 171 09567976221116816    2</span></span>
+<span><span class="co">#&gt; 172 09567976221116892    6</span></span>
+<span><span class="co">#&gt; 173 09567976221116893    5</span></span>
+<span><span class="co">#&gt; 174 09567976221119391    6</span></span>
+<span><span class="co">#&gt; 175 09567976221121348    5</span></span>
+<span><span class="co">#&gt; 176 09567976221131519    4</span></span>
+<span><span class="co">#&gt; 177 09567976221131520    9</span></span>
+<span><span class="co">#&gt; 178 09567976221134476    8</span></span>
+<span><span class="co">#&gt; 179 09567976221139496    1</span></span>
+<span><span class="co">#&gt; 180 09567976221140326    1</span></span>
+<span><span class="co">#&gt; 181 09567976221140341   16</span></span>
+<span><span class="co">#&gt; 182 09567976221145316    4</span></span>
+<span><span class="co">#&gt; 183 09567976221147258    2</span></span>
+<span><span class="co">#&gt; 184 09567976221147259    6</span></span>
+<span><span class="co">#&gt; 185 09567976221150616    5</span></span>
+<span><span class="co">#&gt; 186 09567976231151581    1</span></span>
+<span><span class="co">#&gt; 187 09567976231154804    3</span></span>
+<span><span class="co">#&gt; 188 09567976231156413    6</span></span>
+<span><span class="co">#&gt; 189 09567976231156793    1</span></span>
+<span><span class="co">#&gt; 190 09567976231158288    6</span></span>
+<span><span class="co">#&gt; 191 09567976231158570    4</span></span>
+<span><span class="co">#&gt; 192 09567976231160098    2</span></span>
+<span><span class="co">#&gt; 193 09567976231160702   10</span></span>
+<span><span class="co">#&gt; 194 09567976231161565    4</span></span>
+<span><span class="co">#&gt; 195 09567976231164553    2</span></span>
+<span><span class="co">#&gt; 196 09567976231165267    1</span></span>
+<span><span class="co">#&gt; 197 09567976231170878    2</span></span>
+<span><span class="co">#&gt; 198 09567976231172500    3</span></span>
+<span><span class="co">#&gt; 199 09567976231173900   15</span></span>
+<span><span class="co">#&gt; 200 09567976231173902    2</span></span>
+<span><span class="co">#&gt; 201 09567976231177968    2</span></span>
+<span><span class="co">#&gt; 202 09567976231179378    1</span></span>
+<span><span class="co">#&gt; 203 09567976231180578   10</span></span>
+<span><span class="co">#&gt; 204 09567976231180588    2</span></span>
+<span><span class="co">#&gt; 205 09567976231180881    5</span></span>
+<span><span class="co">#&gt; 206 09567976231184887    8</span></span>
+<span><span class="co">#&gt; 207 09567976231185127    3</span></span>
+<span><span class="co">#&gt; 208 09567976231185129    8</span></span>
+<span><span class="co">#&gt; 209 09567976231188107   11</span></span>
+<span><span class="co">#&gt; 210 09567976231188124    0</span></span>
+<span><span class="co">#&gt; 211 09567976231190546    7</span></span>
+<span><span class="co">#&gt; 212 09567976231192241    1</span></span>
+<span><span class="co">#&gt; 213 09567976231194221    0</span></span>
+<span><span class="co">#&gt; 214 09567976231194590    5</span></span>
+<span><span class="co">#&gt; 215 09567976231196145    5</span></span>
+<span><span class="co">#&gt; 216 09567976231198194   11</span></span>
+<span><span class="co">#&gt; 217 09567976231198435    3</span></span>
+<span><span class="co">#&gt; 218 09567976231199440    4</span></span>
+<span><span class="co">#&gt; 219 09567976231203139    1</span></span>
+<span><span class="co">#&gt; 220 09567976231204035    1</span></span>
+<span><span class="co">#&gt; 221 09567976231207095    7</span></span>
+<span><span class="co">#&gt; 222 09567976231213572    9</span></span>
+<span><span class="co">#&gt; 223 09567976231217508    1</span></span>
+<span><span class="co">#&gt; 224 09567976231218640    2</span></span>
+<span><span class="co">#&gt; 225 09567976231220902    7</span></span>
+<span><span class="co">#&gt; 226 09567976231221789    1</span></span>
+<span><span class="co">#&gt; 227 09567976231222288    5</span></span>
+<span><span class="co">#&gt; 228 09567976231222836    4</span></span>
+<span><span class="co">#&gt; 229 09567976231223130    6</span></span>
+<span><span class="co">#&gt; 230 09567976231223410   10</span></span>
+<span><span class="co">#&gt; 231 09567976241227411    7</span></span>
+<span><span class="co">#&gt; 232 09567976241228504    4</span></span>
+<span><span class="co">#&gt; 233 09567976241232891    3</span></span>
+<span><span class="co">#&gt; 234 09567976241235931    4</span></span>
+<span><span class="co">#&gt; 235 09567976241235932    0</span></span>
+<span><span class="co">#&gt; 236 09567976241239932    4</span></span>
+<span><span class="co">#&gt; 237 09567976241239935   11</span></span>
+<span><span class="co">#&gt; 238 09567976241242105    5</span></span>
+<span><span class="co">#&gt; 239 09567976241243370    4</span></span>
+<span><span class="co">#&gt; 240 09567976241245695    8</span></span>
+<span><span class="co">#&gt; 241 09567976241246561    3</span></span>
+<span><span class="co">#&gt; 242 09567976241249183    5</span></span>
+<span><span class="co">#&gt; 243 09567976241254312    3</span></span>
+<span><span class="co">#&gt; 244 09567976241258149    9</span></span>
+<span><span class="co">#&gt; 245 09567976241260247    5</span></span>
+<span><span class="co">#&gt; 246 09567976241263344    8</span></span>
+<span><span class="co">#&gt; 247 09567976241263347    7</span></span>
+<span><span class="co">#&gt; 248 09567976241266516    4</span></span>
+<span><span class="co">#&gt; 249 09567976241267854    5</span></span>
+<span><span class="co">#&gt; 250 09567976241279291   11</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="imprecise-p">imprecise-p<a class="anchor" aria-label="anchor" href="#imprecise-p"></a>
+<h3 id="imprecise_p">imprecise_p<a class="anchor" aria-label="anchor" href="#imprecise_p"></a>
 </h3>
 <p>List any p-values that may have been reported with insufficient
 precision (e.g., p &lt; .05 or p = n.s.).</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">imprecise</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"imprecise-p"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">imprecise</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"imprecise_p"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">imprecise</span> <span class="co"># print table</span></span></code></pre></div>
-<p>You may have reported some imprecise p-values</p>
-<table class="table">
-<thead><tr class="header">
-<th align="left">text</th>
-<th align="left">p_comp</th>
-<th align="right">p_value</th>
-<th align="left">section</th>
-<th align="left">header</th>
-<th align="right">div</th>
-<th align="right">p</th>
-<th align="right">s</th>
-</tr></thead>
-<tbody><tr class="odd">
-<td align="left">p &lt; .025</td>
-<td align="left">&lt;</td>
-<td align="right">0.025</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">2</td>
-<td align="right">3</td>
-</tr></tbody>
-</table>
-<p>Showing 1 of 1 rows</p>
+<span><span class="va">imprecise</span><span class="op">$</span><span class="va">table</span> <span class="co"># print table</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 9</span></span></span>
+<span><span class="co">#&gt;   text     p_comp p_value section header    div     p     s id              </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> p &lt; .025 &lt;        0.025 results Results     9     2     3 0956797620955209</span></span></code></pre>
 <p>You can use the <code><a href="../reference/expand_text.html">expand_text()</a></code> function to get the full
 sentence or paragraph for context. Here you can see that “p &lt; .025”
 was not an imprecisely reported p-value, but a description of the
 preregistered alpha threshold.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/expand_text.html">expand_text</a></span><span class="op">(</span><span class="va">imprecise</span>, <span class="va">paper</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/expand_text.html">expand_text</a></span><span class="op">(</span><span class="va">imprecise</span><span class="op">$</span><span class="va">table</span>, <span class="va">paper</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">exp</span><span class="op">$</span><span class="va">expanded</span> <span class="co"># print expanded text</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; [1] "The main effect of illness recency did not meet our preregistered threshold (p &lt; .025)-recently ill: M = 661 ms, SD = 197; not recently ill: M = 626 ms, SD = 153, F(1, 400) = 4.23, η p 2 = .010, 90% CI = [.000, .039], p = .040-nor did the interaction between illness recency and face type (disfigured vs. typical), F(1, 400) = 1.87, η p 2 = .005, 90% CI = [.000, .027], p = .173."</span></span></code></pre>
 <p>We can investigate the most common imprecise p-values in the PsychSci
 set. “p &lt; .01” and “p &lt; .05” are probably often describing figures
 or tables, but what is the deal with “p &gt; .25”?</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">imprecise_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"imprecise-p"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">imprecise_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"imprecise_p"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">imprecise_ps</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">text</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p> [38;5;246m# A tibble: 6 × 2 [39m text n  [3m [38;5;246m<chr> [39m [23m
- [3m [38;5;246m<int> [39m [23m  [38;5;250m1 [39m p &lt; .05 152
- [38;5;250m2 [39m p &lt; .01 143  [38;5;250m3 [39m p &lt; .005 15
- [38;5;250m4 [39m p &gt; .05 13  [38;5;250m5 [39m p &gt; .250 13
- [38;5;250m6 [39m p &gt; .25 12</int></chr></p>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
+<span><span class="co">#&gt;   text         n</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> p &lt; .05    152</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> p &lt; .01    143</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> p &lt; .005    15</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> p &gt; .05     13</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> p &gt; .250    13</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> p &gt; .25     12</span></span></code></pre>
 <p>We can expand the text to check the context for “p &gt; .25”.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gt.25</span> <span class="op">&lt;-</span> <span class="va">imprecise_ps</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"\\.25"</span>, <span class="va">text</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/expand_text.html">expand_text</a></span><span class="op">(</span>paper <span class="op">=</span> <span class="va">psychsci</span><span class="op">)</span></span>
@@ -674,17 +743,17 @@ or tables, but what is the deal with “p &gt; .25”?</p>
 <span><span class="co">#&gt; [3] "The twoway interactions between knowledge distance and search effort (odds ratio = 1.67, p = .080) and between knowledge distance and search variation (odds ratio = 0.65, p = .077) were marginally significant, whereas the interaction between search effort and variation was not significant (odds ratio = 1.01, p &gt; .250)."</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="llm-summarise">llm-summarise<a class="anchor" aria-label="anchor" href="#llm-summarise"></a>
+<h3 id="llm_summarise">llm_summarise<a class="anchor" aria-label="anchor" href="#llm_summarise"></a>
 </h3>
 <p>Generate a 1-sentence summary for each section. This uses the
 <code><a href="../reference/llm.html">llm()</a></code> function with the query “summarise this section
 briefly, in one sentence” and returns a one-sentence summary of each
 major section (abstract, intro, method, results, discussion,
 acknowledgements, appendices)</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">summaries</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"llm-summarise"</span>, seed <span class="op">=</span> <span class="fl">8675309</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">summaries</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"llm_summarise"</span>, seed <span class="op">=</span> <span class="fl">8675309</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">summaries</span> <span class="co"># print default table</span></span></code></pre></div>
+<span><span class="va">summaries</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="43%">
@@ -770,7 +839,7 @@ interest with respect to the authorship or…</td>
 <p>The default table isn’t very helpful here, so let’s customise the
 output. The object returned from a module usually contains a table. We
 just want to show the section and answer columns here.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">summaries</span><span class="op">$</span><span class="va">table</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"section"</span>, <span class="st">"answer"</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt;      section</span></span>
 <span><span class="co">#&gt; 1   abstract</span></span>
@@ -795,462 +864,90 @@ for the default model on a free groq account). You can increase the
 maximum allowable calls (<code><a href="../reference/llm.html">llm()</a></code> manages your rate limit, so
 this would take nearly an hour at 30 calls per minute) using
 <code><a href="../reference/llm_max_calls.html">llm_max_calls()</a></code>, but we aren’t going to do this here.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">summaries_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"llm-summarise"</span>, seed <span class="op">=</span> <span class="fl">8675309</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; Error in (function (text, query, text_col = "text", model = llm_model(), : You need to include the argument API_KEY or set the variable GROQ_API_KEY in your Renviron</span></span></code></pre>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">summaries_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"llm_summarise"</span>, seed <span class="op">=</span> <span class="fl">8675309</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; Error in value[[3L]](cond): Running the module produced errors: You need to include the argument API_KEY or set the variable GROQ_API_KEY in your Renviron</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="marginal">marginal<a class="anchor" aria-label="anchor" href="#marginal"></a>
 </h3>
 <p>List all sentences that describe an effect as ‘marginally
 significant’.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">marginal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"marginal"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">marginal</span> <span class="co"># print table</span></span></code></pre></div>
 <p>No effects were described as marginally/borderline/close to
 significant.</p>
 <p>Let’s check how many are in the full set.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">marginal_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"marginal"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">marginal_ps</span> <span class="co"># print table</span></span></code></pre></div>
-<p>You described effects as marginally/borderline/close to significant.
-It is better to write ‘did not reach the threshold alpha for
-significance’.</p>
-<table class="table">
-<colgroup>
-<col width="52%">
-<col width="5%">
-<col width="27%">
-<col width="2%">
-<col width="1%">
-<col width="1%">
-<col width="8%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">text</th>
-<th align="left">section</th>
-<th align="left">header</th>
-<th align="right">div</th>
-<th align="right">p</th>
-<th align="right">s</th>
-<th align="left">id</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">Although the PTSD group showed a significant
-facilitation effect (M = 0.68), F(1, 15) = 5.575, p …</td>
-<td align="left">results</td>
-<td align="left">Details.</td>
-<td align="right">11</td>
-<td align="right">1</td>
-<td align="right">4</td>
-<td align="left">0956797615569889</td>
-</tr>
-<tr class="even">
-<td align="left">A marginally significant negative correlation was found
-between suppression-induced forgetting on…</td>
-<td align="left">results</td>
-<td align="left">Posttraumatic Stress Diagnostic Scale</td>
-<td align="right">13</td>
-<td align="right">1</td>
-<td align="right">4</td>
-<td align="left">0956797615569889</td>
-</tr>
-<tr class="odd">
-<td align="left">When we more closely matched depression symptoms by
-comparing the low-BDI-II PTSD group with the …</td>
-<td align="left">results</td>
-<td align="left">The effects of depressive symptoms</td>
-<td align="right">14</td>
-<td align="right">3</td>
-<td align="right">1</td>
-<td align="left">0956797615569889</td>
-</tr>
-<tr class="even">
-<td align="left">In that analysis, the group difference in
-suppression-induced forgetting only approached signific…</td>
-<td align="left">results</td>
-<td align="left">Conditionalized final-test data</td>
-<td align="right">15</td>
-<td align="right">1</td>
-<td align="right">2</td>
-<td align="left">0956797615569889</td>
-</tr>
-<tr class="odd">
-<td align="left">The Congruency × Alignment interaction was marginally
-significant for faces, F(1, 19) = 4.12, p =…</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">7</td>
-<td align="right">2</td>
-<td align="right">3</td>
-<td align="left">0956797615617779</td>
-</tr>
-<tr class="even">
-<td align="left">The twoway interactions between knowledge distance and
-search effort (odds ratio = 1.67, p = .080…</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">6</td>
-<td align="right">2</td>
-<td align="right">3</td>
-<td align="left">0956797616634665</td>
-</tr>
-<tr class="odd">
-<td align="left">An omnibus 3 (sex ratio) × 2 (participant sex) ANOVA on
-vaccine-investment variance revealed a ma…</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">15</td>
-<td align="right">2</td>
-<td align="right">1</td>
-<td align="left">0956797616636631</td>
-</tr>
-<tr class="even">
-<td align="left">Further, we observed a marginally significant indirect
-effect of target condition on endorsement …</td>
-<td align="left">fig</td>
-<td align="left"></td>
-<td align="right">3</td>
-<td align="right">NA</td>
-<td align="right">2</td>
-<td align="left">0956797617692000</td>
-</tr>
-<tr class="odd">
-<td align="left">The dagger and asterisks indicate marginally
-significant and significant paths ( † p &lt; .10, **p &lt;…</td>
-<td align="left">fig</td>
-<td align="left">Fig. 5 .</td>
-<td align="right">5</td>
-<td align="right">NA</td>
-<td align="right">7</td>
-<td align="left">0956797617692000</td>
-</tr>
-<tr class="even">
-<td align="left">Given the unexpected nature of the finding and the
-marginally significant trend, we will not inte…</td>
-<td align="left">annex</td>
-<td align="left">Supplemental Material</td>
-<td align="right">20</td>
-<td align="right">1</td>
-<td align="right">2</td>
-<td align="left">0956797617716922</td>
-</tr>
-<tr class="odd">
-<td align="left">A marginally significant fit effect was found for
-conscientiousness, but this Response surface in…</td>
-<td align="left">results</td>
-<td align="left">Actual Personality</td>
-<td align="right">7</td>
-<td align="right">4</td>
-<td align="right">6</td>
-<td align="left">0956797617724435</td>
-</tr>
-<tr class="even">
-<td align="left">A fit bonus was not calculated for emotional stability
-because the a4 parameter did not reach the…</td>
-<td align="left">results</td>
-<td align="left">Actual Personality</td>
-<td align="right">7</td>
-<td align="right">4</td>
-<td align="right">12</td>
-<td align="left">0956797617724435</td>
-</tr>
-<tr class="odd">
-<td align="left">The fit bonus is reported only for those traits that
-had at least a marginally significant a4 par…</td>
-<td align="left">discussion</td>
-<td align="left">Discussion</td>
-<td align="right">8</td>
-<td align="right">3</td>
-<td align="right">8</td>
-<td align="left">0956797617724435</td>
-</tr>
-<tr class="even">
-<td align="left">Participant height (added as a fixed effect to the
-interceptonly model) had a marginally signific…</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">6</td>
-<td align="right">1</td>
-<td align="left">0956797618772822</td>
-</tr>
-<tr class="odd">
-<td align="left">There was a marginally significant interaction between
-participant height and opponent height on …</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">7</td>
-<td align="right">2</td>
-<td align="left">0956797618772822</td>
-</tr>
-<tr class="even">
-<td align="left">SES was marginally significantly related to coins kept
-for self in the dictator game versus the u…</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">10</td>
-<td align="right">6</td>
-<td align="left">0956797618772822</td>
-</tr>
-<tr class="odd">
-<td align="left">Subsequently, opponent height was added to the model,
-which was marginally significantly related …</td>
-<td align="left">results</td>
-<td align="left">Studies 1 and 2: Combined Data Analysis</td>
-<td align="right">14</td>
-<td align="right">2</td>
-<td align="right">2</td>
-<td align="left">0956797618772822</td>
-</tr>
-<tr class="even">
-<td align="left">However, results revealed a marginally significant
-interaction between implicit partner evaluatio…</td>
-<td align="left">results</td>
-<td align="left">Implicit partner evaluations and nonverbal
-behaviors</td>
-<td align="right">13</td>
-<td align="right">2</td>
-<td align="right">3</td>
-<td align="left">0956797618785899</td>
-</tr>
-<tr class="odd">
-<td align="left">Although the main effect of implicit partner
-evaluations on nonverbal behavior remained significa…</td>
-<td align="left">results</td>
-<td align="left">Implicit partner evaluations and nonverbal
-behaviors</td>
-<td align="right">13</td>
-<td align="right">3</td>
-<td align="right">3</td>
-<td align="left">0956797618785899</td>
-</tr>
-<tr class="even">
-<td align="left">Following up on the debate on the use of significance
-levels in psychology, we empirically examin…</td>
-<td align="left">abstract</td>
-<td align="left">Abstract</td>
-<td align="right">0</td>
-<td align="right">2</td>
-<td align="right">1</td>
-<td align="left">0956797619830326</td>
-</tr>
-</tbody>
-</table>
-<p>Showing 20 of 97 rows</p>
-<p>You can see that the default shows only the first 20 rows and
-truncates long lines. We can adjust this by explicitly calling the print
-function and setting <code>maxrows</code> and
-<code>trunc_cell</code>.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">marginal_ps</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span>maxrows <span class="op">=</span> <span class="fl">5</span>, trunc_cell <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></code></pre></div>
-<p>You described effects as marginally/borderline/close to significant.
-It is better to write ‘did not reach the threshold alpha for
-significance’.</p>
-<table class="table">
-<colgroup>
-<col width="82%">
-<col width="1%">
-<col width="9%">
-<col width="0%">
-<col width="0%">
-<col width="0%">
-<col width="4%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">text</th>
-<th align="left">section</th>
-<th align="left">header</th>
-<th align="right">div</th>
-<th align="right">p</th>
-<th align="right">s</th>
-<th align="left">id</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">Although the PTSD group showed a significant
-facilitation effect (M = 0.68), F(1, 15) = 5.575, p = .032, η p 2 =
-.271, and the control group showed only a marginally significant effect
-(M = 0.56), F(1, 15) = 4.368, p = .054, η p 2 = .226, the difference
-between the groups was not significant, F(1, 30) = 0.100, p = .754, η p
-2 = .003 (Fig. 3c).</td>
-<td align="left">results</td>
-<td align="left">Details.</td>
-<td align="right">11</td>
-<td align="right">1</td>
-<td align="right">4</td>
-<td align="left">0956797615569889</td>
-</tr>
-<tr class="even">
-<td align="left">A marginally significant negative correlation was found
-between suppression-induced forgetting on the details measure and PDS
-scores in the PTSD group (Kendall’s τ = -.33, p = .07; Fig. 4b).</td>
-<td align="left">results</td>
-<td align="left">Posttraumatic Stress Diagnostic Scale</td>
-<td align="right">13</td>
-<td align="right">1</td>
-<td align="right">4</td>
-<td align="left">0956797615569889</td>
-</tr>
-<tr class="odd">
-<td align="left">When we more closely matched depression symptoms by
-comparing the low-BDI-II PTSD group with the high-BDI-II control group,
-we observed a marginally significant group-by-condition interaction for
-the details measure, F(1, 16) = 4.032, p = .062, η p 2 = .201.</td>
-<td align="left">results</td>
-<td align="left">The effects of depressive symptoms</td>
-<td align="right">14</td>
-<td align="right">3</td>
-<td align="right">1</td>
-<td align="left">0956797615569889</td>
-</tr>
-<tr class="even">
-<td align="left">In that analysis, the group difference in
-suppression-induced forgetting only approached significance, F(1, 30) =
-3.869, p = .058, η p 2 = .114.</td>
-<td align="left">results</td>
-<td align="left">Conditionalized final-test data</td>
-<td align="right">15</td>
-<td align="right">1</td>
-<td align="right">2</td>
-<td align="left">0956797615569889</td>
-</tr>
-<tr class="odd">
-<td align="left">The Congruency × Alignment interaction was marginally
-significant for faces, F(1, 19) = 4.12, p = .057, η p 2 = .18, and
-significant for line patterns, F(1, 19) = 85.53, p &lt; .001, η p 2 =
-.82.</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">7</td>
-<td align="right">2</td>
-<td align="right">3</td>
-<td align="left">0956797615617779</td>
-</tr>
-</tbody>
-</table>
-<p>Showing 5 of 97 rows</p>
+<span><span class="va">marginal_ps</span><span class="op">$</span><span class="va">table</span> <span class="co"># print table</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 97 × 7</span></span></span>
+<span><span class="co">#&gt;    text                                   section header   div     p     s id   </span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Although the PTSD group showed a sign… results <span style="color: #949494;">"</span>Deta…    11     1     4 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> A marginally significant negative cor… results <span style="color: #949494;">"</span>Post…    13     1     4 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> When we more closely matched depressi… results <span style="color: #949494;">"</span>The …    14     3     1 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> In that analysis, the group differenc… results <span style="color: #949494;">"</span>Cond…    15     1     2 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> The Congruency × Alignment interactio… results <span style="color: #949494;">"</span>Resu…     7     2     3 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> The twoway interactions between knowl… results <span style="color: #949494;">"</span>Resu…     6     2     3 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> An omnibus 3 (sex ratio) × 2 (partici… results <span style="color: #949494;">"</span>Resu…    15     2     1 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> Further, we observed a marginally sig… fig     <span style="color: #949494;">""</span>         3    <span style="color: #BB0000;">NA</span>     2 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> The dagger and asterisks indicate mar… fig     <span style="color: #949494;">"</span>Fig.…     5    <span style="color: #BB0000;">NA</span>     7 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Given the unexpected nature of the fi… annex   <span style="color: #949494;">"</span>Supp…    20     1     2 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 87 more rows</span></span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="osf-check">osf-check<a class="anchor" aria-label="anchor" href="#osf-check"></a>
+<h3 id="osf_check">osf_check<a class="anchor" aria-label="anchor" href="#osf_check"></a>
 </h3>
 <p>List all OSF links and whether they are open, closed, or do not
 exist. This requires an internet connection to check the status of the
 link.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">osf_check</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"osf-check"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">osf_check</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"osf_check"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">osf_check</span> <span class="co"># print table</span></span></code></pre></div>
-<p>All OSF links are open</p>
-<table class="table">
-<thead><tr class="header">
-<th align="left">text</th>
-<th align="left">section</th>
-<th align="left">header</th>
-<th align="right">div</th>
-<th align="right">p</th>
-<th align="right">s</th>
-<th align="left">status</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left"><a href="https://osf.io/k2dbf" class="external-link uri">https://osf.io/k2dbf</a></td>
-<td align="left">method</td>
-<td align="left">Analyses</td>
-<td align="right">8</td>
-<td align="right">1</td>
-<td align="right">1</td>
-<td align="left">open</td>
-</tr>
-<tr class="even">
-<td align="left"><a href="https://osf.io/k2dbf" class="external-link uri">https://osf.io/k2dbf</a></td>
-<td align="left">funding</td>
-<td align="left">Open Practices</td>
-<td align="right">14</td>
-<td align="right">1</td>
-<td align="right">1</td>
-<td align="left">open</td>
-</tr>
-<tr class="odd">
-<td align="left"><a href="https://osf.io/k2dbf" class="external-link uri">https://osf.io/k2dbf</a></td>
-<td align="left">funding</td>
-<td align="left">Open Practices</td>
-<td align="right">14</td>
-<td align="right">2</td>
-<td align="right">1</td>
-<td align="left">open</td>
-</tr>
-</tbody>
-</table>
-<p>Showing 3 of 3 rows</p>
+<span><span class="va">osf_check</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 8</span></span></span>
+<span><span class="co">#&gt;   text                 section header           div     p     s id        status</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> https://osf.io/k2dbf method  Analyses           8     1     1 09567976… open  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> https://osf.io/k2dbf funding Open Practices    14     1     1 09567976… open  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> https://osf.io/k2dbf funding Open Practices    14     2     1 09567976… open</span></span></code></pre>
 <p>This would take a while to run for the 341 unique OSF links found in
 the PsychSci set (usually 1-2 seconds per link), so we will skip it here
 (but can reveal we found 10 closed links).</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">osf_check_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"osf-check"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">osf_check_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"osf_check"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="ref-consistency">ref-consistency<a class="anchor" aria-label="anchor" href="#ref-consistency"></a>
+<h3 id="ref_consistency">ref_consistency<a class="anchor" aria-label="anchor" href="#ref_consistency"></a>
 </h3>
 <p>Check if all references are cited and all citations are
 referenced.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ref_consistency</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"ref-consistency"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ref_consistency</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"ref_consistency"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">ref_consistency</span> <span class="co"># print table</span></span></code></pre></div>
-<p>This module relies on Grobid correctly parsing the references. There
-may be some false positives. There are references that are not cited or
-citations that are not referenced</p>
-<table class="table">
-<colgroup>
-<col width="5%">
-<col width="86%">
-<col width="7%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">bib_id</th>
-<th align="left">ref</th>
-<th align="left">missing</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">b0</td>
-<td align="left">(Illness recency. 95 .05 .03 .06 .08 5. Latencies
-(typical faces; ms) 633.90 163.50. 06 .03 .07 ….</td>
-<td align="left">citation</td>
-</tr>
-<tr class="even">
-<td align="left">b17</td>
-<td align="left">Jones BC, Hahn AC, Fisher CI, Wang H, Kandrik M, Tybur
-JM, Debruine LM (2018). “Hormonal correlat…</td>
-<td align="left">citation</td>
-</tr>
-<tr class="odd">
-<td align="left">b18</td>
-<td align="left">Jones BC, Hahn AC, Fisher CI, Wang H, Kandrik M, Tybur
-JM, Debruine LM (2018). “Reply to Fleischm…</td>
-<td align="left">citation</td>
-</tr>
-<tr class="even">
-<td align="left">b32</td>
-<td align="left">Tybur JM, Inbar Y, Aarøe L, Barclay P, Barlow FK, De
-Barra M, Žeželj .., I (2016). “Parasite stre…</td>
-<td align="left">citation</td>
-</tr>
-<tr class="odd">
-<td align="left">b35</td>
-<td align="left">Tybur JM, Lieberman D, Kurzban R, Descioli P (2013).
-“Disgust: Evolved function and structure.” _…</td>
-<td align="left">citation</td>
-</tr>
-</tbody>
-</table>
-<p>Showing 5 of 5 rows</p>
+<span><span class="va">ref_consistency</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;   bib_id  doi</span></span>
+<span><span class="co">#&gt; 1     b0 &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2    b17 &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3    b18 &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4    b32 &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5    b35 &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;                                                                                                                                                                                                                                                                                                                                  ref</span></span>
+<span><span class="co">#&gt; 1 (Illness recency. 95 .05 .03 .06 .08 5. Latencies (typical faces; ms) 633.90 163.50. 06 .03 .07 .09 6. Pathogen disgust 4.99 0.95 [.01, .23. 03, .16] -.60 .53 .17 7. Disgust toward Curtis images 4.34 1.16 [-.06, .16. 40 .14 8. Germ Aversion 3.86 1.11. 16 9. Perceived Infectability 3.65 1.28 [.05, .26. 06, .25References).</span></span>
+<span><span class="co">#&gt; 2                                                                                                          Jones BC, Hahn AC, Fisher CI, Wang H, Kandrik M, Tybur JM, Debruine LM (2018). “Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis.” _Evolution and Human Behavior_, *39*, 166-169.</span></span>
+<span><span class="co">#&gt; 3                                                     Jones BC, Hahn AC, Fisher CI, Wang H, Kandrik M, Tybur JM, Debruine LM (2018). “Reply to Fleischman and Fessler's (2018) comment on "Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis.” _Evolution and Human Behavior_, *39*, 470-471.</span></span>
+<span><span class="co">#&gt; 4                                                          Tybur JM, Inbar Y, Aarøe L, Barclay P, Barlow FK, De Barra M, Žeželj .., I (2016). “Parasite stress and pathogen avoidance relate to distinct dimensions of political ideology across 30 nations.” _Proceedings of the National Academy of Sciences_, *113*, 12408-12413.</span></span>
+<span><span class="co">#&gt; 5                                                                                                                                                                                              Tybur JM, Lieberman D, Kurzban R, Descioli P (2013). “Disgust: Evolved function and structure.” _Psychological Review_, *120*, 65-84.</span></span>
+<span><span class="co">#&gt;                 id  missing</span></span>
+<span><span class="co">#&gt; 1 0956797620955209 citation</span></span>
+<span><span class="co">#&gt; 2 0956797620955209 citation</span></span>
+<span><span class="co">#&gt; 3 0956797620955209 citation</span></span>
+<span><span class="co">#&gt; 4 0956797620955209 citation</span></span>
+<span><span class="co">#&gt; 5 0956797620955209 citation</span></span></code></pre>
 <p>It looks like there are some references with missing citations. The
 first one doesn’t look like a reference, and grobid often parses tables
 oddly. You’d need to look at the original PDF to see if the others are
@@ -1265,92 +962,49 @@ reference list.</p>
 substantial time to make calls to crossref for each reference, so we
 provide a summary of the database in papercheck, which is updated
 regularly (last 2025-02-28).</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"retractionwatch"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">rw</span> <span class="co"># print table</span></span></code></pre></div>
-<p>You cited no papers in the Retraction Watch database (as of
-2025-02-28)</p>
+<span><span class="va">rw</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] bib_id          doi             ref             id             </span></span>
+<span><span class="co">#&gt; [5] retractionwatch</span></span>
+<span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span></code></pre>
 <p>In the full PsychSci set, we find three papers in the RetractionWatch
 database cited, one with a retraction and two with corrections.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rw_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"retractionwatch"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">rw_ps</span>, trunc_cell <span class="op">=</span> <span class="fl">30</span><span class="op">)</span> <span class="co"># print table</span></span></code></pre></div>
-<p>You cited some papers in the Retraction Watch database (as of
-2025-02-28). These may be retracted, have corrections, or expressions of
-concern.</p>
-<table class="table">
-<colgroup>
-<col width="5%">
-<col width="20%">
-<col width="23%">
-<col width="13%">
-<col width="12%">
-<col width="23%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">bib_id</th>
-<th align="left">doi</th>
-<th align="left">ref</th>
-<th align="left">id</th>
-<th align="left">retractionwatch</th>
-<th align="left">text</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">b15</td>
-<td align="left">10.1177/0956797612470827</td>
-<td align="left">Kok BE, Coffey KA, Cohn MA,…</td>
-<td align="left">09567976221150616</td>
-<td align="left">Correction</td>
-<td align="left">The vagus nerve controls re…</td>
-</tr>
-<tr class="even">
-<td align="left">b26</td>
-<td align="left">10.1186/gb-2013-14-10-r115</td>
-<td align="left">Horvath S (2013). “DNA meth…</td>
-<td align="left">09567976231194221</td>
-<td align="left">Correction</td>
-<td align="left">Epigenetic aging is one suc…</td>
-</tr>
-<tr class="odd">
-<td align="left">b34</td>
-<td align="left">10.1038/s41562-023-01749-9</td>
-<td align="left">Protzko J, Krosnick J, Nels…</td>
-<td align="left">09567976241249183</td>
-<td align="left">Retraction</td>
-<td align="left">One may also ask whether ou…</td>
-</tr>
-<tr class="even">
-<td align="left">b25</td>
-<td align="left">10.1186/gb-2013-14-10-r115</td>
-<td align="left">Horvath S (2013). “DNA meth…</td>
-<td align="left">09567976241260247</td>
-<td align="left">Correction</td>
-<td align="left">Discrepancies between someo…</td>
-</tr>
-<tr class="odd">
-<td align="left">b25</td>
-<td align="left">10.1186/gb-2013-14-10-r115</td>
-<td align="left">Horvath S (2013). “DNA meth…</td>
-<td align="left">09567976241260247</td>
-<td align="left">Correction</td>
-<td align="left">EAA from the Horvath PanTis…</td>
-</tr>
-<tr class="even">
-<td align="left">b25</td>
-<td align="left">10.1186/gb-2013-14-10-r115</td>
-<td align="left">Horvath S (2013). “DNA meth…</td>
-<td align="left">09567976241260247</td>
-<td align="left">Correction</td>
-<td align="left">The replication of results …</td>
-</tr>
-</tbody>
-</table>
-<p>Showing 6 of 6 rows</p>
+<span><span class="va">rw_ps</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;   bib_id                        doi</span></span>
+<span><span class="co">#&gt; 1    b15   10.1177/0956797612470827</span></span>
+<span><span class="co">#&gt; 2    b26 10.1186/gb-2013-14-10-r115</span></span>
+<span><span class="co">#&gt; 3    b34 10.1038/s41562-023-01749-9</span></span>
+<span><span class="co">#&gt; 4    b25 10.1186/gb-2013-14-10-r115</span></span>
+<span><span class="co">#&gt; 5    b25 10.1186/gb-2013-14-10-r115</span></span>
+<span><span class="co">#&gt; 6    b25 10.1186/gb-2013-14-10-r115</span></span>
+<span><span class="co">#&gt;                                                                                                                                                                                                                                                                                                                                                                                                                               ref</span></span>
+<span><span class="co">#&gt; 1                                    Kok BE, Coffey KA, Cohn MA, Catalino LI, Vacharkulksemsuk T, Algoe SB, Brantley M, Fredrickson BL (2013). “How positive emotions build physical health: Perceived positive social connections account for the upward spiral between positive emotions and vagal tone.” _Psychological Science_, *24*(7), 1123-1132. doi:10.1177/0956797612470827 &lt;https://doi.org/10.1177/0956797612470827&gt;.</span></span>
+<span><span class="co">#&gt; 2                                                                                                                                                                                                                                          Horvath S (2013). “DNA methylation age of human tissues and cell types.” _Genome Biology_, *14*(10), 115. doi:10.1186/gb-2013-14-10-r115 &lt;https://doi.org/10.1186/gb-2013-14-10-r115&gt;.</span></span>
+<span><span class="co">#&gt; 3 Protzko J, Krosnick J, Nelson L, Nosek BA, Axt J, Berent M, Buttrick N, Debell M, Ebersole CR, Lundmark S, Macinnis B, O'donnell M, Perfecto H, Pustejovsky JE, Roeder SS, Walleczek J, Schooler JW (2023). “High replicability of newly discovered social-behavioural findings is achievable.” _Nature Human DeKay, Dou Behaviour_, *8*, 311-319. doi:10.1038/s41562-023-01749-9 &lt;https://doi.org/10.1038/s41562-023-01749-9&gt;.</span></span>
+<span><span class="co">#&gt; 4                                                                                                                                                                                                                                             Horvath S (2013). “DNA methylation age of human tissues and cell types.” _Genome Biology_, *14*, 3156. doi:10.1186/gb-2013-14-10-r115 &lt;https://doi.org/10.1186/gb-2013-14-10-r115&gt;.</span></span>
+<span><span class="co">#&gt; 5                                                                                                                                                                                                                                             Horvath S (2013). “DNA methylation age of human tissues and cell types.” _Genome Biology_, *14*, 3156. doi:10.1186/gb-2013-14-10-r115 &lt;https://doi.org/10.1186/gb-2013-14-10-r115&gt;.</span></span>
+<span><span class="co">#&gt; 6                                                                                                                                                                                                                                             Horvath S (2013). “DNA methylation age of human tissues and cell types.” _Genome Biology_, *14*, 3156. doi:10.1186/gb-2013-14-10-r115 &lt;https://doi.org/10.1186/gb-2013-14-10-r115&gt;.</span></span>
+<span><span class="co">#&gt;                  id retractionwatch</span></span>
+<span><span class="co">#&gt; 1 09567976221150616      Correction</span></span>
+<span><span class="co">#&gt; 2 09567976231194221      Correction</span></span>
+<span><span class="co">#&gt; 3 09567976241249183      Retraction</span></span>
+<span><span class="co">#&gt; 4 09567976241260247      Correction</span></span>
+<span><span class="co">#&gt; 5 09567976241260247      Correction</span></span>
+<span><span class="co">#&gt; 6 09567976241260247      Correction</span></span>
+<span><span class="co">#&gt;                                                                                                                                                                                                                                                   text</span></span>
+<span><span class="co">#&gt; 1 The vagus nerve controls respiratory sinus arrhythmia (RSA), the covariation of heart rate and respiration, known to be an index of cardiac health and predictor of enhanced capacity for emotion regulation (Butler et al., 2006;Kok et al., 2013).</span></span>
+<span><span class="co">#&gt; 2                                                                                                                                                              Epigenetic aging is one such indicator of accelerated biological aging (Horvath, 2013).</span></span>
+<span><span class="co">#&gt; 3                                              One may also ask whether our results can be generalized from our CloudResearch and student samples to broader populations in the United States or elsewhere (Hanel &amp; Vione, 2016;Protzko et al., 2023).</span></span>
+<span><span class="co">#&gt; 4                                         Discrepancies between someone's biological and chronological age translate into "age acceleration," with older biological age relative to chronological age indicating greater acceleration (Horvath, 2013).</span></span>
+<span><span class="co">#&gt; 5                                                                                                                        EAA from the Horvath PanTissue clock (Horvath, 2013) was calculated using the methylclock package (Pelegí-Sisó et al., 2021).</span></span>
+<span><span class="co">#&gt; 6                                                            The replication of results across the PedBE and Horvath PanTissue clocks increases our confidence in study findings because these tools share no overlapping DNAm sites (Horvath, 2013;L.</span></span></code></pre>
 <p>Check the context of the citations in the text column:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rw_ps</span><span class="op">$</span><span class="va">table</span><span class="op">$</span><span class="va">text</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; [1] "The vagus nerve controls respiratory sinus arrhythmia (RSA), the covariation of heart rate and respiration, known to be an index of cardiac health and predictor of enhanced capacity for emotion regulation (Butler et al., 2006;Kok et al., 2013)."</span></span>
 <span><span class="co">#&gt; [2] "Epigenetic aging is one such indicator of accelerated biological aging (Horvath, 2013)."                                                                                                                                                             </span></span>
@@ -1364,87 +1018,30 @@ concern.</p>
 </h3>
 <p>Check consistency of p-values and test statistics using functions
 from <a href="https://github.com/MicheleNuijten/statcheck" class="external-link">statcheck</a>.</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">statcheck</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"statcheck"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">statcheck</span> <span class="co"># print table</span></span></code></pre></div>
-<p>We detected possible errors in test statistics</p>
-<table class="table">
-<colgroup>
-<col width="3%">
-<col width="2%">
-<col width="3%">
-<col width="4%">
-<col width="2%">
-<col width="4%">
-<col width="4%">
-<col width="9%">
-<col width="2%">
-<col width="5%">
-<col width="6%">
-<col width="4%">
-<col width="37%">
-<col width="2%">
-<col width="2%">
-<col width="1%">
-<col width="1%">
-<col width="1%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">test_type</th>
-<th align="right">df2</th>
-<th align="left">test_comp</th>
-<th align="right">test_value</th>
-<th align="left">p_comp</th>
-<th align="right">reported_p</th>
-<th align="right">computed_p</th>
-<th align="left">raw</th>
-<th align="left">error</th>
-<th align="left">decision_error</th>
-<th align="left">one_tailed_in_txt</th>
-<th align="right">apa_factor</th>
-<th align="left">text</th>
-<th align="left">section</th>
-<th align="left">header</th>
-<th align="right">div</th>
-<th align="right">p</th>
-<th align="right">s</th>
-</tr></thead>
-<tbody><tr class="odd">
-<td align="left">t</td>
-<td align="right">248.4</td>
-<td align="left">=</td>
-<td align="right">2.01</td>
-<td align="left">=</td>
-<td align="right">0.023</td>
-<td align="right">0.0455124</td>
-<td align="left">t(248.4) = 2.01, p = .023</td>
-<td align="left">TRUE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="right">1</td>
-<td align="left">Yes-the 90% confidence intervals of the difference in
-attentional bias for participants who were …</td>
-<td align="left">results</td>
-<td align="left">Results</td>
-<td align="right">9</td>
-<td align="right">3</td>
-<td align="right">3</td>
-</tr></tbody>
-</table>
-<p>Showing 1 of 1 rows</p>
+<span><span class="va">statcheck</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;   test_type df1   df2 test_comp test_value p_comp reported_p computed_p</span></span>
+<span><span class="co">#&gt; 1         t  NA 248.4         =       2.01      =      0.023 0.04551244</span></span>
+<span><span class="co">#&gt;                         raw error decision_error one_tailed_in_txt apa_factor</span></span>
+<span><span class="co">#&gt; 1 t(248.4) = 2.01, p = .023  TRUE          FALSE             FALSE          1</span></span>
+<span><span class="co">#&gt;                                                                                                                                                                                                                                                                                                text</span></span>
+<span><span class="co">#&gt; 1 Yes-the 90% confidence intervals of the difference in attentional bias for participants who were and were not recently ill found here (d z = -0.14, 90% CI = [-0.31, -0.04]) did not overlap with an effect size (d z ) of -0.35, t(248.4) = 2.01, p = .023, or 0.35, t(248.4) = -4.55, p &lt; .001.</span></span>
+<span><span class="co">#&gt;   section  header div p s               id</span></span>
+<span><span class="co">#&gt; 1 results Results   9 3 3 0956797620955209</span></span></code></pre>
 <p>Here we see a false positive, where the paper reported the results of
 an equivalence test, which are meant to be one-tailed, but statcheck did
 not detect that this was one-tailed.</p>
 <p>In the full PsychSci set, there are more than 27K sentences with
 numbers to check, so this takes about a minute to run.</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">statcheck_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"statcheck"</span><span class="op">)</span></span></code></pre></div>
 <p>There will be, of course, some false positives in the full set of 151
 flagged values. Let’s look just at the flagged values where the computed
 p-value is about double the reported p-value, and this changes the
 significance decision (at an alpha of 0.05).</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">statcheck_ps</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">decision_error</span>, </span>
 <span>         <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">computed_p</span><span class="op">/</span><span class="va">reported_p</span>, <span class="fl">1</span><span class="op">)</span> <span class="op">==</span> <span class="fl">2.0</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1462,6 +1059,31 @@ significance decision (at an alpha of 0.05).</p>
 <span><span class="co">#&gt; 9     0.0330     0.0654     t(55) = 1.88, p = .033</span></span></code></pre>
 </div>
 </div>
+<div class="section level2">
+<h2 id="chaining-modules">Chaining Modules<a class="anchor" aria-label="anchor" href="#chaining-modules"></a>
+</h2>
+<p>Modules return a <code>summary</code> table as well as the detailed
+results <code>table</code>, which is automatically added to the summary
+if you chain modules.</p>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ps_metascience</span> <span class="op">&lt;-</span> <span class="va">psychsci</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="st">"all_p_values"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="st">"imprecise_p"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="st">"marginal"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ps_metascience</span><span class="op">$</span><span class="va">summary</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;                  id p_values imprecise_p marginal</span></span>
+<span><span class="co">#&gt; 1  0956797613520608        6           0        0</span></span>
+<span><span class="co">#&gt; 2  0956797614522816       39           0        0</span></span>
+<span><span class="co">#&gt; 3  0956797614527830       13           3        0</span></span>
+<span><span class="co">#&gt; 4  0956797614557697       27          11        0</span></span>
+<span><span class="co">#&gt; 5  0956797614560771        4           1        0</span></span>
+<span><span class="co">#&gt; 6  0956797614566469        0           0        0</span></span>
+<span><span class="co">#&gt; 7  0956797615569001       25          23        0</span></span>
+<span><span class="co">#&gt; 8  0956797615569889       26           2        4</span></span>
+<span><span class="co">#&gt; 9  0956797615583071       24           3        0</span></span>
+<span><span class="co">#&gt; 10 0956797615588467       20           7        0</span></span></code></pre>
+</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
@@ -1473,7 +1095,7 @@ significance decision (at an alpha of 0.05).</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>

@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9036</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9037</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -77,104 +77,247 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span></code></pre></div>
 <p>Modules are user-created patterns for checking a paper or set of
-papers. Module specifications are written in JSON format.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="dt">"title"</span><span class="fu">:</span> <span class="st">"List All P-Values"</span><span class="fu">,</span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="dt">"description"</span><span class="fu">:</span> <span class="st">"List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table."</span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+papers. Module specifications are written in the same format as
+functions in R packages, using roxygen2 for documentation.</p>
+<pre><code><span><span class="co">#' Module Name</span></span>
+<span><span class="co">#'</span></span>
+<span><span class="co">#' @description</span></span>
+<span><span class="co">#' A short description of the module</span></span>
+<span><span class="co">#'</span></span>
+<span><span class="co">#' @author Author Name (\email{name@email.com})</span></span>
+<span><span class="co">#'</span></span>
+<span><span class="co">#' @references</span></span>
+<span><span class="co">#' # Optional reference to include in reports</span></span>
+<span><span class="co">#'</span></span>
+<span><span class="co">#' @import dplyr</span></span>
+<span><span class="co">#'</span></span>
+<span><span class="co">#' @param paper a paper object or paperlist object</span></span>
+<span><span class="co">#' @param ... further arguments (not used)</span></span>
+<span><span class="co">#'</span></span>
+<span><span class="co">#' @returns a list with table, summary, traffic light, and report text</span></span>
+<span><span class="co">#'</span></span>
+<span><span class="co">#' @examples</span></span>
+<span><span class="co">#' module_run(psychsci, "module_name")</span></span>
+<span><span class="va">module_name</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">paper</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># detailed table of results ----</span></span>
+<span>  <span class="va">pattern</span> <span class="op">&lt;-</span> <span class="st">"significant"</span></span>
+<span>  <span class="va">table</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">paper</span>, <span class="va">pattern</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># summary output for paperlists ----</span></span>
+<span>  <span class="co"># must have id column as the id of each paper, one row per paper</span></span>
+<span>  <span class="co"># further columns to be added to a master summary table</span></span>
+<span>  <span class="va">summary_table</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">table</span>, <span class="va">id</span>, name <span class="op">=</span> <span class="st">"n_significant"</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># determine the traffic light ----</span></span>
+<span>  <span class="co"># possible values: na, info, red, yellow, green, fail</span></span>
+<span>  <span class="va">tl</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">table</span><span class="op">)</span><span class="op">)</span> <span class="st">"info"</span> <span class="kw">else</span> <span class="st">"na"</span></span>
+<span></span>
+<span>  <span class="co"># report text for each possible traffic light ----</span></span>
+<span>  <span class="va">report</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    na <span class="op">=</span> <span class="st">"Not applicable"</span>,</span>
+<span>    info <span class="op">=</span> <span class="st">"This table is provided for your information"</span>,</span>
+<span>    red <span class="op">=</span> <span class="st">"This is a potential problem"</span>,</span>
+<span>    yellow <span class="op">=</span> <span class="st">"There may be a problem"</span>,</span>
+<span>    green <span class="op">=</span> <span class="st">"No problems found"</span>,</span>
+<span>    fail <span class="op">=</span> <span class="st">"The check failed, sorry"</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># return a list ----</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    table <span class="op">=</span> <span class="va">table</span>,</span>
+<span>    summary <span class="op">=</span> <span class="va">summary_table</span>,</span>
+<span>    na_replace <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    traffic_light <span class="op">=</span> <span class="va">tl</span>,</span>
+<span>    report <span class="op">=</span> <span class="va">report</span><span class="op">[[</span><span class="va">tl</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre>
 <div class="section level2">
-<h2 id="search-strategies">Search Strategies<a class="anchor" aria-label="anchor" href="#search-strategies"></a>
+<h2 id="roxygen-documentation">Roxygen Documentation<a class="anchor" aria-label="anchor" href="#roxygen-documentation"></a>
 </h2>
-<p>Modules can use three search strategies, each of which has its own
-JSON specification. All three types take either a paper object or the
-resulting search table as input, making it easy to chain modules
-together.</p>
+<p>The module file starts with standard function documentation using
+roxygen2. Roxygen documentation always starts with <code>#'</code>.</p>
 <div class="section level3">
-<h3 id="text-search">Text Search<a class="anchor" aria-label="anchor" href="#text-search"></a>
+<h3 id="title">Title<a class="anchor" aria-label="anchor" href="#title"></a>
 </h3>
-<p>For checks that can be done with a simple text search, you can create
-a module that provides the arguments to the <code><a href="../reference/search_text.html">search_text()</a></code>
-function. The “text” key takes a dictionary of the arguments to the
-<code><a href="../reference/search_text.html">search_text()</a></code> function.</p>
-<p>Foe example, the following JSON specification defines the arguments
-needed to search for all instances of p-values in the text and return
-just the matched text.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="dt">"title"</span><span class="fu">:</span> <span class="st">"List All P-Values"</span><span class="fu">,</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="dt">"description"</span><span class="fu">:</span> <span class="st">"List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table."</span><span class="fu">,</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="dt">"text"</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>    <span class="dt">"pattern"</span><span class="fu">:</span> <span class="st">"</span><span class="ch">\\</span><span class="st">bp-?(value)?</span><span class="ch">\\</span><span class="st">s*[&lt;&gt;=≤≥]{1,2}</span><span class="ch">\\</span><span class="st">s*(n</span><span class="ch">\\</span><span class="st">.?s</span><span class="ch">\\</span><span class="st">.?|</span><span class="ch">\\</span><span class="st">d?</span><span class="ch">\\</span><span class="st">.</span><span class="ch">\\</span><span class="st">d+)(e-</span><span class="ch">\\</span><span class="st">d+)?"</span><span class="fu">,</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>    <span class="dt">"return"</span><span class="fu">:</span> <span class="st">"match"</span><span class="fu">,</span></span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>    <span class="dt">"perl"</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="fu">}</span></span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>On the first line, give your module a short title, which will be used
+as a section header in reports.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' Module Name</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="code">Code<a class="anchor" aria-label="anchor" href="#code"></a>
+<h3 id="description">Description<a class="anchor" aria-label="anchor" href="#description"></a>
 </h3>
-<p>For checks that require a bit more logic, you can include R code
-directly or (more likely) reference an external .R file. The “code” key
-takes a dictionary of the “code” or a “path” to a file containing code.
-You can optionally list the “packages” required so users can be prompted
-to install any unavailable packages.</p>
-<pre><code>{
-  "title": "Check Status of OSF Links",
-  "description": "List all OSF links and whether they are open, closed, or do not exist.",
-  "code": {
-    "packages": ["papercheck", "httr", "dplyr"],
-    "path": "osf-check.R"
-  }
-}</code></pre>
-<p>Code must end with a list that contains values to return. The item
-<code>table</code> should be the table of returned values, and the
-optional item <code>traffic_light</code> contains the classification of
-the result (see below).</p>
+<p>You can skip a line and write a 1-sentence description, which will be
+shown in <code><a href="../reference/module_list.html">module_list()</a></code>, or optionally start this with
+<code>@description</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' @description</span></span>
+<span><span class="co">#' A short description of the module</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="large-language-models">Large Language Models<a class="anchor" aria-label="anchor" href="#large-language-models"></a>
+<h3 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a>
 </h3>
-<p>The “llm” key takes a dictionary of the arguments to the
-<code><a href="../reference/llm.html">llm()</a></code> function.</p>
-<pre><code>{
-  "title": "Summarise Sections",
-  "description": "Generate a 1-sentence summary for each section",
-  "llm": {
-    "query": "Summarise this section briefly, in one sentence. Do not include any preamble explaining what you are going to do, just give the sentence."
-  }
-}
-</code></pre>
+<p>You can write more detailed help under the tag <code>@details</code>,
+which will be shown when calling <code><a href="../reference/module_help.html">module_help()</a></code>. This is
+optional.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' @details</span></span>
+<span><span class="co">#' Here is more information about the module to help you use or understand it.</span></span>
+<span><span class="co">#' </span></span>
+<span><span class="co">#' You can skip more lines to break up paragraphs.</span></span>
+<span><span class="co">#' </span></span>
+<span><span class="co">#' * make a list</span></span>
+<span><span class="co">#' * check it twice</span></span></code></pre></div>
+<p>If you have experience writing R functions with roxygen, you can also
+omit the <code>@description</code> and <code>@details</code> tags and
+rely on paragraph spacing to distinguish description from details.</p>
+</div>
+<div class="section level3">
+<h3 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a>
+</h3>
+<p>Include the module authors so they can get credit! Adda new
+<code>@author</code> tag for each author, and optionally add ther
+emailaddress.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' @author Lisa DeBruine (\email{debruine@gmail.com})</span></span>
+<span><span class="co">#' @author Daniel Lakens (\email{lakens@gmail.com})</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h3>
+<p>Optionally include references that you would want available to users.
+If you are building a module that uses citable resources, please list
+them here.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' @references</span></span>
+<span><span class="co">#' The Retraction Watch Database [Internet].</span></span>
+<span><span class="co">#' New York: The Center for Scientific Integrity. 2018.</span></span>
+<span><span class="co">#' ISSN: 2692-4579. [Cited 2025-05-20].</span></span>
+<span><span class="co">#' Available from: http://retractiondatabase.org/.</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="import">Import<a class="anchor" aria-label="anchor" href="#import"></a>
+</h3>
+<p>If you are using packages other than <code>papercheck</code>, add
+each with an <code>@import</code> statement.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' @import dplyr</span></span>
+<span><span class="co">#' @import tidyr</span></span></code></pre></div>
+<p>Technically, you can then use functions from these packages in your
+function code without the package name prefix, but it is still best
+practice to use the package name prefix for all functions, like
+<code><a href="https://dplyr.tidyverse.org/reference/case_when.html" class="external-link">dplyr::case_when()</a></code>.</p>
+</div>
+<div class="section level3">
+<h3 id="parameters">Parameters<a class="anchor" aria-label="anchor" href="#parameters"></a>
+</h3>
+<p>Each argument should be defined for a function. All papercheck
+modules require the first argument to be <code>paper</code>. The last
+argument can optionally be <code>...</code>. This allows the
+<code><a href="../reference/module_run.html">module_run()</a></code> function to pass any arguments, and your code
+can use them by name (e.g.,
+<code>extra_args &lt;- list(...)</code>).</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' @param paper a paper object or paperlist object</span></span>
+<span><span class="co">#' @param ... further arguments (not used)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="returns">Returns<a class="anchor" aria-label="anchor" href="#returns"></a>
+</h3>
+<p>It is good practice to explain what your function returns. This is
+usually the default list with table, summary, traffic light, and report
+text, but you can edit this. It’s just a human-readable string.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' @returns a list with table, summary, traffic light, and report text</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
+</h3>
+<p>You can add an example of how to use this module with the
+<code><a href="../reference/module_run.html">module_run()</a></code> function. Give a paper or list of papers in
+the example so you can demonstrate the purpose of this module and it
+doesn’t take too much tme to run the example.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' @examples</span></span>
+<span><span class="co">#' module_run(psychsci, "module_name")</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="chaining-modules">Chaining Modules<a class="anchor" aria-label="anchor" href="#chaining-modules"></a>
+<h2 id="function-code">Function Code<a class="anchor" aria-label="anchor" href="#function-code"></a>
 </h2>
-<p>You can run a chain of modules by including them in order. The first
-module will take the paper(s) as input, and the rest will take the
-returned table as input. Here, we want to group the text by section
-before sending it to the llm.</p>
-<pre><code>{
-  "title": "Summarise Sections",
-  "description": "Generate a 1-sentence summary for each section",
-  "text": {
-    "return": "section"
-  },
-  "llm": {
-    "query": "Summarise this section briefly, in one sentence. Do not include any preamble explaining what you are going to do, just give the sentence."
-  }
-}
-</code></pre>
-</div>
-<div class="section level2">
-<h2 id="report-info">Report Info<a class="anchor" aria-label="anchor" href="#report-info"></a>
-</h2>
+<p>The module function is written like any R package function, with the
+requirement that the first argument be <code>paper</code>. Set
+<code>module_name</code> to your module name, which must be a valid R
+variable name. Your module script should also have the same name, with a
+.R suffix (e.g., <code>module_name.R</code>).</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">module_name</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">paper</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># detailed table of results ----</span></span>
+<span>  <span class="co"># summary output for paperlists ----</span></span>
+<span>  <span class="co"># determine the traffic light ----</span></span>
+<span>  <span class="co"># report text for each possible traffic light ----</span></span>
+<span>  <span class="co"># return a list ----</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>You can define helper functions below your main module functions, but
+the first functions defined in the script is what will be run on the
+paper object.</p>
+<p>A module can technically do anything you want with the paper input,
+but you will need to follow the template below for your module to work
+automatically with reports and the metascience workflow.</p>
 <p>If you are using your modules to build a report, you need to specify
 what type of output corresponds to good practice or practice that may
-need improvement. We do this through “traffic-light” and “report”
-keys.</p>
+need improvement. We do this through “traffic_light” and “report”.</p>
 <div class="section level3">
-<h3 id="traffic-lights">Traffic Lights<a class="anchor" aria-label="anchor" href="#traffic-lights"></a>
+<h3 id="table">Table<a class="anchor" aria-label="anchor" href="#table"></a>
 </h3>
-<p>There are 5 kinds of traffic lights:</p>
+<p>Most modules will need to structure their output in a table that can
+be shown in a report. The <code><a href="../reference/search_text.html">search_text()</a></code> function below
+creates a table with a row for each sentence that contains to word
+“significant”.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span>  <span class="co"># detailed table of results ----</span></span>
+<span>  <span class="va">pattern</span> <span class="op">&lt;-</span> <span class="st">"significant"</span></span>
+<span>  <span class="va">table</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">paper</span>, <span class="va">pattern</span><span class="op">)</span></span></code></pre></div>
+<p>You will need to make sure that your module works with both single
+paper object sand lists of paper objects. The papercheck functions
+<code><a href="../reference/search_text.html">search_text()</a></code> and <code><a href="../reference/llm.html">llm()</a></code> are already vectorised
+for paper lists.</p>
+</div>
+<div class="section level3">
+<h3 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
+</h3>
+<p>For the metascience workflow, it is useful to create a table with a
+row for each paper in a list, and some columns that summarise the
+results. You can use nested tables if you want some of your cells to
+contain multiple values.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span>  <span class="co"># summary output for paperlists ----</span></span>
+<span>  <span class="co"># must have id column as the id of each paper, one row per paper</span></span>
+<span>  <span class="co"># further columns to be added to a master summary table</span></span>
+<span>  <span class="va">summary_table</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">table</span>, <span class="va">id</span>, name <span class="op">=</span> <span class="st">"n_significant"</span><span class="op">)</span></span></code></pre></div>
+<p>Your summary table might omit some papers from the whole list because
+no relevant text was found. You don’t have to add them into your table,
+as the <code><a href="../reference/module_run.html">module_run()</a></code> function will do that automatically for
+you. However, you may want the values of your summary variables to be
+something other than <code>NA</code> for these missing papers. You can
+set the value of <code>na_replace</code> in the return list (below) to
+this default value. For example, if you are returning a summary of the
+count of sentences with the word “significant”, you can replace
+<code>NA</code>s with 0.</p>
+<p>If you are returning more than one summary column and have different
+replacement values, use a named list.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">na_replace</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  n_significant <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  paper_type <span class="op">=</span> <span class="st">"unknown"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="traffic-light">Traffic Light<a class="anchor" aria-label="anchor" href="#traffic-light"></a>
+</h3>
+<p>The traffic lights are used in single-paper reports to give a quick
+visual overview of the module results. There are 5 kinds of traffic
+lights:</p>
 <style>
   h2.na::before { content: '⚪️ '; }
   h2.fail::before { content: '⚫️ '; }
@@ -186,97 +329,48 @@ keys.</p>
 <p>🟢 no problems detected;<br> 🟡 something to check;<br> 🔴 possible
 problems detected;<br> 🔵 informational only;<br> ⚪️ not applicable;<br>
 ⚫️ check failed</p>
-<p>The simplest way to set traffic lights is to specify the meaning of
-“found” and “not_found”. If the module produces more than 0 rows in the
-output table, then the traffic light takes the “found” value, otherwise
-the “not_found” value.</p>
-<pre><code>{
-  "title": "List All P-Values",
-  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
-  "text": {
-    "pattern": "\\bp-?(value)?\\s*[&lt;&gt;=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?",
-    "return": "match",
-    "perl": true
-  },
-  "traffic_light": {
-    "found": "info",
-    "not_found": "na"
-  }
-}</code></pre>
-<p>If you are using the “code” type, you can also specify the traffic
-light in the returned list.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># code for imprecise-p module</span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all-p-values"</span><span class="op">)</span><span class="op">$</span><span class="va">table</span></span>
-<span><span class="va">p</span><span class="op">$</span><span class="va">p_comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"p-?(value)?\\s*|\\s*\\d?\\.\\d+e?-?\\d*"</span>, <span class="st">""</span>, <span class="va">p</span><span class="op">$</span><span class="va">text</span><span class="op">)</span></span>
-<span><span class="va">p</span><span class="op">$</span><span class="va">p_value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"^p-?(value)?\\s*[&lt;&gt;=≤≥]{1,2}\\s*"</span>, <span class="st">""</span>, <span class="va">p</span><span class="op">$</span><span class="va">text</span><span class="op">)</span></span>
-<span><span class="va">p</span><span class="op">$</span><span class="va">p_value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">p</span><span class="op">$</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">p</span><span class="op">$</span><span class="va">imprecise</span> <span class="op">&lt;-</span> <span class="va">p</span><span class="op">$</span><span class="va">p_comp</span> <span class="op">==</span> <span class="st">"&lt;"</span> <span class="op">&amp;</span> <span class="va">p</span><span class="op">$</span><span class="va">p_value</span> <span class="op">&gt;</span> <span class="fl">.001</span></span>
-<span><span class="va">p</span><span class="op">$</span><span class="va">imprecise</span> <span class="op">&lt;-</span> <span class="va">p</span><span class="op">$</span><span class="va">imprecise</span> <span class="op">|</span> <span class="va">p</span><span class="op">$</span><span class="va">p_comp</span> <span class="op">==</span> <span class="st">"&gt;"</span></span>
-<span><span class="va">p</span><span class="op">$</span><span class="va">imprecise</span> <span class="op">&lt;-</span> <span class="va">p</span><span class="op">$</span><span class="va">imprecise</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">p</span><span class="op">$</span><span class="va">p_value</span><span class="op">)</span></span>
-<span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"text"</span>, <span class="st">"section"</span>, <span class="st">"header"</span>, <span class="st">"div"</span>, <span class="st">"p"</span>, <span class="st">"s"</span>, <span class="st">"id"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">tl</span> <span class="op">&lt;-</span> <span class="st">"na"</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="va">p</span><span class="op">$</span><span class="va">imprecise</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">tl</span> <span class="op">&lt;-</span> <span class="st">"red"</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">p</span><span class="op">$</span><span class="va">imprecise</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">tl</span> <span class="op">&lt;-</span> <span class="st">"green"</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>  <span class="va">tl</span> <span class="op">&lt;-</span> <span class="st">"yellow"</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  table <span class="op">=</span> <span class="va">p</span><span class="op">[</span><span class="va">p</span><span class="op">$</span><span class="va">imprecise</span>, <span class="va">cols</span><span class="op">]</span>,</span>
-<span>  traffic_light <span class="op">=</span> <span class="va">tl</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<p>You will need to write some code to determine which traffic lights
+apply to your case. If you don’t include a traffic light, but do include
+a <code>table</code> in the returned list, the following rule will be
+applied for the traffic light.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span>  <span class="co"># determine the traffic light ----</span></span>
+<span>  <span class="co"># possible values: na, info, red, yellow, green, fail</span></span>
+<span>  <span class="va">tl</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">table</span><span class="op">)</span><span class="op">)</span> <span class="st">"info"</span> <span class="kw">else</span> <span class="st">"na"</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="report">Report<a class="anchor" aria-label="anchor" href="#report"></a>
+<h3 id="report-text">Report Text<a class="anchor" aria-label="anchor" href="#report-text"></a>
 </h3>
-<p>Any text that you want to include in the report should be specified
-in the “report” key. You can set different text for each traffic light,
-and/or text to include in all reports.</p>
-<pre><code>{
-  "title": "Reference Consistency",
-  "description": "Check if all references are cited and all citations are referenced",
-  "code": {
-    "packages": ["dplyr"],
-    "path": "ref-consistency.R"
-  },
-  "report": {
-    "all": "This module relies on Grobid correctly parsing the references. There may be some false positives.",
-    "red": "There are references that are not cited or citations that are not referenced",
-    "green": "All references were cited and citations were referenced",
-    "na": "No citations/references were detected"
-  }
-}</code></pre>
+<p>Reports need to explain concepts or give resources for further
+learning. This is often specific to the outcome of a check, so you can
+use the pattern below to customise the report text for each traffic
+light.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span>  <span class="co"># report text for each possible traffic light ----</span></span>
+<span>  <span class="va">report</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    na <span class="op">=</span> <span class="st">"Not applicable"</span>,</span>
+<span>    info <span class="op">=</span> <span class="st">"This table is provided for your information"</span>,</span>
+<span>    red <span class="op">=</span> <span class="st">"This is a potential problem"</span>,</span>
+<span>    yellow <span class="op">=</span> <span class="st">"There may be a problem"</span>,</span>
+<span>    green <span class="op">=</span> <span class="st">"No problems found"</span>,</span>
+<span>    fail <span class="op">=</span> <span class="st">"The check failed, sorry"</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="authors">Authors<a class="anchor" aria-label="anchor" href="#authors"></a>
+<h3 id="return">Return<a class="anchor" aria-label="anchor" href="#return"></a>
 </h3>
-<p>You can also include author information in the following format:</p>
-<pre><code>{
-  "title": "List All P-Values",
-  "description": "List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.",
-  "authors": [{
-    "orcid": "0000-0002-7523-5539",
-    "name":{
-      "surname": "DeBruine",
-      "given": "Lisa"
-    },
-    "email": "debruine@gmail.com"
-  }],
-  "text": {
-    "pattern": "\\bp-?(value)?\\s*[&lt;&gt;=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?",
-    "return": "match",
-    "perl": true
-  },
-  "traffic_light": {
-    "found": "info",
-    "not_found": "na"
-  }
-}</code></pre>
+<p>Structure the returned values in a list, with the names
+<code>table</code>, <code>summary</code>, <code>na_replace</code>,
+<code>traffic_light</code> and <code>report</code>.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span>  <span class="co"># return a list ----</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    table <span class="op">=</span> <span class="va">table</span>,</span>
+<span>    summary <span class="op">=</span> <span class="va">summary_table</span>,</span>
+<span>    na_replace <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    traffic_light <span class="op">=</span> <span class="va">tl</span>,</span>
+<span>    report <span class="op">=</span> <span class="va">report</span><span class="op">[[</span><span class="va">tl</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -290,7 +384,7 @@ and/or text to include in all reports.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>

@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9036</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9037</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -693,13 +693,14 @@ will share more modules.</p>
 <p>You can see the list of built-in modules with the function below.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/module_list.html">module_list</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;  * all-p-values: List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.</span></span>
-<span><span class="co">#&gt;  * all-urls: List all the URLs in the main text</span></span>
-<span><span class="co">#&gt;  * imprecise-p: List any p-values reported with insufficient precision (e.g., p &lt; .05 or p = n.s.)</span></span>
-<span><span class="co">#&gt;  * llm-summarise: Generate a 1-sentence summary for each section</span></span>
+<pre><code><span><span class="co">#&gt;  * all_p_values: List all p-values in the text, returning the matched text (e.g., 'p = 0.04')</span></span>
+<span><span class="co">#&gt; and document location in a table.</span></span>
+<span><span class="co">#&gt;  * all_urls: List all the URLs in the main text.</span></span>
+<span><span class="co">#&gt;  * imprecise_p: List any p-values reported with insufficient precision (e.g., p &lt; .05 or p = n.s.)</span></span>
+<span><span class="co">#&gt;  * llm_summarise: Generate a 1-sentence summary for each section</span></span>
 <span><span class="co">#&gt;  * marginal: List all sentences that describe an effect as 'marginally significant'.</span></span>
-<span><span class="co">#&gt;  * osf-check: List all OSF links and whether they are open, closed, or do not exist.</span></span>
-<span><span class="co">#&gt;  * ref-consistency: Check if all references are cited and all citations are referenced</span></span>
+<span><span class="co">#&gt;  * osf_check: List all OSF links and whether they are open, closed, or do not exist.</span></span>
+<span><span class="co">#&gt;  * ref_consistency: Check if all references are cited and all citations are referenced</span></span>
 <span><span class="co">#&gt;  * retractionwatch: Flag any cited papers in the RetractionWatch database</span></span>
 <span><span class="co">#&gt;  * statcheck: Check consistency of p-values and test statistics</span></span></code></pre>
 </div>
@@ -709,7 +710,7 @@ will share more modules.</p>
 <p>To run a built-in module on a paper, you can reference it by
 name.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all-p-values"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all_p_values"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th align="left">text</th>
@@ -754,30 +755,19 @@ name.</p>
 <div class="section level3">
 <h3 id="creating-modules">Creating modules<a class="anchor" aria-label="anchor" href="#creating-modules"></a>
 </h3>
-<p>You can create your own modules by specifying the arguments to
-<code><a href="../reference/search_text.html">search_text()</a></code> or <code><a href="../reference/llm.html">llm()</a></code> in JSON format and/or
-including R code. Modules can also contain instructions for reporting,
-to give “traffic lights” for whether a check passed or failed, and to
-include appropriate text feedback in a report. See the <a href="modules.html">modules vignette</a> for more details.</p>
-<p>Below is an abbreviated example of the module that detects all
-p-values in the text and returns the matching text.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>  <span class="dt">"title"</span><span class="fu">:</span> <span class="st">"List All P-Values"</span><span class="fu">,</span></span>
-<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a>  <span class="dt">"description"</span><span class="fu">:</span> <span class="st">"List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table."</span><span class="fu">,</span></span>
-<span id="cb27-4"><a href="#cb27-4" tabindex="-1"></a>  <span class="dt">"text"</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb27-5"><a href="#cb27-5" tabindex="-1"></a>    <span class="dt">"pattern"</span><span class="fu">:</span> <span class="st">"</span><span class="ch">\\</span><span class="st">bp-?(value)?</span><span class="ch">\\</span><span class="st">s*[&lt;&gt;=≤≥]{1,2}</span><span class="ch">\\</span><span class="st">s*(n</span><span class="ch">\\</span><span class="st">.?s</span><span class="ch">\\</span><span class="st">.?|</span><span class="ch">\\</span><span class="st">d?</span><span class="ch">\\</span><span class="st">.</span><span class="ch">\\</span><span class="st">d+)(e-</span><span class="ch">\\</span><span class="st">d+)?"</span><span class="fu">,</span></span>
-<span id="cb27-6"><a href="#cb27-6" tabindex="-1"></a>    <span class="dt">"return"</span><span class="fu">:</span> <span class="st">"match"</span><span class="fu">,</span></span>
-<span id="cb27-7"><a href="#cb27-7" tabindex="-1"></a>    <span class="dt">"perl"</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb27-8"><a href="#cb27-8" tabindex="-1"></a>  <span class="fu">}</span></span>
-<span id="cb27-9"><a href="#cb27-9" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>You can create your own modules using R code. Modules can also
+contain instructions for reporting, to give “traffic lights” for whether
+a check passed or failed, and to include appropriate text feedback in a
+report. See the <a href="modules.html">modules vignette</a> for more
+details.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="reports">Reports<a class="anchor" aria-label="anchor" href="#reports"></a>
 </h2>
 <p>You can generate a report from any set of modules. The default set is
-<code>c("imprecise-p", "marginal", "osf-check", "retractionwatch", "ref-consistency")</code></p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code>c("imprecise_p", "marginal", "osf_check", "retractionwatch", "ref_consistency")</code></p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/report.html">report</a></span><span class="op">(</span><span class="va">paper</span>, output_format <span class="op">=</span> <span class="st">"qmd"</span><span class="op">)</span></span></code></pre></div>
 <p>See the <a href="report-example.html">example report</a>.</p>
 </div>
@@ -792,7 +782,7 @@ p-values in the text and returns the matching text.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
