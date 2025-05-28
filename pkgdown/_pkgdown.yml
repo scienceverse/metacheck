@@ -22,9 +22,9 @@ articles:
     contents:
       - report-example
       - batch
-#      - metascience
+      - metascience
       - text_model
       - modules
       - creating_modules
-#      - validate
+      - validate
       - github

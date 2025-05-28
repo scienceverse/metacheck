@@ -44,7 +44,10 @@ module_run <- function(paper, module, ...) {
     }
   }
 
-  tryCatch(source(module_path, local = TRUE),
+  orig_wd <- getwd(); on.exit(setwd(orig_wd))
+  dirname(module_path) |> setwd()
+
+  tryCatch(basename(module_path) |>source(local = TRUE),
            error = function(e) {
              stop("The module code has errors: ", e$message)
            })

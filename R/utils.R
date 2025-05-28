@@ -182,30 +182,6 @@ print.scivrs_paperlist <- function(x, ...) {
   paperlist(NextMethod())
 }
 
-#' Print Validation List Object
-#'
-#' @param x The ppchk_validate object
-#' @param ... Additional parameters for print
-#'
-#' @export
-#' @keywords internal
-#'
-print.ppchk_validate <- function(x, ...) {
-  txt <- sprintf("Validated matches from a sample of %i:
-* tables: %i%s
-* reports: %i%s
-* traffic lights: %i%s\n",
-    nrow(x$sample),
-    round(x$tables_matched * 100),
-    ifelse(is.na(x$tables_matched), "", "%"),
-    round(x$reports_matched * 100),
-    ifelse(is.na(x$reports_matched), "", "%"),
-    round(x$tl_matched * 100),
-    ifelse(is.na(x$tl_matched), "", "%")
-  )
-  cat("", txt)
-}
-
 #' Print Module List Object
 #'
 #' @param x The ppchk_module_list object

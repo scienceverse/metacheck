@@ -1,3 +1,9 @@
+# papercheck 0.0.0.9038
+
+* `validate()` function is updated for the new module structure
+* the validation, metascience, and text_model vignettes are updated
+* modules can now use relative paths (to their own location) to access helper files
+
 # papercheck 0.0.0.9037
 
 * The way modules are created has been majorly changed -- it is now very similar to R package functions, using roxygen for documentation, instead of JSON format. There is no longer a need to distinguish text search, code, and LLM types of modules, they all use code. The vignettes have been updated to reflect this.
