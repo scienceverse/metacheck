@@ -35,9 +35,9 @@ ui <- dashboardPage(
       menuItem("Modules", tabName = "mod_tab",
                icon = icon("database")),
       menuItem("Search Text", tabName = "text_tab",
-               icon = icon("magnifying-glass")),
-      menuItem("LLM", tabName = "llm_tab",
-               icon = icon("robot"))
+               icon = icon("magnifying-glass")) #,
+      # menuItem("LLM", tabName = "llm_tab",
+      #          icon = icon("robot"))
     ),
     actionButton("demo", "Load Demo File"),
     actionButton("batch_demo", "Load Batch Demo"),
@@ -292,10 +292,10 @@ server <- function(input, output, session) {
       text_table(tt)
 
       # update interface elements
-      updateCheckboxGroupInput(session, "llm_group_by",
-                               choices = names(tt),
-                               selected = "file",
-                               inline = TRUE)
+      # updateCheckboxGroupInput(session, "llm_group_by",
+      #                          choices = names(tt),
+      #                          selected = "file",
+      #                          inline = TRUE)
 
       sec <- unique(tt$section)
       sec <- sec[!is.na(sec)] |> sort()
@@ -373,11 +373,7 @@ server <- function(input, output, session) {
     waiter$show()
     on.exit(waiter$hide())
 
-    # modules <- input$report_module_list
-    modules <- c(input$module_text,
-                 input$module_code,
-                 input$module_ml,
-                 input$module_ai)
+    modules <- input$report_module_list
 
     if (length(my_paper()) == 0) return(NULL)
 
@@ -404,10 +400,7 @@ server <- function(input, output, session) {
   ### report_defaults ----
 
   update_report_modules <- function(modules) {
-    updateCheckboxGroupInput(session, "module_text", selected = modules)
-    updateCheckboxGroupInput(session, "module_code", selected = modules)
-    updateCheckboxGroupInput(session, "module_ml", selected = modules)
-    updateCheckboxGroupInput(session, "module_ai", selected = modules)
+    updateCheckboxGroupInput(session, "report_module_list", selected = modules)
   }
 
   observeEvent(input$report_defaults, {
@@ -518,6 +511,7 @@ server <- function(input, output, session) {
     removeCssClass("mod_title", "na")
     removeCssClass("mod_title", "fail")
     removeCssClass("mod_title", "info")
+
     addCssClass("mod_title", output$traffic_light)
     mod_table(output$table %||% data.frame())
     mod_report(output$report %||% "")

@@ -1,11 +1,6 @@
 # set up module list
 
 modules <- papercheck::module_list()
-mod <- list()
-for (type in c("text", "code", "ml", "llm")) {
-  m <- modules[modules$type == type, ]
-  mod[[type]] <- stats::setNames(m$name, m$title)
-}
 
 ### report_tab ----
 report_tab <- tabItem(
@@ -13,18 +8,8 @@ report_tab <- tabItem(
   actionButton("report_info", "Info"),
   actionButton("report_defaults", "Defaults"),
   fluidRow(
-    column(width = 6, checkboxGroupInput("module_text", "Text", mod$text)),
-    column(width = 6, checkboxGroupInput("module_code", "Code", mod$code))
-    #column(width = 3, checkboxGroupInput("module_ml", "ML", mod$ml)),
-    #column(width = 3, checkboxGroupInput("module_llm", "LLM", mod$llm))
+    column(width = 12, checkboxGroupInput("report_module_list", "", modules$name))
   ),
-
-  # checkboxGroupInput("report_module_list", NULL,
-  #             stats::setNames(module_list()$name, module_list()$title),
-  #             c("imprecise_p",
-  #               "osf_check",
-  #               "retractionwatch",
-  #               "marginal")),
   actionButton("report_run", "Run Report"),
   downloadButton("report_dl_quarto", "Download Quarto"),
   downloadButton("report_dl_html", "Download HTML"),

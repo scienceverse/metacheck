@@ -34,7 +34,7 @@ test_that("basic", {
   paper <- psychsci[1:10]
   module <- "marginal"
   expected <- module_run(paper, module)
-  exp_summary <- expected$summary[1:9, ]
+  exp_summary <- expected$summary
   exp_summary[1,2] <- 5 # change some expected values
   exp_summary[2,2] <- NA
 
@@ -43,6 +43,7 @@ test_that("basic", {
   expect_equal(v$module, module)
   expect_equal(v$actual$summary, expected$summary)
   expect_equal(names(v$matches), "summary")
-  #expect_equal(v$matches$summary$expected, c(exp_summary$marginal, NA))
-  #expect_equal(v$matches$summary$marginal, rep(c(F, T, F), c(2, 7, 1)))
+  expect_equal(v$matches$summary$marginal.expected, c(exp_summary$marginal))
+  expect_equal(v$matches$summary$marginal.actual, expected$summary$marginal)
+  expect_equal(v$matches$summary$marginal, rep(c(F, T), c(2, 8)))
 })

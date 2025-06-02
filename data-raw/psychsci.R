@@ -1,15 +1,11 @@
 ## code to prepare `psychsci` dataset goes here
 
 # make relative filename make sense
-setwd("tests/testthat/psychsci/light")
+setwd("data-raw/psychsci/grobid_0.8.2/")
 psychsci <- read_grobid(".")
-setwd("../../../../")
+setwd("../../../")
 
-# for (i in seq_along(psychsci)) {
-#   psychsci[[1]]$info$doi <- psychsci[[1]]$info$doi |>
-#     gsub("pss\\.", "", x = _) |>
-#     gsub("sagepub\\.", "", x = _)
-# }
+info <- info_table(psychsci)
 
 usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")
 

@@ -119,32 +119,32 @@ test_that("test", {
   expect_true(all(first_char == "p"))
 })
 
-test_that("LLM", {
-  skip_on_cran()
-  skip_if_offline("api.groq.com")
-
-  paper <- read_grobid(demoxml())
-  sec <- search_text(paper,
-                      section = "method",
-                      return = "section")
-
-  model <- "llama3-70b-8192"
-  expect_message({
-    mod_output <- module_run(sec, "llm_summarise",
-                             model = model,
-                             seed = 8675309)
-  })
-
-  expect_equal(names(mod_output$table),
-               c("text", "section", "header", "div", "p",
-                 "s", "id", "answer", "time", "tokens"))
-  # expect_equal(mod_output$table$answer, "This study randomly assigned 50 scientists to use an automated error-checking tool and 50 to use a checklist to examine whether automation reduces errors in scientific manuscripts.")
-
-  # get attributes
-  atts <- attr(mod_output$table, "llm")
-  expect_equal(atts$seed, 8675309)
-  expect_equal(atts$model, model)
-})
+# test_that("LLM", {
+#   skip_on_cran()
+#   skip_if_offline("api.groq.com")
+#
+#   paper <- read_grobid(demoxml())
+#   sec <- search_text(paper,
+#                       section = "method",
+#                       return = "section")
+#
+#   model <- "llama3-70b-8192"
+#   expect_message({
+#     mod_output <- module_run(sec, "llm_summarise",
+#                              model = model,
+#                              seed = 8675309)
+#   })
+#
+#   expect_equal(names(mod_output$table),
+#                c("text", "section", "header", "div", "p",
+#                  "s", "id", "answer", "time", "tokens"))
+#   # expect_equal(mod_output$table$answer, "This study randomly assigned 50 scientists to use an automated error-checking tool and 50 to use a checklist to examine whether automation reduces errors in scientific manuscripts.")
+#
+#   # get attributes
+#   atts <- attr(mod_output$table, "llm")
+#   expect_equal(atts$seed, 8675309)
+#   expect_equal(atts$model, model)
+# })
 
 test_that("all_p_values", {
   paper <- read_grobid(demoxml())
@@ -157,7 +157,7 @@ test_that("all_p_values", {
   # iteration: text modules need no special adaptation
   paper <- psychsci
   expect_no_error( mod_output <- module_run(paper, module) )
-  expect_equal(nrow(mod_output$table), 4683)
+  expect_equal(nrow(mod_output$table), 4853)
 
   # check problem with minus sign at end
   minus <- mod_output$table$text[grep("-$", mod_output$table$text)]
@@ -262,7 +262,7 @@ test_that("imprecise_p", {
   paper <- psychsci
   mod_output <- module_run(paper, module)
   lt05 <- grepl("p < .05", mod_output$table$text) |> sum()
-  expect_equal(lt05, 156)
+  expect_equal(lt05, 174)
   expect_equal(mod_output$table$p_comp[[1]], "<")
   expect_equal(mod_output$table$p_value[[1]], 0.05)
 })

@@ -1,3 +1,11 @@
+# papercheck 0.0.0.9039
+
+* removed the llm_summarise module
+* updated `papercheck_app()` to show all modules
+* removedd LLM tab from the shiny app
+* fixed a bug in `pdf2grobid()` where a custom grobid_url was not used in batch processing
+* `psychsci` object updated to use XMLs from grobid 0.8.2, which fixes some grobid-related errors in PDF import
+
 # papercheck 0.0.0.9038
 
 * `validate()` function is updated for the new module structure

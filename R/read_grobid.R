@@ -102,6 +102,9 @@ read_grobid <- function(filename) {
   # get authors ----
   p$authors <- get_authors(xml)
 
+  # get app info ----
+  p$app <- get_app_info(xml)
+
   # full text----
   p$full_text <- get_full_text(xml, id = basename(filename))
 
@@ -618,4 +621,13 @@ xml2bib <- function(ref) {
                   })
 
   bib
+}
+
+get_app_info <- function(xml) {
+  app <- xml2::xml_find_first(xml, "//appInfo //application")
+  list(
+    version = xml2::xml_attr(app, "version"),
+    when = xml2::xml_attr(app, "when"),
+    url = xml2::xml_find_first(app, "//ref") |> xml2::xml_attr("target")
+  )
 }

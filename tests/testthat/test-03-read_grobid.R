@@ -365,3 +365,19 @@ test_that("grobid-versions", {
 
   # no mismatch!
 })
+
+test_that("get_app_info", {
+  filename <- "examples/to_err_is_human.xml"
+  xml <- read_grobid_xml(filename)
+  info <- get_app_info(xml)
+
+  expect_equal(info$version, "0.8.1")
+  expect_equal(info$when, "2025-02-25T18:30+0000")
+  expect_equal(info$url, "https://github.com/kermitt2/grobid")
+
+  filename <- "grobid-test/full/0956797613520608.xml"
+  paper <- read_grobid(filename)
+  expect_equal(paper$app$version, "0.8.2")
+  expect_equal(paper$app$when, "2025-05-18T17:52+0000")
+  expect_equal(paper$app$url, "https://github.com/kermitt2/grobid")
+})

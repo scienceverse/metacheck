@@ -575,6 +575,12 @@
       "en": ""
     },
     {
+      "en": "all_p_values"
+    },
+    {
+      "en": "all_urls"
+    },
+    {
       "en": "div"
     },
     {
@@ -584,10 +590,28 @@
       "en": "id"
     },
     {
-      "en": "LLM"
+      "en": "imprecise_p"
+    },
+    {
+      "en": "marginal"
+    },
+    {
+      "en": "osf_check"
+    },
+    {
+      "en": "ref_consistency"
+    },
+    {
+      "en": "retractionwatch"
+    },
+    {
+      "en": "statcheck"
     },
     {
       "en": "StatCheck"
+    },
+    {
+      "en": "Use `pdf2grobid()` to create XML files from PDFs. This relies on an external or local grobid server, and will save files to your machine, so needs to run outside this app."
     }
   ]
 }

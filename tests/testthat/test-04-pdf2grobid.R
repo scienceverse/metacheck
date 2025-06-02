@@ -13,6 +13,7 @@ test_that("works", {
 grobid_server <- "kermitt2-grobid.hf.space"
 
 test_that("defaults", {
+  skip_on_cran()
   skip_if_offline(grobid_server)
 
   filename <- demopdf()
@@ -26,7 +27,7 @@ test_that("defaults", {
   expect_equal(xml_file, exp)
 
   xml2 <- read_grobid_xml(xml_file)
-  expect_equal(xml, xml2)
+  expect_equal(xml, xml2) # fails if when is not identical
   file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
 })
 

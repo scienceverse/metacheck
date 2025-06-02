@@ -62,6 +62,7 @@ test_that("openalex", {
 
   # one malformatted DOI
   paper <- psychsci[10:11]
+  paper[[2]]$info$doi <- paste0(paper[[2]]$info$doi, "x")
   expect_warning(oa <- openalex(paper))
   expect_equal(oa[[1]]$id, "https://openalex.org/W1824074316")
   expect_equal(oa[[2]], list(error = paper[[2]]$info$doi))
@@ -72,3 +73,18 @@ test_that("openalex", {
   expect_equal(oa$is_retracted, TRUE)
 })
 
+test_that("exists", {
+  expect_true(is.function(papercheck::paper_info))
+  expect_no_error(helplist <- help(paper_info, papercheck))
+})
+
+test_that("paper_info", {
+  paper <- psychsci[[1]]
+
+  # good DOI, in OpenAlex
+  p1 <- paper_info(paper)
+
+  # bad DOI
+  paper$info$doi <- "baddoi"
+  p2 <- paper_info(paper)
+})

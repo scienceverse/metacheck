@@ -18,7 +18,7 @@ crossref <- function(doi) {
     doi <- info_table(papers, "doi")$doi
   }
 
-  if (length(doi > 1)) {
+  if (length(doi) > 1) {
     # iterate over DOIs
     crossref_list <- lapply(doi, crossref)
     names(crossref_list) <- doi
@@ -44,11 +44,11 @@ crossref <- function(doi) {
   }
 }
 
-#' Get OpenAlex info
+#' Get OpenAlex info for a paper
 #'
 #' See details for a list of root-level fields that can be selected.
 #'
-#' See <https://docs.openalex.org/api-entities/works/work-object> for explanations of the informationyou can retrieve about works.
+#' See <https://docs.openalex.org/api-entities/works/work-object> for explanations of the information you can retrieve about works.
 #'
 #' Root-level fields for the select argument:
 #'
@@ -118,7 +118,8 @@ crossref <- function(doi) {
 openalex <- function(doi, select = NULL) {
   # handle papers, paperlists, and vectors of multiple dois
   if (inherits(doi, "scivrs_paper")) {
-    doi <- doi$info$doi
+    paper <- doi
+    doi <- paper$info$doi
   } else if (is_paper_list(doi) || length(doi) > 1) {
     info <- lapply(doi, openalex)
     return(info)
@@ -134,6 +135,23 @@ openalex <- function(doi, select = NULL) {
                    return(list(error = doi))
                  })
 
+  # if ("error" %in% names(info) & !is.null(paper)) {
+  #   # try title
+  #   message("Trying to search OpenAlex by title")
+  #   url <- sprintf("https://api.openalex.org/works?filter=title.search:%s&mailto=%s",
+  #                  URLencode(paper$info$title), "debruine@gmail.com")
+  #   res <- tryCatch( suppressWarnings( jsonlite::read_json(url) ),
+  #                     error = function(e) {
+  #                       if (verbose())
+  #                         warning(doi, " not found in OpenAlex", call. = FALSE)
+  #                       return(list(error = doi))
+  #                     })
+  #
+  #   if (res$meta$count == 1) {
+  #
+  #   }
+  # }
+
   return(info)
 }
 
@@ -145,4 +163,19 @@ ref_info <- function(paper) {
       list()
     }
   })
+}
+
+#' Update Paper Info
+#'
+#' Check OpenAlex and/or CrossRef for paper info and update the paper object accordingly to fix import problems.
+#'
+#' @param paper
+#'
+#' @returns the updated paper object
+#' @export
+#'
+#' @examples
+#' ps1 <- paper_info(psychsci[[1]])
+paper_info <- function(paper) {
+
 }

@@ -7,10 +7,11 @@ llm_tab <- tabItem(
       textInput("llm_query", "Query", "Summarise this text", "100%"),
       textInput("llm_api", "GROQ API Key", Sys.getenv("GROQ_API_KEY"), "100%"),
       fluidRow(
-        column(4, checkboxGroupInput("llm_group_by", "Group By", c(), inline = TRUE)),
-        valueBoxOutput("total_cost"),
-        column(4, div(actionButton("llm_submit", "Search"),
-                      numericInput("llm_max_calls", "Maximum allowed calls", getOption("papercheck.llm_max_calls"), 1, NA, 1)))
+        column(4, actionButton("llm_submit", "Search")),
+        column(4, numericInput("llm_max_calls",
+                               "Maximum allowed calls",
+                               getOption("papercheck.llm_max_calls"), 1, NA, 1)),
+        valueBoxOutput("total_cost")
       )
   ),
   downloadButton("download_llm", "Download Answers"),

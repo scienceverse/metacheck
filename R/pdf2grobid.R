@@ -34,7 +34,7 @@ pdf2grobid <- function(filename, save_path = ".",
     }
 
     xmls <- lapply(filename, \(pdf) {
-      xml <- tryCatch(pdf2grobid(pdf, save_path),
+      xml <- tryCatch(pdf2grobid(pdf, save_path, grobid_url),
                       error = function(e) { return(FALSE) })
       if (verbose()) pb$tick()
       xml
@@ -54,7 +54,7 @@ pdf2grobid <- function(filename, save_path = ".",
     if (length(pdfs) == 0) {
       warning("There are no PDF files in the directory ", filename)
     }
-    xmls <- pdf2grobid(pdfs, save_path)
+    xmls <- pdf2grobid(pdfs, save_path, grobid_url)
     return(xmls)
   }
 

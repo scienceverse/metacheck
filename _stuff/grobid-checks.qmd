@@ -1,0 +1,37 @@
+---
+title: "grobid-checks"
+format: html
+---
+
+```{r}
+devtools::load_all("../")
+```
+
+## Abstracts
+
+Are all the abstracts being retrieved correctly by grobid?
+
+```{r}
+abstracts <- info_table(psychsci, c("doi", "description"))
+
+abstracts$doi <- gsub("[^0-9]*$", "", abstracts$doi)
+
+cat(abstracts$description[[1]])
+```
+
+```{r}
+search_text(psychsci[[4]], section = "abstract")
+```
+
+
+```{r}
+library(pdftools)
+pdf <- "../data-raw/pdf/0956797613520608.pdf"
+text <- pdf_text(pdf)
+
+text[[1]] |>
+  strsplit("\n")
+```
+
+
+
