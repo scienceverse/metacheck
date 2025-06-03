@@ -154,7 +154,18 @@ module_report <- function(module_output,
                           maxrows = Inf,
                           trunc_cell = Inf) {
   # set up table
-  tab <- module_output$table
+  if ("table" %in% names(module_output)) {
+    tab <- module_output$tab
+  } else {
+    tab <- ""
+  }
+  # use summary table if available and reporting more than one paper
+  if ("summary" %in% names(module_output) &
+      nrow(module_output) > 1) {
+    tab <- module_output$summary
+  }
+
+
   rowwarning <- ""
   if (is.data.frame(tab)) {
     # get rid of the id column if only one ID
