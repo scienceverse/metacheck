@@ -155,7 +155,7 @@ module_report <- function(module_output,
                           trunc_cell = Inf) {
   # set up table
   if ("table" %in% names(module_output)) {
-    tab <- module_output$tab
+    tab <- module_output$table
   } else {
     tab <- ""
   }
@@ -172,7 +172,7 @@ module_report <- function(module_output,
     if (unique(tab$id) |> length() < 2) tab$id <- NULL
     # get rid of all columns with only NA or header column
     keep <- sapply(tab, \(col) {!all(is.na(col))})
-    keep <- setdiff(keep, "header")
+    if ("header" %in% names(keep)) keep[["header"]] <- FALSE
     tab <- tab[, keep, drop = FALSE]
 
     if (nrow(tab) == 0 || ncol(tab) == 0) {
