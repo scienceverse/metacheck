@@ -160,8 +160,8 @@ module_report <- function(module_output,
     tab <- ""
   }
   # use summary table if available and reporting more than one paper
-  if ("summary" %in% names(module_output) &
-      nrow(module_output) > 1) {
+  if ("summary" %in% names(module_output) &&
+      nrow(module_output$summary) > 1) {
     tab <- module_output$summary
   }
 
