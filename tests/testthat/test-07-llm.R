@@ -159,7 +159,7 @@ test_that("llm_model", {
   expect_error(llm_model(T))
   expect_equal(orig_model, llm_model())
 
-  model <- "llama3-8b-8192"
+  model <- "llama-3.1-8b-instant"
   llm_model(model)
   expect_equal(llm_model(), model)
 

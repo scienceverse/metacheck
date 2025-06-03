@@ -123,19 +123,19 @@ test_that("module_report", {
   module_output <- module_run(psychsci[1:4], "all_p_values")
 
   report <- module_report(module_output)
-  expect_true(grepl("Showing 85 of 85 rows", report))
+  expect_true(grepl("Showing 4 of 4 rows", report))
   expect_true(grepl("^## List All P-Values \\{\\.info\\}", report))
 
   report <- module_report(module_output, header = 3, maxrows = 20, trunc_cell = 10)
-  expect_true(grepl("Showing 20 of 85 rows", report))
+  expect_true(grepl("Showing 4 of 4 rows", report))
   expect_true(grepl("^### List All P-Values \\{\\.info\\}", report))
-  expect_true(grepl("Eye mov...", report, fixed = TRUE))
+  expect_true(grepl("0956797...", report, fixed = TRUE))
 
   report <- module_report(module_output, header = "Custom header")
   expect_true(grepl("^Custom header", report))
 
   op <- capture_output(print(module_output))
-  expect_true(grepl("^\\|text     \\|section \\|header ", op))
-  expect_true(grepl("\n\nShowing 20 of 85 rows$", op))
-  expect_true(grepl("p = \\.237 \\|results \\|Eye movement strategies", op))
+  expect_true(grepl("^|id               | p_values|", op))
+  expect_true(grepl("\n\nShowing 4 of 4 rows$", op))
+  expect_true(grepl("|0956797614557697 |       27|", op))
 })

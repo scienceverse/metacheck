@@ -128,7 +128,7 @@ test_that("test", {
 #                       section = "method",
 #                       return = "section")
 #
-#   model <- "llama3-70b-8192"
+#   model <- "llama-3.3-70b-versatile"
 #   expect_message({
 #     mod_output <- module_run(sec, "llm_summarise",
 #                              model = model,

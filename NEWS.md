@@ -1,3 +1,8 @@
+# papercheck 0.0.0.9040
+
+* Updated default llm model to llama-3.3-70b-versatile (old one is being deprecated in August)
+* Updated reporting function for modules to show the summary table
+
 # papercheck 0.0.0.9039
 
 * removed the llm_summarise module
