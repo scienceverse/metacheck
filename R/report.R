@@ -170,8 +170,9 @@ module_report <- function(module_output,
   if (is.data.frame(tab)) {
     # get rid of the id column if only one ID
     if (unique(tab$id) |> length() < 2) tab$id <- NULL
-    # get rid of all columns with only NA
+    # get rid of all columns with only NA or header column
     keep <- sapply(tab, \(col) {!all(is.na(col))})
+    keep <- setdiff(keep, "header")
     tab <- tab[, keep, drop = FALSE]
 
     if (nrow(tab) == 0 || ncol(tab) == 0) {
