@@ -15,19 +15,20 @@
 
 .onAttach <- function(libname, pkgname) {
   stripe <- paste0(
-    "\033[31m***\033[39m",
-    "\033[33m***\033[39m",
-    "\033[32m***\033[39m",
-    "\033[34m***\033[39m",
-    "\033[35m***\033[39m"
+    "\033[31m*****", # red
+    "\033[33m*****", # yellow
+    "\033[32m*****", # green
+    "\033[34m*****", # blue
+    #"\033[36m*****" # cyan
+    "\033[35m*****\033[0m"  # magenta
   )
   paste(
     "\n",
     stripe,
-    "Welcome to PaperCheck. For support and examples visit:",
+    "\u2705 Welcome to PaperCheck. For support and examples visit:",
     "https://scienceverse.github.io/papercheck/",
-    "\\26A0 This software is an alpha version, so please check any results. ",
-    "\\26A0 False positives and false negatives will occur at unknown rates.",
+    "\u26A0\uFE0F This software is an alpha version, so please check any results. ",
+    "\u26A0\uFE0F False positives and false negatives will occur at unknown rates.",
     stripe,
     sep = "\n"
   ) %>% packageStartupMessage()
