@@ -2,7 +2,7 @@
 % Please edit documentation in R/crossref.R
 \name{openalex}
 \alias{openalex}
-\title{Get OpenAlex info}
+\title{Get OpenAlex info for a paper}
 \usage{
 openalex(doi, select = NULL)
 }
@@ -18,7 +18,7 @@ a list of values
 See details for a list of root-level fields that can be selected.
 }
 \details{
-See \url{https://docs.openalex.org/api-entities/works/work-object} for explanations of the informationyou can retrieve about works.
+See \url{https://docs.openalex.org/api-entities/works/work-object} for explanations of the information you can retrieve about works.
 
 Root-level fields for the select argument:
 \itemize{

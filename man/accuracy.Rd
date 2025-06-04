@@ -4,12 +4,12 @@
 \alias{accuracy}
 \title{Accuracy}
 \usage{
-accuracy(expected, actual)
+accuracy(expected, observed)
 }
 \arguments{
 \item{expected}{a vector of logical values for the expected values}
 
-\item{actual}{a vector of logical values for the actual values}
+\item{observed}{a vector of logical values for the observed values}
 }
 \value{
 a list of accuracy parameters

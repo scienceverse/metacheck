@@ -2,6 +2,8 @@
 
 * Updated default llm model to llama-3.3-70b-versatile (old one is being deprecated in August)
 * Updated reporting function for modules to show the summary table
+* Fixes a bug in `validate()` that returned FALSE for matches if the expected and observed results were both `NA`
+* Added two preliminary modules: "effect_size_ttest" and "effect_size_ftest"
 
 # papercheck 0.0.0.9039
 

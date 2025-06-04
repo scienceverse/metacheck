@@ -145,26 +145,26 @@ test_that("xml2bib", {
   ref <- refs[[1]]
   bib1 <- xml2bib(ref)
   bibtext1 <- format(bib1, width = NULL)
-  actual <- gsub("\\n", " ", bibtext1) |> gsub("“|”", "\"", x = _)
+  observed <- gsub("\\n", " ", bibtext1) |> gsub("“|”", "\"", x = _)
   expected <- "Basso A, Capitani E, Della Sala S, Laiacona M, Spinnler H (1987). \"Recovery from ideomotor apraxia: A study on acute stroke patients.\" _Brain_, *110*, 747-760."
   expect_true(inherits(bib1, "bibentry"))
-  expect_equal(actual, expected)
+  expect_equal(observed, expected)
 
   # book chapter
   ref <- refs[[7]]
   bib7 <- xml2bib(ref)
   bibtext7 <- format(bib7)
-  actual <- gsub("\\n", " ", bibtext7) |> gsub("“|”", "\"", x = _)
+  observed <- gsub("\\n", " ", bibtext7) |> gsub("“|”", "\"", x = _)
   expected <- "Csibra G (2008). \"Action mirroring and action understanding: An alternative account.\" In Haggard P, Rossetti Y, Kawato M (eds.), _Sensorimotor foundation of higher cognition: Attention and performance_, 435-458. Oxford University Press."
-  expect_equal(actual, expected)
+  expect_equal(observed, expected)
 
   # in press
   ref <- refs[[6]]
   bib6 <- xml2bib(ref)
   bibtext6 <- format(bib6)
-  actual <- gsub("\\n", " ", bibtext6) |> gsub("“|”", "\"", x = _)
+  observed <- gsub("\\n", " ", bibtext6) |> gsub("“|”", "\"", x = _)
   expected <- "Cook R, Bird G, Catmur C, Press C, Heyes CM (in press). \"Mirror neurons: From origin to function.\" _Behavioral & Brain Sciences_."
-  expect_equal(actual, expected)
+  expect_equal(observed, expected)
 
   # book
   ref <- refs[[37]]

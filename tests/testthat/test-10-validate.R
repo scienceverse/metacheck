@@ -17,7 +17,7 @@ test_that("errors", {
   expect_error(validate(paper, module, x = 1),
                "The results of this module did not return any objects named: x")
 
-  # expected table has columns not in the actual results
+  # expected table has columns not in the observed results
   expected <- module_run(paper, module)
   exp_sum <- expected$summary
   exp_sum$extra_col <- 1
@@ -41,9 +41,9 @@ test_that("basic", {
   v <- validate(paper, module, summary = exp_summary)
 
   expect_equal(v$module, module)
-  expect_equal(v$actual$summary, expected$summary)
+  expect_equal(v$observed$summary, expected$summary)
   expect_equal(names(v$matches), "summary")
   expect_equal(v$matches$summary$marginal.expected, c(exp_summary$marginal))
-  expect_equal(v$matches$summary$marginal.actual, expected$summary$marginal)
+  expect_equal(v$matches$summary$marginal.observed, expected$summary$marginal)
   expect_equal(v$matches$summary$marginal, rep(c(F, T), c(2, 8)))
 })

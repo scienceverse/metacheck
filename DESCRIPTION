@@ -1,7 +1,7 @@
 Package: papercheck
 Title: Check Scientific Papers for Best Practices
-Version: 0.0.0.9039
-Date: 2025-06-02
+Version: 0.0.0.9040
+Date: 2025-06-04
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -38,7 +38,6 @@ Config/testthat/edition: 3
 Imports: 
     dplyr,
     tidyr,
-    readxl,
     progress,
     tidytext,
     SnowballC,

@@ -37,47 +37,47 @@ validate <- function(paper, module, ...) {
         stop("The `", check, "` table did not have the same columns as the expected table")
       }
 
-      result_actual <- results[[check]][exp_names] |> unique()
+      result_observed <- results[[check]][exp_names] |> unique()
       result_expected <- expected[[check]][exp_names] |> unique()
 
-      # combine actual and expected results
-      if (nrow(result_actual) == nrow(result_expected) &
+      # combine observed and expected results
+      if (nrow(result_observed) == nrow(result_expected) &
           all(names(paper) %in% result_expected$id)) {
         # a summary table with one row per ID
         match_res <- dplyr::full_join(result_expected,
-                                      result_actual,
+                                      result_observed,
                                       by = "id",
-                                      suffix = c(".expected", ".actual"))
+                                      suffix = c(".expected", ".observed"))
 
         for (col in exp_names[exp_names != "id"]) {
-          match_res[[col]] <- sapply(
-            match_res[[paste0(col, ".expected")]] ==
-              match_res[[paste0(col, ".actual")]],
-            isTRUE
+          match_res[[col]] <- mapply(
+            identical,
+            match_res[[paste0(col, ".expected")]],
+            match_res[[paste0(col, ".observed")]]
           )
           match_stats[[col]] <- mean(match_res[[col]])
         }
       } else {
         # a table with 0+ rows per id
         true_pos <- dplyr::inner_join(result_expected,
-                                  result_actual,
+                                  result_observed,
                                   by = exp_names)
         false_neg <- dplyr::anti_join(result_expected,
-                                   result_actual,
+                                   result_observed,
                                   by = exp_names)
-        false_pos <- dplyr::anti_join(result_actual,
+        false_pos <- dplyr::anti_join(result_observed,
                                     result_expected,
                                     by = exp_names)
         true_pos$expected  = rep(TRUE, nrow(true_pos))
-        true_pos$actual    = rep(TRUE, nrow(true_pos))
+        true_pos$observed    = rep(TRUE, nrow(true_pos))
         false_neg$expected = rep(TRUE, nrow(false_neg))
-        false_neg$actual   = rep(FALSE, nrow(false_neg))
+        false_neg$observed   = rep(FALSE, nrow(false_neg))
         false_pos$expected = rep(FALSE, nrow(false_pos))
-        false_pos$actual   = rep(TRUE, nrow(false_pos))
+        false_pos$observed   = rep(TRUE, nrow(false_pos))
 
         match_res <- list(true_pos, false_neg, false_pos) |>
           do.call(dplyr::bind_rows, args = _)
-        match_res$match <- match_res$expected == match_res$actual
+        match_res$match <- match_res$expected == match_res$observed
 
         match_stats$true_positive = nrow(true_pos)
         match_stats$false_positive = nrow(false_pos)
@@ -95,7 +95,7 @@ validate <- function(paper, module, ...) {
   # organise info and return ----
   info <- list(
     module = module,
-    actual = results[to_check],
+    observed = results[to_check],
     matches = matches,
     stats = stats
   )
@@ -138,16 +138,16 @@ print.ppchk_validate <- function(x, ...) {
 #' Signal detection values for modules that classify papers as having a feature or not
 #'
 #' @param expected a vector of logical values for the expected values
-#' @param actual a vector of logical values for the actual values
+#' @param observed a vector of logical values for the observed values
 #'
 #' @returns a list of accuracy parameters
 #' @export
-accuracy <- function(expected, actual) {
+accuracy <- function(expected, observed) {
   # categorise the sample
-  hit <- sum(expected & actual)
-  miss <- sum(expected & !actual)
-  fa <- sum(!expected & actual)
-  cr <- sum(!expected & !actual)
+  hit <- sum(expected & observed)
+  miss <- sum(expected & !observed)
+  fa <- sum(!expected & observed)
+  cr <- sum(!expected & !observed)
 
   # Convert counts to proportions
   hit_rate <- hit / (hit + miss)

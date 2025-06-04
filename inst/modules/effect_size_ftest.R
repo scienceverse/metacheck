@@ -1,0 +1,74 @@
+#' Missing Effect Sizes (F-test)
+#'
+#' @description
+#' Detect F-tests with missing effect sized
+#'
+#' @author Daniel Laken
+#'
+#' @import dplyr
+#' @import tidyr
+#'
+#' @param paper a paper object or paperlist object
+#' @param ... further arguments (not used)
+#'
+#' @returns a list with table, summary, traffic light, and report text
+detect_missing_effect_size_ftest <- function(paper, ...) {
+  # Regex to detect all tests
+  test_regex <- "\\bF\\s*\\(\\s*\\d+(\\.\\d+)?\\s*,\\s*\\d+(\\.\\d+)?\\s*\\)\\s*=\\s*-?\\d+(\\.\\d+)?"
+  text_found_test <- paper |>
+    search_text("=") |> # sentences with equal signs
+    search_text("[0-9]") |> # sentences with numbers
+    search_text(test_regex, perl = TRUE) # sentences with a relevant test
+
+  # Regex to detect tests with reported effect sizes
+  test_es_regex <- "(?:cohen'?s\\s*)?(d|dz|ds|g|Hedges'?\\s*g|f²|η\\s*2|η\\s*p\\s*2|η²|η²p|omega²|ω²|partial\\s+η²)\\s*[=≈<>\u2264\u2265]{1,3}\\s*-?\\d+(\\.\\d+)?"
+  text_found_es <- search_text(text_found_test, test_es_regex, perl = TRUE)
+
+  # Identify tests without reported effect sizes
+  es_not_reported <- dplyr::anti_join(
+    text_found_test,
+    text_found_es,
+    by = "text"
+  )
+
+  summary_not <- dplyr::count(es_not_reported, id,
+                              name = "Ftests_without_es")
+  summary_test <- dplyr::count(text_found_test, id,
+                               name = "Ftests_n")
+  summary_es <- dplyr::count(text_found_es, id,
+                             name = "Ftests_with_es")
+  summary_table <- summary_test |>
+    dplyr::left_join(summary_es, by = "id") |>
+    dplyr::left_join(summary_not, by = "id") |>
+    dplyr::mutate(
+      Ftests_with_es = tidyr::replace_na(Ftests_with_es, 0),
+      Ftests_without_es = tidyr::replace_na(Ftests_without_es, 0)
+    )
+
+  total_n <- nrow(text_found_test)
+  noes_n <- nrow(es_not_reported)
+  tl <- dplyr::case_when(
+    total_n == 0 ~ "na",
+    noes_n == 0 ~ "green",
+    noes_n == total_n ~ "red",
+    noes_n < total_n ~ "yellow",
+    .default = "fail"
+  )
+
+  report <- c(
+    na = "No F-tests were detected.",
+    red = "No effect sizes were detected for any F-tests. The Journal Article Reporting Standards state effect sizes should be reported.",
+    yellow = "Effect sizes were detected for some, but not all F-tests. The Journal Article Reporting Standards state effect sizes should be reported.",
+    green = "All detected F-tests had an effect size reported in the same sentence.",
+    fail = "There was an error detecting F-tests."
+  )
+
+  # return a list ----
+  list(
+    table = es_not_reported,
+    summary = summary_table,
+    na_replace = list(Ftests_n = 0),
+    traffic_light = tl,
+    report = report[[tl]]
+  )
+}

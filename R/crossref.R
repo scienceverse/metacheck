@@ -169,7 +169,7 @@ ref_info <- function(paper) {
 #'
 #' Check OpenAlex and/or CrossRef for paper info and update the paper object accordingly to fix import problems.
 #'
-#' @param paper
+#' @param paper a papercheck paper object or list
 #'
 #' @returns the updated paper object
 #' @export

@@ -7,7 +7,7 @@
 paper_info(paper)
 }
 \arguments{
-\item{paper}{}
+\item{paper}{a papercheck paper object or list}
 }
 \value{
 the updated paper object

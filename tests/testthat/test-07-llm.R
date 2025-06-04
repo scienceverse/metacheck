@@ -126,14 +126,15 @@ test_that("exceeds tokens", {
   skip_if_offline("api.groq.com")
   skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
-  ## big text
-  text <- psychsci[[1]] |> search_text(return = "id")
-  query <- "Respond with the exact text"
-  expect_message(
-    expect_warning(
-      answer <- llm(text, query),
-      "tokens/rate_limit_exceeded", fixed = TRUE),
-    "requests left", fixed = TRUE)
+  ## big text (new model has a much bigger limit)
+  # text <- psychsci[7] |> search_text(return = "id")
+  # # nchar(text$text)
+  # query <- "Respond with the exact text"
+  # expect_message(
+  #   expect_warning(
+  #     answer <- llm(text, query),
+  #     "tokens/rate_limit_exceeded", fixed = TRUE),
+  #   "requests left", fixed = TRUE)
 })
 
 test_that("rate limiting", {
