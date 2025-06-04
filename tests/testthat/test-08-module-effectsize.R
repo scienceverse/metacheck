@@ -8,12 +8,12 @@ test_that("ttest", {
   expect_equal(nrow(mod_output$table), 0)
 
   # relevant text - red
-  paper <- psychsci[[10]]
+  paper <- psychsci[[4]]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
-  expect_equal(mod_output$summary$ttests_n, 3)
+  expect_equal(mod_output$summary$ttests_n, 1)
   expect_equal(mod_output$summary$ttests_with_es, 0)
-  expect_equal(mod_output$summary$ttests_without_es, 3)
+  expect_equal(mod_output$summary$ttests_without_es, 1)
 
   # relevant text - yellow
   paper <- psychsci[[9]]
@@ -54,28 +54,28 @@ test_that("ftest", {
   expect_equal(nrow(mod_output$table), 0)
 
   # relevant text - red
-  paper <- psychsci[[1]]
+  paper <- psychsci[[10]]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
-  expect_equal(mod_output$summary$Ftests_n, 5)
+  expect_equal(mod_output$summary$Ftests_n, 1)
   expect_equal(mod_output$summary$Ftests_with_es, 0)
-  expect_equal(mod_output$summary$Ftests_without_es, 5)
+  expect_equal(mod_output$summary$Ftests_without_es, 1)
 
   # relevant text - green
-  paper <- psychsci[[36]]
+  paper <- psychsci[[2]]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "green")
-  expect_equal(mod_output$summary$Ftests_n, 6)
-  expect_equal(mod_output$summary$Ftests_with_es, 6)
+  expect_equal(mod_output$summary$Ftests_n, 21)
+  expect_equal(mod_output$summary$Ftests_with_es, 21)
   expect_equal(mod_output$summary$Ftests_without_es, 0)
 
   # relevant text - yellow
-  paper <- psychsci[[29]]
+  paper <- psychsci[[9]]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "yellow")
-  expect_equal(mod_output$summary$Ftests_n, 9)
-  expect_equal(mod_output$summary$Ftests_with_es, 5)
-  expect_equal(mod_output$summary$Ftests_without_es, 4)
+  expect_equal(mod_output$summary$Ftests_n, 5)
+  expect_equal(mod_output$summary$Ftests_with_es, 3)
+  expect_equal(mod_output$summary$Ftests_without_es, 2)
 
   # iterate
   paper <- psychsci

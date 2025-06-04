@@ -14,15 +14,39 @@
 #' @returns a list with table, summary, traffic light, and report text
 detect_missing_effect_size_ttest <- function(paper, ...) {
   # Regex to detect all t-tests
-  test_regex <- "\\bt\\s*\\(\\s*\\d+(\\.\\d+)?\\s*\\)\\s*=\\s*-?\\d+(\\.\\d+)?"
+  test_regex <- paste0(
+    "\\bt\\s*", # word border and t
+    "(\\(\\s*\\d+(\\.\\d+)?\\s*\\))?", # df
+    "\\s*=\\s*", # comparator
+    "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
+  )
   text_found_test <- paper |>
     search_text("=") |> # sentences with equal signs
     search_text("[0-9]") |> # sentences with numbers
     search_text(test_regex, perl = TRUE) # sentences with a relevant test
 
   # Regex to detect effect sizes
-  test_es_regex <- "(cohen'?s\\s*)?\\b(d|b|g|r|f²?|η²|η²p|omega²|ω²|partial\\s+η²)\\s*[=≈<>\u2264\u2265]{1,3}\\s*-?\\d+(\\.\\d+)?"
-  text_found_es <- search_text(text_found_test, test_es_regex, perl = TRUE)
+  potentials <- c(
+    "cohen('|\u2019)?s\\s+d",
+    "d", "dz", "ds",
+    "hedges?('|\u2019)?s?\\s+g",
+    "g",
+    "b",
+    "r",
+    "f\\s*(2|²)?",
+    "omega\\s*(2|²)?",
+    "ω\\s*(2|²)?",
+    "η\\s*p*\\s*(2|²)",
+    "partial\\s+η\\s*(2|²)"
+  )
+
+  es_regex <- paste0(
+    "\\b", # word border
+    "(", paste(potentials, collapse = "|"), ")",
+    "\\s*[=≈<>\u2264\u2265]{1,3}\\s*", # comparators
+    "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
+  )
+  text_found_es <- search_text(text_found_test, es_regex, perl = FALSE)
 
   # Identify t-tests without reported effect sizes
   es_not_reported <- dplyr::anti_join(
