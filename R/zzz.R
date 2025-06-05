@@ -31,7 +31,7 @@
     "\u26A0\uFE0F False positives and false negatives will occur at unknown rates.",
     stripe,
     sep = "\n"
-  ) %>% packageStartupMessage()
+  ) |> packageStartupMessage()
 }
 
 ## quiets concerns of R CMD check re: the .'s that appear in pipelines
