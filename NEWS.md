@@ -1,3 +1,11 @@
+# papercheck 0.0.0.9041
+
+* Fixed a bug in `validate()` that returned incorrect summary stats if the data type of an expected column didn't match the data type of an observed column (e.g., double vs integer)
+* Combined the two effect size modules into "effect_size"
+* Renamed the module "imprecise_p" to "exact_p" (I keep typo-ing "imprecise")
+* Added a loading message
+* Added code coverage at https://app.codecov.io/gh/scienceverse/papercheck
+
 # papercheck 0.0.0.9040
 
 * Updated default llm model to llama-3.3-70b-versatile (old one is being deprecated in August)
@@ -9,7 +17,7 @@
 
 * removed the llm_summarise module
 * updated `papercheck_app()` to show all modules
-* removedd LLM tab from the shiny app
+* removed the LLM tab from the shiny app
 * fixed a bug in `pdf2grobid()` where a custom grobid_url was not used in batch processing
 * `psychsci` object updated to use XMLs from grobid 0.8.2, which fixes some grobid-related errors in PDF import
 

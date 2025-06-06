@@ -37,8 +37,8 @@ validate <- function(paper, module, ...) {
         stop("The `", check, "` table did not have the same columns as the expected table")
       }
 
-      result_observed <- results[[check]][exp_names] |> unique()
-      result_expected <- expected[[check]][exp_names] |> unique()
+      result_observed <- results[[check]][exp_names]# |> unique()
+      result_expected <- expected[[check]][exp_names]# |> unique()
 
       # combine observed and expected results
       if (nrow(result_observed) == nrow(result_expected) &
@@ -50,11 +50,16 @@ validate <- function(paper, module, ...) {
                                       suffix = c(".expected", ".observed"))
 
         for (col in exp_names[exp_names != "id"]) {
-          match_res[[col]] <- mapply(
-            identical,
-            match_res[[paste0(col, ".expected")]],
-            match_res[[paste0(col, ".observed")]]
-          )
+          e <- match_res[[paste0(col, ".expected")]]
+          o <- match_res[[paste0(col, ".observed")]]
+          # fix type mismatches
+          if (typeof(e) != typeof(o) &&
+              is.numeric(e) && is.numeric(o)) {
+            e <- as.double(e)
+            o <- as.double(o)
+          }
+
+          match_res[[col]] <- mapply(identical, e, o)
           match_stats[[col]] <- mean(match_res[[col]])
         }
       } else {

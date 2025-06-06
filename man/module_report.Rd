@@ -24,6 +24,6 @@ Report from module output
 \examples{
 filename <- demoxml()
 paper <- read_grobid(filename)
-op <- module_run(paper, "imprecise_p")
+op <- module_run(paper, "exact_p")
 module_report(op) |> cat()
 }

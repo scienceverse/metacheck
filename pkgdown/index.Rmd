@@ -17,6 +17,8 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+
+[![Codecov test coverage](https://codecov.io/gh/scienceverse/papercheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/papercheck)
 <!-- badges: end -->
 
 PaperCheck provides extendanble and integrated tools for automatically checking scientific papers for best practices, developed by Lisa DeBruine and Daniel Lakens in 2024 during Lisa’s visiting professorship at the Eindhoven Artificial Intelligence Systems Institute (EAISI). 
@@ -139,7 +141,7 @@ knitr::kable(p$table)
 
 ### Reports
 
-You can generate a report from any set of modules. The default set is `c("imprecise_p", "marginal", "osf_check", "retractionwatch", "ref_consistency")`
+You can generate a report from any set of modules. The default set is `c("exact_p", "marginal", "effect_size", osf_check", "retractionwatch", "ref_consistency")`
 
 ```{r, eval = FALSE}
 paper_path <- report(paper, output_format = "html")

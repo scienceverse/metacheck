@@ -46,4 +46,9 @@ test_that("basic", {
   expect_equal(v$matches$summary$marginal.expected, c(exp_summary$marginal))
   expect_equal(v$matches$summary$marginal.observed, expected$summary$marginal)
   expect_equal(v$matches$summary$marginal, rep(c(F, T), c(2, 8)))
+
+  # handle type mismatch
+  exp_summary$marginal <- as.integer(expected$summary$marginal)
+  v <- validate(paper, module, summary = exp_summary)
+  expect_equal(v$stats$summary$marginal, 1)
 })

@@ -22,13 +22,20 @@
     #"\033[36m*****" # cyan
     "\033[35m*****\033[0m"  # magenta
   )
+
+  stripe <- paste0("\033[32m",
+                   rep("*", 43) |> paste(collapse = ""),
+                   "\033[0m")
   paste(
     "\n",
     stripe,
-    "\u2705 Welcome to PaperCheck. For support and examples visit:",
+    "\u2705 Welcome to PaperCheck.",
+    "For support and examples visit:",
     "https://scienceverse.github.io/papercheck/",
-    "\u26A0\uFE0F This software is an alpha version, so please check any results. ",
-    "\u26A0\uFE0F False positives and false negatives will occur at unknown rates.",
+    "",
+    "\u26A0\uFE0F This is alpha software; please check any",
+    "results. False positives and negatives will",
+    "occur at unknown rates.",
     stripe,
     sep = "\n"
   ) |> packageStartupMessage()

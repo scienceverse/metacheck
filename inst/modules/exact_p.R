@@ -1,4 +1,4 @@
-#' Imprecise P-Values
+#' Exact P-Values
 #'
 #' @description
 #' List any p-values reported with insufficient precision (e.g., p < .05 or p = n.s.)
@@ -13,8 +13,8 @@
 #' @returns a list with table, summary, traffic light, and report text
 #'
 #' @examples
-#' module_run(psychsci, "imprecise_p")
-imprecise_p <- function(paper, ...) {
+#' module_run(psychsci, "exact_p")
+exact_p <- function(paper, ...) {
   # detailed table of results ----
   p <- module_run(paper, "all_p_values")$table
   p$p_comp <- gsub("p-?(value)?\\s*|\\s*\\d?\\.\\d+e?-?\\d*", "",
@@ -29,7 +29,7 @@ imprecise_p <- function(paper, ...) {
   table <- p[p$imprecise, cols]
 
   # summary output for paperlists ----
-  summary_table <- dplyr::count(table, id, name = "imprecise_p")
+  summary_table <- dplyr::count(table, id, name = "exact_p")
 
   # determine the traffic light ----
   tl <- dplyr::case_when(

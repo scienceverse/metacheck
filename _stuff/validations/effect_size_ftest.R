@@ -16,26 +16,23 @@ detect_missing_effect_size_ftest <- function(paper, ...) {
   # Regex to detect all tests
   test_regex <- paste0(
     "\\bF\\s*", # word border and F
-    "(\\(\\s*\\d+(\\.\\d+)?\\s*,\\s*\\d+(\\.\\d+)?\\s*\\))?", # optional df
+    "\\(\\s*\\d+\\s*,\\s*\\d+\\s*\\)", # df (must be 2 integers)
     "\\s*=\\s*", # comparator
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
   text_found_test <- paper |>
     search_text("=") |> # sentences with equal signs
     search_text("[0-9]") |> # sentences with numbers
-    search_text(test_regex, perl = TRUE) # sentences with a relevant test
+    search_text(test_regex, perl = TRUE, ignore.case = FALSE) # sentences with a relevant test
 
   # Regex to detect tests with reported effect sizes
   potentials <- c(
-    "cohen('|\u2019)?s\\s+d",
-    "d", "dz", "ds",
-    "hedges?('|\u2019)?s?\\s+g",
-    "g",
+    "cohen('|\u2019)?s\\s+f",
     "f\\s*(2|²)?",
-    "omega\\s*(2|²)?",
-    "ω\\s*(2|²)?",
     "η\\s*p*\\s*(2|²)",
-    "partial\\s+η\\s*(2|²)"
+    "partial\\s+η\\s*(2|²)",
+    "omega\\s*(2|²)?",
+    "ω\\s*(2|²)?"
   )
 
   es_regex <- paste0(
@@ -44,6 +41,7 @@ detect_missing_effect_size_ftest <- function(paper, ...) {
     "\\s*[=≈<>\u2264\u2265]{1,3}\\s*", # comparators
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
+
   text_found_es <- search_text(text_found_test, es_regex, perl = FALSE)
 
   # Identify tests without reported effect sizes

@@ -57,29 +57,28 @@ test_t <- data.frame(
     "hat = 1.2",
     "t2 = 1.2",
     "ts = 54"
-  )
+  ),
+  expected = rep(c(T, F), c(14, 3))
 )
 test_t$detected <- grepl(test_regex, test_t$text, 
-                         perl = TRUE, ignore.case = TRUE)
+                         perl = TRUE, ignore.case = FALSE)
 
-test_t |> filter(!detected)
+test_t |> filter(expected != detected)
 ```
-
 
 ```{r}
 potentials <- c(
-  "cohen('|\u2019)?s\\s+d",
-  "d",
-  "hedge('|\u2019)?s\\s+g",
-  "g",
-  "b",
-  "r",
-  "f\\s*(2|²)?",
-  "omega\\s*(2|²)?",
-  "ω\\s*(2|²)?",
-  "η\\s*p*\\s*(2|²)",
-  "partial\\s+η\\s*(2|²)"
-)
+    "cohen('|\u2019)?s\\s+d",
+    "d", "dz", "ds",
+    "hedges?('|\u2019)?s?\\s+g",
+    "g", "b", "r"
+    # "cohen('|\u2019)?s\\s+f",
+    # "f\\s*(2|²)?",
+    # "omega\\s*(2|²)?",
+    # "ω\\s*(2|²)?",
+    # "η\\s*p*\\s*(2|²)",
+    # "partial\\s+η\\s*(2|²)"
+  )
 
 es_regex <- paste0(
   "\\b", # word border
@@ -113,6 +112,10 @@ test_es <- data.frame(
     "b = 43.2",
     "g = 1.2",
     "r = 1.332",
+
+    # not expected
+    "SD = 10.2",
+    "t = 12",
     "f² = 1.2",
     "f = 1.2",
     "η² = 2.34",
@@ -131,21 +134,16 @@ test_es <- data.frame(
     "ω ² = 3.2",
     "ω2 = 3.2",
     "ω 2 = 3.2",
-    "partial\\s+η² = 1.2",
-    
-    # not expected
-    "SD = 10.2",
-    "t = 12"
-  )
+    "partial\\s+η² = 1.2"
+  ),
+  expected = rep(c(T, F), c(22, 21))
 )
 
 test_es$detected <- grepl(es_regex, test_es$text, 
                           ignore.case = TRUE)
 
-test_es |> filter(!detected)
+test_es |> filter(expected !=detected)
 ```
-
-
 
 
 ### Full set
@@ -157,7 +155,8 @@ Run code from the module to get the full set of sentences with a t-test, and the
 text_found_test <- paper |>
   search_text("=") |> # sentences with equal signs
   search_text("[0-9]") |> # sentences with numbers
-  search_text(test_regex, perl = TRUE) # sentences with a relevant test
+  # sentences with a relevant test
+  search_text(test_regex, perl = TRUE, ignore.case = FALSE) 
 
 # Regex to detect effect sizes
 text_found_es <- search_text(text_found_test, es_regex, perl = FALSE)
@@ -204,7 +203,7 @@ ttest_validation <- left_join(
 Write to a file for human coding.
 
 ```{r}
-write_csv(ttest_validation, "effect_size_ttest_v1.csv", na = "")
+write_csv(ttest_validation, "effect_size_ttest_v2.csv", na = "")
 ```
 
 * `text`: the full text of a sentence with one or more potential matches
@@ -216,57 +215,317 @@ write_csv(ttest_validation, "effect_size_ttest_v1.csv", na = "")
 
 The columns `has_t` and `has_es` should be double-checked by a human.
 
-### Validation
 
-Load in the human-coded version.
+
+
+
+
+## F-test
+
+### Check regex
 
 ```{r}
-ttest_coded <- read_xlsx("effect_size_ttest_v1.xlsx")
+test_regex <- paste0(
+  "\\bF\\s*", # word border and F
+  "\\(\\s*\\d+\\s*,\\s*\\d+\\s*\\)", # df (must be 2 integers)
+  "\\s*=\\s*", # comparator
+  "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
+)
+
+test_f <- data.frame(
+  text = c(
+    "F(10, 2) = +2.1",
+    "F(10, 2)   =2",
+    "F(10, 2)=-2.1",
+    "F(10, 2)= \n 2.1",
+    "F(10, 2) = 2.1",
+    "F(1, 3) = .287",
+    "F(2000929, 2) = 0.2",
+    "F(2, 3) = 1.3e-3",
+    
+    # not expected
+    "f = 2.1",
+    "f(1, 2) = 3",
+    "F(10.1) = 2.1",
+    "F ( 10 ) = 2.1",
+    "F (10, 2, 3) = 2.1",
+    "ABF = 1.2",
+    "f2 = 1.2",
+    "Fs = 54"
+  ),
+  expected = rep(c(T, F), c(8, 8))
+)
+test_f$detected <- grepl(test_regex, test_f$text, 
+                         perl = TRUE, ignore.case = FALSE)
+
+test_f |> filter(expected != detected)
+```
+
+```{r}
+potentials <- c(
+  "cohen('|\u2019)?s\\s+f",
+  "f\\s*(2|²)?",
+  "η\\s*p*\\s*(2|²)",
+  "partial\\s+η\\s*(2|²)",
+  "omega\\s*(2|²)?",
+  "ω\\s*(2|²)?"
+)
+
+es_regex <- paste0(
+  "\\b", # word border
+  "(", paste(potentials, collapse = "|"), ")", 
+  "\\s*[=≈<>\u2264\u2265]{1,3}\\s*", # comparators
+  "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
+)
+
+test_es <- data.frame(
+  text = c(
+    "cohen's f = 1",
+    "Cohen's f = 1",
+    "cohen’s f = 1",
+    "cohens f = 1",
+    "f² = 1.2",
+    "f = 1.2",
+    "η² = 2.34",
+    "η ² = 2.34",
+    "η2 = 2.34",
+    "η 2 = 2.34",
+    "ηp² = 2.34",
+    "η p ² = 2.34",
+    "ηp2 = 2.34",
+    "η p 2 = 2.34",
+    "partial\\s+η² = 1.2",
+    
+    "omega² = 53.",
+    "omega ² = 53.",
+    "omega2 = 53.",
+    "omega 2 = 53.",
+    "ω² = 3.2",
+    "ω ² = 3.2",
+    "ω2 = 3.2",
+    "ω 2 = 3.2",
+    
+    # not expected
+    "SD = 10.2",
+    "t = 12",
+    "cohen's d = 1",
+    "Cohen's d = 1",
+    "cohen’s d = 1",
+    "cohens d = 1",
+    "hedge's g = 1",
+    "Hedge's g = 1",
+    "hedge’s g = 1",
+    "hedges g = 1",
+    "d = 1",
+    "d = 1.2",
+    "d = -1.2",
+    "d=1.10002",
+    "d = \n 0.2023",
+    "d = 1.24e-3",
+    "d = .001",
+    "d < 0.001",
+    "d > 2.3",
+    "d <= 0.001",
+    "d ≈ 1.2",
+    "b = 43.2",
+    "g = 1.2",
+    "r = 1.332"
+  ),
+  expected = rep(c(T, F), c(23, 24))
+)
+
+test_es$detected <- grepl(es_regex, test_es$text, 
+                          ignore.case = TRUE)
+
+test_es |> filter(expected !=detected)
+```
+
+### Full set
+
+Run code from the module to get the full set of sentences with an F-test, and the ones that are detected as having an effect size.
+
+```{r}
+# Regex to detect all F-tests
+text_found_test <- paper |>
+  search_text("=") |> # sentences with equal signs
+  search_text("[0-9]") |> # sentences with numbers
+  # sentences with a relevant test
+  search_text(test_regex, perl = TRUE, ignore.case = FALSE) 
+
+# Regex to detect effect sizes
+text_found_es <- search_text(text_found_test, es_regex, perl = FALSE)
+```
+
+Add in the exact matching text:
+
+```{r}
+# get just F-test text
+text_found_test_match <- search_text(
+  text_found_test, test_regex, ignore.case = FALSE,
+  perl = TRUE, return = "match") |>
+  summarise(match_test = paste(text, collapse = "; "), 
+            .by = c("div", "p", "s", "id"))
+
+text_found_test <- left_join(text_found_test, text_found_test_match, 
+                             by = c("div", "p", "s", "id"))
+
+# get just effect size text
+text_found_es_match <- search_text(
+  text_found_es, es_regex, 
+  perl = FALSE, return = "match") |>
+  summarise(match_es = paste(text, collapse = "; "), 
+            .by = c("div", "p", "s", "id"))
+
+text_found_es <- left_join(text_found_es, text_found_es_match, 
+                             by = c("div", "p", "s", "id"))
+```
+
+
+Combine tables to create a validation set with preliminary labels for `has_F` and `has_es`.
+
+```{r}
+text_found_test$has_F <- TRUE
+text_found_es$has_es <- TRUE
+
+Ftest_validation <- left_join(
+  text_found_test, text_found_es, 
+  by = c("text", "section", "header", "div", "p", "s", "id")
+) |>
+  mutate(has_es = ifelse(is.na(has_es), FALSE, has_es))
+```
+
+Write to a file for human coding.
+
+```{r}
+readr::write_csv(Ftest_validation, "effect_size_Ftest_v1.csv", na = "")
+```
+
+* `text`: the full text of a sentence with one or more potential matches
+* `match_test`: just the relevant `t(df)` text of any matches 
+* `has_F`: T/F whether the regex detected an F-test
+* `match_es`: just the relevant effect size text of any matches 
+* `has_es`: whether the regex detected an effect size
+* `checked`: mark this when you’ve checked this row
+
+The columns `has_F` and `has_es` should be double-checked by a human.
+
+
+
+## Combined
+
+### Run once
+
+```{r}
+module_run(psychsci[9], "effect_size")
+```
+
+### Run on a batch
+
+```{r}
+module_run(paper[1:10], "effect_size")
+```
+
+
+
+## Validation
+
+Load in the human-coded versions.
+
+```{r}
+ttest_coded <- read_xlsx("effect_size_ttest_v2_coded_ML_LD.xlsx") |>
+  rename(has_test = has_t, test_text = match_test) |>
+  mutate(test = "t-test")
+ftest_coded <- read_xlsx("effect_size_Ftest_v1_coded_LD.xlsx") |>
+  rename(has_test = has_F, test_text = match_test) |>
+  mutate(test = "F-test")
 ```
 
 Create the expected table and summary.
 
 ```{r}
 exp_table <- ttest_coded |>
-  filter(has_t, !has_es) |>
-  select(id, text, div, p, s)
+  bind_rows(ftest_coded) |>
+  filter(has_test, !has_es) |>
+  select(id, text, div, p, s, test)
 
-t_summary <- ttest_coded |>
-  filter(has_t) |>
-  count(id, has_es) |>
-  pivot_wider(names_from = has_es, values_from = n) |>
-  rename(ttests_with_es = `TRUE`, ttests_without_es = `FALSE`) |>
+summary <- ttest_coded |>
+  bind_rows(ftest_coded) |>
+  filter(has_test) |>
+  count(id, test, has_es) |>
+  pivot_wider(names_from = c(test, has_es), 
+              values_from = n) |>
+  rename(ttests_with_es = `t-test_TRUE`, 
+         ttests_without_es = `t-test_FALSE`,
+         Ftests_with_es = `F-test_TRUE`, 
+         Ftests_without_es = `F-test_FALSE`)
+
+# add in papers with no tests
+no_tests <- info_table(paper, c()) |>
+  anti_join(summary, by = "id")
+
+exp_summary <- bind_rows(summary, no_tests) |>
   mutate(
     ttests_with_es = replace_na(ttests_with_es, 0),
+    Ftests_with_es = replace_na(Ftests_with_es, 0),
     ttests_without_es = replace_na(ttests_without_es, 0),
-    ttests_n = ttests_with_es + ttests_without_es
+    Ftests_without_es = replace_na(Ftests_without_es, 0),
+    ttests_n = ttests_with_es + ttests_without_es,
+    Ftests_n = Ftests_with_es + Ftests_without_es
   )
-
-# add in papers with no t-tests
-no_t <- info_table(paper, c()) |>
-  anti_join(t_summary, by = "id") |>
-  mutate(ttests_n = 0)
-
-exp_summary <- bind_rows(t_summary, no_t)
 ```
 
 Run the validation
 
 ```{r}
-v1 <- validate(paper, "effect_size_ttest",
+v1 <- validate(paper, "effect_size_v1.R",
                table = exp_table, 
                summary = exp_summary)
 
 v1
 ```
 
+
 Explore mismatches
 
 ```{r}
 v1$matches$table |> 
-  filter(!match)
+  filter(!match) |> 
+  select(test, expected, observed, text) |>
+  arrange(test, expected, observed)
 ```
 
+### Refine
+
+Version 2 adds a lot of new effect size measures to the F-test and makes it case-sensitive.
 
 
+```{r}
+v2 <- validate(paper, "effect_size_v2.R",
+               table = exp_table, 
+               summary = exp_summary)
+
+v2
+```
+
+There are way fewer false positives. 
+
+The two t-test errors are about t as a time variable. (All attempts to remove these created many more false negatives.)
+
+```{r}
+v2$matches$table |> 
+  filter(!match, test == "t-test") |> 
+  select(test, expected, observed, text) |>
+  arrange(test, expected, observed) |>
+  pull(text)
+```
+
+For F-tests, most of the errors are about sentences that contain a valid effect size for another statistic reported in the sentence, but not for the F-test. The first one does contain en effct size measure, but in a table.
+
+```{r}
+v2$matches$table |> 
+  filter(!match, test == "F-test") |> 
+  select(test, expected, observed, text) |>
+  arrange(test, expected, observed) |>
+  pull(text)
+```
 

@@ -406,8 +406,9 @@ server <- function(input, output, session) {
   observeEvent(input$report_defaults, {
     debug_msg("report_defaults")
 
-    modules <- c("imprecise_p",
+    modules <- c("exact_p",
                  "marginal",
+                 "effect_size",
                  "osf_check",
                  "retractionwatch",
                  "ref_consistency")

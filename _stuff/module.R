@@ -10,7 +10,7 @@
 #' @examples
 #' filename <- demoxml()
 #' paper <- read_grobid(filename)
-#' module_run(paper, "imprecise_p")
+#' module_run(paper, "exact_p")
 module_run <- function(paper, module, ...) {
   module_path <- module_find(module)
 

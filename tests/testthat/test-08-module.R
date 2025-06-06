@@ -230,11 +230,11 @@ test_that("retractionwatch", {
                        "10.1038/s41562-023-01749-9"))
 })
 
-test_that("imprecise_p", {
+test_that("exact_p", {
   paper <- demodir() |> read_grobid()
   paper <- paper[[1]]
 
-  module <- "imprecise_p"
+  module <- "exact_p"
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "green")
   expect_equal(nrow(mod_output$table), 0)

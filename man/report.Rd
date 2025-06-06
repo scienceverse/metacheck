@@ -6,8 +6,8 @@
 \usage{
 report(
   paper,
-  modules = c("imprecise_p", "marginal", "statcheck", "osf_check", "retractionwatch",
-    "ref_consistency"),
+  modules = c("exact_p", "marginal", "effect_size", "statcheck", "osf_check",
+    "retractionwatch", "ref_consistency"),
   output_file = paste0(paper$name, "_report.", output_format),
   output_format = c("qmd", "html", "pdf")
 )
