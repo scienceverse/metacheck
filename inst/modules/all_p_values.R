@@ -14,8 +14,23 @@
 #' @examples
 #' module_run(psychsci, "all_p_values")
 all_p_values <- function(paper, ...) {
+  # set up pattern ----
+  operators <- c("=", "<", ">", "~",
+                 "\u2248", # ~~
+                 "\u2260", # !=
+                 "\u2264", # <=
+                 "\u2265", # >=
+                 "\u226A", # <<
+                 "\u226B" # >>
+  ) |> paste(collapse = "")
+
+  pattern <- paste0(
+    "\\bp-?(value)?\\s*", # ways to write p
+    "[", operators, "]{1,2}\\s*", # 1-2 operators
+    "(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?" # ns or valid numbers
+  )
+
   # detailed table of results ----
-  pattern <- "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?"
   table <- search_text(paper, pattern, return = "match", "perl" = TRUE)
 
   # summary output for paperlists ----

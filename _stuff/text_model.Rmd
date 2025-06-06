@@ -1,0 +1,261 @@
+---
+title: "Text Models"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Text Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+#| message: false
+
+library(papercheck)
+library(dplyr)
+library(ggplot2)
+
+theme_set(theme_minimal(base_size = 16))
+
+set.seed(8675309) 
+```
+
+
+You can build a simple general linear model to predict the classification of text strings.
+
+## Set up ground truth
+
+See the [metascience vignette](metascience.html) for an explanation of how to set up a ground truth table. Here, we're going to split our data into a training and test set.
+
+```{r}
+ground_truth <- readr::read_csv("power/power_screening_coded.csv", 
+                         show_col_types = FALSE)
+
+train <- slice_sample(ground_truth, prop = 0.5)
+test <- anti_join(ground_truth, train, by = "text")
+```
+
+
+
+
+## Get important words
+
+You can use any method for finding the words you want to use in your model, but papercheck has a built-in function to find the words that are most distinctive in your classification groups. The classification values here are 0 and 1, but can be TRUE/FALSE or any two text values.
+
+`n_X` is the total number of incidents of the word in category X, while `freq_X` is the average number of incidents per text string in category X (so can be higher than 1 if a word tends to be found several times per sentence). The table gives you the top `n` words with the largest absolute difference in frequency.
+
+```{r}
+words <- distinctive_words(
+  text = train$text,
+  classification = train$power_computation,
+  n = 10
+)
+```
+
+```{r, echo = FALSE}
+knitr::kable(words, digits = 2)
+```
+
+
+By default, the function will "stem" words using the "porter" algorithm. For example, "sampl" will match "sample", "samples" and "sampling". If your text is not English, check `SnowballC::getStemLanguages()` for other supported languages, or set `stem_language = FALSE`. 
+
+You can get rid of words that you think will be irrelevant (even if they are predictive of classification in this data set) by adding them to `stop_words`. The `tidytext::stop_words` object gives you a list of common stop words, but this includes words like "above", "according", or "small", so use this with caution. 
+
+The "###" value represents any number (the default setting for the `numbers` argument). We can set the `numbers` argument to "specific" to see if there are any specific numbers associated with power analyses.
+
+```{r}
+words <- distinctive_words(
+  text = train$text,
+  classification = train$power_computation,
+  n = 10,
+  numbers = "specific",
+  stop_words = c("the", "a", "of", "an", "and")
+)
+```
+
+```{r, echo = FALSE}
+knitr::kable(words, digits = 2)
+```
+
+## Code text features
+
+Next, code the features of your ground truth text using `text_features()`. This will give you a data frame that codes 0 or 1 for the absence or presence of each word or feature.
+
+* `word_count` defaults to TRUE, and returns the number of words in each text string. 
+* `has_number` defaults to TRUE, and checks for any number in your text. If "###" is in your words list, this will be automatically set to TRUE. 
+* `has_symbols` is a named vector of non-word strings (use regex) that you want to detect. 
+* `values` defaults to "presence" and returns 0 or 1 for the presence of a word in each text string, while "count" returns the number of incidences of the word per string. 
+
+```{r}
+has_symbols <- c(has_equals = "=", 
+                 has_percent = "%")
+
+features <- text_features(
+  text = train$text, 
+  words = words$word,
+  word_count = FALSE, 
+  has_number = TRUE,
+  has_symbol = has_symbols, 
+  values = "presence" # presence or count
+)
+
+# show the first row
+features[1, ] |> str()
+```
+
+## Train a model
+
+You can then use this feature data to train a model. Here, we're using a simple binomial logistic regression to predict the classification from all of the features.
+
+```{r}
+# Train logistic regression model
+model <- glm(train$power_computation ~ .,
+             data = features,
+             family = "binomial")
+
+summary(model)
+```
+
+You can use any model you like and any method to assess and choose the best model.
+
+
+## Predict classification
+
+Now you can classify any text using this model. First, we're going to predict the classification of the original training data. Use `text_features()` to get the feature data and `predict()` to return the model response, and compare this result to a threshold (here 0.5) to generate the predicted classification.
+
+```{r}
+train$model_response <- predict(model, features)
+```
+
+
+```{r}
+#| echo: false
+#| fig-alt: The model response (on the x-axis) for paper with (red) and without (blue) power computations. The papers without have mostly values below 0. The papers with have a cluster centered just above 0, and another cluster around 18-21.
+ggplot(train, aes(x = model_response, 
+                  color = factor(power_computation, 0:1, c("No", "Yes")))) +
+  geom_vline(xintercept = 0, color = "grey40") +
+  geom_hline(yintercept = 0, color = "grey40") +
+  geom_density(linewidth = 1.5) +
+  scale_color_manual(values = c("dodgerblue", "firebrick")) +
+  scale_x_continuous(breaks = -100:100) +
+  guides(
+    colour = guide_legend(position = "inside")
+  ) +
+  labs(x = "Model Response",
+       y = NULL,
+       color = "Power Computation") +
+  theme(legend.position.inside = c(.8, .8), 
+        axis.text.y = element_blank(),
+        legend.background = element_blank()
+        )
+```
+
+You can see that it's just below 0 that Yes values become more probable than No values. Remeber, this will change a bite depending on your sample, so you don't need to optimize the threshold to two decimal places or anything.
+
+>[!NOTE]
+> You need to consider the use of your classification when setting a threshold. Do you want to be over-inclusive and have another step to weed out false positives? Or under-inclusive and be absolutely sure that you only classify a sentence as having a power analysis when it defiitely does? Or do you want to balance these two types of error?
+
+```{r}
+train$power_computation_predict <- train$model_response > 0
+
+dplyr::count(train, 
+             power_computation, 
+             power_computation_predict)
+```
+
+Now you should test this on a new set of data.
+
+```{r}
+test_features <- text_features(
+  text = test$text, 
+  words = words,
+  word_count = FALSE, 
+  has_number = TRUE,
+  has_symbol = has_symbols, 
+  values = "presence" # presence or count
+)
+test$model_response <- predict(model, test_features)
+
+test$power_computation_predict <- test$model_response > 0
+
+dplyr::count(test, 
+             power_computation, 
+             power_computation_predict)
+```
+
+
+## Create a module
+
+To create a module for this, you will need to save your model and create a module with code.
+
+```{r, eval = FALSE}
+saveRDS(model, "power/power_log_model.Rds")
+```
+
+
+```{r, eval=FALSE}
+#' Power Log Model
+power_log_model <- function(paper) {
+  # initial text search
+  table <- paper |>
+    papercheck::search_text("power(ed)?\\b") |>
+    papercheck::search_text("(\\.[0-9]|[0-9]%)")
+
+  # get text features
+  words <- c("size", "sampl", "effect", "particip", "α", "analysi", "80", 
+"in", "detect", "we")
+
+  has_symbols <- c(has_equals = "=",
+                   has_percent = "%")
+
+  features <- text_features(
+    text = table$text,
+    words = words,
+    word_count = FALSE,
+    has_number = TRUE,
+    has_symbol = has_symbols,
+    values = "presence" # presence or count
+  )
+
+  # predict response from model
+  model <- readRDS("power_log_model.Rds")
+  table$model_response <- predict(model, features)
+  table$power_computation_predict <- table$model_response > 0
+
+  # summarise by paper
+  summary_table <- table[table$power_computation_predict, ] |>
+    dplyr::count(id, name = "n_power")
+
+  list(
+    table = table,
+    summary = summary_table,
+    na_replace = 0
+  )
+}
+```
+
+Now you can use `module_run()` to run the module on a new paper or set of papers.
+
+```{r}
+m <- demodir() |> read_grobid() |>
+  module_run("power/power_log_model.R")
+```
+
+```{r}
+m$table[, c("id", "model_response", "power_computation_predict", "text")]
+```
+
+```{r}
+m$summary
+```
+
+
+
+
+

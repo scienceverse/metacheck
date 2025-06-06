@@ -23,7 +23,7 @@ articles:
       - report-example
       - batch
  #     - metascience
-      - text_model
+ #     - text_model
       - modules
       - creating_modules
       - validate

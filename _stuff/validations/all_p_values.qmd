@@ -1,0 +1,89 @@
+---
+title: All P Values Module Validation
+format:
+  html:
+    toc: true
+    embed-resources: true
+---
+
+```{r}
+#| message: false
+
+# library(papercheck)
+library(tidyverse)
+
+# use local dev version
+devtools::load_all("../../")
+```
+
+This module just needs a logical check that it;'s mnatching what we'd hope and not what we don't.
+
+```{r}
+operators <- c("=", "<", ">", "~",  
+               "\u2248", # ~~
+               "\u2260", # !=
+               "\u2264", # <=
+               "\u2265", # >=
+               "\u226A", # <<
+               "\u226B" # >>
+               ) |> paste(collapse = "")
+
+pattern <- paste0(
+  "\\bp-?(value)?\\s*", # ways to write p
+  "[", operators, "]{1,2}\\s*", # 1-2 operators
+  "(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?" # ns or valid numbers
+)
+
+expected <- c(
+  "p=.05",
+  "p\n=\n.05",
+  "p = .05",
+  "p < .05",
+  "p > .05",
+  "p <= .05",
+  "p >= .05",
+  "p == .05",
+  "p << .05",
+  "p >> .05",
+  "p ≤ .05",
+  "p ≥ .05",
+  "p ≪ .05",
+  "p ≫ .05",
+  "p ≠ .05",
+  "p-value = .02",
+  "pvalue = .023",
+  "p = 0.05",
+  "p = 0.05229381290",
+  "p = 1.2e-5",
+  "p = n.s.",
+  "p = ns"
+)
+not <- c(
+  "up = 0.23",
+  "p = stuff",
+  "p = -0.5",
+  "p less than 0.05",
+  "p = 12.87"
+)
+
+table <- data.frame(
+  text = c(expected, not),
+  expected = rep(c(T, F), c(length(expected), length(not)))
+)
+
+table$observed <- grepl(pattern, table$text, "perl" = TRUE)
+
+# filter to mismatches
+table[table$expected != table$observed, ]
+```
+
+```{r}
+all_p <- module_run(psychsci, "all_p_values")
+
+ptable <- all_p$table |> 
+  separate(text, c(NA, "operator", "value"), sep = "\\s+", remove = FALSE, fill = "right") |>
+  mutate(nval = as.numeric(value))
+
+ptable |> count(operator)
+```
+

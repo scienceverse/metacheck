@@ -5,6 +5,7 @@
 * Renamed the module "imprecise_p" to "exact_p" (I keep typo-ing "imprecise")
 * Added a loading message
 * Added code coverage at https://app.codecov.io/gh/scienceverse/papercheck
+* updated "all_p_values" to handle unicode operators like <=or >>
 
 # papercheck 0.0.0.9040
 
