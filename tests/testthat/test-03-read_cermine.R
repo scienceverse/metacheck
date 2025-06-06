@@ -122,6 +122,7 @@ test_that("iteration", {
   suppressWarnings(
     s <- read_cermine(system.file(package="papercheck"))
   )
+  skip_on_covr()
   nested_files <- c("extdata/to_err_is_human.cermine",
                     "cermine/eyecolor.cermine",
                     "cermine/incest.cermine",
