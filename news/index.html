@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9037</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9041</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,11 +40,45 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.0.9041" id="papercheck-0009041">papercheck 0.0.0.9041<a class="anchor" aria-label="anchor" href="#papercheck-0009041"></a></h2>
+<ul><li>Fixed a bug in <code><a href="../reference/validate.html">validate()</a></code> that returned incorrect summary stats if the data type of an expected column didn’t match the data type of an observed column (e.g., double vs integer)</li>
+<li>Combined the two effect size modules into “effect_size”</li>
+<li>Renamed the module “imprecise_p” to “exact_p” (I keep typo-ing “imprecise”)</li>
+<li>Added a loading message</li>
+<li>Added code coverage at <a href="https://app.codecov.io/gh/scienceverse/papercheck" class="external-link uri">https://app.codecov.io/gh/scienceverse/papercheck</a>
+</li>
+<li>updated “all_p_values” to handle unicode operators like &lt;=or &gt;&gt;</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.0.9040" id="papercheck-0009040">papercheck 0.0.0.9040<a class="anchor" aria-label="anchor" href="#papercheck-0009040"></a></h2>
+<ul><li>Updated default llm model to llama-3.3-70b-versatile (old one is being deprecated in August)</li>
+<li>Updated reporting function for modules to show the summary table</li>
+<li>Fixes a bug in <code><a href="../reference/validate.html">validate()</a></code> that returned FALSE for matches if the expected and observed results were both <code>NA</code>
+</li>
+<li>Added two preliminary modules: “effect_size_ttest” and “effect_size_ftest”</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.0.9039" id="papercheck-0009039">papercheck 0.0.0.9039<a class="anchor" aria-label="anchor" href="#papercheck-0009039"></a></h2>
+<ul><li>removed the llm_summarise module</li>
+<li>updated <code><a href="../reference/papercheck_app.html">papercheck_app()</a></code> to show all modules</li>
+<li>removed the LLM tab from the shiny app</li>
+<li>fixed a bug in <code><a href="../reference/pdf2grobid.html">pdf2grobid()</a></code> where a custom grobid_url was not used in batch processing</li>
+<li>
+<code>psychsci</code> object updated to use XMLs from grobid 0.8.2, which fixes some grobid-related errors in PDF import</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.0.9038" id="papercheck-0009038">papercheck 0.0.0.9038<a class="anchor" aria-label="anchor" href="#papercheck-0009038"></a></h2>
+<ul><li>
+<code><a href="../reference/validate.html">validate()</a></code> function is updated for the new module structure</li>
+<li>the validation, metascience, and text_model vignettes are updated</li>
+<li>modules can now use relative paths (to their own location) to access helper files</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9037" id="papercheck-0009037">papercheck 0.0.0.9037<a class="anchor" aria-label="anchor" href="#papercheck-0009037"></a></h2>
 <ul><li>The way modules are created has been majorly changed – it is now very similar to R package functions, using roxygen for documentation, instead of JSON format. There is no longer a need to distinguish text search, code, and LLM types of modules, they all use code. The vignettes have been updated to reflect this.</li>
 <li>Modules now return a <code>summary</code> table that is appended to a master summary table if you chain modules like <code>psychsci |&gt; module_run("all_p_values") |&gt; module_run("marginal")</code>
 </li>
-<li>The <code>validate()</code> function is temporarily removed to adapt the workflow to the new summary tables.</li>
+<li>The <code><a href="../reference/validate.html">validate()</a></code> function is temporarily removed to adapt the workflow to the new summary tables.</li>
 <li>new <code><a href="../reference/module_help.html">module_help()</a></code> function and some help/examples in modules</li>
 <li>new <code><a href="../reference/module_info.html">module_info()</a></code> helper function</li>
 <li>new <code><a href="../reference/paperlist.html">paperlist()</a></code> function to create paper list objects</li>
@@ -137,7 +171,7 @@
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9024" id="papercheck-0009024-2025-01-31">papercheck 0.0.0.9024 (2025-01-31)<a class="anchor" aria-label="anchor" href="#papercheck-0009024-2025-01-31"></a></h2>
-<ul><li>Added <code>validate()</code> function and vignette</li>
+<ul><li>Added <code><a href="../reference/validate.html">validate()</a></code> function and vignette</li>
 </ul></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

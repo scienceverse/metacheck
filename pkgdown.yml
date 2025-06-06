@@ -8,8 +8,8 @@ articles:
   modules: modules.html
   papercheck: papercheck.html
   report-example: report-example.html
-  text_model: text_model.html
-last_built: 2025-05-25T16:24Z
+  validate: validate.html
+last_built: 2025-06-06T14:43Z
 urls:
   reference: https://scienceverse.github.io/papercheck/reference
   article: https://scienceverse.github.io/papercheck/articles

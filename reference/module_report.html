@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9037</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9041</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,15 +78,15 @@
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">filename</span> <span class="op">&lt;-</span> <span class="fu"><a href="demoxml.html">demoxml</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_grobid.html">read_grobid</a></span><span class="op">(</span><span class="va">filename</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"imprecise_p"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"exact_p"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">module_report</span><span class="op">(</span><span class="va">op</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ## Imprecise P-Values {.red}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Exact P-Values {.red}</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> You may have reported some imprecise p-values</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |text    |p_comp | p_value|section |header  | div|  p|  s|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |:-------|:------|-------:|:-------|:-------|---:|--:|--:|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |p &gt; .05 |&gt;      |    0.05|results |Results |   3|  2|  2|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |text    |p_comp | p_value|section | div|  p|  s|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |:-------|:------|-------:|:-------|---:|--:|--:|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |p &gt; .05 |&gt;      |    0.05|results |   3|  2|  2|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Showing 1 of 1 rows</span>
 </code></pre></div>

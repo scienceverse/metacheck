@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9036</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9041</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,8 +62,12 @@
 
 
 
-
-<div class="row">
+<link href="validate_files/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+<script src="validate_files/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="validate_files/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="validate_files/datatables-binding-0.33/datatables.js"></script><link href="validate_files/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="validate_files/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet">
+<script src="validate_files/dt-core-1.13.6/js/jquery.dataTables.min.js"></script><link href="validate_files/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet">
+<script src="validate_files/crosstalk-1.2.1/js/crosstalk.min.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Validation</h1>
             
@@ -82,124 +86,136 @@ piloting this workflow and it is likely to change.</p>
 <div class="section level2">
 <h2 id="validation-sample">Validation sample<a class="anchor" aria-label="anchor" href="#validation-sample"></a>
 </h2>
-<p>Set up the papers in your validation sample. You will need a
-directory of XML files created by <code><a href="../reference/pdf2grobid.html">pdf2grobid()</a></code>. In this
-example, we’ll set everything up in a temporary directory.</p>
+<p>Create a paper list object for the papers in your validation sample.
+Here, we’ll just use the first 10 papers in the <code>psychsci</code>
+set, but in practice you will need many more papers.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># create validation directory in temp dir</span></span>
-<span><span class="va">valdir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"validate"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">valdir</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># copy built-in XML files to xml directory</span></span>
-<span><span class="va">xmldir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">valdir</span>, <span class="st">"xml"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">xmldir</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">xmls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="fu"><a href="../reference/demodir.html">demodir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"\\.xml$"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.copy</a></span><span class="op">(</span><span class="va">xmls</span>, <span class="va">xmldir</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] TRUE TRUE TRUE</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">sample_papers</span> <span class="op">&lt;-</span> <span class="va">psychsci</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="sample-data">Sample data<a class="anchor" aria-label="anchor" href="#sample-data"></a>
+<h2 id="expected-results">Expected Results<a class="anchor" aria-label="anchor" href="#expected-results"></a>
 </h2>
-<p>Create a data frame with info about each paper. One column must be
-called “id” and contain paths to the xml files (relative to the
-validation file location). Other possible columns are “table”, “report”,
-and “traffic_light”, which should contain the expected values of those
-items from the module you’re testing. If you want to check more than
-just the first row of the text column from the return table, omit the
-table column and use the method in the next section.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  id <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"xml"</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">xmldir</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  table <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"faceresearch.org"</span>, <span class="st">"https://osf.io/mwzuq"</span>, <span class="st">"https://osf.io/pwtrh"</span><span class="op">)</span>,</span>
-<span>  report <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">""</span>, <span class="fl">3</span><span class="op">)</span>, <span class="co"># this module has no report</span></span>
-<span>  traffic_light <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"info"</span>, <span class="st">"info"</span>, <span class="st">"red"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>The code above has one inaccurate traffic light (“red”) for
-demonstration purposes.</p>
+<p>Create objects for the expected results of the module you’re
+validating. You can test any or all of the typically returned
+<code>table</code> or <code>summary</code> tables, as well as any other
+custom results.</p>
+<p>This usually requires quite a lot of manual work to determine the
+ground truth for each paper in your validation sample.</p>
+<div class="section level3">
+<h3 id="results-table">Results Table<a class="anchor" aria-label="anchor" href="#results-table"></a>
+</h3>
+<p>For returned tables, the columns should have the same names as the
+columns returned by the module. You can omit any columns (except
+<code>id</code>) and they will not be checked in the validation. Here,
+we will validate only the text column.</p>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-ac96cb3ee4656e2e9ec3" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ac96cb3ee4656e2e9ec3">{"x":{"filter":"none","vertical":false,"data":[["0956797615569889","0956797615569889","0956797615569889","0956797615569889"],["Although the PTSD group showed a significant facilitation effect (M = 0.68), F(1, 15) = 5.575, p = .032, η p 2 = .271, and the control group showed only a marginally significant effect (M = 0.56), F(1, 15) = 4.368, p = .054, η p 2 = .226, the difference between the groups was not significant, F(1, 30) = 0.100, p = .754, η p 2 = .003 (Fig. 3c).","A marginally significant negative correlation was found between suppression-induced forgetting on the details measure and PDS scores in the PTSD group (Kendall's τ = -.33, p = .07; Fig. 4b).","When we more closely matched depression symptoms by comparing the low-BDI-II PTSD group with the high-BDI-II control group, we observed a marginally significant group-by-condition interaction for the details measure, F(1, 16) = 4.032, p = .062, η p 2 = .201.","In that analysis, the group difference in suppression-induced forgetting only approached significance, F(1, 30) = 3.869, p = .058, η p 2 = .114."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>id<\/th>\n      <th>text<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"dom":"tip","columnDefs":[{"name":"id","targets":0},{"name":"text","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script><blockquote>
+<p>[!NOTE] You can use <code>search_text(sample_papers)</code> to get a
+list of all sentences in the sample, or narrow it down to sentences that
+match a search term. This can give you a starting table that you can
+code more easily for expected results.</p>
+</blockquote>
 </div>
-<div class="section level2">
-<h2 id="expected-table">Expected Table<a class="anchor" aria-label="anchor" href="#expected-table"></a>
-</h2>
-<p>If the tables returned by the module you’re validating can have more
-than one row, or you want to check columns other than “text”, you will
-need to add the expected values to a separate data frame. One column
-must be “xml” to join it to the other table. The other columns should
-have the same names as the columns returned by the module. You can omit
-any columns and they will not be checked in the validation. Here, we
-will only validate the text and header columns (making one mistake in
-the header column for demonstration purposes).</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">expected</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">sample</span><span class="op">$</span><span class="va">id</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  text <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"faceresearch.org"</span>, <span class="st">"stumbleupon.com"</span>,</span>
-<span>           <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"https://osf.io/mwzuq"</span>, <span class="fl">3</span><span class="op">)</span>,</span>
-<span>           <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"https://osf.io/pwtrh"</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  header <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Participants"</span>, <span class="st">"Participants"</span>, </span>
-<span>             <span class="st">"Methods"</span>, <span class="st">"Procedure"</span>, <span class="st">"Analysis"</span>,</span>
-<span>             <span class="st">"Intro"</span>, <span class="st">"Attitude"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">expected</span></span>
-<span><span class="co">#&gt;                 id                 text       header</span></span>
-<span><span class="co">#&gt; 1 xml/eyecolor.xml     faceresearch.org Participants</span></span>
-<span><span class="co">#&gt; 2 xml/eyecolor.xml      stumbleupon.com Participants</span></span>
-<span><span class="co">#&gt; 3   xml/incest.xml https://osf.io/mwzuq      Methods</span></span>
-<span><span class="co">#&gt; 4   xml/incest.xml https://osf.io/mwzuq    Procedure</span></span>
-<span><span class="co">#&gt; 5   xml/incest.xml https://osf.io/mwzuq     Analysis</span></span>
-<span><span class="co">#&gt; 6   xml/prereg.xml https://osf.io/pwtrh        Intro</span></span>
-<span><span class="co">#&gt; 7   xml/prereg.xml https://osf.io/pwtrh     Attitude</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="summary-table">Summary Table<a class="anchor" aria-label="anchor" href="#summary-table"></a>
+</h3>
+<p>We can also check the summary table. This is likely to be more useful
+for reporting validation statistics, as you can report for what percent
+of papers each column matches the expected value.</p>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-e5c8c404fe174e4c81bd" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e5c8c404fe174e4c81bd">{"x":{"filter":"none","vertical":false,"data":[["0956797613520608","0956797614522816","0956797614527830","0956797614557697","0956797614560771","0956797614566469","0956797615569001","0956797615569889","0956797615583071","0956797615588467"],[0,0,0,0,0,0,0,4,0,0]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>id<\/th>\n      <th>marginal<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"dom":"tip","columnDefs":[{"className":"dt-right","targets":1},{"name":"id","targets":0},{"name":"marginal","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
 </div>
 <div class="section level2">
 <h2 id="run-validation">Run Validation<a class="anchor" aria-label="anchor" href="#run-validation"></a>
 </h2>
-<p>If you don’t include the expected results table, the table check will
-just check the first result in the text column of the module results and
-match it to the table column of your sample.</p>
+<p>The <code><a href="../reference/validate.html">validate()</a></code> function takes the paper list as a first
+argument, the module name or path as the second argument, and then the
+expected values of any expected results. These arguments must be named
+and have the same names as the results returned from the module, such as
+<code>table</code>, <code>summary</code>, or
+<code>traffic_light</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">sample_papers</span>, </span>
+<span>              module <span class="op">=</span> <span class="st">"marginal"</span>, </span>
+<span>              table <span class="op">=</span> <span class="va">exp_table</span>, </span>
+<span>              summary <span class="op">=</span> <span class="va">exp_summary</span><span class="op">)</span></span></code></pre></div>
+<p>If you print the result, it will give you a text summary of the
+validation.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">v</span></span>
+<span><span class="co">#&gt;  Validated matches for module `marginal`:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; * N in validation sample: 10</span></span>
+<span><span class="co">#&gt; * table: </span></span>
+<span><span class="co">#&gt;   * true_positive: 4</span></span>
+<span><span class="co">#&gt;   * false_positive: 0</span></span>
+<span><span class="co">#&gt;   * false_negative: 0</span></span>
+<span><span class="co">#&gt; * summary: </span></span>
+<span><span class="co">#&gt;   * marginal: 1</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="results-list">Results List<a class="anchor" aria-label="anchor" href="#results-list"></a>
+</h3>
+<p>The result is actually a list with the module name, the observed
+results of the module for each expected return object, a list of match
+information for each expected return object, and stats for this match
+information.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="st">"all-urls"</span>, <span class="va">sample</span>, path <span class="op">=</span> <span class="va">valdir</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">v</span></span></code></pre></div>
-<p>If you include the expected results table, it will assess all the
-data for matching the module results table.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">v</span>, <span class="va">names</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; List of 4</span></span>
+<span><span class="co">#&gt;  $ module  : NULL</span></span>
+<span><span class="co">#&gt;  $ observed: chr [1:2] "table" "summary"</span></span>
+<span><span class="co">#&gt;  $ matches : chr [1:2] "table" "summary"</span></span>
+<span><span class="co">#&gt;  $ stats   : chr [1:3] "n_papers" "table" "summary"</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="non-summary-tables">Non-Summary Tables<a class="anchor" aria-label="anchor" href="#non-summary-tables"></a>
+</h3>
+<p>For tables where there are zero or more rows possible per id, the
+<code>matches</code> table gives you <code>expected</code>,
+<code>observed</code>, and <code>match</code> columns.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="st">"all-urls"</span>, <span class="va">sample</span>, <span class="va">expected</span>, path <span class="op">=</span> <span class="va">valdir</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">v</span></span></code></pre></div>
-<p>We can further explore any problems by looking at the sample and
-returned tables.</p>
+<code class="sourceCode R"><span><span class="va">v</span><span class="op">$</span><span class="va">matches</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-36aa3d2a04d42bbc2145" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-36aa3d2a04d42bbc2145">{"x":{"filter":"none","vertical":false,"data":[["0956797615569889","0956797615569889","0956797615569889","0956797615569889"],["Although the PTSD group showed a significant facilitation effect (M = 0.68), F(1, 15) = 5.575, p = .032, η p 2 = .271, and the control group showed only a marginally significant effect (M = 0.56), F(1, 15) = 4.368, p = .054, η p 2 = .226, the difference between the groups was not significant, F(1, 30) = 0.100, p = .754, η p 2 = .003 (Fig. 3c).","A marginally significant negative correlation was found between suppression-induced forgetting on the details measure and PDS scores in the PTSD group (Kendall's τ = -.33, p = .07; Fig. 4b).","When we more closely matched depression symptoms by comparing the low-BDI-II PTSD group with the high-BDI-II control group, we observed a marginally significant group-by-condition interaction for the details measure, F(1, 16) = 4.032, p = .062, η p 2 = .201.","In that analysis, the group difference in suppression-induced forgetting only approached significance, F(1, 30) = 3.869, p = .058, η p 2 = .114."],[true,true,true,true],[true,true,true,true],[true,true,true,true]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>id<\/th>\n      <th>text<\/th>\n      <th>expected<\/th>\n      <th>observed<\/th>\n      <th>match<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"dom":"tip","columnDefs":[{"name":"id","targets":0},{"name":"text","targets":1},{"name":"expected","targets":2},{"name":"observed","targets":3},{"name":"match","targets":4}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script><p>The stats for such tables gives you the number of true positives,
+false positives, and false negatives. This is for all columns, not
+column-by-column, since there may be multiple rows per paper id.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># show rows where the traffic light check is false</span></span>
-<span><span class="va">v</span><span class="op">$</span><span class="va">sample</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="va">tl_check</span><span class="op">)</span></span>
-<span><span class="co">#&gt;           id                table report traffic_light report_ver tl_ver misses</span></span>
-<span><span class="co">#&gt; 1 xml/prereg https://osf.io/pwtrh                  red              info      1</span></span>
-<span><span class="co">#&gt;   false_alarms table_check report_check tl_check</span></span>
-<span><span class="co">#&gt; 1            8       FALSE         TRUE    FALSE</span></span></code></pre></div>
-<p>The table check is false, and there is one missing and one extra
-result.</p>
+<code class="sourceCode R"><span><span class="va">v</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">table</span></span>
+<span><span class="co">#&gt; $true_positive</span></span>
+<span><span class="co">#&gt; [1] 4</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $false_positive</span></span>
+<span><span class="co">#&gt; [1] 0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $false_negative</span></span>
+<span><span class="co">#&gt; [1] 0</span></span></code></pre></div>
+<blockquote>
+<p>[!NOTE] The stats section does not report true negatives because the
+total sample N can differ from module to module. For example, a module
+that identifies any sentences that describe an effect as ‘marginally
+significant’ has a total sample N of all the sentences in all the
+papers. Alternatively, a module that identifies whether each paper
+reports at least one power analysis has a total sample N of the number
+of papers.</p>
+</blockquote>
+</div>
+<div class="section level3">
+<h3 id="summary-tables">Summary Tables<a class="anchor" aria-label="anchor" href="#summary-tables"></a>
+</h3>
+<p>For summary tables, where there is one row per paper id, the matches
+table is a little different. For each non-id column, it returned the
+expected and observed values, plus a column stating whether these
+match.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># show rows where the table check is false</span></span>
-<span><span class="va">v</span><span class="op">$</span><span class="va">sample</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="va">table_check</span><span class="op">)</span></span>
-<span><span class="co">#&gt;             id                table report traffic_light report_ver tl_ver</span></span>
-<span><span class="co">#&gt; 1 xml/eyecolor     faceresearch.org                 info              info</span></span>
-<span><span class="co">#&gt; 2   xml/prereg https://osf.io/pwtrh                  red              info</span></span>
-<span><span class="co">#&gt;   misses false_alarms table_check report_check tl_check</span></span>
-<span><span class="co">#&gt; 1      0            1       FALSE         TRUE     TRUE</span></span>
-<span><span class="co">#&gt; 2      1            8       FALSE         TRUE    FALSE</span></span></code></pre></div>
-<p>You can view the validated results table for that paper…</p>
+<code class="sourceCode R"><span><span class="va">v</span><span class="op">$</span><span class="va">matches</span><span class="op">$</span><span class="va">summary</span></span></code></pre></div>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-febe03efa1a2d8d52a86" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-febe03efa1a2d8d52a86">{"x":{"filter":"none","vertical":false,"data":[["0956797613520608","0956797614522816","0956797614527830","0956797614557697","0956797614560771","0956797614566469","0956797615569001","0956797615569889","0956797615583071","0956797615588467"],[0,0,0,0,0,0,0,4,0,0],[0,0,0,0,0,0,0,4,0,0],[true,true,true,true,true,true,true,true,true,true]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>id<\/th>\n      <th>marginal.expected<\/th>\n      <th>marginal.observed<\/th>\n      <th>marginal<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"dom":"tip","columnDefs":[{"className":"dt-right","targets":[1,2]},{"name":"id","targets":0},{"name":"marginal.expected","targets":1},{"name":"marginal.observed","targets":2},{"name":"marginal","targets":3}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script><p>The stats gives you the percent of matches for each column.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">v</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="st">"xml/prereg.xml"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] id     text   header</span></span>
-<span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span></code></pre></div>
-<p>…and compare it with the expected results.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">expected</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="st">"xml/prereg.xml"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;               id                 text   header</span></span>
-<span><span class="co">#&gt; 1 xml/prereg.xml https://osf.io/pwtrh    Intro</span></span>
-<span><span class="co">#&gt; 2 xml/prereg.xml https://osf.io/pwtrh Attitude</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">v</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">summary</span></span>
+<span><span class="co">#&gt; $marginal</span></span>
+<span><span class="co">#&gt; [1] 1</span></span></code></pre></div>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
@@ -212,7 +228,7 @@ result.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>

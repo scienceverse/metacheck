@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9037</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9041</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,7 +75,18 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">*******************************************</span></span></span>
+<span><span class="co">#&gt; ✅ Welcome to PaperCheck.</span></span>
+<span><span class="co">#&gt; For support and examples visit:</span></span>
+<span><span class="co">#&gt; https://scienceverse.github.io/papercheck/</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ⚠️ This is alpha software; please check any</span></span>
+<span><span class="co">#&gt; results. False positives and negatives will</span></span>
+<span><span class="co">#&gt; occur at unknown rates.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">*******************************************</span></span></span></code></pre></div>
 <p>There are some built-in functions in papercheck for exploring GitHub
 repositories. You can use these in custom modules.</p>
 <div class="section level2">
@@ -102,7 +113,7 @@ of. repo name, and an error if the repository in inaccessible.</p>
 <span><span class="co">#&gt; [1] "scienceverse/papercheck"</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/github_repo.html">github_repo</a></span><span class="op">(</span><span class="st">"scienceverse/checkpaper"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error in github_repo("scienceverse/checkpaper"): scienceverse/checkpaper is unavailable</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "unavailable"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="github_readme">github_readme<a class="anchor" aria-label="anchor" href="#github_readme"></a>
@@ -114,6 +125,12 @@ of. repo name, and an error if the repository in inaccessible.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">readme</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; # papercheck</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; &lt;!-- badges: start --&gt;</span></span>
+<span><span class="co">#&gt; [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [![Codecov test coverage](https://codecov.io/gh/scienceverse/papercheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/papercheck)</span></span>
+<span><span class="co">#&gt; &lt;!-- badges: end --&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; The goal of papercheck is to automatically check scientific papers for best practices. You can find out more at &lt;https://scienceverse.github.io/papercheck/&gt;.</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -134,11 +151,12 @@ languages, as detected and classified by GitHub.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/github_languages.html">github_languages</a></span><span class="op">(</span><span class="st">"scienceverse/papercheck"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     language  bytes</span></span>
-<span><span class="co">#&gt; 1          R 262606</span></span>
-<span><span class="co">#&gt; 2        CSS   3358</span></span>
-<span><span class="co">#&gt; 3 JavaScript   1018</span></span>
-<span><span class="co">#&gt; 4       AMPL    143</span></span>
-<span><span class="co">#&gt; 5       SCSS     19</span></span></code></pre></div>
+<span><span class="co">#&gt; 1          R 299984</span></span>
+<span><span class="co">#&gt; 2       AMPL   7578</span></span>
+<span><span class="co">#&gt; 3     Python   6986</span></span>
+<span><span class="co">#&gt; 4        CSS   3358</span></span>
+<span><span class="co">#&gt; 5 JavaScript   1018</span></span>
+<span><span class="co">#&gt; 6       SCSS     19</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="github_files">github_files<a class="anchor" aria-label="anchor" href="#github_files"></a>
@@ -150,25 +168,26 @@ directory, non-recursively.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/github_files.html">github_files</a></span><span class="op">(</span><span class="st">"scienceverse/papercheck"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                name             path size          ext   type</span></span>
-<span><span class="co">#&gt; 1           .github          .github    0       github    dir</span></span>
-<span><span class="co">#&gt; 2        .gitignore       .gitignore  225    gitignore config</span></span>
-<span><span class="co">#&gt; 3     .Rbuildignore    .Rbuildignore  177 rbuildignore   file</span></span>
-<span><span class="co">#&gt; 4              data             data    0                 dir</span></span>
-<span><span class="co">#&gt; 5          data-raw         data-raw    0                 dir</span></span>
-<span><span class="co">#&gt; 6       DESCRIPTION      DESCRIPTION 1587                file</span></span>
-<span><span class="co">#&gt; 7              inst             inst    0                 dir</span></span>
-<span><span class="co">#&gt; 8           LICENSE          LICENSE   48                file</span></span>
-<span><span class="co">#&gt; 9        LICENSE.md       LICENSE.md 1077           md   text</span></span>
-<span><span class="co">#&gt; 10              man              man    0                 dir</span></span>
-<span><span class="co">#&gt; 11        NAMESPACE        NAMESPACE 1170                file</span></span>
-<span><span class="co">#&gt; 12          NEWS.md          NEWS.md 4143           md   text</span></span>
-<span><span class="co">#&gt; 13 papercheck.Rproj papercheck.Rproj  462        rproj config</span></span>
-<span><span class="co">#&gt; 14          pkgdown          pkgdown    0                 dir</span></span>
-<span><span class="co">#&gt; 15          profile          profile    0                 dir</span></span>
-<span><span class="co">#&gt; 16                R                R    0                 dir</span></span>
-<span><span class="co">#&gt; 17        README.md        README.md  379           md   text</span></span>
-<span><span class="co">#&gt; 18            tests            tests    0                 dir</span></span>
-<span><span class="co">#&gt; 19        vignettes        vignettes    0                 dir</span></span></code></pre></div>
+<span><span class="co">#&gt; 1            _stuff           _stuff    0                 dir</span></span>
+<span><span class="co">#&gt; 2           .github          .github    0       github    dir</span></span>
+<span><span class="co">#&gt; 3        .gitignore       .gitignore  272    gitignore config</span></span>
+<span><span class="co">#&gt; 4     .Rbuildignore    .Rbuildignore  177 rbuildignore   file</span></span>
+<span><span class="co">#&gt; 5              data             data    0                 dir</span></span>
+<span><span class="co">#&gt; 6          data-raw         data-raw    0                 dir</span></span>
+<span><span class="co">#&gt; 7       DESCRIPTION      DESCRIPTION 1575                file</span></span>
+<span><span class="co">#&gt; 8              inst             inst    0                 dir</span></span>
+<span><span class="co">#&gt; 9           LICENSE          LICENSE   48                file</span></span>
+<span><span class="co">#&gt; 10       LICENSE.md       LICENSE.md 1077           md   text</span></span>
+<span><span class="co">#&gt; 11              man              man    0                 dir</span></span>
+<span><span class="co">#&gt; 12        NAMESPACE        NAMESPACE 1223                file</span></span>
+<span><span class="co">#&gt; 13          NEWS.md          NEWS.md 5629           md   text</span></span>
+<span><span class="co">#&gt; 14 papercheck.Rproj papercheck.Rproj  462        rproj config</span></span>
+<span><span class="co">#&gt; 15          pkgdown          pkgdown    0                 dir</span></span>
+<span><span class="co">#&gt; 16          profile          profile    0                 dir</span></span>
+<span><span class="co">#&gt; 17                R                R    0                 dir</span></span>
+<span><span class="co">#&gt; 18        README.md        README.md  722           md   text</span></span>
+<span><span class="co">#&gt; 19            tests            tests    0                 dir</span></span>
+<span><span class="co">#&gt; 20        vignettes        vignettes    0                 dir</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/github_files.html">github_files</a></span><span class="op">(</span><span class="st">"scienceverse/papercheck"</span>, dir <span class="op">=</span> <span class="st">".github"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         name               path size       ext   type</span></span>
@@ -180,10 +199,11 @@ recursively can take a few seconds.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/github_files.html">github_files</a></span><span class="op">(</span><span class="st">"scienceverse/papercheck"</span>,</span>
 <span>             dir <span class="op">=</span> <span class="st">".github"</span>,</span>
 <span>             recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;           name                           path size       ext   type</span></span>
-<span><span class="co">#&gt; 1   .gitignore             .github/.gitignore    7 gitignore config</span></span>
-<span><span class="co">#&gt; 2    workflows              .github/workflows    0              dir</span></span>
-<span><span class="co">#&gt; 3 pkgdown.yaml .github/workflows/pkgdown.yaml 1304      yaml config</span></span></code></pre></div>
+<span><span class="co">#&gt;                 name                                 path size       ext   type</span></span>
+<span><span class="co">#&gt; 1         .gitignore                   .github/.gitignore    7 gitignore config</span></span>
+<span><span class="co">#&gt; 2          workflows                    .github/workflows    0              dir</span></span>
+<span><span class="co">#&gt; 3       pkgdown.yaml       .github/workflows/pkgdown.yaml 1304      yaml config</span></span>
+<span><span class="co">#&gt; 4 test-coverage.yaml .github/workflows/test-coverage.yaml 1813      yaml config</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="github_info">github_info<a class="anchor" aria-label="anchor" href="#github_info"></a>
@@ -195,16 +215,16 @@ with items named “repo”, “readme”, “languages”, and “files”.</p>
 <span>                    recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">info</span><span class="op">$</span><span class="va">files</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">type</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     type   n</span></span>
-<span><span class="co">#&gt; 1  audio   1</span></span>
-<span><span class="co">#&gt; 2   code 944</span></span>
-<span><span class="co">#&gt; 3 config   6</span></span>
-<span><span class="co">#&gt; 4   data   9</span></span>
-<span><span class="co">#&gt; 5    dir  40</span></span>
-<span><span class="co">#&gt; 6   file   4</span></span>
-<span><span class="co">#&gt; 7  image  11</span></span>
-<span><span class="co">#&gt; 8   text  17</span></span>
-<span><span class="co">#&gt; 9    web   4</span></span></code></pre></div>
+<span><span class="co">#&gt;     type    n</span></span>
+<span><span class="co">#&gt; 1  audio    9</span></span>
+<span><span class="co">#&gt; 2   code 1216</span></span>
+<span><span class="co">#&gt; 3 config    8</span></span>
+<span><span class="co">#&gt; 4   data   11</span></span>
+<span><span class="co">#&gt; 5    dir   45</span></span>
+<span><span class="co">#&gt; 6   file    4</span></span>
+<span><span class="co">#&gt; 7  image   11</span></span>
+<span><span class="co">#&gt; 8   text   17</span></span>
+<span><span class="co">#&gt; 9    web    4</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

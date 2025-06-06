@@ -9,10 +9,11 @@
 <url><loc>https://scienceverse.github.io/papercheck/articles/modules.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/articles/papercheck.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/articles/report-example.html</loc></url>
-<url><loc>https://scienceverse.github.io/papercheck/articles/text_model.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/articles/validate.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/authors.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/index.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/news/index.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/accuracy.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/add_author.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/author.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/author_table.html</loc></url>
@@ -61,6 +62,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/op-null-default.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/openalex.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/paper.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/paper_info.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/papercheck_app.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/paperlist.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/pdf2grobid.html</loc></url>
@@ -84,6 +86,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/study.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/sub-.scivrs_paperlist.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/text_features.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/validate.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/verbose.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/xml2bib.html</loc></url>
 </urlset>
