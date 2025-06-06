@@ -48,7 +48,7 @@ github_repo <- function(repo) {
   head <- httr::HEAD(url)
 
   if (head$status_code != 200) {
-    stop(simple_repo, " is unavailable")
+    return("unavailable")
   }
 
   return(simple_repo)
