@@ -1,0 +1,346 @@
+---
+title: "Using Papercheck for MetaScience"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using Papercheck for MetaScience}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>"
+)
+
+mytable <- function(tbl, cols = c("id", "text")) {
+  DT::datatable(tbl[, cols], 
+                rownames = FALSE,
+                filter = "none",
+                options = list(pageLength = 5, dom = "tip")
+  )
+}
+```
+
+```{r}
+#| label: setup
+#| message: false
+library(papercheck)
+library(readr) # reading and writing CSV files
+library(dplyr) # for data wrangling
+```
+
+In this vignette, we will demonstrate the steps towards creating a module that detects sentences reporting a power analysis. This could be used for metascientific enquiry, or as a first step in a module that aims to give advice about whether a power analysis reports all of the necessary information for interpretation.
+
+## Initial Text Search
+
+First, we need to set up the sample of papers we will code for ground truth. See the [batch processing vignette](batch.html) for information on how to load multiple PDFs. Here, we will load 250 open access papers from Psychological Science, which have been previously read in to papercheck. 
+
+```{r}
+papers <- psychsci
+```
+
+If you want to be completely thorough, you can manually code every single sentence in every single paper for your target concept.
+
+```{r}
+text_all <- search_text(papers)
+```
+
+Here, that results in `r nrow(text_all)` sentences. However, we can narrow that down a LOT with some simple text searches.
+
+### Fixed Terms
+
+Let's start with a fixed search term: "power analysis". We'll keep track of our iteratively developed search terms by naming the resulting table `text_#`. 
+
+```{r}
+text_1 <- search_text(papers, pattern = "power analysis")
+```
+
+Here we have `r nrow(text_1)` results. We'll just show the paper id and text columns for the first 10 rows of the returned table, but the table also provides the section type, header, and section, paragraph, and sentence numbers (div, p, and s).
+
+```{r}
+#| echo: false
+mytable(text_1[1:10,])
+```
+
+We caught a lot of sentences with that term, but are probably missing a few. Let's try a more general fixed search term: "power".
+
+```{r}
+text_2 <- search_text(papers, pattern = "power")
+```
+
+Here we have `r nrow(text_2)` results. Inspect the first 100 rows to see if there are any false positives.
+
+```{r}
+#| echo: false
+mytable(text_2[1:100,])
+```
+
+### Regex
+
+After a quick skim through the `r nrow(text_2)` results, we can see that words like "powerful" or "Power-Point" are never reporting a power analysis, so we should try to exclude them.
+
+We can use regex to make our text search a bit more specific. The following pattern requires that power is followed optionally by "ed" and then by a word border (like a space or full stop), so will match "power" and "powered", but not "powerful".
+
+```{r}
+pattern <- "(\\b|G*)power(ed)?\\b"
+
+# test some examples to check the pattern
+yes <- c("power",
+         "power.",
+         "Power",
+         "power analysis",
+         "powered",
+         "G*Power")
+no  <- c("powerful",
+         "powerful analysis", 
+         "empower")
+grepl(pattern, yes, ignore.case = TRUE)
+grepl(pattern, no, ignore.case = TRUE)
+```
+
+```{r}
+text_3 <- search_text(papers, pattern)
+```
+
+Here we have `r nrow(text_3)` results. Inspect them for false positives again. 
+
+```{r}
+#| echo: false
+mytable(text_3[1:100, ])
+```
+
+### Refining the search
+
+You can repeat this process of skimming the results and refining the search term iteratively until you are happy that you have probably caught all of the relevant text and don't have too many false positives. 
+
+Let's also have a quick look at any papers that mention power more than 10 times, as they are probably talking about a different sense of power.
+
+```{r}
+count(text_3, id, sort = TRUE) |>
+  filter(n > 10)
+```
+
+That first paper is a definite outlier, and indeed, the title is "`r papers[["0956797616647519"]]$info$title`". Excluding that one, what sentences are in the other papers? 
+
+```{r}
+outliers <- count(text_3, id, sort = TRUE) |>
+  filter(n > 10, n < 90) |>
+  semi_join(text_3, y = _, by = "id")
+```
+
+```{r}
+#| echo: false
+mytable(outliers)
+```
+
+It looks like a lot of this text is about alpha/beta/theta oscillations. We can pipe our results to another `search_text()` function to return only sentences that do not contain the strings "beta", "theta" or "oscillat" (we won't exclude "alpha" because specifying your critical alpha threshold is part is good reporting for a power analysis).
+
+```{r}
+# exclude outlier paper from sample
+to_exclude <- names(papers) == "0956797616647519"
+papers <- papers[!to_exclude]
+
+text_4 <- papers |>
+  # search for power sentences
+  search_text("(\\b|G*)power(ed)?\\b") |>
+  # exclude oscillations sentences
+  search_text("^(?!.*\\b(beta|theta|oscillat)).*", perl = TRUE)
+```
+
+
+One useful technique is to use `dplyr::anti_join()` to check which text was excluded when you make a search term more specific, to make sure there are no or few false negatives. 
+
+```{r}
+# rows in text_3 that were excluded in text_4
+excluded <- anti_join(text_3, text_4, 
+                      by = c("id", "div", "p", "s"))
+```
+
+```{r}
+#| echo: false
+mytable(excluded)
+```
+
+### Screening
+
+Once you are happy that your search term includes all of the relevant text and not too much irrelevant text (we've narrowed our candidate sentences down now to `r round(100*nrow(text_4)/nrow(text_all), 1)`% of the full text!), the next step is to save this data frame so you can open it in a spreadsheet application and code each row for ground truth.
+
+```{r}
+readr::write_csv(text_4, "power/power_screening.csv")
+```
+
+
+```{r, eval = FALSE, echo = FALSE}
+# gt <- read_csv("power/power_screening_coded.csv") |>
+#   select(id, text, power_computation:sensitivity_analysis)|>
+#   unique()
+# 
+# gt2 <- left_join(text_4, gt, by = c("id", "text"))
+# readr::write_csv(gt2, "power/power_screening_coded.csv", na = "")
+```
+
+Be careful opening files in spreadsheet apps like Excel. Sometimes they will garble special characters like `ü` or \beta, which will make the validation process below inaccurate, since the expected values from your spreadsheet will not exactly match the calculated values from the modules you're testing. One way to fix this if it has happened, is to read the excel file into R and replace the `text` column with the `text` column from the data frame above, and re-save it as a CSV file. 
+
+```{r, eval = FALSE}
+ground_truth <- read_csv("power/power_screening_coded.csv", 
+                         show_col_types = FALSE)
+
+# fix problem with excel and special chars
+ground_truth$text <- text_4$text
+write_csv(ground_truth, "power/power_screening_coded.csv")
+```
+
+## Validating a Module
+
+### Module Creation
+
+To validate a module, you need to write your search term into a module. See the [modules vignette](modules.html) for details. Creating a module for a text search is very straightforward. Just save the following text in a file called "power0.R". You can omit the description in the roxygen section for now.
+
+```{r, eval = FALSE}
+#' Power Analysis v0
+power0 <- function(paper) {
+  table <- paper |>
+    # search for power sentences
+    search_text("(\\b|G*)power(ed)?\\b") |>
+    # exclude oscillations sentences
+    search_text("^(?!.*\\b(beta|theta|osscil)).*", perl = TRUE)
+  
+  summary_table <- dplyr::count(table, id, name = "n_power")
+  
+  list(
+    table = table,
+    summary = summary_table,
+    na_replace = 0
+  )
+}
+```
+
+Now test your module by running it on the papers. The returned table should be identical to `text_4`. 
+
+```{r}
+mod_test <- module_run(papers, "power/power0.R")
+all.equal(mod_test$table, text_4)
+```
+
+We also returned a summary table, which gives a single row per paper, and the number of matching sentences from the main table.
+
+```{r}
+#| echo: false
+mytable(mod_test$summary, c("id", "n_power"))
+```
+
+
+
+### Set Up Validation Files
+
+Once you have the ground truth coded from your best inclusive search term, you can validate your module and start trying to improve its performance.
+
+First, let's use the over-inclusive search term. This will, by definition, have no false negatives, but further refining of your module will start to produce both false positives and negatives. 
+
+You have to set up two files to match the module output. First, a table of the expected text matches. You can get this by filtering your ground truth table to just the rows that are true positives (hand-coded here as the column `power_computation`).
+
+```{r}
+ground_truth <- read_csv("power/power_screening_coded.csv", 
+                         show_col_types = FALSE)
+
+table_exp <- ground_truth |>
+  filter(power_computation == 1) |>
+  select(id, text)
+```
+
+Next, determine the expected summary table. Since not all papers are in the expected table above, you need to add them manually with a count of 0. The code below demonstrates one way to do that.
+
+```{r}
+summary_exp <- papers |>
+  # gets a table of just the paper IDs
+  info_table(c()) |>
+  # join in the expected table
+  left_join(table_exp, by = "id") |>
+  # count rows with text for each id
+  summarise(n_power = sum(!is.na(text)), .by = "id")
+```
+
+### Validate
+
+Run a validation using the `validate()` function. Set the first argument to your sample of papers, the second to the path to your module, and the next arguments to the expected values of any items returned by your module (usually `table` and/or `summary`).
+
+```{r}
+v0 <- validate(papers, 
+               module = "power/power0.R",
+               table = table_exp, 
+               summary = summary_exp)
+```
+
+Printing the returned object will give you a summary of the validation. 
+
+```{r}
+v0
+```
+
+You can access these values directly from the `stats` item of the list. See the [validation vignette](validate.html) for further information about the contents of this list.
+
+```{r}
+v0$stats |> str()
+```
+
+
+
+### Refine and Iterate
+
+Refine your module to improve it based on your coding of the ground truth. For example, perhaps we decide that almost all instances of real power analyses contain both the strings "power" and "analys"
+
+```{r}
+pattern <- "(analys.*power|power.*analys)"
+yes <- c("power analysis",
+         "power analyses",
+         "power has an analysis",
+         "analyse power",
+         "analysis is powered at")
+no  <- c("powered",
+         "power",
+         "analysis")
+grepl(pattern, yes)
+grepl(pattern, no)
+```
+
+Duplicate the file "power0.R" as "power1.R" and change the search pattern to this new one and re-run the validation.
+
+```{r}
+v1 <- validate(paper = papers, 
+               module = "power/power1.R",
+               table = table_exp, 
+               summary = summary_exp)
+```
+
+
+```{r}
+v1
+```
+
+
+This version has the same overall accuracy by paper, but fewer false positives and more false negatives. False positives in the context of a module that informs scientists about a potential problem are not necessarily undesirable. It may be better to be over-sensitive and catch almost all problems, even if you also catch many non-problems. You will need to evaluate the validation results in the context of what you want your module to do.
+
+### Iterate again
+
+Let's try a two-step process for finding sentences with the word power that also have numbers or percents.
+
+```{r, eval = FALSE}
+table <- papers |>
+    search_text("(\\b|G*)power(ed)?\\b") |> 
+    search_text("(\\.[0-9]|[0-9]%)")
+```
+
+```{r}
+v2 <- validate(paper = papers, 
+               module = "power/power2.R",
+               table = table_exp, 
+               summary = summary_exp)
+```
+
+
+```{r}
+v2
+```
+
+It's definitely doing better than the last version. Can you refine it to do even better?
