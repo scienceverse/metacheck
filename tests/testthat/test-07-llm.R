@@ -48,6 +48,7 @@ test_that("llm_max_calls", {
   expect_equal(getOption("papercheck.llm_max_calls"), 8)
 
   skip_on_cran()
+  skip_on_covr()
   skip_if_offline("api.groq.com")
 
   text <- data.frame(
