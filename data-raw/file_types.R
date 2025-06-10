@@ -8,35 +8,44 @@ types <- jsonlite::read_json(url, simplifyVector = TRUE) |>
 
 types$type[types$type == "sheet"] <- "data"
 
-new <- dplyr::tribble(
-  ~ext, ~type,
-  "gitignore", "config",
-  "git", "config",
-  "Rmd", "code",
-  "quarto", "code",
-  "qmd", "code",
-  "rda", "code",
-  "Rd", "code",
-  "Rds", "code",
-  "ico", "image",
-  "json", "data",
-  "tsv", "sheet",
-  "yml", "config",
-  "yaml", "config",
-  "Rproj", "config",
-  "por", "stats",
-  "jasp", "stats",
-  "sps", "stats",
-  "spss", "stats",
-  "sav", "data",
-  "dta", "data",
-  "dat", "data",
-  "sas7bdat", "data",
-  "DO", "stats"
+extensions <- list()
+extensions[["code"]] <- data.frame(
+  ext = c("R", "Rmd", "qmd", "quarto",
+          "rda", "Rd", "Rds",
+          "ado","dss", "jnlp",
+          "Rnw", "jl", "ipynb", "mat")
+)
+extensions[["code"]]$type <- "code"
+
+extensions[["data"]] <- data.frame(
+  ext = c("rds", "RData", "sav", "zsav", "por",
+          "dta", "sas7bdat", "xpt", "sd7", "jasp",
+          "omv", "arff", "sav.gz", "csv.sav", "gen",
+          "gdt", "gdtb", "dft", "wf1",
+          "dat", "json", "tsv", "csv")
+)
+extensions[["data"]]$type <- "data"
+
+extensions[["config"]] <- data.frame(
+  ext = c("gitignore", "git", "yml", "yaml", "config", "Rproj")
+)
+extensions[["config"]]$type <- "config"
+
+extensions[["stats"]] <- data.frame(
+  ext = c( "sas", "por", "jasp", "sps", "spss", "DO")
+)
+extensions[["stats"]]$type <- "stats"
+
+extensions[["extra"]] <- data.frame(
+  ext = "ico",
+  type = "image"
 )
 
-file_types <- dplyr::bind_rows(types, new)
+
+file_types <- do.call(dplyr::bind_rows, c(list(types), extensions))
 file_types$ext <- tolower(file_types$ext)
+file_types <- unique(file_types) |>
+  dplyr::summarise(type = paste(type, collapse = ";"), .by = ext)
 
 usethis::use_data(file_types, overwrite = TRUE, compress = "xz")
 usethis::use_r("file_types")

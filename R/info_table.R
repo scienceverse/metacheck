@@ -17,7 +17,7 @@ info_table <- function(paper,
                                 "doi"),
                        path = c("relative", "absolute")
                        ) {
-  if (inherits(paper, "scivrs_paper")) {
+  if (is_paper(paper)) {
     one_paper <- paper
     paper <- list(one_paper)
     names(paper) <- one_paper$name
@@ -72,7 +72,7 @@ info_table <- function(paper,
 #' paper <- psychsci[1:2]
 #' author_table(paper)
 author_table <- function(paper) {
-  if (inherits(paper, "scivrs_paper")) {
+  if (is_paper(paper)) {
     paper <- list(paper)
     names(paper) <- paper[[1]]$id
   }

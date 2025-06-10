@@ -7,7 +7,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		<fileDesc>
 			<titleStmt>
 				<title level="a" type="main">Emotional Vocalizations Are Cross-Cultural Regardless of Valence research-article2015</title>
-				<funder ref="#_WR4maAX">
+				<funder ref="#_Uybnaee">
 					<orgName type="full">Netherlands Organisation for Scientific Research (NWO)</orgName>
 				</funder>
 			</titleStmt>
@@ -79,8 +79,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		</fileDesc>
 		<encodingDesc>
 			<appInfo>
-				<application version="0.8.1" ident="GROBID" when="2025-05-20T18:18+0000">
+				<application version="0.8.2" ident="GROBID" when="2025-06-03T09:59+0000">
 					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">a91ee48</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=false, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], sentenceSegmentation=false, flavor=null</label>
 					<ref target="https://github.com/kermitt2/grobid"/>
 				</application>
 			</appInfo>
@@ -102,7 +104,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 <div><head>Funding</head><p>This work was funded by a <rs type="funder">Netherlands Organisation for Scientific Research (NWO)</rs> <rs type="grantName">Veni grant</rs> (<rs type="grantNumber">275-70-033</rs>) to <rs type="person">D. A. Sauter</rs>.</p></div>
 			</div>
 			<listOrg type="funding">
-				<org type="funding" xml:id="_WR4maAX">
+				<org type="funding" xml:id="_Uybnaee">
 					<idno type="grant-number">275-70-033</idno>
 					<orgName type="grant-name">Veni grant</orgName>
 				</org>

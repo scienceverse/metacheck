@@ -631,3 +631,67 @@ get_app_info <- function(xml) {
     url = xml2::xml_find_first(app, "//ref") |> xml2::xml_attr("target")
   )
 }
+
+#' Validate Papers
+#'
+#' A quick function to help diagnose problems with imported papers. It checks if there is a title, doi, abstract, and references.
+#'
+#' @param paper a paper object or a list of paper objects
+#'
+#' @returns a list or dat frame of checks
+#' @export
+#'
+#' @examples
+#' paper_validate(psychsci[[1]])
+#' paper_validate(psychsci)
+paper_validate <- function(paper) {
+  if (is_paper_list(paper)) {
+    checks <- lapply(paper, paper_validate) |>
+      lapply(dplyr::as_tibble) |>
+      do.call(rbind, args = _)
+    return(checks)
+  }
+
+  if (!is_paper(paper)) {
+    stop("The object must be a paper or paperlist to check")
+  }
+
+  # check if doi is valid
+  pattern <- "^10\\.\\d{3,9}\\/[-._;()/:A-Za-z0-9]*[A-Za-z0-9]$"
+
+  doi <- dplyr::case_when(
+    paper$info$doi == "" ~ "missing",
+    !grepl(pattern, paper$info$doi, perl = TRUE) ~ "invalid",
+    .default = ""
+  )
+
+  # check if title is missing
+  title <- dplyr::case_when(
+    paper$info$title == "" ~ "missing",
+    grepl("commentary on", paper$info$title, ignore.case = TRUE) ~ "commentary",
+    grepl("corrigendum", paper$info$title, ignore.case = TRUE) ~ "corrigendum",
+    grepl("erratum", paper$info$title, ignore.case = TRUE) ~ "erratum",
+    grepl("reply to", paper$info$title, ignore.case = TRUE) ~ "reply",
+    .default = ""
+  )
+
+  # check abstract
+  abstract <- dplyr::case_when(
+    paper$info$description == "" ~ "missing",
+    .default = ""
+  )
+
+  valid <- doi == "" &
+    title != "missing" &
+    abstract == "" &
+    nrow(paper$references) > 0
+
+  list(
+    id = paper$id,
+    valid = valid,
+    doi = doi,
+    title = title,
+    abstract = abstract,
+    refs = nrow(paper$references)
+  )
+}

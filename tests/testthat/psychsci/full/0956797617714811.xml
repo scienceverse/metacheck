@@ -54,8 +54,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		</fileDesc>
 		<encodingDesc>
 			<appInfo>
-				<application version="0.8.1" ident="GROBID" when="2025-05-20T19:08+0000">
+				<application version="0.8.2" ident="GROBID" when="2025-06-03T11:21+0000">
 					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">a91ee48</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=false, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], sentenceSegmentation=false, flavor=null</label>
 					<ref target="https://github.com/kermitt2/grobid"/>
 				</application>
 			</appInfo>
@@ -76,7 +78,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 			<div type="annex">
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Author Contributions</head><p>B. Landis developed the study concept. J. J. Gladstone collected the data. B. Landis and J. J. Gladstone performed the data analysis and interpretation and drafted the manuscript. Both authors approved the final version of the manuscript for submission.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Declaration of Conflicting Interests</head><p>The authors declared that they had no conflicts of interest with respect to their authorship or the publication of this article.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplemental Material</head><p>Additional supporting information can be found at <ref type="url" target="http://journals.sagepub.com/doi/suppl/10.1177/0956797617714811">http:// journals.sagepub.com/doi/suppl/10.1177/0956797617714811</ref> </p></div>			</div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplemental Material</head><p>Additional supporting information can be found at <ref type="url" target="http://journals.sagepub.com/doi/suppl/10.1177/0956797617714811">http://  journals.sagepub.com/doi/suppl/10.1177/0956797617714811</ref> </p></div>			</div>
 			<div type="references">
 
 				<listBibl>

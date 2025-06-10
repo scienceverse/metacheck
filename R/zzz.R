@@ -4,7 +4,8 @@
   op.pkg <- list(
     papercheck.verbose = TRUE,
     papercheck.llm_max_calls = 30L,
-    papercheck.llm.model = "llama-3.3-70b-versatile"
+    papercheck.llm.model = "llama-3.3-70b-versatile",
+    papercheck.osf.delay = 0
   )
   # only set if not already set
   toset <- !(names(op.pkg) %in% names(op))
@@ -29,7 +30,7 @@
   paste(
     "\n",
     stripe,
-    "\u2705 Welcome to PaperCheck.",
+    "\u2705 Welcome to PaperCheck",
     "For support and examples visit:",
     "https://scienceverse.github.io/papercheck/",
     "",

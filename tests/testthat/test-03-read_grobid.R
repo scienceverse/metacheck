@@ -381,3 +381,29 @@ test_that("get_app_info", {
   expect_equal(paper$app$when, "2025-05-18T17:52+0000")
   expect_equal(paper$app$url, "https://github.com/kermitt2/grobid")
 })
+
+test_that("paper_validate", {
+  expect_true(is.function(paper_validate))
+
+  expect_error(paper_validate())
+  expect_error(paper_validate(1))
+  expect_error(paper_validate(list(hi = 1)))
+
+  # single valid paper
+  paper <- psychsci[[1]]
+  pc <- paper_validate(paper)
+
+  expect_equal(pc$id, paper$id)
+  expect_equal(pc$valid, TRUE)
+  expect_equal(pc$doi, "")
+  expect_equal(pc$title, "")
+  expect_equal(pc$abstract, "")
+  expect_equal(pc$refs, 41)
+
+  # batch
+  paper <- psychsci
+  pc <- paper_validate(paper)
+
+  expect_true(is.data.frame(pc))
+})
+

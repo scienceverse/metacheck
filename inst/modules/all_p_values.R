@@ -31,7 +31,8 @@ all_p_values <- function(paper, ...) {
   )
 
   # detailed table of results ----
-  table <- search_text(paper, pattern, return = "match", "perl" = TRUE)
+  table <- search_text(paper, pattern, return = "match",
+                       perl = TRUE, ignore.case = FALSE)
 
   # summary output for paperlists ----
   summary_table <- dplyr::count(table, id, name = "p_values")

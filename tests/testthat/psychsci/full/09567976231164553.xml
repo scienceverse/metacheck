@@ -7,9 +7,6 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		<fileDesc>
 			<titleStmt>
 				<title level="a" type="main">Younger Than Ever? Subjective Age Is Becoming Younger and Remains More Stable in Middle-Age and Older Adults Today</title>
-				<funder ref="#_ekzxJes">
-					<orgName type="full">German Federal Ministry for Family Affairs, Senior Citizens, Women, and Youth</orgName>
-				</funder>
 			</titleStmt>
 			<publicationStmt>
 				<publisher/>
@@ -126,8 +123,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		</fileDesc>
 		<encodingDesc>
 			<appInfo>
-				<application version="0.8.1" ident="GROBID" when="2025-05-20T20:43+0000">
+				<application version="0.8.2" ident="GROBID" when="2025-06-03T14:06+0000">
 					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">a91ee48</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=false, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], sentenceSegmentation=false, flavor=null</label>
 					<ref target="https://github.com/kermitt2/grobid"/>
 				</application>
 			</appInfo>
@@ -143,42 +142,32 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 				</keywords>
 			</textClass>
 			<abstract>
-<div xmlns="http://www.tei-c.org/ns/1.0"><p>Subjective age describes how old people feel, in comparison with how old they actually are chronologically. It is usually assessed with a single-item question (such as "How old do you feel?"; <ref type="bibr" target="#b25">Kotter-Grühn et al., 2016)</ref>. Evidence from nearly 300 studies using this item has shown that most middle-age and older people feel younger than they are <ref type="bibr" target="#b28">(Pinquart &amp; Wahl, 2021;</ref><ref type="bibr" target="#b31">Rubin &amp; Berntsen, 2006)</ref>, including very old individuals (Kleinspehn- <ref type="bibr" target="#b23">Ammerlahn et al., 2008;</ref><ref type="bibr" target="#b24">Kotter-Grühn et al., 2009)</ref>. This phenomenon has been labeled subjective age bias (Weiss &amp; Weiss, 2019) and might reflect an age-group dissociation process ("They are old, but I feel younger"; Weiss &amp; Lang, 2012) that helps individuals cope with ageism <ref type="bibr" target="#b7">(Chasteen &amp; Cary, 2015)</ref>.</p><p>Empirical evidence has demonstrated that subjective age is a "biopsychosocial marker of aging" (Stephan  et al., 2018a, p. 87); feeling younger predicts benefits on key developmental outcomes, such as better physical and cognitive health, higher well-being, greater stress resilience, and lower mortality hazards, whereas feeling older predicts developmental risks on these outcomes <ref type="bibr" target="#b8">(Debreczeni &amp; Bailey, 2021;</ref>  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Subjective age describes how old people feel, in comparison with how old they actually are chronologically. It is usually assessed with a single-item question (such as "How old do you feel?"; <ref type="bibr" target="#b24">Kotter-Grühn et al., 2016)</ref>. Evidence from nearly 300 studies using this item has shown that most middle-age and older people feel younger than they are <ref type="bibr" target="#b27">(Pinquart &amp; Wahl, 2021;</ref><ref type="bibr" target="#b30">Rubin &amp; Berntsen, 2006)</ref>, including very old individuals (Kleinspehn- <ref type="bibr" target="#b21">Ammerlahn et al., 2008;</ref><ref type="bibr" target="#b23">Kotter-Grühn et al., 2009)</ref>. This phenomenon has been labeled subjective age bias (Weiss &amp; Weiss, 2019) and might reflect an age-group dissociation process ("They are old, but I feel younger"; Weiss &amp; Lang, 2012) that helps individuals cope with ageism <ref type="bibr" target="#b5">(Chasteen &amp; Cary, 2015)</ref>.</p><p>Empirical evidence has demonstrated that subjective age is a "biopsychosocial marker of aging" (Stephan  et al., 2018a, p. 87); feeling younger predicts benefits on key developmental outcomes, such as better physical and cognitive health, higher well-being, greater stress resilience, and lower mortality hazards, whereas feeling older predicts developmental risks on these outcomes <ref type="bibr" target="#b6">(Debreczeni &amp; Bailey, 2021;</ref>  </p></div>
 			</abstract>
 		</profileDesc>
 	</teiHeader>
 	<text xml:lang="en">
 		<body>
-<div xmlns="http://www.tei-c.org/ns/1.0"><p>Promoting a younger subjective age, which seems to be feasible by means of interventions <ref type="bibr" target="#b32">(Shao et al., 2020)</ref>, could thus contribute to healthy aging and to maintenance of quality of life into old and very old age.</p><p>However, despite the various benefits of a younger subjective age, recent findings suggest that feeling younger may be beneficial for life satisfaction only up to a certain point-there is "a limit beyond which feeling younger is detrimental" <ref type="bibr">(Blöchl et al., 2021, p. 360)</ref>. Feeling younger may also have greater specific risks, such as getting infected with COVID-19 <ref type="bibr" target="#b5">(Berezina &amp; Rybtsov, 2021)</ref>. Moreover, feeling younger as a process of age-group dissociation <ref type="bibr" target="#b40">(Weiss &amp; Weiss, 2019)</ref> has the negative implication that individuals have to employ this dissociation as a coping mechanism against ageism <ref type="bibr" target="#b7">(Chasteen &amp; Cary, 2015)</ref>.</p><p>Little is known about whether within-person trajectories of subjective age have changed across historical time. There might be a subjective rejuvenation across historical time, that is, middle-age and older adults today potentially feel younger than their age peers did several decades ago. Research on historical change in subjective age has, to the best of our knowledge, so far exclusively relied on time-lagged cross-sectional analyses <ref type="bibr" target="#b17">(Hülür et al., 2016;</ref><ref type="bibr" target="#b38">Wahl et al., 2022)</ref> and on samples of older but not middle-age adults. We aimed to extend these prior findings by making use of withinperson, long-term longitudinal change data. Specifically, we examined whether middle-age and older adults today and those in the past differ in how old they feel at a certain age and in the intraindividual subjective aging rate over time. This longitudinal perspective is important because if later-born cohorts maintain younger subjective ages longer, they might also benefit longer from the positive health implications of feeling younger. Moreover, research has identified not only older subjective age at one point in time, but also a steeper change toward an older subjective age over time, as a risk factor for elevated mortality hazards among older adults <ref type="bibr" target="#b24">(Kotter-Grühn et al., 2009)</ref>.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Historical Change in Subjective Age Trajectories and in Related Domains</head><p>The existing evidence on historical change in subjective age, particularly regarding secular change in age-related subjective age trajectories in the second half of life, is very limited. As one rare exception, <ref type="bibr" target="#b17">Hülür et al. (2016)</ref> did not find any cohort difference in subjective age when comparing case-matched older participants (65-89 years) from the Berlin Aging Study assessed from 1990 to 1993 and the Berlin Aging Study II assessed from 2013 to 2014. Similarly, <ref type="bibr" target="#b38">Wahl et al. (2022)</ref> did not find any cohort difference in subjective age across two decades in their examination of two independent data sets obtained from older adults in their 60s and 70s in the Midlife in the United States (MIDUS) study and older adults in their 70s and 80s in the Berlin Aging Studies. However, both studies used a time-lagged cross-sectional approach that precluded examination of whether within-person subjective age trajectories differ across historical time. Moreover, these studies included participants who were 60 years and older but not middle-age individuals. Evidence is emerging that cohort-related trends in midlife are both positive and nega tive, suggesting, for instance, historical change toward fewer perceived constraints <ref type="bibr" target="#b11">(Drewelies et al., 2018)</ref> but also toward a higher prevalence of certain diseases <ref type="bibr" target="#b20">(Infurna et al., 2020)</ref> in later-born middle-age adults. Moreover, there is evidence in support of better cognitive abilities <ref type="bibr" target="#b9">(Degen et al., 2022;</ref><ref type="bibr" target="#b15">Gerstorf et al., 2023)</ref>, better psychosocial functioning <ref type="bibr" target="#b17">(Hülür et al., 2016;</ref><ref type="bibr" target="#b36">Sutin et al., 2013)</ref>, better social integration <ref type="bibr" target="#b19">(Huxhold, 2019;</ref><ref type="bibr" target="#b35">Suanet &amp; Huxhold, 2020)</ref>, greater internal control beliefs, and fewer perceived constraints <ref type="bibr" target="#b11">(Drewelies et al., 2018;</ref><ref type="bibr" target="#b12">Gerstorf et al., 2019)</ref> across subsequent birth cohorts, which-given the important role of psychosocial resources for feeling younger (e.g., <ref type="bibr" target="#b4">Bellingtier &amp; Neupert, 2020)</ref>-might have led to a historical shift toward feeling younger. Of the factors that are potentially relevant for historical change in subjective age, we selected key indicators of established correlates of</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statement of Relevance</head><p>Subjective age refers to how old individuals feel. Feeling younger than one chronologically is has various benefits (e.g., for health and well-being), although it may also reflect a reluctance to belong to the group of older adults. We investigated historical trends in trajectories of subjective age, that is, whether middle-age and older adults feel younger nowadays than did the birth cohorts before them. Our results suggest that later-born cohorts of middle-age and older adults indeed feel younger and have a more stable subjective age over time compared with earlier-born cohorts. Factors such as education and multimorbidity could not fully explain this cohort trend. We conclude that there is a historical trend toward younger subjective ages of individuals in middle and late adulthood that stretches beyond historical changes in education and health. Mechanismoriented research is needed to better understand the factors underlying this observed subjectiverejuvenation effect across historical time.</p><p>subjective age <ref type="bibr" target="#b2">(Ayalon et al., 2016;</ref><ref type="bibr">Stephan et al., 2018a)</ref> that were available in the German Ageing Survey assessment battery throughout the entire study period <ref type="bibr">(i.e., 1996-2020)</ref>, namely sociodemographic variables (age, gender, education, region of residence), number of chronic diseases, and loneliness.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Historical Trends in Midlife and</head><p>Old Age Versus Very Old Age Not all age groups might have benefitted equally from historical medical and technological advances and from historically higher levels of psychosocial functioning. Specifically, very old age could be a life phase in which positive cohort trends are least likely, given that very old age is generally associated with high vulnerability, closeness to death <ref type="bibr" target="#b3">(Baltes &amp; Smith, 2003)</ref>, and pronounced time-to-death-related-decline dynamics across various domains of functioning <ref type="bibr">(Gerstorf &amp; Ram, 2013)</ref>. Indeed, evidence from studies on cognitive functioning and psychosocial resources suggest that the medium to large historical improvements observed among middleage and older adults are not detectable or even reversed among very old adults (for an overview, see <ref type="bibr" target="#b13">Gerstorf et al., 2020)</ref>. For instance, <ref type="bibr" target="#b18">Hülür et al. (2013)</ref> found that age-related as well as time-to-death-related memory decline was steeper in adults who died in the 2000s compared with those who died in the 1990s (for similar findings, see <ref type="bibr" target="#b16">Gerstorf et al., 2011)</ref>. This could be due to manufactured survival <ref type="bibr" target="#b27">(Olshansky &amp; Carnes, 2019)</ref>: Because of biomedical interventions, more people survive into very old age nowadays compared with decades ago, but for some of them, this extended lifetime might be accompanied by more years spent in poor health, extended loss in functioning, and reduced quality of life at the end of life.</p><p>Historical change in subjective age could therefore be age specific and indicate younger felt ages in laterborn cohorts of middle-age and older adults in their 60s and 70s but not necessarily in very old adults in their 80s and 90s.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Hypotheses</head><p>On the basis of the described empirical findings with regard to cohort differences in within-person trajectories of various developmental domains (e.g., <ref type="bibr" target="#b12">Gerstorf et al., 2019;</ref><ref type="bibr" target="#b19">Huxhold, 2019)</ref>, we hypothesized that there is a cohort trend toward younger subjective ages and toward greater within-person stability in subjective age among later-born middle-age and older adults. However, given the described vulnerability of very old age and empirical evidence suggesting no or even negative historical trends in functioning among the oldest-old, we assumed that cohort-related subjective rejuvenation would be limited to middle-age and young-old individuals.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Open Practices Statement</head><p>The data used in this study were from the German Ageing Survey. These data as well as study materials (questionnaires, interview documentation) can be obtained via the Research Data Centre of the German Center of Gerontology (<ref type="url" target="https://www.dza.de/en/research/fdz/access-to-data">https://www.dza.de/en/research/fdz/ access-to-data</ref>). The analyses we conducted were not preregistered.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head><p>Data from the German Ageing Survey (Deutscher Alterssurvey; <ref type="bibr" target="#b22">Klaus et al., 2017)</ref> were used. The German Ageing Survey is a nationwide, cross-sequential study of individuals in their second half of life (40-85 years at their first measurement occasions). The first study sample was drawn in 1996, and individuals were reassessed in <ref type="bibr">2002</ref><ref type="bibr" target="#b23">, 2008</ref><ref type="bibr" target="#b16">, 2011</ref><ref type="bibr">, 2014</ref><ref type="bibr" target="#b22">, 2017</ref><ref type="bibr">, and 2020</ref><ref type="bibr">. Additional samples were drawn in 2002</ref><ref type="bibr" target="#b23">, 2008</ref><ref type="bibr">, and 2014</ref> and reassessed at later measurement occasions. To be considered for survey participation, individuals have to reside in Germany, and they are required to understand and speak German. For the first two measurement waves (1996 and 2002, but not thereafter), German citizenship was specified as an inclusion criterion for study participation. Apart from this exception, the random sampling procedure was consistent and strictly parallel across all waves in order to ensure comparability of the study samples. The vast majority of individuals who have participated so far (n = 19,745; 95.3%) have German citizenship; 8.4 % (n = 1,742) reported having migrated to Germany.</p><p>The sample sizes of the newly drawn samples in <ref type="bibr">1996, 2002, 2008, and 2014 ranged between 3,084 (2002) and 6,205 (2008)</ref>. From 2008 on, sample sizes of more than 6,000 were recruited in order to ensure that each category of every stratification variable (age group, gender, region of residence) and every crosscategorization (e.g., older men in East Germany) are sufficiently represented for group-specific analyses <ref type="bibr" target="#b21">(Klaus &amp; Engstler, 2016)</ref>.</p><p>For the following analyses, we used observations from 14,928 individuals (age: M = 61.25 years, <ref type="bibr">SD = 11.93;</ref><ref type="bibr">birth cohorts: 1911</ref><ref type="bibr">-1974)</ref> who provided one or more valid scores on the study variables (including correlates) on at least one measurement occasion between 1996 and 2020. Participants contributed on average 2.33 observations for subjective age (range 1-7), resulting in an overall number of observations amounting to 34,792, which should correspond to sufficient statistical power to detect small to medium effect sizes.</p><p>Ethical approval is not mandatory for general surveys in Germany and thus was not obtained. The German Ageing Survey does not employ invasive methods. It is supervised by a permanent academic advisory board that ensures the scientific quality of the survey. Table <ref type="table" target="#tab_0">1</ref> summarizes the main characteristics of the samples used in the following analyses.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Measures</head><p>Subjective age. Study participants' subjective age was assessed at each measurement occasion using the item "How old do you feel?" which is a common assessment approach (e.g., <ref type="bibr" target="#b25">Kotter-Grühn et al., 2016)</ref>. Following usual practice (e.g., <ref type="bibr">Stephan et al., 2018b)</ref>, we agestandardized subjective age by computing a subjectiveage proportional-discrepancy score <ref type="bibr" target="#b31">(Rubin &amp; Berntsen, 2006)</ref>, which we multiplied by 100 to facilitate the interpretation of the discrepancy score (proportional discrepancy score = 100 × [subjective age -chronological age]/ chronological age). A proportional discrepancy score of -20 indicates that participants feel 20% younger than they chronologically are, a score of 0 indicates that chronological and subjective age are the same, and a score of +20 indicates that participants feel 20% older than they chronologically are.</p><p>We treated scores that were 3 or more standard deviations above or below the mean as outliers, which is common in research on subjective age (e.g., <ref type="bibr">Stephan et al., 2018b)</ref>, and we recorded these outlier values as missing (224 values excluded out of 43,156; 0.5%).</p><p>Cohort. Birth cohort was a person-level characteristic operationalized as a continuous variable (year of birth). This variable ranged from 1911 to 1974 and was centered at 1936. Time in study. Time in study was assessed in years and was centered at each individuals' median time in the study (e.g., for an individual who participated over 12 years, time in study would be centered at 6 years and thus range from -6 to 6).</p><p>Age. Chronological age was included as a time-invariant variable (years since birth). Age (median age across study participants' observations) was centered at 63.4 years (mean of the 1996 sample).</p><p>Correlates. Supplementing the main models, additional models included a variety of correlates (i.e., year of study entry, gender, education, loneliness, region of residence, and health). Year of study entry <ref type="bibr">(1996, 2002, 2008, 2014; centered at 1996)</ref> was included because individuals who already joined the study in 1996 and still took part in 2017 or 2020 might be more selective than those who joined in 2014. We estimated two sets of models, one without and one with correlates.</p><p>The assessment of education was based on International Standard Classification of Education coding (United Nations Educational, Scientific and Cultural Organization, 2012). This coding takes school and professional education into account, resulting in a differentiation of four educational levels (low, medium, elevated, and high education). Region of residence was operationalized by differentiating between West and East Germany. Loneliness was assessed using the </p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data analysis</head><p>Longitudinal multilevel regression models <ref type="bibr" target="#b29">(Ram &amp; Grimm, 2015)</ref>  </p><formula xml:id="formula_0">i i i = + + + 0 ( ) ( ) ( ) ) , , + = u i i 1 2 2</formula><p>and β γ 0</p><p>where γs are sample-level parameters; birth year i and age i represent a given participant's year of birth and age, respectively; and u 0i and u 1i are unexplained individual differences that are assumed to be multivariate normally distributed with variances, σ 2 u0 and σ 2 u1 and covariance σ u0u1 .</p><p>The role of sociodemographic (gender, education), health (number of chronic diseases at baseline), and social (loneliness at baseline) factors was examined by including these variables as additional time-invariant predictors of the person-specific intercepts and linear rates of change in subjective age, β 0i and β 1i , along with interaction terms of these additional predictors with the cohort variable (birth year). Model parsimony was maintained by including only those interactions that were statistically significant in the final models.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>Longitudinal multilevel regression findings are reported in Table <ref type="table" target="#tab_2">2</ref>. In the model without correlates, participants felt on average 11.5% younger than their chronological age. Over time in the study, there was a significant mean-level reduction in the subjective-age proportional-discrepancy score (γ 10 = 0.298), indicating a change toward an older subjective age. Individuals felt relatively less young by about 3% every 10 years.</p><p>Results also revealed that an older age was associated with feeling younger (γ 01 = -1.588). Specifically, being chronologically older by 10 years was associated with feeling younger by an additional 1.6%. Also, an older age was associated with a less steep increase in subjective age (or decrease in subjective age proportional discrepancy) over time (γ 11 = -0.215). This indicates that the above-noted reduction of the subjective age bias/discrepancy over time was smaller the older participants were.</p><p>Most importantly for our main research question, the pattern for historical change in within-person trajectories of subjective age revealed statistically significant effects of year of birth on both subjective age level (γ 08 = -0.232) and rates of change (γ 18 = -0.023). As illustrated in Figure <ref type="figure" target="#fig_1">1</ref>, later-born participants in the German Ageing Survey sample felt younger by an additional 2% with each birth decade born later, and their younger subjective age remained more stable over time. Because none of the age interactions with year of birth were statistically significant, they were trimmed from the final model. This indicates that the pattern of historical change observed was invariant across the age range examined here. We also tested interactions with quadratic terms for age and obtained the same null findings.</p><p>In the models that contained the correlates, higher levels of education and lower loneliness were associated with a younger subjective age. Higher education was also associated with a less steep increase in subjective age over time, and women, West Germans, and individuals with fewer chronic diseases felt younger. We also obtained two interaction effects of the correlates with historical change (for details, see the Supplemental Material available online). First, women had younger subjective ages than men, and this gender gap was larger among later-born cohorts. Second, individuals with higher levels of education had younger subjective age than those with lower levels of education, and this difference was smaller among later-born cohorts. Most important for our research questions, inclusion of the correlates did not change the pattern of cohort differences observed earlier without the inclusion of the correlates.</p><p>We quantified the extent of variation in the cohort effects accounted for by the correlates by computing the relative reduction in the random intercept and random slope effects in a model with year of birth included but without the additional correlates versus in a model with only the correlates included but without year of birth. Variance in the cohort effect explained was small, both for the intercept (7.2% of variance explained) and for the slope (1.1% of variance explained).</p><p>Because our analyses also included individuals who provided only one observation and then dropped out of the study, we repeated our analyses by including dropout status as an additional binary predictor (only one observation provided vs. more than one observation provided) to evaluate the extent of selectivity of the longitudinal sample with regard to subjective age. We also included interaction terms of dropout status with age, birth year, and a three-way interaction of dropout status, birth year, and age. In the model without correlates, the effect of dropout status was not significant. Dropouts and nondropouts are thus not significantly different with regard to their subjective age levels. Also, the interaction terms including dropout status were not significant, with the exception of the interaction of dropout status and age: Among the nondropouts, subjective age discrepancy at baseline was lower by -1.7% when baseline chronological age was higher by one decade. Among the dropouts, this difference was reduced to -0.7%. However, in the model with all correlates included, this effect and all others including dropout status were no longer significant.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>Our results revealed historical change toward younger subjective ages and toward less increase in subjective age over time. This historical trend was observable across all ages in the second half of life, also-contrary to our expectations-in very old age. We tested for age-cohort interactions, none were statistically significant. Our perspective on very old age and its assumed lower plasticity and lower benefit from secular change might thus have been too pessimistic. This finding can, on the one hand, be regarded as good news, as a younger subjective age (and also a greater stability in subjective age; e.g., <ref type="bibr" target="#b24">Kotter-Grühn et al., 2009)</ref> is associated with greater well-being, better health, and lower mortality hazards <ref type="bibr" target="#b8">(Debreczeni &amp; Bailey, 2021;</ref><ref type="bibr">Stephan et al., 2018a</ref><ref type="bibr">Stephan et al., , 2018b;;</ref><ref type="bibr" target="#b42">Wettstein et al., 2021)</ref>. However, given the already mentioned findings that a younger subjective age also comes with certain risks <ref type="bibr" target="#b5">(Berezina &amp; Rybtsov, 2021)</ref> and is beneficial for outcomes such as life satisfaction only up to a certain extent <ref type="bibr" target="#b6">(Blöchl et al., 2021)</ref>, cohort trends toward younger subjective ages might also have negative implications. Specifically, because feeling younger also reflects age-group dissociation <ref type="bibr" target="#b40">(Weiss &amp; Weiss, 2019)</ref>, individuals would ideally not need to reveal age-group dissociation any more once a society has overcome an overly one-sided negative connotation of aging and of  later life. From this perspective, the trend toward younger subjective ages across birth cohorts could mirror trends of an increasing negativity of age stereotypes that were observed across the past 200 years <ref type="bibr" target="#b26">(Ng et al., 2015)</ref>. Notably, <ref type="bibr" target="#b38">Wahl et al. (2022)</ref> did not find a cohort trend toward younger subjective ages based on time-lagged analyses using United States (MIDUS) and German (Berlin Aging Studies) data gathered about 20 years apart. The two reports differ in a number of different respects, including differences in study designs and analyses (models of time-lagged within-person trajectories vs. time-lagged cross-sectional analyses). Moreover, in the <ref type="bibr" target="#b38">Wahl et al. (2022)</ref> report, both study samples were on average older than the sample in this study and did not comprise middle-age adults. Also, their German sample exclusively comprised individuals living in Berlin, a city with a unique history that might not be representative of other parts of Germany that are better represented in the nationwide German Ageing Survey sample. Finally, the German Ageing Survey sample comprised six decades of birth years  and thus might be more suitable for detecting gradual historical changes over time than a more restrictive range of birth years (e.g., three decades only in MIDUS).</p><p>The cohort effect remained significant when analyses controlled for sociodemographic factors, diseases, and loneliness. Obviously, it is thus not-or not onlycohort trends in these factors that promoted subjective rejuvenation across subsequent cohorts. It might rather be historical improvement in other psychosocial resources, such as control beliefs and perceived constraints <ref type="bibr" target="#b11">(Drewelies et al., 2018;</ref><ref type="bibr" target="#b12">Gerstorf et al., 2019)</ref> or well-being <ref type="bibr" target="#b36">(Sutin et al., 2013)</ref>, that led to cohort trends toward younger subjective ages.</p><p>Further research should thus investigate which factors contributed to historical changes toward younger subjective ages and how feeling younger can be supported, for example, by promoting positive views on aging.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Promoting a younger subjective age, which seems to be feasible by means of interventions <ref type="bibr" target="#b31">(Shao et al., 2020)</ref>, could thus contribute to healthy aging and to maintenance of quality of life into old and very old age.</p><p>However, despite the various benefits of a younger subjective age, recent findings suggest that feeling younger may be beneficial for life satisfaction only up to a certain point-there is "a limit beyond which feeling younger is detrimental" <ref type="bibr">(Blöchl et al., 2021, p. 360)</ref>. Feeling younger may also have greater specific risks, such as getting infected with COVID-19 <ref type="bibr" target="#b3">(Berezina &amp; Rybtsov, 2021)</ref>. Moreover, feeling younger as a process of age-group dissociation <ref type="bibr" target="#b39">(Weiss &amp; Weiss, 2019)</ref> has the negative implication that individuals have to employ this dissociation as a coping mechanism against ageism <ref type="bibr" target="#b5">(Chasteen &amp; Cary, 2015)</ref>.</p><p>Little is known about whether within-person trajectories of subjective age have changed across historical time. There might be a subjective rejuvenation across historical time, that is, middle-age and older adults today potentially feel younger than their age peers did several decades ago. Research on historical change in subjective age has, to the best of our knowledge, so far exclusively relied on time-lagged cross-sectional analyses <ref type="bibr" target="#b15">(Hülür et al., 2016;</ref><ref type="bibr" target="#b37">Wahl et al., 2022)</ref> and on samples of older but not middle-age adults. We aimed to extend these prior findings by making use of withinperson, long-term longitudinal change data. Specifically, we examined whether middle-age and older adults today and those in the past differ in how old they feel at a certain age and in the intraindividual subjective aging rate over time. This longitudinal perspective is important because if later-born cohorts maintain younger subjective ages longer, they might also benefit longer from the positive health implications of feeling younger. Moreover, research has identified not only older subjective age at one point in time, but also a steeper change toward an older subjective age over time, as a risk factor for elevated mortality hazards among older adults <ref type="bibr" target="#b23">(Kotter-Grühn et al., 2009)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Historical Change in Subjective Age Trajectories and in Related Domains</head><p>The existing evidence on historical change in subjective age, particularly regarding secular change in age-related subjective age trajectories in the second half of life, is very limited. As one rare exception, <ref type="bibr" target="#b15">Hülür et al. (2016)</ref> did not find any cohort difference in subjective age when comparing case-matched older participants (65-89 years) from the Berlin Aging Study assessed from 1990 to 1993 and the Berlin Aging Study II assessed from 2013 to 2014. Similarly, <ref type="bibr" target="#b37">Wahl et al. (2022)</ref> did not find any cohort difference in subjective age across two decades in their examination of two independent data sets obtained from older adults in their 60s and 70s in the Midlife in the United States (MIDUS) study and older adults in their 70s and 80s in the Berlin Aging Studies. However, both studies used a time-lagged cross-sectional approach that precluded examination of whether within-person subjective age trajectories differ across historical time. Moreover, these studies included participants who were 60 years and older but not middle-age individuals. Evidence is emerging that cohort-related trends in midlife are both positive and nega tive, suggesting, for instance, historical change toward fewer perceived constraints <ref type="bibr" target="#b9">(Drewelies et al., 2018)</ref> but also toward a higher prevalence of certain diseases <ref type="bibr" target="#b18">(Infurna et al., 2020)</ref> in later-born middle-age adults. Moreover, there is evidence in support of better cognitive abilities <ref type="bibr" target="#b7">(Degen et al., 2022;</ref><ref type="bibr" target="#b13">Gerstorf et al., 2023)</ref>, better psychosocial functioning <ref type="bibr" target="#b15">(Hülür et al., 2016;</ref><ref type="bibr" target="#b35">Sutin et al., 2013)</ref>, better social integration <ref type="bibr" target="#b17">(Huxhold, 2019;</ref><ref type="bibr" target="#b34">Suanet &amp; Huxhold, 2020)</ref>, greater internal control beliefs, and fewer perceived constraints <ref type="bibr" target="#b9">(Drewelies et al., 2018;</ref><ref type="bibr" target="#b10">Gerstorf et al., 2019)</ref> across subsequent birth cohorts, which-given the important role of psychosocial resources for feeling younger (e.g., <ref type="bibr" target="#b2">Bellingtier &amp; Neupert, 2020)</ref>-might have led to a historical shift toward feeling younger. Of the factors that are potentially relevant for historical change in subjective age, we selected key indicators of established correlates of</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statement of Relevance</head><p>Subjective age refers to how old individuals feel. Feeling younger than one chronologically is has various benefits (e.g., for health and well-being), although it may also reflect a reluctance to belong to the group of older adults. We investigated historical trends in trajectories of subjective age, that is, whether middle-age and older adults feel younger nowadays than did the birth cohorts before them. Our results suggest that later-born cohorts of middle-age and older adults indeed feel younger and have a more stable subjective age over time compared with earlier-born cohorts. Factors such as education and multimorbidity could not fully explain this cohort trend. We conclude that there is a historical trend toward younger subjective ages of individuals in middle and late adulthood that stretches beyond historical changes in education and health. Mechanismoriented research is needed to better understand the factors underlying this observed subjectiverejuvenation effect across historical time.</p><p>subjective age <ref type="bibr" target="#b0">(Ayalon et al., 2016;</ref><ref type="bibr">Stephan et al., 2018a)</ref> that were available in the German Ageing Survey assessment battery throughout the entire study period <ref type="bibr">(i.e., 1996-2020)</ref>, namely sociodemographic variables (age, gender, education, region of residence), number of chronic diseases, and loneliness.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Historical Trends in Midlife and</head><p>Old Age Versus Very Old Age Not all age groups might have benefitted equally from historical medical and technological advances and from historically higher levels of psychosocial functioning. Specifically, very old age could be a life phase in which positive cohort trends are least likely, given that very old age is generally associated with high vulnerability, closeness to death <ref type="bibr" target="#b1">(Baltes &amp; Smith, 2003)</ref>, and pronounced time-to-death-related-decline dynamics across various domains of functioning <ref type="bibr">(Gerstorf &amp; Ram, 2013)</ref>. Indeed, evidence from studies on cognitive functioning and psychosocial resources suggest that the medium to large historical improvements observed among middleage and older adults are not detectable or even reversed among very old adults (for an overview, see <ref type="bibr" target="#b11">Gerstorf et al., 2020)</ref>. For instance, <ref type="bibr" target="#b16">Hülür et al. (2013)</ref> found that age-related as well as time-to-death-related memory decline was steeper in adults who died in the 2000s compared with those who died in the 1990s (for similar findings, see <ref type="bibr" target="#b14">Gerstorf et al., 2011)</ref>. This could be due to manufactured survival <ref type="bibr" target="#b26">(Olshansky &amp; Carnes, 2019)</ref>: Because of biomedical interventions, more people survive into very old age nowadays compared with decades ago, but for some of them, this extended lifetime might be accompanied by more years spent in poor health, extended loss in functioning, and reduced quality of life at the end of life.</p><p>Historical change in subjective age could therefore be age specific and indicate younger felt ages in laterborn cohorts of middle-age and older adults in their 60s and 70s but not necessarily in very old adults in their 80s and 90s.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Hypotheses</head><p>On the basis of the described empirical findings with regard to cohort differences in within-person trajectories of various developmental domains (e.g., <ref type="bibr" target="#b10">Gerstorf et al., 2019;</ref><ref type="bibr" target="#b17">Huxhold, 2019)</ref>, we hypothesized that there is a cohort trend toward younger subjective ages and toward greater within-person stability in subjective age among later-born middle-age and older adults. However, given the described vulnerability of very old age and empirical evidence suggesting no or even negative historical trends in functioning among the oldest-old, we assumed that cohort-related subjective rejuvenation would be limited to middle-age and young-old individuals.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Open Practices Statement</head><p>The data used in this study were from the German Ageing Survey. These data as well as study materials (questionnaires, interview documentation) can be obtained via the Research Data Centre of the German Center of Gerontology (<ref type="url" target="https://www.dza.de/en/research/fdz/access-to-data">https://www.dza.de/en/research/fdz/  access-to-data</ref>). The analyses we conducted were not preregistered.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head><p>Data from the German Ageing Survey (Deutscher Alterssurvey; <ref type="bibr" target="#b20">Klaus et al., 2017)</ref> were used. The German Ageing Survey is a nationwide, cross-sequential study of individuals in their second half of life (40-85 years at their first measurement occasions). The first study sample was drawn in 1996, and individuals were reassessed in <ref type="bibr">2002</ref><ref type="bibr" target="#b21">, 2008</ref><ref type="bibr" target="#b14">, 2011</ref><ref type="bibr">, 2014</ref><ref type="bibr" target="#b20">, 2017</ref><ref type="bibr">, and 2020</ref><ref type="bibr">. Additional samples were drawn in 2002</ref><ref type="bibr" target="#b21">, 2008</ref><ref type="bibr">, and 2014</ref> and reassessed at later measurement occasions. To be considered for survey participation, individuals have to reside in Germany, and they are required to understand and speak German. For the first two measurement waves (1996 and 2002, but not thereafter), German citizenship was specified as an inclusion criterion for study participation. Apart from this exception, the random sampling procedure was consistent and strictly parallel across all waves in order to ensure comparability of the study samples. The vast majority of individuals who have participated so far (n = 19,745; 95.3%) have German citizenship; 8.4 % (n = 1,742) reported having migrated to Germany.</p><p>The sample sizes of the newly drawn samples in <ref type="bibr">1996, 2002, 2008, and 2014 ranged between 3,084 (2002) and 6,205 (2008)</ref>. From 2008 on, sample sizes of more than 6,000 were recruited in order to ensure that each category of every stratification variable (age group, gender, region of residence) and every crosscategorization (e.g., older men in East Germany) are sufficiently represented for group-specific analyses <ref type="bibr" target="#b19">(Klaus &amp; Engstler, 2016)</ref>.</p><p>For the following analyses, we used observations from 14,928 individuals (age: M = 61.25 years, <ref type="bibr">SD = 11.93;</ref><ref type="bibr">birth cohorts: 1911</ref><ref type="bibr">-1974)</ref> who provided one or more valid scores on the study variables (including correlates) on at least one measurement occasion between 1996 and 2020. Participants contributed on average 2.33 observations for subjective age (range 1-7), resulting in an overall number of observations amounting to 34,792, which should correspond to sufficient statistical power to detect small to medium effect sizes.</p><p>Ethical approval is not mandatory for general surveys in Germany and thus was not obtained. The German Ageing Survey does not employ invasive methods. It is supervised by a permanent academic advisory board that ensures the scientific quality of the survey. Table <ref type="table" target="#tab_0">1</ref> summarizes the main characteristics of the samples used in the following analyses.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Measures</head><p>Subjective age. Study participants' subjective age was assessed at each measurement occasion using the item "How old do you feel?" which is a common assessment approach (e.g., <ref type="bibr" target="#b24">Kotter-Grühn et al., 2016)</ref>. Following usual practice (e.g., <ref type="bibr">Stephan et al., 2018b)</ref>, we agestandardized subjective age by computing a subjectiveage proportional-discrepancy score <ref type="bibr" target="#b30">(Rubin &amp; Berntsen, 2006)</ref>, which we multiplied by 100 to facilitate the interpretation of the discrepancy score (proportional discrepancy score = 100 × [subjective age -chronological age]/ chronological age). A proportional discrepancy score of -20 indicates that participants feel 20% younger than they chronologically are, a score of 0 indicates that chronological and subjective age are the same, and a score of +20 indicates that participants feel 20% older than they chronologically are.</p><p>We treated scores that were 3 or more standard deviations above or below the mean as outliers, which is common in research on subjective age (e.g., <ref type="bibr">Stephan et al., 2018b)</ref>, and we recorded these outlier values as missing (224 values excluded out of 43,156; 0.5%).</p><p>Cohort. Birth cohort was a person-level characteristic operationalized as a continuous variable (year of birth). This variable ranged from 1911 to 1974 and was centered at 1936. Time in study. Time in study was assessed in years and was centered at each individuals' median time in the study (e.g., for an individual who participated over 12 years, time in study would be centered at 6 years and thus range from -6 to 6).</p><p>Age. Chronological age was included as a time-invariant variable (years since birth). Age (median age across study participants' observations) was centered at 63.4 years (mean of the 1996 sample).</p><p>Correlates. Supplementing the main models, additional models included a variety of correlates (i.e., year of study entry, gender, education, loneliness, region of residence, and health). Year of study entry <ref type="bibr">(1996, 2002, 2008, 2014; centered at 1996)</ref> was included because individuals who already joined the study in 1996 and still took part in 2017 or 2020 might be more selective than those who joined in 2014. We estimated two sets of models, one without and one with correlates.</p><p>The assessment of education was based on International Standard Classification of Education coding (United Nations Educational, Scientific and Cultural Organization, 2012). This coding takes school and professional education into account, resulting in a differentiation of four educational levels (low, medium, elevated, and high education). Region of residence was operationalized by differentiating between West and East Germany. Loneliness was assessed using the </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data analysis</head><p>Longitudinal multilevel regression models <ref type="bibr" target="#b28">(Ram &amp; Grimm, 2015)</ref> were used to investigate within-person change in subjective age and its predictors (the syntax for the analyses can be downloaded from OSF at <ref type="url" target="https://osf.io/vduq9/">https://osf.io/vduq9/</ref>). Within-person change in subjective age was specified as follows: subjective age t ime in study time in study 1 2 ti i i ti i = + ( + β β β 0 2 2 ti ti e ( ) + , with person i's score on subjective age at observation t. Subjective age ti is specified as a function of a personspecific intercept coefficient, β 0i ; a person-specific linear slope coefficient, β 1i ; a person-specific quadratic slope coefficient (which was retained in the model only when statistically significant), β 2i ; and residual error, e ti . Interindividual differences in the person-specific coefficients were modeled as follows: β γ γ γ γ 0 0 0 0 0 0 i i i = + + + 1 2 8 age year of study entry Birth Year ( ) ( ) ( i i i u ) , + 0 β γ γ γ γ 1 1 11 12 18 age year of study entry Birth Year</p><formula xml:id="formula_0">i i i = + + + 0 ( ) ( ) ( ) ) , , + = u i i 1 2 2</formula><p>and β γ 0</p><p>where γs are sample-level parameters; birth year i and age i represent a given participant's year of birth and age, respectively; and u 0i and u 1i are unexplained individual differences that are assumed to be multivariate normally distributed with variances, σ 2 u0 and σ 2 u1 and covariance σ u0u1 .</p><p>The role of sociodemographic (gender, education), health (number of chronic diseases at baseline), and social (loneliness at baseline) factors was examined by including these variables as additional time-invariant predictors of the person-specific intercepts and linear rates of change in subjective age, β 0i and β 1i , along with interaction terms of these additional predictors with the cohort variable (birth year). Model parsimony was maintained by including only those interactions that were statistically significant in the final models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>Longitudinal multilevel regression findings are reported in Table <ref type="table" target="#tab_2">2</ref>. In the model without correlates, participants felt on average 11.5% younger than their chronological age. Over time in the study, there was a significant mean-level reduction in the subjective-age proportional-discrepancy score (γ 10 = 0.298), indicating a change toward an older subjective age. Individuals felt relatively less young by about 3% every 10 years.</p><p>Results also revealed that an older age was associated with feeling younger (γ 01 = -1.588). Specifically, being chronologically older by 10 years was associated with feeling younger by an additional 1.6%. Also, an older age was associated with a less steep increase in subjective age (or decrease in subjective age proportional discrepancy) over time (γ 11 = -0.215). This indicates that the above-noted reduction of the subjective age bias/discrepancy over time was smaller the older participants were.</p><p>Most importantly for our main research question, the pattern for historical change in within-person trajectories of subjective age revealed statistically significant effects of year of birth on both subjective age level (γ 08 = -0.232) and rates of change (γ 18 = -0.023). As illustrated in Figure <ref type="figure" target="#fig_1">1</ref>, later-born participants in the German Ageing Survey sample felt younger by an additional 2% with each birth decade born later, and their younger subjective age remained more stable over time. Because none of the age interactions with year of birth were statistically significant, they were trimmed from the final model. This indicates that the pattern of historical change observed was invariant across the age range examined here. We also tested interactions with quadratic terms for age and obtained the same null findings.</p><p>In the models that contained the correlates, higher levels of education and lower loneliness were associated with a younger subjective age. Higher education was also associated with a less steep increase in subjective age over time, and women, West Germans, and individuals with fewer chronic diseases felt younger. We also obtained two interaction effects of the correlates with historical change (for details, see the Supplemental Material available online). First, women had younger subjective ages than men, and this gender gap was larger among later-born cohorts. Second, individuals with higher levels of education had younger subjective age than those with lower levels of education, and this difference was smaller among later-born cohorts. Most important for our research questions, inclusion of the correlates did not change the pattern of cohort differences observed earlier without the inclusion of the correlates.</p><p>We quantified the extent of variation in the cohort effects accounted for by the correlates by computing the relative reduction in the random intercept and random slope effects in a model with year of birth included but without the additional correlates versus in a model with only the correlates included but without year of birth. Variance in the cohort effect explained was small, both for the intercept (7.2% of variance explained) and for the slope (1.1% of variance explained).</p><p>Because our analyses also included individuals who provided only one observation and then dropped out of the study, we repeated our analyses by including dropout status as an additional binary predictor (only one observation provided vs. more than one observation provided) to evaluate the extent of selectivity of the longitudinal sample with regard to subjective age. We also included interaction terms of dropout status with age, birth year, and a three-way interaction of dropout status, birth year, and age. In the model without correlates, the effect of dropout status was significant. Dropouts and nondropouts are thus not significantly different with regard to their subjective age levels. Also, the interaction terms including dropout status were not significant, with the exception of the interaction of dropout status and age: Among the nondropouts, subjective age discrepancy at baseline was lower by -1.7% when baseline chronological age was higher by one decade. Among the dropouts, this difference was reduced to -0.7%. However, in the model with all correlates included, this effect and all others including dropout status were no longer significant.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>Our results revealed historical change toward younger subjective ages and toward less increase in subjective age over time. This historical trend was observable across all ages in the second half of life, also-contrary to our expectations-in very old age. We tested for age-cohort interactions, none were statistically significant. Our perspective on very old age and its assumed lower plasticity and lower benefit from secular change might thus have been too pessimistic. This finding can, on the one hand, be regarded as good news, as a younger subjective age (and also a greater stability in subjective age; e.g., <ref type="bibr" target="#b23">Kotter-Grühn et al., 2009)</ref> is associated with greater well-being, better health, and lower mortality hazards <ref type="bibr" target="#b6">(Debreczeni &amp; Bailey, 2021;</ref><ref type="bibr">Stephan et al., 2018a</ref><ref type="bibr">Stephan et al., , 2018b;;</ref><ref type="bibr" target="#b41">Wettstein et al., 2021)</ref>. However, given the already mentioned findings that a younger subjective age also comes with certain risks <ref type="bibr" target="#b3">(Berezina &amp; Rybtsov, 2021)</ref> and is beneficial for outcomes such as life satisfaction only up to a certain extent <ref type="bibr" target="#b4">(Blöchl et al., 2021)</ref>, cohort trends toward younger subjective ages might also have negative implications. Specifically, because feeling younger also reflects age-group dissociation <ref type="bibr" target="#b39">(Weiss &amp; Weiss, 2019)</ref>, individuals would ideally not need to reveal age-group dissociation any more once a society has overcome an overly one-sided negative connotation of aging and of</p><p>-5 -6 -7 -8 -9 -10 -11 -12 -13 -14 -15 -16 -17 -18 Subjective Age Quotient Chronological Age German Ageing Survey Middle-Aged and Older Adults % Felt Younger Relative to One's Own Age Born 1911-1935 Born 1952-1974 Born 1936-1951 40 45 50 55 60 65 70 75 80 85 90 Feeling a Little Younger Feeling a Lot Younger later life. From this perspective, the trend toward younger subjective ages across birth cohorts could mirror trends of an increasing negativity of age stereotypes that were observed across the past 200 years <ref type="bibr" target="#b25">(Ng et al., 2015)</ref>. Notably, <ref type="bibr" target="#b37">Wahl et al. (2022)</ref> did not find a cohort trend toward younger subjective ages based on time-lagged analyses using United States (MIDUS) and German (Berlin Aging Studies) data gathered about 20 years apart. The two reports differ in a number of different respects, including differences in study designs and analyses (models of time-lagged within-person trajectories vs. time-lagged cross-sectional analyses). Moreover, in the <ref type="bibr" target="#b37">Wahl et al. (2022)</ref> report, both study samples were on average older than the sample in this study and did not comprise middle-age adults. Also, their German sample exclusively comprised individuals living in Berlin, a city with a unique history that might not be representative of other parts of Germany that are better represented in the nationwide German Ageing Survey sample. Finally, the German Ageing Survey sample comprised six decades of birth years  and thus might be more suitable for detecting gradual historical changes over time than a more restrictive range of birth years (e.g., three decades only in MIDUS).</p><p>The cohort effect remained significant when analyses controlled for sociodemographic factors, diseases, and loneliness. Obviously, it is thus not-or not onlycohort trends in these factors that promoted subjective rejuvenation across subsequent cohorts. It might rather be historical improvement in other psychosocial resources, such as control beliefs and perceived constraints <ref type="bibr" target="#b9">(Drewelies et al., 2018;</ref><ref type="bibr" target="#b10">Gerstorf et al., 2019)</ref> or well-being <ref type="bibr" target="#b35">(Sutin et al., 2013)</ref>, that led to cohort trends toward younger subjective ages.</p><p>Further research should thus investigate which factors contributed to historical changes toward younger subjective ages and how feeling younger can be supported, for example, by promoting positive views on aging.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Limitations</head><p>Our study had several limitations. The findings may be culture specific and not generalizable to countries beyond Germany. Our estimates of change in subjective age might also be to some extent biased because of selective dropout. Although our additional selectivity analyses suggest that subjective age was not different between dropouts and nondropouts, it is still possible that subjective age trajectories are different between both groups and that, if more repeated assessments of the dropouts had been available, their scores would have differed at a later measurement occasion.</p><p>Moreover, later-born cohorts entered the German Ageing Survey at a later point in time (e.g., individuals born in 1974 were assessed in 2014 for the first time) and therefore had fewer longitudinal observations than earlier-born cohorts. This might have implications for the estimates of trajectories and for statistical power.</p><p>Study dropout is particularly relevant in the oldestold individuals. Specifically, less than 3% (n = 933) of all our observations were from individuals older than 85 years, and no data were available from individuals older than 97 years. More research is needed to investigate the extent to which subjective rejuvenation across subsequent birth cohorts holds into very old age by including, for instance, centenarians and vulnerable subgroups (e.g., nursing home residents) that were not sufficiently represented in our study sample. Regarding correlates of subjective age trajectories, some measures, such as depressive symptoms, control beliefs, functional health, or cognitive abilities, were not assessed in each baseline sample <ref type="bibr">(1996,</ref><ref type="bibr">2002,</ref><ref type="bibr">2008,</ref><ref type="bibr">2014)</ref> and therefore not included in our analyses, so our set of correlates may not be sufficient to explain subjective age trajectories as well as cohort effects in these trajectories. We also specified all correlates included, such as loneliness and disease, as time-invariant predictors, although they might change over time.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusion</head><p>Our results suggest a historical trend toward younger subjective ages and less increase in subjective age over time. This finding is in line with other research demonstrating historical improvements in psychosocial resources, such as well-being <ref type="bibr" target="#b36">(Sutin et al., 2013)</ref>, social integration <ref type="bibr" target="#b19">(Huxhold, 2019;</ref><ref type="bibr" target="#b35">Suanet &amp; Huxhold, 2020)</ref>, and control beliefs <ref type="bibr" target="#b12">(Gerstorf et al., 2019)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusion</head><p>Our results suggest a historical trend toward younger subjective ages and less increase in subjective age over time. This finding is in line with other research demonstrating historical improvements in psychosocial resources, such as well-being <ref type="bibr" target="#b35">(Sutin et al., 2013)</ref>, social integration <ref type="bibr" target="#b17">(Huxhold, 2019;</ref><ref type="bibr" target="#b34">Suanet &amp; Huxhold, 2020)</ref>, and control beliefs <ref type="bibr" target="#b10">(Gerstorf et al., 2019)</ref>.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Transparency</head><p>Action Editor: M. Natasha Rajah Editor: Patricia J. Bauer Nilam Ram: Conceptualization; Formal analysis; Methodology; Supervision; Writing -review &amp; editing. Denis Gerstorf: Conceptualization; Formal analysis; Investigation; Methodology; Resources; Software; Writing -original draft; Writing -review &amp; editing.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Declaration of Conflicting Interests</head><p>The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 1 .</head><label>1</label><figDesc>Fig.1. Cohort differences in model-implied trajectories of subjective age among middle-age and older adults in the German Ageing Survey. For each cohort, the figure shows model-implied within-person changes over 5 years in 25+ age bins of 1-year age increments as short, thick lines. The single linear age and selection trend for each cohort is shown as a long, thin line. In old age, the earlier-born cohort (dashed lines) exhibited within-person reductions in subjective age discrepancies (i.e., they felt less young), whereas later-born cohorts (solid black and gray lines) reported feeling younger and exhibited larger within-person stability in subjective age discrepancy across old age (e.g., less steep within-person increase of the subjective age quotient over time).</figDesc><graphic coords="7,68.69,73.57,480.14,300.86" type="bitmap" /></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Overview of Participants From the German Ageing Survey Who Were Analyzed in the Present Study -item De Jong-Gierveld loneliness scale<ref type="bibr" target="#b10">(De Jong Gierveld &amp; Van Tilburg, 2006;</ref> Cronbach's αs from 1996 Cronbach's αs from    to 2014 = .82, .83, .84, .83, respectively) = .82, .83, .84, .83, respectively). Health was measured as the number of chronic diseases based on a list of 11 chronic conditions (e.g., diabetes, cancer, cardiovascular diseases). All correlates, including loneliness and number of chronic diseases, were specified as time-invariant predictors. If an individual had a missing score on one of the correlates, but a nonmissing score at a later measurement occasion, we used the score from the later measurement occasion.</figDesc><table><row><cell></cell><cell></cell><cell cols="2">Year started</cell><cell></cell></row><row><cell>Variable</cell><cell>1996</cell><cell>2002</cell><cell>2008</cell><cell>2014</cell></row><row><cell>Maximum observations</cell><cell>7</cell><cell>6</cell><cell>5</cell><cell>3</cell></row><row><cell>Maximum years in study</cell><cell>24</cell><cell>18</cell><cell>12</cell><cell>6</cell></row><row><cell>Years between waves</cell><cell>2.42-6.68</cell><cell>2.42-6.68</cell><cell>2.33-3.67</cell><cell>2.50-3.51</cell></row><row><cell>n at Time 1</cell><cell>3,837</cell><cell>2,600</cell><cell>4,294</cell><cell>4,197</cell></row><row><cell>Birth year</cell><cell>1911-1956</cell><cell>1917-1962</cell><cell>1923-1968</cell><cell>1929-1974</cell></row><row><cell>Mean age in years at Time 1 (SD)</cell><cell>59.88 (12.10)</cell><cell>60.93 (12.43)</cell><cell>61.71 (11.84)</cell><cell>62.22 (11.44)</cell></row><row><cell>Mean subjective age a in years at</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Time 1 (SD; [range])</cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table><note><p>six</p></note></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head></head><label></label><figDesc>were used to investigate within-person change in subjective age and its predictors (the syntax for the analyses can be downloaded from OSF at https://osf.io/vduq9/). Within-person change in subjective age was specified as follows:</figDesc><table><row><cell></cell><cell cols="13">subjective age</cell><cell>ti</cell><cell cols="2">=</cell><cell></cell><cell cols="2">β</cell><cell>0</cell><cell>i</cell><cell>+</cell><cell>1 i β</cell><cell>(</cell><cell>t ime in study</cell><cell>ti</cell><cell>)</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="3">+</cell><cell cols="2">β</cell><cell>2 i</cell><cell>time in study</cell><cell>2 2</cell><cell>ti</cell></row><row><cell cols="20">Interindividual differences in the person-specific coef-</cell></row><row><cell cols="20">ficients were modeled as follows:</cell></row><row><cell>β</cell><cell>0</cell><cell>i</cell><cell>=</cell><cell cols="2">γ</cell><cell></cell><cell>0 0</cell><cell cols="2">+</cell><cell>γ</cell><cell>0 1</cell><cell>(</cell><cell cols="2">age</cell><cell>i</cell><cell cols="2">)</cell><cell cols="2">+</cell><cell>γ</cell><cell>0 2</cell><cell>(</cell><cell>i year of study entry</cell><cell>)</cell></row><row><cell></cell><cell></cell><cell></cell><cell>+</cell><cell>γ</cell><cell cols="3">0 8</cell><cell>(</cell><cell cols="9">Birth Year i i</cell><cell cols="2">)</cell><cell>u + 0</cell><cell>i</cell><cell>,</cell></row><row><cell cols="3">β 1</cell><cell></cell><cell cols="3">γ</cell><cell>1</cell><cell></cell><cell></cell><cell>γ</cell><cell>11</cell><cell></cell><cell cols="2">age</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>γ</cell><cell>12</cell><cell>year of study entry</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="2">γ</cell><cell cols="2">18</cell><cell></cell><cell cols="9">Birth Year</cell><cell></cell></row></table><note><p>e ( ) + , with person i's score on subjective age at observation t. Subjective age ti is specified as a function of a personspecific intercept coefficient, β 0i ; a person-specific linear slope coefficient, β 1i ; a person-specific quadratic slope coefficient (which was retained in the model only when statistically significant), β 2i ; and residual error, e ti .</p></note></figure>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Declaration of Conflicting Interests</head><p>The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Funding</head><p>The German Ageing Survey was funded under Grant No. 301-6083-05/003*2 by the German Federal Ministry for Family Affairs, Senior Citizens, Women, and Youth. The content of the article is the sole responsibility of the authors.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 1 .</head><label>1</label><figDesc>Fig.1. Cohort differences in model-implied trajectories of subjective age among middle-age and older adults in the German Ageing Survey. For each cohort, the figure shows model-implied within-person changes over 5 years in 25+ age bins of 1-year age increments as short, thick lines. The single linear age and selection trend for each cohort is shown as a long, thin line. In old age, the earlier-born cohort (dashed lines) exhibited within-person reductions in subjective age discrepancies (i.e., they felt less young), whereas later-born cohorts (solid black and gray lines) reported feeling younger and exhibited larger within-person stability in subjective age discrepancy across old age (e.g., less steep within-person increase of the subjective age quotient over time).</figDesc><graphic coords="7,68.69,73.57,480.14,300.86" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Overview of Participants From the German Ageing Survey Who Were Analyzed in the Present Study Subjective age was calculated as follows: proportional discrepancy score = 100 × (subjective age -chronological age)/ chronological age. b School and professional education were combined into one categorical variable (1-4; low, medium, elevated, and high education, respectively) based on the International Standard Classification of Education coding (United Nations Educational, Scientific and Cultural Organization, 2012). six-item De Jong-Gierveld loneliness scale (De Jong Gierveld &amp; Van Tilburg, 2006; Cronbach's αs from 1996 to 2014 =.82, .83, .84, .83, respectively). Health was measured as the number of chronic diseases based on a list of 11 chronic conditions (e.g., diabetes, cancer, cardiovascular diseases). All correlates, including loneliness and number of chronic diseases, were specified as time-invariant predictors. If an individual had a missing score on one of the correlates, but a nonmissing score at a later measurement occasion, we used the score from the later measurement occasion.</figDesc><table><row><cell></cell><cell></cell><cell cols="2">Year started</cell><cell></cell></row><row><cell>Variable</cell><cell>1996</cell><cell>2002</cell><cell>2008</cell><cell>2014</cell></row><row><cell>Maximum observations</cell><cell>7</cell><cell>6</cell><cell>5</cell><cell>3</cell></row><row><cell>Maximum years in study</cell><cell>24</cell><cell>18</cell><cell>12</cell><cell>6</cell></row><row><cell>Years between waves</cell><cell>2.42-6.68</cell><cell>2.42-6.68</cell><cell>2.33-3.67</cell><cell>2.50-3.51</cell></row><row><cell>n at Time 1</cell><cell>3,837</cell><cell>2,600</cell><cell>4,294</cell><cell>4,197</cell></row><row><cell>Birth year</cell><cell>1911-1956</cell><cell>1917-1962</cell><cell>1923-1968</cell><cell>1929-1974</cell></row><row><cell>Mean age in years at Time 1 (SD)</cell><cell>59.88 (12.10)</cell><cell>60.93 (12.43)</cell><cell>61.71 (11.84)</cell><cell>62.22 (11.44)</cell></row><row><cell>Mean subjective age a in years at</cell><cell>-12.36 (11.40;</cell><cell>-12.07 (11.65;</cell><cell>-12.50 (11.34;</cell><cell>-12.93 (11.71;</cell></row><row><cell>Time 1 (SD; [range])</cell><cell>[-61.54, 37.93])</cell><cell>[-64.71, 31.58])</cell><cell>[-63.64, 40.35])</cell><cell>[-64.29, 40.98])</cell></row><row><cell>Women (%)</cell><cell>49</cell><cell>50</cell><cell>49</cell><cell>50</cell></row><row><cell>Mean years of education b</cell><cell>2.27</cell><cell>2.37</cell><cell>2.49</cell><cell>2.62</cell></row></table><note><p>a</p></note></figure>
 <figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Results From Growth Models of Subjective Age: The Role of Chronological Age, Year of Birth, and Correlates Age (in decades) represents the median of all observations per participants and was centered at 6.34 decades (63.4 years). Year of birth was centered at 1936. Year of study entry was centered at 1996. Means of all predictors were grand-mean centered for the group of individuals who entered the study in 1996 (reference group). a The proportion of explained variance of the subjective age intercept was 0.018 without correlates and 0.088 with correlates. b The proportion of explained variance of the change in subjective age over time in study was 0.014 both with and without correlates.</figDesc><table><row><cell></cell><cell cols="2">Without correlates</cell><cell cols="2">With correlates</cell></row><row><cell>Variable</cell><cell>b</cell><cell>SE</cell><cell>b</cell><cell>SE</cell></row><row><cell>Fixed effects</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Intercept, γ 00</cell><cell>-11.475*</cell><cell>0.143</cell><cell>-11.399*</cell><cell>0.140</cell></row><row><cell>Time, γ 10</cell><cell>0.298*</cell><cell>0.046</cell><cell>0.290*</cell><cell>0.047</cell></row><row><cell>Age, γ 01</cell><cell>-1.588*</cell><cell>0.252</cell><cell>-1.036*</cell><cell>0.250</cell></row><row><cell>Age × Time, γ 11</cell><cell>-0.215*</cell><cell>0.065</cell><cell>-0.197*</cell><cell>0.066</cell></row><row><cell>Year of study entry, γ 02</cell><cell>1.016*</cell><cell>0.142</cell><cell>0.525*</cell><cell>0.140</cell></row><row><cell>Year of Study Entry × Time, γ 12</cell><cell>0.120*</cell><cell>0.025</cell><cell>0.118*</cell><cell>0.026</cell></row><row><cell>Correlates</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Women, γ 03</cell><cell></cell><cell></cell><cell>-1.087*</cell><cell>0.199</cell></row><row><cell>East Germany, γ 04</cell><cell></cell><cell></cell><cell>1.410*</cell><cell>0.166</cell></row><row><cell>Education, γ 05</cell><cell></cell><cell></cell><cell>-0.584*</cell><cell>0.108</cell></row><row><cell>Loneliness, γ 06</cell><cell></cell><cell></cell><cell>0.952*</cell><cell>0.142</cell></row><row><cell>Chronic diseases, γ 07</cell><cell></cell><cell></cell><cell>1.072*</cell><cell>0.050</cell></row><row><cell>Women × Time, γ 13</cell><cell></cell><cell></cell><cell>0.028</cell><cell>0.023</cell></row><row><cell>East Germany × Time, γ 14</cell><cell></cell><cell></cell><cell>0.019</cell><cell>0.024</cell></row><row><cell>Education × Time, γ 15</cell><cell></cell><cell></cell><cell>-0.035*</cell><cell>0.012</cell></row><row><cell>Loneliness × Time, γ 16</cell><cell></cell><cell></cell><cell>-0.002</cell><cell>0.021</cell></row><row><cell>Diseases × Time, γ 17</cell><cell></cell><cell></cell><cell>-0.005</cell><cell>0.008</cell></row><row><cell>Cohort</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Year of birth, γ 08</cell><cell>-0.232*</cell><cell>0.024</cell><cell>-0.120*</cell><cell>0.024</cell></row><row><cell>Year of Birth × Time, γ 18</cell><cell>-0.023*</cell><cell>0.006</cell><cell>-0.022*</cell><cell>0.006</cell></row><row><cell>Year of Birth × Women, γ 09</cell><cell></cell><cell></cell><cell>-0.041*</cell><cell>0.012</cell></row><row><cell>Year of Birth × Education, γ 010</cell><cell></cell><cell></cell><cell>0.021*</cell><cell>0.007</cell></row><row><cell>Random effects</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Variance intercept a</cell><cell>61.747*</cell><cell>1.171</cell><cell>57.321*</cell><cell>1.113</cell></row><row><cell>Variance time b</cell><cell>0.145*</cell><cell>0.014</cell><cell>0.145</cell><cell>0.014</cell></row><row><cell>Covariance intercept, time</cell><cell>-0.257</cell><cell>0.110</cell><cell>-0.232</cell><cell>0.106</cell></row><row><cell>Residual variance</cell><cell>58.281*</cell><cell>0.679</cell><cell>58.176*</cell><cell>0.675</cell></row></table><note><p>Note: German Ageing Survey: N = 14,928, 34,792 observations. Subjective age was calculated as follows: proportional discrepancy score = 100 × (subjective age -chronological age)/ chronological age. *p &lt; .01.</p></note></figure>
 		</body>
 		<back>
-
-			<div type="funding">
-<div><head>Funding</head><p>The <rs type="projectName">German Ageing Survey</rs> was funded under Grant No. <rs type="grantNumber">301-6083-05/003</rs>*2 by the <rs type="funder">German Federal Ministry for Family Affairs, Senior Citizens, Women, and Youth</rs>. The content of the article is the sole responsibility of the authors.</p></div>
-			</div>
-			<listOrg type="funding">
-				<org type="funded-project" xml:id="_ekzxJes">
-					<idno type="grant-number">301-6083-05/003</idno>
-					<orgName type="project" subtype="full">German Ageing Survey</orgName>
-				</org>
-			</listOrg>
 			<div type="annex">
 <div xmlns="http://www.tei-c.org/ns/1.0" />			</div>
 			<div type="references">
@@ -186,33 +175,6 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 				<listBibl>
 
 <biblStruct xml:id="b0">
-	<analytic>
-		<title/>
-	</analytic>
-	<monogr>
-		<title level="j">Mean years of education</title>
-		<imprint>
-			<biblScope unit="issue">27 2</biblScope>
-			<biblScope unit="page" from="37" to="39" />
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b1">
-	<analytic>
-		<title level="a" type="main">as follows: proportional discrepancy score = 100 × (subjective age -chronological age)/ chronological age. b School and professional education were combined into one categorical variable (1-4; low, medium, elevated, and high education, respectively)</title>
-	</analytic>
-	<monogr>
-		<title level="m">based on the International Standard Classification of Education coding (United Nations Educational</title>
-		<imprint>
-			<publisher>Scientific and Cultural Organization</publisher>
-			<date type="published" when="2012">2012</date>
-		</imprint>
-	</monogr>
-	<note>a Subjective age was calculated. References</note>
-</biblStruct>
-
-<biblStruct xml:id="b2">
 	<analytic>
 		<title level="a" type="main">Accelerated increase and decrease in subjective age as a function of changes in loneliness and objective social indicators over a four-year period: Results from the Health and Retirement Study</title>
 		<author>
@@ -241,7 +203,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b3">
+<biblStruct xml:id="b1">
 	<analytic>
 		<title level="a" type="main">New frontiers in the future of aging: From successful aging of the young old to the dilemmas of the fourth age</title>
 		<author>
@@ -264,7 +226,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b4">
+<biblStruct xml:id="b2">
 	<analytic>
 		<title level="a" type="main">Feeling young and in control: Daily control beliefs are associated with younger subjective ages</title>
 		<author>
@@ -287,7 +249,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b5">
+<biblStruct xml:id="b3">
 	<analytic>
 		<title level="a" type="main">Acceleration of biological aging and underestimation of subjective age are risk factors for severe COVID-19</title>
 		<author>
@@ -310,7 +272,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b6">
+<biblStruct xml:id="b4">
 	<analytic>
 		<title level="a" type="main">A limit of the subjective age bias: Feeling younger to a certain degree, but no more, is beneficial for life satisfaction</title>
 		<author>
@@ -336,7 +298,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b7">
+<biblStruct xml:id="b5">
 	<analytic>
 		<title level="a" type="main">Age stereotypes and age stigma: Connections to research on subjective aging</title>
 		<author>
@@ -364,7 +326,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b8">
+<biblStruct xml:id="b6">
 	<analytic>
 		<title level="a" type="main">A systematic review and meta-analysis of subjective age and the association with cognition, subjective well-being, and depression</title>
 		<author>
@@ -387,7 +349,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b9">
+<biblStruct xml:id="b7">
 	<analytic>
 		<title level="a" type="main">Differences in cognitive functioning in two birth cohorts born 20 years apart: Data from the Interdisciplinary Longitudinal Study of Ageing</title>
 		<author>
@@ -416,7 +378,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b10">
+<biblStruct xml:id="b8">
 	<analytic>
 		<title level="a" type="main">A 6-item scale for overall, emotional, and social loneliness: Confirmatory tests on survey data</title>
 		<author>
@@ -442,7 +404,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b11">
+<biblStruct xml:id="b9">
 	<analytic>
 		<title level="a" type="main">Perceived constraints in late midlife: Cohort differences in the Longitudinal Aging Study Amsterdam (LASA)</title>
 		<author>
@@ -471,7 +433,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b12">
+<biblStruct xml:id="b10">
 	<analytic>
 		<title level="a" type="main">Cohort differences in adult-life trajectories of internal and external control beliefs: A tale of more and better maintained internal control and fewer external constraints</title>
 		<author>
@@ -536,7 +498,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b13">
+<biblStruct xml:id="b11">
 	<analytic>
 		<title level="a" type="main">Adult development and aging in historical context</title>
 		<author>
@@ -571,7 +533,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b14">
+<biblStruct xml:id="b12">
 	<analytic>
 		<title level="a" type="main">Inquiry into terminal decline: Five objectives for future study</title>
 		<author>
@@ -594,7 +556,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b15">
+<biblStruct xml:id="b13">
 	<analytic>
 		<title level="a" type="main">Today&apos;s older adults are cognitively fitter than older adults were 20 years ago, but when and how they decline is no different than in the past</title>
 		<author>
@@ -650,7 +612,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b16">
+<biblStruct xml:id="b14">
 	<analytic>
 		<title level="a" type="main">Cohort differences in cognitive aging and terminal decline in the Seattle Longitudinal Study</title>
 		<author>
@@ -682,7 +644,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b17">
+<biblStruct xml:id="b15">
 	<analytic>
 		<title level="a" type="main">Cohort differences in psychosocial function over 20 years: Current older adults feel less lonely and less dependent on external circumstances</title>
 		<author>
@@ -729,7 +691,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b18">
+<biblStruct xml:id="b16">
 	<analytic>
 		<title level="a" type="main">Cohorts based on decade of death: No evidence for secular trends favoring later cohorts in cognitive aging and terminal decline in the AHEAD study</title>
 		<author>
@@ -758,7 +720,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b19">
+<biblStruct xml:id="b17">
 	<analytic>
 		<title level="a" type="main">Gauging effects of historical differences on aging trajectories: The increasing importance of friendships</title>
 		<author>
@@ -778,7 +740,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b20">
+<biblStruct xml:id="b18">
 	<analytic>
 		<title level="a" type="main">Midlife in the 2020s: Opportunities and challenges</title>
 		<author>
@@ -804,7 +766,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b21">
+<biblStruct xml:id="b19">
 	<analytic>
 		<title level="a" type="main">Daten und Methoden des Deutschen Alterssurveys [Data and methods of the German Ageing Survey</title>
 		<author>
@@ -838,7 +800,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b22">
+<biblStruct xml:id="b20">
 	<analytic>
 		<title level="a" type="main">Cohort profile: The German Ageing Survey (DEAS)</title>
 		<author>
@@ -876,7 +838,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b23">
+<biblStruct xml:id="b21">
 	<analytic>
 		<title level="a" type="main">Self-perceptions of aging: Do subjective age and satisfaction with aging change during old age?</title>
 		<author>
@@ -889,7 +851,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 			<persName><forename type="first">J</forename><surname>Smith</surname></persName>
 		</author>
 		<idno type="DOI">10.1093/geronb/63.6.P377</idno>
-		<ptr target="https://doi.org/10.1093/geronb/63.6" />
+		<ptr target="https://doi.org/10.1093/geronb/63" />
 	</analytic>
 	<monogr>
 		<title level="j">The Journals of Gerontology: Series B: Psychological Sciences and Social Sciences</title>
@@ -902,11 +864,24 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b24">
+<biblStruct xml:id="b22">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">P</forename></persName>
+		</author>
+		<idno type="DOI">10.1093/geronb/63.6.P377</idno>
+		<imprint>
+			<biblScope unit="page">377</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
 	<analytic>
 		<title level="a" type="main">Self-perceptions of aging predict mortality and change with approaching death: 16-year longitudinal results from the Berlin Aging Study</title>
 		<author>
-			<persName><forename type="first">D</forename><surname>P377 Kotter-Grühn</surname></persName>
+			<persName><forename type="first">D</forename><surname>Kotter-Grühn</surname></persName>
 		</author>
 		<author>
 			<persName><forename type="first">A</forename><surname>Kleinspehn-Ammerlahn</surname></persName>
@@ -931,7 +906,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b25">
+<biblStruct xml:id="b24">
 	<analytic>
 		<title level="a" type="main">Looking beyond chronological age: Current knowledge and future directions in the study of subjective age</title>
 		<author>
@@ -957,7 +932,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b26">
+<biblStruct xml:id="b25">
 	<analytic>
 		<title level="a" type="main">Increasing negativity of age stereotypes across 200 years: Evidence from a database of 400 million words</title>
 		<author>
@@ -989,7 +964,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b27">
+<biblStruct xml:id="b26">
 	<analytic>
 		<title level="a" type="main">Inconvenient truths about human longevity</title>
 		<author>
@@ -1011,7 +986,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b28">
+<biblStruct xml:id="b27">
 	<analytic>
 		<title level="a" type="main">Subjective age from childhood to advanced old age: A meta-analysis</title>
 		<author>
@@ -1034,7 +1009,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b29">
+<biblStruct xml:id="b28">
 	<analytic>
 		<title level="a" type="main">Growth curve modeling and longitudinal factor analysis</title>
 		<author>
@@ -1061,7 +1036,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<note>7th ed.</note>
 </biblStruct>
 
-<biblStruct xml:id="b30">
+<biblStruct xml:id="b29">
 	<analytic>
 		<title/>
 		<idno type="DOI">10.1002/9781118963418.childpsy120</idno>
@@ -1074,7 +1049,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b31">
+<biblStruct xml:id="b30">
 	<analytic>
 		<title level="a" type="main">People over forty feel 20% younger than their age: Subjective age across the lifespan</title>
 		<author>
@@ -1097,7 +1072,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b32">
+<biblStruct xml:id="b31">
 	<analytic>
 		<title level="a" type="main">Feeling younger, remembering better&apos;: The effect of experimentally induced subjective age on memory performance among Chinese older adults</title>
 		<author>
@@ -1126,7 +1101,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b33">
+<biblStruct xml:id="b32">
 	<analytic>
 		<title level="a" type="main">Determinants and implications of subjective age across adulthood and old age</title>
 		<author>
@@ -1157,7 +1132,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b34">
+<biblStruct xml:id="b33">
 	<analytic>
 		<title level="a" type="main">Subjective age and mortality in three longitudinal samples</title>
 		<author>
@@ -1183,7 +1158,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b35">
+<biblStruct xml:id="b34">
 	<analytic>
 		<title level="a" type="main">Cohort difference in agerelated trajectories in network size in old age: Are networks expanding?</title>
 		<author>
@@ -1206,7 +1181,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b36">
+<biblStruct xml:id="b35">
 	<analytic>
 		<title level="a" type="main">The effect of birth cohort on well-being: The legacy of economic hard times</title>
 		<author>
@@ -1241,7 +1216,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b37">
+<biblStruct xml:id="b36">
 	<monogr>
 		<title level="m">International Standard Classification of Education: ISCED 2011</title>
 		<imprint>
@@ -1251,7 +1226,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b38">
+<biblStruct xml:id="b37">
 	<analytic>
 		<title level="a" type="main">Subjective age and attitudes toward own aging across two decades of historical time</title>
 		<author>
@@ -1304,7 +1279,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b39">
+<biblStruct xml:id="b38">
 	<analytic>
 		<title level="a" type="main">They&quot; are old but &quot;I&quot; feel younger: Age-group dissociation as a self-protective strategy in old age</title>
 		<author>
@@ -1325,7 +1300,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b40">
+<biblStruct xml:id="b39">
 	<analytic>
 		<title level="a" type="main">Why people feel younger: Motivational and social-cognitive mechanisms of the subjective age bias and its implications for work and organizations</title>
 		<author>
@@ -1346,7 +1321,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b41">
+<biblStruct xml:id="b40">
 	<analytic>
 		<title level="a" type="main">Assessing the impact of subjective aging on health-related outcomes: An updated meta-analysis of the evidence from longitudinal studies</title>
 		<author>
@@ -1381,7 +1356,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<note>in press</note>
 </biblStruct>
 
-<biblStruct xml:id="b42">
+<biblStruct xml:id="b41">
 	<analytic>
 		<title level="a" type="main">Feeling younger as a stress buffer: Subjective age moderates the effect of perceived stress on change in functional health</title>
 		<author>

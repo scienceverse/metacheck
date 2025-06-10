@@ -1,5 +1,5 @@
 ---
-title: All P Values Module Validation
+title: P Value Module sValidation
 format:
   html:
     toc: true
@@ -15,6 +15,8 @@ library(tidyverse)
 # use local dev version
 devtools::load_all("../../")
 ```
+
+## all_p_values
 
 This module just needs a logical check that it;'s mnatching what we'd hope and not what we don't.
 
@@ -81,9 +83,67 @@ table[table$expected != table$observed, ]
 all_p <- module_run(psychsci, "all_p_values")
 
 ptable <- all_p$table |> 
-  separate(text, c(NA, "operator", "value"), sep = "\\s+", remove = FALSE, fill = "right") |>
+  separate(text, c("p", "operator", "value"), sep = "\\s+", remove = FALSE, fill = "right") |>
   mutate(nval = as.numeric(value))
 
-ptable |> count(operator)
+count(ptable, p, operator)
 ```
+
+All instances of uppercase P are not p-values.
+
+```{r}
+all_p$table |>
+  filter(grepl("P", text)) |>
+  expand_text(psychsci) |>
+  pull(expanded) |>
+  unique()
+```
+
+## exact_p
+
+Run code from module to get full table
+
+```{r}
+p <- all_p$table
+
+  operators <- c("=", "<", ">", "~",
+                 "\u2248", # ~~
+                 "\u2260", # !=
+                 "\u2264", # <=
+                 "\u2265", # >=
+                 "\u226A", # <<
+                 "\u226B" # >>
+  ) |> paste(collapse = "")
+
+  # get operator
+  pattern <- paste0("[", operators, "]{1,2}")
+  matches <- gregexpr(pattern, p$text, perl = TRUE)
+  p$p_comp <- regmatches(p$text, matches) |> sapply(`[[`, 1)
+
+  # get value
+  pattern <- paste0("(?<=[", operators, "]{1,2}).*$")
+  matches <- gregexpr(pattern, p$text, perl = TRUE)
+  p$p_value <- regmatches(p$text, matches) |> trimws()
+  p$p_value <- suppressWarnings(as.numeric(p$p_value))
+
+  p$imprecise <- p$p_comp == "<" & p$p_value > .001
+  p$imprecise <- p$imprecise | !p$p_comp %in% c("=", "<")
+  p$imprecise <- p$imprecise | is.na(p$p_value)
+```
+
+```{r}
+ggplot(p, aes(x = p_value, color = p_comp)) +
+  geom_density(linewidth = 1) +
+  coord_cartesian(xlim = c(0, 1)) +
+  guides(color = guide_legend(position = "inside")) +
+  labs(x = "p-value", y = NULL, color = NULL,
+       title = "P-Value Distribution by Operator") +
+  scale_color_manual(values = c("firebrick", "darkgreen", "dodgerblue3", "darkorchid")) +
+  theme_bw(base_size = 13) +
+  theme(legend.position.inside = c(.2, .7),
+        legend.background = element_blank())
+
+ggsave("~/Desktop/pval.png", width = 7, height= 5)
+```
+
 

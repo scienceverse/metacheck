@@ -31,7 +31,7 @@ expand_text <- function(results_table,
   if (!is.data.frame(results_table)) {
     if (inherits(results_table, "ppchk_module_output")) {
       results_table <- results_table$table
-    } else if (inherits(results_table, "scivrs_paper")) {
+    } else if (is_paper(results_table)) {
       results_table <- results_table$full_text
     } else {
       stop("The results table was not a table or object containing a table")

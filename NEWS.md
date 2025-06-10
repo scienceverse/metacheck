@@ -1,3 +1,8 @@
+# papercheck 0.0.0.9042
+
+* New OSF functions and vignette
+* Build pkgdown manually 
+
 # papercheck 0.0.0.9041
 
 * Fixed a bug in `validate()` that returned incorrect summary stats if the data type of an expected column didn't match the data type of an observed column (e.g., double vs integer)

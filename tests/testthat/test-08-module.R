@@ -157,7 +157,7 @@ test_that("all_p_values", {
   # iteration: text modules need no special adaptation
   paper <- psychsci
   expect_no_error( mod_output <- module_run(paper, module) )
-  expect_equal(nrow(mod_output$table), 4853)
+  expect_equal(nrow(mod_output$table), 4832)
 
   # check problem with minus sign at end
   minus <- mod_output$table$text[grep("-$", mod_output$table$text)]

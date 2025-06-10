@@ -7,13 +7,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		<fileDesc>
 			<titleStmt>
 				<title level="a" type="main">.Effort Exertion Reduces Response Caution research-article2020</title>
-				<funder ref="#_Z2dJCRz">
+				<funder ref="#_NjUm6RV">
 					<orgName type="full">Natural Sciences and Engineering Research Council of Canada</orgName>
 				</funder>
-				<funder ref="#_yGDJmMr">
-					<orgName type="full">unknown</orgName>
-				</funder>
-				<funder ref="#_fkUwrc3">
+				<funder ref="#_DASMKAE">
 					<orgName type="full">Social Sciences and Humanities Research Council of Canada</orgName>
 				</funder>
 			</titleStmt>
@@ -92,8 +89,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		</fileDesc>
 		<encodingDesc>
 			<appInfo>
-				<application version="0.8.1" ident="GROBID" when="2025-05-20T19:50+0000">
+				<application version="0.8.2" ident="GROBID" when="2025-06-03T12:36+0000">
 					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">a91ee48</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=false, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], sentenceSegmentation=false, flavor=null</label>
 					<ref target="https://github.com/kermitt2/grobid"/>
 				</application>
 			</appInfo>
@@ -118,47 +117,45 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</teiHeader>
 	<text xml:lang="en">
 		<body>
-<div xmlns="http://www.tei-c.org/ns/1.0"><p>What are the consequences of exerting effort? Many people intuitively believe in ego depletion <ref type="bibr">(Francis &amp; Job, 2018)</ref>, the idea that exerting effortful control depletes one's energy <ref type="bibr">(Baumeister &amp; Vohs, 2016)</ref>. However, highpowered preregistered studies <ref type="bibr" target="#b3">(Garrison, Finley, &amp; Schmeichel, 2019;</ref><ref type="bibr" target="#b5">Hagger et al., 2016)</ref>, meta-analyses <ref type="bibr">(Carter, Kofler, Forster, &amp; McCullough, 2015)</ref>, and theoretical reviews <ref type="bibr" target="#b1">(Friese, Loschelder, Gieseler, Frankenbach, &amp; Inzlicht, 2019;</ref><ref type="bibr">Inzlicht &amp; Friese, 2019)</ref> suggest that laboratory depletion effects are small or potentially nonexistent and that previous work suffers from limitations such as ineffective experimental manipulations and low statistical power. Here, in four preregistered studies, we developed a paradigm that addresses previous methodological limitations and provides insights into the effects of effort exertion.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Ego-Depletion Controversy</head><p>In the first tests of ego depletion (i.e., <ref type="bibr" target="#b0">Baumeister, Bratslavsky, Muraven, &amp; Tice, 1998)</ref>, one group of participants initially completed a difficult self-control task (depletion group; e.g., forced to eat radishes instead of chocolates), and another group completed an easier task (control group; e.g., allowed to eat chocolates). Both groups then completed a second, unrelated self-control task (e.g., worked on unsolvable puzzles), which served as the dependent variable (e.g., persistence duration on puzzles). The depletion group showed reduced selfcontrol on the second task compared with the control group, providing evidence for ego depletion-the idea that self-control runs out after use <ref type="bibr" target="#b1">(Friese et al., 2019)</ref>.</p><p>Subsequent studies found that depletion influenced diverse outcomes even when the depletion or outcome tasks did not entail self-control or inhibitory control (e.g., <ref type="bibr" target="#b15">Moller, Deci, &amp; Ryan, 2006;</ref><ref type="bibr" target="#b17">Schmeichel, 2007)</ref>, suggesting that exerting effort and experiencing fatigue (rather than recruiting inhibitory control) led to depletion effects. Critically, the first meta-analysis of 198 published tests suggested that the effect (d = 0.62, 95% confidence interval, or CI = [0.57, 0.67]) was practically important and deserved further investigation <ref type="bibr" target="#b6">(Hagger, Wood, Stiff, &amp; Chatzisarantis, 2010)</ref>.</p><p>Subsequent evidence, however, suggested otherwise. Researchers began reporting replication failures or much smaller effect sizes (e.g., <ref type="bibr" target="#b19">Tuk, Zhang, &amp; Sweldens, 2015)</ref>. Meta-analyses that were conducted to correct for publication bias (i.e., when significant results are published more frequently than nonsignificant ones) suggest that depletion might be unreal <ref type="bibr">(Carter et al., 2015;</ref><ref type="bibr" target="#b1">Friese &amp; Frankenbach, 2019)</ref>, although subsequent work has questioned the validity of existing bias-correction techniques <ref type="bibr">(Carter, Schönbrodt, Gervais, &amp; Hilgard, 2019)</ref>. These critiques were bolstered by further failures involving either large-scale preregistered replications or reanalyses of large data sets not originally gathered to investigate ego depletion <ref type="bibr">(Etherton et al., 2018;</ref><ref type="bibr" target="#b5">Hagger et al., 2016)</ref>.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Starting Anew: A Novel Approach</head><p>Although the field appears to have hit a dead end, it might be too soon to jettison ego depletion because researchers have relied mainly on one paradigm (i.e., between-subjects laboratory sequential tasks) and has yet to fully examine other approaches. For example, studies using archival data sets, field data, or experience sampling suggest that depletion or carryover fatigue effects may be apparent in people's everyday lives (e.g., <ref type="bibr">Dai, Milkman, Hofmann, &amp; Staats, 2015;</ref><ref type="bibr" target="#b7">Hirshleifer, Levi, Lourie, &amp; Teoh, 2019)</ref>. Although ecologically valid, these studies often cannot control for real-world confounds. Our goal was to create a laboratory paradigm to provide converging evidence to facilitate future research. We also tested the idea that laboratory depletion effects are akin to real-life fatigue effects in that people shift their priorities when tired, resulting in disengagement from ongoing tasks <ref type="bibr" target="#b9">(Inzlicht, Schmeichel, &amp; Macrae, 2014)</ref>.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Strong manipulation and withinsubjects design</head><p>Instead of using standard depletion paradigms, which often use demanding tasks that are thought to tap inhibitory control, we focused on designing a manipulation that robustly elicited states (e.g., effort, fatigue) typically associated with depletion <ref type="bibr" target="#b1">(Friese et al., 2019)</ref>. We used the symbolcounting task, which draws on the shifting and updating aspects of executive function <ref type="bibr" target="#b2">(Garavan, Ross, Li, &amp; Stein, 2000)</ref>. Crucially, we modified the task so that it adapted trial-by-trial to each participant's performance, which ensured that the task was highly demanding for each participant. Second, we used a completely within-subjects design to reduce error variance and increase statistical power <ref type="bibr">(Francis, Milyavskaya, Lin, &amp; Inzlicht, 2018)</ref>. To minimize demand characteristics and learning effects, we had participants complete the low-demand and high-demand tasks on two separate days roughly 1 week apart.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Drift-diffusion modeling</head><p>After the demand manipulation, participants completed the Stroop task, which is often used to assess inhibition abilities <ref type="bibr" target="#b14">(Miyake &amp; Friedman, 2012)</ref>. Importantly, in addition to performing traditional behavioral analyses on reaction time and accuracy, our primary interest was to transform these observed measures into latent variables assumed to underlie performance. We fitted driftdiffusion models, which assume people make speeded decisions by gradually accumulating information until an evidence boundary is reached (Fig. <ref type="figure">1</ref>; <ref type="bibr" target="#b16">Ratcliff &amp; McKoon, 2008)</ref>. This model not only resolved the speed/accuracy trade-off in reaction time tasks <ref type="bibr" target="#b16">(Ratcliff &amp; McKoon, 2008)</ref> but also allowed us to examine whether fatigue effects affect information-processing speed (drift-rate parameter) and response caution or impulsivity (boundary parameter; see Fig. <ref type="figure">1</ref> for an explanation). Specifically, we fitted the EZ-diffusion model <ref type="bibr" target="#b22">(Wagenmakers, Van der Maas, &amp; Grasman, 2007)</ref>, which, despite being simpler, often outperforms the full diffusion model and better detects experimental effects <ref type="bibr">(Dutilh et al., 2019;</ref><ref type="bibr" target="#b21">van Ravenzwaaij, Donkin, &amp; Vandekerckhove, 2017)</ref>. Given the success of this modeling approach in explaining individual differences and how experimental manipulations influence psychological processes <ref type="bibr">(Evans &amp; Wagenmakers, 2019)</ref>, these latent variables can provide insights into the psychology underlying depletion.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>What are the consequences of exerting effort? Many people intuitively believe in ego depletion <ref type="bibr" target="#b12">(Francis &amp; Job, 2018)</ref>, the idea that exerting effortful control depletes one's energy <ref type="bibr" target="#b1">(Baumeister &amp; Vohs, 2016)</ref>. However, highpowered preregistered studies <ref type="bibr" target="#b17">(Garrison, Finley, &amp; Schmeichel, 2019;</ref><ref type="bibr" target="#b19">Hagger et al., 2016)</ref>, meta-analyses <ref type="bibr" target="#b3">(Carter, Kofler, Forster, &amp; McCullough, 2015)</ref>, and theoretical reviews <ref type="bibr" target="#b15">(Friese, Loschelder, Gieseler, Frankenbach, &amp; Inzlicht, 2019;</ref><ref type="bibr">Inzlicht &amp; Friese, 2019)</ref> suggest that laboratory depletion effects are small or potentially nonexistent and that previous work suffers from limitations such as ineffective experimental manipulations and low statistical power. Here, in four preregistered studies, we developed a paradigm that addresses previous methodological limitations and provides insights into the effects of effort exertion.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Ego-Depletion Controversy</head><p>In the first tests of ego depletion (i.e., <ref type="bibr" target="#b0">Baumeister, Bratslavsky, Muraven, &amp; Tice, 1998)</ref>, one group of participants initially completed a difficult self-control task (depletion group; e.g., forced to eat radishes instead of chocolates), and another group completed an easier task (control group; e.g., allowed to eat chocolates). Both groups then completed a second, unrelated self-control task (e.g., worked on unsolvable puzzles), which served as the dependent variable (e.g., persistence duration on puzzles). The depletion group showed reduced selfcontrol on the second task compared with the control group, providing evidence for ego depletion-the idea that self-control runs out after use <ref type="bibr">(Friese et al., 2019)</ref>.</p><p>Subsequent studies found that depletion influenced diverse outcomes even when the depletion or outcome tasks did not entail self-control or inhibitory control (e.g., <ref type="bibr" target="#b29">Moller, Deci, &amp; Ryan, 2006;</ref><ref type="bibr" target="#b31">Schmeichel, 2007)</ref>, suggesting that exerting effort and experiencing fatigue (rather than recruiting inhibitory control) led to depletion effects. Critically, the first meta-analysis of 198 published tests suggested that the effect (d = 0.62, 95% confidence interval, or CI = [0.57, 0.67]) was practically important and deserved further investigation <ref type="bibr" target="#b20">(Hagger, Wood, Stiff, &amp; Chatzisarantis, 2010)</ref>.</p><p>Subsequent evidence, however, suggested otherwise. Researchers began reporting replication failures or much smaller effect sizes (e.g., <ref type="bibr" target="#b33">Tuk, Zhang, &amp; Sweldens, 2015)</ref>. Meta-analyses that were conducted to correct for publication bias (i.e., when significant results are published more frequently than nonsignificant ones) suggest that depletion might be unreal <ref type="bibr" target="#b3">(Carter et al., 2015;</ref><ref type="bibr">Friese &amp; Frankenbach, 2019)</ref>, although subsequent work has questioned the validity of existing bias-correction techniques <ref type="bibr" target="#b4">(Carter, Schönbrodt, Gervais, &amp; Hilgard, 2019)</ref>. These critiques were bolstered by further failures involving either large-scale preregistered replications or reanalyses of large data sets not originally gathered to investigate ego depletion <ref type="bibr" target="#b9">(Etherton et al., 2018;</ref><ref type="bibr" target="#b19">Hagger et al., 2016)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Starting Anew: A Novel Approach</head><p>Although the field appears to have hit a dead end, it might be too soon to jettison ego depletion because researchers have relied mainly on one paradigm (i.e., between-subjects laboratory sequential tasks) and has yet to fully examine other approaches. For example, studies using archival data sets, field data, or experience sampling suggest that depletion or carryover fatigue effects may be apparent in people's everyday lives (e.g., <ref type="bibr" target="#b5">Dai, Milkman, Hofmann, &amp; Staats, 2015;</ref><ref type="bibr" target="#b21">Hirshleifer, Levi, Lourie, &amp; Teoh, 2019)</ref>. Although ecologically valid, these studies often cannot control for real-world confounds. Our goal was to create a laboratory paradigm to provide converging evidence to facilitate future research. We also tested the idea that laboratory depletion effects are akin to real-life fatigue effects in that people shift their priorities when tired, resulting in disengagement from ongoing tasks <ref type="bibr" target="#b23">(Inzlicht, Schmeichel, &amp; Macrae, 2014)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Strong manipulation and withinsubjects design</head><p>Instead of using standard depletion paradigms, which often use demanding tasks that are thought to tap inhibitory control, we focused on designing a manipulation that robustly elicited states (e.g., effort, fatigue) typically associated with depletion <ref type="bibr">(Friese et al., 2019)</ref>. We used the symbolcounting task, which draws on the shifting and updating aspects of executive function <ref type="bibr" target="#b16">(Garavan, Ross, Li, &amp; Stein, 2000)</ref>. Crucially, we modified the task so that it adapted trial-by-trial to each participant's performance, which ensured that the task was highly demanding for each participant. Second, we used a completely within-subjects design to reduce error variance and increase statistical power <ref type="bibr" target="#b13">(Francis, Milyavskaya, Lin, &amp; Inzlicht, 2018)</ref>. To minimize demand characteristics and learning effects, we had participants complete the low-demand and high-demand tasks on two separate days roughly 1 week apart.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Drift-diffusion modeling</head><p>After the demand manipulation, participants completed the Stroop task, which is often used to assess inhibition abilities <ref type="bibr" target="#b28">(Miyake &amp; Friedman, 2012)</ref>. Importantly, in addition to performing traditional behavioral analyses on reaction time and accuracy, our primary interest was to transform these observed measures into latent variables assumed to underlie performance. We fitted driftdiffusion models, which assume people make speeded decisions by gradually accumulating information until an evidence boundary is reached (Fig. <ref type="figure">1</ref>; <ref type="bibr" target="#b30">Ratcliff &amp; McKoon, 2008)</ref>. This model not only resolved the speed/accuracy trade-off in reaction time tasks <ref type="bibr" target="#b30">(Ratcliff &amp; McKoon, 2008)</ref> but also allowed us to examine whether fatigue effects affect information-processing speed (drift-rate parameter) and response caution or impulsivity (boundary parameter; see Fig. <ref type="figure">1</ref> for an explanation). Specifically, we fitted the EZ-diffusion model <ref type="bibr" target="#b36">(Wagenmakers, Van der Maas, &amp; Grasman, 2007)</ref>, which, despite being simpler, often outperforms the full diffusion model and better detects experimental effects <ref type="bibr" target="#b7">(Dutilh et al., 2019;</ref><ref type="bibr" target="#b35">van Ravenzwaaij, Donkin, &amp; Vandekerckhove, 2017)</ref>. Given the success of this modeling approach in explaining individual differences and how experimental manipulations influence psychological processes <ref type="bibr" target="#b11">(Evans &amp; Wagenmakers, 2019)</ref>, these latent variables can provide insights into the psychology underlying depletion.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Hypotheses</head><p>Studies 1 and 2 were conducted in the laboratory. Studies 3 and 4 were conducted online. We varied the duration of the high-demand task across studies. In Study 1, we preregistered only traditional analyses on the Stroop task but ran exploratory diffusion-model analyses. Studies 2, 3, and 4 were preregistered, confirmatory experiments that tested two primary hypotheses: The high-demand experimental manipulation would reduce boundary and drift rate more than the low-demand manipulation would. These predictions reflect our prediction that exerting effort should reduce subsequent overall task engagement rather than specifically inhibitory control.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Participants</head><p>Study 1 was designed to primarily evaluate the effectiveness of our within-subjects demand manipulation and its effects on traditional Stroop behavioral measures (i.e., accuracy and reaction time). Two hundred fiftythree undergraduates participated (178 women, 71 men, 4 other; mean age = 18.80 years, SD = 2.66; range = 17-46 years; the preregistration is at <ref type="url" target="https://osf.io/hhn3s/">https://osf.io/ hhn3s/</ref>). We also ran exploratory diffusion-model analyses, which we planned to confirm and replicate in Studies 2 to 4, in which we assumed a relatively small effect size (d = 0.26). This effect size reflected our beliefs at the time about preregistration, our skepticism around depletion research, and the likelihood that previous studies might have overestimated effect sizes. We conducted sensitivity analyses using the Power Analysis for General ANOVA Designs program for the R Shiny app <ref type="bibr" target="#b23">(Westfall, 2016)</ref>, which suggested that roughly 130 participants would provide at least 80% statistical power to detect the hypothesized effect. We tried our best to recruit about 130 participants for each study, but because we recruited participants in batches and had to exclude data (see the Exclusion Criteria section), our final sample sizes were not exactly 130: Study 2 (N = 132 undergraduates; 98 women, 32 men, 2 other; mean age = 18.80 years, SD = 1.78; range = 17-29 years; the preregistration is at <ref type="url" target="https://osf.io/xp7hn/">https://osf.io/xp7hn/</ref>), Study 3 (N = 180 Amazon Mechanical Turk, or MTurk, workers; 94 women, 83 men, 3 other; mean age = 34.90 years, SD = 9.93; range = 20-70 years; the preregistration is at <ref type="url" target="https://osf.io/6p8t4/">https://osf.io/6p8t4/</ref>), Study 4 (N = 121 MTurk workers; 63 women, 57 men, 1 other; mean age = 39.50 years, SD = 11.20; range = 20-66 years; the preregistration is at <ref type="url" target="https://osf.io/6sncm/">https://osf.io/6sncm/</ref>). All participants provided informed consent in accordance with policies of the University of Toronto's Institutional Review Board.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Within-subjects design</head><p>To reduce error variance and increase statistical power, we used within-subjects designs in all four studies. To minimize demand characteristics and learning effects, we had each participant complete the low-demand and high-demand tasks on two separate days. In Studies 1  <ref type="bibr" target="#b16">(Ratcliff &amp; McKoon, 2008)</ref>. Panel (a) shows three simulated decisions with different diffusion processes or paths. Each path depicts how one decision process evolved over time. The solid black and dashed lines depict decision processes reaching the correct boundary (i.e., correct responses made) at different rates; higher drift rates terminate sooner at the boundary (i.e., yielding faster reaction times). The light-gray arrows show the direct paths to the correct boundary for these two processes. The dotted line depicts a process that terminated relatively quickly at the error boundary (i.e., resulted in a fast error response). <ref type="bibr">Panel (b)</ref> shows what would happen if the boundaries were reduced for the same three decisions. Decision processes would terminate at the boundaries sooner, although drift rates would remain unchanged, reflecting less evidence accumulation and resulting in noisier or more error responses and faster reaction times. The decision process depicted by the dashed line terminated prematurely at the error boundary. Boundary widths reflect either individual differences in response caution or experimental manipulations (e.g., emphasizing speedy responses reduces boundaries, whereas emphasizing accuracy increases them).</p><p>and 2, undergraduate participants completed the two tasks in two different weeks. Both sessions occurred on the same day of each week at the same time of the day. Each participant was pseudorandomly assigned to complete either the low-demand or high-demand task on the first day on the basis of his or her allocated participant number. Participants in Studies 1 and 2 received course credits for completing the study. In Studies 3 and 4, MTurk workers also completed the two tasks in two different weeks. However, because participants recruited via this online platform usually complete tasks at their convenience, they completed the second task 7 to 12 days after they completed the first task. They also did not have to complete the two tasks at the same time of the day. Each was randomly assigned to complete either the low-demand or high-demand task on the first day. Participants in Studies 3 and 4 received $2.90 and $3.60, respectively, for completing the study.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Procedure and sequential-task paradigm</head><p>Task 1: experimental manipulation. The low-demand task required participants to watch a 5-min wildlife video.</p><p>The high-demand task required participants to complete a titrated symbol-counting task (study materials and code are available at <ref type="url" target="https://osf.io/45gyk/">https://osf.io/45gyk/</ref>; see <ref type="bibr" target="#b2">Garavan et al., 2000)</ref>; the high-demand task lasted approximately 20, 15, 5, and 10 min in Studies 1, 2, 3, and 4, respectively. We did not match the durations of the low-demand and highdemand tasks in Studies 1, 2, and 4 because we wanted to avoid inducing boredom with long but easy control tasks, which might lead to levels of subjective fatigue comparable with those from exerting cognitive effort on a demanding task <ref type="bibr" target="#b13">(Milyavskaya, Inzlicht, Johnson, &amp; Larson, 2019)</ref> and potentially undermine the demand manipulation. Further, previous work using unbalanced designs such as ours have reported stronger effects <ref type="bibr" target="#b18">(Sjåstad &amp; Baumeister, 2018)</ref>. The symbol-counting task is a cognitive task that parametrically manipulates executive demands <ref type="bibr" target="#b2">(Garavan et al., 2000)</ref>. On each trial, participants had to count the number of small black squares that had been presented. Thus, the task heavily taxes the shifting and updating (but not inhibition) aspects of executive function <ref type="bibr" target="#b14">(Miyake &amp; Friedman, 2012)</ref>. To further increase the difficulty of the task, we calibrated the task for each individual such that difficulty was adjusted trial by trial according to the participant's performance on the previous trial. On each trial, multiple small and big squares were presented sequentially (between 11 and 17 squares per trial), and each square was preceded by a fixation cross (Fig. <ref type="figure">2</ref>). The first trial began with 12 squares and a switch frequency of 5 (i.e., the squares within a trial switched 5 times, from small to big square or big to small square). At the end of each trial, participants indicated how many small and how many big squares were presented. That is, participants had to keep a running tally of two lists. If participants responded correctly, the total number of squares in the next trial increased by one, the switch could also increase, and the square display duration decreased by 20 ms (see Table <ref type="table">S1</ref> in the Supplemental Material available online for details on how the switch frequency was determined on each trial and other task details). If participants responded incorrectly, the number of squares on the next trial decreased by one, the square display duration increased by 20 ms, and the switch frequency decreased. These calibration procedures helped to ensure that even without drawing on inhibition processes, the task was demanding and tiring for all participants regardless of individual differences in executive-function abilities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Participants</head><p>Study 1 was designed to primarily evaluate the effectiveness of our within-subjects demand manipulation and its effects on traditional Stroop behavioral measures (i.e., accuracy and reaction time). Two hundred fiftythree undergraduates participated (178 women, 71 men, 4 other; mean age = 18.80 years, SD = 2.66; range = 17-46 years; the preregistration is at <ref type="url" target="https://osf.io/hhn3s/">https://osf.io/  hhn3s/</ref>). We also ran exploratory diffusion-model analyses, which we planned to confirm and replicate in Studies 2 to 4, in which we assumed a relatively small effect size (d = 0.26). This effect size reflected our beliefs at the time about preregistration, our skepticism around depletion research, and the likelihood that previous studies might have overestimated effect sizes. We conducted sensitivity analyses using the Power Analysis for General ANOVA Designs program for the R Shiny app <ref type="bibr" target="#b37">(Westfall, 2016)</ref>, which suggested that roughly 130 participants would provide at least 80% statistical power to detect the hypothesized effect. We tried our best to recruit about 130 participants for each study, but because we recruited participants in batches and had to exclude data (see the Exclusion Criteria section), our final sample sizes were not exactly 130: Study 2 (N = 132 undergraduates; 98 women, 32 men, 2 other; mean age = 18.80 years, SD = 1.78; range = 17-29 years; the preregistration is at <ref type="url" target="https://osf.io/xp7hn/">https://osf.io/xp7hn/</ref>), Study 3 (N = 180 Amazon Mechanical Turk, or MTurk, workers; 94 women, 83 men, 3 other; mean age = 34.90 years, SD = 9.93; range = 20-70 years; the preregistration is at <ref type="url" target="https://osf.io/6p8t4/">https://osf.io/6p8t4/</ref>), Study 4 (N = 121 MTurk workers; 63 women, 57 men, 1 other; mean age = 39.50 years, SD = 11.20; range = 20-66 years; the preregistration is at <ref type="url" target="https://osf.io/6sncm/">https://osf.io/6sncm/</ref>). All participants provided informed consent in accordance with policies of the University of Toronto's Institutional Review Board.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Within-subjects design</head><p>To reduce error variance and increase statistical power, we used within-subjects designs in all four studies. To minimize demand characteristics and learning effects, we had each participant complete the low-demand and high-demand tasks on two separate days. In Studies 1</p><p>Correct Boundary Starting Point Total Reaction Time = Nondecision Time + Decision Time High Drift Rate Low Drift Rate Reduced Boundary Time Error Boundary Error Boundary Time Correct Boundary a b Fig. 1. Schematic illustrating the drift-diffusion model, which decomposes the joint distributions of reaction time and accuracy into latent variables including drift rate, decision boundary, nondecision time, and starting point <ref type="bibr" target="#b30">(Ratcliff &amp; McKoon, 2008)</ref>. Panel (a) shows three simulated decisions with different diffusion processes or paths. Each path depicts how one decision process evolved over time. The solid black and dashed lines depict decision processes reaching the correct boundary (i.e., correct responses made) at different rates; higher drift rates terminate sooner at the boundary (i.e., yielding faster reaction times). The light-gray arrows show the direct paths to the correct boundary for these two processes. The dotted line depicts a process that terminated relatively quickly at the error boundary (i.e., resulted in a fast error response). <ref type="bibr">Panel (b)</ref> shows what would happen if the boundaries were reduced for the same three decisions. Decision processes would terminate at the boundaries sooner, although drift rates would remain unchanged, reflecting less evidence accumulation and resulting in noisier or more error responses and faster reaction times. The decision process depicted by the dashed line terminated prematurely at the error boundary. Boundary widths reflect either individual differences in response caution or experimental manipulations (e.g., emphasizing speedy responses reduces boundaries, whereas emphasizing accuracy increases them).</p><p>and 2, undergraduate participants completed the two tasks in two different weeks. Both sessions occurred on the same day of each week at the same time of the day. Each participant was pseudorandomly assigned to complete either the low-demand or high-demand task on the first day on the basis of his or her allocated participant number. Participants in Studies 1 and 2 received course credits for completing the study. In Studies 3 and 4, MTurk workers also completed the two tasks in two different weeks. However, because participants recruited via this online platform usually complete tasks at their convenience, they completed the second task 7 to 12 days after they completed the first task. They also did not have to complete the two tasks at the same time of the day. Each was randomly assigned to complete either the low-demand or high-demand task on the first day. Participants in Studies 3 and 4 received $2.90 and $3.60, respectively, for completing the study.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Procedure and sequential-task paradigm</head><p>Task 1: experimental manipulation. The low-demand task required participants to watch a 5-min wildlife video.</p><p>The high-demand task required participants to complete a titrated symbol-counting task (study materials and code are available at <ref type="url" target="https://osf.io/45gyk/">https://osf.io/45gyk/</ref>; see <ref type="bibr" target="#b16">Garavan et al., 2000)</ref>; the high-demand task lasted approximately 20, 15, 5, and 10 min in Studies 1, 2, 3, and 4, respectively. We did not match the durations of the low-demand and highdemand tasks in Studies 1, 2, and 4 because we wanted to avoid inducing boredom with long but easy control tasks, which might lead to levels of subjective fatigue comparable with those from exerting cognitive effort on a demanding task <ref type="bibr" target="#b27">(Milyavskaya, Inzlicht, Johnson, &amp; Larson, 2019)</ref> and potentially undermine the demand manipulation. Further, previous work using unbalanced designs such as ours have reported stronger effects <ref type="bibr" target="#b32">(Sjåstad &amp; Baumeister, 2018)</ref>. The symbol-counting task is a cognitive task that parametrically manipulates executive demands <ref type="bibr" target="#b16">(Garavan et al., 2000)</ref>. On each trial, participants had to count the number of small black squares that had been presented. Thus, the task heavily taxes the shifting and updating (but not inhibition) aspects of executive function <ref type="bibr" target="#b28">(Miyake &amp; Friedman, 2012)</ref>. To further increase the difficulty of the task, we calibrated the task for each individual such that difficulty was adjusted trial by trial according to the participant's performance on the previous trial. On each trial, multiple small and big squares were presented sequentially (between 11 and 17 squares per trial), and each square was preceded by a fixation cross (Fig. <ref type="figure">2</ref>). The first trial began with 12 squares and a switch frequency of 5 (i.e., the squares within a trial switched 5 times, from small to big square or big to small square). At the end of each trial, participants indicated how many small and how many big squares were presented. That is, participants had to keep a running tally of two lists. If participants responded correctly, the total number of squares in the next trial increased by one, the switch could also increase, and the square display duration decreased by 20 ms (see Table <ref type="table">S1</ref> in the Supplemental Material available online for details on how the switch frequency was determined on each trial and other task details). If participants responded incorrectly, the number of squares on the next trial decreased by one, the square display duration increased by 20 ms, and the switch frequency decreased. These calibration procedures helped to ensure that even without drawing on inhibition processes, the task was demanding and tiring for all participants regardless of individual differences in executive-function abilities.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Measures of phenomenology.</head><p>After completing the lowdemand and high-demand tasks, participants answered five questions (presented in random order) about the task and their current mental state using a sliding Likert scale: (a) mental demand: "How mentally demanding was the [task/video task]?" (from very low demand to very demanding); (b) effort: "How hard did you have [to work/to work to watch the video]?" (from very little to very hard); (c) frustration: "How insecure, discouraged, irritated, stressed, and annoyed [were you/were you when watching the video]?" (from very little to very high); (d) boredom: "How boring was the [task/video task]?" (from not boring to very boring); (e) fatigue: "I'm mentally fatigued now" (from strongly disagree to strongly agree). Each scale ranged from 1 to 7, but participants did not see the scale ranges and saw only the two text anchors below the scale.</p><p>Task 2: outcome measure. After completing the experimental manipulation and manipulation checks, participants completed a Stroop task with 120 congruent and 60 incongruent trials. On each trial, a word ("red," "blue," or "yellow") was presented in either the color red, blue, or yellow, and participants had to indicate the font color of the word by pressing a key (V = red, B = blue, N = yellow). The same mapping was used for all participants and was displayed at the bottom of the screen throughout the task. On congruent trials, the word and color matched (e.g., the word "red" shown in red font); on incongruent trials, the word and color did not match (e.g., the word "red" shown in blue font). Congruent and incongruent trials were interleaved randomly, and the stimulus on each trial remained on screen until the participant responded or until 2,000 ms had elapsed. If participants failed to respond on three consecutive trials, they were reminded to respond faster and more accurately. Participants practiced 12 trials before completing 180 experimental trials.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Exclusion criteria</head><p>We preregistered the same four exclusion criteria 1 for all four studies to exclude low-quality data (e.g., see the Exclusion Criteria section at <ref type="url" target="https://osf.io/6sncm/">https://osf.io/6sncm/</ref>). First, we excluded participants whose overall accuracy on the high-demand task (titrated symbol-counter task) was less than 20% (3, 9, 25, and 28 participants were excluded in Studies 1, 2, 3, and 4, respectively). Second, for the dependent variable (Stroop task), we excluded trials on which reaction time was faster than 250 ms (0.52%, 0.26%, 1.66%, and 0.93% trials were excluded in Studies 1, 2, 3, and 4, respectively). Third, we used a robust outlier-detection approach (median absolute deviation) rather than the commonly used but problematic ±3-SD approach to exclude trials with outlier reaction times <ref type="bibr" target="#b11">(Leys, Delacre, Mora, Lakens, &amp; Ley, 2019)</ref>. For each participant and within each experimental condition, we excluded trials on which the reaction time was ±3 times the median absolute deviation (5.44%, 5.06%, 5.29%, and 4.68% of trials were excluded in Studies 1, 2, 3, and 4, respectively). Fourth, we used the same robust approach and criterion to exclude participants who made too many errors on congruent Stroop trials (12, 3, 24, and 16 participants were excluded in Studies 1, 2, 3, and 4, respectively). Note that these four criteria did not pertain to our dependent variables because the goal was to exclude extremely low-quality data (e.g., disengaged or inattentive participants who showed little signs of trying) rather than to exclude outliers on the basis of the outcome variables. Rerunning our main analyses with outliers included did not change our main conclusions (Table <ref type="table">S6</ref> in the Supplemental Material).</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Diffusion-model fitting</head><p>We fitted the EZ-diffusion model <ref type="bibr" target="#b22">(Wagenmakers et al., 2007)</ref> to each participant's Stroop data, which transformed the observed reaction time and accuracy variables into the latent variables of drift rate, boundary, and nondecision time (for code, see <ref type="bibr" target="#b12">Lin, 2019)</ref>. This model </p><formula xml:id="formula_0">+ If Wrong, Next Trial -1 Square -20 ms • • • • • • Fig. 2.</formula><p>Example trial from the titrated symbol-counter task used in the high-demand manipulation (adapted from the study by <ref type="bibr" target="#b2">Garavan, Ross, Li, &amp; Stein, 2000)</ref>. This calibrated task heavily taxes the shifting and updating aspects of executive function. On each trial, multiple small and big squares were presented sequentially, and participants reported the number of small and big squares presented at the end of the trial. If participants responded correctly, the total number of squares in the next trial increased, the switch frequency increased, and the square display duration decreased. If participants responded incorrectly, the total number of squares on the next trial decreased, the switch frequency decreased, and the square display duration increased.</p><p>does not compute the starting-point bias because it assumes that the starting point is equidistant from the two boundaries. Furthermore, the boundary parameter is generally assumed to be determined before stimulus onset and therefore should not vary as a function of Stroop stimulus congruency. However, using the EZdiffusion model in our case prevented us from forcing the boundary to be the same for all stimuli. We therefore obtained separate boundary-parameter estimates for congruent and incongruent Stroop stimuli, assuming that participants rapidly adjusted their boundaries immediately after stimulus onset. Despite these assumptions and the fact that the EZdiffusion model is simpler than the full model, several studies have shown that the former often outperforms the latter <ref type="bibr">(Dutilh et al., 2019;</ref><ref type="bibr" target="#b21">van Ravenzwaaij et al., 2017)</ref>. To verify the EZ-diffusion model results, we ran exploratory but preregistered analyses (osf.io/7qcxa) to fit more appropriate models (i.e., diffusion model for conflict tasks; Evans &amp; Servant, 2019), which led to conclusions similar to those obtained via EZ-diffusion modeling (see Figs. <ref type="figure">S2</ref> and<ref type="figure">S3</ref> in the Supplemental Material).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Exclusion criteria</head><p>We preregistered the same four exclusion criteria 1 for all four studies to exclude low-quality data (e.g., see the Exclusion Criteria section at <ref type="url" target="https://osf.io/6sncm/">https://osf.io/6sncm/</ref>). First, we excluded participants whose overall accuracy on the high-demand task (titrated symbol-counter task) was less than 20% (3, 9, 25, and 28 participants were excluded in Studies 1, 2, 3, and 4, respectively). Second, for the dependent variable (Stroop task), we excluded trials on which reaction time was faster than 250 ms (0.52%, 0.26%, 1.66%, and 0.93% trials were excluded in Studies 1, 2, 3, and 4, respectively). Third, we used a robust outlier-detection approach (median absolute deviation) rather than the commonly used but problematic ±3-SD approach to exclude trials with outlier reaction times <ref type="bibr" target="#b25">(Leys, Delacre, Mora, Lakens, &amp; Ley, 2019)</ref>. For each participant and within each experimental condition, we excluded trials on which the reaction time was ±3 times the median absolute deviation (5.44%, 5.06%, 5.29%, and 4.68% of trials were excluded in Studies 1, 2, 3, and 4, respectively). Fourth, we used the same robust approach and criterion to exclude participants who made too many errors on congruent Stroop trials (12, 3, 24, and 16 participants were excluded in Studies 1, 2, 3, and 4, respectively). Note that these four criteria did not pertain to our dependent variables because the goal was to exclude extremely low-quality data (e.g., disengaged or inattentive participants who showed little signs of trying) rather than to exclude outliers on the basis of the outcome variables. Rerunning our main analyses with outliers included did not change our main conclusions (Table <ref type="table">S6</ref> in the Supplemental Material).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Diffusion-model fitting</head><p>We fitted the EZ-diffusion model <ref type="bibr" target="#b36">(Wagenmakers et al., 2007)</ref> to each participant's Stroop data, which transformed the observed reaction time and accuracy variables into the latent variables of drift rate, boundary, and nondecision time (for code, see <ref type="bibr" target="#b26">Lin, 2019)</ref>. This model </p><formula xml:id="formula_0">+ If Wrong, Next Trial -1 Square -20 ms • • • • • • Fig. 2.</formula><p>Example trial from the titrated symbol-counter task used in the high-demand manipulation (adapted from the study by <ref type="bibr" target="#b16">Garavan, Ross, Li, &amp; Stein, 2000)</ref>. This calibrated task heavily taxes the shifting and updating aspects of executive function. On each trial, multiple small and big squares were presented sequentially, and participants reported the number of small and big squares presented at the end of the trial. If participants responded correctly, the total number of squares in the next trial increased, the switch frequency increased, and the square display duration decreased. If participants responded incorrectly, the total number of squares on the next trial decreased, the switch frequency decreased, and the square display duration increased.</p><p>does not compute the starting-point bias because it assumes that the starting point is equidistant from the two boundaries. Furthermore, the boundary parameter is generally assumed to be determined before stimulus onset and therefore should not vary as a function of Stroop stimulus congruency. However, using the EZdiffusion model in our case prevented us from forcing the boundary to be the same for all stimuli. We therefore obtained separate boundary-parameter estimates for congruent and incongruent Stroop stimuli, assuming that participants rapidly adjusted their boundaries immediately after stimulus onset. Despite these assumptions and the fact that the EZdiffusion model is simpler than the full model, several studies have shown that the former often outperforms the latter <ref type="bibr" target="#b7">(Dutilh et al., 2019;</ref><ref type="bibr" target="#b35">van Ravenzwaaij et al., 2017)</ref>. To verify the EZ-diffusion model results, we ran exploratory but preregistered analyses (osf.io/7qcxa) to fit more appropriate models (i.e., diffusion model for conflict tasks; <ref type="bibr" target="#b10">Evans &amp; Servant, 2019)</ref>, which led to conclusions similar to those obtained via EZ-diffusion modeling (see Figs. <ref type="figure">S2</ref> and <ref type="figure">S3</ref> in the Supplemental Material).</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Preregistered hypotheses and analyses</head><p>Phenomenology. We expected participants to report higher mental demand, effort exerted, frustration, boredom, and fatigue in the high-demand than in the lowdemand condition.</p><p>Primary hypotheses. We expected the high-demand condition to have a smaller boundary than the low-demand condition after controlling for Stroop congruency (trial type: congruent vs. incongruent), which would reflect less cautious or more impulsive responding after completing the high-demand task. We also expected the high-demand condition to have lower drift rate than the low-demand condition after controlling for Stroop congruency, which would reflect a slower information-processing rate. These analyses reflected our belief at the time that our demand manipulation should reduce overall task motivation and engagement rather than specifically reduce self-control or inhibition abilities. Note that we preregistered these two hypotheses only for Studies 2 to 4 but not Study 1, for which we preregistered only traditional Stroop behavioral effects. Finally, another plausible outcome 2 we did not preregister (and failed to observe in our data) is that effort exertion reduces drift rate and that participants might compensate by increasing boundary separation to ensure they maintain acceptable accuracies on the task.</p><p>Secondary hypotheses. We also tested additional hypotheses to indirectly examine the effects of high and low demand, but the primary effects described above did not hinge on these secondary effects. On the basis of the results from Study 1, we expected that (a) participants who reported feeling more fatigued, frustrated, or bored 3 after completing the first task would have lower drift rate or boundary on the Stroop task and (b) incongruent Stroop trials would be associated with lower drift rate and boundary 4 than congruent Stroop trials.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Exploratory analyses</head><p>We investigated the effects of our manipulations on traditional Stroop behavioral outcomes (reported in the Results section). Note that we preregistered these behavioral effects in Study 1 but not Studies 2 to 4. In addition, we verified the results of the EZ-diffusion model by running exploratory preregistered analyses (osf.io/7qcxa) that involved fitting more complicated diffusion models <ref type="bibr">(Evans &amp; Servant, 2019;</ref><ref type="bibr" target="#b20">Ulrich, Schröter, Leuthold, &amp; Birngruber, 2015)</ref>. Finally, because Stroop performance might be influenced by practice or learning effects (because of our within-subjects design), we also tested for session-order effects.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statistical analyses</head><p>Continuous predictors were mean-centered on participant, and categorical predictors were recoded before model fitting: condition (low demand = -0.5; high demand = 0.5) and Stroop congruency (congruent = -0.5; incongruent = 0.5). We fitted Bayesian multilevel models using the R package brms <ref type="bibr">(Bürkner, 2017)</ref>. We first fitted two-level varying-intercept multilevel models separately for each study in which data/units clustered within participants:</p><formula xml:id="formula_1">y X i i i i = + + [ ] β β 0 participant R syntax 1 participant [ ] ; :( | ).</formula><p>To meta-analyze the four studies to obtain an overall effect, we fitted three-level varying-intercept multilevel models in which data were clustered within participants, who were in turn clustered within studies:</p><formula xml:id="formula_2">y i i i i X = + + [ ] [ ] β β 0 study participant R syntax 1 study partic [ ] ; : ( | / i ipant).</formula><p>For the condition effect (high demand vs. low demand) in each model, we used an informed Gaussian prior of d equal to 0.28 (SD = 0.14), which was based on a Bayesian reanalysis of a depletion study <ref type="bibr" target="#b22">(Wagenmakers &amp; Gronau, 2017)</ref>. The priors were rescaled to the raw scale of each outcome measure so that the prior mean reflected the expected difference between the lowdemand and high-demand conditions, and the standard deviation of the prior distribution was half the prior   mean (Dienes, 2014). For example, for the effects of condition on self-reported demand and boundary, the priors were N(0.36, 0.18) and N(-0.0088, 0.0044), respectively (see Fig. <ref type="figure">S1</ref> in the Supplemental Material for visualizations of the prior and posterior distributions). For other effects that did not directly test the effect of our demand manipulation, we used the standard normal prior, N(0, 1).</p><p>Because the prior influences the posterior, we performed prior-sensitivity analyses by refitting the models using normal priors with the same standard deviations as the informed priors but centered around 0 for the effect of interest; effects not directly testing our demand manipulation had the prior N(0, 1). These priors reflected the belief that our experimental effects would be relatively tightly centered around 0: For example, the priors for the effects of condition on self-reported mental demand and boundary were N(0, 0.18) and N(0, 0.0044), respectively (compare these with the informed priors above). Results from the sensitivity analyses were consistent with our main or original conclusions, suggesting that our findings were robust to prior choice (see Table <ref type="table">S2</ref> in the Supplemental Material for complete results from models fitted using these priors).</p><p>For each model, we ran 20 Markov chain Monte Carlo chains with 2,000 samples and discarded the first 1,000 samples (as burn-in). For each effect, we report the mean of the posterior samples and the 95% highestposterior-density (HPD) interval, which is the narrowest interval containing the specified probability mass. We used bridge sampling to compute Bayes factors (BFs), which reflect the amount of evidence favoring one model over a reduced model that does not contain the effect or hypothesis of interest. To ensure the stability of the results, we report BFs that were the mean of five BF computations. BFs equal to 1 indicate equal evidence for the null and experimental hypotheses. BFs greater than 1 indicate evidence in favor of the experimental hypothesis: from 1 to 3 indicate anecdotal evidence, from 3 to 10 indicate moderate evidence, from 10 to 30 indicate strong evidence, and greater than 30 indicate very strong or decisive evidence <ref type="bibr" target="#b10">(Lee &amp; Wagenmakers, 2013</ref>; but for problems with BFs, see <ref type="bibr" target="#b4">Gelman &amp; Shalizi, 2013)</ref>. Conversely, BFs less than 1 indicate evidence in favor of the null hypothesis. Smaller values indicate stronger evidence for the null hypothesis: BFs from 0.33 to 1 indicate anecdotal evidence, from 0.10 to 0.33 indicates moderate evidence, from 0.03 to 0.10 indicates strong evidence, and less than 0.03 indicate very strong or decisive evidence. All data, materials, and code for the main analyses can be found at <ref type="url" target="https://osf.io/45gyk/">https:// osf.io/45gyk/</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Exploratory analyses</head><p>We investigated the effects of our manipulations on traditional Stroop behavioral outcomes (reported in the Results section). Note that we preregistered these behavioral effects in Study 1 but not Studies 2 to 4. In addition, we verified the results of the EZ-diffusion model by running exploratory preregistered analyses (osf.io/7qcxa) that involved fitting more complicated diffusion models <ref type="bibr" target="#b10">(Evans &amp; Servant, 2019;</ref><ref type="bibr" target="#b34">Ulrich, Schröter, Leuthold, &amp; Birngruber, 2015)</ref>. Finally, because Stroop performance might be influenced by practice or learning effects (because of our within-subjects design), we also tested for session-order effects.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statistical analyses</head><p>Continuous predictors were mean-centered on participant, and categorical predictors were recoded before model fitting: condition (low demand = -0.5; high demand = 0.5) and Stroop congruency (congruent = -0.5; incongruent = 0.5). We fitted Bayesian multilevel models using the R package brms <ref type="bibr" target="#b2">(Bürkner, 2017)</ref>. We first fitted two-level varying-intercept multilevel models separately for each study in which data/units clustered within participants:</p><formula xml:id="formula_1">y X i i i i = + + [ ] β β 0 participant R syntax 1 participant [ ] ; :( | ).</formula><p>To meta-analyze the four studies to obtain an overall effect, we fitted three-level varying-intercept multilevel models in which data were clustered within participants, who were in turn clustered within studies:</p><formula xml:id="formula_2">y i i i i X = + + [ ] [ ] β β 0 study participant R syntax 1 study partic [ ] ; : ( | / i ipant).</formula><p>For the condition effect (high demand vs. low demand) in each model, we used an informed Gaussian prior of d equal to 0.28 (SD = 0.14), which was based on a Bayesian reanalysis of a depletion study <ref type="bibr" target="#b36">(Wagenmakers &amp; Gronau, 2017)</ref>. The priors were rescaled to the raw scale of each outcome measure so that the prior mean reflected the expected difference between the lowdemand and high-demand conditions, and the standard deviation of the prior distribution was half the prior   mean <ref type="bibr" target="#b6">(Dienes, 2014)</ref>. For example, for the effects of condition on self-reported demand and boundary, the priors were N(0.36, 0.18) and N(-0.0088, 0.0044), respectively (see Fig. <ref type="figure">S1</ref> in the Supplemental Material for visualizations of the prior and posterior distributions). For other effects that did not directly test the effect of our demand manipulation, we used the standard normal prior, N(0, 1).</p><p>Because the prior influences the posterior, we performed prior-sensitivity analyses by refitting the models using normal priors with the same standard deviations as the informed priors but centered around 0 for the effect of interest; effects not directly testing our demand manipulation had the prior N(0, 1). These priors reflected the belief that our experimental effects would be relatively tightly centered around 0: For example, the priors for the effects of condition on self-reported mental demand and boundary were N(0, 0.18) and N(0, 0.0044), respectively (compare these with the informed priors above). Results from the sensitivity analyses were consistent with our main or original conclusions, suggesting that our findings were robust to prior choice (see Table <ref type="table">S2</ref> in the Supplemental Material for complete results from models fitted using these priors).</p><p>For each model, we ran 20 Markov chain Monte Carlo chains with 2,000 samples and discarded the first 1,000 samples (as burn-in). For each effect, we report the mean of the posterior samples and the 95% highestposterior-density (HPD) interval, which is the narrowest interval containing the specified probability mass. We used bridge sampling to compute Bayes factors (BFs), which reflect the amount of evidence favoring one model over a reduced model that does not contain the effect or hypothesis of interest. To ensure the stability of the results, we report BFs that were the mean of five BF computations. BFs equal to 1 indicate equal evidence for the null and experimental hypotheses. BFs greater than 1 indicate evidence in favor of the experimental hypothesis: from 1 to 3 indicate anecdotal evidence, from 3 to 10 indicate moderate evidence, from 10 to 30 indicate strong evidence, and greater than 30 indicate very strong or decisive evidence <ref type="bibr" target="#b24">(Lee &amp; Wagenmakers, 2013</ref>; but for problems with BFs, see <ref type="bibr" target="#b18">Gelman &amp; Shalizi, 2013)</ref>. Conversely, BFs less than 1 indicate evidence in favor of the null hypothesis. Smaller values indicate stronger evidence for the null hypothesis: BFs from 0.33 to 1 indicate anecdotal evidence, from 0.10 to 0.33 indicates moderate evidence, from 0.03 to 0.10 indicates strong evidence, and less than 0.03 indicate very strong or decisive evidence. All data, materials, and code for the main analyses can be found at <ref type="url" target="https://osf.io/45gyk/">https://  osf.io/45gyk/</ref>.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Preregistered-Analysis Results</head></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Phenomenology</head><p>Demand. We found strong and consistent effects of condition on self-reported mental demand. In all studies (Fig. <ref type="figure">3</ref>), mental demand was much higher in the high-demand than in the low-demand conditions (Study 1: b = 1.96, 95% HPD = [1.75, 2.17  <ref type="table">1</ref> for more information). These findings suggest that our paradigm was highly effective for eliciting effort-related phenomenology. To meta-analyze the effects across studies, we fitted a three-level multilevel model (data/units clustered within participants, who were clustered within studies). The meta-analytic effect was</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Mental Demand</head><p>Effort Frustration Boredom Fatigue 1 2 3 4 5 6 7 1 2 3 4 5 6 7 1 2 3 4 5 6 7 1 2 3 4 5 6 7 1 2 3 4 5  </p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Latent parameter: boundary</head><p>We report the effect of condition on the boundary parameter after controlling for Stroop congruency, which had strong effects on the boundary parameter in all studies (Fig. <ref type="figure" target="#fig_3">4</ref>, Table <ref type="table">1</ref>). The  b = -0.006, 95% HPD = [-0.01, 0.00], d = -0.13), but only Studies 1 and 3 had effects whose 95% HPD did not include 0. Moreover, results from the three-level multilevel-model meta-analysis provided strong evidence for our preregistered hypothesis that completing a high-demand as opposed to low-demand task would lead to reduced boundary, b = -0.004, 95% HPD = [-0.005, -0.002], BF = 29.10, d = -0.15, 95% HPD = [-0.22, -0.07]; this effect was similar when we used a prior centered around 0 (but retaining the scale of the informed prior), b = -0.003, 95% HPD = [-0.005, -0.001], BF = 88.33, d = -0.13, 95% HPD = [-0.20, -0.06].</p><p>Together, our results provide strong and decisive evidence in favor of the hypothesis that exerting mental effort decreases subsequent boundary separation. Nonetheless, even if reliable, the meta-analytic effect size was small (b = -0.004, d = -0.13) and slightly less than half the expected effect size (prior b = -0.0088, prior d = -0.28; see Fig. <ref type="figure" target="#fig_3">4</ref>). Exploratory analyses including session order and the session-order-by-condition interaction in the models showed that practice or learning effects were strong and consistent with previous work (e.g., <ref type="bibr">Dutilh, Krypotos, &amp; Wagenmakers, 2011)</ref>. Boundary separation was smaller in the second than first session in all studies (BFs &gt; 500), but order did not interact with condition, and the effect of our demand manipulation remained small but highly robust, b = -0.003, 95% HPD = [-0.005, -0.002], BF = 117.67, d = -0.14, 95% HPD = [-0.21, -0.07] (see Fig. <ref type="figure">S6</ref> and Table <ref type="table">S3</ref> in the Supplemental Material).</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Latent parameter: drift rate</head><p>We also report the effect of condition on drift rate after controlling for Stroop congruency, which had strong effects on the drift-rate parameter in all studies (Fig. <ref type="figure" target="#fig_3">4</ref>, Table <ref type="table">1</ref>). The effects of condition on drift rate were inconsistent across studies ( <ref type="formula">Study</ref> from the three-level multilevel-model meta-analysis suggest-contrary to our preregistered hypothesis-that completing a high-demand as opposed to a low-demand task did not lead to reduced drift rate, b = -0.003, 95% HPD = [-0.007, 0.001], BF = 0.06, d = -0.05, 95% HPD = [-0.13, 0.02] (Fig. <ref type="figure" target="#fig_3">4</ref>).</p><p>Exploratory analyses including session order and the session-order-by-condition in the models showed that practice or learning effects were strong; these effects were consistent with previous findings (e.g., <ref type="bibr">Dutilh et al., 2011)</ref>. Drift rate was higher in the second than in the first session in all studies (BFs &gt; 500), reflecting improved task performance. Order did not interact with condition, and drift rate did not differ between the high-demand and low-demand conditions (see Fig. <ref type="figure">S6</ref> and Table <ref type="table">S3</ref>).</p><p>Finally, to verify the results of the EZ-diffusion model, we ran exploratory analyses that fitted the diffusion model for conflict tasks, which is specifically designed for cognitive control tasks such as the Stroop. It models information integration during conflict tasks as a function of controlled and automatic processes; the automatic process varies over time according to a gamma function <ref type="bibr" target="#b20">(Ulrich et al., 2015)</ref>. Consistent with the results of the EZ-diffusion model, these analyses showed that effort exertion reduced boundary separation but had no effect on information integration via controlled (drift-rate parameter) or automatic (ζ parameter) processes. These results bolster our interpretation that exerting effort or being depleted does not selectively impair one's ability to inhibit automatic processes (see Figs. S2-S5 in the Supplemental Material for details and additional results from the regular analytic diffusion model). Boundary-boredom relation. Self-reported boredom was not associated with the boundary parameter in any of the four studies. All 95% HPD intervals included 0 (Table <ref type="table">1</ref>).</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Phenomenology and latent-parameter relations</head><p>Drift rate-fatigue relation. Self-reported fatigue was not associated with the drift-rate parameter in any of the four studies. All 95% HPD intervals included 0 (Table <ref type="table">1</ref>).</p><p>Drift rate-frustration relation. Self-reported frustration was not associated with the drift-rate parameter in any of the four studies. All 95% HPD intervals included 0 (see Table <ref type="table">1</ref>). Exploratory analyses found that session order did not interact with fatigue, frustration, or boredom (see Tables <ref type="table">S4</ref> and<ref type="table">S5</ref> in the Supplemental Material).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Mental Demand</head><p>Effort Frustration Boredom Fatigue 1 2 3 4 5 6 7 1 2 3 4 5 6 7 1 2 3 4 5 6 7 1 2 3 4 5 6 7 1 2 3 4 5 6 7 0.0 0.3 0.6 Rating Density Low-Demand Condition High-Demand Condition d = 2.83 BF &gt; 500 d = 2.75 BF &gt; 500 d = 2.10 BF &gt; 500 d = 0.91 BF &gt; 500 d = 2.49 BF &gt; 500 Fig. 3. Phenomenology collapsed across studies: kernel-density estimates as a function of condition (high demand vs. low demand), separately for each of the self-reported ratings of mental demand, effort, frustration, boredom, and fatigue. The area beneath each density curve sums to 1. See Table 1 for detailed statistics. BF = Bayes factor. equally strong, b = 2.83, 95% HPD = [2.70, 2.96], BF &gt; 500, d = 2.17, 95% HPD = [2.02, 2.33] (see Fig. 3). Selfreported demand was much higher in the high-demand condition (M = 5.61, SD = 1.23) than in the low-demand condition (M = 2.41, SD = 1.36). Effort. Self-reported effort was also much higher in the high-demand than in the low-demand condition in all studies (Study 1: b = 1.90, 95% HPD = [1.69, 2.11], d = 1.42; Study 2: b = 1.58, 95% HPD = [1.31, 1.86], d = 1.11; Study 3: b = 2.37, 95% HPD = [2.11, 2.63], d = 1.72; Study 4: b = 1.99, 95% HPD = [1.66, 2.31], d = 1.29). Results from the three-level multilevel-model meta-analysis suggest that overall, participants reported exerting much more effort in the high-demand condition (M = 5.44, SD = 1.22) than in the low-demand condition (M = 2.33, SD = 1.42; b = 2.75, 95% HPD = [2.61, 2.88], BF &gt; 500, d = 2.09, 95% HPD = [1.94, 2.24]). </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Latent parameter: boundary</head><p>We report the effect of condition on the boundary parameter after controlling for Stroop congruency, which had strong effects on the boundary parameter in all studies (Fig. <ref type="figure" target="#fig_3">4</ref>, Table <ref type="table">1</ref>). The boundary parameter was smaller in the high-demand than in the low-demand condition in all four studies ( <ref type="formula">Study</ref> Table 1 for detailed statistics. BF = Bayes factor. Table 1. Preregistered Analyses: Results From Bayesian Multilevel Models Using Informed Priors Independent and dependent variable Study 1 (20 min) Study 2 (15 min) Study 3 (5 min) Study 4 (10 min) Overall Condition Demand 1.96 [1.75, 2.17] (BF &gt; 500) d = 1.46 [1.25, 1.69] 1.73 [1.45, 2.01] (BF &gt; 500) d = 1.21 [0.93, 1.49] 2.23 [1.96, 2.48] (BF &gt; 500) d = 1.56 [1.29, 1.84] 2.06 [1.73, 2.39] (BF &gt; 500) d = 1.37 [1.03, 1.72] 2.83 [2.70, 2.96] (BF &gt; 500) d = 2.17 [2.02, 2.33] Effort 1.90 [1.69, 2.11] (BF &gt; 500) d = 1.42 [1.20, 1.64] 1.58 [1.31, 1.86] (BF &gt; 500) d = 1.11 [0.85, 1.38] 2.37 [2.11, 2.63] (BF &gt; 500) d = 1.72 [1.42, 2.01] 1.99 [1.66, 2.31] (BF &gt; 500) d = 1.29 [0.98, 1.62] 2.75 [2.61, 2.88] (BF &gt; 500) d = 2.09 [1.94, 2.24] Frustration 2.13 [1.91, 2.36] (BF &gt; 500) d = 1.60 [1.34, 1.87] 1.31 [1.02, 1.59] (BF &gt; 500) d = 0.88 [0.65, 1.13] 1.50 [1.23, 1.77] (BF &gt; 500) d = 0.97 [0.75, 1.22] 1.48 [1.15, 1.78] (BF &gt; 500) d = 0.96 [0.68, 1.26] 2.10 [1.95, 2.24] (BF &gt; 500) d = 1.50 [1.36, 1.64] Boredom 1.13 [0.89, 1.38] (BF &gt; 500) d = 0.72 [0.54, 0.89] 0.69 [0.38, 1.00] (BF &gt; 500) d = 0.43 [0.23, 0.63] 0.60 [0.31, 0.89] (BF = 198.00) d = 0.35 [0.17, 0.53] 0.74 [0.40, 1.08] (BF &gt; 500) d = 0.41 [0.21, 0.61] 0.91 [0.75, 1.08] (BF &gt; 500) d = 0.55 [0.45, 0.66] Fatigue 2.05 [1.84, 2.25] (BF &gt; 500) d = 1.65 [1.37, 1.90] 1.41 [1.13, 1.69] (BF &gt; 500) d = 0.97 [0.72, 1.21] 1.92 [1.65, 2.19] (BF &gt; 500) d = 1.25 [1.01, 1.49] 1.98 [1.64, 2.31] (BF &gt; 500) d = 1.27 [0.97, 1.60] 2.49 [2.35, 2.63] (BF &gt; 500) d = 1.86 [1.70, 2.02]</p><p>b = -0.006, 95% HPD = [-0.01, 0.00], d = -0.13), but only Studies 1 and 3 had effects whose 95% HPD did not include 0. Moreover, results from the three-level multilevel-model meta-analysis provided strong evidence for our preregistered hypothesis that completing a high-demand as opposed to low-demand task would lead to reduced boundary, b = -0.004, 95% HPD = [-0.005, -0.002], BF = 29.10, d = -0.15, 95% HPD = [-0.22, -0.07]; this effect was similar when we used a prior centered around 0 (but retaining the scale of the informed prior), b = -0.003, 95% HPD = [-0.005, -0.001], BF = 88.33, d = -0.13, 95% HPD = [-0.20, -0.06].</p><p>Together, our results provide strong and decisive evidence in favor of the hypothesis that exerting mental effort decreases subsequent boundary separation. Nonetheless, even if reliable, the meta-analytic effect size was small (b = -0.004, d = -0.13) and slightly less than half the expected effect size (prior b = -0.0088, prior d = -0.28; see Fig. <ref type="figure" target="#fig_3">4</ref>). Exploratory analyses including session order and the session-order-by-condition interaction in the models showed that practice or learning effects were strong and consistent with previous work (e.g., <ref type="bibr" target="#b8">Dutilh, Krypotos, &amp; Wagenmakers, 2011)</ref>. Boundary separation was smaller in the second than first session in all studies (BFs &gt; 500), but order did not interact with condition, and the effect of our demand manipulation remained small but highly robust, b = -0.003, 95% HPD = [-0.005, -0.002], BF = 117.67, d = -0.14, 95% HPD = [-0.21, -0.07] (see Fig. <ref type="figure">S6</ref> and Table <ref type="table">S3</ref> in the Supplemental Material).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Latent parameter: drift rate</head><p>We also report the effect of condition on drift rate after controlling for Stroop congruency, which had strong effects on the drift-rate parameter in all studies (Fig. <ref type="figure" target="#fig_3">4</ref>, Table <ref type="table">1</ref>). The effects of condition on drift rate were inconsistent across studies ( <ref type="formula">Study</ref> from the three-level multilevel-model meta-analysis suggest-contrary to our preregistered hypothesis-that completing a high-demand as opposed to a low-demand task did not lead to reduced drift rate, b = -0.003, 95% HPD = [-0.007, 0.001], BF = 0.06, d = -0.05, 95% HPD = [-0.13, 0.02] (Fig. <ref type="figure" target="#fig_3">4</ref>).</p><p>Exploratory analyses including session order and the session-order-by-condition in the models showed that practice or learning effects were strong; these effects were consistent with previous findings (e.g., <ref type="bibr" target="#b8">Dutilh et al., 2011)</ref>. Drift rate was higher in the second than in the first session in all studies (BFs &gt; 500), reflecting improved task performance. Order did not interact with condition, and drift rate did not differ between the high-demand and low-demand conditions (see Fig. <ref type="figure">S6</ref> and Table <ref type="table">S3</ref>).</p><p>Finally, to verify the results of the EZ-diffusion model, we ran exploratory analyses that fitted the diffusion model for conflict tasks, which is specifically designed for cognitive control tasks such as the Stroop. It models information integration during conflict tasks as a function of controlled and automatic processes; the automatic process varies over time according to a gamma function <ref type="bibr" target="#b34">(Ulrich et al., 2015)</ref>. Consistent with the results of the EZ-diffusion model, these analyses showed that effort exertion reduced boundary separation but had no effect on information integration via controlled (drift-rate parameter) or automatic (ζ parameter) processes. These results bolster our interpretation that exerting effort or being depleted does not selectively impair one's ability to inhibit automatic processes (see Figs. S2-S5 in the Supplemental Material for details and additional results from the regular analytic diffusion model). Boundary-boredom relation. Self-reported boredom was not associated with the boundary parameter in any of the four studies. All 95% HPD intervals included 0 (Table <ref type="table">1</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Phenomenology and latent-parameter relations</head><p>Drift rate-fatigue relation. Self-reported fatigue was not associated with the drift-rate parameter in any of the four studies. All 95% HPD intervals included 0 (Table <ref type="table">1</ref>).</p><p>Drift rate-frustration relation. Self-reported frustration was not associated with the drift-rate parameter in any of the four studies. All 95% HPD intervals included 0 (see Table <ref type="table">1</ref>). Exploratory analyses found that session order did not interact with fatigue, frustration, or boredom (see Tables <ref type="table">S4</ref> and <ref type="table">S5</ref> in the Supplemental Material).</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Exploratory-Analysis Results</head><p>Other (nonpreregistered) analyses might provide further insights into the psychology of effort exertion and ego depletion (see Table <ref type="table">2</ref>). Note that because we did not preregister the analyses below, we used normal priors centered around 0 instead of informed priors. However, the three-level multilevel-model meta-analysis also provided evidence for a negative relationship between self-reported effort and boundary, b = -0.001, 95% HPD = [-0.002, 0.00], BF = 16.04, d = -0.05, 95% HPD = [-0.08, -0.02], although the effect was also very small. These two results above suggest that increased feelings of mental demand and effort led to less cautious responding on the Stroop task, although we note that these two ratings correlated strongly in all four studies (rs &gt; .77). Because we consider these analyses exploratory, we caution against overinterpreting these effects and have presented them because we believe that they could provide insights into the effects of different subjective mental states.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Phenomenology and latent-parameter relations</head><p>Drift rate-demand relation. Self-reported demand was not associated with drift rate in any of the studies. All 95% HPD intervals included 0 (Table <ref type="table">2</ref>).</p><p>Drift rate-effort relation. Self-reported effort was also not associated with drift rate in any of the studies. All 95% HPD intervals included 0 (Table <ref type="table">2</ref>).</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Latent parameter: boundary (condition-congruency interaction)</head><p>We fitted a model in which the boundary parameter was predicted by condition, Stroop congruency, and their interaction. Here, we focused on the interaction term because it indicates whether the effect of condition on the boundary parameter varied as a function of Stroop congruency. In all four studies, the 95% HPD intervals of the interaction term included 0 (see Table <ref type="table">2</ref>). Results from the three-level multilevel model were similar, b = 0, 95% HPD = [-0.003, 0.004], BF = 0.43, d = 0.03, 95% HPD = [-0.11, 0.17]. These findings suggest that the effect of condition on the boundary parameter did not vary as a function of Stroop congruency.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Latent parameter: drift rate (condition-congruency interaction)</head><p>We also fitted a model in which the drift-rate parameter was predicted by condition, Stroop congruency, and their interaction. In all studies, the interaction effect was close to 0 (Table <ref type="table">2</ref>), which suggests that the effect of condition on the drift-rate parameter did not vary as a function of Stroop congruency.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Behavioral effects: Stroop accuracy</head><p>We modeled Stroop accuracy (proportion correct) as a function of condition, congruency, and their interaction.</p><p>The congruency effect was robust and consistent across studies (Table <ref type="table">2</ref>), and the results from the three-level multilevel model indicated that accuracy was lower on incongruent trials (M = .90, SD = .11) than congruent trials (M = .98, SD = .03), b = -0.08, 95% HPD = [-0.08, -0.07], BF &gt; 500, d = -1.16, 95% HPD <ref type="bibr">[-1.24, -1.08</ref>]. The condition effect (high vs. low demand) was negative in all studies, but all 95% HPD intervals included 0; however, results from the three-level multilevelmodel meta-analysis suggest some evidence for reduced overall accuracy in the high-demand condition, although the effect was small, b = -0.005, 95% HPD = [-0.01, 0.00], BF = 1.21, d = -0.08, 95% HPD = [-0.15, -0.01] (low-demand condition: M = .941, SD = .09; highdemand condition: M = .935, SD = .09). The congruency-condition interaction effect was close to 0 in all studies, and all 95% HPD intervals included 0 (Table <ref type="table">2</ref>), which suggests that the condition effect did not vary as a function of Stroop congruency.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Behavioral effects: Stroop reaction time</head><p>We also modeled Stroop reaction time (trials with correct responses) as a function of congruency, condition, and their interaction. As expected, the congruency effect was strong and consistent across studies (Table <ref type="table">2)</ref>  <ref type="table">2</ref>). The three-level multilevel-model meta-analysis provided some evidence that across the four studies, overall reaction times were faster in the high-demand condition (M = 0.66 s, SD = 0.13) than in the low-demand condition (M = 0.67 s, SD = 0.13), although the effect was small, b = -0.006, 95% HPD = [-0.01, -0.001], BF = 2.32, d = -0.09, 95% HPD = [-0.17, -0.02]. The congruency-condition interaction effect was close to 0 in all studies (all 95% HPD intervals contained 0; see Table <ref type="table">2</ref>).</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>Our results provide insights into the psychology of effort exertion. Across four studies, our demand manipulation (high vs. low) was highly depleting because it robustly elicited strong effort and fatigue sensations. Diffusion-model analyses provided insights into the effects of effort exertion on cognitive processes that have been previously unexamined.</p><p>For the two preregistered effects on the latent parameters, Bayesian analyses provided strong evidence for reduced boundary but not drift rate after participants completed the high-demand but not the low-demand task. The lack of evidence for reduced drift rate suggests that effort exertion did not worsen participants' subsequent task performance or their abilities to process information. However, reduced boundary separation suggests that participants responded less cautiously, as if they cared less about the task and had lost some of their will to persist and engage fully.</p><p>Crucially, the reduced-boundary effect was not limited to situations involving inhibition (i.e., incongruent Stroop trials), consistent with our theoretical position that exerting effort leads to task reprioritization and disengagement with ongoing tasks <ref type="bibr" target="#b9">(Inzlicht et al., 2014)</ref>. Accordingly, depletion should impair performance on incongruent and congruent Stroop trials. Indeed, exploratory analyses revealed that overall Stroop reaction time and accuracy were lower in the high-demand condition than in the low-demand condition, although the effect was much weaker relative to the boundary effect. Furthermore, results from an extended diffusion model for conflict tasks also suggested that effort exertion affected only boundary separation but not controlled or automatic information-integration processes.</p><p>Further evidence for our theoretical view comes from the finding that participants reported increased boredom in the high-demand than in the low-demand condition, which might indicate unsuccessful attentional engagement when people feel either unable or unwilling to engage with ongoing tasks <ref type="bibr" target="#b24">(Westgate &amp; Wilson, 2018)</ref>. Moreover, participants who reported increased fatigue, demand, or effort also had reduced boundary parameters, but these exploratory effects should be interpreted with caution.</p><p>Our findings suggest that even when tasks elicit strong subjective states related to fatigue, traditional behavioral measures might lack sensitivity to detect downstream effects. Instead, latent variables might be more sensitive. For example, the reduced-boundary effect was about twice as large as the reduced overall Stroop reaction time and accuracy effects, likely because the diffusion model solves the speed/accuracy trade-off associated with reaction time tasks. Given the strengths of the diffusion model (see <ref type="bibr">Evans &amp; Wagenmakers, 2019)</ref>, we suggest that other researchers apply similar approaches or reanalyze previous depletion studies that used speeded reaction time tasks.</p><p>Depletion proponents might celebrate because our results provide strong evidence for and further insights into depletion effects as well as against the null hypothesis that depletion effects do not exist. Skeptics, however, will hasten to highlight various limitations. Only one of two hypotheses were confirmed-and only meta-analytically, with merely two of four individual studies providing evidence for our preregistered hypotheses. Nevertheless, the small but meaningful effect size (reduced boundary effect: d = -0.15) suggests that researchers hoping to examine similar effects should use within-subjects designs to ensure sufficient statistical power, especially given that the boundary effect was present even after we accounted for within-subjects learning effects in our studies. Despite these issues, our work has numerous strengths-strong manipulations, preregistered hypotheses, and cognitive modeling-that have allowed us to rigorously examine the cognitive processes underlying effort exertion.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>Our results provide insights into the psychology of effort exertion. Across four studies, our demand manipulation (high vs. low) was highly depleting because it robustly elicited strong effort and fatigue sensations. Diffusion-model analyses provided insights into the effects of effort exertion on cognitive processes that have been previously unexamined.</p><p>For the two preregistered effects on the latent parameters, Bayesian analyses provided strong evidence for reduced boundary but not drift rate after participants completed the high-demand but not the low-demand task. The lack of evidence for reduced drift rate suggests that effort exertion did not worsen participants' subsequent task performance or their abilities to process information. However, reduced boundary separation suggests that participants responded less cautiously, as if they cared less about the task and had lost some of their will to persist and engage fully.</p><p>Crucially, the reduced-boundary effect was not limited to situations involving inhibition (i.e., incongruent Stroop trials), consistent with our theoretical position that exerting effort leads to task reprioritization and disengagement with ongoing tasks <ref type="bibr" target="#b23">(Inzlicht et al., 2014)</ref>. Accordingly, depletion should impair performance on incongruent and congruent Stroop trials. Indeed, exploratory analyses revealed that overall Stroop reaction time and accuracy were lower in the high-demand condition than in the low-demand condition, although the effect was much weaker relative to the boundary effect. Furthermore, results from an extended diffusion model for conflict tasks also suggested that effort exertion affected only boundary separation but not controlled or automatic information-integration processes.</p><p>Further evidence for our theoretical view comes from the finding that participants reported increased boredom in the high-demand than in the low-demand condition, which might indicate unsuccessful attentional engagement when people feel either unable or unwilling to engage with ongoing tasks <ref type="bibr" target="#b38">(Westgate &amp; Wilson, 2018)</ref>. Moreover, participants who reported increased fatigue, demand, or effort also had reduced boundary parameters, but these exploratory effects should be interpreted with caution.</p><p>Our findings suggest that even when tasks elicit strong subjective states related to fatigue, traditional behavioral measures might lack sensitivity to detect downstream effects. Instead, latent variables might be more sensitive. For example, the reduced-boundary effect was about twice as large as the reduced overall Stroop reaction time and accuracy effects, likely because the diffusion model solves the speed/accuracy trade-off associated with reaction time tasks. Given the strengths of the diffusion model (see <ref type="bibr" target="#b11">Evans &amp; Wagenmakers, 2019)</ref>, we suggest that other researchers apply similar approaches or reanalyze previous depletion studies that used speeded reaction time tasks.</p><p>Depletion proponents might celebrate because our results provide strong evidence for and further insights into depletion effects as well as against the null hypothesis that depletion effects do not exist. Skeptics, however, will hasten to highlight various limitations. Only one of two hypotheses were confirmed-and only meta-analytically, with merely two of four individual studies providing evidence for our preregistered hypotheses. Nevertheless, the small but meaningful effect size (reduced boundary effect: d = -0.15) suggests that researchers hoping to examine similar effects should use within-subjects designs to ensure sufficient statistical power, especially given that the boundary effect was present even after we accounted for within-subjects learning effects in our studies. Despite these issues, our work has numerous strengths-strong manipulations, preregistered hypotheses, and cognitive modeling-that have allowed us to rigorously examine the cognitive processes underlying effort exertion.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusion</head><p>Our paradigm robustly elicited feelings such as effort and fatigue, highlighting its utility for studying these subjective states. Bayesian analyses provided strong evidence for the idea that people disengage after exerting effort. Although we failed to find support for all our hypotheses, we have learned that laboratory depletion effects are elusive even with strong manipulations and latent variables that capture meaningful cognitive processes. But our rigorous approach has much potential to facilitate future empirical and theoretical developments.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Transparency</head><p>Action Editor: Laura King Editor: D. Stephen Lindsay</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>$17.14 in 10 days (11 to 17 Squares per Trial) Question: How Many Small and Big Squares?</figDesc></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>], d = 1.46; Study 2: b = 1.73, 95% HPD = [1.45, 2.01], d = 1.21; Study 3: b = 2.23, 95% HPD = [1.96, 2.48], d = 1.56; Study 4: b = 2.06, 95% HPD = [1.73, 2.39], d = 1.37; see Table</figDesc></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Frustration.</head><label></label><figDesc>Similarly, participants reported feeling more frustrated in the high-demand condition than in the lowdemand condition in all studies (Study 1: b = 2.13, 95% HPD = [1.91, 2.36], d = 1.60; Study 2: b = 1.31, 95% HPD = [1.02, 1.59], d = 0.88; Study 3: b = 1.50, 95% HPD = [1.23, 1.77], d = 0.97; Study 4: b = 1.48, 95% HPD = [1.15, 1.78], d = 0.96). Results from the three-level multilevel-model meta-analysis were similar (low-demand condition: M = 2.19, SD = 1.41; high-demand condition: M = 4.49, SD = 1.70; b = 2.10, 95% HPD = [1.95, 2.24], BF &gt; 500, d = 1.50, 95% HPD [1.36, 1.64]). Boredom. Self-reported boredom was higher in the highdemand condition than in the low-demand condition in all studies (Study 1: b = 1.13, 95% HPD = [0.89, 1.38], d = 0.72; Study 2: b = 0.69, 95% HPD = [0.38, 1.00], d = 0.43; Study 3: b = 0.60, 95% HPD = [0.31, 0.89], d = 0.35; Study 4: b = 0.74, 95% HPD = [0.40, 1.08], d = 0.41). Results from the three-level multilevel-model meta-analysis suggest that the effect was consistent across studies but smaller than the effects on demand, effort, and frustration (low-demand condition: M = 3.53, SD = 1.83; high-demand condition: M = 4.48, SD = 1.87; b = 0.91, 95% HPD = [0.75, 1.08], BF &gt; 500, d = 0.55, 95% HPD = [0.45, 0.66]). Fatigue. Finally, participants reported higher fatigue in the high-demand condition than in the low-demand condition in all studies (Study 1: b = 2.05, 95% HPD = [1.84, 2.25], d = 1.65; Study 2: b = 1.41, 95% HPD = [1.13, 1.69], d = 0.97; Study 3: b = 1.92, 95% HPD = [1.65, 2.19], d = 1.25; Study 4: b = 1.98, 95% HPD = [1.64, 2.31], d = 1.27). Results from the three-level multilevel-model meta-analysis were similar (low-demand condition: M = 2.11, SD = 1.30; high-demand condition: M = 4.87, SD = 1.58; b = 2.49, 95% HPD = [2.35, 2.63], BF &gt; 500, d = 1.86, 95% HPD = [1.70, 2.02], which suggests that our high-demand task was effective in eliciting fatigue.</figDesc></figure>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Transparency</head><p>Action Editor: Laura King Editor: D. Stephen Lindsay</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><figDesc>$17.14 in 10 days (11 to 17 Squares per Trial) Question: How Many Small and Big Squares?</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><figDesc>], d = 1.46; Study 2: b = 1.73, 95% HPD = [1.45, 2.01], d = 1.21; Study 3: b = 2.23, 95% HPD = [1.96, 2.48], d = 1.56; Study 4: b = 2.06, 95% HPD = [1.73, 2.39], d = 1.37; see Table</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Frustration.</head><figDesc>Similarly, participants reported feeling more frustrated in the high-demand condition than in the lowdemand condition in all studies (Study 1: b = 2.13, 95% HPD = [1.91, 2.36], d = 1.60; Study 2: b = 1.31, 95% HPD = [1.02, 1.59], d = 0.88; Study 3: b = 1.50, 95% HPD = [1.23, 1.77], d = 0.97; Study 4: b = 1.48, 95% HPD = [1.15, 1.78], d = 0.96). Results from the three-level multilevel-model meta-analysis were similar (low-demand condition: M = 2.19, SD = 1.41; high-demand condition: M = 4.49, SD = 1.70; b = 2.10, 95% HPD = [1.95, 2.24], BF &gt; 500, d = 1.50, 95% HPD [1.36, 1.64]). Self-reported boredom was higher in the highdemand condition than in the low-demand condition in all studies (Study 1: b = 1.13, 95% HPD = [0.89, 1.38], d = 0.72; Study 2: b = 0.69, 95% HPD = [0.38, 1.00], d = 0.43; Study 3: b = 0.60, 95% HPD = [0.31, 0.89], d = 0.35; Study 4: b = 0.74, 95% HPD = [0.40, 1.08], d = 0.41). Results from the three-level multilevel-model meta-analysis suggest that the effect was consistent across studies but smaller than the effects on demand, effort, and frustration (low-demand condition: M = 3.53, SD = 1.83; high-demand condition: M = 4.48, SD = 1.87; b = 0.91, 95% HPD = [0.75, 1.08], BF &gt; 500, d = 0.55, 95% HPD = [0.45, 0.66]). Fatigue. Finally, participants reported higher fatigue in the high-demand condition than in the low-demand condition in all studies (Study 1: b = 2.05, 95% HPD = [1.84, 2.25], d = 1.65; Study 2: b = 1.41, 95% HPD = [1.13, 1.69], d = 0.97; Study 3: b = 1.92, 95% HPD = [1.65, 2.19], d = 1.25; Study 4: b = 1.98, 95% HPD = [1.64, 2.31], d = 1.27). Results from the three-level multilevel-model meta-analysis were similar (low-demand condition: M = 2.11, SD = 1.30; high-demand condition: M = 4.87, SD = 1.58; b = 2.49, 95% HPD = [2.35, 2.63], BF &gt; 500, d = 1.86, 95% HPD = [1.70, 2.02], which suggests that our high-demand task was effective in eliciting fatigue.</figDesc></figure>
 <figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig.4. Bayesian posterior-and prior-density distributions for the effect of condition (low demand vs. high demand) on the boundary (left) and drift-rate (right) parameters obtained from meta-analytic Bayesian multilevel models. Prior distributions reflect expectations about the effect sizes before empirical data are collected: Informed priors reflecting Cohen's d of -0.28 (SD = 0.14) were created by rescaling the expected effect size to the raw scale of each parameter. Posterior distributions reflect revised or updated beliefs and effect sizes after empirical data are taken into consideration. See Table1for detailed statistics. BF = Bayes factor.</figDesc></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>1: b = -0.007, 95% HPD = [-0.01, -0.001], d = -0.14; Study 2: b = -0.01, 95% HPD = [-0.02, -0.002], d = -0.20; Study 3: b = 0.001, 95% HPD = [-0.006, 0.009], d = 0.03; Study 4: b = -0.003, 95% HPD = [-0.01, 0.007], d = -0.05). Further, results</figDesc></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>Boundary-fatigue relation. Increased self-reported fatigue was associated with smaller boundaries in three studies (Study 1: b = -0.001, 95% HPD = [-0.002, 0.00], d = -0.09; Study 3: b = -0.002, 95% HPD = [-0.003, -0.001], d = -0.14; Study 4: b = -0.002, 95% HPD = [-0.004, 0.00], d = -0.04) but not in Study 2 (b = 0.00, 95% HPD = [-0.001, 0.001], d = 0.01). Further, results from the three-level multilevel-model meta-analysis provided weak evidence for the prediction that increased fatigue was associated with reduced boundary, b = -0.001, 95% HPD = [-0.002, 0.00], BF = 1.88, d = -0.05, 95% HPD = [-0.08, -0.02]. Boundary-frustration relation. Increased self-reported frustration was associated with smaller boundaries in three studies, although only Study 3's 95% HPD intervals did not include 0 (Study 1: b = -0.001, 95% HPD = [-0.002, 0.00], d = -0.08; Study 2: b = 0.00, 95% HPD = [-0.001, 0.002], d = 0.02; Study 3: b = -0.002, 95% HPD = [-0.003, -0.001], d = -0.12; Study 4: b = -0.002, 95% HPD = [-0.005, 0.001], d = -0.04). Overall, the three-level multilevel-model meta-analysis indicated that frustration was not associated with reduced boundary, b = -0.001, 95% HPD = [-0.002, 0.00], BF = 0.25, d = -0.04, 95% HPD = [-0.08, -0.009].</figDesc></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head></head><label></label><figDesc>Drift rate-boredom relation. Self-reported boredom was associated with reduced drift rate in Studies 1 and 2 (Study 1: b = -0.004, 95% HPD = [-0.006, -0.001], d = -0.10; Study 2: b = -0.003, 95% HPD = [-0.007, -0.001], d = -0.08; Study 3: b = -0.001, 95% HPD = [-0.005, 0.002], d = -0.03; Study 4: b = -0.005, 95% HPD = [-0.01, 0.00], d = -0.09). However, overall, the three-level multilevelmodel results failed to provide evidence for the prediction that increased boredom was associated with reduced drift rate, b = -0.003, 95% HPD = [-0.004, -0.001], BF = 0.67, d = -0.06, 95% HPD = [-0.11, -0.02].</figDesc></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head></head><label></label><figDesc>Boundary-demand relation. Results from the individual studies showed that self-reported demand was not consistently associated with changes in boundary (Study 1: b = -0.001, 95% HPD = [-0.002, 0.00], d = -0.05; Study 2: b = 0, 95% HPD = [-0.001, 0.00], d = -0.03; Study 3: b = -0.001, 95% HPD = [-0.002, 0.00], d = -0.10; Study 4: b = -0.001, 95% HPD = [-0.003, 0.001], d = -0.03). Critically, the three-level multilevel-model meta-analysis provided strong evidence for a negative relationship between demand and boundary, b = -0.001, 95% HPD = [-0.002, -0.001], BF = 17.21, d = -0.05, 95% HPD = [-0.08, -0.02], although the effect was very small. Boundary-effort relation. As with the results for the boundary-demand relation, results from the individual studies for the boundary-effort relation were mixed (Study 1: b = 0, 95% HPD = [-0.001, 0.00], d = -0.04; Study 2: b = 0, 95% HPD = [-0.002, 0.00], d = -0.03; Study 3: b = -0.001, 95% HPD = [-0.002, -0.00], d = -0.10; Study 4: b = -0.001, 95% HPD = [-0.004, 0.00], d = -0.03).</figDesc></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head></head><label></label><figDesc>: Results from the three-level multilevel-model metaanalysis indicate that reaction times were slower on incongruent trials (M = 0.72 s, SD = 0.14) than on congruent trials (M = 0.62 s, SD = 0.10), b = 0.11, 95% HPD = [0.10, 0.11], BF &gt; 500, d = 1.73, 95% HPD = [1.63, 1.82]. However, evidence for the condition effect (high demand vs. low demand) was less strong and mixed: The 95% HPD intervals for Studies 3 and 4 did not include 0 (Study 3: b = -0.01, 95% HPD = [-0.02, -0.003], d = -0.19; Study 4: b = -0.01, 95% HPD = [-0.02, -0.004], d = -0.25), whereas the 95% HPD intervals for Studies 1 and 2 included 0 (see Table</figDesc></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head></head><label></label><figDesc>Phenomenology collapsed across studies: kernel-density estimates as a function of condition (high demand vs. low demand), separately for each of the self-reported ratings of mental demand, effort, frustration, boredom, and fatigue. The area beneath each density curve sums to 1. See Table1for detailed statistics. BF = Bayes factor.</figDesc><table><row><cell></cell><cell>0.6</cell><cell>d = 2.83</cell><cell>d = 2.75</cell><cell>d = 2.10</cell><cell>d = 0.91</cell><cell>d = 2.49</cell></row><row><cell></cell><cell></cell><cell>BF &gt; 500</cell><cell>BF &gt; 500</cell><cell>BF &gt; 500</cell><cell>BF &gt; 500</cell><cell>BF &gt; 500</cell></row><row><cell>Density</cell><cell>0.3</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>0.0</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>6 7</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell>Rating</cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="2">Low-Demand Condition</cell><cell>High-Demand Condition</cell></row><row><cell cols="2">Fig. 3.</cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table><note><p><p><p><p><p><p>equally strong, b = 2.83, 95% HPD = [2.70, 2.96], BF &gt; 500, d = 2.17, 95% HPD = [2.02, 2.33] (see Fig.</p>3</p>). Selfreported demand was much higher in the high-demand condition (M = 5.61, SD = 1.23) than in the low-demand condition (M = 2.41, SD = 1.36).</p>Effort. Self-reported effort was also much higher in the high-demand than in the low-demand condition in all studies</p>(</p>Study 1: b = 1.90, 95% HPD = [1.69, 2.11], d = 1.42; Study 2: b = 1.58, 95% HPD = [1.31, 1.86], d = 1.11; Study 3: b = 2.37, 95% HPD = [2.11, 2.63], d = 1.72; Study 4: b = 1.99, 95% HPD = [1.66, 2.31], d = 1.29). Results from the three-level multilevel-model meta-analysis suggest that overall, participants reported exerting much more effort in the high-demand condition (M = 5.44, SD = 1.22) than in the low-demand condition (M = 2.33, SD = 1.42; b = 2.75, 95% HPD = [2.61, 2.88], BF &gt; 500, d = 2.09, 95% HPD = [1.94, 2.24]).</p></note></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head></head><label></label><figDesc>Table 1 for detailed statistics. BF = Bayes factor.</figDesc><table><row><cell></cell><cell></cell><cell></cell><cell>Overall</cell><cell></cell><cell>2.83 [2.70, 2.96]</cell><cell>(BF &gt; 500)</cell><cell>d = 2.17 [2.02, 2.33]</cell><cell>2.75 [2.61, 2.88]</cell><cell>(BF &gt; 500)</cell><cell>d = 2.09 [1.94, 2.24]</cell><cell>2.10 [1.95, 2.24]</cell><cell>(BF &gt; 500)</cell><cell>d = 1.50 [1.36, 1.64]</cell><cell>0.91 [0.75, 1.08]</cell><cell>(BF &gt; 500)</cell><cell>d = 0.55 [0.45, 0.66]</cell><cell>2.49 [2.35, 2.63]</cell><cell>(BF &gt; 500)</cell><cell>d = 1.86 [1.70, 2.02]</cell></row><row><cell></cell><cell></cell><cell></cell><cell>Study 4 (10 min)</cell><cell></cell><cell>2.06 [1.73, 2.39]</cell><cell>(BF &gt; 500)</cell><cell>d = 1.37 [1.03, 1.72]</cell><cell>1.99 [1.66, 2.31]</cell><cell>(BF &gt; 500)</cell><cell>d = 1.29 [0.98, 1.62]</cell><cell>1.48 [1.15, 1.78]</cell><cell>(BF &gt; 500)</cell><cell>d = 0.96 [0.68, 1.26]</cell><cell>0.74 [0.40, 1.08]</cell><cell>(BF &gt; 500)</cell><cell>d = 0.41 [0.21, 0.61]</cell><cell>1.98 [1.64, 2.31]</cell><cell>(BF &gt; 500)</cell><cell>d = 1.27 [0.97, 1.60]</cell></row><row><cell>Table 1. Preregistered Analyses: Results From Bayesian Multilevel Models Using Informed Priors</cell><cell>Independent</cell><cell>and dependent</cell><cell>variable Study 1 (20 min) Study 2 (15 min) Study 3 (5 min)</cell><cell>Condition</cell><cell>Demand 1.96 [1.75, 2.17] 1.73 [1.45, 2.01] 2.23 [1.96, 2.48]</cell><cell>(BF &gt; 500) (BF &gt; 500) (BF &gt; 500)</cell><cell>d = 1.46 [1.25, 1.69] d = 1.21 [0.93, 1.49] d = 1.56 [1.29, 1.84]</cell><cell>Effort 1.90 [1.69, 2.11] 1.58 [1.31, 1.86] 2.37 [2.11, 2.63]</cell><cell>(BF &gt; 500) (BF &gt; 500) (BF &gt; 500)</cell><cell>d = 1.42 [1.20, 1.64] d = 1.11 [0.85, 1.38] d = 1.72 [1.42, 2.01]</cell><cell>Frustration 2.13 [1.91, 2.36] 1.31 [1.02, 1.59] 1.50 [1.23, 1.77]</cell><cell>(BF &gt; 500) (BF &gt; 500) (BF &gt; 500)</cell><cell>d = 1.60 [1.34, 1.87] d = 0.88 [0.65, 1.13] d = 0.97 [0.75, 1.22]</cell><cell>Boredom 1.13 [0.89, 1.38] 0.69 [0.38, 1.00] 0.60 [0.31, 0.89]</cell><cell>(BF &gt; 500) (BF &gt; 500) (BF = 198.00)</cell><cell>d = 0.72 [0.54, 0.89] d = 0.43 [0.23, 0.63] d = 0.35 [0.17, 0.53]</cell><cell>Fatigue 2.05 [1.84, 2.25] 1.41 [1.13, 1.69] 1.92 [1.65, 2.19]</cell><cell>(BF &gt; 500) (BF &gt; 500) (BF &gt; 500)</cell><cell>d = 1.65 [1.37, 1.90] d = 0.97 [0.72, 1.21] d = 1.25 [1.01, 1.49]</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><figDesc>1: b = -0.007, 95% HPD = [-0.01, -0.001], d = -0.14; Study 2: b = -0.01, 95% HPD = [-0.02, -0.002], d = -0.20; Study 3: b = 0.001, 95% HPD = [-0.006, 0.009], d = 0.03; Study 4: b = -0.003, 95% HPD = [-0.01, 0.007], d = -0.05). Further, results</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><figDesc>Boundary-fatigue relation. Increased self-reported fatigue was associated with smaller boundaries in three studies (Study 1: b = -0.001, 95% HPD = [-0.002, 0.00], d = -0.09; Study 3: b = -0.002, 95% HPD = [-0.003, -0.001], d = -0.14; Study 4: b = -0.002, 95% HPD = [-0.004, 0.00], d = -0.04) but not in Study 2 (b = 0.00, 95% HPD = [-0.001, 0.001], d = 0.01). Further, results from the three-level multilevel-model meta-analysis provided weak evidence for the prediction that increased fatigue was associated with reduced boundary, b = -0.001, 95% HPD = [-0.002, 0.00], BF = 1.88, d = -0.05, 95% HPD = [-0.08, -0.02]. Boundary-frustration relation. Increased self-reported frustration was associated with smaller boundaries in three studies, although only Study 3's 95% HPD intervals did not include 0 (Study 1: b = -0.001, 95% HPD = [-0.002, 0.00], d = -0.08; Study 2: b = 0.00, 95% HPD = [-0.001, 0.002], d = 0.02; Study 3: b = -0.002, 95% HPD = [-0.003, -0.001], d = -0.12; Study 4: b = -0.002, 95% HPD = [-0.005, 0.001], d = -0.04). Overall, the three-level multilevel-model meta-analysis indicated that frustration was not associated with reduced boundary, b = -0.001, 95% HPD = [-0.002, 0.00], BF = 0.25, d = -0.04, 95% HPD = [-0.08, -0.009].</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><figDesc>Drift rate-boredom relation. Self-reported boredom was associated with reduced drift rate in Studies 1 and 2 (Study 1: b = -0.004, 95% HPD = [-0.006, -0.001], d = -0.10; Study 2: b = -0.003, 95% HPD = [-0.007, -0.001], d = -0.08; Study 3: b = -0.001, 95% HPD = [-0.005, 0.002], d = -0.03; Study 4: b = -0.005, 95% HPD = [-0.01, 0.00], d = -0.09). However, overall, the three-level multilevelmodel results failed to provide evidence for the prediction that increased boredom was associated with reduced drift rate, b = -0.003, 95% HPD = [-0.004, -0.001], BF = 0.67, d = -0.06, 95% HPD = [-0.11, -0.02].</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><figDesc>Boundary-demand relation. Results from the individual studies showed that self-reported demand was not consistently associated with changes in boundary (Study 1: b = -0.001, 95% HPD = [-0.002, 0.00], d = -0.05; Study 2: b = 0, 95% HPD = [-0.001, 0.00], d = -0.03; Study 3: b = -0.001, 95% HPD = [-0.002, 0.00], d = -0.10; Study 4: b = -0.001, 95% HPD = [-0.003, 0.001], d = -0.03). Critically, the three-level multilevel-model meta-analysis provided strong evidence for a negative relationship between demand and boundary, b = -0.001, 95% HPD = [-0.002, -0.001], BF = 17.21, d = -0.05, 95% HPD = [-0.08, -0.02], although the effect was very small. Boundary-effort relation. As with the results for the boundary-demand relation, results from the individual studies for the boundary-effort relation were mixed (Study 1: b = 0, 95% HPD = [-0.001, 0.00], d = -0.04; Study 2: b = 0, 95% HPD = [-0.002, 0.00], d = -0.03; Study 3: b = -0.001, 95% HPD = [-0.002, -0.00], d = -0.10; Study 4: b = -0.001, 95% HPD = [-0.004, 0.00], d = -0.03).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><figDesc>: Results from the three-level multilevel-model metaanalysis indicate that reaction times were slower on incongruent trials (M = 0.72 s, SD = 0.14) than on congruent trials (M = 0.62 s, SD = 0.10), b = 0.11, 95% HPD = [0.10, 0.11], BF &gt; 500, d = 1.73, 95% HPD = [1.63, 1.82]. However, evidence for the condition effect (high demand vs. low demand) was less strong and mixed: The 95% HPD intervals for Studies 3 and 4 did not include 0 (Study 3: b = -0.01, 95% HPD = [-0.02, -0.003], d = -0.19; Study 4: b = -0.01, 95% HPD = [-0.02, -0.004], d = -0.25), whereas the 95% HPD intervals for Studies 1 and 2 included 0 (see Table</figDesc></figure>
 		</body>
 		<back>
 
@@ -166,30 +163,27 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 <div><head>Acknowledgments</head><p>We thank <rs type="person">Colin Kupitz</rs>, <rs type="person">Joachim Vandekerckhove</rs>, and <rs type="person">Shravan Vasishth</rs> for their guidance. We also thank <rs type="person">Julian Quandt</rs> for spotting mistakes in the preprint of this article.</p></div>
 			</div>
 			<div type="funding">
-<div><head>Funding</head><p>This work was supported by the <rs type="funder">Social Sciences and Humanities Research Council of Canada</rs> (<rs type="grantNumber">435-2019-0144</rs>)   and <rs type="funder">Natural Sciences and Engineering Research Council of Canada</rs> (<rs type="grantNumber">RGPIN-2019-05280</rs>) to M. Inzlicht. Personality and Social Psychology, 74, 1252-1262. doi:10.<rs type="grantNumber">1037/0022-3514.74.5</rs>.1252  Baumeister, R. F., &amp; Vohs, K. D. (2016). Strength model of selfregulation as limited resource: Assessment, controversies, update. In <rs type="person">J. M. Olson</rs> &amp; <rs type="person">M. P. Zanna</rs> (Eds.), Advances in experimental social psychology (Vol. 54, pp. 67-127). San Diego, CA: Academic Press. doi:10.1016/bs.aesp.2016 .04.001 Bürkner, P. C. (2017). brms: An R package for Bayesian multilevel models using Stan. Journal of Statistical Software, 80(1). doi:10.18637/jss.v080.i01 Carter, <rs type="person">E. C.</rs>, <rs type="person">Kofler</rs>, <rs type="person">L. M.</rs>, <rs type="person">Forster</rs>, D. E., &amp; McCullough, M. E. (2015). A series of meta-analytic tests of the depletion effect: Self-control does not seem to rely on a limited resource. Journal of Experimental Psychology: General, 144, 796-815. doi:10.1037/xge0000083 Carter, <rs type="person">E. C.</rs>, Schönbrodt, <rs type="person">F. D.</rs>, <rs type="person">Gervais</rs>, W. M., &amp; Hilgard, J. (2019). Correcting for bias in psychology: A comparison of meta-analytic methods. Advances in Methods and Practices in Psychological Science, 2, 115-144. doi:10.1177/ 2515245919847196 Dai, <rs type="person">H.</rs>, <rs type="person">Milkman</rs>, <rs type="person">K. L.</rs>, <rs type="person">Hofmann</rs>, D. A., &amp; Staats, B. R. (2015). The impact of time at work and time off from work on rule compliance: The case of hand hygiene in health care. Journal of Applied Psychology, 100, 846-862. doi:10.1037/a0038067 Dienes, Z. (2014). Using Bayes to get the most out of nonsignificant results. Frontiers in Psychology, 5, Article 781. doi:10.3389/fpsyg.2014.00781 Dutilh, <rs type="person">G.</rs>, <rs type="person">Annis</rs>, <rs type="person">J.</rs>, <rs type="person">Brown</rs>, <rs type="person">S. D.</rs>, <rs type="person">Cassey</rs>, <rs type="person">P.</rs>, <rs type="person">Evans</rs>, <rs type="person">N. J.</rs>, <rs type="person">Grasman</rs>, R<rs type="person">. P. P. P.</rs>, . . . Donkin, C. (2019). The quality of response time data inference: A blinded, collabora tive assessment of the validity of cognitive models. Psychonomic Bulletin &amp; Review, 26, 1051-1069. doi:10.3758/s13423-017-1417-2 Dutilh, G., Krypotos, A.-M., &amp; Wagenmakers, E.-J. (2011). Taskrelated versus stimulus-specific practice. Experimental Psychology, 58, 434-442. doi:10.1027/1618-3169/a000111 Etherton, <rs type="person">J. L.</rs>, <rs type="person">Osborne</rs>, <rs type="person">R.</rs>, <rs type="person">Stephenson</rs>, <rs type="person">K.</rs>, <rs type="person">Grace</rs>, <rs type="person">M.</rs>, <rs type="person">Jones</rs>, <rs type="person">C.</rs>, &amp; <rs type="person">De Nadai</rs>, A. S. (2018). Bayesian analysis of multimethod ego-depletion studies favours the null hypothesis. British Journal of Social Psychology, 57, 367-385. doi:10.1111/bjso.12236 Evans, N. J., &amp; Servant, M. (2019). A comparison of conflict diffusion models in the flanker task through pseudolikelihood Bayes factors. Psychological Review, 127, 114-135. doi:10.1037/rev0000165 Evans, N. J., &amp; Wagenmakers, E.-J. (2019). Evidence accumulation models: Current limitations and future directions. PsyArXiv. doi:10.31234/osf.io/74df9 Francis, Z., &amp; Job, V. (2018). Lay theories of willpower. Social and Personality Psychology Compass, 12(4), Article e12381. doi:10.1111/spc3.12381 Francis, Z., Milyavskaya, M., Lin, H., &amp; Inzlicht, M. (2018). Development of a within-subject, repeated-measures ego-depletion paradigm. Social Psychology, 49, 271-286. doi:10.1027/1864-9335/a000348 Friese, M., &amp; Frankenbach, J. (2019). p-Hacking and pub-</p></div>
-<div><head>Journal of</head></div>
+<div><head>Funding</head><p>This work was supported by the <rs type="funder">Social Sciences and Humanities Research Council of Canada</rs> (<rs type="grantNumber">435-2019-0144</rs>) and <rs type="funder">Natural Sciences and Engineering Research Council of Canada</rs> (<rs type="grantNumber">RGPIN-2019-05280</rs>) to <rs type="person">M. Inzlicht</rs>. Open Practices All data and materials have been made publicly available via the Open Science Framework (OSF) and can be accessed at <ref type="url" target="https://osf.io/45gyk/">https://osf.io/45gyk/</ref>. The design and analysis plans for four of the studies were preregistered: <ref type="url" target="https://osf.io/hhn3s/">https://  osf.io/hhn3s/</ref> (Study 1; listed on the OSF as Study 4), <ref type="url" target="https://osf.io/xp7hn/">https://osf.io/xp7hn/</ref> (Study 2; listed on the OSF as Study 6), <ref type="url" target="https://osf.io/6p8t4/">https://osf.io/6p8t4/</ref> (Study 3; listed on the OSF as Study 7), <ref type="url" target="https://osf.io/6sncm/">https://osf.io/6sncm/</ref> (Study 4; listed on the OSF as Study 8). All deviations from the preregistrations are discussed in the text of this article. The complete Open Practices Disclosure for this article can be found at <ref type="url" target="http://journals.sagepub.com/doi/suppl/10.1177/0956797620904990">http://journals.sage  pub.com/doi/suppl/10.1177/0956797620904990</ref>. This article has received the badges for Open Data, Open Materials, and Preregistration. More information about the Open Practices badges can be found at <ref type="url" target="http://www.psychologicalscience.org/publications/badges">http://www.psychological  science.org/publications/badges</ref>. TC</p></div>
 			</div>
 			<listOrg type="funding">
-				<org type="funding" xml:id="_fkUwrc3">
+				<org type="funding" xml:id="_DASMKAE">
 					<idno type="grant-number">435-2019-0144</idno>
 				</org>
-				<org type="funding" xml:id="_Z2dJCRz">
+				<org type="funding" xml:id="_NjUm6RV">
 					<idno type="grant-number">RGPIN-2019-05280</idno>
-				</org>
-				<org type="funding" xml:id="_yGDJmMr">
-					<idno type="grant-number">1037/0022-3514.74.5</idno>
 				</org>
 			</listOrg>
 			<div type="annex">
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Boundary</head></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Declaration of Conflicting Interests</head><p>The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article. 2. We thank Eric-Jan Wagenmakers for offering this hypothesis, which increases the informativeness of our results by highlighting which processes were or were not influenced by effort exertion.</p><p>3. When exploring Study 1's data, we found hints of associations between the two latent parameters and three items assessing phenomenology (frustration, boredom, fatigue) but not two others (mental demand, effort exerted). We thus preregistered analyses with frustration, boredom, and fatigue, but we consider the analyses with mental demand and effort exploratory. 4. We made this prediction on the basis of Study 1's results. Theoretically, we would have made the opposite prediction because incongruent trials are more difficult, and boundaries should increase to allow more time for evidence accumulation. Reduced boundaries on incongruent trials could reflect reduced drift rates on the same trials: When drift rates are low, evidence-accumulation rates are slower, potentially increasing in missed responses, which could be avoided by lowering the boundaries so the decision processes can still reach a bound within the allotted time.</p></div>			</div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Declaration of Conflicting Interests</head><p>The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplemental Material</head><p>Additional supporting information can be found at <ref type="url" target="http://journals.sagepub.com/doi/suppl/10.1177/0956797620904990">http://  journals.sagepub.com/doi/suppl/10.1177/0956797620904990</ref> Notes 1. We preregistered additional exclusion criteria for Study 1. However, in confirmatory Studies 2 to 4, we focused on the latent variables and did not preregister criteria based on behavioral effects. For consistency across studies, we applied to Study 1 the criteria used in Studies 2 to 4. 2. We thank Eric-Jan Wagenmakers for offering this hypothesis, which increases the informativeness of our results by highlighting which processes were or were not influenced by effort exertion.</p><p>3. When exploring Study 1's data, we found hints of associations between the two latent parameters and three items assessing phenomenology (frustration, boredom, fatigue) but not two others (mental demand, effort exerted). We thus preregistered analyses with frustration, boredom, and fatigue, but we consider the analyses with mental demand and effort exploratory. 4. We made this prediction on the basis of Study 1's results. Theoretically, we would have made the opposite prediction because incongruent trials are more difficult, and boundaries should increase to allow more time for evidence accumulation. Reduced boundaries on incongruent trials could reflect reduced drift rates on the same trials: When drift rates are low, evidence-accumulation rates are slower, potentially increasing in missed responses, which could be avoided by lowering the boundaries so the decision processes can still reach a bound within the allotted time.</p></div>			</div>
 			<div type="references">
 
 				<listBibl>
 
 <biblStruct xml:id="b0">
 	<analytic>
-		<title level="a" type="main">Ego depletion: Is the active self a limited resource. lication bias interact to distort meta-analytic effect size estimates</title>
+		<title level="a" type="main">Ego depletion: Is the active self a limited resource</title>
 		<author>
 			<persName><forename type="first">R</forename><forename type="middle">F</forename><surname>Baumeister</surname></persName>
 		</author>
@@ -202,17 +196,369 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		<author>
 			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Tice</surname></persName>
 		</author>
-		<idno type="DOI">10.1037/met0000246</idno>
+		<idno type="DOI">10.1037/0022-3514.74.5.1252</idno>
 	</analytic>
 	<monogr>
-		<title level="j">Psychological Methods</title>
+		<title level="j">Journal of Personality and Social Psychology</title>
 		<imprint>
+			<biblScope unit="volume">74</biblScope>
+			<biblScope unit="page" from="1252" to="1262" />
 			<date type="published" when="1998">1998</date>
 		</imprint>
 	</monogr>
 </biblStruct>
 
 <biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Strength model of selfregulation as limited resource: Assessment, controversies</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">F</forename><surname>Baumeister</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">D</forename><surname>Vohs</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/bs.aesp.2016.04.001</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in experimental social psychology</title>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Olson</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Zanna</surname></persName>
+		</editor>
+		<meeting><address><addrLine>San Diego, CA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Academic Press</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="67" to="127" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">brms: An R package for Bayesian multilevel models using Stan</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">C</forename><surname>Bürkner</surname></persName>
+		</author>
+		<idno type="DOI">10.18637/jss.v080.i01</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Statistical Software</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A series of meta-analytic tests of the depletion effect: Self-control does not seem to rely on a limited resource</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">C</forename><surname>Carter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Kofler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">E</forename><surname>Forster</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Mccullough</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/xge0000083</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Experimental Psychology: General</title>
+		<imprint>
+			<biblScope unit="volume">144</biblScope>
+			<biblScope unit="page" from="796" to="815" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Correcting for bias in psychology: A comparison of meta-analytic methods</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">C</forename><surname>Carter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">D</forename><surname>Schönbrodt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Gervais</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hilgard</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/2515245919847196</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Methods and Practices in Psychological Science</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="115" to="144" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">The impact of time at work and time off from work on rule compliance: The case of hand hygiene in health care</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">L</forename><surname>Milkman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Hofmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">R</forename><surname>Staats</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/a0038067</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Applied Psychology</title>
+		<imprint>
+			<biblScope unit="volume">100</biblScope>
+			<biblScope unit="page" from="846" to="862" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Using Bayes to get the most out of nonsignificant results</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Dienes</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fpsyg.2014.00781</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Psychology</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page">781</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">The quality of response time data inference: A blinded, collabora tive assessment of the validity of cognitive models</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Dutilh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Annis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">D</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Cassey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Evans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">P P P</forename><surname>Grasman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">.</forename><forename type="middle">.</forename><surname>Donkin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename></persName>
+		</author>
+		<idno type="DOI">10.3758/s13423-017-1417-2</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Psychonomic Bulletin &amp; Review</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="page" from="1051" to="1069" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Taskrelated versus stimulus-specific practice</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Dutilh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A.-M</forename><surname>Krypotos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E.-J</forename><surname>Wagenmakers</surname></persName>
+		</author>
+		<idno type="DOI">10.1027/1618-3169/a000111</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Experimental Psychology</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="page" from="434" to="442" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Bayesian analysis of multimethod ego-depletion studies favours the null hypothesis</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Etherton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Osborne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Stephenson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Grace</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">S</forename><surname>De Nadai</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/bjso.12236</idno>
+	</analytic>
+	<monogr>
+		<title level="j">British Journal of Social Psychology</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page" from="367" to="385" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">A comparison of conflict diffusion models in the flanker task through pseudolikelihood Bayes factors</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Evans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Servant</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/rev0000165</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Review</title>
+		<imprint>
+			<biblScope unit="volume">127</biblScope>
+			<biblScope unit="page" from="114" to="135" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Evidence accumulation models: Current limitations and future directions</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Evans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E.-J</forename><surname>Wagenmakers</surname></persName>
+		</author>
+		<idno type="DOI">10.31234/osf.io/74df9</idno>
+	</analytic>
+	<monogr>
+		<title level="j">PsyArXiv</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Lay theories of willpower</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Francis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Job</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/spc3.12381</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Social and Personality Psychology Compass</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note>Article e12381</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Development of a within-subject, repeated-measures ego-depletion paradigm</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Francis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Milyavskaya</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Inzlicht</surname></persName>
+		</author>
+		<idno type="DOI">10.1027/1864-9335/a000348</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Social Psychology</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="page" from="271" to="286" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">p-Hacking and publication bias interact to distort meta-analytic effect size estimates</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Friese</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Frankenbach</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/met0000246</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Methods</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
 	<analytic>
 		<title level="a" type="main">Is ego depletion real? An analysis of arguments</title>
 		<author>
@@ -242,7 +588,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b2">
+<biblStruct xml:id="b16">
 	<analytic>
 		<title level="a" type="main">A parametric manipulation of central executive functioning</title>
 		<author>
@@ -269,7 +615,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b3">
+<biblStruct xml:id="b17">
 	<analytic>
 		<title level="a" type="main">Ego depletion reduces attention control: Evidence from two high-powered preregistered experiments</title>
 		<author>
@@ -293,7 +639,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b4">
+<biblStruct xml:id="b18">
 	<analytic>
 		<title level="a" type="main">Philosophy and the practice of Bayesian statistics</title>
 		<author>
@@ -314,7 +660,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b5">
+<biblStruct xml:id="b19">
 	<analytic>
 		<title level="a" type="main">A multilab preregistered replication of the ego-depletion effect</title>
 		<author>
@@ -353,7 +699,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b6">
+<biblStruct xml:id="b20">
 	<analytic>
 		<title level="a" type="main">Ego depletion and the strength model of self-control: A meta-analysis</title>
 		<author>
@@ -380,7 +726,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b7">
+<biblStruct xml:id="b21">
 	<analytic>
 		<title level="a" type="main">Decision fatigue and heuristic analyst forecasts</title>
 		<author>
@@ -407,7 +753,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b8">
+<biblStruct xml:id="b22">
 	<analytic>
 		<title level="a" type="main">The past, present, and future of ego depletion</title>
 		<author>
@@ -428,7 +774,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b9">
+<biblStruct xml:id="b23">
 	<analytic>
 		<title level="a" type="main">Why selfcontrol seems (but may not be) limited</title>
 		<author>
@@ -452,7 +798,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b10">
+<biblStruct xml:id="b24">
 	<monogr>
 		<title level="m" type="main">Bayesian cognitive modeling: A practical course</title>
 		<author>
@@ -469,7 +815,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b11">
+<biblStruct xml:id="b25">
 	<analytic>
 		<title level="a" type="main">How to classify, detect, and manage univariate and multivariate outliers, with emphasis on pre-registration</title>
 		<author>
@@ -500,7 +846,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b12">
+<biblStruct xml:id="b26">
 	<analytic>
 		<title level="a" type="main">hauselin/hausekeep: Third release</title>
 		<author>
@@ -517,7 +863,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<note>Version v0.0.0.9003-alpha</note>
 </biblStruct>
 
-<biblStruct xml:id="b13">
+<biblStruct xml:id="b27">
 	<analytic>
 		<title level="a" type="main">Reward sensitivity following boredom and cognitive effort: A high-powered neurophysiological investigation</title>
 		<author>
@@ -544,7 +890,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b14">
+<biblStruct xml:id="b28">
 	<analytic>
 		<title level="a" type="main">The nature and organization of individual differences in executive functions: Four general conclusions</title>
 		<author>
@@ -565,7 +911,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b15">
+<biblStruct xml:id="b29">
 	<analytic>
 		<title level="a" type="main">Choice and ego-depletion: The moderating role of autonomy</title>
 		<author>
@@ -589,7 +935,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b16">
+<biblStruct xml:id="b30">
 	<analytic>
 		<title level="a" type="main">The diffusion decision model: Theory and data for two-choice decision tasks</title>
 		<author>
@@ -610,7 +956,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b17">
+<biblStruct xml:id="b31">
 	<analytic>
 		<title level="a" type="main">Attention control, memory updating, and emotion regulation temporarily reduce the capacity for executive control</title>
 		<author>
@@ -628,7 +974,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b18">
+<biblStruct xml:id="b32">
 	<analytic>
 		<title level="a" type="main">The future and the will: Planning requires self-control, and ego depletion leads to planning aversion</title>
 		<author>
@@ -649,7 +995,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b19">
+<biblStruct xml:id="b33">
 	<analytic>
 		<title level="a" type="main">The propagation of self-control: Self-control in one domain simultaneously improves self-control in other domains</title>
 		<author>
@@ -673,7 +1019,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b20">
+<biblStruct xml:id="b34">
 	<analytic>
 		<title level="a" type="main">Automatic and controlled stimulus processing in conflict tasks: Superimposed diffusion processes and delta functions</title>
 		<author>
@@ -700,7 +1046,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b21">
+<biblStruct xml:id="b35">
 	<analytic>
 		<title level="a" type="main">The EZ diffusion model provides a powerful test of simple empirical effects</title>
 		<author>
@@ -724,7 +1070,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b22">
+<biblStruct xml:id="b36">
 	<analytic>
 		<title level="a" type="main">Redefine statistical significance XIII: The case of ego depletion</title>
 		<author>
@@ -753,10 +1099,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 			<date type="published" when="2007">2017, December 28. 2007</date>
 		</imprint>
 	</monogr>
-	<note>An EZ-diffusion model for response time and accuracy</note>
+	<note>Web log post An EZ-diffusion model for response time and accuracy</note>
 </biblStruct>
 
-<biblStruct xml:id="b23">
+<biblStruct xml:id="b37">
 	<monogr>
 		<author>
 			<persName><forename type="first">J</forename><surname>Westfall</surname></persName>
@@ -769,7 +1115,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b24">
+<biblStruct xml:id="b38">
 	<analytic>
 		<title level="a" type="main">Boring thoughts and bored minds: The MAC model of boredom and cognitive engagement</title>
 		<author>

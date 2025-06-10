@@ -6,7 +6,31 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<teiHeader xml:lang="en">
 		<fileDesc>
 			<titleStmt>
-				<title level="a" type="main"></title>
+				<title level="a" type="main">Conditioning on a Collider May or May Not Explain the Relationship Between Lower Neuroticism and Premature Mortality in the Study by Gale et al. (2017): A Reply to</title>
+				<funder ref="#_kXEtXkD">
+					<orgName type="full">Biotechnology and Biological Sciences Research Council and Medical Research Council</orgName>
+				</funder>
+				<funder ref="#_AVkm9u8 #_6HMgxTg">
+					<orgName type="full">MRC</orgName>
+				</funder>
+				<funder ref="#_QKdKdJp">
+					<orgName type="full">National Institute on Aging</orgName>
+				</funder>
+				<funder ref="#_2H2bKmz">
+					<orgName type="full">Scottish Funding Council</orgName>
+				</funder>
+				<funder ref="#_uBfABr4">
+					<orgName type="full">Wellcome Trust</orgName>
+				</funder>
+				<funder ref="#_jFZ9q2f">
+					<orgName type="full">Scottish Government Chief Scientist Office</orgName>
+				</funder>
+				<funder ref="#_NgSxsmg">
+					<orgName type="full">University of Edinburgh Centre for</orgName>
+				</funder>
+				<funder ref="#_gKhez87">
+					<orgName type="full">unknown</orgName>
+				</funder>
 			</titleStmt>
 			<publicationStmt>
 				<publisher/>
@@ -18,18 +42,95 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 						<author role="corresp">
 							<persName><forename type="first">Alexander</forename><surname>Weiss</surname></persName>
 							<email>alex.weiss@ed.ac.uk</email>
-							<affiliation key="aff0">
-								<orgName type="department" key="dep1">School of Philosophy</orgName>
-								<orgName type="department" key="dep2">Psychology &amp; Language Sciences</orgName>
-								<orgName type="department" key="dep3">Department of Psychology</orgName>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Psychology</orgName>
+								<orgName type="laboratory">Centre for Cognitive Ageing and Cognitive Epidemiology</orgName>
 								<orgName type="institution">University of Edinburgh</orgName>
-								<address>
-									<addrLine>7 George Square</addrLine>
-									<postCode>EH8 9JZ</postCode>
-									<settlement>Edinburgh</settlement>
-									<country key="GB">United Kingdom</country>
-								</address>
 							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department" key="dep1">Department of Psychology</orgName>
+								<orgName type="department" key="dep2">School of Philosophy</orgName>
+								<orgName type="department" key="dep3">Psychology &amp; Language Sciences</orgName>
+								<orgName type="institution">University of Edinburgh</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Davey</forename><surname>Richardson</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Munafò</forename><surname>Smith</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Catharine</forename><forename type="middle">R</forename><surname>Gale</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Psychology</orgName>
+								<orgName type="laboratory">Centre for Cognitive Ageing and Cognitive Epidemiology</orgName>
+								<orgName type="institution">University of Edinburgh</orgName>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department" key="dep1">Department of Psychology</orgName>
+								<orgName type="department" key="dep2">School of Philosophy</orgName>
+								<orgName type="department" key="dep3">Psychology &amp; Language Sciences</orgName>
+								<orgName type="institution">University of Edinburgh</orgName>
+							</affiliation>
+							<affiliation key="aff3">
+								<orgName type="laboratory">MRC Lifecourse Epidemiology Unit</orgName>
+								<orgName type="institution">University of Southampton</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Iva</forename><forename type="middle">C</forename><surname>ˇukic ´1</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Psychology</orgName>
+								<orgName type="laboratory">Centre for Cognitive Ageing and Cognitive Epidemiology</orgName>
+								<orgName type="institution">University of Edinburgh</orgName>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department" key="dep1">Department of Psychology</orgName>
+								<orgName type="department" key="dep2">School of Philosophy</orgName>
+								<orgName type="department" key="dep3">Psychology &amp; Language Sciences</orgName>
+								<orgName type="institution">University of Edinburgh</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">G</forename><surname>David Batty</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Psychology</orgName>
+								<orgName type="laboratory">Centre for Cognitive Ageing and Cognitive Epidemiology</orgName>
+								<orgName type="institution">University of Edinburgh</orgName>
+							</affiliation>
+							<affiliation key="aff4">
+								<orgName type="department">Department of Epidemiology &amp; Public Health</orgName>
+								<orgName type="institution">University College London</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Andrew</forename><forename type="middle">M</forename><surname>Mcintosh</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Psychology</orgName>
+								<orgName type="laboratory">Centre for Cognitive Ageing and Cognitive Epidemiology</orgName>
+								<orgName type="institution">University of Edinburgh</orgName>
+							</affiliation>
+							<affiliation key="aff5">
+								<orgName type="department">Division of Psychiatry</orgName>
+								<orgName type="institution">University of Edinburgh</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ian</forename><forename type="middle">J</forename><surname>Deary</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Psychology</orgName>
+								<orgName type="laboratory">Centre for Cognitive Ageing and Cognitive Epidemiology</orgName>
+								<orgName type="institution">University of Edinburgh</orgName>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department" key="dep1">Department of Psychology</orgName>
+								<orgName type="department" key="dep2">School of Philosophy</orgName>
+								<orgName type="department" key="dep3">Psychology &amp; Language Sciences</orgName>
+								<orgName type="institution">University of Edinburgh</orgName>
+							</affiliation>
+						</author>
+						<author>
 							<affiliation key="aff0">
 								<orgName type="department" key="dep1">School of Philosophy</orgName>
 								<orgName type="department" key="dep2">Psychology &amp; Language Sciences</orgName>
@@ -43,6 +144,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 								</address>
 							</affiliation>
 						</author>
+						<title level="a" type="main">Conditioning on a Collider May or May Not Explain the Relationship Between Lower Neuroticism and Premature Mortality in the Study by Gale et al. (2017): A Reply to</title>
 					</analytic>
 					<monogr>
 						<imprint>
@@ -51,13 +153,16 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 					</monogr>
 					<idno type="MD5">27504228AB04FBE8EA646C5B0FB706FB</idno>
 					<idno type="DOI">10.1177/0956797619833325</idno>
+					<note type="submission">Received 3/23/18; Revision accepted 1/23/18</note>
 				</biblStruct>
 			</sourceDesc>
 		</fileDesc>
 		<encodingDesc>
 			<appInfo>
-				<application version="0.8.1" ident="GROBID" when="2025-05-20T19:36+0000">
+				<application version="0.8.2" ident="GROBID" when="2025-06-03T12:09+0000">
 					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">a91ee48</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=false, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], sentenceSegmentation=false, flavor=null</label>
 					<ref target="https://github.com/kermitt2/grobid"/>
 				</application>
 			</appInfo>
@@ -69,28 +174,56 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<text xml:lang="en">
 		<body>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>ASSOCIATION FOR PSYCHOLOGICAL SCIENCE</head></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Reply</head><p>We <ref type="bibr" target="#b4">(Gale et al., 2017)</ref> analyzed data on 321,456 UK Biobank participants to address why higher neuroticism is sometimes related to lower mortality (e.g., <ref type="bibr" target="#b10">Korten et al., 1999)</ref>. We noted that the studies that revealed an inverse relationship between neuroticism and mortality included self-rated health as a predictor, perhaps because it is associated with mortality, even when multiple objective measures of health status are included in models (for reviews, see <ref type="bibr" target="#b0">Benyamini &amp; Idler, 1999;</ref><ref type="bibr" target="#b7">Idler &amp; Benyamini, 1997)</ref>. We therefore tested whether including self-rated health, which was modestly related to neuroticism, r S = .23 <ref type="bibr">(Gale et al., p. 1348)</ref>, in a model changed the sign of the neuroticism-mortality relationship. We found that it did so and then set out to test two possible explanations for this phenomenon.</p><p>The first possible explanation that we tested was that self-rated health moderated the neuroticism-mortality association. We therefore included a Neuroticism × Self-Rated Health interaction in our models and also examined the association between neuroticism and mortality at each self-rated health stratum. The interaction was significant only for cancer death; analyses stratified by self-rated health suggested that neuroticism was protective against all-cause mortality among participants with "fair" self-rated health and protective against cancer mortality among participants with "fair" or "poor" selfrated health <ref type="bibr" target="#b4">(Gale et al., 2017</ref><ref type="bibr">(Gale et al., , pp. 1350</ref><ref type="bibr">(Gale et al., -1352))</ref>.</p><p>The second possible explanation that we tested was that self-rated health acted as a negative suppressor <ref type="bibr" target="#b19">(Tzelgov &amp; Henrik, 1991)</ref>. In other words, we tested whether including self-rated health in models controlled for aspects of neuroticism related to poorer health. This explanation is based on the fact that in the presence of the pattern of correlations that gives rise to the statistical phenomenon known as negative suppression, mediation analyses will result in opposite signs for the direct and indirect effects <ref type="bibr" target="#b19">(Tzelgov &amp; Henrik, 1991)</ref>; this is sometimes called "inconsistent mediation" (see <ref type="bibr">MacKinnon, Krull, &amp; Lockwood, 2000, p. 175)</ref>. The self-rated-health and personality literatures, as much as it is possible for longitudinal and prospective studies to do so, provide findings that are consistent with this explanation. This literature shows that neuroticism has a negative effect on (is on a causal pathway to) self-rated health <ref type="bibr" target="#b11">(Löckenhoff, Terracciano, Ferrucci, &amp; Costa, 2012)</ref>, that neuroticism has a positive effect on mortality <ref type="bibr" target="#b5">(Graham et al., 2017)</ref>, and that poor self-rated health has a positive effect on mortality (for reviews, see <ref type="bibr" target="#b0">Benyamini &amp; Idler, 1999;</ref><ref type="bibr" target="#b7">Idler &amp; Benyamini, 1997)</ref>, including even non-illness-related mortality <ref type="bibr" target="#b6">(Heistaro, Jousilahti, Lahelma, Vartiainen, &amp; Puska, 2001)</ref>. Given this literature, it is plausible that neuroticism would have a direct and positive effect on mortality and an indirect negative effect (via self-rated health) on mortality. This was in fact found, although only in women, in a previous study <ref type="bibr" target="#b14">(Ploubidis &amp; Grundy, 2009)</ref>.</p><p>Because personality-health associations are often limited to one or a few personality facets (e.g., <ref type="bibr" target="#b18">Terracciano et al., 2009)</ref>, we followed a reviewer's suggestion and tested whether variance related to health-harming but not health-helping facets of neuroticism might have been controlled for by the inclusion of self-rated health in the model. Our analyses proceeded as follows. We first had to contend with the fact that participants completed the short Neuroticism scale from the Revised Eysenck Personality Questionnaire (EPQ-R; <ref type="bibr" target="#b3">Eysenck, Eysenck, &amp; Barrett, 1985)</ref>, which does not operationalize facets. We therefore operationalized facets by conducting an exploratory bifactor analysis. This involves extracting factors using exploratory factor analysis and then rotating these factors so that all items have high loadings on a general factor and each item has a high loading on, at most, one of two or more special factors that are orthogonal to the general factor <ref type="bibr" target="#b8">( Jennrich &amp; Bentler, 2011</ref><ref type="bibr">, 2012)</ref>. The latent variable for each special factor, therefore, is made up only of item variance related to that special factor; the latent variable score for the general factor consists only of the common item variance. A reviewer advised that we use bifactor analysis because, by not doing so, such as by using simple sum scores, it is not possible to determine whether an association between a facet and an outcome is related to the facet or the general factor, which would share a considerable portion of variance with the facet (see <ref type="bibr" target="#b21">Wiernik, Wilmot, &amp; Kostal, 2015</ref>, for a discussion). Alongside the general neuroticism factor, the analysis yielded two special factors, representing facets that we labeled "anxious/tense" and "worried/vulnerable" (see Fig. <ref type="figure" target="#fig_1">1</ref>).</p><p>We then examined associations between these latent variable scores and each mortality outcome in one model that included age, sex, and the general neuroticism factor and a second model that additionally included all the covariates, including self-rated health. The critical analyses were those related to the first model <ref type="bibr">(Gale et al., 2017, Table 4</ref>). There could be no conditioning on a collider in this model because neither self-rated health nor other health-related covariates were included. For death from all causes, cancer, cardiovascular disease, and respiratory disease, but not from external causes, higher worried/vulnerable scores were associated with reduced risk. Anxious/tense scores were not associated with any mortality outcomes. Only the relationship between the worried/ vulnerable facet and all-cause mortality survived adjusting for the covariates and correction for the false discovery rate. <ref type="bibr">Richardson and colleagues (2019)</ref> proposed that our findings relating to conditioning on self-rated health could be spurious if neuroticism and mortality risk factors independently influenced self-rated health because, in these circumstances, self-rated health is a collider (note that in their model, self-rated health is a consequence and not a cause of poor health). To explore this possibility, they examined associations between neuroticism and the health-related covariates from our analyses, both in the total sample and stratified by self-rated health. For some covariates, they found that neuroticism was associated with increased risk in the total sample and reduced risk in self-rated health strata, an example of <ref type="bibr" target="#b16">Simpson's (1951)</ref> paradox. They interpreted this as evidence that our finding of a healthprotective effect of neuroticism was spurious.</p><p>We thank Richardson and colleagues for their comments. Collider bias may lead to results such as those we reported. However, as noted, negative suppression may also lead to the same results, and our facet-level analyses that we described above did not include possible colliders, and so seems to support this explanation of the phenomenon. We also wish to be clear that we did not conclude from our previous study that we think the phenomenon in question was the result of neuroticism having a different effect at different levels of selfrated health, which seems to be what Richardson and colleagues surmised. To prevent further misunderstanding, we concluded in the final paragraph that "perhaps the most promising avenue for future research would be a closer examination of the role of Neuroticism's facets" <ref type="bibr" target="#b4">(Gale et al., 2017</ref><ref type="bibr">(Gale et al., , p. 1355))</ref>. In other words, we judged that our results supported the possibility that self-rated health acted as a negative suppressor that revealed the effects of a specific facet of neuroticism.</p><p>In response to their Commentary, we now report further analyses that we carried out to test whether their findings can also be explained by the worried/vulnerable facet.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Reply</head><p>We <ref type="bibr" target="#b4">(Gale et al., 2017)</ref> analyzed data on 321,456 UK Biobank participants to address why higher neuroticism is sometimes related to lower mortality (e.g., <ref type="bibr" target="#b10">Korten et al., 1999)</ref>. We noted that the studies that revealed an inverse relationship between neuroticism and mortality included self-rated health as a predictor, perhaps because it is associated with mortality, even when multiple objective measures of health status are included in models (for reviews, see <ref type="bibr" target="#b0">Benyamini &amp; Idler, 1999;</ref><ref type="bibr" target="#b7">Idler &amp; Benyamini, 1997)</ref>. We therefore tested whether including self-rated health, which was modestly related to neuroticism, r S = .23 <ref type="bibr">(Gale et al., p. 1348)</ref>, in a model changed the sign of the neuroticism-mortality relationship. We found that it did so and then set out to test two possible explanations for this phenomenon.</p><p>The first possible explanation that we tested was that self-rated health moderated the neuroticism-mortality association. We therefore included a Neuroticism × Self-Rated Health interaction in our models and also examined the association between neuroticism and mortality at each self-rated health stratum. The interaction was significant only for cancer death; analyses stratified by self-rated health suggested that neuroticism was protective against all-cause mortality among participants with "fair" self-rated health and protective against cancer mortality among participants with "fair" or "poor" selfrated health <ref type="bibr" target="#b4">(Gale et al., 2017</ref><ref type="bibr">(Gale et al., , pp. 1350</ref><ref type="bibr">(Gale et al., -1352))</ref>.</p><p>The second possible explanation that we tested was that self-rated health acted as a negative suppressor <ref type="bibr" target="#b19">(Tzelgov &amp; Henrik, 1991)</ref>. In other words, we tested whether including self-rated health in models controlled for aspects of neuroticism related to poorer health. This explanation is based on the fact that in the presence of the pattern of correlations that gives rise to the statistical phenomenon known as negative suppression, mediation analyses will result in opposite signs for the direct and indirect effects <ref type="bibr" target="#b19">(Tzelgov &amp; Henrik, 1991)</ref>; this is sometimes called "inconsistent mediation" (see <ref type="bibr">MacKinnon, Krull, &amp; Lockwood, 2000, p. 175)</ref>. The self-rated-health and personality literatures, as much as it is possible for longitudinal and prospective studies to do so, provide findings that are consistent with this explanation. This literature shows that neuroticism has a negative effect on (is on a causal pathway to) self-rated health <ref type="bibr" target="#b11">(Löckenhoff, Terracciano, Ferrucci, &amp; Costa, 2012)</ref>, that neuroticism has a positive effect on mortality <ref type="bibr" target="#b5">(Graham et al., 2017)</ref>, and that poor self-rated health has a positive effect on mortality (for reviews, see <ref type="bibr" target="#b0">Benyamini &amp; Idler, 1999;</ref><ref type="bibr" target="#b7">Idler &amp; Benyamini, 1997)</ref>, including even non-illness-related mortality <ref type="bibr" target="#b6">(Heistaro, Jousilahti, Lahelma, Vartiainen, &amp; Puska, 2001)</ref>. Given this literature, it is plausible that neuroticism would have a direct and positive effect on mortality and an indirect negative effect (via self-rated health) on mortality. This was in fact found, although only in women, in a previous study <ref type="bibr" target="#b14">(Ploubidis &amp; Grundy, 2009)</ref>.</p><p>Because personality-health associations are often limited to one or a few personality facets (e.g., <ref type="bibr" target="#b18">Terracciano et al., 2009)</ref>, we followed a reviewer's suggestion and tested whether variance related to health-harming but not health-helping facets of neuroticism might have been controlled for by the inclusion of self-rated health in the model. Our analyses proceeded as follows. We first had to contend with the fact that participants completed the short Neuroticism scale from the Revised Eysenck Personality Questionnaire (EPQ-R; <ref type="bibr" target="#b3">Eysenck, Eysenck, &amp; Barrett, 1985)</ref>, which does not operationalize facets. We therefore operationalized facets by conducting an exploratory bifactor analysis. This involves extracting factors using exploratory factor analysis and then rotating these factors so that all items have high loadings on a general factor and each item has a high loading on, at most, one of two or more special factors that are orthogonal to the general factor <ref type="bibr" target="#b8">( Jennrich &amp; Bentler, 2011</ref><ref type="bibr">, 2012)</ref>. The latent variable for each special factor, therefore, is made up only of item variance related to that special factor; the latent variable score for the general factor consists only of the common item variance. A reviewer advised that we use bifactor analysis because, by not doing so, such as by using simple sum scores, it is not possible to determine whether an association between a facet and an outcome is related to the facet or the general factor, which would share a considerable portion of variance with the facet (see <ref type="bibr" target="#b21">Wiernik, Wilmot, &amp; Kostal, 2015</ref>, for a discussion). Alongside the general neuroticism factor, the analysis yielded two special factors, representing facets that we labeled "anxious/tense" and "worried/vulnerable" (see Fig. <ref type="figure" target="#fig_0">1</ref>).</p><p>We then examined associations between these latent variable scores and each mortality outcome in one model that included age, sex, and the general neuroticism factor and a second model that additionally included all the covariates, including self-rated health. The critical analyses were those related to the first model <ref type="bibr">(Gale et al., 2017, Table 4</ref>). There could be no conditioning on a collider in this model because neither self-rated health nor other health-related covariates were included. For death from all causes, cancer, cardiovascular disease, and respiratory disease, but not from external causes, higher worried/vulnerable scores were associated with reduced risk. Anxious/tense scores were not associated with any mortality outcomes. Only the relationship between the worried/ vulnerable facet and all-cause mortality survived adjusting for the covariates and correction for the false discovery rate. <ref type="bibr">Richardson and colleagues (2019)</ref> proposed that our findings relating to conditioning on self-rated health could be spurious if neuroticism and mortality risk factors independently influenced self-rated health because, in these circumstances, self-rated health is a collider (note that in their model, self-rated health is a consequence and not a cause of poor health). To explore this possibility, they examined associations between neuroticism and the health-related covariates from our analyses, both in the total sample and stratified by self-rated health. For some covariates, they found that neuroticism was associated with increased risk in the total sample and reduced risk in self-rated health strata, an example of <ref type="bibr" target="#b16">Simpson's (1951)</ref> paradox. They interpreted this as evidence that our finding of a healthprotective effect of neuroticism was spurious.</p><p>We thank Richardson and colleagues for their comments. Collider bias may lead to results such as those we reported. However, as noted, negative suppression may also lead to the same results, and our facet-level analyses that we described above did not include possible colliders, and so seems to support this explanation of the phenomenon. We also wish to be clear that we did not conclude from our previous study that we think the phenomenon in question was the result of neuroticism having a different effect at different levels of selfrated health, which seems to be what Richardson and colleagues surmised. To prevent further misunderstanding, we concluded in the final paragraph that "perhaps the most promising avenue for future research would be a closer examination of the role of Neuroticism's facets" <ref type="bibr" target="#b4">(Gale et al., 2017</ref><ref type="bibr">(Gale et al., , p. 1355))</ref>. In other words, we judged that our results supported the possibility that self-rated health acted as a negative suppressor that revealed the effects of a specific facet of neuroticism.</p><p>In response to their Commentary, we now report further analyses that we carried out to test whether their findings can also be explained by the worried/vulnerable facet.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head><p>To start, we tested whether neuroticism's bifactor structure replicated in two independent data sets: 8,158 participants in Generation Scotland <ref type="bibr" target="#b17">(Smith et al., 2006)</ref> and the 1,434 participants used to develop the EPQ-R <ref type="bibr" target="#b3">(Eysenck et al., 1985)</ref>. We then used data from the participants from our previous article and from Richardson and colleagues' analyses to conduct three sets of new analyses, which we describe below.</p><p>First, we used multinomial logit regression to examine associations between self-rated health strata and the latent neuroticism scores. This model was adjusted for sex and age. Second, we examined associations between mortality and the general neuroticism factor, both neuroticism facets separately, and both facets together. Sex and age were present in all models, and we tested whether the healthrelated covariates attenuated these associations. Note that the sex-and age-adjusted models are critical because they do not include possible colliders.</p><p>Third, we examined associations between the healthrelated covariates and (a) general neuroticism, the anxious/ tense facet, and the worried/vulnerable facet separately and (b) both facets together. This was done to test whether the general neuroticism factor and the facets, and especially the worried/vulnerable facet, were associated with these variables in different directions. That is, we tested whether Richardson and colleagues' results could be explained by the facet-level mechanism that we proposed.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>The bifactor structure of neuroticism's items replicated in the new samples (see Table <ref type="table" target="#tab_0">S1</ref> in the Supplemental Material available online). The first set of analyses (see Table <ref type="table">S2</ref>) revealed that higher general neuroticism and anxious/tense scores were associated with poorer selfrated health; higher worried/vulnerable scores were associated with better self-rated health.</p><p>The second set of analyses (see Table <ref type="table" target="#tab_0">1</ref>) revealed that higher general neuroticism was associated with greater all-cause mortality but only in the sex-and ageadjusted model; the anxious/tense facet was not associated with all-cause mortality. Higher scores on the worried/vulnerable facet, on the other hand, were associated with reduced all-cause mortality in the sex-and age-adjusted model (a key result) and in the fully adjusted model. For specific causes of death, we found a similar pattern of results in sex-and age-adjusted models, but adding the other covariates rendered effects nonsignificant. We did not find a significant association in the sex-and age-adjusted model for cancer when both facets were included simultaneously.</p><p>The third set of analyses (see Table <ref type="table">S3</ref>) revealed that for nearly every covariate, higher general neuroticism  .733</p><p>Note: Estimates represent hazard ratios (HRs); 95% confidence intervals are given in brackets. Estimates were first adjusted for age and sex and then, in addition, for other covariates at baseline: health behaviors (smoking status, frequency of alcohol intake, number of types of exercise engaged in, and daily consumption of fruits and vegetables), physical attributes (body mass index, forced expiratory volume in 1 s, systolic blood pressure, and grip strength), reaction time, existing illness (diagnosis of vascular or heart problems, diabetes, cancer, asthma, chronic lung disease, deep vein thrombosis,</p><p>or pulmonary embolism at baseline), and socioeconomic position (Townsend index score and highest educational qualification). Alpha was set to .001.</p><p>Neuroticism Facets and Health 637 scores were associated with higher risk, and higher worried/vulnerable scores were protective (another key result).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>The bifactor structure of neuroticism's items replicated in the new samples (see Table <ref type="table" target="#tab_0">S1</ref> in the Supplemental Material available online). The first set of analyses (see Table <ref type="table">S2</ref>) revealed that higher general neuroticism and anxious/tense scores were associated with poorer selfrated health; higher worried/vulnerable scores were associated with better self-rated health.</p><p>The second set of analyses (see Table <ref type="table" target="#tab_0">1</ref>) revealed that higher general neuroticism was associated with greater all-cause mortality but only in the sex-and ageadjusted model; the anxious/tense facet was not associated with all-cause mortality. Higher scores on the worried/vulnerable facet, on the other hand, were associated with reduced all-cause mortality in the sex-and age-adjusted model (a key result) and in the fully adjusted model. For specific causes of death, we found a similar pattern of results in sex-and age-adjusted models, but adding the other covariates rendered effects nonsignificant. We did not find a significant association in the sex-and age-adjusted model for cancer when both facets were included simultaneously.</p><p>The third set of analyses (see Table <ref type="table">S3</ref>) revealed that for nearly every covariate, higher general neuroticism  .733</p><p>Note: Estimates represent hazard ratios (HRs); 95% confidence intervals are given in brackets. Estimates were first adjusted for age and sex and then, in addition, for other covariates at baseline: health behaviors (smoking status, frequency of alcohol intake, number of types of exercise engaged in, and daily consumption of fruits and vegetables), physical attributes (body mass index, forced expiratory volume in 1 s, systolic blood pressure, and grip strength), reaction time, existing illness (diagnosis of vascular or heart problems, diabetes, cancer, asthma, chronic lung disease, deep vein thrombosis,</p><p>or pulmonary embolism at baseline), and socioeconomic position (Townsend index score and highest educational qualification). Alpha was set to .001.</p><p>scores were associated with higher risk, and higher worried/vulnerable scores were protective (another key result).</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>The worried/vulnerable facet of neuroticism is linked to better health in models that do not include possible colliders. This finding suggests that in addition to considering collider bias as an explanation for why the inclusion of self-rated health causes neuroticism to become protective, one must consider the possibility that self-rated health is a negative suppressor, which reveals the action of a neuroticism facet related to worry and vulnerability. The latter explanation has the same number of parameters as the collider-bias explanation but describes a scenario in which neuroticism has a direct positive effect on health and an indirect negative effect on health via self-rated health. However, the latter explanation, which we favor, appears to be more consistent with findings from the literature at the time of the study and those that emerged since then. These findings include those relating to the association between self-rated health and mortality <ref type="bibr" target="#b0">(Benyamini &amp; Idler, 1999;</ref><ref type="bibr" target="#b6">Heistaro, Jousilahti, Lahelma, Vartiainen, &amp; Puska, 2001;</ref><ref type="bibr" target="#b7">Idler &amp; Benyamini, 1997)</ref>, which we cited earlier, and those from the study by <ref type="bibr" target="#b14">Ploubidis and Grundy (2009)</ref>, who modeled the association between neuroticism and mortality. Their study found that, in women but not men, the direct effect of neuroticism was related to reduced risk and that the indirect effect of neuroticism via a somatic health factor (it loaded on self-rated health) was related to increased mortality. Similarly, another study found that "body vigilance" acted as a suppressor: When it was included in a model, the effect of neuroticism was protective <ref type="bibr" target="#b20">(Weston &amp; Jackson, 2018)</ref>. Our findings are also consistent with the fact that not all facets of a personality domain are responsible for personality-health associations (e.g., <ref type="bibr" target="#b18">Terracciano et al., 2009)</ref> and that although Type 2 diabetes is related to lower neuroticism net of depression (C ˇukic ´ &amp; Weiss, 2014), Type 1 diabetes risk, which cannot be reduced by vigilance, is related to higher neuroticism, regardless of whether depression is included in the model <ref type="bibr" target="#b2">(C ˇukic ´ &amp; Weiss, 2016)</ref>. Finally, a Mendelian randomization analysis by <ref type="bibr" target="#b13">Nagel, Watanabe, Stringer, Posthuma, and van der Sluis (2018)</ref> found that a similar facet, which they labeled "worry" was related to lower waist circumference and lower body mass index, both mortality risk factors. Thus, multiple strands point to a health-protective role for neuroticism via vigilance or for one or more neuroticism facets related to vigilance. That said, because Nagel et al. did not use a bifactor analysis to obtain this facet, it is not possible to know whether the relationships that they report reflect associations with the facet or with the general neuroticism factor (see our earlier discussion on this point).</p><p>Richardson and colleagues are correct: One should be alert to the possibility of collider bias, and we agree that that was a possible-but not the only-interpretation of our original results. Future studies on the causal association between self-rated health and mortality will be key to understanding which explanation is likely to be correct. Nonetheless, our results as a whole, and the literature, appear to better support an alternative possibility that some neuroticism facets are associated with higher health risks, some are neutral, and some are protective.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Action Editor</head><p>D. Stephen Lindsay served as action editor for this article.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>833325P</head><label></label><figDesc>SSXXX10.1177/0956797619833325Weiss et al.Neuroticism Facets and Health Conditioning on a Collider May or May Not Explain the Relationship Between Lower Neuroticism and Premature Mortality in the Study by Gale et al. (2017): A Reply to Richardson, Davey Smith, and Munafò (2019)</figDesc></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Bifactor structure of neuroticism in the UK Biobank data. The circle and arrows at the top of the figure represent loadings of the general factor onto the 12 Neuroticism items from the short form of the Revised Eysenck Personality Questionnaire (Eysenck, Eysenck, &amp; Barrett, 1985). The circles and arrows at the bottom of the figure represent loadings of facets onto specific Neuroticism items from this scale. All loadings were positive. Loadings less than |.3| are not presented. Item numbers in the figure correspond to the position of the items presented inTable 9 in the article by Eysenck et al. Item wording is presented in Appendix 2 of Eysenck et al.</figDesc></figure>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Action Editor</head><p>D. Stephen Lindsay served as action editor for this article.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Bifactor structure of neuroticism in the UK Biobank data. The circle and arrows at the top of the figure represent loadings of the general factor onto the 12 Neuroticism items from the short form of the Revised Eysenck Personality Questionnaire (Eysenck, Eysenck, &amp; Barrett, 1985). The circles and arrows at the bottom of the figure represent loadings of facets onto specific Neuroticism items from this scale. All loadings were positive. Loadings less than |.3| are not presented. Item numbers in the figure correspond to the position of the items presented inTable 9 in the article by Eysenck et al. Item wording is presented in Appendix 2 of Eysenck et al.</figDesc></figure>
 <figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Table 9 in the article by Eysenck et al. Item wording is presented in Appendix 2 of Eysenck et al. Associations Between Mortality Risk and the General Neuroticism Factor, the Anxious/Tense Facet, and the Worried/Vulnerable Facet From Models Examining the General Neuroticism Factor and the Facets Separately and From Models Examining the Two Facets Simultaneously (N =</figDesc><table><row><cell>Examined simultaneously</cell></row><row><cell>321,456)</cell></row><row><cell>Examined separately</cell></row></table></figure>
-			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>Centre for Cognitive Ageing and Cognitive Epidemiology, Department of Psychology, University of Edinburgh;</p></note>
-			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>Department of Psychology, School of Philosophy, Psychology &amp; Language Sciences, University of Edinburgh;</p></note>
-			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="3" xml:id="foot_2"><p>MRC Lifecourse Epidemiology Unit, University of Southampton;</p></note>
-			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="4" xml:id="foot_3"><p>Department of Epidemiology &amp; Public Health, University College London; and</p></note>
-			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="5" xml:id="foot_4"><p>Division of Psychiatry, University of Edinburgh</p></note>
 		</body>
 		<back>
 
 			<div type="acknowledgement">
 <div><head>Acknowledgments</head><p>We thank <rs type="person">Archie Campbell</rs> and <rs type="person">Paul Barrett</rs> for data, <rs type="person">Stuart Ritchie</rs> for comments, and <rs type="person">Ben Chapman</rs> and <rs type="person">Lindsay Paterson</rs> for assistance in addressing a reviewer's comments about how we estimated the change in hazard ratios.</p></div>
-			</div>			<div type="annex">
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Author Contributions</head><p>A. Weiss planned the reply and analyses and conducted the exploratory bifactor analyses. C. R. Gale conducted the analyses presented in Table <ref type="table">1</ref> and<ref type="table">in Table S2 in</ref>  </p></div>
+			</div>
+			<div type="funding">
+<div><head>Funding</head><p>The research was conducted using the <rs type="projectName">UK Biobank Resource</rs> (Application <rs type="grantNumber">10279</rs>). The <rs type="funder">University of Edinburgh Centre for</rs> <rs type="projectName">Cognitive Ageing and Cognitive Epidemiology</rs> is funded by the <rs type="funder">Biotechnology and Biological Sciences Research Council and Medical Research Council</rs> (MRC; <rs type="grantNumber">MR/K026992/1</rs>), which supports <rs type="person">I. J. Deary. I. J. Deary</rs>, <rs type="person">C. R. Gale</rs>, and I. C ˇukic ´ are supported by the <rs type="funder">MRC</rs> (<rs type="grantNumber">MR/K025023/1</rs>). <rs type="person">A. M</rs>. McIntosh is supported by The <rs type="funder">Wellcome Trust</rs> (<rs type="grantNumber">104036/Z/14/Z</rs>). G. D.</p><p><rs type="person">Batty</rs> is supported by <rs type="funder">MRC</rs> (<rs type="grantNumber">MR/P023444/1</rs>) and the <rs type="funder">National Institute on Aging</rs> (<rs type="grantNumber">1R56AG052519-01</rs>, <rs type="grantNumber">1R01AG052519-01A1</rs>). Generation Scotland was funded by the <rs type="funder">Scottish Government Chief Scientist Office</rs> (<rs type="grantNumber">CZD/16/6</rs>) and <rs type="funder">Scottish Funding Council</rs> (<rs type="grantNumber">HR03006</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funded-project" xml:id="_NgSxsmg">
+					<idno type="grant-number">10279</idno>
+					<orgName type="project" subtype="full">UK Biobank Resource</orgName>
+				</org>
+				<org type="funded-project" xml:id="_kXEtXkD">
+					<idno type="grant-number">MR/K026992/1</idno>
+					<orgName type="project" subtype="full">Cognitive Ageing and Cognitive Epidemiology</orgName>
+				</org>
+				<org type="funding" xml:id="_AVkm9u8">
+					<idno type="grant-number">MR/K025023/1</idno>
+				</org>
+				<org type="funding" xml:id="_uBfABr4">
+					<idno type="grant-number">104036/Z/14/Z</idno>
+				</org>
+				<org type="funding" xml:id="_6HMgxTg">
+					<idno type="grant-number">MR/P023444/1</idno>
+				</org>
+				<org type="funding" xml:id="_QKdKdJp">
+					<idno type="grant-number">1R56AG052519-01</idno>
+				</org>
+				<org type="funding" xml:id="_jFZ9q2f">
+					<idno type="grant-number">1R01AG052519-01A1</idno>
+				</org>
+				<org type="funding" xml:id="_2H2bKmz">
+					<idno type="grant-number">CZD/16/6</idno>
+				</org>
+				<org type="funding" xml:id="_gKhez87">
+					<idno type="grant-number">HR03006</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Author Contributions</head><p>A. Weiss planned the reply and analyses and conducted the exploratory bifactor analyses. C. R. Gale conducted the analyses presented in Table <ref type="table">1</ref> and <ref type="table">in Table S2 in</ref>  </p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Declaration of Conflicting Interests</head><p>The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Funding</head><p>The research was conducted using the UK Biobank Resource Batty is supported by MRC (MR/P023444/1) and the National Institute on Aging (1R56AG052519-01, 1R01AG052519-01A1). Generation Scotland was funded by the Scottish Government Chief Scientist Office (CZD/16/6) and Scottish Funding Council (HR03006).</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplemental Material</head><p>Additional supporting information can be found at <ref type="url" target="http://journals.sagepub.com/doi/suppl/10.1177/0956797619833325">http:// journals.sagepub.com/doi/suppl/10.1177/0956797619833325</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplemental Material</head><p>Additional supporting information can be found at <ref type="url" target="http://journals.sagepub.com/doi/suppl/10.1177/0956797619833325">http://  journals.sagepub.com/doi/suppl/10.1177/0956797619833325</ref> </p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Open Practices</head><p>Data from UK Biobank are available to approved researchers at <ref type="url" target="https://www.ukbiobank.ac.uk/">https://www.ukbiobank.ac.uk/</ref>. The other data used in this study are available on request from the corresponding author.</p></div>			</div>
 			<div type="references">
 

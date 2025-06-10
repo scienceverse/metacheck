@@ -6,20 +6,11 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<teiHeader xml:lang="en">
 		<fileDesc>
 			<titleStmt>
-				<title level="a" type="main">Collective Emotions and Social Resilience in the Digital Traces After a Terrorist Attack</title>
+				<title level="a" type="main">RiméDigital Traces of Collective Emotions and Social Resilience</title>
 				<funder>
 					<orgName type="full">Ethics Committee of the Medical University of Vienna</orgName>
 				</funder>
-				<funder ref="#_WAnVzYU #_fNnTG97">
-					<orgName type="full">unknown</orgName>
-				</funder>
-				<funder ref="#_t8gjByz">
-					<orgName type="full">Persian Gulf War. Journal of Social</orgName>
-				</funder>
-				<funder ref="#_Fq5Ufwd">
-					<orgName type="full">National Academy of Sciences, USA</orgName>
-				</funder>
-				<funder ref="#_SFrQDWr">
+				<funder ref="#_pyqa2fH">
 					<orgName type="full">Vienna Science and Technology Fund</orgName>
 				</funder>
 			</titleStmt>
@@ -66,7 +57,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 								</address>
 							</affiliation>
 						</author>
-						<title level="a" type="main">Collective Emotions and Social Resilience in the Digital Traces After a Terrorist Attack</title>
+						<title level="a" type="main">RiméDigital Traces of Collective Emotions and Social Resilience</title>
 					</analytic>
 					<monogr>
 						<imprint>
@@ -81,8 +72,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		</fileDesc>
 		<encodingDesc>
 			<appInfo>
-				<application version="0.8.1" ident="GROBID" when="2025-05-20T19:36+0000">
+				<application version="0.8.2" ident="GROBID" when="2025-06-03T12:08+0000">
 					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">a91ee48</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=false, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], sentenceSegmentation=false, flavor=null</label>
 					<ref target="https://github.com/kermitt2/grobid"/>
 				</application>
 			</appInfo>
@@ -90,7 +83,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		<profileDesc>
 			<textClass>
 				<keywords>
-					<term>RiméDigital Traces of Collective Emotions and Social Resilience research-article2019 social interaction</term>
+					<term>social interaction</term>
 					<term>psycholinguistics</term>
 					<term>emotions</term>
 					<term>social media</term>
@@ -98,22 +91,22 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 				</keywords>
 			</textClass>
 			<abstract>
-<div xmlns="http://www.tei-c.org/ns/1.0"><p>have extensively documented the implications of exposure to such episodes for individuals' psychological adjustment. Collective traumas also spark spectacular collective manifestations <ref type="bibr" target="#b6">(Collins, 2004b;</ref> Pennebaker &amp; Harber, 1993)  about which much less is known. A particularly visible collective response to upheavals takes the form of crowd gatherings, such as marches, demonstrations, copresence at memorial sites, or formal commemorations. After September 2001, countless gatherings happened all over the United States <ref type="bibr" target="#b6">(Collins, 2004b)</ref>. After the Madrid attacks in March 2004, protest marches took place in all Spanish cities, with an estimated 25% of the population taking part (Páez, Basabe, Ubillos, &amp; González-Castro, 2007).</p><p>The attacks on Charlie Hebdo in Paris in January 2015 provoked spontaneous marches that brought together 4 million to 5 million demonstrators across France ("Contre le Terrorisme," 2015).</p><p>A much less noticeable though equally important social response to upheavals happens in interpersonal communication. Because he witnessed the 1910 San Francisco earthquake, William James was probably the first to document the extraordinary need to talk among disaster survivors. In his correspondence with Pierre Janet, he reported that in rescue tents, it was impossible to sleep at night because of the endless chatter <ref type="bibr" target="#b20">( Janet, 1926</ref>( Janet,  /1975, p. 326), p. 326). After a traumatic event, members of concerned communities indeed talk profusely about what happened and how they feel. Pennebaker and Harber (1993)  provided the first 831964P SSXXX10.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>After collective traumas such as natural disasters and terrorist attacks, members of concerned communities experience intense emotions and talk profusely about them. Although these exchanges resemble simple emotional venting, Durkheim's theory of collective effervescence postulates that these collective emotions lead to higher levels of solidarity in the affected community. We present the first large-scale test of this theory through the analysis of digital traces of 62,114 Twitter users after the Paris terrorist attacks of November 2015. We found a collective negative emotional response followed by a marked long-term increase in the use of lexical indicators related to solidarity. Expressions of social processes, prosocial behavior, and positive affect were higher in the months after the attacks for the individuals who participated to a higher degree in the collective emotion. Our findings support the conclusion that collective emotions after a disaster are associated with higher solidarity, revealing the social resilience of a community.</p></div>
 			</abstract>
 		</profileDesc>
 	</teiHeader>
 	<text xml:lang="en">
 		<body>
-<div xmlns="http://www.tei-c.org/ns/1.0"><p>quantitative empirical evidence in this respect. In surveys conducted respectively among residents of the San Francisco Bay Area after the 1989 earthquake and among U.S. respondents after the outbreak of the first Gulf War, they recorded startling levels of social sharing that lasted for a period of 2 to 3 weeks after the event but dropped sharply afterward. Similarly, after the 2004 terrorist attacks in <ref type="bibr">Madrid, Rimé, Páez, Basabe, and Martínez (2010)</ref> observed that Spanish residents talked and heard talking of the event at a very high level during the 1st week following the attacks. The level of talking decreased during the 2nd and 3rd weeks, and 2 months after the event, the social sharing of emotion had vanished.</p><p>Such communications were virtually untraceable before the development of our current digital society; social media now reveal the overabundant communications provoked by upheavals (for a review, see <ref type="bibr" target="#b26">Simon, Goldberg, &amp; Adini, 2015)</ref>. After the 2011 earthquake in Japan, the volume of tweets sent per second spiked to more than 5,000 <ref type="bibr">(abdur, 2011)</ref>. After the January 2015 terrorist attacks in Paris, the hashtag #JeSuisCharlie was used nearly 6,500 times per minute <ref type="bibr" target="#b16">(Goldman &amp; Pagliery, 2015)</ref>. To date, we lack scientific knowledge on the nature and function of these profuse communications in the midst of collective traumas. At first sight, they look like buzzing noise stimulated by transient ventilation needs and devoid of noteworthy social consequences. We advocate in favor of a radically different perspective. We propose that crowd gatherings and peer-to-peer communications elicited by upheavals rest on common ground. In our perspective, they involve similar processes of social synchronization and they entail effects serving social resilience. We first develop our arguments and then describe a study designed to assess our view.</p><p>Collective Gatherings, Synchronization, and Social Resilience <ref type="bibr" target="#b8">Durkheim (1912)</ref> theorized that members of a society happen to come together and to synchronize their thoughts and actions through shared slogans, gestures, and movements. Participants reciprocally stimulate their emotions, thus engendering a collective effervescence. In this experience of emotional communion, they revive their sense of social belonging and their shared beliefs. Individuals thus leave the crowd endowed with positive affect, strength and self-confidence, and openness to other individuals. Recent studies largely supported this classic model. First, experimental induction of synchronization (e.g., marching in step, dancing in rhythm) lessened interpersonal boundaries, enhanced positive affect, and promoted cooperation (e.g., <ref type="bibr">Miles, Nind, Henderson, &amp; Macrae, 2010;</ref><ref type="bibr" target="#b31">Wiltermuth &amp; Heath, 2009)</ref>.</p><p>Second, participation in both positively and negatively toned collective gatherings strengthened common identity, personal and collective self-esteem, positive affect, and positive social beliefs <ref type="bibr">(Páez, Rimé, Basabe, Wlodarczyk, &amp; Zumeta, 2015)</ref>. In line with a central tenet of Durkheim's model, these effects were mediated by participants' perceived emotional synchrony with other people. The question thus arises of the social functions of social synchronization and its effects. <ref type="bibr" target="#b3">Cacioppo, Reis, and Zautra (2011)</ref> stressed that coordinated social activity, feelings of connectedness, and shared identities represent key contributions to social resilience or the capacity to "endure and recover from life stressors" (p. 44). Similarly, disaster-preparedness models focus on social connectivity, or bonding, bridging, and linking, as a primary asset within resilient communities <ref type="bibr" target="#b9">(Ellis &amp; Abdi, 2017)</ref>. In sum, social synchronization may favor social resilience.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Social Sharing of Emotion, Synchronization, and Social Resilience</head><p>The profuse talking of members of affected communities simply fits the principle of social sharing of emotion. It states that emotion systematically triggers the need to talk about it and that more intense emotions are shared more frequently and more extensively (for a review, see <ref type="bibr">Rimé, 2009)</ref>. However, collective emotional episodes are special in that they elicit emotion sharing feedback loops. Individuals read news, think of the event, talk, and hear other people talking about it <ref type="bibr" target="#b6">(Collins, 2004b;</ref><ref type="bibr">Pennebaker &amp; Harber, 1993;</ref><ref type="bibr">Rimé, 2007)</ref>. As sharing reboots emotions <ref type="bibr">(Rimé, 2009)</ref>, both the sharing source and the target experience further need to talk. In the affected community, with most individuals being the seat of this process, the social sharing of emotion can reach astronomic values.</p><p>To our knowledge, no theoretical model to date accounts for this spectacular peer-to-peer sharing of collective events. Moving from a peer-to-peer perspective to a collective perspective on these exchanges, we propose that even if participating individuals remain physically separated from one another, the social sharing of a collective emotion drives social synchronization in the affected community and thus fuels a variant of Durkheim's collective effervescence. We argue that the buzzing noise elicited by a collective emotional event actually weaves a social resilience process based on social synchronization. More specifically, we predict participation in the social sharing of emotion following a traumatic event to enhance social belonging, shared beliefs, positive affect, and prosocial attitudes. Initial support for such predictions was found in longitudinal data collected from respondents' self-reports after the March 2004 terrorist attacks in <ref type="bibr">Madrid (Rimé et al., 2010)</ref>. One week, 3 weeks, and 8 weeks after the terrorist act, respondents from five Spanish regions answered questionnaires measuring social sharing of emotion related to the events as well as perceived emotional climate, social integration, and posttraumatic growth. Higher levels of social sharing were initially found to predict higher levels of social integration, perceived posttraumatic growth, and positive affect assessed 3 and 8 weeks later. This was further linked to perceived benefits after the terrorist attacks <ref type="bibr" target="#b30">(Vázquez &amp; Hervás, 2010)</ref>.</p><p>Nowadays, digital traces from social media in combination with text analysis offer the opportunity to access emotional life at a much larger scale than using self-reports <ref type="bibr" target="#b23">(Schweitzer &amp; Garcia, 2010)</ref>. <ref type="bibr" target="#b4">Cohn, Mehl, and Pennebaker (2004)</ref> analyzed the content of online diaries of U.S. users 2 months before and 2 months after September 11, 2001. Participants expressed more negative emotions and were more cognitively and socially engaged within the first 2 weeks after the attacks but then returned to baseline levels. Currently, Twitter offers direct access to individuals' emotional sharing content. <ref type="bibr" target="#b10">Eriksson (2016)</ref> analyzed discourse on Twitter in the 6 days following the 2011 attacks in Oslo and Utøya. Initially, the main discursive themes included solidarity, but later, the causes of the attacks were framed with respect to national contexts. <ref type="bibr" target="#b27">Smith, McGarty, and Thomas (2018)</ref> investigated tweets posted in reaction to the diffusion of images of the body of 3-year-old Aylan Kurdi. Tweeting about death, threat, and harm predicted increased expressions of solidarity with refugees 10 weeks later.</p><p>Beyond these effects, linguistic analysis of observational data revealed how language patterns change in reaction to economic recessions and wars <ref type="bibr" target="#b19">(Iliev, Hoover, Dehghani, &amp; Axelrod, 2016)</ref> and how they vary across levels of activity in a political movement <ref type="bibr" target="#b1">(Alvarez, Garcia, Moreno, &amp; Schweitzer, 2015)</ref>. Thus, studies examining digital traces surrounding major upheavals confirmed the abundant emotional, cognitive, and social engagement in online communicative exchanges. Twitter has become a go-to site during disasters and a way to share methods for donating money to help the recovery (for a review, see <ref type="bibr" target="#b26">Simon et al., 2015)</ref>. The terrorist attacks in Paris in November 2015 led to expressions of solidarity and empathy across the globe through the #JeSuisParis hashtag. At the same time, inhabitants of Paris were actively using the hashtag #PorteOuverte to offer their homes to people who were afraid or unable to travel inside Paris in the aftermath of the attacks. This was a clear example of prosocial behavior as manifested through social media: Users were not just talking about helping other people; they were actually offering help through Twitter in an altruistic act toward strangers.</p><p>In the present study, we empirically analyzed collective effervescence, testing the association between the collective experience of emotions and solidarity, in particular the activation of social processes and the salience of prosocial behavior and shared values <ref type="bibr">(Collins, 2004a)</ref>. We present the analysis of French social media content on Twitter after the November 2015 terrorist attacks in Paris. We analyzed the temporal dynamics of the collective emotion that followed the attacks and tested its relationship to lexical indicators associated with solidarity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Individual responses to collective traumas (e.g., natural disasters, technological accidents, terrorist attacks) have been abundantly investigated. In particular, national surveys conducted in the United States after the September 2001 attacks (e.g., <ref type="bibr" target="#b36">Seery, Silver, Holman, Ence, &amp; Chu, 2008;</ref><ref type="bibr" target="#b37">Silver, Holman, McIntosh, Poulin, &amp; Gil-Rivas, 2002;</ref><ref type="bibr" target="#b40">Stein et al., 2004)</ref> have extensively documented the implications of exposure to such episodes for individuals' psychological adjustment. Collective traumas also spark spectacular collective manifestations <ref type="bibr" target="#b6">(Collins, 2004b;</ref><ref type="bibr" target="#b29">Pennebaker &amp; Harber, 1993)</ref> about which much less is known. A particularly visible collective response to upheavals takes the form of crowd gatherings, such as marches, demonstrations, copresence at memorial sites, or formal commemorations. After September 2001, countless gatherings happened all over the United States <ref type="bibr" target="#b6">(Collins, 2004b)</ref>. After the Madrid attacks in March 2004, protest marches took place in all Spanish cities, with an estimated 25% of the population taking part <ref type="bibr" target="#b26">(Páez, Basabe, Ubillos, &amp; González-Castro, 2007)</ref>.</p><p>The attacks on Charlie Hebdo in Paris in January 2015 provoked spontaneous marches that brought together 4 million to 5 million demonstrators across France ("Contre le <ref type="bibr">Terrorisme," 2015)</ref>.</p><p>A much less noticeable though equally important social response to upheavals happens in interpersonal communication. Because he witnessed the 1910 San Francisco earthquake, William James was probably the first to document the extraordinary need to talk among disaster survivors. In his correspondence with Pierre Janet, he reported that in rescue tents, it was impossible to sleep at night because of the endless chatter <ref type="bibr" target="#b20">( Janet, 1926</ref><ref type="bibr">( Janet, /1975, p. 326), p. 326)</ref>. After a traumatic event, members of concerned communities indeed talk profusely about what happened and how they feel. <ref type="bibr" target="#b29">Pennebaker and Harber (1993)</ref> provided the first quantitative empirical evidence in this respect. In surveys conducted respectively among residents of the San Francisco Bay Area after the 1989 earthquake and among U.S. respondents after the outbreak of the first Gulf War, they recorded startling levels of social sharing that lasted for a period of 2 to 3 weeks after the event but dropped sharply afterward. Similarly, after the 2004 terrorist attacks in Madrid, <ref type="bibr" target="#b33">Rimé, Páez, Basabe, and Martínez (2010)</ref> observed that Spanish residents talked and heard talking of the event at a very high level during the 1st week following the attacks. The level of talking decreased during the 2nd and 3rd weeks, and 2 months after the event, the social sharing of emotion had vanished.</p><p>Such communications were virtually untraceable before the development of our current digital society; social media now reveal the overabundant communications provoked by upheavals (for a review, see <ref type="bibr" target="#b38">Simon, Goldberg, &amp; Adini, 2015)</ref>. After the 2011 earthquake in Japan, the volume of tweets sent per second spiked to more than 5,000 <ref type="bibr">(abdur, 2011)</ref>. After the January 2015 terrorist attacks in Paris, the hashtag #JeSuisCharlie was used nearly 6,500 times per minute <ref type="bibr" target="#b16">(Goldman &amp; Pagliery, 2015)</ref>. To date, we lack scientific knowledge on the nature and function of these profuse communications in the midst of collective traumas. At first sight, they look like buzzing noise stimulated by transient ventilation needs and devoid of noteworthy social consequences. We advocate in favor of a radically different perspective. We propose that crowd gatherings and peer-to-peer communications elicited by upheavals rest on common ground. In our perspective, they involve similar processes of social synchronization and they entail effects serving social resilience. We first develop our arguments and then describe a study designed to assess our view.</p><p>Collective Gatherings, Synchronization, and Social Resilience <ref type="bibr" target="#b8">Durkheim (1912)</ref> theorized that members of a society happen to come together and to synchronize their thoughts and actions through shared slogans, gestures, and movements. Participants reciprocally stimulate their emotions, thus engendering a collective effervescence. In this experience of emotional communion, they revive their sense of social belonging and their shared beliefs. Individuals thus leave the crowd endowed with positive affect, strength and self-confidence, and openness to other individuals. Recent studies largely supported this classic model. First, experimental induction of synchronization (e.g., marching in step, dancing in rhythm) lessened interpersonal boundaries, enhanced positive affect, and promoted cooperation (e.g., <ref type="bibr" target="#b25">Miles, Nind, Henderson, &amp; Macrae, 2010;</ref><ref type="bibr" target="#b43">Wiltermuth &amp; Heath, 2009)</ref>.</p><p>Second, participation in both positively and negatively toned collective gatherings strengthened common identity, personal and collective self-esteem, positive affect, and positive social beliefs <ref type="bibr" target="#b27">(Páez, Rimé, Basabe, Wlodarczyk, &amp; Zumeta, 2015)</ref>. In line with a central tenet of Durkheim's model, these effects were mediated by participants' perceived emotional synchrony with other people. The question thus arises of the social functions of social synchronization and its effects. <ref type="bibr" target="#b3">Cacioppo, Reis, and Zautra (2011)</ref> stressed that coordinated social activity, feelings of connectedness, and shared identities represent key contributions to social resilience or the capacity to "endure and recover from life stressors" (p. 44). Similarly, disaster-preparedness models focus on social connectivity, or bonding, bridging, and linking, as a primary asset within resilient communities <ref type="bibr" target="#b9">(Ellis &amp; Abdi, 2017)</ref>. In sum, social synchronization may favor social resilience.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Social Sharing of Emotion, Synchronization, and Social Resilience</head><p>The profuse talking of members of affected communities simply fits the principle of social sharing of emotion. It states that emotion systematically triggers the need to talk about it and that more intense emotions are shared more frequently and more extensively (for a review, see <ref type="bibr" target="#b32">Rimé, 2009)</ref>. However, collective emotional episodes are special in that they elicit emotion sharing feedback loops. Individuals read news, think of the event, talk, and hear other people talking about it <ref type="bibr" target="#b6">(Collins, 2004b;</ref><ref type="bibr" target="#b29">Pennebaker &amp; Harber, 1993;</ref><ref type="bibr" target="#b31">Rimé, 2007)</ref>. As sharing reboots emotions <ref type="bibr" target="#b32">(Rimé, 2009)</ref>, both the sharing source and the target experience further need to talk. In the affected community, with most individuals being the seat of this process, the social sharing of emotion can reach astronomic values.</p><p>To our knowledge, no theoretical model to date accounts for this spectacular peer-to-peer sharing of collective events. Moving from a peer-to-peer perspective to a collective perspective on these exchanges, we propose that even if participating individuals remain physically separated from one another, the social sharing of a collective emotion drives social synchronization in the affected community and thus fuels a variant of Durkheim's collective effervescence. We argue that the buzzing noise elicited by a collective emotional event actually weaves a social resilience process based on social synchronization. More specifically, we predict participation in the social sharing of emotion following a traumatic event to enhance social belonging, shared beliefs, positive affect, and prosocial attitudes. Initial support for such predictions was found in longitudinal data collected from respondents' self-reports after the March 2004 terrorist attacks in Madrid <ref type="bibr" target="#b33">(Rimé et al., 2010)</ref>. One week, 3 weeks, and 8 weeks after the terrorist act, respondents from five Spanish regions answered questionnaires measuring social sharing of emotion related to the events as well as perceived emotional climate, social integration, and posttraumatic growth. Higher levels of social sharing were initially found to predict higher levels of social integration, perceived posttraumatic growth, and positive affect assessed 3 and 8 weeks later. This was further linked to perceived benefits after the terrorist attacks <ref type="bibr" target="#b42">(Vázquez &amp; Hervás, 2010)</ref>.</p><p>Nowadays, digital traces from social media in combination with text analysis offer the opportunity to access emotional life at a much larger scale than using self-reports <ref type="bibr" target="#b35">(Schweitzer &amp; Garcia, 2010)</ref>. <ref type="bibr" target="#b4">Cohn, Mehl, and Pennebaker (2004)</ref> analyzed the content of online diaries of U.S. users 2 months before and 2 months after September 11, 2001. Participants expressed more negative emotions and were more cognitively and socially engaged within the first 2 weeks after the attacks but then returned to baseline levels. Currently, Twitter offers direct access to individuals' emotional sharing content. <ref type="bibr" target="#b10">Eriksson (2016)</ref> analyzed discourse on Twitter in the 6 days following the 2011 attacks in Oslo and Utøya. Initially, the main discursive themes included solidarity, but later, the causes of the attacks were framed with respect to national contexts. <ref type="bibr" target="#b39">Smith, McGarty, and Thomas (2018)</ref> investigated tweets posted in reaction to the diffusion of images of the body of 3-year-old Aylan Kurdi. Tweeting about death, threat, and harm predicted increased expressions of solidarity with refugees 10 weeks later.</p><p>Beyond these effects, linguistic analysis of observational data revealed how language patterns change in reaction to economic recessions and wars <ref type="bibr" target="#b19">(Iliev, Hoover, Dehghani, &amp; Axelrod, 2016)</ref> and how they vary across levels of activity in a political movement <ref type="bibr" target="#b1">(Alvarez, Garcia, Moreno, &amp; Schweitzer, 2015)</ref>. Thus, studies examining digital traces surrounding major upheavals confirmed the abundant emotional, cognitive, and social engagement in online communicative exchanges. Twitter has become a go-to site during disasters and a way to share methods for donating money to help the recovery (for a review, see <ref type="bibr" target="#b38">Simon et al., 2015)</ref>. The terrorist attacks in Paris in November 2015 led to expressions of solidarity and empathy across the globe through the #JeSuisParis hashtag. At the same time, inhabitants of Paris were actively using the hashtag #PorteOuverte to offer their homes to people who were afraid or unable to travel inside Paris in the aftermath of the attacks. This was a clear example of prosocial behavior as manifested through social media: Users were not just talking about helping other people; they were actually offering help through Twitter in an altruistic act toward strangers.</p><p>In the present study, we empirically analyzed collective effervescence, testing the association between the collective experience of emotions and solidarity, in particular the activation of social processes and the salience of prosocial behavior and shared values <ref type="bibr">(Collins, 2004a)</ref>. We present the analysis of French social media content on Twitter after the November 2015 terrorist attacks in Paris. We analyzed the temporal dynamics of the collective emotion that followed the attacks and tested its relationship to lexical indicators associated with solidarity.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Twitter data set</head><p>During 1 month after November 13, 2015, we collected tweets with hashtags related to the terrorist attacks in Paris through daily requests to the Twitter search application programming interface (API). Hashtags were selected by manual inspection to cover tweets referring to the attacks, and a list of them can be found in the Supplemental Material available online. In the results of those requests, we filtered out all tweets that were retweets, and we applied language detection to each tweet in combination with language metadata provided by Twitter to select only tweets in French. Analyzing tweets sampled through manually selected hashtag lists can lead to unrepresentative samples of Twitter data (see King, Lam, &amp; Roberts, 2017, who include an example about the Paris attacks in their Appendix). Using only that data would have limited the analysis only to the days after the attacks, ignoring earlier periods and artificially lowering data volumes over time. Instead of using those hashtag tweets as a corpus, we used them to identify a panel of user accounts that we historically analyzed through their time line of original tweets (ignoring retweets).</p><p>Of the nearly half million users found in that data set, more than 287,000 (58%) shared location information in their profile. We filtered those users to include only those with profiles located in European France and who showed no clear signs of behaving like bots or mass media accounts (for more details, see the Supplemental Material). As a result, we produced a data set of 62,114 user accounts in the country directly affected by the terrorist attacks. 1 The activity of users in this data set was concentrated in Paris but also covered locations all over France, as shown in Figure <ref type="figure" target="#fig_0">1a</ref>. We restricted our final data set to the period between April 1, 2015, and June 30, 2016, shown in Figure <ref type="figure" target="#fig_0">1b</ref>, which comprised a total of 17,899,591 tweets. There was a clear activity spike following the attacks, when the number of tweets was more than double any previous day in the data set. A qualitative inspection of the text of these tweets, as shown in Figure <ref type="figure" target="#fig_0">1c</ref>, shows that tweets after the attacks often included terms such as Paris, prayforparis, and attentats (French for "terrorist attacks"). This illustrates that the activity spike was directly related to the attacks, motivating our further quantitative analysis of the text of tweets.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Text analysis</head><p>We processed all tweets using the Linguistic Inquiry and Word Count (LIWC) method (Pennebaker, <ref type="bibr">Boyd, Jordan, &amp; Blackburn, 2015)</ref>, computing lexical indicators as the fraction of words in a text that belong to a word class of LIWC. Using the French adaptation of the LIWC dictionary (Piolat, Booth, Chung, Davids, &amp; Pennebaker, 2011), we measured the frequency of use of positive-affect and negative-affect terms in tweets as well as the expression of terms related to sadness, anxiety, and anger. We validated the applicability of the French LIWC dictionary with a data set of French tweets with annotated sentiment. Compared with control tweet samples, tweets annotated as positive contained 110% more positive-affect terms, and tweets annotated as negative contained 420% more negative-affect terms. Furthermore, tweets annotated as sad contained 933% more sadness terms, tweets annotated as anxious contained 1,150% more anxiety terms, and tweets annotated as angry contained 360% more anger terms. These results are reported in detail in the Supplemental Material.</p><p>We additionally recorded the fraction of terms in the LIWC category of social processes, which contains terms that refer to other people (somebody, guy), relationships ( friend, son), and social activities (discuss, celebration). Furthermore, we quantified the frequency of terms about French shared values (stemming from the terms liberté, égalité, and fraternité). Finally, we measured the frequency of terms related to prosocial behavior through a translation of a previously validated dictionary <ref type="bibr" target="#b11">(Frimer, Schaefer, &amp; Oakes, 2014)</ref>, including terms such as caring, solidarity, and NGO (nongovernmental organization). We validated our French version of the prosocial-terms dictionary by comparing a sample of prosocial Twitter accounts with a random sample of tweets from our baseline data set. Tweets from prosocial Twitter accounts contained 156% more prosocial terms than tweets in the baseline data set (see the Supplemental Material).</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statistical models</head><p>We calculated the daily mean value of each of the above lexical indicators over the tweets produced during our analysis period. We computed the baseline of each indicator for each weekday during the 6-month period before the attacks, shown in Figure <ref type="figure" target="#fig_0">1b</ref>. Then, for each indicator, we computed the daily normalized score as the log-transformed fraction between the value of the indicator in a day and the corresponding baseline value according to the day of the week. In this way, we corrected for weekly oscillations in term frequencies <ref type="bibr" target="#b15">(Golder &amp; Macy, 2011)</ref>, reduced skewness, and produced comparable scores for all indicators. To assess the uncertainty of this measurement, we generated 10,000 bootstrapped samples of the tweets in each day to calculate 95% confidence intervals (CIs) and median estimates.</p><p>We fitted the temporal evolution of each daily score through a time-series model that included an exogenous shock when the attacks took place and a memory term (ϕ) that quantified the linear relationship between the score in one day and the score in the next day. The value of ϕ is a measurement of the memory of the time series and tells us about the strength of synchronization of behavior in the aftermath of the terrorist attacks. Significant positive values of ϕ are generated when there is strong alignment of behavior that creates collective dynamics beyond individual relaxation levels. A value of ϕ indistinguishable from zero indicates the absence of collective behavior, which is present when synchronization is absent or weaker than individual relaxation. We illustrate this in detail in the Supplemental Material through an agent-based model of collective emotions <ref type="bibr" target="#b23">(Schweitzer &amp; Garcia, 2010</ref>) that was calibrated with empirical results on emotion dynamics in online discussions <ref type="bibr" target="#b12">(Garcia, Kappas, Küster, &amp; Schweitzer, 2016)</ref>.</p><p>We fitted models of collective behavior with the bayesglm function of the arm package <ref type="bibr" target="#b13">(Gelman &amp; Su, 2018)</ref> in the R programming environment, taking weakly informative priors for all parameters. After fitting, we verified that all residuals approximately followed normal distributions with Shapiro-Wilk tests, assessed that residuals of time-series models had no significant serial correlations in stationarity tests, and verified that they showed no relevant signs of heteroscedasticity. Detailed results of all fits are reported in the Supplemental Material.</p><p>Our individual-level analysis tested whether there was a relationship between high levels of emotionality right after the attacks and long-term increased levels of social-process terms, prosocial terms, shared-values terms, and affect terms. This analysis was restricted to users from our sample who produced at least one tweet in the 3 months before the attacks (August 13-November 12), in the 2 weeks after the attacks, and in the next 3 months, resulting in a total of 49,001 users. Because we sought to study the effect of shared emotions soon after the attacks on long-term behavior, we measured the individual level of emotional expression in the 2 weeks after the attacks (November 13-27) and analyzed its effect on other lexical indicators measured in the next 3 months (November 28-February 27).</p><p>For each user, we first calculated a vector of personalityrelated lexical indicators in the 3 months before the attacks. The digital traces of human behavior capture a wide variety of behaviors commonly studied in personality research, such as religious faith, caring, and empathy <ref type="bibr" target="#b2">(Boyd et al., 2015)</ref>. Our vector of personalityrelated lexical indicators included positive-affect and negative-affect terms, social-process terms, and firstperson singular pronouns, which have been found to be correlated with extraversion and openness (Mairesse, Walker, Mehl, &amp; Moore, 2007), especially in social media <ref type="bibr" target="#b22">(Schwartz et al., 2013)</ref>. This allowed us to correct for personality components that are likely to play a role in the susceptibility of a person to participate in a collective emotion. To take into account self-selection biases, we regressed emotional expression after the attacks on the vector of personality-related lexical indicators, adding to the model the logarithm of the number of posts of each user to account for different userengagement levels. This model indicates significant correlations between emotional expression after the attacks and all indicators except social processes (for more detail, see the Supplemental Material). For the rest of our analysis, we took the residuals of this model as the corrected measurement of short-term emotionality after the attacks.</p><p>We measured long-term effects in social-process terms, prosocial terms, shared values, and affect during the 3-month period after the attacks. We estimated effect sizes in mediation analysis using the mediation package in R <ref type="bibr" target="#b29">(Tingley, Yamamoto, Hirose, Keele, &amp; Imai, 2014)</ref>, taking as the mediator the measurement of the same lexical indicator but in the 2 weeks after the attacks. This allowed us to measure direct effects in long-term measurements versus mediated effects through the short-term levels of the dependent variable. We also added personality-related lexical indicators measured during the baseline period as covariates in each model. We assessed the uncertainty of these estimates in 10,000 bootstrapped samples, using the 25th and 75th percentiles of the corrected measurement of emotionality after the attacks to estimate the effect on the long-term levels of use of solidarity and affective terms. Detailed results of all fits and effect-size estimates are reported in the Supplemental Material.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Twitter data set</head><p>During 1 month after November 13, 2015, we collected tweets with hashtags related to the terrorist attacks in Paris through daily requests to the Twitter search application programming interface (API). Hashtags were selected by manual inspection to cover tweets referring to the attacks, and a list of them can be found in the Supplemental Material available online. In the results of those requests, we filtered out all tweets that were retweets, and we applied language detection to each tweet in combination with language metadata provided by Twitter to select only tweets in French. Analyzing tweets sampled through manually selected hashtag lists can lead to unrepresentative samples of Twitter data (see <ref type="bibr" target="#b22">King, Lam, &amp; Roberts, 2017</ref>, who include an example about the Paris attacks in their Appendix). Using only that data would have limited the analysis only to the days after the attacks, ignoring earlier periods and artificially lowering data volumes over time. Instead of using those hashtag tweets as a corpus, we used them to identify a panel of user accounts that we historically analyzed through their time line of original tweets (ignoring retweets).</p><p>Of the nearly half million users found in that data set, more than 287,000 (58%) shared location information in their profile. We filtered those users to include only those with profiles located in European France and who showed no clear signs of behaving like bots or mass media accounts (for more details, see the Supplemental Material). As a result, we produced a data set of 62,114 user accounts in the country directly affected by the terrorist attacks. 1 The activity of users in this data set was concentrated in Paris but also covered locations all over France, as shown in Figure <ref type="figure" target="#fig_0">1a</ref>. We restricted our final data set to the period between April 1, 2015, and June 30, 2016, shown in Figure <ref type="figure" target="#fig_0">1b</ref>, which comprised a total of 17,899,591 tweets. There was a clear activity spike following the attacks, when the number of tweets was more than double any previous day in the data set. A qualitative inspection of the text of these tweets, as shown in Figure <ref type="figure" target="#fig_0">1c</ref>, shows that tweets after the attacks often included terms such as Paris, prayforparis, and attentats (French for "terrorist attacks"). This illustrates that the activity spike was directly related to the attacks, motivating our further quantitative analysis of the text of tweets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Text analysis</head><p>We processed all tweets using the Linguistic Inquiry and Word Count (LIWC) method <ref type="bibr" target="#b28">(Pennebaker, Boyd, Jordan, &amp; Blackburn, 2015)</ref>, computing lexical indicators as the fraction of words in a text that belong to a word class of LIWC. Using the French adaptation of the LIWC dictionary <ref type="bibr" target="#b30">(Piolat, Booth, Chung, Davids, &amp; Pennebaker, 2011)</ref>, we measured the frequency of use of positive-affect and negative-affect terms in tweets as well as the expression of terms related to sadness, anxiety, and anger. We validated the applicability of the French LIWC dictionary with a data set of French tweets with annotated sentiment. Compared with control tweet samples, tweets annotated as positive contained 110% more positive-affect terms, and tweets annotated as negative contained 420% more negative-affect terms. Furthermore, tweets annotated as sad contained 933% more sadness terms, tweets annotated as anxious contained 1,150% more anxiety terms, and tweets annotated as angry contained 360% more anger terms. These results are reported in detail in the Supplemental Material.</p><p>We additionally recorded the fraction of terms in the LIWC category of social processes, which contains terms that refer to other people (somebody, guy), relationships ( friend, son), and social activities (discuss, celebration). Furthermore, we quantified the frequency of terms about French shared values (stemming from the terms liberté, égalité, and fraternité). Finally, we measured the frequency of terms related to prosocial behavior through a translation of a previously validated dictionary <ref type="bibr" target="#b11">(Frimer, Schaefer, &amp; Oakes, 2014)</ref>, including terms such as caring, solidarity, and NGO (nongovernmental organization). We validated our French version of the prosocial-terms dictionary by comparing a sample of prosocial Twitter accounts with a random sample of tweets from our baseline data set. Tweets from prosocial Twitter accounts contained 156% more prosocial terms than tweets in the baseline data set (see the Supplemental Material).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statistical models</head><p>We calculated the daily mean value of each of the above lexical indicators over the tweets produced during our analysis period. We computed the baseline of each indicator for each weekday during the 6-month period before the attacks, shown in Figure <ref type="figure" target="#fig_0">1b</ref>. Then, for each indicator, we computed the daily normalized score as the log-transformed fraction between the value of the indicator in a day and the corresponding baseline value according to the day of the week. In this way, we corrected for weekly oscillations in term frequencies <ref type="bibr" target="#b15">(Golder &amp; Macy, 2011)</ref>, reduced skewness, and produced comparable scores for all indicators. To assess the uncertainty of this measurement, we generated 10,000 bootstrapped samples of the tweets in each day to calculate 95% confidence intervals (CIs) and median estimates.</p><p>We fitted the temporal evolution of each daily score through a time-series model that included an exogenous shock when the attacks took place and a memory term (ϕ) that quantified the linear relationship between the score in one day and the score in the next day. The value of ϕ is a measurement of the memory of the time series and tells us about the strength of synchronization of behavior in the aftermath of the terrorist attacks. Significant positive values of ϕ are generated when there is strong alignment of behavior that creates collective dynamics beyond individual relaxation levels. A value of ϕ indistinguishable from zero indicates the absence of collective behavior, which is present when synchronization is absent or weaker than individual relaxation. We illustrate this in detail in the Supplemental Material through an agent-based model of collective emotions <ref type="bibr" target="#b35">(Schweitzer &amp; Garcia, 2010</ref>) that was calibrated with empirical results on emotion dynamics in online discussions <ref type="bibr" target="#b12">(Garcia, Kappas, Küster, &amp; Schweitzer, 2016)</ref>.</p><p>We fitted models of collective behavior with the bayesglm function of the arm package <ref type="bibr" target="#b13">(Gelman &amp; Su, 2018)</ref> in the R programming environment, taking weakly informative priors for all parameters. After fitting, we verified that all residuals approximately followed normal distributions with Shapiro-Wilk tests, assessed that residuals of time-series models had no significant serial correlations in stationarity tests, and verified that they showed no relevant signs of heteroscedasticity. Detailed results of all fits are reported in the Supplemental Material.</p><p>Our individual-level analysis tested whether there was a relationship between high levels of emotionality right after the attacks and long-term increased levels of social-process terms, prosocial terms, shared-values terms, and affect terms. This analysis was restricted to users from our sample who produced at least one tweet in the 3 months before the attacks (August 13-November 12), in the 2 weeks after the attacks, and in the next 3 months, resulting in a total of 49,001 users. Because we sought to study the effect of shared emotions soon after the attacks on long-term behavior, we measured the individual level of emotional expression in the 2 weeks after the attacks (November 13-27) and analyzed its effect on other lexical indicators measured in the next 3 months (November 28-February 27).</p><p>For each user, we first calculated a vector of personalityrelated lexical indicators in the 3 months before the attacks. The digital traces of human behavior capture a wide variety of behaviors commonly studied in personality research, such as religious faith, caring, and empathy <ref type="bibr" target="#b2">(Boyd et al., 2015)</ref>. Our vector of personalityrelated lexical indicators included positive-affect and negative-affect terms, social-process terms, and firstperson singular pronouns, which have been found to be correlated with extraversion and openness <ref type="bibr" target="#b24">(Mairesse, Walker, Mehl, &amp; Moore, 2007)</ref>, especially in social media <ref type="bibr" target="#b34">(Schwartz et al., 2013)</ref>. This allowed us to correct for personality components that are likely to play a role in the susceptibility of a person to participate in a collective emotion. To take into account self-selection biases, we regressed emotional expression after the attacks on the vector of personality-related lexical indicators, adding to the model the logarithm of the number of posts of each user to account for different userengagement levels. This model indicates significant correlations between emotional expression after the attacks and all indicators except social processes (for more detail, see the Supplemental Material). For the rest of our analysis, we took the residuals of this model as the corrected measurement of short-term emotionality after the attacks.</p><p>We measured long-term effects in social-process terms, prosocial terms, shared values, and affect during the 3-month period after the attacks. We estimated effect sizes in mediation analysis using the mediation package in R <ref type="bibr" target="#b41">(Tingley, Yamamoto, Hirose, Keele, &amp; Imai, 2014)</ref>, taking as the mediator the measurement of the same lexical indicator but in the 2 weeks after the attacks. This allowed us to measure direct effects in long-term measurements versus mediated effects through the short-term levels of the dependent variable. We also added personality-related lexical indicators measured during the baseline period as covariates in each model. We assessed the uncertainty of these estimates in 10,000 bootstrapped samples, using the 25th and 75th percentiles of the corrected measurement of emotionality after the attacks to estimate the effect on the long-term levels of use of solidarity and affective terms. Detailed results of all fits and effect-size estimates are reported in the Supplemental Material.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Collective behavior</head><p>Figure <ref type="figure" target="#fig_2">2</ref> shows the daily normalized scores of emotion terms over a period of 8 weeks centered on the attacks.</p><p>There is a strong response toward more frequent negative affect and a weaker response toward a lower frequency of positive affect. There is evidence of a collective negative emotion with significant memory in negative affect (ϕ = 0.57, 95% CI = [0.418, 0.716], p &lt; .001), as hypothesized. The time series of positive affect shows some signs of collective behavior (ϕ = 0.26, 95% CI = [0.042, 0.474], p &lt; .05), but with a weaker memory than negative affect. These results indicate the existence of a collective emotion that kept the levels of negative affect above their baseline for more than a week and led to the positive values of ϕ for negative affect. This contrasts with individual emotional responses, which relax much faster and, in the absence of emotional feedback loops, would produce values of ϕ that are indistinguishable from zero.</p><p>The composition of the expression of negative affect can be seen in the bottom panel of Figure <ref type="figure" target="#fig_2">2</ref>. The strongest response was of anxiety, followed by sadness starting from the day after the attacks. Surprisingly for a reaction to a terrorist attack, the weakest response was of anger. All three negative emotions show collective behavior (anxiety: ϕ = 0.62, 95% CI = [0.480, 0.766], p &lt; .001; sadness: ϕ = 0.43, 95% CI = [0.272, 0.594], p &lt; .001; anger: ϕ = 0.54, 95% CI = [0.31, 0.77], p &lt; .001), in line with our observations for the negative-affect indicator.</p><p>We repeated the same analysis for three lexical indicators related to solidarity: social-process terms, prosocialbehavior terms, and shared-values terms. Figure <ref type="figure">3</ref> shows the daily scores of these lexical indicators along with the model fits and the estimate of ϕ for each of them. They all display a similar pattern: Their spike is strong and is not exactly on the day of the attacks but the day afterward. They all have clear signs of collective behavior with significant memory (social process: ϕ = 0.71, 95% CI = [0.567, 0.86], p &lt; .001; prosocial behavior: ϕ = 0.65, 95% CI = [0.566, 0.742], p &lt; .001; shared values: ϕ = 0.89, 95% CI = [0.698, 1.09], p &lt; .001). This suggests that solidarity follows collective emotions: All three indicators peaked 1 day later and show a memory pattern with a slow relaxation toward their baseline.</p><p>There is an interplay between social-process terms and affective terms that can be observed at faster time scales, in particular when testing the correlation between the content of a tweet and the content of the tweet written next by the same user shortly after the attacks. We fitted mixed-effects logistic regression models with a random intercept for each user in the sample, modeling the binary variable of a tweet containing a certain lexical indicator (e.g., social processes) as a function of the previous tweet containing another lexical indicator (e.g., positive affect) with a correction for autocorrelation and its interaction. We found that a tweet containing affective terms was predictive of the next tweet containing social-process terms (positive affect: β = 0.06, 95% CI = [0.04, 0.07], p &lt; .001; negative affect: β = 0.08, 95% CI = [0.07, 0.10], p &lt; .001). Similarly, we found that tweets containing social-process terms were also predictive of the following tweets containing affective terms, but with effects of smaller magnitude (both with β = 0.03, 95% CI = [0.02, 0.04], p &lt; .001). More details about these results are presented in the Supplemental Material, including a comparison of magnitudes and interaction effects.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Individual-level analysis</head><p>To test the individual effects of collective effervescence suggested by Durkheim's theory, we performed an individual-level analysis linking short-term emotional expression after the attacks with long-term expressions related to solidarity and affect. We identified individuals showing emotional synchronization as those using affect terms (both positive and negative) more frequently during the 2 weeks after the attacks than in their individual baseline during the 3 months before the attacks. In this way, we divided individuals into a high-emotionalsynchronization group and a low-emotional-synchronization group.</p><p>The left panel of Figure <ref type="figure">4</ref> shows the time series of the frequency of social-process terms over a long period before and after the attacks, differentiating the frequency between emotional-synchronization groups. Before the attacks, both groups used a similar frequency of social-process terms, but after the attacks, individuals in the high-emotional-synchronization group (i.e., who took part in the collective emotion) used more social-process terms on average than individuals in the low-emotional-synchronization group. This difference was persistent over time, with a clear distance even months after the attacks took place.</p><p>The same phenomenon can be observed for terms related to prosocial behavior and for terms about shared values. The right panel of Figure <ref type="figure">4</ref> shows the difference between the high-emotional-synchronization group and the low-emotional-synchronization group for each of the three lexical indicators. It can be observed that, in all three cases, there was a significant positive difference toward the high-emotional-synchronization group that lasted for months after the attacks, with shared values going back to the baseline the fastest.</p><p>Whereas the results described above illustrate the effect of collective emotions in long-term lexical indicators related to solidarity, it is necessary to test the robustness of these observations to self-selection confounds and covariates that can be measured in  user-level data. We verified these results in mediation analyses in which the treatment was the average frequency of emotional terms tweeted by a user in the 2 weeks after the attacks after correction for self-selection through personality-related lexical indicators. The outcome variable of these analyses was the long-term frequency of terms of a certain kind (e.g., social-process terms), and the mediator variable was the short-term frequency of those terms in the 2 weeks after the attacks. We used vectors of activity and personality-related lexical indicators as covariates to ensure a robust correction for these measurable confounds. We rescaled all indicators before analysis to have comparable estimates. We found a significant positive direct effect of corrected emotion levels on long-term use of social-process terms (average direct effect, or ADE = 0.022, 95% CI = [0.011, 0.03], p &lt; .001), which was partially mediated by the short-term use of social-process terms (average causal mediation effect, or ACME = 0.016, 95% CI = [0.013, 0.02], p &lt; .001). Results were similar for prosocial terms, with a significant positive direct effect of corrected emotion levels (ADE = 0.0157, 95% CI = [0.0043, 0.03], p &lt; .01) and a positive effect mediated on the short-term use of prosocial terms (ACME = 0.0092, 95% CI = [0.0072, 0.01], p &lt; .001). For shared values, we found no significant direct effect of corrected emotion levels (p = .27), but there was a significant effect mediated on the short-term level of shared values (ACME = 0.0034, 95% CI = [0.0004, 0.01], p &lt; .001). We explored further the long-term effects on the levels of use of positive-affect and negative-affect terms. We found a significant positive direct effect of corrected emotion levels on long-term expression of positive affect (ADE = 0.0678, 95% CI = [0.0499, 0.09], p &lt; .001), which was partially mediated by the short-term expression of positive affect (ACME = 0.0567, 95% CI = [0.0421, 0.07], p &lt; .001). On the contrary, for negative affect, we found no significant direct effects (p = 0.42), and we found a positive effect only when it was mediated by the shortterm expression of negative affect (ACME = 0.0563, 95% CI = [0.0477, 0.07], p &lt; .001).</p><formula xml:id="formula_0">O c t 1 7 O c t 2 0 O c t 2 3 O c t 2 6 O c t 2 9 N o v 0 1 N o v 0 4 N o v 0 7 N o v 1 0 N o v 1 3 N o v 1 6 N o v 1 9 N o v 2 2 N o v 2 5 N o v</formula><p>Despite these long-term effects on solidarity indicators and affect, individuals with high short-term emotionality after the attacks did not reference the attacks more frequently in the long run. A negative binomial model with zero inflation shows that users with high emotionality after the attacks used terms related to the attacks less frequently in the 3-month period (for more details, see the Supplemental Material). This suggests that the effects on solidarity and affect were not generated by later discussions about the attacks.</p><formula xml:id="formula_1">-1 0 1 O c t 1 7 O c t 2 0 O c t 2 3 O c t 2 6 O c t 2 9 N o v 0 1 N o v 0 4 N o v 0 7 N o v 1 0 N o v 1 3 N o v 1 6 N o v 1 9 N o v 2 2 N o v 2 5 N o v</formula></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>We analyzed collective emotional synchronization in a naturalistic, observational study of behavior in vivo as manifested in social media. Although our approach was very close to social reality, one should keep in mind that our analysis was purely observational and thus has limitations to fully reveal causal mechanisms. Users self-selected into the collective emotion by posting emotional tweets after the attacks, which is far from a situation in which we have control over who is involved in the collective emotion. We corrected for personalityrelated psycholinguistic features of the users to try to get closer to a random treatment, but we must still warn about the possible role of behavioral traits in our analysis. In addition, we could analyze only individuals who were active on Twitter and shared a location that we could map to France. This kind of geographic sample has been shown to be more consistent than keywordbased samples <ref type="bibr">(King et al., 2017;</ref><ref type="bibr" target="#b32">Zhang, Hill, &amp; Rothschild, 2018</ref>), but we still do not know if there are behavioral or emotional differences between the users in this kind of sample and the population in general. Only a combination of methods can prevent future research from falling into the trap of big-data hubris (Lazer, Kennedy, King, &amp; Vespignani, 2014) of assuming that a data set is free of limitations just because it is large. Future investigations can combine large-scale observational analyses with established and representative survey methods, as recently shown for the case of a campus lockdown <ref type="bibr" target="#b21">( Jones, Thompson, Dunkel Schetter, &amp; Silver, 2017)</ref>.</p><p>Our results shed light on a case of the response to a collective trauma, which we interpreted as an instance of social resilience through the lens of Durkheim's theory. We must note that we measured only three responses associated with different aspects of solidarity (social processes, prosocial terms, and shared values) and not the function of social resilience itself. Future studies in more than one collective trauma can elucidate the process of social resilience and potentially reveal the dynamics of how societies recover after disaster hits. We found that long-term expressions of solidarity are related to the previous participation in collective emotions, but we also found effects for longterm expressions of affect and correlations in both directions in shorter time scales. This shows that the process we observed is not a simple cause and effect between collective emotions and solidarity. The most likely scenario is an interplay at various time scales, in which both solidarity and emotions influence each other.</p><p>Our observations of collective responses show that sadness peaks 1 day after the attacks, whereas anger and anxiety peak on the day of the attacks. This could be explained by the lower arousal levels of sadness, which would delay expression in tweets, or by the expression of sadness being secondhand, that is, the sadness of people not directly affected by the attacks but expressed in relation to those who were harmed.</p><p>Our work touched only the tip of the iceberg of the phenomena captured by Durkheim's theory. Durkheim's principle of collective effervescence can also be observed in the timing patterns of large-scale social media activity <ref type="bibr" target="#b17">(González-Bailón, 2013)</ref>. Furthermore, collective emotions are of relevance in further psychological phenomena, such as group-based emotions <ref type="bibr" target="#b14">(Goldenberg, Saguy, &amp; Halperin, 2014)</ref> and collective action <ref type="bibr" target="#b1">(Alvarez et al., 2015)</ref>. In addition, we still do not know the precise conditions under which collective emotions lead to broad solidarity or are also accompanied by intolerance toward out-group members. We noticed weaker effects of emotions in shared values than in social processes and in prosocial language, which calls for a theoretical approach that models the similarities and differences between these behaviors and phenomena.</p><p>Our results shed new light on the social function of collective emotions, illustrating that a society hit by a collective trauma does not just respond with simultaneous negative emotions. The collective experience of emotions leads to long-term solidarity in the activation of social processes, in the use of language related to prosocial behavior, and in the expression of positive affect. These findings suggest that it is not despite our distress that we are more united after a terrorist attack, but it is precisely because of our shared distress that our bonds become stronger and our society adapts to face the next threat.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Twitter data around the Paris terrorist attacks of November 2015. Locations of the Twitter users in our data set are shown on a map of France (a), with points shaded according to the amount of data available in each location (darker equals more data). The full time line (b) shows the number of tweets in the data set, and the focus window of our analysis is expanded below (c). Word clouds show words with a size proportional to their frequency in the days before and after the attacks. In (b) and (c), dashed horizontal lines mark the average daily number of tweets, and the vertical line marks the day of the attacks. The shaded area in (b) shows the data used to calculate linguistic baselines.</figDesc></figure>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Individual-level analysis</head><p>To test the individual effects of collective effervescence suggested by Durkheim's theory, we performed an individual-level analysis linking short-term emotional expression after the attacks with long-term expressions related to solidarity and affect. We identified individuals showing emotional synchronization as those using affect terms (both positive and negative) more frequently during the 2 weeks after the attacks than in their individual baseline during the 3 months before the attacks. In this way, we divided individuals into a high-emotionalsynchronization group and a low-emotional-synchronization group.</p><p>The left panel of Figure <ref type="figure">4</ref> shows the time series of the frequency of social-process terms over a long period before and after the attacks, differentiating the frequency between emotional-synchronization groups. Before the attacks, both groups used a similar frequency of social-process terms, but after the attacks, individuals in the high-emotional-synchronization group (i.e., who took part in the collective emotion) used more social-process terms on average than individuals in the low-emotional-synchronization group. This difference was persistent over time, with a clear distance even months after the attacks took place.</p><p>The same phenomenon can be observed for terms related to prosocial behavior and for terms about shared values. The right panel of Figure <ref type="figure">4</ref> shows the difference between the high-emotional-synchronization group and the low-emotional-synchronization group for each of the three lexical indicators. It can be observed that, in all three cases, there was a significant positive difference toward the high-emotional-synchronization group that lasted for months after the attacks, with shared values going back to the baseline the fastest.</p><p>Whereas the results described above illustrate the effect of collective emotions in long-term lexical indicators related to solidarity, it is necessary to test the robustness of these observations to self-selection confounds and covariates that can be measured in</p><p>0.0 0.2 0.4 Affect Terms (Daily Score) Positive Negative Anxiety Sadness Anger 0.0 0.4 0.8 user-level data. We verified these results in mediation analyses in which the treatment was the average frequency of emotional terms tweeted by a user in the 2 weeks after the attacks after correction for self-selection through personality-related lexical indicators. The outcome variable of these analyses was the long-term frequency of terms of a certain kind (e.g., social-process terms), and the mediator variable was the short-term frequency of those terms in the 2 weeks after the attacks. We used vectors of activity and personality-related lexical indicators as covariates to ensure a robust correction for these measurable confounds. We rescaled all indicators before analysis to have comparable estimates. We found a significant positive direct effect of corrected emotion levels on long-term use of social-process terms (average direct effect, or ADE = 0.022, 95% CI = [0.011, 0.03], p &lt; .001), which was partially mediated by the short-term use of social-process terms (average causal mediation effect, or ACME = 0.016, 95% CI = [0.013, 0.02], p &lt; .001). Results were similar for prosocial terms, with a significant positive direct effect of corrected emotion levels (ADE = 0.0157, 95% CI = [0.0043, 0.03], p &lt; .01) and a positive effect mediated on the short-term use of prosocial terms (ACME = 0.0092, 95% CI = [0.0072, 0.01], p &lt; .001). For shared values, we found no significant direct effect of corrected emotion levels (p = .27), but there was a significant effect mediated on the short-term level of shared values (ACME = 0.0034, 95% CI = [0.0004, 0.01], p &lt; .001). We explored further the long-term effects on the levels of use of positive-affect and negative-affect terms. We found a significant positive direct effect of corrected emotion levels on long-term expression of positive affect (ADE = 0.0678, 95% CI = [0.0499, 0.09], p &lt; .001), which was partially mediated by the short-term expression of positive affect (ACME = 0.0567, 95% CI = [0.0421, 0.07], p &lt; .001). On the contrary, for negative affect, we found no significant direct effects (p = 0.42), and we found a positive effect only when it was mediated by the shortterm expression of negative affect (ACME = 0.0563, 95% CI = [0.0477, 0.07], p &lt; .001).</p><formula xml:id="formula_0">O c t 1 7 O c t 2 0 O c t 2 3 O c t 2 6 O c t 2 9 N o v 0 1 N o v 0 4 N o v 0 7 N o v 1 0 N o v 1 3 N o v 1 6 N o v 1 9 N o v 2 2 N o v 2 5 N o v</formula><p>Despite these long-term effects on solidarity indicators and affect, individuals with high short-term emotionality after the attacks did not reference the attacks Frequency Relative Difference -2.5% 0.0% 2.5% 5.0% -25% 0% 25% 50% J u l 2 4 A u g 2 1 S e p 1 8 O c t 1 6 N o v 1 3 D e c 1 1 J a n 0 8 F e b 0 5 M a r 0 4 A p r 0 1 A p r 2 9 M a y 2 7 J u n 2 4 0% 4% 8% Social-Process Terms Prosocial Terms Shared-Values Terms Date 2015 2016 Frequency of Social-Process Terms Date 2015 2016 2.9% 3.0% 3.1% 3.2% J u n 2 6 J u l 2 4 A u g 2 1 S e p 1 8 O c t 1 6 N o v 1 3 D e c 1 1 J a n 0 8 F e b 0 5 M a r 0 4 A p r 0 1 A p r 2 9 M a y 2 7 J u n 2 4 High Emotional Synchronization Low Emotional Synchronization Fig. 4. Frequency of time-series social-process terms for individuals in the high-and low-emotional-synchronization groups (left) and time series of the relative frequency difference between groups for social-process terms, prosocial terms, and shared-values terms (right). Both panels show values averaged over sliding windows of 1 month. The gray area marks the 2 weeks used to measure emotional synchronization, and shaded areas around solid lines show 95% bootstrapped confidence intervals. The dashed vertical lines mark the day of the attacks.</p><formula xml:id="formula_1">-1 0 1 O c t 1 7 O c t 2 0 O c t 2 3 O c t 2 6 O c t 2 9 N o v 0 1 N o v 0 4 N o v 0 7 N o v 1 0 N o v 1 3 N o v 1 6 N o v 1 9 N o v 2 2 N o v 2 5 N o v</formula><p>more frequently in the long run. A negative binomial model with zero inflation shows that users with high emotionality after the attacks used terms related to the attacks less frequently in the 3-month period (for more details, see the Supplemental Material). This suggests that the effects on solidarity and affect were not generated by later discussions about the attacks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>We analyzed collective emotional synchronization in a naturalistic, observational study of behavior in vivo as manifested in social media. Although our approach was very close to social reality, one should keep in mind that our analysis was purely observational and thus has limitations to fully reveal causal mechanisms. Users self-selected into the collective emotion by posting emotional tweets after the attacks, which is far from a situation in which we have control over who is involved in the collective emotion. We corrected for personalityrelated psycholinguistic features of the users to try to get closer to a random treatment, but we must still warn about the possible role of behavioral traits in our analysis. In addition, we could analyze only individuals who were active on Twitter and shared a location that we could map to France. This kind of geographic sample has been shown to be more consistent than keywordbased samples <ref type="bibr" target="#b22">(King et al., 2017;</ref><ref type="bibr" target="#b44">Zhang, Hill, &amp; Rothschild, 2018</ref>), but we still do not know if there are behavioral or emotional differences between the users in this kind of sample and the population in general. Only a combination of methods can prevent future research from falling into the trap of big-data hubris <ref type="bibr" target="#b23">(Lazer, Kennedy, King, &amp; Vespignani, 2014)</ref> of assuming that a data set is free of limitations just because it is large. Future investigations can combine large-scale observational analyses with established and representative survey methods, as recently shown for the case of a campus lockdown <ref type="bibr" target="#b21">( Jones, Thompson, Dunkel Schetter, &amp; Silver, 2017)</ref>.</p><p>Our results shed light on a case of the response to a collective trauma, which we interpreted as an instance of social resilience through the lens of Durkheim's theory. We must note that we measured only three responses associated with different aspects of solidarity (social processes, prosocial terms, and shared values) and not the function of social resilience itself. Future studies in more than one collective trauma can elucidate the process of social resilience and potentially reveal the dynamics of how societies recover after disaster hits. We found that long-term expressions of solidarity are related to the previous participation in collective emotions, but we also found effects for longterm expressions of affect and correlations in both directions in shorter time scales. This shows that the process we observed is not a simple cause and effect between collective emotions and solidarity. The most likely scenario is an interplay at various time scales, in which both solidarity and emotions influence each other.</p><p>Our observations of collective responses show that sadness peaks 1 day after the attacks, whereas anger and anxiety peak on the day of the attacks. This could be explained by the lower arousal levels of sadness, which would delay expression in tweets, or by the expression of sadness being secondhand, that is, the sadness of people not directly affected by the attacks but expressed in relation to those who were harmed.</p><p>Our work touched only the tip of the iceberg of the phenomena captured by Durkheim's theory. Durkheim's principle of collective effervescence can also be observed in the timing patterns of large-scale social media activity <ref type="bibr" target="#b17">(González-Bailón, 2013)</ref>. Furthermore, collective emotions are of relevance in further psychological phenomena, such as group-based emotions <ref type="bibr" target="#b14">(Goldenberg, Saguy, &amp; Halperin, 2014)</ref> and collective action <ref type="bibr" target="#b1">(Alvarez et al., 2015)</ref>. In addition, we still do not know the precise conditions under which collective emotions lead to broad solidarity or are also accompanied by intolerance toward out-group members. We noticed weaker effects of emotions in shared values than in social processes and in prosocial language, which calls for a theoretical approach that models the similarities and differences between these behaviors and phenomena.</p><p>Our results shed new light on the social function of collective emotions, illustrating that a society hit by a collective trauma does not just respond with simultaneous negative emotions. The collective experience of emotions leads to long-term solidarity in the activation of social processes, in the use of language related to prosocial behavior, and in the expression of positive affect. These findings suggest that it is not despite our distress that we are more united after a terrorist attack, but it is precisely because of our shared distress that our bonds become stronger and our society adapts to face the next threat.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Twitter data around the Paris terrorist attacks of November 2015. Locations of the Twitter users in our data set are shown on a map of France (a), with points shaded according to the amount of data available in each location (darker equals more data). The full time line (b) shows the number of tweets in the data set, and the focus window of our analysis is expanded below (c). Word clouds show words with a size proportional to their frequency in the days before and after the attacks. In (b) and (c), dashed horizontal lines mark the average daily number of tweets, and the vertical line marks the day of the attacks. The shaded area in (b) shows the data used to calculate linguistic baselines.</figDesc></figure>
 <figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Daily scores of positive affect and negative affect (top) and anxiety, sadness, and anger (bottom). Points show median estimates over 10,000 bootstrapped samples, and shaded areas show their 95% confidence intervals. Dashed lines show model fits, along with the estimated values of each ϕ. The dotted vertical line marks the day of the attacks.</figDesc></figure>
 <figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 .Fig. 4 .</head><label>34</label><figDesc>Fig. 3. Daily scores of lexical indicators related to solidarity around the terrorist attacks: social-process terms (top), prosocial terms (middle), and shared-values terms (bottom). Dashed lines show model fits, and shaded areas show 95% bootstrapped confidence intervals of empirical data. The dotted vertical line marks the day of the attacks.</figDesc></figure>
 		</body>
@@ -123,33 +116,19 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 <div><head>Acknowledgments</head><p>We thank <rs type="person">Simon Schweighofer</rs>, <rs type="person">Max Pellert</rs>, <rs type="person">Amit Goldenberg</rs>, <rs type="person">Daniel Romero</rs>, and <rs type="person">Pablo Barberá</rs> for useful discussions and feedback. The research presented in this article was considered exempt from ethics review by the <rs type="funder">Ethics Committee of the Medical University of Vienna</rs> (Decision 1600/2018).</p></div>
 			</div>
 			<div type="funding">
-<div><head>Funding</head><p>This work was supported by <rs type="funder">Vienna Science and Technology Fund</rs> Grant No. <rs type="grantNumber">VRG16-005</rs> (to <rs type="person">D. Garcia</rs>).</p><p><rs type="funder">National Academy of Sciences, USA</rs>, 114, <rs type="grantNumber">11663-11668</rs>.  doi:10.1073/pnas.<rs type="grantNumber">1708518114</rs> King, G., <rs type="person">Lam</rs>, P., &amp; Roberts, M. E. (2017). Computer-assisted keyword and document set discovery from unstructured text. American Journal of Political Science, 61, 971-988.  doi:10.1111/ajps.12291  Lazer, D., Kennedy, R., King, G., &amp; Vespignani, A. (2014). The parable of <rs type="projectName">Google Flu</rs>: Traps in big data analysis. Science, 343, 1203-1205. doi:10.1126/science.1248506 Mairesse, <rs type="person">F.</rs>, <rs type="person">Walker</rs>, <rs type="person">M. A.</rs>, <rs type="person">Mehl</rs>, M. R., &amp; <rs type="person">Moore</rs>, R. K. (2007). Using linguistic cues for the automatic recognition of personality in conversation and text. Journal of Artificial Intelligence Research, 30, 457-500. doi:10.1613/jair.2349 Miles, <rs type="person">L. K.</rs>, <rs type="person">Nind</rs>, <rs type="person">L. K.</rs>, <rs type="person">Henderson</rs>, Z., &amp; <rs type="person">Macrae</rs>, C. N. (2010). Moving memories: Behavioral synchrony and memory for self and others. Journal of Experimental Social Psychology, 46, 457-460. doi:10.1016/j.jesp.2009.12.006 Páez, <rs type="person">D.</rs>, <rs type="person">Basabe</rs>, <rs type="person">N.</rs>, Ubillos, <rs type="person">S.</rs>, &amp; <rs type="person">González-Castro</rs>, J. L. (2007). Social sharing, participation in demonstrations, emotional climate, and coping with collective violence after the March 11th Madrid bombings. Journal of Social Issues, 63, 323-337. doi:10.1111/j.1540-4560.2007.00511.x Páez, <rs type="person">D.</rs>, <rs type="person">Rimé</rs>, <rs type="person">B.</rs>, <rs type="person">Basabe</rs>, <rs type="person">N.</rs>, Wlodarczyk, A., &amp; Zumeta, L. (2015). Psychosocial effects of perceived emotional synchrony in collective gatherings. Journal of Personality and Social Psychology, 108, 711-729. doi:10.1037/pspi0000014 Pennebaker, <rs type="person">J. W.</rs>, <rs type="person">Boyd</rs>, <rs type="person">R. L.</rs>, Jordan, K., &amp; Blackburn, K. (2015). The development and psychometric properties of LIWC2015. Austin: <rs type="institution">University of Texas at Austin</rs>. <rs type="person">Pennebaker</rs>, <rs type="person">J. W.</rs>, &amp; <rs type="person">Harber</rs>, K. D. (1993). A social stage model of collective coping: The Loma Prieta earthquake and the <rs type="funder">Persian Gulf War. Journal of Social</rs> Issues, 49, 125-145. doi:10.1111/j.1540-4560.1993.tb01184.x Piolat, <rs type="person">A.</rs>, <rs type="person">Booth</rs>, <rs type="person">R.</rs>, <rs type="person">Chung</rs>, <rs type="person">C.</rs>, <rs type="person">Davids</rs>, M., &amp; Pennebaker, J. (2011). La version française du dictionnaire pour le LIWC: Modalités de construction et exemples d'utilisation [The French dictionary for LIWC: Modalities of construction and examples of use]. Psychologie Française, 56, 145-159. doi:10.1016/j.psfr.2011.07.002 Rimé, B. (2007). The social sharing of emotion as an interface between individual and collective processes in the construction of emotional climates. Journal of Social Issues, 63, <rs type="grantNumber">307-322</rs>. doi:10.1111/j.1540-4560.2007.<rs type="grantNumber">00510</rs>.x Rimé, B. (2009). <rs type="projectName">Emotion elicits the social sharing of emotion: Theory and empirical review. Emotion Review</rs>, 1, 60-85. doi:10.1177/1754073908097189 Rimé, <rs type="person">B.</rs>, <rs type="person">Páez</rs>, <rs type="person">D.</rs>, <rs type="person">Basabe</rs>, <rs type="person">N.</rs>, &amp; Martínez, F. (2010). Social sharing of emotion, post-traumatic growth, and emotional climate: Follow-up of Spanish citizen's response to the collective trauma of March 11th terrorist attacks in Madrid.</p></div>
+<div><head>Funding</head><p>This work was supported by <rs type="funder">Vienna Science and Technology Fund</rs> Grant No. <rs type="grantNumber">VRG16-005</rs> (to <rs type="person">D. Garcia</rs>).</p></div>
+<div><head>Supplemental Material</head><p>Additional supporting information can be found at <ref type="url" target="http://journals.sagepub.com/doi/suppl/10.1177/0956797619831964">http://  journals.sagepub.com/doi/suppl/10.1177/0956797619831964</ref> </p></div>
+<div><head>Open Practices</head><p>All data have been made publicly available via the Open Science Framework and can be accessed at osf.io/npqgz. The design and analysis plans for this study were not preregistered. The complete Open Practices Disclosure for this article can be found at <ref type="url" target="http://journals.sagepub.com/doi/suppl/10.1177/0956797619831964">http://  journals.sagepub.com/doi/suppl/10.1177/0956797619831964</ref>. This article has received the badge for Open Data. More information about the Open Practices badges can be found at <ref type="url" target="http://www.psychologicalscience.org/publications/badges">http://  www.psychologicalscience.org/publications/badges</ref>.</p></div>
 			</div>
 			<listOrg type="funding">
-				<org type="funding" xml:id="_SFrQDWr">
+				<org type="funding" xml:id="_pyqa2fH">
 					<idno type="grant-number">VRG16-005</idno>
-				</org>
-				<org type="funding" xml:id="_Fq5Ufwd">
-					<idno type="grant-number">11663-11668</idno>
-				</org>
-				<org type="funded-project" xml:id="_t8gjByz">
-					<idno type="grant-number">1708518114</idno>
-					<orgName type="project" subtype="full">Google Flu</orgName>
-				</org>
-				<org type="funding" xml:id="_WAnVzYU">
-					<idno type="grant-number">307-322</idno>
-				</org>
-				<org type="funded-project" xml:id="_fNnTG97">
-					<idno type="grant-number">00510</idno>
-					<orgName type="project" subtype="full">Emotion elicits the social sharing of emotion: Theory and empirical review. Emotion Review</orgName>
 				</org>
 			</listOrg>
 			<div type="annex">
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Action Editor</head><p>James K. McNulty served as action editor for this article.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Author Contributions</head><p>Both authors designed the research and wrote the manuscript. D. Garcia retrieved and analyzed the data. Both authors approved the final manuscript for submission.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Declaration of Conflicting Interests</head><p>The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplemental Material</head><p>Additional supporting information can be found at <ref type="url" target="http://journals.sagepub.com/doi/suppl/10.1177/0956797619831964">http:// journals.sagepub.com/doi/suppl/10.1177/0956797619831964</ref> </p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Open Practices</head><p>All data have been made publicly available via the Open Science Framework and can be accessed at osf.io/npqgz. The design and analysis plans for this study were not preregistered. The complete Open Practices Disclosure for this article can be found at <ref type="url" target="http://journals.sagepub.com/doi/suppl/10.1177/0956797619831964">http:// journals.sagepub.com/doi/suppl/10.1177/0956797619831964</ref>. This article has received the badge for Open Data. More information about the Open Practices badges can be found at <ref type="url" target="http://www.psychologicalscience.org/publications/badges">http:// www.psychologicalscience.org/publications/badges</ref>.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Note</head><p>1. An online interactive visualization of the results presented in this article can be viewed at <ref type="url" target="http://dgarcia.eu/ParisAttacks.html">http://dgarcia.eu/ParisAttacks.html</ref>.</p></div>			</div>
 			<div type="references">
 
@@ -593,19 +572,321 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		<author>
 			<persName><forename type="first">R</forename><forename type="middle">C</forename><surname>Silver</surname></persName>
 		</author>
-		<idno type="DOI">10.1002/ejsp.700</idno>
+		<idno type="DOI">10.1073/pnas.1708518114</idno>
 	</analytic>
 	<monogr>
-		<title level="j">Proceedings of the European Journal of Social Psychology</title>
+		<title level="j">Proceedings of the National Academy of Sciences</title>
 		<imprint>
-			<biblScope unit="volume">40</biblScope>
-			<biblScope unit="page" from="1029" to="1045" />
+			<biblScope unit="volume">114</biblScope>
+			<biblScope unit="page" from="11663" to="11668" />
 			<date type="published" when="2017">2017</date>
+			<pubPlace>USA</pubPlace>
 		</imprint>
 	</monogr>
 </biblStruct>
 
 <biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Computer-assisted keyword and document set discovery from unstructured text</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>King</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Roberts</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/ajps.12291</idno>
+	</analytic>
+	<monogr>
+		<title level="j">American Journal of Political Science</title>
+		<imprint>
+			<biblScope unit="volume">61</biblScope>
+			<biblScope unit="page" from="971" to="988" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">The parable of Google Flu: Traps in big data analysis</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lazer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kennedy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>King</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vespignani</surname></persName>
+		</author>
+		<idno type="DOI">10.1126/science.1248506</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">343</biblScope>
+			<biblScope unit="page" from="1203" to="1205" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Using linguistic cues for the automatic recognition of personality in conversation and text</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Mairesse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Walker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Mehl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">K</forename><surname>Moore</surname></persName>
+		</author>
+		<idno type="DOI">10.1613/jair.2349</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Artificial Intelligence Research</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="457" to="500" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Moving memories: Behavioral synchrony and memory for self and others</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">K</forename><surname>Miles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">K</forename><surname>Nind</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Henderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">N</forename><surname>Macrae</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jesp.2009.12.006</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Experimental Social Psychology</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="page" from="457" to="460" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Social sharing, participation in demonstrations, emotional climate, and coping with collective violence after the March 11th Madrid bombings</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Páez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Basabe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ubillos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>González-Castro</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.1540-4560.2007.00511.x</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Social Issues</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="page" from="323" to="337" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Psychosocial effects of perceived emotional synchrony in collective gatherings</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Páez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Rimé</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Basabe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Wlodarczyk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zumeta</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/pspi0000014</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Personality and Social Psychology</title>
+		<imprint>
+			<biblScope unit="volume">108</biblScope>
+			<biblScope unit="page" from="711" to="729" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<title level="m" type="main">The development and psychometric properties of LIWC</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Pennebaker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Boyd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jordan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Blackburn</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015">2015. 2015</date>
+			<pubPlace>Austin</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>University of Texas at Austin</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">A social stage model of collective coping: The Loma Prieta earthquake and the Persian Gulf War</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Pennebaker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">D</forename><surname>Harber</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.1540-4560.1993.tb01184.x</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Social Issues</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="page" from="125" to="145" />
+			<date type="published" when="1993">1993</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">La version française du dictionnaire pour le LIWC: Modalités de construction et exemples d&apos;utilisation [The French dictionary for LIWC: Modalities of construction and examples of use</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Piolat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Booth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Davids</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pennebaker</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.psfr.2011.07.002</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Psychologie Française</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="page" from="145" to="159" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">The social sharing of emotion as an interface between individual and collective processes in the construction of emotional climates</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Rimé</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.1540-4560.2007.00510.x</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Social Issues</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="page" from="307" to="322" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Emotion elicits the social sharing of emotion: Theory and empirical review</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Rimé</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1754073908097189</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Emotion Review</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="60" to="85" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Social sharing of emotion, post-traumatic growth, and emotional climate: Follow-up of Spanish citizen&apos;s response to the collective trauma of March 11th terrorist attacks in Madrid</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Rimé</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Páez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Basabe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Martínez</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/ejsp.700</idno>
+	</analytic>
+	<monogr>
+		<title level="j">European Journal of Social Psychology</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="page" from="1029" to="1045" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
 	<analytic>
 		<title level="a" type="main">Personality, gender, and age in the language of social media: The open-vocabulary approach</title>
 		<author>
@@ -645,7 +926,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b23">
+<biblStruct xml:id="b35">
 	<analytic>
 		<title level="a" type="main">An agent-based model of collective emotions in online communities</title>
 		<author>
@@ -666,7 +947,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b24">
+<biblStruct xml:id="b36">
 	<analytic>
 		<title level="a" type="main">Expressing thoughts and feelings following a collective trauma: Immediate responses to 9/11 predict negative outcomes in a national sample</title>
 		<author>
@@ -696,7 +977,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b25">
+<biblStruct xml:id="b37">
 	<analytic>
 		<title level="a" type="main">Nationwide longitudinal study of psychological responses to September 11</title>
 		<author>
@@ -726,7 +1007,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b26">
+<biblStruct xml:id="b38">
 	<analytic>
 		<title level="a" type="main">Socializing in emergencies-A review of the use of social media in emergency situations</title>
 		<author>
@@ -750,7 +1031,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b27">
+<biblStruct xml:id="b39">
 	<analytic>
 		<title level="a" type="main">After Aylan Kurdi: How tweeting about death, threat, and harm predict increased expressions of solidarity with refugees over time</title>
 		<author>
@@ -774,7 +1055,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b28">
+<biblStruct xml:id="b40">
 	<analytic>
 		<title level="a" type="main">A national longitudinal study of the psychological consequences of the September 11, 2001 terrorist attacks: Reactions, impairment, and help-seeking</title>
 		<author>
@@ -810,7 +1091,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b29">
+<biblStruct xml:id="b41">
 	<analytic>
 		<title level="a" type="main">mediation: R package for causal mediation analysis</title>
 		<author>
@@ -840,7 +1121,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b30">
+<biblStruct xml:id="b42">
 	<analytic>
 		<title level="a" type="main">Perceived benefits after terrorist attacks: The role of positive and negative emotions</title>
 		<author>
@@ -861,7 +1142,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b31">
+<biblStruct xml:id="b43">
 	<analytic>
 		<title level="a" type="main">Synchrony and cooperation</title>
 		<author>
@@ -882,7 +1163,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b32">
+<biblStruct xml:id="b44">
 	<analytic>
 		<title level="a" type="main">Addressing selection bias in event studies with general-purpose social media panels</title>
 		<author>

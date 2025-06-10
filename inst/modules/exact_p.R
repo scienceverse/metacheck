@@ -17,19 +17,40 @@
 exact_p <- function(paper, ...) {
   # detailed table of results ----
   p <- module_run(paper, "all_p_values")$table
-  p$p_comp <- gsub("p-?(value)?\\s*|\\s*\\d?\\.\\d+e?-?\\d*", "",
-                   p$text, ignore.case = TRUE)
-  p$p_value <- gsub("^p-?(value)?\\s*[<>=≤≥]{1,2}\\s*", "",
-                    p$text, ignore.case = TRUE)
+
+  operators <- c("=", "<", ">", "~",
+                 "\u2248", # ~~
+                 "\u2260", # !=
+                 "\u2264", # <=
+                 "\u2265", # >=
+                 "\u226A", # <<
+                 "\u226B" # >>
+  ) |> paste(collapse = "")
+
+  # get operator
+  pattern <- paste0("[", operators, "]{1,2}")
+  matches <- gregexpr(pattern, p$text, perl = TRUE)
+  p$p_comp <- regmatches(p$text, matches) |> sapply(`[[`, 1)
+
+  # get value
+  pattern <- paste0("(?<=[", operators, "]{1,2}).*$")
+  matches <- gregexpr(pattern, p$text, perl = TRUE)
+  p$p_value <- regmatches(p$text, matches) |> trimws()
   p$p_value <- suppressWarnings(as.numeric(p$p_value))
+
   p$imprecise <- p$p_comp == "<" & p$p_value > .001
-  p$imprecise <- p$imprecise | p$p_comp == ">"
+  p$imprecise <- p$imprecise | !p$p_comp %in% c("=", "<")
   p$imprecise <- p$imprecise | is.na(p$p_value)
   cols <- c("text", "p_comp", "p_value", "section", "header", "div", "p", "s", "id")
   table <- p[p$imprecise, cols]
 
   # summary output for paperlists ----
-  summary_table <- dplyr::count(table, id, name = "exact_p")
+  summary_table <- dplyr::count(p, id, imprecise) |>
+    dplyr::mutate(imprecise = factor(imprecise, c("FALSE", "TRUE"))) |>
+    tidyr::pivot_wider(names_from = imprecise, values_from = n,
+                       # in case no instances of T or F
+                       names_expand = TRUE, values_fill = 0) |>
+    dplyr::rename(exact_p = `FALSE`, imprecise_p = `TRUE`)
 
   # determine the traffic light ----
   tl <- dplyr::case_when(

@@ -6,8 +6,8 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<teiHeader xml:lang="en">
 		<fileDesc>
 			<titleStmt>
-				<title level="a" type="main">Preregistered Direct Replication of &quot;Sick Body, Vigilant Mind: The Biological Immune System Activates the Behavioral Immune System&quot;</title>
-				<funder ref="#_cJMhq4V">
+				<title level="a" type="main"></title>
+				<funder ref="#_5XcYe83">
 					<orgName type="full">Horizon 2020 European Research Council</orgName>
 				</funder>
 			</titleStmt>
@@ -71,7 +71,6 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 								<orgName type="institution">Vrije Universiteit Amsterdam</orgName>
 							</affiliation>
 						</author>
-						<title level="a" type="main">Preregistered Direct Replication of &quot;Sick Body, Vigilant Mind: The Biological Immune System Activates the Behavioral Immune System&quot;</title>
 					</analytic>
 					<monogr>
 						<imprint>
@@ -86,8 +85,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		</fileDesc>
 		<encodingDesc>
 			<appInfo>
-				<application version="0.8.1" ident="GROBID" when="2025-05-20T19:59+0000">
+				<application version="0.8.2" ident="GROBID" when="2025-06-03T12:50+0000">
 					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">a91ee48</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=false, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], sentenceSegmentation=false, flavor=null</label>
 					<ref target="https://github.com/kermitt2/grobid"/>
 				</application>
 			</appInfo>
@@ -105,36 +106,36 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 				</keywords>
 			</textClass>
 			<abstract>
-<div xmlns="http://www.tei-c.org/ns/1.0"><p>Across taxa, animals possess a number of behavioral adaptations that function to mitigate the costs imposed by infectious microorganisms <ref type="bibr" target="#b16">(Hart, 2011)</ref>. Humans are no exception. For example, our visual and olfactory systems have evolved a sensitivity to cues related to infectious agents, such as the textures and colors associated with other people's immune responses (e.g., pus) and the chemical by-products of bacterial presence on corpses (e.g., putrescine). When these cues to pathogens are detected, facial movements and motivational tendencies are deployed in a manner tailored to avoiding pathogens (Tybur, Lieberman, Kurzban, &amp; DeScioli, 2013). Our pathogen-avoidance adaptations have consequences for myriad phenomena traditionally under the purview of social, developmental, cognitive, and clinical psychologists, including food learning, stigmatization, hygiene ruminations, and mate choice (for reviews, see <ref type="bibr" target="#b2">Ackerman, Hill, &amp; Murray, 2018;</ref><ref type="bibr" target="#b4">Curtis, 2014;</ref><ref type="bibr" target="#b23">Murray &amp; Schaller, 2016;</ref><ref type="bibr" target="#b27">Schaller &amp; Park, 2011;</ref><ref type="bibr" target="#b33">and Tybur &amp; Lieberman, 2016)</ref>. Consequently, a large body of researchwhat has come to be known as the behavioral-immunesystem literature-has focused on better understanding these adaptations.</p><p>A sizeable proportion of work on the behavioral immune system has been designed to better understand why people vary in their pathogen-avoidant behaviors. Much of this research has been inspired by</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Across taxa, animals possess a number of behavioral adaptations that function to mitigate the costs imposed by infectious microorganisms <ref type="bibr" target="#b15">(Hart, 2011)</ref>. Humans are no exception. For example, our visual and olfactory systems have evolved a sensitivity to cues related to infectious agents, such as the textures and colors associated with other people's immune responses (e.g., pus) and the chemical by-products of bacterial presence on corpses (e.g., putrescine). When these cues to pathogens are detected, facial movements and motivational tendencies are deployed in a manner tailored to avoiding pathogens (Tybur, Lieberman, Kurzban, &amp; DeScioli, 2013). Our pathogen-avoidance adaptations have consequences for myriad phenomena traditionally under the purview of social, developmental, cognitive, and clinical psychologists, including food learning, stigmatization, hygiene ruminations, and mate choice (for reviews, see <ref type="bibr" target="#b1">Ackerman, Hill, &amp; Murray, 2018;</ref><ref type="bibr" target="#b3">Curtis, 2014;</ref><ref type="bibr" target="#b22">Murray &amp; Schaller, 2016;</ref><ref type="bibr" target="#b26">Schaller &amp; Park, 2011;</ref><ref type="bibr" target="#b32">and Tybur &amp; Lieberman, 2016)</ref>. Consequently, a large body of researchwhat has come to be known as the behavioral-immunesystem literature-has focused on better understanding these adaptations.</p><p>A sizeable proportion of work on the behavioral immune system has been designed to better understand why people vary in their pathogen-avoidant behaviors.</p></div>
 			</abstract>
 		</profileDesc>
 	</teiHeader>
 	<text xml:lang="en">
 		<body>
-<div xmlns="http://www.tei-c.org/ns/1.0"><p>the evolutionary-biology literature, which highlights the fact that organisms neutralize pathogens not only through avoidance but also through immunological resistance (e.g., via proinflammatory cytokines) and tolerance <ref type="bibr" target="#b21">(Medzhitov, Schneider, &amp; Soares, 2012)</ref>. Given that investment in these strategies might be traded off against each other <ref type="bibr" target="#b14">(Gangestad &amp; Grebe, 2014)</ref>, researchers have proposed that a decreased ability to resist infection leads to greater investment in avoiding infection (e.g., <ref type="bibr" target="#b24">Oaten, Stevenson, &amp; Case, 2009)</ref>. Multiple studies have presented data that have been interpreted as supporting this prediction: Putatively lower immunological resistance was associated with (a) greater skin conductance response while participants viewed visual cues to pathogens <ref type="bibr" target="#b8">(Ersche et al., 2014)</ref>, (b) higher reported disgust toward such images <ref type="bibr" target="#b12">(Fleischman &amp; Fessler, 2011)</ref>, and (c) more reported anxiety toward infection-risky behaviors <ref type="bibr" target="#b25">(Oaten, Stevenson, &amp; Case, 2017)</ref>. These studies were limited by their measurement of capacity to resist infection, however; they treated cocaine dependency, progesterone, and affliction with rheumatoid arthritis, respectively, as proxies for decreased immunological resistance.</p><p>To the best of our knowledge, the most compelling evidence for a relation between immunological resistance and pathogen avoidance in humans was provided by <ref type="bibr" target="#b22">Miller and Maner (2011)</ref>, who, in Study 1, found that participants who had recently been ill-compared with participants who had not-displayed heightened attention toward cues to pathogens. Specifically, participants completed a dot-probe task, in which they were asked to identify a target object as either a circle or a square as quickly as possible. In critical trials, faces that were either typical (referred to as "healthy" in the original study) or disfigured appeared shortly before the target object in a different screen quadrant. Higher reaction times during these critical trials were interpreted as reflecting greater attention toward the distractors. Analyses of reaction times revealed that illness recency interacted with distractor type: The 28 participants who had recently been ill took 38 ms longer to identify the targets after disfigured-face distractors relative to typicalface distractors (SD = 65.25, d z = 0.58), whereas reaction times did not differ across distractor face types for the 66 participants who had not recently been ill (mean difference = 4 ms faster to identify targets after disfiguredface distractors, SD = 58.32, d z = 0.07; J. K. <ref type="bibr">Maner, personal communication, April 25, 2018)</ref>.</p><p>The use of illness recency to test behavioral-immunesystem hypotheses offers a clear advantage over the other approaches described above. Illness recency is presumably less confounded with other variables than are cocaine dependency or rheumatoid arthritis, and it has clearer effects on immunological resistance than does progesterone. Indeed, immunologists have noted that people are more likely to die of secondary bacterial infections after influenza than from the viral infection itself, and research exploring this phenomenon has found that resisting influenza raises anti-inflammatory interleukin-10 and depresses natural killer cells <ref type="bibr" target="#b29">(Small et al., 2010;</ref><ref type="bibr" target="#b36">Van der Sluijs, 2004)</ref>. Both of these effects compromise the ability to resist subsequent infections.</p><p>The finding that illness recency affects attention to pathogen cues has influenced theoretical models of the behavioral immune system (e.g., <ref type="bibr" target="#b2">Ackerman et al., 2018;</ref><ref type="bibr" target="#b23">Murray &amp; Schaller, 2016;</ref><ref type="bibr" target="#b33">Tybur &amp; Lieberman, 2016)</ref>, and it has been showcased as a key example of the relation between immunological resistance and the behavioral immune system (e.g., <ref type="bibr" target="#b13">Fleischman &amp; Fessler, 2018;</ref><ref type="bibr">cf. Jones et al., 2018b)</ref>. The current study directly replicated Study 1 of <ref type="bibr" target="#b22">Miller and Maner (2011)</ref> to test the robustness of the effect of illness recency on attention to pathogen cues. It had an additional goal. Disgustsensitivity instruments, in which participants report their disgust toward disgust-eliciting situations, have been criticized as potentially insensitive to short-term fluctuations in pathogen-avoidance motivations <ref type="bibr" target="#b13">(Fleischman &amp; Fessler, 2018;</ref><ref type="bibr" target="#b30">Tybur, Çınar, Karinen, &amp; Perone, 2018)</ref>. Self-reported disgust toward visual cues to pathogens has been proposed as a more sensitive measure of such fluctuations <ref type="bibr" target="#b13">(Fleischman &amp; Fessler, 2018)</ref>. Therefore, we also assessed whether scores on a disgust-sensitivity instrument and self-reported disgust toward visual cues to pathogens are related to illness recency. Note that we administered these additional measures, which were not included by <ref type="bibr" target="#b22">Miller and Maner (2011)</ref>, after the materials collected in the original study. Consequently, their presence did not interfere with the replication.</p><p>This replication attempt comes at a critical time for the behavioral-immune-system literature. Although the studies summarized above have pointed to a relation between immunological resistance and avoidance, others have found no relation between progesterone and disgust sensitivity <ref type="bibr">( Jones et al., 2018a)</ref>, infection history and disgust sensitivity (de <ref type="bibr" target="#b6">Barra, Islam, &amp; Curtis, 2014)</ref>, and ecological pathogen stress and disgust sensitivity <ref type="bibr">(Tybur et al., 2016)</ref>. These studies used large samples (all had more than 280 participants, which would afford more than 90% power to detect an effect size [r] of .20 for a between-subjects design), and Jones et al. also collected repeated assessments of progesterone and disgust sensitivity within participants. Hence, these null results cannot easily be dismissed as Type II errors. Ultimately, given the combination of positive and null results, some doubts regarding the relation between immunological resistance and pathogen avoidance persist. Hence, replicating one of the key results supporting this relation could pay dividends in future theory development in this area. Further, measuring both attention to pathogen cues and disgust sensitivity indicates whether inconsistent results within this literature reflect differences in phenomena measured (e.g., visual attention vs. disgust sensitivity).</p><p>Ultimately, then, the present work (a) directly replicates a key study in the behavioral-immune-system literature and, in doing so, (b) informs the degree to which illness recency relates to visual attention to pathogen cues versus self-reported disgust (via semantic and visual descriptions) toward stimuli connoting heightened infection risk.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Preregistered Direct Replication of "Sick Body, Vigilant Mind: The Biological Immune System Activates the Behavioral Immune System" the evolutionary-biology literature, which highlights the fact that organisms neutralize pathogens not only through avoidance but also through immunological resistance (e.g., via proinflammatory cytokines) and tolerance <ref type="bibr" target="#b20">(Medzhitov, Schneider, &amp; Soares, 2012)</ref>. Given that investment in these strategies might be traded off against each other <ref type="bibr" target="#b13">(Gangestad &amp; Grebe, 2014)</ref>, researchers have proposed that a decreased ability to resist infection leads to greater investment in avoiding infection (e.g., <ref type="bibr" target="#b23">Oaten, Stevenson, &amp; Case, 2009)</ref>. Multiple studies have presented data that have been interpreted as supporting this prediction: Putatively lower immunological resistance was associated with (a) greater skin conductance response while participants viewed visual cues to pathogens <ref type="bibr" target="#b7">(Ersche et al., 2014)</ref>, (b) higher reported disgust toward such images <ref type="bibr" target="#b11">(Fleischman &amp; Fessler, 2011)</ref>, and (c) more reported anxiety toward infection-risky behaviors <ref type="bibr" target="#b24">(Oaten, Stevenson, &amp; Case, 2017)</ref>. These studies were limited by their measurement of capacity to resist infection, however; they treated cocaine dependency, progesterone, and affliction with rheumatoid arthritis, respectively, as proxies for decreased immunological resistance.</p><p>To the best of our knowledge, the most compelling evidence for a relation between immunological resistance and pathogen avoidance in humans was provided by <ref type="bibr" target="#b21">Miller and Maner (2011)</ref>, who, in Study 1, found that participants who had recently been ill-compared with participants who had not-displayed heightened attention toward cues to pathogens. Specifically, participants completed a dot-probe task, in which they were asked to identify a target object as either a circle or a square as quickly as possible. In critical trials, faces that were either typical (referred to as "healthy" in the original study) or disfigured appeared shortly before the target object in a different screen quadrant. Higher reaction times during these critical trials were interpreted as reflecting greater attention toward the distractors. Analyses of reaction times revealed that illness recency interacted with distractor type: The 28 participants who had recently been ill took 38 ms longer to identify the targets after disfigured-face distractors relative to typicalface distractors (SD = 65.25, d z = 0.58), whereas reaction times did not differ across distractor face types for the 66 participants who had not recently been ill (mean difference = 4 ms faster to identify targets after disfiguredface distractors, SD = 58.32, d z = 0.07; J. K. <ref type="bibr">Maner, personal communication, April 25, 2018)</ref>.</p><p>The use of illness recency to test behavioral-immunesystem hypotheses offers a clear advantage over the other approaches described above. Illness recency is presumably less confounded with other variables than are cocaine dependency or rheumatoid arthritis, and it has clearer effects on immunological resistance than does progesterone. Indeed, immunologists have noted that people are more likely to die of secondary bacterial infections after influenza than from the viral infection itself, and research exploring this phenomenon has found that resisting influenza raises anti-inflammatory interleukin-10 and depresses natural killer cells <ref type="bibr" target="#b28">(Small et al., 2010;</ref><ref type="bibr" target="#b35">Van der Sluijs, 2004)</ref>. Both of these effects compromise the ability to resist subsequent infections.</p><p>The finding that illness recency affects attention to pathogen cues has influenced theoretical models of the behavioral immune system (e.g., <ref type="bibr" target="#b1">Ackerman et al., 2018;</ref><ref type="bibr" target="#b22">Murray &amp; Schaller, 2016;</ref><ref type="bibr" target="#b32">Tybur &amp; Lieberman, 2016)</ref>, and it has been showcased as a key example of the relation between immunological resistance and the behavioral immune system (e.g., <ref type="bibr" target="#b12">Fleischman &amp; Fessler, 2018;</ref><ref type="bibr">cf. Jones et al., 2018b)</ref>. The current study directly replicated Study 1 of <ref type="bibr" target="#b21">Miller and Maner (2011)</ref> to test the robustness of the effect of illness recency on attention to pathogen cues. It had an additional goal. Disgustsensitivity instruments, in which participants report their disgust toward disgust-eliciting situations, have been criticized as potentially insensitive to short-term fluctuations in pathogen-avoidance motivations <ref type="bibr" target="#b12">(Fleischman &amp; Fessler, 2018;</ref><ref type="bibr" target="#b29">Tybur, Çınar, Karinen, &amp; Perone, 2018)</ref>. Self-reported disgust toward visual cues to pathogens has been proposed as a more sensitive measure of such fluctuations <ref type="bibr" target="#b12">(Fleischman &amp; Fessler, 2018)</ref>. Therefore, we also assessed whether scores on a disgust-sensitivity instrument and self-reported disgust toward visual cues to pathogens are related to illness recency. Note that we administered these additional measures, which were not included by <ref type="bibr" target="#b21">Miller and Maner (2011)</ref>, after the materials collected in the original study. Consequently, their presence did not interfere with the replication.</p><p>This replication attempt comes at a critical time for the behavioral-immune-system literature. Although the studies summarized above have pointed to a relation between immunological resistance and avoidance, others have found no relation between progesterone and disgust sensitivity <ref type="bibr">( Jones et al., 2018a)</ref>, infection history and disgust sensitivity (de <ref type="bibr" target="#b5">Barra, Islam, &amp; Curtis, 2014)</ref>, and ecological pathogen stress and disgust sensitivity <ref type="bibr">(Tybur et al., 2016)</ref>. These studies used large samples (all had more than 280 participants, which would afford more than 90% power to detect an effect size [r] of .20 for a between-subjects design), and Jones et al. also collected repeated assessments of progesterone and disgust sensitivity within participants. Hence, these null results cannot easily be dismissed as Type II errors. Ultimately, given the combination of positive and null results, some doubts regarding the relation between immunological resistance and pathogen avoidance persist. Hence, replicating one of the key results supporting this relation could pay dividends in future theory development in this area. Further, measuring both attention to pathogen cues and disgust sensitivity indicates whether inconsistent results within this literature reflect differences in phenomena measured (e.g., visual attention vs. disgust sensitivity).</p><p>Ultimately, then, the present work (a) directly replicates a key study in the behavioral-immune-system literature and, in doing so, (b) informs the degree to which illness recency relates to visual attention to pathogen cues versus self-reported disgust (via semantic and visual descriptions) toward stimuli connoting heightened infection risk.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head><p>Except where noted, all methodological details-including all stimuli and dot-probe procedures-and all analyses were identical to those used by <ref type="bibr">Miller and Maner (2011, Study 1)</ref>. All procedures from the original study (e.g., Inquisit files, stimuli, trial order, and order of questionnaires) were confirmed with the senior author from the original study ( J. K. <ref type="bibr">Maner, personal communication, April 25, 2018)</ref>.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Participants</head><p>Miller and Maner (2011) tested 96 participants (all between 18 and 30 years of age). <ref type="bibr" target="#b28">Simonsohn's (2015)</ref> "small-telescopes" approach to sample size suggests that replications should have at least 2.5 times the sample size of the original study (hence, a replication sample size of 240). Given the potential of randomly recruiting a lower proportion of recently ill participants (relative to the sample in the original study), we preregistered a sample size of 360 participants. We ultimately enrolled 413 participants between the ages of 18 and 30 years across the three test sites (n = 147 at Vrije Universiteit Amsterdam, n = 145 at the University of Michigan, and n = 121 at the University of Glasgow). According to an analysis in G*Power <ref type="bibr">(Version 3.9.1.7;</ref><ref type="bibr" target="#b9">Faul, Erdfelder, Buchner, &amp; Lang, 2009)</ref>, this sample size affords more than 99% power to detect an interaction effect (d) of 0.65 (equivalent to that reported in the original study). This calculation was based on an exclusion rate of 2% (see below), categorization of 30% of the sample as recently ill (i.e., 121 participants who had recently been ill and 283 participants who had not), and setting α to .025 (see below). Given evidence that experimenters' expectations can influence results <ref type="bibr" target="#b15">(Gilder &amp; Heerey, 2018)</ref>, experimenters were blind to study hypotheses.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Stimuli</head><p>We used 40 photographs of faces (20 disfigured, 20 nondisfigured), initially described by <ref type="bibr" target="#b1">Ackerman et al. (2009)</ref>. These were the same stimuli used by <ref type="bibr" target="#b22">Miller and Maner (2011)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Participants</head><p>Miller and Maner (2011) tested 96 participants (all between 18 and 30 years of age). <ref type="bibr" target="#b27">Simonsohn's (2015)</ref> "small-telescopes" approach to sample size suggests that replications should have at least 2.5 times the sample size of the original study (hence, a replication sample size of 240). Given the potential of randomly recruiting a lower proportion of recently ill participants (relative to the sample in the original study), we preregistered a sample size of 360 participants. We ultimately enrolled 413 participants between the ages of 18 and 30 years across the three test sites (n = 147 at Vrije Universiteit Amsterdam, n = 145 at the University of Michigan, and n = 121 at the University of Glasgow). According to an analysis in G*Power <ref type="bibr">(Version 3.9.1.7;</ref><ref type="bibr" target="#b8">Faul, Erdfelder, Buchner, &amp; Lang, 2009)</ref>, this sample size affords more than 99% power to detect an interaction effect (d) of 0.65 (equivalent to that reported in the original study). This calculation was based on an exclusion rate of 2% (see below), categorization of 30% of the sample as recently ill (i.e., 121 participants who had recently been ill and 283 participants who had not), and setting α to .025 (see below). Given evidence that experimenters' expectations can influence results <ref type="bibr" target="#b14">(Gilder &amp; Heerey, 2018)</ref>, experimenters were blind to study hypotheses.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Stimuli</head><p>We used 40 photographs of faces (20 disfigured, 20 nondisfigured), initially described by <ref type="bibr" target="#b0">Ackerman et al. (2009)</ref>. These were the same stimuli used by <ref type="bibr" target="#b21">Miller and Maner (2011)</ref>.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Measuring attentional biases</head><p>We used a dot-probe task, experimental setup, and code identical to those used in the original study. On each trial, a face was displayed in one quadrant of the computer screen. After 500 ms, the face disappeared, and a categorization object (circle or square) was immediately presented in either the same location as the face (congruentlocation trials) or a different quadrant (incongruentlocation trials). Participants were instructed to respond as quickly as possible by categorizing the object as a circle (via the E key) or a square (via the I key). Each participant completed 80 trials in total (32 congruent-location trials and 48 incongruent-location trials). Each of the 40 faces (20 disfigured, 20 nondisfigured) was presented twice. Participants also completed 12 practice trials before completing those with faces. For these practice trials, items intended to be neutrally valenced and not associated with threats (infectious disease or otherwise; e.g., a mug, a pair of shoes, a spoon) were presented instead of faces.</p><p>Quadrant locations of faces and categorization objects were randomized, as were categorization-object shape and face types. These locations and shapes were constrained so that 32 trials used congruent locations and 48 trials used incongruent locations. As soon as the participant responded, the next trial started (i.e., the face in the next trial was presented immediately, and there was no intertrial interval). Trial order was randomized within each of the four blocks of trials.</p><p>Faces and categorization objects were presented at 20% of screen height, centered at 15% of screen height from the corner of each quadrant.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Questionnaires</head><p>Self-report instruments were presented after the dotprobe task via Qualtrics surveys. Illness recency was assessed using both categorical and continuous measures. For the categorical measure, participants reported the last time they had a cold by choosing from the options "today," "a couple days ago," "a week ago," "a couple weeks ago," "a month ago," "a few months ago," or "a year or more ago." Participants responding "today," "a couple days ago," or "a week ago" were categorized as recently ill, and all others were categorized as not recently ill.</p><p>For the continuous measure, participants responded to four statements on a 7-point scale (1 = strongly disagree, 7 = strongly agree): "Over the past couple of days, I have not been feeling well"; "Lately, I have been feeling a little under the weather"; "I have felt sick within the past week"; and "I had a cold or flu recently." The average of these four scores was calculated. We note that in the original study, the interaction between face type and illness recency on reaction time was statistically significant (α = .05) when the categorical measure was used (p = .003) but not when the continuous measure was used (p = .08). However, the simple effect of relative attention toward disfigured faces was statistically significant for analyses using both the categorical and continuous measures (ps = .001 and .01, respectively, with relative attention estimated for participants 1 SD above the mean of the continuous illness-recency measure). Hence, following <ref type="bibr" target="#b22">Miller and Maner (2011)</ref>, we report outcomes of tests using both categorical and continuous measures. Given multiple tests of the same hypothesis, we used an alpha of .025 for both tests.</p><p>Participants also completed the Perceived Infectability and Germ Aversion subscales of the Perceived Vulnerability to Disease (PVD) scale <ref type="bibr" target="#b7">(Duncan, Schaller, &amp; Park, 2009)</ref>. As outlined above, we administered other measures that were not reported by <ref type="bibr" target="#b22">Miller and Maner (2011)</ref>. These included the seven pathogen-disgust items from the Three Domain Disgust Scale <ref type="bibr" target="#b34">(Tybur, Lieberman, &amp; Griskevicius, 2009)</ref>; ratings of images connoting infection risk developed by <ref type="bibr" target="#b5">Curtis, Aunger, and Rabie (2004)</ref>; and ratings of the faces used in the dot-probe task. For these tasks, participants rated items on a 7-point scale (1 = not at all disgusting, 7 = extremely disgusting). Finally, participants completed the HEXACO-60 <ref type="bibr" target="#b3">(Ashton &amp; Lee, 2009)</ref>, a measure of the six HEXACO personality traits. Existing work suggests that perceptions of illness are partially influenced by personality (e.g., <ref type="bibr" target="#b10">Feldman, Cohen, Doyle, Skoner, &amp; Gwaltney, 1999)</ref>. Using the HEXACO-60 allowed us to test whether the original results-if replicated-are independent of personality.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data-quality checks and data exclusions</head><p>For our primary analysis of the dot-probe task, we followed the original study by analyzing reaction times only from trials with correct responses 3 standard deviations of that participant's mean reaction time. Participants with error rates greater than 3 standard deviations from the mean for the full sample were excluded from analyses. We also excluded these participants from the Three Domain Disgust Scale, PVD scale, and photo-rating analyses.</p><p>Other approaches to dot-probe data analysis, although not utilized in the study being replicated here, are defensible. We therefore also conducted exploratory analyses using other approaches (e.g., Winsorizing extreme responses and using reaction time to congruent trials as a covariate; see, e.g., <ref type="bibr" target="#b20">McNulty, Meltzer, Makhanova, &amp; Maner, 2018)</ref>. Results from these analyses are reported in the Supplemental Material available online, as are findings from each individual data-collection site and findings modeling random effects for distractor stimuli.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Analyses</head><p>Analysis R code is provided on OSF (<ref type="url" target="https://osf.io/k2dbf/">https://osf.io/ k2dbf/</ref>) and included in the Supplemental Material. We preregistered two types of analyses to evaluate the replication. The first tested the null hypothesis that the interaction between illness recency and face type is equal to zero. We preregistered our intention to test the simple effect of face type within the two categories of illness recency only if the null hypothesis were rejected. Mean reaction times were analyzed using an analysis of variance (ANOVA) with face type (disfigured, nondisfigured) as a within-subjects factor and illness recency as a between-subjects factor.</p><p>Results of replications that test only the null hypothesis of an effect size equal to zero can be ambiguous. Wide confidence intervals (CIs) can include both zero and the effect size found in the original study, and narrow confidence intervals can fail to overlap with zero but also be smaller than those included in the 95% CIs of the original study. To reduce such ambiguity, we also preregistered our intention to conduct an equivalence test, which treats the population parameter under the null hypothesis as a nonzero value. A rejected null indicates that the population effect size is unlikely to be equal to or greater than that value <ref type="bibr" target="#b19">(Lakens, 2017)</ref>. For replication studies, <ref type="bibr" target="#b28">Simonsohn (2015)</ref> recommends testing an effect size that an original study had 33% power to detect. Samples 2.5 times larger than the original have roughly 80% power to reject population effect sizes of this magnitude.</p><p>The interaction described above is identical to an independent-samples t test on the differences in reaction times to the two face types between participants who had recently been ill and those who had not. Given that the original study had 28 participants who had recently been ill and 66 who had not recently been ill, we set the equivalence bound (d z ) to 0.35-the effect size that the original design afforded 33% power to detect. Using the two one-sided tests procedure <ref type="bibr" target="#b19">(Lakens, 2017)</ref>, we interpreted p values below .05 as indicating that no meaningful effect exists, and we interpreted p values of .05 and above as indicating that the effect size (d z ) could indeed be as high as 0.35.</p><p>We preregistered the same approach as <ref type="bibr" target="#b22">Miller and Maner (2011)</ref> to test whether germ aversion, perceived infectability, disgust sensitivity, and disgust ratings of images vary across participants who were and were not recently ill. These analyses were not reported in Miller and Maner, but they tested conceptually similar hypotheses. All analyses were first conducted using the categorical illness-recency variable and then using continuous illness-recency variable. Hence, for each test, we used an alpha of .025 rather than .05.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>On the basis of our preregistered exclusion criteria, we removed the 9 participants with error rates more than 3 standard deviations above the mean and two participants who did not complete both the questionnaire and the dot-probe task, resulting in a final sample of 402 participants, 151 of whom had recently been ill, and 251 of whom had not recently been ill. Alpha reliabilities were consistent with existing work for pathogendisgust sensitivity (α = .69), germ aversion (α = .76), perceived infectability (α = .92), and ratings of disgusteliciting images (α = .81). Average within-person response latencies following disfigured faces were highly correlated with average within-person response latencies following typical faces, r = .95 (Table <ref type="table" target="#tab_0">1</ref>).</p><p>We observed a main effect of face type: Responses were slower following disfigured faces (M = 644 ms, SD = 180) than typical faces (M = 634 ms, SD = 163), F(1, 400) = 14.96, η p 2 = .036, 90% CI = [.009, .078], p &lt; .001 (Fig. <ref type="figure" target="#fig_2">1</ref>). The main effect of illness recency did not meet our preregistered threshold (p &lt; .025)-recently ill: M = 661 ms, SD = 197; not recently ill: M = 626 ms, SD = 153, F(1, 400) = 4.23, η p 2 = .010, 90% CI = [.000, .039], p = .040-nor did the interaction between illness recency and face type (disfigured vs. typical), F(1, 400) = 1.87, η p 2 = .005, 90% CI = [.000, .027], p = .173. Whereas the original study detected attentional bias toward disfigured faces only for recently ill participants, we detected this same attentional bias for participants who were recently ill (M = 15.71 ms, 95% CI = [4.63, 26.79], p = .006) and for participants who were not recently ill (M = 7.51 ms, 95% CI = [1.19, 13.83], p = .02). We also did not detect an interaction between the continuous measure of illness recency and attentional biases toward disfigured relative to typical faces, F(1, 400) = 0.16, η p 2 &lt; .001, 90% CI = [0.000, 0.013], p = .691, and further, we did not detect a main effect of the continuous measure on response latencies, F(1, 400) = 1.06, η p 2 = .003, 90% CI = [.000, .022], p = .303.</p><p>We were unable to reject the null hypothesis that illness recency is unrelated to attentional bias toward disfigured faces. But can we reject the null of the effect size (d z ) being as large as ±0.35-what the original study had 33% power to detect? Yes-the 90% confidence intervals of the difference in attentional bias for participants who were and were not recently ill found here (d z = -0.14, 90% CI = [-0.31, -0.04]) did not overlap with an effect size (d z ) of -0.35, t(248.4) = 2.01, p = .023, or 0.35, t(248.4) = -4.55, p &lt; .001.</p><p>We next examined relations between illness recency and the self-report measures. Relying on the categorical approach, and again using the preregistered critical p value of .025, we detected a relation between illness recency and perceived infectability, r = .16, 95% CI = [.05, .26], p = .006, but not between illness recency and germ aversion, r = .11, 95% CI = [.01, .22], p = .037; sensitivity to pathogen disgust, r = .12, 95% CI = [.01, .23], p = .038; or disgust ratings of the images from the Curtis data set, r = .05, 95% CI = [-.06, .16], p = .358. Results were similar using the continuous approach; we detected a relation between illness recency and perceived infectability, r = .26, 95% CI = [.17, .35], p &lt; .001, but not germ aversion, r = .08, 95% CI = [-.02, .18], p = .127; sensitivity to pathogen disgust, r = .09, 95% CI = [-.00, .19], p = .062; or disgust ratings of images from the Curtis data set, r = .10, 95% CI = [.00, .18], p = .047. We also did not detect relations between illness recency and the six HEXACO factors (all ps &gt; .07; see the Supplemental Material for full results, including alternative approaches to analyzing dot-probe data).</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>The study replicated here has been interpreted as a key piece of evidence supporting a relation between immunological resistance and pathogen avoidance in humans. Yet given the results from this direct replication, it should not be taken as evidence for such a relation. That said, because of two methodological limitations of the original study and this replication, we hesitate to interpret our null findings as strong evidence that pathogen avoidance does not vary as a function of immunological resistance. First, the dot-probe task has well-documented psychometric limitations, especially for the type of between-participant comparisons reported here <ref type="bibr" target="#b26">(Parsons, Kruijt, &amp; Fox, 2019)</ref>. Second, the degree to which reporting having a head cold in the last 2 weeks reflects ability to resist pathogens is unclear. This latter shortcoming is perhaps shared by other studies that have seemingly demonstrated a relation between immunological resistance and pathogen avoidance, in which cocaine dependence <ref type="bibr" target="#b8">(Ersche et al., 2014)</ref>, progesterone <ref type="bibr" target="#b12">(Fleischman &amp; Fessler, 2011)</ref>, rheumatoid arthritis <ref type="bibr" target="#b25">(Oaten et al., 2017)</ref>, trimester of pregnancy <ref type="bibr" target="#b11">(Fessler, Eng, &amp; Navarrete, 2005)</ref>, and the same illness-recency measure used here <ref type="bibr" target="#b22">(Miller &amp; Maner, 2011</ref>, Study 2) have been interpreted as markers of a limited ability to resist pathogens. The use of such approaches has likely stemmed from the invasiveness and expense of measuring immune markers. But collaborations with  controlled human-infection trials could allow for systematic control of the type of pathogen leading to infection and the time course of infection, as well as pre-and postinfection observations. We detected a relation that the original study did not: Illness recency related to the PVD scale's Perceived Infectability subscale. Rather than reflecting a shift in pathogen avoidance when immunological resistance is low, though, this relation indicates that reports of recent illness covary with reports of general illness frequency. Illness recency was unrelated to the other PVD subscale (Germ Aversion), disgust sensitivity, and disgust ratings of images of pathogen threats. Variables that have been deployed interchangeably to test behavioral-immunesystem hypotheses (e.g., attentional bias toward disfigured faces in a dot-probe task, disgust sensitivity, germ aversion, and perceived infectability; see <ref type="bibr" target="#b31">Tybur, Frankenhuis, &amp; Pollet, 2014)</ref> had correlations (rs) between -.02 (attentional bias and germ aversion) and .60 (disgust sensitivity and disgust ratings of images). Notably, we did not detect a relation between attentional bias toward disfigured faces and disgust sensitivity or germ aversion; this might suggest that the main effect arose from lowlevel features of the disfigured faces (e.g., coloration) rather than from the stimuli being interpreted as infectious. This research area would benefit from better developing the validity of the many measures deployed here. Such an endeavor would match calls to view the behavioral immune system as just that-a modular system with distinct components, not all of which can or should respond identically to something such as capacity to resist infection <ref type="bibr" target="#b14">(Gangestad &amp; Grebe, 2014)</ref>.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Concluding Thoughts</head><p>The existence of modular features of human psychology dedicated to neutralizing pathogens is not in question (e.g., <ref type="bibr" target="#b2">Ackerman et al., 2018;</ref><ref type="bibr" target="#b5">Curtis et al., 2004;</ref><ref type="bibr" target="#b27">Schaller &amp; Park, 2011;</ref><ref type="bibr" target="#b33">Tybur &amp; Lieberman, 2016)</ref>. A key task for psychologists is understanding the nature of this psychology and, hopefully, using it to better understand topics ranging from food choice to intergroup relations to health decisions, among other things. We hope that this preregistered direct replication will not be perceived as repudiating a key hypothesis in this area but rather will facilitate progress in the substantial and growing literature on the psychological underpinnings of pathogen avoidance.  </p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Transparency</head></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>Action Editor: D. Stephen Lindsay Editor: D. Stephen Lindsay Author Contributions All five authors contributed to writing the manuscript. B. C. Jones and L. M. DeBruine generated the analysis script, and L. M. DeBruine and V. Fasolt analyzed the data. All authors approved the final version for submission.</figDesc></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Mean reaction time (RT) on incongruent-location trials as a function of illness recency and face type. In each violin plot, the dot indicates the mean, errors bars indicate 95% confidence intervals, and the width of the shaded area indicates the distribution of the data.</figDesc></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Descriptive Statistics for and Correlations Between Study Variables Variable</figDesc><table /></figure>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Questionnaires</head><p>Self-report instruments were presented after the dotprobe task via Qualtrics surveys. Illness recency was assessed using both categorical and continuous measures. For the categorical measure, participants reported the last time they had a cold by choosing from the options "today," "a couple days ago," "a week ago," "a couple weeks ago," "a month ago," "a few months ago," or "a year or more ago." Participants responding "today," "a couple days ago," or "a week ago" were categorized as recently ill, and all others were categorized as not recently ill.</p><p>For the continuous measure, participants responded to four statements on a 7-point scale (1 = strongly disagree, 7 = strongly agree): "Over the past couple of days, I have not been feeling well"; "Lately, I have been feeling a little under the weather"; "I have felt sick within the past week"; and "I had a cold or flu recently." The average of these four scores was calculated. We note that in the original study, the interaction between face type and illness recency on reaction time was statistically significant (α = .05) when the categorical measure was used (p = .003) but not when the continuous measure was used (p = .08). However, the simple effect of relative attention toward disfigured faces was statistically significant for analyses using both the categorical and continuous measures (ps = .001 and .01, respectively, with relative attention estimated for participants 1 SD above the mean of the continuous illness-recency measure). Hence, following <ref type="bibr" target="#b21">Miller and Maner (2011)</ref>, we report outcomes of tests using both categorical and continuous measures. Given multiple tests of the same hypothesis, we used an alpha of .025 for both tests.</p><p>Participants also completed the Perceived Infectability and Germ Aversion subscales of the Perceived Vulnerability to Disease (PVD) scale <ref type="bibr" target="#b6">(Duncan, Schaller, &amp; Park, 2009)</ref>. As outlined above, we administered other measures that were not reported by <ref type="bibr" target="#b21">Miller and Maner (2011)</ref>. These included the seven pathogen-disgust items from the Three Domain Disgust Scale <ref type="bibr" target="#b33">(Tybur, Lieberman, &amp; Griskevicius, 2009)</ref>; ratings of images connoting infection risk developed by <ref type="bibr" target="#b4">Curtis, Aunger, and Rabie (2004)</ref>; and ratings of the faces used in the dot-probe task. For these tasks, participants rated items on a 7-point scale (1 = not at all disgusting, 7 = extremely disgusting). Finally, participants completed the HEXACO-60 <ref type="bibr" target="#b2">(Ashton &amp; Lee, 2009)</ref>, a measure of the six HEXACO personality traits. Existing work suggests that perceptions of illness are partially influenced by personality (e.g., <ref type="bibr" target="#b9">Feldman, Cohen, Doyle, Skoner, &amp; Gwaltney, 1999)</ref>. Using the HEXACO-60 allowed us to test whether the original results-if replicated-are independent of personality.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data-quality checks and data exclusions</head><p>For our primary analysis of the dot-probe task, we followed the original study by analyzing reaction times only from trials with correct responses 3 standard deviations of that participant's mean reaction time. Participants with error rates greater than 3 standard deviations from the mean for the full sample were excluded from analyses. We also excluded these participants from the Three Domain Disgust Scale, PVD scale, and photo-rating analyses.</p><p>Other approaches to dot-probe data analysis, although not utilized in the study being replicated here, are defensible. We therefore also conducted exploratory analyses using other approaches (e.g., Winsorizing extreme responses and using reaction time to congruent trials as a covariate; see, e.g., <ref type="bibr" target="#b19">McNulty, Meltzer, Makhanova, &amp; Maner, 2018)</ref>. Results from these analyses are reported in the Supplemental Material available online, as are findings from each individual data-collection site and findings modeling random effects for distractor stimuli.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Analyses</head><p>Analysis R code is provided on OSF (<ref type="url" target="https://osf.io/k2dbf/">https://osf.io/  k2dbf/</ref>) and included in the Supplemental Material. We preregistered two types of analyses to evaluate the replication. The first tested the null hypothesis that the interaction between illness recency and face type is equal to zero. We preregistered our intention to test the simple effect of face type within the two categories of illness recency only if the null hypothesis were rejected. Mean reaction times were analyzed using an analysis of variance (ANOVA) with face type (disfigured, nondisfigured) as a within-subjects factor and illness recency as a between-subjects factor.</p><p>Results of replications that test only the null hypothesis of an effect size equal to zero can be ambiguous. Wide confidence intervals (CIs) can include both zero and the effect size found in the original study, and narrow confidence intervals can fail to overlap with zero but also be smaller than those included in the 95% CIs of the original study. To reduce such ambiguity, we also preregistered our intention to conduct an equivalence test, which treats the population parameter under the null hypothesis as a nonzero value. A rejected null indicates that the population effect size is unlikely to be equal to or greater than that value <ref type="bibr" target="#b18">(Lakens, 2017)</ref>. For replication studies, <ref type="bibr" target="#b27">Simonsohn (2015)</ref> recommends testing an effect size that an original study had 33% power to detect. Samples 2.5 times larger than the original have roughly 80% power to reject population effect sizes of this magnitude.</p><p>The interaction described above is identical to an independent-samples t test on the differences in reaction times to the two face types between participants who had recently been ill and those who had not. Given that the original study had 28 participants who had recently been ill and 66 who had not recently been ill, we set the equivalence bound (d z ) to 0.35-the effect size that the original design afforded 33% power to detect. Using the two one-sided tests procedure <ref type="bibr" target="#b18">(Lakens, 2017)</ref>, we interpreted p values below .05 as indicating that no meaningful effect exists, and we interpreted p values of .05 and above as indicating that the effect size (d z ) could indeed be as high as 0.35.</p><p>We preregistered the same approach as <ref type="bibr" target="#b21">Miller and Maner (2011)</ref> to test whether germ aversion, perceived infectability, disgust sensitivity, and disgust ratings of images vary across participants who were and were not recently ill. These analyses were not reported in Miller and Maner, but they tested conceptually similar hypotheses. All analyses were first conducted using the categorical illness-recency variable and then using continuous illness-recency variable. Hence, for each test, we used an alpha of .025 rather than .05.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>On the basis of our preregistered exclusion criteria, we removed the 9 participants with error rates more than 3 standard deviations above the mean and two participants who did not complete both the questionnaire and the dot-probe task, resulting in a final sample of 402 participants, 151 of whom had recently been ill, and 251 of whom had not recently been ill. Alpha reliabilities were consistent with existing work for pathogendisgust sensitivity (α = .69), germ aversion (α = .76), perceived infectability (α = .92), and ratings of disgusteliciting images (α = .81). Average within-person response latencies following disfigured faces were highly correlated with average within-person response latencies following typical faces, r = .95 (Table <ref type="table" target="#tab_0">1</ref>).</p><p>We observed a main effect of face type: Responses were slower following disfigured faces (M = 644 ms, SD = 180) than typical faces (M = 634 ms, SD = 163), F(1, 400) = 14.96, η p 2 = .036, 90% CI = [.009, .078], p &lt; .001 (Fig. <ref type="figure" target="#fig_1">1</ref>). The main effect of illness recency did not meet our preregistered threshold (p &lt; .025)-recently ill: M = 661 ms, SD = 197; not recently ill: M = 626 ms, SD = 153, F(1, 400) = 4.23, η p 2 = .010, 90% CI = [.000, .039], p = .040-nor did the interaction between illness recency and face type (disfigured vs. typical), F(1, 400) = 1.87, η p 2 = .005, 90% CI = [.000, .027], p = .173. Whereas the original study detected attentional bias toward disfigured faces only for recently ill participants, we detected this same attentional bias for participants who were recently ill (M = 15.71 ms, 95% CI = [4.63, 26.79], p = .006) and for participants who were not recently ill (M = 7.51 ms, 95% CI = [1.19, 13.83], p = .02). We also did not detect an interaction between the continuous measure of illness recency and attentional biases toward disfigured relative to typical faces, F(1, 400) = 0.16, η p 2 &lt; .001, 90% CI = [0.000, 0.013], p = .691, and further, we did not detect a main effect of the continuous measure on response latencies, F(1, 400) = 1.06, η p 2 = .003, 90% CI = [.000, .022], p = .303.</p><p>We were unable to reject the null hypothesis that illness recency is unrelated to attentional bias toward disfigured faces. But can we reject the null of the effect size (d z ) being as large as ±0.35-what the original study had 33% power to detect? Yes-the 90% confidence intervals of the difference in attentional bias for participants who were and were not recently ill found here (d z = -0.14, 90% CI = [-0.31, -0.04]) did not overlap with an effect size (d z ) of -0.35, t(248.4) = 2.01, p = .023, or 0.35, t(248.4) = -4.55, p &lt; .001.</p><p>We next examined relations between illness recency and the self-report measures. Relying on the categorical approach, and again using the preregistered critical p value of .025, we detected a relation between illness recency and perceived infectability, r = .16, 95% CI = [.05, .26], p = .006, but not between illness recency and germ aversion, r = .11, 95% CI = [.01, .22], p = .037; sensitivity to pathogen disgust, r = .12, 95% CI = [.01, .23], p = .038; or disgust ratings of the images from the Curtis data set, r = .05, 95% CI = [-.06, .16], p = .358. Results were similar using the continuous approach; we detected a relation between illness recency and perceived infectability, r = .26, 95% CI = [.17, .35], p &lt; .001, but not germ aversion, r = .08, 95% CI = [-.02, .18], p = .127; sensitivity to pathogen disgust, r = .09, 95% CI = [-.00, .19], p = .062; or disgust ratings of images from the Curtis data set, r = .10, 95% CI = [.00, .18], p = .047. We also did not detect relations between illness recency and the six HEXACO factors (all ps &gt; .07; see the Supplemental Material for full results, including alternative approaches to analyzing dot-probe data).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>The study replicated here has been interpreted as a key piece of evidence supporting a relation between immunological resistance and pathogen avoidance in humans. Yet given the results from this direct replication, it should not be taken as evidence for such a relation. That said, because of two methodological limitations of the original study and this replication, we hesitate to interpret our null findings as strong evidence that pathogen avoidance does not vary as a function of immunological resistance. First, the dot-probe task has well-documented psychometric limitations, especially for the type of between-participant comparisons reported here <ref type="bibr" target="#b25">(Parsons, Kruijt, &amp; Fox, 2019)</ref>. Second, the degree to which reporting having a head cold in the last 2 weeks reflects ability to resist pathogens is unclear. This latter shortcoming is perhaps shared by other studies that have seemingly demonstrated a relation between immunological resistance and pathogen avoidance, in which cocaine dependence <ref type="bibr" target="#b7">(Ersche et al., 2014)</ref>, progesterone <ref type="bibr" target="#b11">(Fleischman &amp; Fessler, 2011)</ref>, rheumatoid arthritis <ref type="bibr" target="#b24">(Oaten et al., 2017)</ref>, trimester of pregnancy <ref type="bibr" target="#b10">(Fessler, Eng, &amp; Navarrete, 2005)</ref>, and the same illness-recency measure used here <ref type="bibr" target="#b21">(Miller &amp; Maner, 2011</ref>, Study 2) have been interpreted as markers of a limited ability to resist pathogens. The use of such approaches has likely stemmed from the invasiveness and expense of measuring immune markers. But collaborations with controlled human-infection trials could allow for systematic control of the type of pathogen leading to infection and the time course of infection, as well as pre-and postinfection observations. We detected a relation that the original study did not: Illness recency related to the PVD scale's Perceived Infectability subscale. Rather than reflecting a shift in pathogen avoidance when immunological resistance is low, though, this relation indicates that reports of recent illness covary with reports of general illness frequency. Illness recency was unrelated to the other PVD subscale (Germ Aversion), disgust sensitivity, and disgust ratings of images of pathogen threats. Variables that have been deployed interchangeably to test behavioral-immunesystem hypotheses (e.g., attentional bias toward disfigured faces in a dot-probe task, disgust sensitivity, germ aversion, and perceived infectability; see <ref type="bibr" target="#b30">Tybur, Frankenhuis, &amp; Pollet, 2014)</ref> had correlations (rs) between -.02 (attentional bias and germ aversion) and .60 (disgust sensitivity and disgust ratings of images). Notably, we did not detect a relation between attentional bias toward disfigured faces and disgust sensitivity or germ aversion; this might suggest that the main effect arose from lowlevel features of the disfigured faces (e.g., coloration) rather than from the stimuli being interpreted as infectious. This research area would benefit from better developing the validity of the many measures deployed here. Such an endeavor would match calls to view the behavioral immune system as just that-a modular system with distinct components, not all of which can or should respond identically to something such as capacity to resist infection <ref type="bibr" target="#b13">(Gangestad &amp; Grebe, 2014)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Concluding Thoughts</head><p>The existence of modular features of human psychology dedicated to neutralizing pathogens is not in question (e.g., <ref type="bibr" target="#b1">Ackerman et al., 2018;</ref><ref type="bibr" target="#b4">Curtis et al., 2004;</ref><ref type="bibr" target="#b26">Schaller &amp; Park, 2011;</ref><ref type="bibr" target="#b32">Tybur &amp; Lieberman, 2016)</ref>. A key task for psychologists is understanding the nature of this psychology and, hopefully, using it to better understand topics ranging from food choice to intergroup relations to health decisions, among other things. We hope that this preregistered direct replication will not be perceived as repudiating a key hypothesis in this area but rather will facilitate progress in the substantial and growing literature on the psychological underpinnings of pathogen avoidance.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Transparency</head></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><figDesc>Action Editor: D. Stephen Lindsay Editor: D. Stephen Lindsay Author Contributions All five authors contributed to writing the manuscript. B. C. Jones and L. M. DeBruine generated the analysis script, and L. M. DeBruine and V. Fasolt analyzed the data. All authors approved the final version for submission.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Mean reaction time (RT) on incongruent-location trials as a function of illness recency and face type. In each violin plot, the dot indicates the mean, errors bars indicate 95% confidence intervals, and the width of the shaded area indicates the distribution of the data.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Descriptive Statistics for and Correlations Between Study VariablesVariable</figDesc><table><row><cell></cell><cell></cell><cell>.16</cell><cell>.26</cell><cell>-.02</cell><cell>.08</cell></row><row><cell></cell><cell>8</cell><cell>.11</cell><cell>.08</cell><cell>-.02</cell><cell>.06</cell></row><row><cell></cell><cell>7</cell><cell>.05</cell><cell>.10</cell><cell>.01</cell><cell>.03</cell></row><row><cell></cell><cell>6</cell><cell>.12</cell><cell>.09</cell><cell>-.01</cell><cell>.05</cell></row><row><cell>Correlations</cell><cell>5</cell><cell>.11</cell><cell>.05</cell><cell>.11</cell><cell>.95</cell></row><row><cell></cell><cell>4</cell><cell>.13</cell><cell>.05</cell><cell>.43</cell><cell>-</cell></row><row><cell></cell><cell>3</cell><cell>.08</cell><cell>.02</cell><cell>-</cell><cell>[.34, .50]</cell></row><row><cell></cell><cell>2</cell><cell>.73</cell><cell>-</cell><cell>[-.08, .12]</cell><cell>[-.05, .15]</cell></row><row><cell></cell><cell>1</cell><cell>-</cell><cell>[.69, .76]</cell><cell>[-.04, .20]</cell><cell>[.00, .24]</cell></row><row><cell></cell><cell>SD</cell><cell>.48</cell><cell>1.67</cell><cell>58.35</cell><cell>179.58</cell><cell>163.50</cell></row><row><cell></cell><cell>M</cell><cell>.38</cell><cell>3.44</cell><cell>10.59</cell><cell>644.49</cell><cell>633.90</cell></row><row><cell></cell><cell></cell><cell>1. Illness recency (discrete)</cell><cell>2. Illness recency (continuous)</cell><cell>3. Latencies (difference; ms)</cell><cell>4. Latencies (disfigured faces; ms)</cell><cell>5. Latencies (typical faces; ms)</cell></row></table></figure>
 			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_0"><p>Note: Pearson correlations appear above the diagonal, and 95% confidence intervals appear below the diagonal. Point-biserial correlations derived from t values are reported between the dichotomous illness-recency variable and other variables.</p></note>
 		</body>
 		<back>
 
 			<div type="funding">
-<div><p>Funding This work was supported by <rs type="funder">Horizon 2020 European Research Council</rs> Grant No. <rs type="grantNumber">StG-2015 680002-HBIS</rs>.</p></div>
+<div><head>Funding</head><p>This work was supported by <rs type="funder">Horizon 2020 European Research Council</rs> Grant No. <rs type="grantNumber">StG-2015 680002-HBIS</rs>.</p></div>
 <div><head>Open Practices</head><p>All data and analysis code have been made publicly available via OSF and can be accessed at <ref type="url" target="https://osf.io/k2dbf/">https://osf.io/k2dbf/</ref>.</p><p>The design and analysis plans for this study were preregistered at <ref type="url" target="https://osf.io/k2dbf/">https://osf.io/k2dbf/</ref>. This article has received the badges for Open Data and Preregistration. More information about the Open Practices badges can be found at <ref type="url" target="http://www.psychologicalscience.org/publications/badges">http://www.psychologicalscience.org/publications/badges</ref>.</p></div>
 			</div>
 			<listOrg type="funding">
-				<org type="funding" xml:id="_cJMhq4V">
+				<org type="funding" xml:id="_5XcYe83">
 					<idno type="grant-number">StG-2015 680002-HBIS</idno>
 				</org>
 			</listOrg>
@@ -145,22 +146,6 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 				<listBibl>
 
 <biblStruct xml:id="b0">
-	<analytic>
-		<title/>
-		<idno>02 .05 .05 .09 .10 .08 .26 3</idno>
-	</analytic>
-	<monogr>
-		<title level="j">Latencies (disfigured faces</title>
-		<imprint>
-			<biblScope unit="volume">38</biblScope>
-			<biblScope unit="issue">73</biblScope>
-			<biblScope unit="page" from="49" to="179" />
-		</imprint>
-	</monogr>
-	<note>Illness recency. 95 .05 .03 .06 .08 5. Latencies (typical faces; ms) 633.90 163.50. 06 .03 .07 .09 6. Pathogen disgust 4.99 0.95 [.01, .23. 03, .16] -.60 .53 .17 7. Disgust toward Curtis images 4.34 1.16 [-.06, .16. 40 .14 8. Germ Aversion 3.86 1.11. 16 9. Perceived Infectability 3.65 1.28 [.05, .26. 06, .25References</note>
-</biblStruct>
-
-<biblStruct xml:id="b1">
 	<analytic>
 		<title level="a" type="main">A pox on the mind: Disjunction of attention and memory in the processing of physical disfigurement</title>
 		<author>
@@ -192,7 +177,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b2">
+<biblStruct xml:id="b1">
 	<analytic>
 		<title level="a" type="main">The behavioral immune system: Current concerns and future directions</title>
 		<author>
@@ -215,7 +200,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<note>Article e12371</note>
 </biblStruct>
 
-<biblStruct xml:id="b3">
+<biblStruct xml:id="b2">
 	<analytic>
 		<title level="a" type="main">The HEXACO-60: A short measure of the major dimensions of personality</title>
 		<author>
@@ -235,7 +220,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b4">
+<biblStruct xml:id="b3">
 	<analytic>
 		<title level="a" type="main">Infection-avoidance behaviour in humans and other animals</title>
 		<author>
@@ -252,7 +237,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b5">
+<biblStruct xml:id="b4">
 	<analytic>
 		<title level="a" type="main">Evidence that disgust evolved to protect from risk of disease</title>
 		<author>
@@ -275,7 +260,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b6">
+<biblStruct xml:id="b5">
 	<analytic>
 		<title level="a" type="main">Disgust sensitivity is not associated with health in a rural Bangladeshi sample</title>
 		<author>
@@ -300,7 +285,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b7">
+<biblStruct xml:id="b6">
 	<analytic>
 		<title level="a" type="main">Perceived vulnerability to disease: Development and validation of a 15-item self-report instrument</title>
 		<author>
@@ -324,7 +309,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b8">
+<biblStruct xml:id="b7">
 	<analytic>
 		<title level="a" type="main">Aberrant disgust responses and immune reactivity in cocainedepend ent men</title>
 		<author>
@@ -359,7 +344,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b9">
+<biblStruct xml:id="b8">
 	<analytic>
 		<title level="a" type="main">Statistical power analyses using G * Power 3.1: Tests for correlation and regression analyses</title>
 		<author>
@@ -385,7 +370,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b10">
+<biblStruct xml:id="b9">
 	<analytic>
 		<title level="a" type="main">The impact of personality on the reporting of unfounded symptoms and illness</title>
 		<author>
@@ -417,7 +402,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b11">
+<biblStruct xml:id="b10">
 	<analytic>
 		<title level="a" type="main">Elevated disgust sensitivity in the first trimester of pregnancy: Evidence supporting the compensatory prophylaxis hypothesis</title>
 		<author>
@@ -440,7 +425,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b12">
+<biblStruct xml:id="b11">
 	<analytic>
 		<title level="a" type="main">Progesterone&apos;s effects on the psychology of disease avoidance: Support for the compensatory behavioral prophylaxis hypothesis</title>
 		<author>
@@ -460,7 +445,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b13">
+<biblStruct xml:id="b12">
 	<analytic>
 		<title level="a" type="main">Response to &quot;Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis</title>
 		<author>
@@ -480,7 +465,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b14">
+<biblStruct xml:id="b13">
 	<analytic>
 		<title level="a" type="main">Pathogen avoidance within an integrated immune system: Multiple components with distinct costs and benefits</title>
 		<author>
@@ -500,7 +485,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b15">
+<biblStruct xml:id="b14">
 	<analytic>
 		<title level="a" type="main">The role of experimenter belief in social priming</title>
 		<author>
@@ -520,7 +505,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b16">
+<biblStruct xml:id="b15">
 	<analytic>
 		<title level="a" type="main">Behavioural defences in animals against pathogens and parasites: Parallels with the pillars of medicine in humans</title>
 		<author>
@@ -537,7 +522,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b17">
+<biblStruct xml:id="b16">
 	<analytic>
 		<title level="a" type="main">Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis</title>
 		<author>
@@ -572,7 +557,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b18">
+<biblStruct xml:id="b17">
 	<analytic>
 		<title level="a" type="main">Reply to Fleischman and Fessler&apos;s (2018) comment on &quot;Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis</title>
 		<author>
@@ -607,7 +592,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b19">
+<biblStruct xml:id="b18">
 	<analytic>
 		<title level="a" type="main">Equivalence tests: A practical primer for t tests, correlations, and meta-analyses</title>
 		<author>
@@ -624,7 +609,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b20">
+<biblStruct xml:id="b19">
 	<analytic>
 		<title level="a" type="main">Attentional and evaluative biases help people maintain relationships by avoiding infidelity</title>
 		<author>
@@ -650,7 +635,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b21">
+<biblStruct xml:id="b20">
 	<analytic>
 		<title level="a" type="main">Disease tolerance as a defense strategy</title>
 		<author>
@@ -673,7 +658,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b22">
+<biblStruct xml:id="b21">
 	<analytic>
 		<title level="a" type="main">Sick body, vigilant mind: The biological immune system activates the behavioral immune system</title>
 		<author>
@@ -694,7 +679,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b23">
+<biblStruct xml:id="b22">
 	<analytic>
 		<title level="a" type="main">The behavioral immune system: Implications for social cognition, social interaction, and social influence</title>
 		<author>
@@ -722,7 +707,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b24">
+<biblStruct xml:id="b23">
 	<analytic>
 		<title level="a" type="main">Disgust as a disease-avoidance mechanism</title>
 		<author>
@@ -746,7 +731,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b25">
+<biblStruct xml:id="b24">
 	<analytic>
 		<title level="a" type="main">Compensatory up-regulation of behavioral disease avoidance in immuno-compromised people with rheumatoid arthritis</title>
 		<author>
@@ -769,7 +754,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b26">
+<biblStruct xml:id="b25">
 	<analytic>
 		<title level="a" type="main">Psychological science needs a standard practice of reporting the reliability of cognitive-behavioral measurements</title>
 		<author>
@@ -792,7 +777,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b27">
+<biblStruct xml:id="b26">
 	<analytic>
 		<title level="a" type="main">The behavioral immune system (and why it matters)</title>
 		<author>
@@ -812,7 +797,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b28">
+<biblStruct xml:id="b27">
 	<analytic>
 		<title level="a" type="main">Small telescopes: Detectability and the evaluation of replication results</title>
 		<author>
@@ -829,7 +814,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b29">
+<biblStruct xml:id="b28">
 	<analytic>
 		<title level="a" type="main">Influenza infection leads to increased susceptibility to subsequent bacterial superinfection by impairing NK cell responses in the lung</title>
 		<author>
@@ -867,7 +852,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b30">
+<biblStruct xml:id="b29">
 	<analytic>
 		<title level="a" type="main">Why do people vary in disgust?</title>
 		<author>
@@ -894,7 +879,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b31">
+<biblStruct xml:id="b30">
 	<analytic>
 		<title level="a" type="main">Behavioral immune system methods: Surveying the present to shape the future</title>
 		<author>
@@ -917,7 +902,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b32">
+<biblStruct xml:id="b31">
 	<analytic>
 		<title level="a" type="main">Parasite stress and pathogen avoidance relate to distinct dimensions of political ideology across 30 nations</title>
 		<author>
@@ -956,7 +941,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b33">
+<biblStruct xml:id="b32">
 	<analytic>
 		<title level="a" type="main">Human pathogen avoidance adaptations</title>
 		<author>
@@ -976,7 +961,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b34">
+<biblStruct xml:id="b33">
 	<analytic>
 		<title level="a" type="main">Microbes, mating, and morality: Individual differences in three functional domains of disgust</title>
 		<author>
@@ -1000,7 +985,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b35">
+<biblStruct xml:id="b34">
 	<analytic>
 		<title level="a" type="main">Disgust: Evolved function and structure</title>
 		<author>
@@ -1026,7 +1011,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b36">
+<biblStruct xml:id="b35">
 	<analytic>
 		<title level="a" type="main">IL-10 is an important mediator of the enhanced susceptibility to pneumococcal pneumonia after influenza infection</title>
 		<author>

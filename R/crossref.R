@@ -12,8 +12,7 @@
 crossref <- function(doi) {
   site_down("api.labs.crossref.org", error = FALSE)
 
-  if (inherits(doi, "scivrs_paper") ||
-      inherits(doi[[1]], "scivrs_paper")) {
+  if (is_paper(doi) || is_paper_list(doi)) {
     papers <- doi
     doi <- info_table(papers, "doi")$doi
   }
@@ -117,7 +116,7 @@ crossref <- function(doi) {
 #' }
 openalex <- function(doi, select = NULL) {
   # handle papers, paperlists, and vectors of multiple dois
-  if (inherits(doi, "scivrs_paper")) {
+  if (is_paper(doi)) {
     paper <- doi
     doi <- paper$info$doi
   } else if (is_paper_list(doi) || length(doi) > 1) {

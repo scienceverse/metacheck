@@ -5,7 +5,6 @@ inst/doc
 .httr-oauth
 .DS_Store
 .quarto
-docs
 inst/python/constants.py
 profile/psych_science_xml*
 inst/modules/sample-size*

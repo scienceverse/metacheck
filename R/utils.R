@@ -118,6 +118,21 @@ concat_tables <- function(papers, name_path) {
   merged_table
 }
 
+
+#' Detect a paper object
+#'
+#' @param paper the object to test
+#'
+#' @returns logical
+#' @export
+#' @keywords internal
+is_paper <- function(paper) {
+  if (!is.list(paper)) return(FALSE)
+  is_paper <- inherits(paper, "scivrs_paper")
+
+  return(is_paper)
+}
+
 #' Detect a list of paper objects
 #'
 #' @param paper the object to test

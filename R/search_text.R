@@ -35,7 +35,7 @@ search_text <- function(paper, pattern = ".*", section = NULL,
 
   if (is.data.frame(paper)) {
     full_text <- paper
-  } else if (inherits(paper, "scivrs_paper")) {
+  } else if (is_paper(paper)) {
     full_text <- paper$full_text
   } else if (is_paper_list(paper)) {
     full_text <- concat_tables(paper, "full_text")

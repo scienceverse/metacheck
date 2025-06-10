@@ -7,6 +7,12 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		<fileDesc>
 			<titleStmt>
 				<title level="a" type="main">Online Interaction Turns the Congeniality Bias Into an Uncongeniality Bias</title>
+				<funder>
+					<orgName type="full">Leibniz Science Campus Tübingen &quot;Informational Environments</orgName>
+				</funder>
+				<funder ref="#_PJkPVyM">
+					<orgName type="full">unknown</orgName>
+				</funder>
 			</titleStmt>
 			<publicationStmt>
 				<publisher/>
@@ -111,8 +117,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		</fileDesc>
 		<encodingDesc>
 			<appInfo>
-				<application version="0.8.1" ident="GROBID" when="2025-05-20T20:47+0000">
+				<application version="0.8.2" ident="GROBID" when="2025-06-03T14:13+0000">
 					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">a91ee48</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=false, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], sentenceSegmentation=false, flavor=null</label>
 					<ref target="https://github.com/kermitt2/grobid"/>
 				</application>
 			</appInfo>
@@ -136,43 +144,45 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</teiHeader>
 	<text xml:lang="en">
 		<body>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introduction</head><p>Current Western societies are plagued by a number of toxic phenomena, many of which are fueled via online venues: the emergence of "echo chambers" <ref type="bibr" target="#b32">(Sunstein, 2007)</ref>, the dissemination of fake news <ref type="bibr" target="#b28">(Pennycook &amp; Rand, 2021)</ref>, or increasing polarization <ref type="bibr" target="#b18">(Iyengar et al., 2019)</ref>, all of which might lead to a fragmentation of society. With some exceptions, the current consensus among scholars about the assumptions that might underlie this wide range of phenomena could be dubbed a "congeniality narrative." According to this narrative, many toxic online phenomena occur because individuals prefer information that aligns with their attitudes, and online environments are designed in ways that maximally cater to this preference for congeniality <ref type="bibr" target="#b27">(Pariser, 2011)</ref>. The hallmark of the congeniality narrative is the notion of selective exposure <ref type="bibr" target="#b15">(Hart et al., 2009;</ref><ref type="bibr" target="#b19">Knobloch-Westerwick, 2014)</ref>. Rooted in the theory of cognitive dissonance <ref type="bibr" target="#b11">(Festinger, 1957)</ref>, selective-exposure studies provide participants with the opportunity to select among different pieces of information and typically show that attitudinally congenial information is preferred over uncongenial information (congeniality bias; <ref type="bibr" target="#b15">Hart et al., 2009)</ref>.</p><p>Although there is little doubt that the congeniality narrative can account for many forms of online behavior, we argue in the present article that some common online phenomena are difficult to explain by an overarching preference for like-mindedness. For instance, evidence suggests that citizens often quite vehemently argue, engage in emotionally charged debates, and express mutual disagreement in online venues-for example, on Twitter or online discussion forums <ref type="bibr" target="#b17">(Hills, 2019;</ref><ref type="bibr" target="#b31">Suler, 2004)</ref>. Interestingly, the basic structure of most online discussion forums is equivalent to the setup of most selective-exposure experiments: Individuals are confronted with messages varying in congeniality and have to select which messages to attend to. Applied to online forums, the selective-exposure account would suggest that members attend to congenial comments and preferentially express their agreement with like-minded others. However, the level of debate, conflict, and disagreement in many forums, at least anecdotally, suggests an uncongeniality bias in which readers preferentially select dissenting comments to formulate a retort. But given their structural similarity, why do selective-exposure experiments lead to a congeniality bias whereas online forums might lead to an uncongeniality bias?</p><p>The present research is built on the simple assumption that the congeniality bias is confined to settings in which participants can choose only among information sources to read from (selective exposure). However, as soon as an opportunity to interact with others arises, people are motivated to change dissenters. As a consequence, we propose a phenomenon of selective response: People will selectively respond to content that is attitudinally uncongenial to express their disagreement-the congeniality bias will turn into an uncongeniality bias. Selective response and the proposed uncongeniality bias have been already foreshadowed in <ref type="bibr" target="#b11">Festinger's (1957)</ref> theory of cognitive dissonance but have rarely been investigated empirically. Nonetheless, converging evidence supports the notion that selective response and an uncongeniality bias may indeed exist. For instance, there is evidence that uncongenial information is scrutinized more carefully than congenial information <ref type="bibr" target="#b8">(Edwards &amp; Smith, 1996)</ref>. In line with <ref type="bibr" target="#b23">Mercier (2016)</ref>, we propose that being confronted with uncongenial content elicits an internal cognitive conflict that may trigger cognitive processes (elaboration; <ref type="bibr" target="#b10">Eveland, 2004)</ref> as well as affective processes (aversion; <ref type="bibr" target="#b22">Matz &amp; Wood, 2005)</ref>. Experiencing this cognitive conflict then motivates attempts to change the dissenter, provided that there is an opportunity to interact with the source of uncongenial information. As a consequence, settings that provide an opportunity to change dissenters (e.g., online discussion forums) are replete with expressions of disagreement and negativity <ref type="bibr" target="#b39">(Zollo et al., 2015)</ref>.</p><p>Converging evidence from the literature suggests that not only the congeniality bias but also an uncongeniality bias may polarize attitudes. First, anticipating a discussion with uncongenial views has been linked to political knowledge <ref type="bibr" target="#b10">(Eveland, 2004)</ref>, and political knowledge has been linked to larger polarization <ref type="bibr" target="#b33">(Taber &amp; Lodge, 2006)</ref>. Second, scrutiny of uncongenial messages leads to elaboration and the generation of counterarguments <ref type="bibr" target="#b8">(Edwards &amp; Smith, 1996)</ref>, which in turn goes together with increased polarization <ref type="bibr" target="#b34">(Tesser, 1978)</ref>. And third, publicly expressing one's opinion may lead to attitude polarization <ref type="bibr" target="#b5">(Brauer et al., 1995)</ref>. All of this points to the possibility that exhibiting an uncongeniality bias by selectively responding to uncongenial comments makes individuals more polarized than before.</p><p>The uncongeniality bias might be moderated by variables such as the emotionality of comments or the personality of users (see the Supplemental Material available online for a detailed discussion). For present purposes, the opinion climate of a discussion is of prior interest as a moderator. The spiral-of-silence account <ref type="bibr" target="#b26">(Noelle-Neumann, 1974)</ref> has proposed that individuals might be afraid to voice their opinions when they believe their views to be minority opinions in society. Because of inconclusive findings in studies that experimentally manipulated discussion climate (e.g., <ref type="bibr" target="#b7">Duncan et al., 2020;</ref><ref type="bibr" target="#b37">Yun &amp; Park, 2011)</ref>, it is not entirely clear whether being in an oppositional (vs. friendly) climate reduces the overall tendency to reply. However, there is evidence that comments are more assertive in a friendly climate <ref type="bibr" target="#b25">(Nekmat &amp; Gonzenbach, 2013)</ref>, suggesting that a friendly (vs. oppositional) climate will increase the uncongeniality bias.</p><p>Experimentally showing the existence of selective response and an uncongeniality bias helps to broaden our understanding of how engagement with controversial content shapes attitudes and behaviors. Moreover, a link between uncongeniality bias and polarization would have implications for policymaking by raising questions about the effectiveness of depolarization interventions, such as increased exposure to crosscutting content <ref type="bibr" target="#b35">(van der Meer &amp; Hameleers, 2021)</ref> or intergroup contact <ref type="bibr" target="#b36">(Wojcieszak &amp; Warner, 2020)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introduction</head><p>Current Western societies are plagued by a number of toxic phenomena, many of which are fueled via online venues: the emergence of "echo chambers" <ref type="bibr" target="#b17">(Sunstein, 2007)</ref>, the dissemination of fake news <ref type="bibr" target="#b13">(Pennycook &amp; Rand, 2021)</ref>, or increasing polarization <ref type="bibr">(Iyengar et al., 2019)</ref>, all of which might lead to a fragmentation of society. With some exceptions, the current consensus among scholars about the assumptions that might underlie this wide range of phenomena could be dubbed a "congeniality narrative." According to this narrative, many toxic online phenomena occur because individuals prefer information that aligns with their attitudes, and online environments are designed in ways that maximally cater to this preference for congeniality <ref type="bibr" target="#b12">(Pariser, 2011)</ref>. The hallmark of the congeniality narrative is the notion of selective exposure <ref type="bibr">(Hart et al., 2009;</ref><ref type="bibr">Knobloch-Westerwick, 2014)</ref>. Rooted in the theory of cognitive dissonance <ref type="bibr">(Festinger, 1957)</ref>, selective-exposure studies provide participants with the opportunity to select among different pieces of information and typically show that attitudinally congenial information is preferred over uncongenial information <ref type="bibr">(congeniality bias;</ref><ref type="bibr">Hart et al., 2009)</ref>.</p><p>Although there is little doubt that the congeniality narrative can account for many forms of online behavior, we argue in the present article that some common online phenomena are difficult to explain by an overarching preference for like-mindedness. For instance, evidence suggests that citizens often quite vehemently argue, engage in emotionally charged debates, and express mutual disagreement in online venues-for example, on Twitter or online discussion forums <ref type="bibr">(Hills, 2019;</ref><ref type="bibr" target="#b16">Suler, 2004)</ref>. Interestingly, the basic structure of most online discussion forums is equivalent to the setup of most selective-exposure experiments: Individuals are confronted with messages varying in congeniality and have to select which messages to attend to. Applied to online forums, the selective-exposure account would suggest that members attend to congenial comments and preferentially express their agreement with like-minded others. However, the level of debate, conflict, and disagreement in many forums, at least anecdotally, suggests an uncongeniality bias in which readers preferentially select dissenting comments to formulate a retort. But given their structural similarity, why do selective-exposure experiments lead to a congeniality bias whereas online forums might lead to an uncongeniality bias?</p><p>The present research is built on the simple assumption that the congeniality bias is confined to settings in which participants can choose only among information sources to read from (selective exposure). However, as soon as an opportunity to interact with others arises, people are motivated to change dissenters. As a consequence, we propose a phenomenon of selective response: People will selectively respond to content that is attitudinally uncongenial to express their disagreement-the congeniality bias will turn into an uncongeniality bias. Selective response and the proposed uncongeniality bias have been already foreshadowed in Festinger's (1957) theory of cognitive dissonance but have rarely been investigated empirically. Nonetheless, converging evidence supports the notion that selective response and an uncongeniality bias may indeed exist. For instance, there is evidence that uncongenial information is scrutinized more carefully than congenial information <ref type="bibr" target="#b7">(Edwards &amp; Smith, 1996)</ref>. In line with <ref type="bibr">Mercier (2016)</ref>, we propose that being confronted with uncongenial content elicits an internal cognitive conflict that may trigger cognitive processes (elaboration; <ref type="bibr" target="#b9">Eveland, 2004)</ref> as well as affective processes (aversion; <ref type="bibr">Matz &amp; Wood, 2005)</ref>. Experiencing this cognitive conflict then motivates attempts to change the dissenter, provided that there is an opportunity to interact with the source of uncongenial information. As a consequence, settings that provide an opportunity to change dissenters (e.g., online discussion forums) are replete with expressions of disagreement and negativity <ref type="bibr" target="#b24">(Zollo et al., 2015)</ref>.</p><p>Converging evidence from the literature suggests that not only the congeniality bias but also an uncongeniality bias may polarize attitudes. First, anticipating a discussion with uncongenial views has been linked to political knowledge <ref type="bibr" target="#b9">(Eveland, 2004)</ref>, and political knowledge has been linked to larger polarization <ref type="bibr" target="#b18">(Taber &amp; Lodge, 2006)</ref>. Second, scrutiny of uncongenial messages leads to elaboration and the generation of counterarguments <ref type="bibr" target="#b7">(Edwards &amp; Smith, 1996)</ref>, which in turn goes together with increased polarization <ref type="bibr" target="#b19">(Tesser, 1978)</ref>. And third, publicly expressing one's opinion may lead to attitude polarization <ref type="bibr" target="#b4">(Brauer et al., 1995)</ref>. All of this points to the possibility that exhibiting an uncongeniality bias by selectively responding to uncongenial comments makes individuals more polarized than before.</p><p>The uncongeniality bias might be moderated by variables such as the emotionality of comments or the personality of users (see the Supplemental Material available online for a detailed discussion). For present purposes, the opinion climate of a discussion is of prior interest as a moderator. The spiral-of-silence account <ref type="bibr" target="#b11">(Noelle-Neumann, 1974)</ref> has proposed that individuals might be afraid to voice their opinions when they believe their views to be minority opinions in society. Because of inconclusive findings in studies that experimentally manipulated discussion climate (e.g., <ref type="bibr" target="#b6">Duncan et al., 2020;</ref><ref type="bibr" target="#b22">Yun &amp; Park, 2011)</ref>, it is not entirely clear whether being in an oppositional (vs. friendly) climate reduces the overall tendency to reply. However, there is evidence that comments are more assertive in a friendly climate <ref type="bibr" target="#b10">(Nekmat &amp; Gonzenbach, 2013)</ref>, suggesting that a friendly (vs. oppositional) climate will increase the uncongeniality bias.</p><p>Experimentally showing the existence of selective response and an uncongeniality bias helps to broaden our understanding of how engagement with controversial content shapes attitudes and behaviors. Moreover, a link between uncongeniality bias and polarization would have implications for policymaking by raising questions about the effectiveness of depolarization interventions, such as increased exposure to crosscutting content <ref type="bibr" target="#b20">(van der Meer &amp; Hameleers, 2021)</ref> or intergroup contact <ref type="bibr" target="#b21">(Wojcieszak &amp; Warner, 2020)</ref>.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Statement of Relevance</head><p>Many online phenomena, such as attitude polarization or the emergence of echo chambers, rest on the psychological assumption that humans prefer like-minded content and people over counterattitudinal content and people. However, this view does not readily explain the prevalence of heated debate and flaming in social-media settings. We conducted three experiments to show that once social-media users were given an opportunity to interact with others, the preference for like-minded content was eliminated. Rather, users preferentially selected counterattitudinal content for their replies to express their disagreement with others. The tendency to attack dissenting views increased when the overall discussion climate was in favor of a user's view. This has important implications for understanding social-media phenomena and fighting polarization.</p><p>To investigate the uncongeniality bias, we conducted three online studies that were fashioned after selectiveexposure experiments: Participants saw discussion comments of varying congeniality, and they made selections among comments. In a departure from standard selectiveexposure experiments, we measured whether participants felt inclined to reply to a comment. The key prediction then was that larger (vs. smaller) cognitive conflict between person and comment would increase the willingness to reply to that comment (uncongeniality bias). Study 1 was focused on finding an uncongeniality bias; Study 2 examined whether it is the affordance of responding to others that turns a congeniality bias into an uncongeniality bias. Finally, Study 3 investigated the role of discussion climate as a moderator of the uncongeniality bias. Studies were reviewed and approved by the local ethics committee.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study 1</head><p>Study 1 was conducted to assess whether an uncongeniality bias exists. We used the standard selectiveexposure paradigm by confronting participants with discussion comments that varied in the degree of congeniality. We hypothesized that larger cognitive conflict between person and comment would be associated with a larger willingness to reply (Hypothesis 1). In three exploratory analyses, we (a) coded the content of replies written by participants to ensure that replies were more likely to exhibit disagreement than agreement with a comment; (b) investigated whether the uncongeniality bias is independent from the emotionality of comments; and (c) explored whether the uncongeniality bias is related to personality (agency and communion; <ref type="bibr" target="#b3">Bakan, 1966)</ref>.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head><p>Participants and design. Study 1 was conducted on a convenience sample of university student participants (minimum age of 18 years). The sample was composed of 96 participants (67 female, 29 male; mean age 25.79 years). The study was conducted online, and as compensation participants were given the opportunity to take part in a lottery for vouchers to online bookstores. The study was conducted at a time when detailed power analyses were uncommon (2014), so sample size was only determined to clearly exceed the size of standard selective-exposure experiments reported in the literature. <ref type="bibr" target="#b15">(Hart et al., 2009</ref>, reported on 8,000 total participants in 300 independent samples, arriving at N = 27 on average.) No participant was excluded from the analysis.</p><p>Study 1 used a within-subjects design in which conflict scores were nested within comments and within participants.</p><p>Materials. For our materials, we used the highly controversial topic of alternative medicine. Despite lacking strong evidence for its effectiveness from clinical trials and research <ref type="bibr" target="#b9">(Ernst &amp; Smith, 2018)</ref>, about 46% of respondents from a 2017 German poll indicated having undergone alternative-medicine treatments (e.g., homeopathy) at least once <ref type="bibr" target="#b30">(Suhr, 2017)</ref>. German governments have created special regulations for the application of some types of alternative medicine and have exempted some treatments from rigorous clinical testing for approval. Because some health insurance providers have partially covered expenses for alternative-medicine treatments, opponents of alternative medicine have argued that prescriptions of corresponding drugs would come at the expense of the community of solidarity. As a consequence, discussions between proponents and opponents of alternative medicine on the comment sections of German newspapers have been particularly lively and emotionally charged, thus making alternative medicine a highly controversial topic.</p><p>Inspired by actual comments from online discussions, we developed a set of 24 fictitious discussion comments on the pros and cons of alternative medicine. The comments were similar in length, and 12 comments argued for alternative medicine and 12 comments against. Moreover, within the pro and the con set of comments, half of the comments were seeded with emotional language to cover high and low emotionality. In two material testing studies, comments were subsequently rated for their valence (N = 153; on a scale from 1 = strongly in favor of alternative medicine to 7 = strongly against alternative medicine) and their emotionality (N = 36; on a scale from 1 = totally nonemotional to 5 = totally emotional). Both valence and emotionality of comments were z-standardized for further analyses. Table <ref type="table" target="#tab_0">1</ref> provides an example of two discussion comments (translated from German). All comments (original and translated) as well as their prerated average valence and emotionality can be found at <ref type="url" target="https://osf.io/rx3e6/">https://osf.io/rx3e6/</ref>.</p><p>Measures. In Study 1, attitudes were measured with a single item on a 4-point Likert scale (ranging from 1 = in favor of alternative medicine to 4 = against alternative medicine). In a departure from classical selectiveexposure studies, we did not use a dichotomous classification of comments as congenial versus uncongenial. Rather, cognitive conflict between participant and comment was measured continuously as the absolute difference between the original attitude of the person (z-standardized) and the prerated valence of the comment (z-standardized). Willingness to respond was captured through simple yes/ no decisions for each comment.</p><p>It is conceivable that participants might respond to an uncongenial comment to express their sudden agreement. In order to rule out this possibility, participants who indicated that they would respond to a given comment were requested to write a reply. The valence of all 553 replies composed in Study 1 was subsequently rated by two trained, independent, and blinded coders (on a scale from 1 = strongly in favor of alternative medicine to 5 = strongly against alternative medicine). Agreement between the two independent raters was high, as indicated by an intraclass correlation coefficient analysis <ref type="bibr" target="#b29">(Shrout &amp; Fleiss, 1979)</ref>, r = .89, 95% confidence interval (CI) = [.87, .91], F(552, 553) = 17.26, p &lt; .001. Subsequently, ratings of one coder (the first author) were used as measures of reply valence (the coding manual can be found at <ref type="url" target="https://osf.io/rx3e6/">https://osf.io/rx3e6/</ref>). Knowing the valence of all replies allowed us to compute socalled disagreement scores (absolute distance between z-standardized comment valence and z-standardized reply valence), an indicator of how much a written reply argued against the comment it responded to.</p><p>Study 1 also explored whether the uncongeniality bias is moderated by personality variables, a common approach in research on social media <ref type="bibr" target="#b21">(Liu &amp; Campbell, 2017)</ref>. To check this, we measured the "Big Two" traits of agency and communion with 10 adjective items each, taken from literature on personality <ref type="bibr" target="#b14">(Gebauer et al., 2013)</ref>. It is conceivable that because of its adversarial nature the uncongeniality bias is associated with high agency ("getting ahead"), but low communion ("getting along").</p><p>Procedure. Study 1 was conducted online on an inhouse platform for conducting experiments. After receiving participant consent, we measured demographic variables, self-assessments on agency and communion, and prior attitudes on alternative medicine. This was followed by a presentation of the discussion comments. Participants were first requested to read through all 24 comments, which were presented on a single web page. The design of the comment display was likened to an online discussion forum. Afterwards, the 24 comments were presented separately and in random order. For each comment, participants were asked: Would you want to reply to this comment? (yes/no). If participants clicked on yes, a new page loaded, with the instruction, "You indicated that you would like to reply to this comment. What would you respond?" and showing a text field where participants could enter their reply. After doing this for 24 trials, participants were thanked and debriefed, and they had the opportunity to enter in the lottery by providing an email address.</p><p>Analysis plan. We fitted (general) linear mixed-effects models for each dependent variable separately. The fixed-effects structure was specific to each study. All models included both item and participant as random intercepts <ref type="bibr" target="#b1">(Baayen et al., 2008)</ref>.</p><p>We tested the influence of cognitive conflict and emotion on the likelihood to respond to a comment (binomial response). We fitted two general linear mixed-effects models. Model 1 included the main effect of cognitive conflict as a fixed effect, and Model 2 included both main effects of conflict and emotionality as fixed effects. We further tested whether the respondents' cognitive conflict predicted their disagreement score (absolute difference between comment valence and reply valence). We fitted a linear mixed-effects model with disagreement score as the dependent variable and conflict score as a fixed effect. For the exploratory analyses on the Big Two personality factors, two additional models-Model 3, which included agency as a fixed effect, and Model 4, which included communion as a fixed effect alongside conflict as well as their respective interactions-were compared to baseline Model 1 separately.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>Overall, participants replied to 24.35% (ranging from 0% to 66.67%) of the comments they encountered. First, we tested whether cognitive conflict (distance between participant attitude and comment valence) predicted the likelihood to respond to a comment. We confirmed the expected uncongeniality bias (mixed-effects logistic regression: odds ratio, OR = 1.35, SE = 0.09, 95% CI = [1.19, 1.54], z = 4.51, p &lt; .001; Fig. <ref type="figure" target="#fig_0">1a</ref>). Consistent with Hypothesis 1, larger cognitive conflict was associated with higher likelihood of a response. An exploratory analysis testing a second model with both  <ref type="table" target="#tab_0">S1</ref> in the Supplemental Material). This finding rules out the possibility that response behavior was driven by the emotional tone of a comment rather than by its degree of uncongeniality. Although these results provide first evidence for the existence of an uncongeniality bias, they do not preclude the (unlikely) possibility that participants replied to uncongenial comments in order to express their sudden agreement with them. To test for this, two independent coders rated the valence of all 553 replies, enabling us to obtain a disagreement score (the absolute difference between original comment valence and subsequent reply valence). Our analysis showed that the cognitive conflict score between participant and original comment predicted the disagreement score between original comment and reply (mixed linear model: b = 0.43, SE = 0.04, 95% CI = [0.35, 0.51], t = 10.75, p &lt; .001; see Fig. <ref type="figure" target="#fig_0">1b</ref>; see Table <ref type="table">S2</ref> in the Supplemental Material). In other words, this analysis showed that participants tended to respond to uncongenial comments in order to express their disagreement with them. Study 1 also explored the question of whether the likelihood to respond (uncongeniality bias) was dependent on the personality of a reader. However, using measures of the Big Two <ref type="bibr" target="#b14">(Gebauer et al., 2013)</ref>, we could neither observe an influence of agency or communion on the likelihood to respond in general, nor on the likelihood to respond to uncongenial comments (see Tables <ref type="table">S3</ref> and<ref type="table">S4</ref> in the Supplemental Material).</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study 2</head><p>Beyond replicating the uncongeniality bias, Study 2 aimed to show how a congeniality bias can turn into an uncongeniality bias when an opportunity for interaction and selective response arises. To test for this prediction, we set up two experimental conditions: In a read condition, participants indicated for each discussion comment their willingness to read more about it (a classic selective-exposure instruction). In an otherwise identical write condition, participants were requested to indicate how much they are willing to respond to each comment. For the primary analyses, we expected a congeniality bias in the read condition (Hypothesis 1) and an uncongeniality bias in the write condition (Hypothesis 2). In addition, two exploratory analyses were conducted. First, to ensure that the uncongeniality bias in the write condition was due to disagreement with comments, we had participants in both conditions assess perceived quality of each comment. In line with inoculation theory <ref type="bibr" target="#b6">(Compton, 2013)</ref>, it is conceivable that participants in the write condition preferentially selected those comments for replies that they deem to be of low quality. Second, we tested whether exposure to comments in the read and write conditions were associated with attitude polarization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study 1</head><p>Study 1 was conducted to assess whether an uncongeniality bias exists. We used the standard selectiveexposure paradigm by confronting participants with discussion comments that varied in the degree of congeniality. We hypothesized that larger cognitive conflict between person and comment would be associated with a larger willingness to reply (Hypothesis 1). In three exploratory analyses, we (a) coded the content of replies written by participants to ensure that replies were more likely to exhibit disagreement than agreement with a comment; (b) investigated whether the uncongeniality bias is independent from the emotionality of comments; and (c) explored whether the uncongeniality bias is related to personality (agency and communion; <ref type="bibr" target="#b2">Bakan, 1966)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head><p>Participants and design. Study 1 was conducted on a convenience sample of university student participants (minimum age of 18 years). The sample was composed of 96 participants (67 female, 29 male; mean age 25.79 years). The study was conducted online, and as compensation participants were given the opportunity to take part in a lottery for vouchers to online bookstores. The study was conducted at a time when detailed power analyses were uncommon (2014), so sample size was only determined to clearly exceed the size of standard selective-exposure experiments reported in the literature. <ref type="bibr">(Hart et al., 2009</ref>, reported on 8,000 total participants in 300 independent samples, arriving at N = 27 on average.) No participant was excluded from the analysis.</p><p>Study 1 used a within-subjects design in which conflict scores were nested within comments and within participants.</p><p>Materials. For our materials, we used the highly controversial topic of alternative medicine. Despite lacking strong evidence for its effectiveness from clinical trials and research <ref type="bibr" target="#b8">(Ernst &amp; Smith, 2018)</ref>, about 46% of respondents from a 2017 German poll indicated having undergone alternative-medicine treatments (e.g., homeopathy) at least once <ref type="bibr" target="#b15">(Suhr, 2017)</ref>. German governments have created special regulations for the application of some types of alternative medicine and have exempted some treatments from rigorous clinical testing for approval. Because some health insurance providers have partially covered expenses for alternative-medicine treatments, opponents of alternative medicine have argued that prescriptions of corresponding drugs would come at the expense of the community of solidarity. As a consequence, discussions between proponents and opponents of alternative medicine on the comment sections of German newspapers have been particularly lively and emotionally charged, thus making alternative medicine a highly controversial topic.</p><p>Inspired by actual comments from online discussions, we developed a set of 24 fictitious discussion comments on the pros and cons of alternative medicine. The comments were similar in length, and 12 comments argued for alternative medicine and 12 comments against. Moreover, within the pro and the con set of comments, half of the comments were seeded with emotional language to cover high and low emotionality. In two material testing studies, comments were subsequently rated for their valence (N = 153; on a scale from 1 = strongly in favor of alternative medicine to 7 = strongly against alternative medicine) and their emotionality (N = 36; on a scale from 1 = totally nonemotional to 5 = totally emotional). Both valence and emotionality of comments were z-standardized for further analyses. Table <ref type="table" target="#tab_0">1</ref> provides an example of two discussion comments (translated from German). All comments (original and translated) as well as their prerated average valence and emotionality can be found at <ref type="url" target="https://osf.io/rx3e6/">https://osf.io/rx3e6/</ref>.</p><p>Measures. In Study 1, attitudes were measured with a single item on a 4-point Likert scale (ranging from 1 = in favor of alternative medicine to 4 = against alternative medicine). In a departure from classical selectiveexposure studies, we did not use a dichotomous classification of comments as congenial versus uncongenial. Rather, cognitive conflict between participant and comment was measured continuously as the absolute difference between the original attitude of the person (z-standardized) and the prerated valence of the comment (z-standardized). Willingness to respond was captured through simple yes/ no decisions for each comment.</p><p>It is conceivable that participants might respond to an uncongenial comment to express their sudden agreement. In order to rule out this possibility, participants who indicated that they would respond to a given comment were requested to write a reply. The valence of all 553 replies composed in Study 1 was subsequently rated by two trained, independent, and blinded coders (on a scale from 1 = strongly in favor of alternative medicine to 5 = strongly against alternative medicine). Agreement between the two independent raters was high, as indicated by an intraclass correlation coefficient analysis <ref type="bibr" target="#b14">(Shrout &amp; Fleiss, 1979)</ref>, r = .89, 95% confidence interval (CI) = [.87, .91], F(552, 553) = 17.26, p &lt; .001. Subsequently, ratings of one coder (the first author) were used as measures of reply valence (the coding manual can be found at <ref type="url" target="https://osf.io/rx3e6/">https://osf.io/rx3e6/</ref>). Knowing the valence of all replies allowed us to compute socalled disagreement scores (absolute distance between z-standardized comment valence and z-standardized reply valence), an indicator of how much a written reply argued against the comment it responded to.</p><p>Study 1 also explored whether the uncongeniality bias is moderated by personality variables, a common approach in research on social media <ref type="bibr">(Liu &amp; Campbell, 2017)</ref>. To check this, we measured the "Big Two" traits of agency and communion with 10 adjective items each, taken from literature on personality <ref type="bibr">(Gebauer et al., 2013)</ref>. It is conceivable that because of its adversarial nature the uncongeniality bias is associated with high agency ("getting ahead"), but low communion ("getting along").</p><p>Procedure. Study 1 was conducted online on an inhouse platform for conducting experiments. After receiving participant consent, we measured demographic variables, self-assessments on agency and communion, and prior attitudes on alternative medicine. This was followed by a presentation of the discussion comments. Participants were first requested to read through all 24 comments, which were presented on a single web page. The design of the comment display was likened to an online discussion forum. Afterwards, the 24 comments were presented separately and in random order. For each comment, participants were asked: Would you want to reply to this comment? (yes/no). If participants clicked on yes, a new page loaded, with the instruction, "You indicated that you would like to reply to this comment. What would you respond?" and showing a text field where participants could enter their reply. After doing this for 24 trials, participants were thanked and debriefed, and they had the opportunity to enter in the lottery by providing an email address.</p><p>Analysis plan. We fitted (general) linear mixed-effects models for each dependent variable separately. The fixed-effects structure was specific to each study. All models included both item and participant as random intercepts <ref type="bibr" target="#b0">(Baayen et al., 2008)</ref>.</p><p>We tested the influence of cognitive conflict and emotion on the likelihood to respond to a comment (binomial response). We fitted two general linear mixed-effects models. Model 1 included the main effect of cognitive conflict as a fixed effect, and Model 2 included both main effects of conflict and emotionality as fixed effects. We further tested whether the respondents' cognitive conflict predicted their disagreement score (absolute difference between comment valence and reply valence). We fitted a linear mixed-effects model with disagreement score as the dependent variable and conflict score as a fixed effect. For the exploratory analyses on the Big Two personality factors, two additional models-Model 3, which included agency as a fixed effect, and Model 4, which included communion as a fixed effect alongside conflict as well as their respective interactions-were compared to baseline Model 1 separately.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>Overall, participants replied to 24.35% (ranging from 0% to 66.67%) of the comments they encountered. First, we tested whether cognitive conflict (distance between participant attitude and comment valence) predicted the likelihood to respond to a comment. We confirmed the expected uncongeniality bias (mixed-effects logistic regression: odds ratio, OR = 1.35, SE = 0.09, 95% CI = [1.19, 1.54], z = 4.51, p &lt; .001; Fig. <ref type="figure" target="#fig_0">1a</ref>). Consistent with Hypothesis 1, larger cognitive conflict was associated with higher likelihood of a response. An exploratory analysis testing a second model with both  <ref type="table" target="#tab_0">S1</ref> in the Supplemental Material). This finding rules out the possibility that response behavior was driven by the emotional tone of a comment rather than by its degree of uncongeniality. Although these results provide first evidence for the existence of an uncongeniality bias, they do not preclude the (unlikely) possibility that participants replied to uncongenial comments in order to express their sudden agreement with them. To test for this, two independent coders rated the valence of all 553 replies, enabling us to obtain a disagreement score (the absolute difference between original comment valence and subsequent reply valence). Our analysis showed that the cognitive conflict score between participant and original comment predicted the disagreement score between original comment and reply (mixed linear model: b = 0.43, SE = 0.04, 95% CI = [0.35, 0.51], t = 10.75, p &lt; .001; see Fig. <ref type="figure" target="#fig_0">1b</ref>; see Table <ref type="table">S2</ref> in the Supplemental Material). In other words, this analysis showed that participants tended to respond to uncongenial comments in order to express their disagreement with them. Study 1 also explored the question of whether the likelihood to respond (uncongeniality bias) was dependent on the personality of a reader. However, using measures of the Big Two <ref type="bibr">(Gebauer et al., 2013)</ref>, we could neither observe an influence of agency or communion on the likelihood to respond in general, nor on the likelihood to respond to uncongenial comments (see Tables <ref type="table">S3</ref> and <ref type="table">S4</ref> in the Supplemental Material).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study 2</head><p>Beyond replicating the uncongeniality bias, Study 2 aimed to show how a congeniality bias can turn into an uncongeniality bias when an opportunity for interaction and selective response arises. To test for this prediction, we set up two experimental conditions: In a read condition, participants indicated for each discussion comment their willingness to read more about it (a classic selective-exposure instruction). In an otherwise identical write condition, participants were requested to indicate how much they are willing to respond to each comment. For the primary analyses, we expected a congeniality bias in the read condition (Hypothesis 1) and an uncongeniality bias in the write condition (Hypothesis 2). In addition, two exploratory analyses were conducted. First, to ensure that the uncongeniality bias in the write condition was due to disagreement with comments, we had participants in both conditions assess perceived quality of each comment. In line with inoculation theory <ref type="bibr" target="#b5">(Compton, 2013)</ref>, it is conceivable that participants in the write condition preferentially selected those comments for replies that they deem to be of low quality. Second, we tested whether exposure to comments in the read and write conditions were associated with attitude polarization.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head><p>Participants and design. Study 2 was conducted on a convenience student sample of the local university.</p><p>Because the study was conducted at a time when power analyses were quite uncommon (2015), sample sizes were determined by budgetary considerations only. One hundred eighty-seven participants registered for the experiment, but 41 did not finish it. Applying a threshold for a minimum reading time of 8 s per comment (on average), another 23 participants were excluded. Finally, another five participants were excluded because of missing values in measuring the secondary variable of argument quality. The final sample was N = 118 (58 in the read condition, 60 in the write condition; 93 female, 25 male, mean age = 25.22 years). Again, compensation was based on the opportunity to take part in a lottery for vouchers.</p><p>The study employed a design in which participants were randomly assigned to either the read condition or the write condition. However, as the dependent variable was slightly different between the two conditions, we took a conservative approach by analyzing both conditions separately, employing a mixed-model approach with cognitive conflict as a fixed factor and participants and comments as random factors, respectively.</p><p>Materials. The discussion comments used for Study 2 were a subset (16 comments) from the material used in Study 1. Half of the comments were in favor of alternative medicine, and half of the comments were arguing against.</p><p>Measures. Attitudes on alternative medicine were measured both before and after reading discussion comments, using a single item on a 6-point Likert scale (ranging from 1, against alternative medicine, to 6, in favor of alternative medicine). To capture polarization, we multiplied the difference of the attitude measures after and before the experiment by the sign of the difference of the attitude before the experiment and the neutral scale point (3.5): [sign(before -3.5) × (afterbefore)]. Thus, positive polarization scores represented changes toward more extreme attitudes, and negative polarization scores represented changes toward less extreme (or more neutral) attitudes.</p><p>As in Study 1, cognitive conflict was measured as the absolute difference between the original attitude of the person with regard to alternative medicine (z-standardized) and the prerated valence of the comment (z-standardized).</p><p>In Study 2, we did not require participants to write actual replies. Rather, we measured willingness to engage with single, 4-point Likert-scale items for each comment. In the read condition, participants were asked how much they were willing to read more about a given comment (from 1, not under any circumstances, to 4, in any case). In the write condition, participants were asked how much they were willing to reply to a given comment (from 1, not under any circumstances, to 4, in any case).</p><p>To address whether the hypothesized uncongeniality bias in the write condition was due to dissent, participants also had to rate the perceived quality of each comment (on 7-point Likert scales ranging from 1, very low, to 7, very high). Quality ratings were z-standardized for further analyses.</p><p>Procedure. The experiment was conducted online via Qualtrics. After participants provided demographic variables and indicated their attitude on alternative medicine, they were shown the 16 discussion comments separately and in random order. For each comment, participants indicated their willingness to engage (willingness to read more in the read condition, willingness to respond in the write condition). After these 16 trials, attitudes on alternative medicine were measured again. Subsequently, participants were shown all 16 comments again on a single page and rated the perceived quality of each item. At the end, participants were thanked, debriefed, given an opportunity to withdraw their data, and given an opportunity to take part in the lottery.</p><p>Analysis plan. We fitted (general) linear mixed-effects models for each dependent variable separately. All models included both item and participant as random intercepts. Study 2 tested the influence of cognitive conflict on the likelihood of engaging with a comment. The dependent measures of Study 2 were slightly different for the two conditions. Whereas it was "want to read more" in the read condition, it was "want to reply" in the write condition. Thus, we calculated separate analyses for the two dependent variables. For both analyses, two models were tested: Model 1 included cognitive conflict as a continuous fixed effect, and Model 2 included main effects of conflict, of perceived quality, and of their interaction as fixed effects. For the attitude measures, we submitted attitude-polarization scores to a linear model with condition (read vs. write) as a fixed effect.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>Results for the read condition yielded a congeniality bias that was consistent with Hypothesis 1 (b = -0.27, SE = 0.04, 95% CI = [-0.34, -0.20], t = -7.47, p &lt; .001; Fig. <ref type="figure" target="#fig_1">2a</ref>; see Table <ref type="table">S5</ref> in the Supplemental Material). The willingness to engage with a comment (read more) was reduced with increasing cognitive conflict. A second model explored whether the willingness to engage was also affected by the perceived quality of discussion comments. This analysis revealed that the effect of cognitive conflict on the willingness to engage was eliminated (b = -0.01, SE = 0.08, 95% CI = [-0.17, 0.16], t = -0.07, p = .947), whereas the perceived quality of a comment was positively associated with the willingness to engage (b = 0.25, SE = 0.03, 95% CI = [0.19, 0.31], t = 8.23, p &lt; .001). However, this main effect was qualified by a small interaction effect between cognitive conflict and perceived quality (b = -0.04, SE = 0.02, 95% CI = [-0.08, -0.00], t = -2.02, p = .044; see Table <ref type="table">S5</ref> in the Supplemental Material) indicating that participants preferred to read congenial (vs. uncongenial) comments when these comments were perceived as high in quality, whereas no such difference occurred for comments of low perceived quality (Fig. <ref type="figure" target="#fig_2">3a</ref>). This finding contributes to the extant selective-exposure literature by showing that the congeniality bias might be restricted to content that is subjectively perceived to be of high quality.</p><p>Next, we conducted similar analyses with respect to the write condition. Consistent with Hypothesis 2 and the results of Study 1, we again found an uncongeniality bias indicating that participants were more willing to engage with a comment (i.e., respond) the more this comment elicited cognitive conflict (b = 0.20, SE = 0.03, 95% CI = [0.14, 0.26], t = 6.84, p &lt; .001; Fig. <ref type="figure" target="#fig_1">2b</ref>; see Table <ref type="table">S6</ref> in the Supplemental Material). Next, we fitted a second model that included cognitive conflict, perceived quality, and the interaction between conflict and quality. This analysis yielded a substantial main effect for cognitive conflict (b = 0.50, SE = 0.07, 95% CI = [0.35, 0.64], t = 6.71, p &lt; .001) and a smaller main effect for quality (b = 0.10, SE = 0.03, 95% CI = [0.04, 0.15], t = 3.33, p = .001), which were qualified by an interaction between conflict and quality (b = -0.08, SE = 0.02, 95% CI = [-0.12, -0.05], t = -4.42, p &lt; .001; see Table <ref type="table">S6</ref>). This interaction indicates that the tendency to respond to uncongenial comments (uncongeniality bias) was very pronounced for comments of low perceived quality. By contrast, the uncongeniality bias was eliminated for comments of high perceived quality (Fig. <ref type="figure" target="#fig_2">3b</ref>). Finally, we used a single item to explore belief polarization by measuring participants' attitudes on the controversial topic (alternative medicine) before and after exposure to discussion comments. We created a polarization index that indicates a movement away from the neutral scale point from preexposure to postexposure. The analysis of polarization based on this single item did not show signs of polarization (linear model intercept: b = 0.02, SE = 0.06, 95% CI = [-0.10, 0.13], t = 0.29, p = .771). There was also no difference in polarization between the read and write conditions (b = -0.06, SE = 0.08, 95% CI = [-0.22, 0.09], t = -0.80, p = .422; see Table <ref type="table">S7</ref> in the Supplemental Material).</p><p>Taken together, these results indicate that one can elicit a congeniality bias as well as an uncongeniality bias, a difference that was only contingent on the way that instructions about engaging with a comment were provided and the way results were measured (reading more vs. replying). This supports the notion that classic selective-exposure effects might not be sufficient to explain behavior in social-media settings where users may talk back to others. Moreover, the analyses of conflict and perceived quality in Study 2 showed that a congeniality bias mainly occurs for comments of high perceived quality, whereas the uncongeniality bias mainly occurs for comments of low perceived quality. However, we could not establish a link between biased selection behavior and belief polarization.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study 3</head><p>In Study 3 (preregistered), we attempted to replicate the uncongeniality bias (Hypothesis 1), but also explored a potential moderator. Inspired by the spiralof-silence account <ref type="bibr" target="#b26">(Noelle-Neumann, 1974)</ref>, we manipulated discussion climate in three conditions: the majority of comments were either in line with participants' attitudes (friendly climate) or running counter to participants' attitudes (oppositional climate), or comments were balanced as in standard selective-exposure experiments (control). Our preregistered hypotheses were built on the assumption that holding a minority view will dampen the tendency to reply to uncongenial comments (reduced uncongeniality bias; Hypothesis 2). Conversely, we expected that participants in the friendly climate condition are even more inclined to respond to uncongenial comments (increased uncongeniality bias; Hypothesis 3). Primary analyses were complemented by two exploratory investigations. First, to ensure that the uncongeniality bias is driven by disagreement rather than agreement, participants had to express their "like" or "dislike" for each comment (akin to the design of many actual discussion forums). This enabled us to test whether the relation between cognitive conflict and reply behavior is mediated by disagreement (hitting the dislike button). Second, we explored whether exposure and response to comments is associated with attitude polarization.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head><p>Participants and design. Basis for the power analysis of the predicted interaction of conditions (control, friendly climate, oppositional climate) and conflict in Study 3 was a mixed-model simulation with data from Study 2. In particular, we specified the parameters θ (0.50, 0.10), β (3.48671, 0, 0, 0.053, -0.12, 0.12), and the scale parameter σ (1). Importantly, the third and fourth beta parameters specify the interaction effect with data from Study 2. The results showed that 180 participants are sufficient to achieve a power of 92.25%. Poweranalysis simulations are available at <ref type="url" target="https://osf.io/rx3e6/">https://osf.io/rx3e6/</ref>. Thus, Study 3 was preregistered for 180 participants. With oversampling, 198 students from the local university took part in the study, of whom 180 participants finished the study. We preregistered three exclusion criteria: (a)</p><p>We excluded 12 participants who had a standard deviation of zero in the original semantic differential scales measuring prior attitudes (50% of items were reversecoded, and a standard deviation of zero would be indicative of "click-through behavior"); (b) in order to be able to measure polarization, we excluded 5 participants whose prior attitude was completely neutral (5.0 as average across six semantic differential scales ranging from 1 to 9); (c) we excluded participants on the basis of one manipulation-check item in which participants had to indicate whether the comments they saw were largely positive, largely balanced, or largely negative toward alternative medicine. As it turned out, the criteria for this manipulation check lacked precision, thus leading to an exclusion of a further 57 participants and also to different attrition rates <ref type="bibr" target="#b38">(Zhou &amp; Fishbach, 2016)</ref>. We decided to report the preregistered analyses in the main manuscript, but we also conducted additional robustness checks (see Supplemental Material) with only the first two exclusion criteria. For the preregistered analyses, 106 participants remained (47 in the balanced condition, 39 in the friendly climate condition, and 20 in the oppositional climate condition; 83 females, 20 males, 3 nondisclosed; mean age = 25.55 years). Study 3 employed a mixed design with condition (balanced, friendly climate, oppositional climate) as a between-subjects variable and cognitive conflict as a within-subjects variable that was nested within discussion comments and within participants.</p><p>Materials. All participants saw 12 discussion comments from our original material-six comments in favor of alternative medicine and six comments against in the balanced condition, and three comments in favor of alternative medicine and 9 comments against in the two unbalanced conditions. The two unbalanced conditions were designated as friendly climate or oppositional climate depending on the original attitude of a given participant. The 3:9 ratio reflected a compromise between (a) making sure that participants were able to see that there was a minority view; (b) preventing a too-lopsided distribution for statistical reasons; and (c) being similar to studies about minority influence, which typically vary around 20:80 distributions (e.g., <ref type="bibr" target="#b4">Baker &amp; Petty, 1994)</ref>.</p><p>Measures. Attitudes were measured with 9-point semantic differentials in which participants assessed whether they find alternative medicine bad/good, unreasonable/ reasonable, negative/positive, useful/harmful, effective/ ineffective, and convincing/unconvincing (the latter half of these items were reverse-coded). Correcting for reverse coding, attitude scores were averaged across these ratings (ranging from 1, against alternative medicine, to 9, in favor of alternative medicine). Finally, we measured attitude polarization using the same procedure as in Study 2, accounting for the different scale midpoint: [sign(before -5.0) × (afterbefore)].</p><p>Again, cognitive conflict between participant and comment was measured as the absolute difference between the original attitude of the person with regard to alternative medicine (z-standardized) and the prerated valence of the comment (z-standardized).</p><p>Response tendencies for each comment were measured with single, 6-point Likert items asking participants how much they are inclined to reply (from 1 = not at all inclined to 6 = fully inclined).</p><p>We also explored whether the relation between conflict and response tendency was mediated by dislike. Therefore, participants had to click on a like or a dislike button for each comment that they read.</p><p>Procedure. The experiment was conducted online via Qualtrics. After measuring prior attitudes, participants were first required to read 12 discussion comments on a single page. In the balanced condition, participants read six comments against and six comments in favor of alternative medicine. In the other two conditions, participants saw nine comments against and three comments in favor of alternative medicine (with allocations of participants to the friendly vs. oppositional climate condition based on prior attitudes being below or above the scale midpoint). Each comment was associated with a fictitious username and a brief headline. After reading through all 12 forum comments, separate comments were again displayed (in random order). Participants had to click a like or dislike button for each comment and were requested to indicate how much they are inclined to respond to the comment. After the 12 trials, participants' attitudes on alternative medicine was measured again, followed by the manipulationcheck item. After debriefing, we provided the option to withdraw data and take part in the lottery.</p><p>Analysis plan. We fitted (general) linear mixed-effects models for each dependent variable separately. All models included both item and participant as random intercepts. In an initial analysis of Study 3, we tested whether the willingness to respond differed among the three conditions. Therefore, we fitted a linear mixed-effects model with condition (balanced, friendly, oppositional) as a fixed effect and submitted the resulting model to a Type III analysis of variance. For the main analysis, we fitted and tested a model that included condition (balanced, friendly, oppositional) and cognitive conflict as fixed effects (main effects and interaction). Mediation between cognitive conflict and response tendency via dislikes was measured by submitting unstandardized indirect effects to 1,000 bootstrapped samples and computing 95% confidence intervals. Attitude-polarization scores were submitted to a linear model with condition (balanced vs. friendly climate vs. oppositional climate) as a fixed effect. The balanced condition served as a baseline.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study 3</head><p>In Study 3 (preregistered), we attempted to replicate the uncongeniality bias (Hypothesis 1), but also explored a potential moderator. Inspired by the spiralof-silence account <ref type="bibr" target="#b11">(Noelle-Neumann, 1974)</ref>, we manipulated discussion climate in three conditions: the majority of comments were either in line with participants' attitudes (friendly climate) or running counter to participants' attitudes (oppositional climate), or comments were balanced as in standard selective-exposure experiments (control). Our preregistered hypotheses were built on the assumption that holding a minority view will dampen the tendency to reply to uncongenial comments (reduced uncongeniality bias; Hypothesis 2). Conversely, we expected that participants in the friendly climate condition are even more inclined to respond to uncongenial comments (increased uncongeniality bias; Hypothesis 3). Primary analyses were complemented by two exploratory investigations. First, to ensure that the uncongeniality bias is driven by disagreement rather than agreement, participants had to express their "like" or "dislike" for each comment (akin to the design of many actual discussion forums). This enabled us to test whether the relation between cognitive conflict and reply behavior is mediated by disagreement (hitting the dislike button). Second, we explored whether exposure and response to comments is associated with attitude polarization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head><p>Participants and design. Basis for the power analysis of the predicted interaction of conditions (control, friendly climate, oppositional climate) and conflict in Study 3 was a mixed-model simulation with data from Study 2. In particular, we specified the parameters θ (0.50, 0.10), β (3.48671, 0, 0, 0.053, -0.12, 0.12), and the scale parameter σ (1). Importantly, the third and fourth beta parameters specify the interaction effect with data from Study 2. The results showed that 180 participants are sufficient to achieve a power of 92.25%. Poweranalysis simulations are available at <ref type="url" target="https://osf.io/rx3e6/">https://osf.io/rx3e6/</ref>. Thus, Study 3 was preregistered for 180 participants. With oversampling, 198 students from the local university took part in the study, of whom 180 participants finished the study. We preregistered three exclusion criteria: (a)</p><p>We excluded 12 participants who had a standard deviation of zero in the original semantic differential scales measuring prior attitudes (50% of items were reversecoded, and a standard deviation of zero would be indicative of "click-through behavior"); (b) in order to be able to measure polarization, we excluded 5 participants whose prior attitude was completely neutral (5.0 as average across six semantic differential scales ranging from 1 to 9); (c) we excluded participants on the basis of one manipulation-check item in which participants had to indicate whether the comments they saw were largely positive, largely balanced, or largely negative toward alternative medicine. As it turned out, the criteria for this manipulation check lacked precision, thus leading to an exclusion of a further 57 participants and also to different attrition rates <ref type="bibr" target="#b23">(Zhou &amp; Fishbach, 2016)</ref>. We decided to report the preregistered analyses in the main manuscript, but we also conducted additional robustness checks (see Supplemental Material) with only the first two exclusion criteria. For the preregistered analyses, 106 participants remained (47 in the balanced condition, 39 in the friendly climate condition, and 20 in the oppositional climate condition; 83 females, 20 males, 3 nondisclosed; mean age = 25.55 years). Study 3 employed a mixed design with condition (balanced, friendly climate, oppositional climate) as a between-subjects variable and cognitive conflict as a within-subjects variable that was nested within discussion comments and within participants.</p><p>Materials. All participants saw 12 discussion comments from our original material-six comments in favor of alternative medicine and six comments against in the balanced condition, and three comments in favor of alternative medicine and 9 comments against in the two unbalanced conditions. The two unbalanced conditions were designated as friendly climate or oppositional climate depending on the original attitude of a given participant. The 3:9 ratio reflected a compromise between (a) making sure that participants were able to see that there was a minority view; (b) preventing a too-lopsided distribution for statistical reasons; and (c) being similar to studies about minority influence, which typically vary around 20:80 distributions (e.g., <ref type="bibr" target="#b3">Baker &amp; Petty, 1994)</ref>.</p><p>Measures. Attitudes were measured with 9-point semantic differentials in which participants assessed whether they find alternative medicine bad/good, unreasonable/ reasonable, negative/positive, useful/harmful, effective/ ineffective, and convincing/unconvincing (the latter half of these items were reverse-coded). Correcting for reverse coding, attitude scores were averaged across these ratings (ranging from 1, against alternative medicine, to 9, in favor of alternative medicine). Finally, we measured attitude polarization using the same procedure as in Study 2, accounting for the different scale midpoint: [sign(before -5.0) × (afterbefore)].</p><p>Again, cognitive conflict between participant and comment was measured as the absolute difference between the original attitude of the person with regard to alternative medicine (z-standardized) and the prerated valence of the comment (z-standardized).</p><p>Response tendencies for each comment were measured with single, 6-point Likert items asking participants how much they are inclined to reply (from 1 = not at all inclined to 6 = fully inclined).</p><p>We also explored whether the relation between conflict and response tendency was mediated by dislike. Therefore, participants had to click on a like or a dislike button for each comment that they read.</p><p>Procedure. The experiment was conducted online via Qualtrics. After measuring prior attitudes, participants were first required to read 12 discussion comments on a single page. In the balanced condition, participants read six comments against and six comments in favor of alternative medicine. In the other two conditions, participants saw nine comments against and three comments in favor of alternative medicine (with allocations of participants to the friendly vs. oppositional climate condition based on prior attitudes being below or above the scale midpoint). Each comment was associated with a fictitious username and a brief headline. After reading through all 12 forum comments, separate comments were again displayed (in random order). Participants had to click a like or dislike button for each comment and were requested to indicate how much they are inclined to respond to the comment. After the 12 trials, participants' attitudes on alternative medicine was measured again, followed by the manipulationcheck item. After debriefing, we provided the option to withdraw data and take part in the lottery.</p><p>Analysis plan. We fitted (general) linear mixed-effects models for each dependent variable separately. All models included both item and participant as random intercepts. In an initial analysis of Study 3, we tested whether the willingness to respond differed among the three conditions. Therefore, we fitted a linear mixed-effects model with condition (balanced, friendly, oppositional) as a fixed effect and submitted the resulting model to a Type III analysis of variance. For the main analysis, we fitted and tested a model that included condition (balanced, friendly, oppositional) and cognitive conflict as fixed effects (main effects and interaction). Mediation between cognitive conflict and response tendency via dislikes was measured by submitting unstandardized indirect effects to 1,000 bootstrapped samples and computing 95% confidence intervals. Attitude-polarization scores were submitted to a linear model with condition (balanced vs. friendly climate vs. oppositional climate) as a fixed effect. The balanced condition served as a baseline.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>First, consistent with Hypothesis 1, results again indicated an overall uncongeniality bias (b = 0.18, SE = 0.07, 95% CI = [0.03, 0.33], t = 2.40, p = .017; see Table <ref type="table">S8</ref> in the Supplemental Material) showing that larger cognitive conflict was associated with a stronger inclination to respond. Second, we exploratorily investigated the prediction of the spiral-of-silence account according to which individuals are generally less likely to speak out when they feel that they are in a minority. There was no difference in general inclination to respond between participants in an oppositional climate (M = 3.25, SD = 1.60), participants in the balanced condition (M = 3.40, SD = 1.65), and participants in the friendly climate condition (M = 3.19, SD = 1.66), F(2, 106.62) = 0.13, p = .876. This runs counter to the standard spiral-ofsilence effect. Third, however, it should be noted that our preregistered hypotheses were built on a more nuanced interpretation of the spiral-of-silence effect, and indeed, interactions between discussion climate and cognitive conflict were partially consistent with our preregistered hypotheses (see Fig. <ref type="figure" target="#fig_3">4</ref> and Table <ref type="table">S8</ref>). Being in an oppositional climate (vs. the balanced condition) only descriptively reduced the willingness to respond to uncongenial comments (b = -0.30, SE = 0.16, 95% CI = [-0.62, 0.02], t = -1.84, p = .065). On this ground, Hypothesis 2 was not supported. Conversely, in full support of Hypothesis 3, being in a friendly climate (vs. the balanced condition) even increased the willingness to respond to uncongenial comments (b = 0.37, SE = 0.12, 95% CI = [0.14, 0.61], t = 3.15, p = .002). These results indicate that the prevailing climate in a discussion affects subsequent reply behavior: When the discussion climate is friendly, participants are even more inclined to argue against dissenters, whereas the tendency to speak up against counterviews tends to be muted in an oppositional climate. In terms of the spiralof-silence account, these results suggest that being in a minority did not silence participants but made them less confrontational. To further illuminate the role of disagreement for the occurrence of an uncongeniality bias, we also conducted an exploratory analysis to see whether the effect of cognitive conflict on the willingness to respond is mediated by participants' likes or dislikes of a forum comment. Although the direct effect of cognitive conflict on willingness to respond was sizable, c = 0.27, SE = 0.06, t(1,270) = 4.87, p &lt; .001, this effect dropped markedly when we accounted for the effect of expressing dislike with a comment, c′ = 0.11, SE = 0.07, t(1,269) = 1.72, p = .087. In other words, cognitive conflict with a comment increased the likelihood of pressing the dislike button, which in turn increased the likelihood of responding to the comment, yielding a full mediation effect (Fig. <ref type="figure" target="#fig_4">5</ref>).</p><p>In a final exploratory analysis of Study 3, we investigated whether being embedded in discussions with different climates has an impact on attitudes. Similar to Study 2, we computed polarization scores that indicate whether attitudes after exposure to the comments were more extreme than initial attitudes. Again, we found no evidence that polarization occurred in the baseline condition (intercept: b = 0.04, 95% CI = [-0.14, 0.21], p = .692). However, polarization scores were somewhat stronger in a friendly climate compared with the baseline (b = 0.26, 95% CI = [0.00, 0.53], p = .049), whereas no difference between baseline and oppositional climate could be found (b = -0.21, 95% CI = [-0.54, 0.11], p = .183; see Table <ref type="table">S9</ref> in the Supplemental Material).</p><p>As the preregistered analyses had power issues (relatively large dropout due to imprecise exclusion criteria; see the Participants and Design section), we repeated all analyses by applying only two out of three exclusion criteria as a robustness check. Results are in full support of all three preregistered hypotheses (see Table <ref type="table" target="#tab_0">S10</ref> in the Supplemental Material), and yielded effects similar to the preregistered analyses for the mediation analysis (Fig. <ref type="figure" target="#fig_1">S2</ref>) and polarization data (Table <ref type="table" target="#tab_0">S11</ref>).</p><p>Taken together, Study 3 showed that an uncongeniality bias is increased when people believe they hold a majority view, but that an uncongeniality bias is decreased-without a decrease in general likelihood to respond-when people hold a minority view. We could further show that the uncongeniality bias is mediated by dislike toward conflicting comments. Finally, there is some evidence that being in a friendly discussion climate can be linked to polarization. These results were also confirmed in our robustness checks of data that included only two of the three exclusion criteria.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Further Checks and Internal Meta-Analysis</head><p>To further substantiate our findings, we conducted a number of additional exploratory analyses. First, we conducted the primary analyses of all three studies using models with both random intercepts and random slopes. These analyses yielded similar effects as the preregistered models with random intercepts only, hinting at the robustness of the data (for details, see Tables S12-15 in the Supplemental Material). Second, we conducted an internal meta-analysis on those conditions of the three studies in which we expected a standard uncongeniality bias to occur (i.e., full Study 1; the write condition of Study 2; and the balanced condition of Study 3). Using a fixed-effects structure and weighting over the number of observations, we found a small summary effect over the three studies (d = 0.164, SE = 0.016, 95% CI = [0.132, 0.195], p &lt; .001). A randomeffects model yielded similar effect sizes (d = 0.159, SE = 0.028, 95% CI = [0.103, 0.214, p &lt; .001). As the three conditions were very similar in setup and material, we favored the fixed-effects model, and indeed further analyses indicated that the three conditions were homogeneous (Q = 4.71, p = .095). A graphical depiction of the fixed-effects model (with effect sizes and confidence intervals for the individual study conditions as well as the overall effects) is provided in Figure <ref type="figure" target="#fig_5">6</ref>.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>Using a variant of the well-known selective-exposure paradigm, we provide empirical evidence that some types of online behavior (particularly online discussions) may be driven by uncongeniality rather than congeniality. Our findings on selective response contribute to a literature indicating that the classical congeniality narrative cannot account well for how individuals deal with conflicting information. In contradiction to the congeniality narrative, people frequently turn to uncongenial information <ref type="bibr" target="#b13">(Garrett &amp; Stroud, 2014)</ref> or scrutinize it even more than congenial information <ref type="bibr" target="#b33">(Taber &amp; Lodge, 2006)</ref>. Moreover, field studies have demonstrated that unintended exposure to cross-cutting content is frequent <ref type="bibr" target="#b24">(Mutz &amp; Mondak, 2006)</ref>, that many users prefer a balanced news diet <ref type="bibr" target="#b12">(Fletcher &amp; Nielsen, 2017)</ref>, and that some even prefer uncongeniality <ref type="bibr" target="#b16">(Heltzel &amp; Laurin, 2021)</ref>.</p><p>Our studies provide evidence that expressing one's views in response to uncongenial information may strengthen one's attitudes, thus leading to polarization. This adds to literature showing that uncongenial exposure <ref type="bibr" target="#b2">(Bail et al., 2018)</ref>, repeated expression of attitudes <ref type="bibr" target="#b5">(Brauer et al., 1995)</ref>, and discussions with dissenters <ref type="bibr" target="#b20">(Lee et al., 2014)</ref> increase attitude polarization. If the uncongeniality bias indeed fuels polarization, increasing the amount of cross-cutting dialogue between divergent stakeholders <ref type="bibr" target="#b36">(Wojcieszak &amp; Warner, 2020)</ref> may not be an effective remedy for polarization.</p><p>It should be emphasized that our reasoning about selective response and an uncongeniality bias is only beginning to emerge. With that being said, future work should address the limitations of our present studies. First, we used nonrepresentative student convenience samples in all three studies (also with a gender imbalance in favor of females). Although this is not uncommon for these types of experiments, it raises the question of whether the effects can be generalized to or replicated in different samples. Second, we always used discussions on the same controversial topic (pros and cons of alternative medicine), so further research should investigate whether the effects can be replicated for different controversial (or for less controversial) topics. Third, some design issues could be improved (potential demand effects in attitude measurement, potential self-effects by jointly rating likes/dislikes and willingness to respond in Study 3, limited effects of polarization via single exposure). The stability and similarity of effects for three studies using different approaches, however, makes us hopeful that these issues are not fundamental. Fourth and most crucially, by modern standards the studies had some power issues. We addressed this shortcoming with an internal meta-analysis. Moreover, an ongoing analysis of uncongeniality biases in a real discussion forum makes us confident that the effect is not only existent, but even much stronger than shown in the present studies.</p><p>Our data suggest that the congeniality narrative cannot account for all online phenomena, particularly not those that entail interaction on controversial topics. Although users of social media might exhibit a preference for congenial content, this may quickly turn into a preference for uncongenial content once an opportunity to interact with others arises, suggesting that people are not as conflict-averse as large parts of the literature have proposed.  </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig.1. Results of Study 1. With uncongeniality bias (a), the larger the cognitive conflict (distance between participant attitude and comment valence), the greater the likelihood to respond. Evidence that the uncongeniality bias is driven by disagreement is shown in (b): The larger the cognitive conflict between participant attitude and comment valence, the larger the disagreement score (distance between comment valence and reply valence). Shaded areas represent 89% confidence intervals.</figDesc></figure>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Further Checks and Internal Meta-Analysis</head><p>To further substantiate our findings, we conducted a number of additional exploratory analyses. First, we conducted the primary analyses of all three studies using models with both random intercepts and random slopes. These analyses yielded similar effects as the preregistered models with random intercepts only, hinting at the robustness of the data (for details, see Tables S12-15 in the Supplemental Material). Second, we conducted an internal meta-analysis on those conditions of the three studies in which we expected a standard uncongeniality bias to occur (i.e., full Study 1; the write condition of Study 2; and the balanced condition of Study 3). Using a fixed-effects structure and weighting over the number of observations, we found a small summary effect over the three studies (d = 0.164, SE = 0.016, 95% CI = [0.132, 0.195], p &lt; .001). A randomeffects model yielded similar effect sizes (d = 0.159, SE = 0.028, 95% CI = [0.103, 0.214, p &lt; .001). As the three conditions were very similar in setup and material, we favored the fixed-effects model, and indeed further analyses indicated that the three conditions were homogeneous (Q = 4.71, p = .095). A graphical depiction of the fixed-effects model (with effect sizes and confidence intervals for the individual study conditions as well as the overall effects) is provided in Figure <ref type="figure">6</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>Using a variant of the well-known selective-exposure paradigm, we provide empirical evidence that some types of online behavior (particularly online discussions) may be driven by uncongeniality rather than congeniality. Our findings on selective response contribute to a literature indicating that the classical congeniality narrative cannot account well for how individuals deal with conflicting information. In contradiction to the congeniality narrative, people frequently turn to uncongenial information <ref type="bibr">(Garrett &amp; Stroud, 2014)</ref> or scrutinize it even more than congenial information <ref type="bibr" target="#b18">(Taber &amp; Lodge, 2006)</ref>. Moreover, field studies have demonstrated that unintended exposure to cross-cutting content is frequent <ref type="bibr">(Mutz &amp; Mondak, 2006)</ref>, that many users prefer a balanced news diet <ref type="bibr">(Fletcher &amp; Nielsen, 2017)</ref>, and that some even prefer uncongeniality <ref type="bibr">(Heltzel &amp; Laurin, 2021)</ref>.</p><p>Our studies provide evidence that expressing one's views in response to uncongenial information may strengthen one's attitudes, thus leading to polarization. This adds to literature showing that uncongenial exposure <ref type="bibr" target="#b1">(Bail et al., 2018)</ref>, repeated expression of attitudes <ref type="bibr" target="#b4">(Brauer et al., 1995)</ref>, and discussions with dissenters (Lee et al., 2014) increase attitude polarization. If the uncongeniality bias indeed fuels polarization, increasing the amount of cross-cutting dialogue between divergent stakeholders <ref type="bibr" target="#b21">(Wojcieszak &amp; Warner, 2020)</ref> may not be an effective remedy for polarization.</p><p>It should be emphasized that our reasoning about selective response and an uncongeniality bias is only beginning to emerge. With that being said, future work should address the limitations of our present studies. First, we used nonrepresentative student convenience samples in all three studies (also with a gender imbalance in favor of females). Although this is not uncommon for these types of experiments, it raises the question of whether the effects can be generalized to or replicated in different samples. Second, we always used discussions on the same controversial topic (pros and cons of alternative medicine), so further research should investigate whether the effects can be replicated for different controversial (or for less controversial) topics. Third, some design issues could be improved (potential demand effects in attitude measurement, potential self-effects by jointly rating likes/dislikes and willingness to respond in Study 3, limited effects of polarization via single exposure). The stability and similarity of effects for three studies using different approaches, however, makes us hopeful that these issues are not fundamental. Fourth and most crucially, by modern standards the studies had some power issues. We addressed this shortcoming with an internal meta-analysis. Moreover, an ongoing analysis of uncongeniality biases in a real discussion forum makes us confident that the effect is not only existent, but even much stronger than shown in the present studies.</p><p>Our data suggest that the congeniality narrative cannot account for all online phenomena, particularly not those that entail interaction on controversial topics. Although users of social media might exhibit a preference for congenial content, this may quickly turn into a preference for uncongenial content once an opportunity to interact with others arises, suggesting that people are not as conflict-averse as large parts of the literature have proposed.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Transparency</head><p>Action Editor: Lasana Harris Editor: Patricia J. Bauer respectively). The preregistration for Study 3 is available at <ref type="url" target="https://aspredicted.org/6tv5v.pdf">https://aspredicted.org/6tv5v.pdf</ref>.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig.1. Results of Study 1. With uncongeniality bias (a), the larger the cognitive conflict (distance between participant attitude and comment valence), the greater the likelihood to respond. Evidence that the uncongeniality bias is driven by disagreement is shown in (b): The larger the cognitive conflict between participant attitude and comment valence, the larger the disagreement score (distance between comment valence and reply valence). Shaded areas represent 89% confidence intervals.</figDesc></figure>
 <figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Results of Study 2, showing (a) congeniality bias in the read condition and (b) uncongeniality bias in the write condition. Shaded areas represent 89% confidence intervals.</figDesc></figure>
 <figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Relation between cognitive conflict, engagement, and perceived quality. The congeniality bias in the read condition (a) is predicated on high perceived quality; the uncongeniality bias in the write condition (b) is predicated on low perceived quality. Shaded areas represent 89% confidence intervals.</figDesc></figure>
 <figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig.4. Impact of discussion climate on uncongeniality bias. When compared with the uncongeniality bias that includes balanced exposure to congenial and uncongenial comments (blue line), the uncongeniality bias is exacerbated in a friendly climate (majority of congenial comments; green line), whereas the uncongeniality bias is eliminated in an oppositional climate (majority of uncongenial comments; red line). Shaded areas represent 89% confidence intervals.</figDesc></figure>
 <figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. Mediation of the uncongeniality bias (effect of cognitive conflict on response) via choosing the dislike button.</figDesc></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 6 .</head><label>6</label><figDesc>Fig. 6. Results of a fixed-effects internal meta-analysis on the three conditions in which a standard uncongeniality bias was expected to occur (full Study 1; write condition of Study 2; balanced condition of Study 3). CI = confidence interval; FE = fixed effects.</figDesc><graphic coords="12,121.49,81.73,355.22,118.34" type="bitmap" /></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Example of Two Discussion Comments (Translated From German)    </figDesc><table><row><cell>Arguing (emotionally) against alternative medicine</cell><cell>Arguing (nonemotionally) in favor of alternative medicine</cell></row><row><cell>I am distrusting because one has to prove by scientific</cell><cell>It's interesting that alternative-medicine proponents tend</cell></row><row><cell>studies that a medicine is effective, but alternative-</cell><cell>to be much more considerate with their patients. Most</cell></row><row><cell>medicine proponents refuse to do this! The absence of</cell><cell>treatments are effective without chemicals, without</cell></row><row><cell>any scientific evidence is disappointing and worthy of</cell><cell>operations, and most importantly without side effects.</cell></row><row><cell>critique! Therefore I believe it is legitimate to say that</cell><cell>This aspect is often neglected in discussions and</cell></row><row><cell>alternative medicine is insincere!</cell><cell>should be emphasized more.</cell></row></table><note><p>cognitive conflict and emotionality of a comment as predictors indicated that conflict was still predictive of the likelihood to respond (OR = 1.34, SE = 0.09, 95% CI = [1.18, 1.53], z = 4.38, p &lt; .001), whereas emotionality did not predict responses (OR = 1.13, SE = 0.09, 95% CI = [0.96, 1.33], z = 1.43, p = .153; see Table</p></note></figure>
-<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head></head><label></label><figDesc>Declaration of Conflicting InterestsThe author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.FundingThis research was partially funded by the Leibniz Science Campus Tübingen "Informational Environments."Open PracticesMaterials, data files, scripts, and analyses are publicly available at https://osf.io/rx3e6/. Studies 1 and 2 were not preregistered (they were conducted in 2014 and 2015,</figDesc><table><row><cell>Study</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>Estimate [95% Cl]</cell></row><row><cell>Study 1</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>0.16 [0.12, 0.21]</cell></row><row><cell>Study 2</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>0.20 [0.14, 0.27]</cell></row><row><cell>Study 3</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>0.09 [0.01, 0.17]</cell></row><row><cell>FE Model</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>0.16 [0.13, 0.20]</cell></row><row><cell>-0.1</cell><cell>0</cell><cell>0.1</cell><cell>0.2</cell><cell>0 .3</cell><cell>0.4</cell></row><row><cell></cell><cell></cell><cell cols="2">Effect Size (Cohen's d )</cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="2">Transparency</cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">Action Editor: Lasana Harris</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">Editor: Patricia J. Bauer</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="2">Author Contributions</cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">Jürgen Buder: Conceptualization; Funding acquisition;</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">Project administration; Supervision; Writing -original</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">draft; Writing -review &amp; editing.</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">Anja Zimmermann: Formal analysis; Investigation; Writ-</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">ing -review &amp; editing.</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">Brett Buttliere: Formal analysis; Investigation; Methodol-</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">ogy; Writing -review &amp; editing.</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">Lisa Rabl: Formal analysis; Investigation; Methodology;</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">Writing -review &amp; editing.</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">Moritz Vogel: Formal analysis; Methodology; Validation.</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">Markus Huff: Formal analysis; Methodology; Supervision;</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="3">Validation; Visualization; Writing -original draft; Writing -</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="2">review &amp; editing.</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Example of Two Discussion Comments(Translated From German)    </figDesc><table><row><cell>Arguing (emotionally) against alternative medicine</cell><cell>Arguing (nonemotionally) in favor of alternative medicine</cell></row><row><cell>I am distrusting because one has to prove by scientific</cell><cell>It's interesting that alternative-medicine proponents tend</cell></row><row><cell>studies that a medicine is effective, but alternative-</cell><cell>to be much more considerate with their patients. Most</cell></row><row><cell>medicine proponents refuse to do this! The absence of</cell><cell>treatments are effective without chemicals, without</cell></row><row><cell>any scientific evidence is disappointing and worthy of</cell><cell>operations, and most importantly without side effects.</cell></row><row><cell>critique! Therefore I believe it is legitimate to say that</cell><cell>This aspect is often neglected in discussions and</cell></row><row><cell>alternative medicine is insincere!</cell><cell>should be emphasized more.</cell></row></table><note><p>cognitive conflict and emotionality of a comment as predictors indicated that conflict was still predictive of the likelihood to respond (OR = 1.34, SE = 0.09, 95% CI = [1.18, 1.53], z = 4.38, p &lt; .001), whereas emotionality did not predict responses (OR = 1.13, SE = 0.09, 95% CI = [0.96, 1.33], z = 1.43, p = .153; see Table</p></note></figure>
 		</body>
 		<back>
+
+			<div type="funding">
+<div><head>Funding</head><p>This research was partially funded by the <rs type="funder">Leibniz Science Campus Tübingen "Informational Environments</rs>."</p></div>
+<div><head>Open Practices</head><p>Materials, data files, scripts, and analyses are publicly available at <ref type="url" target="https://osf.io/rx3e6/">https://osf.io/rx3e6/</ref>. Studies 1 and 2 were not preregistered (they were conducted in 2014 and 2015, Festinger, L. (1957). A theory of cognitive dissonance. Stanford University Press. <ref type="url" target="https://doi.org/10.1515/9781503620766">https://doi.org/10.1515/978150  3620766</ref> Fletcher, R., &amp; Nielsen, R. K. (2017). Are news audiences increasingly fragmented? A <rs type="projectName">cross-national comparative analysis of cross-platform news audience fragmentation and duplication. Journal of Communication</rs>, 67(4), <rs type="grantNumber">476-498</rs>. <ref type="url" target="https://doi.org/10.1111/jcom.12315">https://doi.org/10.1111/jcom.12315</ref> Garrett, R. K., &amp; Stroud, N. J. (2014). Partisan paths to exposure diversity: Differences in pro-and counterattitudinal news consumption. Journal of Communication, 64(4), 680-701. <ref type="url" target="https://doi.org/10.1111/jcom.12105">https://doi.org/10.1111/jcom.12105</ref> Gebauer, <rs type="person">J. E.</rs>, <rs type="person">Paulhus</rs>, D. L., &amp; Neberich, <rs type="person">W.</rs> (2013). Big Two personality and religiosity across cultures: Communals as religious conformists and agentics as religious contrarians. Social Psychological and Personality Science, 4(1), 21-30. <ref type="url" target="https://doi.org/10.1177/1948550612442553">https://doi.org/10.1177/1948550612442553</ref> Hart, W., <rs type="person">Albarracín</rs>, <rs type="person">D.</rs>, <rs type="person">Eagly</rs>, <rs type="person">A. H.</rs>, <rs type="person">Brechan</rs>, <rs type="person">I.</rs>, <rs type="person">Lindberg</rs>, M. J., &amp; Merrill, L. (2009). Feeling validated versus being correct: A meta-analysis of selective exposure to information. Psychological Bulletin, 135(4), 555-588. <ref type="url" target="https://doi.org/10.1037/a0015701">https://doi  .org/10.1037/a0015701</ref> Heltzel, G., &amp; Laurin, K. (2021). Seek and ye shall be fine: Attitudes toward political-perspective seekers. Psychological Science, 32(11), 1782-1800. <ref type="url" target="https://doi.org/10.1177/09567976211011969">https://doi  .org/10.1177/09567976211011969</ref> Hills, T. T. (2019). The dark side of information proliferation. Perspectives on Psychological Science, 14(3), 323-330. <ref type="url" target="https://doi.org/10.1177/1745691618803647">https://doi.org/10.1177/1745691618803647</ref> Iyengar, <rs type="person">S.</rs>, <rs type="person">Lelkes</rs>, <rs type="person">Y.</rs>, <rs type="person">Levendusky</rs>, <rs type="person">M.</rs>, <rs type="person">Malhotra</rs>, N., &amp; Westwood, S. J. (2019). The origins and consequences of affective polarization in the United States. Annual Review of Political Science, 22, 129-146. <ref type="url" target="https://doi.org/10.1146/annurev-polisci-051117-073034">https://doi.org/10.1146/  annurev-polisci-051117-073034</ref> Knobloch-Westerwick, S. (2014). Choice and preference in media use: Advances in selective exposure theory and research. <rs type="person">Routledge. Lee</rs>, <rs type="person">J. K.</rs>, <rs type="person">Choi</rs>, <rs type="person">J.</rs>, <rs type="person">Kim</rs>, C., &amp; Kim, Y. (2014). Social media, network heterogeneity, and opinion polarization. Journal of Communication, 64(4), 702-722. <ref type="url" target="https://doi.org/10.1111/jcom.12077">https://doi  .org/10.1111/jcom.12077</ref> Liu, D., &amp; Campbell, W. K. (2017). The Big Five personality traits, Big Two metatraits and social media: A metaanalysis. Journal of Research in Personality, 70, 229-240. <ref type="url" target="https://doi.org/10.1016/j.jrp.2017.08.004">https://doi.org/10.1016/j.jrp.2017.08.004</ref> Matz, D. C., &amp; Wood, W. (2005). Cognitive dissonance in groups: The consequences of disagreement. Journal of Personality and Social Psychology, 88(1), 22-37. <ref type="url" target="https://doi.org/10.1037/0022-3514.88.1.22">https://  doi.org/10.1037/0022-3514.88.1.22</ref> Mercier, H. (2016). The argumentative theory: Predictions and empirical evidence. Trends in Cognitive Sciences, 20(9), 689-700. <ref type="url" target="https://doi.org/10.1016/j.tics.2016.07.001">https://doi.org/10.1016/j.tics.2016.07.001</ref> Mutz, <rs type="person">D. C.</rs>, &amp; Mondak, <rs type="person">J</rs>. J. (2006). The workplace as a context for cross-cutting political discourse. The Journal of Politics, 68(1), 140-155. <ref type="url" target="https://doi.org/10.1111/j.1468-2508.2006.00376.x">https://doi.org/10.1111/j.1468- 2508.2006.00376.x</ref> </p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funded-project" xml:id="_PJkPVyM">
+					<idno type="grant-number">476-498</idno>
+					<orgName type="project" subtype="full">cross-national comparative analysis of cross-platform news audience fragmentation and duplication. Journal of Communication</orgName>
+				</org>
+			</listOrg>
 			<div type="annex">
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplemental Material</head><p>Additional supporting information can be found at <ref type="url" target="http://journals.sagepub.com/doi/suppl/10.1177/09567976231194590">http:// journals.sagepub.com/doi/suppl/10.1177/09567976231194590</ref> </p></div>			</div>
+<div xmlns="http://www.tei-c.org/ns/1.0" />			</div>
 			<div type="references">
 
 				<listBibl>
 
 <biblStruct xml:id="b0">
-	<monogr>
-		<ptr target="https://aspredicted.org/6tv5v.pdf" />
-		<title level="m">The preregistration for Study 3 is available at</title>
-		<imprint/>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b1">
 	<analytic>
 		<title level="a" type="main">Mixedeffects modeling with crossed random effects for subjects and items</title>
 		<author>
@@ -198,7 +208,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b2">
+<biblStruct xml:id="b1">
 	<analytic>
 		<title level="a" type="main">Exposure to opposing views on social media can increase political polarization</title>
 		<author>
@@ -246,7 +256,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b3">
+<biblStruct xml:id="b2">
 	<monogr>
 		<title level="m" type="main">The duality of human existence: An essay on psychology and religion</title>
 		<author>
@@ -259,7 +269,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b4">
+<biblStruct xml:id="b3">
 	<analytic>
 		<title level="a" type="main">Majority and minority influence: Source-position imbalance as a determinant of message scrutiny</title>
 		<author>
@@ -282,7 +292,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b5">
+<biblStruct xml:id="b4">
 	<analytic>
 		<title level="a" type="main">The effects of repeated expressions on attitude polarization during group discussions</title>
 		<author>
@@ -308,7 +318,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b6">
+<biblStruct xml:id="b5">
 	<analytic>
 		<title level="a" type="main">Inoculation theory</title>
 		<author>
@@ -334,7 +344,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<note>2nd ed.</note>
 </biblStruct>
 
-<biblStruct xml:id="b7">
+<biblStruct xml:id="b6">
 	<analytic>
 		<title level="a" type="main">Staying silent and speaking out in online comment sections: The influence of spiral of silence and corrective action in reaction to news</title>
 		<author>
@@ -371,7 +381,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b8">
+<biblStruct xml:id="b7">
 	<analytic>
 		<title level="a" type="main">A disconfirmation bias in the evaluation of arguments</title>
 		<author>
@@ -394,7 +404,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b9">
+<biblStruct xml:id="b8">
 	<monogr>
 		<title level="m" type="main">More harm than good? The moral maze of complementary and alternative medicine</title>
 		<author>
@@ -412,7 +422,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b10">
+<biblStruct xml:id="b9">
 	<analytic>
 		<title level="a" type="main">The effect of political discussion in producing informed citizens: The roles of information, motivation, and elaboration</title>
 		<author>
@@ -432,333 +442,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b11">
-	<monogr>
-		<author>
-			<persName><forename type="first">L</forename><surname>Festinger</surname></persName>
-		</author>
-		<idno type="DOI">10.1515/9781503620766</idno>
-		<ptr target="https://doi.org/10.1515/9781503620766" />
-		<title level="m">A theory of cognitive dissonance</title>
-		<imprint>
-			<publisher>Stanford University Press</publisher>
-			<date type="published" when="1957">1957</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b12">
-	<analytic>
-		<title level="a" type="main">Are news audiences increasingly fragmented? A cross-national comparative analysis of cross-platform news audience fragmentation and duplication</title>
-		<author>
-			<persName><forename type="first">R</forename><surname>Fletcher</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">R</forename><forename type="middle">K</forename><surname>Nielsen</surname></persName>
-		</author>
-		<idno type="DOI">10.1111/jcom.12315</idno>
-		<ptr target="https://doi.org/10.1111/jcom.12315" />
-	</analytic>
-	<monogr>
-		<title level="j">Journal of Communication</title>
-		<imprint>
-			<biblScope unit="volume">67</biblScope>
-			<biblScope unit="issue">4</biblScope>
-			<biblScope unit="page" from="476" to="498" />
-			<date type="published" when="2017">2017</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b13">
-	<analytic>
-		<title level="a" type="main">Partisan paths to exposure diversity: Differences in pro-and counterattitudinal news consumption</title>
-		<author>
-			<persName><forename type="first">R</forename><forename type="middle">K</forename><surname>Garrett</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Stroud</surname></persName>
-		</author>
-		<idno type="DOI">10.1111/jcom.12105</idno>
-		<ptr target="https://doi.org/10.1111/jcom.12105" />
-	</analytic>
-	<monogr>
-		<title level="j">Journal of Communication</title>
-		<imprint>
-			<biblScope unit="volume">64</biblScope>
-			<biblScope unit="issue">4</biblScope>
-			<biblScope unit="page" from="680" to="701" />
-			<date type="published" when="2014">2014</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b14">
-	<analytic>
-		<title level="a" type="main">Big Two personality and religiosity across cultures: Communals as religious conformists and agentics as religious contrarians</title>
-		<author>
-			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Gebauer</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Paulhus</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">W</forename><surname>Neberich</surname></persName>
-		</author>
-		<idno type="DOI">10.1177/1948550612442553</idno>
-		<ptr target="https://doi.org/10.1177/1948550612442553" />
-	</analytic>
-	<monogr>
-		<title level="j">Social Psychological and Personality Science</title>
-		<imprint>
-			<biblScope unit="volume">4</biblScope>
-			<biblScope unit="issue">1</biblScope>
-			<biblScope unit="page" from="21" to="30" />
-			<date type="published" when="2013">2013</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b15">
-	<analytic>
-		<title level="a" type="main">Feeling validated versus being correct: A meta-analysis of selective exposure to information</title>
-		<author>
-			<persName><forename type="first">W</forename><surname>Hart</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">D</forename><surname>Albarracín</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Eagly</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">I</forename><surname>Brechan</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Lindberg</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">L</forename><surname>Merrill</surname></persName>
-		</author>
-		<idno type="DOI">10.1037/a0015701</idno>
-		<ptr target="https://doi.org/10.1037/a0015701" />
-	</analytic>
-	<monogr>
-		<title level="j">Psychological Bulletin</title>
-		<imprint>
-			<biblScope unit="volume">135</biblScope>
-			<biblScope unit="issue">4</biblScope>
-			<biblScope unit="page" from="555" to="588" />
-			<date type="published" when="2009">2009</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b16">
-	<analytic>
-		<title level="a" type="main">Seek and ye shall be fine: Attitudes toward political-perspective seekers</title>
-		<author>
-			<persName><forename type="first">G</forename><surname>Heltzel</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">K</forename><surname>Laurin</surname></persName>
-		</author>
-		<idno type="DOI">10.1177/09567976211011969</idno>
-		<ptr target="https://doi.org/10.1177/09567976211011969" />
-	</analytic>
-	<monogr>
-		<title level="j">Psychological Science</title>
-		<imprint>
-			<biblScope unit="volume">32</biblScope>
-			<biblScope unit="issue">11</biblScope>
-			<biblScope unit="page" from="1782" to="1800" />
-			<date type="published" when="2021">2021</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b17">
-	<analytic>
-		<title level="a" type="main">The dark side of information proliferation</title>
-		<author>
-			<persName><forename type="first">T</forename><forename type="middle">T</forename><surname>Hills</surname></persName>
-		</author>
-		<idno type="DOI">10.1177/1745691618803647</idno>
-		<ptr target="https://doi.org/10.1177/1745691618803647" />
-	</analytic>
-	<monogr>
-		<title level="j">Perspectives on Psychological Science</title>
-		<imprint>
-			<biblScope unit="volume">14</biblScope>
-			<biblScope unit="issue">3</biblScope>
-			<biblScope unit="page" from="323" to="330" />
-			<date type="published" when="2019">2019</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b18">
-	<analytic>
-		<title level="a" type="main">The origins and consequences of affective polarization in the United States</title>
-		<author>
-			<persName><forename type="first">S</forename><surname>Iyengar</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">Y</forename><surname>Lelkes</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">M</forename><surname>Levendusky</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">N</forename><surname>Malhotra</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Westwood</surname></persName>
-		</author>
-		<idno type="DOI">10.1146/annurev-polisci-051117-073034</idno>
-		<ptr target="https://doi.org/10.1146/annurev-polisci-051117-073034" />
-	</analytic>
-	<monogr>
-		<title level="j">Annual Review of Political Science</title>
-		<imprint>
-			<biblScope unit="volume">22</biblScope>
-			<biblScope unit="page" from="129" to="146" />
-			<date type="published" when="2019">2019</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b19">
-	<monogr>
-		<title level="m" type="main">Choice and preference in media use: Advances in selective exposure theory and research</title>
-		<author>
-			<persName><forename type="first">S</forename><surname>Knobloch-Westerwick</surname></persName>
-		</author>
-		<imprint>
-			<date type="published" when="2014">2014</date>
-			<publisher>Routledge</publisher>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b20">
-	<analytic>
-		<title level="a" type="main">Social media, network heterogeneity, and opinion polarization</title>
-		<author>
-			<persName><forename type="first">J</forename><forename type="middle">K</forename><surname>Lee</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">J</forename><surname>Choi</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">C</forename><surname>Kim</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">Y</forename><surname>Kim</surname></persName>
-		</author>
-		<idno type="DOI">10.1111/jcom.12077</idno>
-		<ptr target="https://doi.org/10.1111/jcom.12077" />
-	</analytic>
-	<monogr>
-		<title level="j">Journal of Communication</title>
-		<imprint>
-			<biblScope unit="volume">64</biblScope>
-			<biblScope unit="issue">4</biblScope>
-			<biblScope unit="page" from="702" to="722" />
-			<date type="published" when="2014">2014</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b21">
-	<analytic>
-		<title level="a" type="main">The Big Five personality traits, Big Two metatraits and social media: A metaanalysis</title>
-		<author>
-			<persName><forename type="first">D</forename><surname>Liu</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">W</forename><forename type="middle">K</forename><surname>Campbell</surname></persName>
-		</author>
-		<idno type="DOI">10.1016/j.jrp.2017.08.004</idno>
-		<ptr target="https://doi.org/10.1016/j.jrp.2017.08.004" />
-	</analytic>
-	<monogr>
-		<title level="j">Journal of Research in Personality</title>
-		<imprint>
-			<biblScope unit="volume">70</biblScope>
-			<biblScope unit="page" from="229" to="240" />
-			<date type="published" when="2017">2017</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b22">
-	<analytic>
-		<title level="a" type="main">Cognitive dissonance in groups: The consequences of disagreement</title>
-		<author>
-			<persName><forename type="first">D</forename><forename type="middle">C</forename><surname>Matz</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">W</forename><surname>Wood</surname></persName>
-		</author>
-		<idno type="DOI">10.1037/0022-3514.88.1.22</idno>
-		<ptr target="https://doi.org/10.1037/0022-3514.88.1.22" />
-	</analytic>
-	<monogr>
-		<title level="j">Journal of Personality and Social Psychology</title>
-		<imprint>
-			<biblScope unit="volume">88</biblScope>
-			<biblScope unit="issue">1</biblScope>
-			<biblScope unit="page" from="22" to="37" />
-			<date type="published" when="2005">2005</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b23">
-	<analytic>
-		<title level="a" type="main">The argumentative theory: Predictions and empirical evidence</title>
-		<author>
-			<persName><forename type="first">H</forename><surname>Mercier</surname></persName>
-		</author>
-		<idno type="DOI">10.1016/j.tics.2016.07.001</idno>
-		<ptr target="https://doi.org/10.1016/j.tics.2016.07.001" />
-	</analytic>
-	<monogr>
-		<title level="j">Trends in Cognitive Sciences</title>
-		<imprint>
-			<biblScope unit="volume">20</biblScope>
-			<biblScope unit="issue">9</biblScope>
-			<biblScope unit="page" from="689" to="700" />
-			<date type="published" when="2016">2016</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b24">
-	<analytic>
-		<title level="a" type="main">The workplace as a context for cross-cutting political discourse</title>
-		<author>
-			<persName><forename type="first">D</forename><forename type="middle">C</forename><surname>Mutz</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Mondak</surname></persName>
-		</author>
-		<idno type="DOI">10.1111/j.1468-2508.2006.00376.x</idno>
-		<ptr target="https://doi.org/10.1111/j.1468-2508.2006.00376.x" />
-	</analytic>
-	<monogr>
-		<title level="j">The Journal of Politics</title>
-		<imprint>
-			<biblScope unit="volume">68</biblScope>
-			<biblScope unit="issue">1</biblScope>
-			<biblScope unit="page" from="140" to="155" />
-			<date type="published" when="2006">2006</date>
-		</imprint>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b25">
+<biblStruct xml:id="b10">
 	<analytic>
 		<title level="a" type="main">Multiple opinion climates in online forums: Role of website source reference and within-forum opinion congruency</title>
 		<author>
@@ -781,7 +465,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b26">
+<biblStruct xml:id="b11">
 	<analytic>
 		<title level="a" type="main">The spiral of silence: A theory of public opinion</title>
 		<author>
@@ -801,7 +485,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b27">
+<biblStruct xml:id="b12">
 	<monogr>
 		<author>
 			<persName><forename type="first">E</forename><surname>Pariser</surname></persName>
@@ -816,7 +500,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b28">
+<biblStruct xml:id="b13">
 	<analytic>
 		<title level="a" type="main">The psychology of fake news</title>
 		<author>
@@ -839,7 +523,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b29">
+<biblStruct xml:id="b14">
 	<analytic>
 		<title level="a" type="main">Intraclass correlations: Uses in assessing rater reliability</title>
 		<author>
@@ -862,7 +546,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b30">
+<biblStruct xml:id="b15">
 	<monogr>
 		<author>
 			<persName><forename type="first">F</forename><surname>Suhr</surname></persName>
@@ -876,7 +560,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<note type="report_type">Statista</note>
 </biblStruct>
 
-<biblStruct xml:id="b31">
+<biblStruct xml:id="b16">
 	<analytic>
 		<title level="a" type="main">The online disinhibition effect</title>
 		<author>
@@ -896,7 +580,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b32">
+<biblStruct xml:id="b17">
 	<monogr>
 		<author>
 			<persName><forename type="first">C</forename><surname>Sunstein</surname></persName>
@@ -911,7 +595,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b33">
+<biblStruct xml:id="b18">
 	<analytic>
 		<title level="a" type="main">Motivated skepticism in the evaluation of political beliefs</title>
 		<author>
@@ -934,7 +618,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b34">
+<biblStruct xml:id="b19">
 	<analytic>
 		<title level="a" type="main">Self-generated attitude change</title>
 		<author>
@@ -953,7 +637,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b35">
+<biblStruct xml:id="b20">
 	<analytic>
 		<title level="a" type="main">Fighting biased news diets: Using news media literacy interventions to stimulate online cross-cutting media exposure patterns</title>
 		<author>
@@ -976,7 +660,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b36">
+<biblStruct xml:id="b21">
 	<analytic>
 		<title level="a" type="main">Can interparty contact reduce affective polarization? A systematic test of different forms of intergroup contact</title>
 		<author>
@@ -999,7 +683,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b37">
+<biblStruct xml:id="b22">
 	<analytic>
 		<title level="a" type="main">Selective posting: Willingness to post a message online</title>
 		<author>
@@ -1022,7 +706,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b38">
+<biblStruct xml:id="b23">
 	<analytic>
 		<title level="a" type="main">The pitfall of experimenting on the web: How unattended selective attrition leads to surprising (yet false) research conclusions</title>
 		<author>
@@ -1045,7 +729,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b39">
+<biblStruct xml:id="b24">
 	<analytic>
 		<title level="a" type="main">Emotional dynamics in the age of misinformation</title>
 		<author>

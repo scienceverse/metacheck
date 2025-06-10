@@ -7,7 +7,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		<fileDesc>
 			<titleStmt>
 				<title level="a" type="main">The Experience of Empathy in Everyday Life</title>
-				<funder ref="#_29XJ7rH">
+				<funder ref="#_nchp6hx">
 					<orgName type="full">Social Sciences and Humanities Research Council of Canada</orgName>
 				</funder>
 			</titleStmt>
@@ -45,6 +45,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 							</affiliation>
 						</author>
 						<author>
+							<persName><forename type="first">Gregory</forename><forename type="middle">John</forename><surname>De</surname></persName>
+							<idno type="ORCID">0000-0002-9488-9132</idno>
+						</author>
+						<author>
 							<affiliation key="aff0">
 								<orgName type="department">Department of Psychology</orgName>
 								<orgName type="institution">University of Toronto</orgName>
@@ -59,14 +63,16 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 					</monogr>
 					<idno type="MD5">23E2170E0ABC94EE1E76E11A809EEF39</idno>
 					<idno type="DOI">10.1177/0956797621995202</idno>
-					<note type="submission">Received 7/26/20; Revision accepted 12/17/20 TC</note>
+					<note type="submission">Received 7/26/20; Revision accepted 12/17/20</note>
 				</biblStruct>
 			</sourceDesc>
 		</fileDesc>
 		<encodingDesc>
 			<appInfo>
-				<application version="0.8.1" ident="GROBID" when="2025-05-20T20:26+0000">
+				<application version="0.8.2" ident="GROBID" when="2025-06-03T13:38+0000">
 					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">a91ee48</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=false, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], sentenceSegmentation=false, flavor=null</label>
 					<ref target="https://github.com/kermitt2/grobid"/>
 				</application>
 			</appInfo>
@@ -94,22 +100,22 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</teiHeader>
 	<text xml:lang="en">
 		<body>
-<div xmlns="http://www.tei-c.org/ns/1.0"><p>Empathy-understanding, sharing, and caring about the emotions of other people-is important for individuals, fundamental to relationships <ref type="bibr" target="#b36">(Kimmes et al., 2014)</ref>, and critical for large-group living <ref type="bibr" target="#b19">(Decety et al., 2016)</ref>. Unfortunately, evidence suggests that empathy is on the decline <ref type="bibr" target="#b39">(Konrath et al., 2011)</ref>. Despite the wealth of experiments on empathy, we lack a descriptive account of how it is experienced in daily life. Experimentation is critical, but description is also necessary and has too often been neglected in psychology <ref type="bibr" target="#b56">(Rozin, 2001)</ref>. Much of what we know about empathy has been established in laboratory settings-meaning that we do not yet know whether these findings are generalizable to the real world.</p><p>The current study advances our understanding of empathy by moving it "into the wild"-asking people directly about their experiences of empathy in everyday life. We aimed to answer important, unaddressed questions. How often do people perceive empathy opportunities, and how often do they empathize? What types of empathy do people most often report feeling? Whom do people most often empathize with? In addition, we tested preregistered hypotheses that empathy is associated with increased subjective well-being and increased rates of prosocial behavior in daily life. We further examined relationships between empathy in daily life and individual-differences measures, including gender, religiosity, income, and political orientation.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Describing Empathy in Daily Life</head><p>The inconsistency with which empathy has been defined has been rightfully criticized <ref type="bibr" target="#b30">(Hall &amp; Schwartz, 2019)</ref>, but many researchers think empathy involves sharing someone's emotion (an emotional process), taking someone's perspective (a cognitive process), and feeling compassionate and wanting to help (a motivational process). There is no consensus about whether these components-emotion sharing, perspective taking, and compassion-are distinct or different sides of the same empathy construct <ref type="bibr" target="#b72">(Zaki, 2014)</ref>. There is evidence that they can be differentiated <ref type="bibr" target="#b71">(Winter et al., 2017)</ref>. However, these components may be tightly intertwined for most people, even if they are technically dissociable <ref type="bibr" target="#b26">(Fiske, 2009;</ref><ref type="bibr" target="#b73">Zaki &amp; Ochsner, 2012)</ref>. The lack of clarity around whether the components of empathy co-occur contributes to the general confusion about how to define empathy <ref type="bibr" target="#b6">(Batson, 2009;</ref><ref type="bibr" target="#b16">Cuff et al., 2014)</ref>. Unfortunately, few studies have actually examined empathy in daily life to test the perceived co-occurrence of emotion sharing, perspective taking, and compassion.</p><p>Here, we addressed limitations of prior research by improving ecological validity <ref type="bibr" target="#b60">(Schreiter et al., 2013)</ref> while examining multiple emotions across a range of social contexts <ref type="bibr" target="#b48">(Morelli et al., 2014)</ref>. Contexts studied in the lab may or may not match the contexts in which empathy occurs in daily life. For example, many studies on empathy have examined how people empathize with strangers, although evidence suggests that people are biased to feel more empathy for close others <ref type="bibr" target="#b15">(Cikara et al., 2011;</ref><ref type="bibr" target="#b46">Meyer et al., 2013)</ref>. With the current approach, we were able to examine the closeness of real-life empathy targets.</p><p>In addition, research on empathy has typically focused on observed pain. If unchecked, a nonrepresentative focus in the research can distort our understanding of empathy. For example, a meta-analysis of the neuroscience of empathy suggested that the dorsal anterior cingulate cortex and bilateral anterior insula formed part of a core empathy network <ref type="bibr" target="#b24">(Fan et al., 2011)</ref>, but more recent work has shown that this consistent activation may be due to the overrepresentation of studies showing empathy for pain in the functional-MRI literature <ref type="bibr" target="#b48">(Morelli et al., 2014)</ref>. Without an account of how empathy is generally experienced in daily life, we cannot be certain that other conclusions drawn from the literature do not face similar issues. Increasingly, empathy for positive emotions is recognized as important <ref type="bibr" target="#b3">( Andreychik &amp; Migliaccio, 2015;</ref><ref type="bibr" target="#b47">Morelli et al., 2015;</ref><ref type="bibr" target="#b66">Telle &amp; Pfister, 2012)</ref>. The current study focused on whether people report experiencing empathy more often in response to positive or negative emotions and whether these lead to differential outcomes.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Correlates of Empathy in Daily Life</head><p>Feeling empathy may affect one's own subjective wellbeing, although evidence is mixed. Some researchers have argued that empathy leads to increased well-being, whereas others posit that it leads to burnout and social withdrawal (for a review, see <ref type="bibr" target="#b38">Konrath &amp; Grynberg, 2016)</ref>. Some authors have contended that empathy is neither positive nor negative but results in either compassion or personal distress, which have distinct phenomenology and consequences <ref type="bibr" target="#b63">(Singer &amp; Klimecki, 2014)</ref>. It is not clear whether the complexity of real-life social interactions will respect the boundaries of these taxonomies. In this study, we examined real-life perceptions of empathy to determine how different empathy experiences affect subjective well-being in the daily lives of the general population.</p><p>In the lab, feeling empathy often promotes prosocial behavior (for a review, see <ref type="bibr" target="#b18">Davis et al., 2015)</ref>, but there is also evidence that empathy can promote antisocial behaviors such as hyper-competition <ref type="bibr" target="#b53">(Pierce et al., 2013)</ref> and even immorality <ref type="bibr" target="#b7">(Batson et al., 1995)</ref>. In the current study, we thus examined whether-and under what circumstances-empathy is associated with prosocial behavior in the context of everyday life.</p><p>An experience-sampling approach can uncover relationships that trait measures miss because it reduces recall bias and allows us to parse within-subjects variability from between-subjects variability <ref type="bibr" target="#b58">(Runyan et al., 2019;</ref><ref type="bibr" target="#b62">Shiffman et al., 2008)</ref>. The current study allowed us to compare the predictive power of trait and state measures of empathy in predicting prosocial behavior and subjective well-being.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statement of Relevance</head><p>Empathy allows us to connect with other people by taking their perspective, sharing their emotions, and feeling compassion for them. This ability, coupled with unprecedented access to the emotional experiences of other people, should lead to increased social connectedness. Instead, self-reports of empathy are declining, and loneliness is on the rise. Here, we provide an important step to combating these trends by understanding how individuals perceive and respond to the deluge of empathy cues to which they are exposed in everyday life. We found that people often report opportunities to provide as well as receive empathy. In the current study, we used a novel description and rich, representative data set of empathy experiences in everyday life across a range of social and emotional contexts. We tested connections between empathy and subjective well-being as well as empathy and real-life prosocial acts while bringing data to bear on a number of important and unresolved questions.</p><p>When individuals engage in moral acts, they may feel licensed to engage in subsequent immoral acts, an effect known as moral licensing <ref type="bibr" target="#b44">(Merritt et al., 2010)</ref>. Although lab-based research on this effect has been underpowered <ref type="bibr" target="#b10">(Blanken et al., 2015)</ref> and subject to publication bias <ref type="bibr" target="#b40">(Kuper &amp; Bott, 2019)</ref>, experience-sampling research has found that performing a moral act at Time 1 has a "licensing" effect, which makes a moral act at Time 2 less likely to occur <ref type="bibr" target="#b33">(Hofmann et al., 2014)</ref>. Here, we tested whether empathy shows a similar licensing effect or whether, instead, empathy at Time 1 might increase the chance of experiencing empathy again at Time 2-as a sort of "empathy-facilitation" effect.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Who Feels Empathy in Daily Life</head><p>Empathy varies across demographic variables including geographic region <ref type="bibr" target="#b4">(Bach et al., 2017</ref><ref type="bibr">), age (O'Brien et al., 2013)</ref>, ethnicity <ref type="bibr" target="#b13">(Chiao &amp; Mathur, 2010)</ref>, education <ref type="bibr" target="#b68">(Ward et al., 2012)</ref>, income <ref type="bibr" target="#b65">(Stellar et al., 2012), and</ref><ref type="bibr">gender (Christov-Moore et al., 2014)</ref>. Therefore, we used quota sampling to obtain a sample that was representative on these parameters. Given prior findings, we performed preregistered tests of the hypothesis that women are more empathic than men. Research also suggests that religiosity <ref type="bibr" target="#b69">(Watson et al., 1984)</ref> and liberalism <ref type="bibr" target="#b32">(Hasson et al., 2018)</ref> are associated with increased empathy, whereas income is associated with reduced compassion <ref type="bibr" target="#b65">(Stellar et al., 2012)</ref>. We thus performed nonpreregistered analyses of these relationships.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Empathy-understanding, sharing, and caring about the emotions of other people-is important for individuals, fundamental to relationships <ref type="bibr" target="#b34">(Kimmes et al., 2014)</ref>, and critical for large-group living <ref type="bibr" target="#b17">(Decety et al., 2016)</ref>. Unfortunately, evidence suggests that empathy is on the decline <ref type="bibr" target="#b37">(Konrath et al., 2011)</ref>. Despite the wealth of experiments on empathy, we lack a descriptive account of how it is experienced in daily life. Experimentation is critical, but description is also necessary and has too often been neglected in psychology <ref type="bibr" target="#b54">(Rozin, 2001)</ref>. Much of what we know about empathy has been established in laboratory settings-meaning that we do not yet know whether these findings are generalizable to the real world.</p><p>The current study advances our understanding of empathy by moving it "into the wild"-asking people directly about their experiences of empathy in everyday life. We aimed to answer important, unaddressed questions. How often do people perceive empathy opportunities, and how often do they empathize? What types of empathy do people most often report feeling? Whom do people most often empathize with? In addition, we tested preregistered hypotheses that empathy is associated with increased subjective well-being and increased rates of prosocial behavior in daily life. We further examined relationships between empathy in daily life and individual-differences measures, including gender, religiosity, income, and political orientation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Describing Empathy in Daily Life</head><p>The inconsistency with which empathy has been defined has been rightfully criticized <ref type="bibr" target="#b28">(Hall &amp; Schwartz, 2019)</ref>, but many researchers think empathy involves sharing someone's emotion (an emotional process), taking someone's perspective (a cognitive process), and feeling compassionate and wanting to help (a motivational process). There is no consensus about whether these components-emotion sharing, perspective taking, and compassion-are distinct or different sides of the same empathy construct <ref type="bibr" target="#b70">(Zaki, 2014)</ref>. There is evidence that they can be differentiated <ref type="bibr" target="#b69">(Winter et al., 2017)</ref>. However, these components may be tightly intertwined for most people, even if they are technically dissociable <ref type="bibr" target="#b24">(Fiske, 2009;</ref><ref type="bibr" target="#b71">Zaki &amp; Ochsner, 2012)</ref>. The lack of clarity around whether the components of empathy co-occur contributes to the general confusion about how to define empathy <ref type="bibr" target="#b4">(Batson, 2009;</ref><ref type="bibr" target="#b14">Cuff et al., 2014)</ref>. Unfortunately, few studies have actually examined empathy in daily life to test the perceived co-occurrence of emotion sharing, perspective taking, and compassion.</p><p>Here, we addressed limitations of prior research by improving ecological validity <ref type="bibr" target="#b58">(Schreiter et al., 2013)</ref> while examining multiple emotions across a range of social contexts <ref type="bibr" target="#b46">(Morelli et al., 2014)</ref>. Contexts studied in the lab may or may not match the contexts in which empathy occurs in daily life. For example, many studies on empathy have examined how people empathize with strangers, although evidence suggests that people are biased to feel more empathy for close others <ref type="bibr" target="#b13">(Cikara et al., 2011;</ref><ref type="bibr" target="#b44">Meyer et al., 2013)</ref>. With the current approach, we were able to examine the closeness of real-life empathy targets.</p><p>In addition, research on empathy has typically focused on observed pain. If unchecked, a nonrepresentative focus in the research can distort our understanding of empathy. For example, a meta-analysis of the neuroscience of empathy suggested that the dorsal anterior cingulate cortex and bilateral anterior insula formed part of a core empathy network <ref type="bibr" target="#b22">(Fan et al., 2011)</ref>, but more recent work has shown that this consistent activation may be due to the overrepresentation of studies showing empathy for pain in the functional-MRI literature <ref type="bibr" target="#b46">(Morelli et al., 2014)</ref>. Without an account of how empathy is generally experienced in daily life, we cannot be certain that other conclusions drawn from the literature do not face similar issues. Increasingly, empathy for positive emotions is recognized as important <ref type="bibr" target="#b1">( Andreychik &amp; Migliaccio, 2015;</ref><ref type="bibr" target="#b45">Morelli et al., 2015;</ref><ref type="bibr" target="#b64">Telle &amp; Pfister, 2012)</ref>. The current study focused on whether people report experiencing empathy more often in response to positive or negative emotions and whether these lead to differential outcomes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Correlates of Empathy in Daily Life</head><p>Feeling empathy may affect one's own subjective wellbeing, although evidence is mixed. Some researchers have argued that empathy leads to increased well-being, whereas others posit that it leads to burnout and social withdrawal (for a review, see <ref type="bibr" target="#b36">Konrath &amp; Grynberg, 2016)</ref>. Some authors have contended that empathy is neither positive nor negative but results in either compassion or personal distress, which have distinct phenomenology and consequences <ref type="bibr" target="#b61">(Singer &amp; Klimecki, 2014)</ref>. It is not clear whether the complexity of real-life social interactions will respect the boundaries of these taxonomies. In this study, we examined real-life perceptions of empathy to determine how different empathy experiences affect subjective well-being in the daily lives of the general population.</p><p>In the lab, feeling empathy often promotes prosocial behavior (for a review, see <ref type="bibr" target="#b16">Davis et al., 2015)</ref>, but there is also evidence that empathy can promote antisocial behaviors such as hyper-competition <ref type="bibr" target="#b51">(Pierce et al., 2013)</ref> and even immorality <ref type="bibr" target="#b5">(Batson et al., 1995)</ref>. In the current study, we thus examined whether-and under what circumstances-empathy is associated with prosocial behavior in the context of everyday life.</p><p>An experience-sampling approach can uncover relationships that trait measures miss because it reduces recall bias and allows us to parse within-subjects variability from between-subjects variability <ref type="bibr" target="#b56">(Runyan et al., 2019;</ref><ref type="bibr" target="#b60">Shiffman et al., 2008)</ref>. The current study allowed us to compare the predictive power of trait and state measures of empathy in predicting prosocial behavior and subjective well-being.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statement of Relevance</head><p>Empathy allows us to connect with other people by taking their perspective, sharing their emotions, and feeling compassion for them. This ability, coupled with unprecedented access to the emotional experiences of other people, should lead to increased social connectedness. Instead, self-reports of empathy are declining, and loneliness is on the rise. Here, we provide an important step to combating these trends by understanding how individuals perceive and respond to the deluge of empathy cues to which they are exposed in everyday life. We found that people often report opportunities to provide as well as receive empathy. In the current study, we used a novel description and rich, representative data set of empathy experiences in everyday life across a range of social and emotional contexts. We tested connections between empathy and subjective well-being as well as empathy and real-life prosocial acts while bringing data to bear on a number of important and unresolved questions.</p><p>When individuals engage in moral acts, they may feel licensed to engage in subsequent immoral acts, an effect known as moral licensing <ref type="bibr" target="#b42">(Merritt et al., 2010)</ref>. Although lab-based research on this effect has been underpowered <ref type="bibr" target="#b8">(Blanken et al., 2015)</ref> and subject to publication bias <ref type="bibr" target="#b38">(Kuper &amp; Bott, 2019)</ref>, experience-sampling research has found that performing a moral act at Time 1 has a "licensing" effect, which makes a moral act at Time 2 less likely to occur <ref type="bibr" target="#b31">(Hofmann et al., 2014)</ref>. Here, we tested whether empathy shows a similar licensing effect or whether, instead, empathy at Time 1 might increase the chance of experiencing empathy again at Time 2-as a sort of "empathy-facilitation" effect.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Who Feels Empathy in Daily Life</head><p>Empathy varies across demographic variables including geographic region <ref type="bibr" target="#b2">(Bach et al., 2017</ref><ref type="bibr">), age (O'Brien et al., 2013)</ref>, ethnicity <ref type="bibr" target="#b11">(Chiao &amp; Mathur, 2010)</ref>, education <ref type="bibr" target="#b66">(Ward et al., 2012)</ref>, income <ref type="bibr" target="#b63">(Stellar et al., 2012), and</ref><ref type="bibr">gender (Christov-Moore et al., 2014)</ref>. Therefore, we used quota sampling to obtain a sample that was representative on these parameters. Given prior findings, we performed preregistered tests of the hypothesis that women are more empathic than men. Research also suggests that religiosity <ref type="bibr" target="#b67">(Watson et al., 1984)</ref> and liberalism <ref type="bibr" target="#b30">(Hasson et al., 2018)</ref> are associated with increased empathy, whereas income is associated with reduced compassion <ref type="bibr" target="#b63">(Stellar et al., 2012)</ref>. We thus performed nonpreregistered analyses of these relationships.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study design</head><p>Researchers have called for increased ecological validity <ref type="bibr" target="#b60">(Schreiter et al., 2013)</ref> and demonstrated that experience sampling may uncover associations that global reports miss <ref type="bibr" target="#b9">(Billeke et al., 2015;</ref><ref type="bibr" target="#b58">Runyan et al., 2019)</ref>. Thus, in the current study, we took a mixed-methods approach, combining established trait measures of empathy with experience sampling. We add to a small list of studies that have examined empathy with experience sampling or ecological momentary assessment <ref type="bibr" target="#b29">(Grühn et al., 2008;</ref><ref type="bibr" target="#b50">Nezlek et al., 2001)</ref>. This allowed us to explore withinsubjects differences that have historically been neglected in empathy research <ref type="bibr" target="#b21">(Duan &amp; Hill, 1996)</ref> and to examine causal heterogeneity, which is an overlooked problem in psychology more generally <ref type="bibr" target="#b11">(Bolger et al., 2018)</ref>.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Procedure</head><p>Sampling strategy. Given that empathy varies across demographic variables <ref type="bibr" target="#b4">(Bach et al., 2017;</ref><ref type="bibr" target="#b13">Chiao &amp; Mathur, 2010;</ref><ref type="bibr" target="#b14">Christov-Moore et al., 2014;</ref><ref type="bibr" target="#b51">O'Brien et al., 2013;</ref><ref type="bibr" target="#b65">Stellar et al., 2012)</ref>, we used quota sampling to obtain a sample representative of the U.S. population on key demographic parameters (Fig. <ref type="figure">1</ref>). To this end, 3,486 potential participants answered a demographic questionnaire, on which they also provided informed consent about participating in a "daily interactions" study. In cooperation with the survey company Qualtrics (www.qualtrics .com), we selected 841 individuals from this pool of respondents to invite, using quota sampling to match our sample to U.S. census data on sex, ethnicity, education, geographic region, income, and age. In the current study, we use the term representative to mean representative on these six parameters.</p><p>Although ours was not a true random sample, this approach represents a significant improvement over convenience samples used in much of psychological research. A total of 376 participants responded to our e-mail to complete the baseline survey, and 285 went on to download an app and complete experience sampling (Fig. <ref type="figure">1</ref>). Given logistic demands of the study, we planned for high attrition in our sampling strategy.</p><p>We ran a number of simulations (see Fig. <ref type="figure">S1</ref> at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>) to determine the sample size required to accurately estimate the frequency of empathy in daily life. We also consulted previous research on the sample size required to enter the "corridor of stability" for parameter <ref type="bibr" target="#b43">(Maxwell et al., 2008)</ref> and correlation <ref type="bibr" target="#b59">(Schönbrodt &amp; Perugini, 2013)</ref> estimates. We preregistered our intention to recruit a sample of 300 participants, but simulations and prior research suggested that we would enter the corridor of stability between 200 and 300 participants. Practical considerations, mainly financial, halted collection at 285 participants.</p><p>Sensitivity analyses further suggested that this sample size has 80% power to detect between-subjects effects (d) of 0.33 or greater. At the survey level, we had 80% power to detect between-and within-subjects effects of 0.18 and 0.08, respectively.</p><p>Following our preregistration, we removed participants who answered fewer than seven experiencesampling surveys, resulting in a final sample (N = 246) that was representative of the population (see Figs.</p><p>S2-S7 at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>) as well as adequately powered to make precise estimates about the frequency of empathy and its correlation with prosocial behavior and well-being. During experience sampling, participants answered a total of 7,343 surveys, providing a rich and ecologically valid data set. We preregistered our hypotheses and design (<ref type="url" target="https://osf.io/aeqgn">https://osf.io/aeqgn</ref>) and provide open access to materials, code, and data for transparency and the benefit of other researchers (<ref type="url" target="https://osf.io/y3ud7">https://osf.io/y3ud7</ref>).</p><p>Data collection and compensation. After participants were recruited, they completed a baseline survey that included demographic information, such as socioeconomic status, religiosity, and political orientation, as well as the Interpersonal Reactivity Index <ref type="bibr" target="#b17">(Davis, 1983)</ref>, the Empathy Index <ref type="bibr" target="#b35">( Jordan et al., 2016)</ref>, the empathyselection task <ref type="bibr" target="#b12">(Cameron et al., 2019)</ref>, a Big Five measure of personality <ref type="bibr" target="#b64">(Soto &amp; John, 2017)</ref>, and other measures (see Material S1 at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>).</p><p>Because the definition of empathy is not always clear among researchers <ref type="bibr" target="#b6">(Batson, 2009;</ref><ref type="bibr" target="#b30">Hall &amp; Schwartz, 2019)</ref> or laypeople <ref type="bibr" target="#b31">(Hall et al., 2021)</ref>, our baseline survey provided a glossary of terms that participants would later report on. We defined what we meant by empathy opportunity, empathy, emotion sharing, perspective taking, compassion, and prosocial acts (see Material S2 at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>). Providing definitions ensured that the participants would be answering questions about the same concepts, although there would be a possible trade-off of introducing demand. The baseline survey also included instructions to download the experience-sampling app MetricWire (2019, Version 4.1.2).</p><p>We used the MetricWire app to prompt participants seven times a day between 10 a.m. and 10 p.m. for 1 week to complete short, signal-contingent surveys (see Material S3 at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>). Survey triggers occurred semirandomly (i.e., randomly within 90-min windows with minimum 15-min gaps) and expired after 20 min. We asked participants about their current happiness and sense of purpose as a measure of subjective well-being. We also asked whether, in the past 15 min, they (a) had performed a prosocial act, (b) had an opportunity to empathize, and (c) had an opportunity to receive empathy.</p><p>If they indicated that they had had an opportunity to give or receive empathy, we probed for further details. For example, we asked how close they were to the other person involved. When participants had an opportunity to empathize themselves, we asked them to rate the valence of the emotion they observed on scale ranging from 1 (extremely negative) to 7 (extremely positive). We asked whether they had actually experienced empathy at the time and, if so, whether this experience involved emotion sharing, perspective taking, and compassion in turn. For each component that was reported, we asked about extent, difficulty, and confidence. Surveys involved branches that were effort matched so that participants would see the same number of questions regardless of their responses. This prevented participants from simply saying "no" to any question as a means to complete a survey more quickly.</p><p>Instead of the typical experience-sampling questions, the final experience-sampling survey readministered select trait empathy measures that had been previously completed at baseline to assess stability of trait empathy (see Material <ref type="table">S3</ref>).</p><p>Participants earned a minimum of $18 (U.S.) for participating, along with a bonus of $7 if they completed 80% or more of the experience-sampling surveys. Answering 100% of the surveys would take about 2 hr total.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statistical analysis</head><p>We hypothesized that empathy would be related to subjective well-being and prosocial behavior in daily life, but there are many aspects of empathy. Thus, we preregistered an exploratory approach in which we tested each component as a single predictor and adjusted the p values of a given research question (e.g., daily empathy is associated with increased subjective well-being as a within-subjects effect) to control the false-discovery rate (FDR; <ref type="bibr" target="#b8">Benjamini &amp; Hochberg, 2007)</ref>.</p><p>We used generalized mixed-effects models (multilevel logistic regression) for binary outcome variables such as empathy opportunity, prosocial behavior, and empathy. When the outcome variable was continuous, such as extent of empathy or subjective well-being, we used mixed-effects models (multilevel linear models). Observations were nested within participant, which were nested within survey day, so all multilevel models included a random intercept for both participant and survey day. Linear models were employed for tests of between-subjects effects predicting outcomes measured only once, such as testing whether demographic variables predicted the number of surveys answered.</p><p>For continuous outcome variables, we used participantcentered variables as predictors to test within-subjects effects and grand-mean-centered variables as predictors for between-subjects effects. For binomial predictors, we used dummy-coded (1 for yes, 0 for no) responses for testing within-subjects effects and grand-meancentered average proportion of "yes" responses of a participant for testing between-subjects effects. As an illustration, a participant who reported empathy opportunities on 40% of surveys would receive a score of 0.40, which would be grand-mean centered and entered into the multilevel model as a single predictor nested within participant and survey day to test for betweensubjects effects of the tendency to report empathy opportunities.</p><p>Data were analyzed in the R programming environment (Version 3.6.2; R Core Team, 2019). Multilevel models were constructed with the lmer and glmer functions using the lme4 package (Version 1.1-14; <ref type="bibr" target="#b5">Bates et al., 2015)</ref> and linear models with the lm function in the built-in R stats package. Model statistics were calculated with the summaryh function from the hausekeep package (Version 0.0.0.9003; <ref type="bibr" target="#b41">Lin, 2019)</ref>, including a validated effect-size r for fixed effects in multilevel models derived from R 2 <ref type="bibr" target="#b22">(Edwards et al., 2008)</ref> that has previously been used in the literature (e.g., <ref type="bibr" target="#b27">Francis et al., 2020)</ref>. For continuous data, β estimates indicate the model-estimated change in the dependent variable associated with a 1-unit change in the predictor. For binomial data, β estimates indicate the log odds ratio of a "yes" response holding all other covariates constant. Predictors were grand-mean or participant-mean centered as appropriate <ref type="bibr" target="#b37">(Kleiman, 2018)</ref>, and p values were corrected with the p.adjust function from the stats package following the FDR procedure <ref type="bibr" target="#b8">(Benjamini &amp; Hochberg, 2007)</ref>. Given the richness of this data set, we do not present results of all preregistered analyses in the current article. 1 Full survey materials are available on this study's OSF page, along with deidentified data, analysis code, and supplemental material (<ref type="url" target="https://osf.io/y3ud7">https://osf .io/y3ud7</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study design</head><p>Researchers have called for increased ecological validity <ref type="bibr" target="#b58">(Schreiter et al., 2013)</ref> and demonstrated that experience sampling may uncover associations that global reports miss <ref type="bibr" target="#b7">(Billeke et al., 2015;</ref><ref type="bibr" target="#b56">Runyan et al., 2019)</ref>. Thus, in the current study, we took a mixed-methods approach, combining established trait measures of empathy with experience sampling. We add to a small list of studies that have examined empathy with experience sampling or ecological momentary assessment <ref type="bibr" target="#b27">(Grühn et al., 2008;</ref><ref type="bibr" target="#b48">Nezlek et al., 2001)</ref>. This allowed us to explore withinsubjects differences that have historically been neglected in empathy research <ref type="bibr" target="#b19">(Duan &amp; Hill, 1996)</ref> and to examine causal heterogeneity, which is an overlooked problem in psychology more generally <ref type="bibr" target="#b9">(Bolger et al., 2018)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Procedure</head><p>Sampling strategy. Given that empathy varies across demographic variables <ref type="bibr" target="#b2">(Bach et al., 2017;</ref><ref type="bibr" target="#b11">Chiao &amp; Mathur, 2010;</ref><ref type="bibr" target="#b12">Christov-Moore et al., 2014;</ref><ref type="bibr" target="#b49">O'Brien et al., 2013;</ref><ref type="bibr" target="#b63">Stellar et al., 2012)</ref>, we used quota sampling to obtain a sample representative of the U.S. population on key demographic parameters (Fig. <ref type="figure">1</ref>). To this end, 3,486 potential participants answered a demographic questionnaire, on which they also provided informed consent about participating in a "daily interactions" study. In cooperation with the survey company Qualtrics (<ref type="url" target="http://www.qualtrics.com">www.qualtrics  .com</ref>), we selected 841 individuals from this pool of respondents to invite, using quota sampling to match our sample to U.S. census data on sex, ethnicity, education, geographic region, income, and age. In the current study, we use the term representative to mean representative on these six parameters.</p><p>Although ours was not a true random sample, this approach represents a significant improvement over convenience samples used in much of psychological research. A total of 376 participants responded to our e-mail to complete the baseline survey, and 285 went on to download an app and complete experience</p><p>ESM ESM ESM ESM Baseline Survey (n = 375) ESM Surveys (n = 285) Final (49th) ESM Survey Prescreening by Qualtrics (N = 3,486) • Demographic Questions • Attention Check • 841 Invited Via E-Mail, Based on Quota Sampling • Trait Empathy Measures • Instructions to Download ESM App • Taught Empathy Definitions • Seven/Day for 7 Days • Report on Prior 15 Min &amp; Current State • Readministered Trait Empathy Scale Time Fig. 1. Flowchart of procedure. For the experience-sampling method (ESM) surveys, 285 participants completed at least one experiencesampling survey, but 39 participants were excluded for having fewer than seven surveys according to our preregistration, leaving a final sample size of 246 to be analyzed.</p><p>sampling (Fig. <ref type="figure">1</ref>). Given logistic demands of the study, we planned for high attrition in our sampling strategy.</p><p>We ran a number of simulations (see Fig. <ref type="figure">S1</ref> at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>) to determine the sample size required to accurately estimate the frequency of empathy in daily life. We also consulted previous research on the sample size required to enter the "corridor of stability" for parameter <ref type="bibr" target="#b41">(Maxwell et al., 2008)</ref> and correlation <ref type="bibr" target="#b57">(Schönbrodt &amp; Perugini, 2013)</ref> estimates. We preregistered our intention to recruit a sample of 300 participants, but simulations and prior research suggested that we would enter the corridor of stability between 200 and 300 participants. Practical considerations, mainly financial, halted collection at 285 participants.</p><p>Sensitivity analyses further suggested that this sample size has 80% power to detect between-subjects effects (d) of 0.33 or greater. At the survey level, we had 80% power to detect between-and within-subjects effects of 0.18 and 0.08, respectively.</p><p>Following our preregistration, we removed participants who answered fewer than seven experiencesampling surveys, resulting in a final sample (N = 246) that was representative of the population (see Figs.</p><p>S2-S7 at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>) as well as adequately powered to make precise estimates about the frequency of empathy and its correlation with prosocial behavior and well-being. During experience sampling, participants answered a total of 7,343 surveys, providing a rich and ecologically valid data set. We preregistered our hypotheses and design (<ref type="url" target="https://osf.io/aeqgn">https://osf.io/aeqgn</ref>) and provide open access to materials, code, and data for transparency and the benefit of other researchers (<ref type="url" target="https://osf.io/y3ud7">https://osf.io/y3ud7</ref>).</p><p>Data collection and compensation. After participants were recruited, they completed a baseline survey that included demographic information, such as socioeconomic status, religiosity, and political orientation, as well as the Interpersonal Reactivity Index <ref type="bibr" target="#b15">(Davis, 1983)</ref>, the Empathy Index <ref type="bibr" target="#b33">( Jordan et al., 2016)</ref>, the empathyselection task <ref type="bibr" target="#b10">(Cameron et al., 2019)</ref>, a Big Five measure of personality <ref type="bibr" target="#b62">(Soto &amp; John, 2017)</ref>, and other measures (see Material S1 at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>).</p><p>Because the definition of empathy is not always clear among researchers <ref type="bibr" target="#b4">(Batson, 2009;</ref><ref type="bibr" target="#b28">Hall &amp; Schwartz, 2019)</ref> or laypeople <ref type="bibr" target="#b29">(Hall et al., 2021)</ref>, our baseline survey provided a glossary of terms that participants would later report on. We defined what we meant by empathy opportunity, empathy, emotion sharing, perspective taking, compassion, and prosocial acts (see Material S2 at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>). Providing definitions ensured that the participants would be answering questions about the same concepts, although there would be a possible trade-off of introducing demand. The baseline survey also included instructions to download the experience-sampling app MetricWire (2019, Version 4.1.2).</p><p>We used the MetricWire app to prompt participants seven times a day between 10 a.m. and 10 p.m. for 1 week to complete short, signal-contingent surveys (see Material S3 at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>). Survey triggers occurred semirandomly (i.e., randomly within 90-min windows with minimum 15-min gaps) and expired after 20 min. We asked participants about their current happiness and sense of purpose as a measure of subjective well-being. We also asked whether, in the past 15 min, they (a) had performed a prosocial act, (b) had an opportunity to empathize, and (c) had an opportunity to receive empathy.</p><p>If they indicated that they had had an opportunity to give or receive empathy, we probed for further details. For example, we asked how close they were to the other person involved. When participants had an opportunity to empathize themselves, we asked them to rate the valence of the emotion they observed on scale ranging from 1 (extremely negative) to 7 (extremely positive). We asked whether they had actually experienced empathy at the time and, if so, whether this experience involved emotion sharing, perspective taking, and compassion in turn. For each component that was reported, we asked about extent, difficulty, and confidence. Surveys involved branches that were effort matched so that participants would see the same number of questions regardless of their responses. This prevented participants from simply saying "no" to any question as a means to complete a survey more quickly.</p><p>Instead of the typical experience-sampling questions, the final experience-sampling survey readministered select trait empathy measures that had been previously completed at baseline to assess stability of trait empathy (see Material <ref type="table">S3</ref>).</p><p>Participants earned a minimum of $18 (U.S.) for participating, along with a bonus of $7 if they completed 80% or more of the experience-sampling surveys. Answering 100% of the surveys would take about 2 hr total.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statistical analysis</head><p>We hypothesized that empathy would be related to subjective well-being and prosocial behavior in daily life, but there are many aspects of empathy. Thus, we preregistered an exploratory approach in which we tested each component as a single predictor and adjusted the p values of a given research question (e.g., daily empathy is associated with increased subjective well-being as a within-subjects effect) to control the false-discovery rate (FDR; <ref type="bibr" target="#b6">Benjamini &amp; Hochberg, 2007)</ref>.</p><p>We used generalized mixed-effects models (multilevel logistic regression) for binary outcome variables such as empathy opportunity, prosocial behavior, and empathy. When the outcome variable was continuous, such as extent of empathy or subjective well-being, we used mixed-effects models (multilevel linear models). Observations were nested within participant, which were nested within survey day, so all multilevel models included a random intercept for both participant and survey day. Linear models were employed for tests of between-subjects effects predicting outcomes measured only once, such as testing whether demographic variables predicted the number of surveys answered.</p><p>For continuous outcome variables, we used participantcentered variables as predictors to test within-subjects effects and grand-mean-centered variables as predictors for between-subjects effects. For binomial predictors, we used dummy-coded (1 for yes, 0 for no) responses for testing within-subjects effects and grand-meancentered average proportion of "yes" responses of a participant for testing between-subjects effects. As an illustration, a participant who reported empathy opportunities on 40% of surveys would receive a score of 0.40, which would be grand-mean centered and entered into the multilevel model as a single predictor nested within participant and survey day to test for betweensubjects effects of the tendency to report empathy opportunities.</p><p>Data were analyzed in the R programming environment (Version 3.6.2; R Core Team, 2019). Multilevel models were constructed with the lmer and glmer functions using the lme4 package (Version 1.1-14; <ref type="bibr" target="#b3">Bates et al., 2015)</ref> and linear models with the lm function in the built-in R stats package. Model statistics were calculated with the summaryh function from the hausekeep package (Version 0.0.0.9003; <ref type="bibr" target="#b39">Lin, 2019)</ref>, including a validated effect-size r for fixed effects in multilevel models derived from R 2 <ref type="bibr" target="#b20">(Edwards et al., 2008)</ref> that has previously been used in the literature (e.g., <ref type="bibr" target="#b25">Francis et al., 2020)</ref>. For continuous data, β estimates indicate the model-estimated change in the dependent variable associated with a 1-unit change in the predictor. For binomial data, β estimates indicate the log odds ratio of a "yes" response holding all other covariates constant. Predictors were grand-mean or participant-mean centered as appropriate <ref type="bibr" target="#b35">(Kleiman, 2018)</ref>, and p values were corrected with the p.adjust function from the stats package following the FDR procedure <ref type="bibr" target="#b6">(Benjamini &amp; Hochberg, 2007)</ref>. Given the richness of this data set, we do not present results of all preregistered analyses in the current article. 1 Full survey materials are available on this study's OSF page, along with deidentified data, analysis code, and supplemental material (<ref type="url" target="https://osf.io/y3ud7">https://osf  .io/y3ud7</ref>).</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Empathy in everyday life</head><p>Our data suggest that people commonly experience empathy in daily life. Examining the raw data, we found that individuals reported perceiving an empathy opportunity in the past 15 min across 19% of all surveys (see Fig. <ref type="figure" target="#fig_0">2</ref>; SD = 39%, 95% confidence interval [CI] = [18%, 20%]) and reported perceiving an opportunity to receive empathy in the past 15 min across 12% of surveys (SD = 32%, 95% CI = [11%, 13%]). Participants had been informed that an opportunity to empathize was defined as any exposure to the emotions of other people (see Material S2), such as reading a sad status from a friend on social media or watching a stranger laugh. Looking at the mean of participant means yields similar rates (M = 21%, SD = 20%, 95% CI = [18%, 23%]; M = 13%, SD = 18%, 95% CI = [11%, 15%]), showing that these estimates are not unduly influenced by response-rate bias.</p><p>Using participant means from our data, we estimated that-over the course of a 12-hr day-an average individual may perceive 8.92 opportunities to empathize (SD = 9.93, 95% CI = [7.68, 10.16]) and perceive 5.71 opportunities to receive empathy (SD = 8.87, 95% CI = [4.60, 6.82]). These estimates may underestimate how often empathy opportunities are truly perceived, given that (a) participants were able to report on only a single empathy opportunity from the prior 15 min, whereas multiple opportunities may have occurred during that time period, and (b) participants may have forgotten or failed to report an opportunity to empathize. Alternatively, these estimates may overestimate the true perceived frequency because participants may feel demand to report empathy opportunities and empathy within the context of the study because of social desirability, or they may prefer to answer surveys when they have an opportunity to report. However, these initial estimates suggest that experiencing and receiving empathy occur frequently enough to have a significant psychological impact.</p><p>Missed opportunities. If participants reported no opportunity to empathize, they were later asked whether they had observed the emotions of another person in the same time frame. They responded affirmatively to this question on roughly 9% of occasions (SD = 29%, 95% CI = [9%, 10%]). On the basis of the definition that participants were taught and tested on at baseline (see Material S3), these emotional exposures were, by definition, opportunities to empathize. Therefore, participants missed numerous empathy opportunities in daily life, even when the cue was salient enough to be noticed. These findings are in line with research showing that empathy opportunities are often missed, for example, in physician-patient interactions (e.g., <ref type="bibr" target="#b28">Giroldi et al., 2020;</ref><ref type="bibr" target="#b49">Morse et al., 2008)</ref>.</p><p>When an opportunity was reported, participants reported actually feeling empathy 88% of the time (SD = 32%, 95% CI = [86%, 90%]). The same was true when participants reported an opportunity to receive empathythey reported actually receiving empathy in 88% of these opportunities (SD = 23%, 95% CI = [87%, 90%]). These data suggest that people often experience empathy after noticing an opportunity but also miss many opportunities in daily life. These missed opportunities may help to reconcile the discrepancy between the very high rates of choosing to empathize that we observed in daily life and the tendency to avoid empathy that has been previously observed in the lab using the empathy-selection task <ref type="bibr" target="#b12">(Cameron et al., 2019)</ref>.</p><p>Components of empathy. When engaging in empathy, which facets of empathy do people report? In the current study, the co-occurrence of the three different components was very high. All three components-emotion sharing, perspective taking, and compassion-were reported to occur together 75% of the time, and a single component occurred in isolation in only 5% of cases (see Fig. <ref type="figure" target="#fig_1">3</ref>). Participants nearly always reported feeling compassion (94%), whereas perspective taking was the least frequently reported (85%). When participants reported a component, they were asked to rate the extent to which it occurredfor example, the extent to which they felt compassion or shared the person's emotion. Component-extent ratings showed significant medium-size correlations (r) ranging from .45 to .49. These data provide evidence that theoretically distinct components of empathy tend to co-occur and interact during the complex social interactions of daily life <ref type="bibr" target="#b73">(Zaki &amp; Ochsner, 2012)</ref>.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Contexts of empathy.</head><p>Participants rated how close they were to the other person in each empathy experience on a scale ranging from 1 (total stranger) to 7 (very close relationship). In most cases (57%), participants reported on an opportunity to empathize with someone with whom they had a very close relationship. In only 6% of cases did participants report on an opportunity to empathize with a total stranger. Participants were not significantly more likely to empathize, b = 0.12, SE = 0.07, z = 1.74, p = .082, r = .03, as closeness increased. When empathy occurred, participants exhibited a small effect of empathizing to a greater extent as closeness increased, b = 0.09, SE = 0.02, t(1023) = 5.11, p &lt; .001, r = .16. These results stand in contrast to the typical procedure used in empathy studies, in which the modal experience of empathy involves a stranger as the target.</p><p>In a similar vein-although "distress is the typical emotion of the object when the term empathy is used" <ref type="bibr">(Preston, 2007, p. 436)</ref> in the literature-in our data, participants reported perceiving an opportunity to empathize with a positive emotion (65.8%) about 3 times as often as they reported on an opportunity to empathize with negative emotions (21.3%), and the remainder (12.9%) were mixed valence. Not only were positive emotions reported as empathy opportunities more often, but also participants reported empathizing to a greater extent as valence became more positive, b = 0.11, SE = 0.02, t(991) = 6.61, p &lt; .001, r = .21, although the effect was small. Taken together, these data suggest that in daily life, empathy for positive emotions is a more common and more extensive experience than empathy for negative emotions, underscoring recent calls in the literature for more attention to this side of the empathy experience <ref type="bibr" target="#b47">(Morelli et al., 2015)</ref>.</p><p>Empathy and efficacy. In prior work, researchers have demonstrated that some individuals are more empathically accurate than others, and this accuracy has real-life consequences for relationships <ref type="bibr" target="#b34">(Ickes, 1993;</ref><ref type="bibr" target="#b61">Sened et al., 2017)</ref>. Not only does actual empathic accuracy matter, but also experimental research has demonstrated that perceptions of empathic accuracy can affect people's willingness to empathize with others, regardless of actual empathic accuracy <ref type="bibr" target="#b12">(Cameron et al., 2019)</ref>. People who believe that their empathizing is more accurate and effective are less likely to avoid empathy opportunities. Thus, in the current study, we asked participants how subjectively difficult their empathy experiences were and how (subjectively) confident they were about the accuracy of their empathy. The extent to which these perceptions of accuracy map onto actual accuracy is unknown.</p><p>However, participants' sense of confidence and difficulty when empathizing were important factors for their empathy and broader experience. Confidence and difficulty during empathy experiences impacted subjective well-being (see Table <ref type="table" target="#tab_2">1</ref>). Further, participants reported empathizing to a greater extent as their  </p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Correlates of empathy</head><p>Subjective well-being. Empathy was generally associated with higher subjective well-being, but the relationship was complex (see Table <ref type="table" target="#tab_2">1</ref>). Overall, participants reported fairly high levels of subjective well-being (on a scale from 1 to 7; M = 5.02, SD = 1.59, 95% CI = [4.99, 5.06]). They reported higher subjective well-being when they had experienced an empathy opportunity (M = 5.48, SD = 1.47, 95% CI = [5.41, 5.56]) compared with when they had not (M = 4.92, SD = 1.60, 95% CI = [4.88, 4.96]), b = 0.18, SE = 0.03, t(6615) = 6.72, p &lt; .001, r = .08. Similarly, actually experiencing empathy, b = 0.25, SE = 0.08, t(1231) = 3.08, p = .002, r = .09, and the extent of empathy experienced, b = 0.17, SE = 0.03, t(992) = 5.73, p &lt; .001, r = .18, were further predictive of increased well-being. However, the positive impact of empathy opportunities was associated with the valence of the target emotion. Unlike empathy opportunities for positive emotions (M = 5.85, SD = 1.24, 95% CI = [5.78, 5.93]) and mixed emotions (M = 5.10, SD = 1.48, 95% CI = [4.89, 5.32]), empathy opportunities for negative emotions (M = 4.63, SD = 1.69, 95% CI = [4.44, 4.82]) were associated with lower levels of well-being than average (see Fig. <ref type="figure" target="#fig_3">4</ref>).</p><p>Further, not all aspects of everyday empathy were associated with increased subjective well-being. In particular, the extent to which participants found empathy difficult was negatively correlated with subjective wellbeing at both the within-subjects level, b = -0.12, SE = 0.03, t(965) = -4.59, p &lt; .001, r = .15, and betweensubjects level, b = -0.24, SE = 0.08, t(212) = -3.07, p = .002, r = .21. Extent of personal distress was similarly associated with decreased well-being both within subjects, b = -0.14, SE = 0.01, t(1152) = -9.71, p &lt; .001, r = .28, and between subjects, b = -0.39, SE = 0.06, t(222) = -6.89, p &lt; .001, r = .42, the latter being a medium-size effect. These data suggest that, although many components of empathy are associated with increased subjective well-being in daily life, others are associated with decreased well-being, and the overall effect is importantly influenced by the valence of the target emotion.</p><p>Prosocial behavior. Considerable research has found that empathy for negative emotions promotes helping behavior <ref type="bibr" target="#b18">(Davis et al., 2015;</ref><ref type="bibr" target="#b23">Eisenberg &amp; Miller, 1987)</ref>. More recently, researchers have reported that empathy for positive emotions may do the same <ref type="bibr" target="#b2">(Andreychik &amp; Lewis, 2017;</ref><ref type="bibr" target="#b48">Morelli et al., 2014;</ref><ref type="bibr" target="#b67">Telle &amp; Pfister, 2016)</ref>. We observed strong correlational support for both of these effects (see Fig. <ref type="figure" target="#fig_3">4</ref>), finding that several aspects of everyday empathy were correlated with prosocial behavior in daily life (see Table <ref type="table" target="#tab_3">2</ref>). Reported empathy opportunities showed a large correlation with reported prosocial behavior in the same 15-min window, and prosocial behaviors were much more likely when participants reported an empathy opportunity compared with no empathy opportunity, b = 4.41, SE = 0.15, z = 33.38, p &lt;  .001, r = .77. 2 Experiencing empathy in the presence of an opportunity was further predictive of prosocial behavior, b = 1.30, SE = 0.22, z = 5.85, p &lt; .001, r = .34 (a mediumsize effect). Interestingly, opportunities to receive empathy were also predictive of prosocial behavior, b = 2.11, SE = 0.10, z = 20.70, p &lt; .001, r = .50 (a large effect and a relatively unexplored link in the literature that merits further investigation). Prosocial behavior was often elicited in the presence of positive and mixed emotions (see Fig. <ref type="figure" target="#fig_3">4</ref>). In fact, positive empathy opportunities were a little more predictive of prosocial behavior than negative opportunities, b = 0.54, SE = 0.19, z = 2.79, p = .005, r = .15. Further-although participant-centered valence did not predict prosocial behavior, b = 0.08, SE = 0.05, z = 1.53, p = .159, r = .02-participants who typically experienced more positively valenced empathy opportunities were slightly more likely to report prosocial behaviors in a given survey, b = 0.13, SE = 0.04, z = 2.96, p = .009, r = .04 (a between-subjects effect). In sum, this set of results underscores the fact that perceived empathy opportunities are associated with prosocial behavior not only in the face of suffering but also when positive and mixed emotions are observed.</p><p>Trait versus state empathy predicting well-being and prosocial acts. Having described the association between daily empathy and well-being and between daily empathy and prosocial behavior, we conducted preregistered analyses to investigate whether trait empathy predicted these outcomes. After we controlled the FDR <ref type="bibr" target="#b8">(Benjamini &amp; Hochberg, 2007)</ref>, there were no significant associations between trait empathy and daily prosocial behavior (all ps &gt; .05; see Table <ref type="table" target="#tab_2">S1</ref> at <ref type="url" target="https://osf.io/zd6wv/">https:// osf.io/zd6wv/</ref>). Trait empathy also did not predict increased subjective well-being in daily life (all ps &gt; .05; see Table <ref type="table" target="#tab_3">S2</ref> at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>). If anything, we found evidence for the opposite: The associations between lower subjective well-being in daily life and both higher personal distress (measured via a subscale of the Interpersonal Reactivity Index), b = -0.47, SE = 0.10, t(236) = -4.46, p &lt; .001, r = .28, and higher empathy (measured via the Empathy Index), b = -0.33, SE = 0.11, t(236) = -2.89, p = .018, r = .19, were in fact associated with lower subjective well-being in daily life-though effects were small. Overall, higher trait empathy did not seem to be associated with more prosocial behaviors or higher well-being in momentary assessments. However, many aspects of empathy in everyday life were positively associated with momentary assessments of prosocial behavior, and these associations held after adjustments for multiple comparisons (see Table <ref type="table" target="#tab_2">1</ref>). In addition, many aspects of daily empathy were associated with increased subjective well-being at both the within-and between-subjects levels (see Table <ref type="table" target="#tab_3">2</ref>). These effects highlight the importance of empathy and support prior reports that experience sampling may uncover associations with well-being not captured by more global trait measures (e.g., <ref type="bibr" target="#b58">Runyan et al., 2019)</ref>.</p><p>Empathic facilitation. Moral licensing is the phenomenon whereby behaving morally can lead to future immoral behaviors <ref type="bibr" target="#b44">(Merritt et al., 2010)</ref>. Although the robustness of the effect has been questioned <ref type="bibr" target="#b10">(Blanken et al., 2015;</ref><ref type="bibr" target="#b40">Kuper &amp; Bott, 2019)</ref>, there is evidence for its existence in daily life <ref type="bibr" target="#b33">(Hofmann et al., 2014)</ref>. Whether there is a similar effect with empathy-or whether empathy tends to promote more empathy (i.e., empathy facilitation)-is unknown. To explore this question, we examined whether aspects of empathy at Time 1 would predict the likelihood of empathy opportunities or empathy itself at Time 2. These surveys occurred 90 min apart on average.</p><p>For the most part, after FDR correction, there was little evidence of any licensing or facilitation effects. However, noticing opportunities to receive empathy at Time 1 predicted noticing opportunities to provide empathy, b = 0.28, SE = 0.10, z = 2.71, p = .043, r = .08, and act prosocially, b = 0.23, SE = 0.11, z = 2.09, p = .037, r = .06, at Time 2, although both effects were very small. That is, when participants had an emotional experience and felt that someone had an opportunity to empathize with them, they were more likely to report a prosocial behavior and more likely to report an opportunity to empathize with someone else on the next survey they answered.</p><p>Although perceiving an opportunity to empathize at Time 1 did not predict noticing another opportunity at Time 2, b = -0.02, SE = 0.09, z = -0.23, p = .817, r = -.01, missing an opportunity at Time 1 did predict noticing an opportunity at Time 2, b = 0.32, SE = 0.12, z = 2.64, p = .008, r = .09. In other words, when participants reported no empathy opportunity but reported observing the emotions of another person, they were more likely to report an empathy opportunity at their next survey. No aspects of empathy at Time 1 predicted whether participants actually engaged in empathy given the opportunity at Time 2 (all ps &gt; .05). In sum, we did not find robust support for empathic licensing, instead finding preliminary evidence that receiving empathy or missing an opportunity to empathize may facilitate future empathy opportunities.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Who feels empathy: demographics of daily empathy</head><p>In addition to conducting the analyses above, we tested previously reported demographic differences in empathy. In our only preregistered demographic test, sex was a small but significant predictor of empathy. Women scored higher than men on trait empathic concern, b = 0.36, SE = 0.09, t(232) = 4.17, p &lt; .001, r = .26. Congruent with this, results showed that women reported feeling compassion, b = 0.30, SE = 0.11, t(187) = 2.75, p = .007, r = .20, and sharing emotions, b = 0.30, SE = 0.13, t(166) = 2.26, p = .025, r = .17, to a greater extent than men in everyday life. Women also reported higher confidence that their empathy was accurate, b = 0.29, SE = 0.10, t(180) = 2.80, p = .006, r = .20, which may in part explain their increased willingness to empathize <ref type="bibr" target="#b12">(Cameron et al., 2019)</ref>.</p><p>We next performed nonpreregistered tests on three other previously reported demographic differences. We examined whether compassion varied across income levels <ref type="bibr" target="#b65">(Stellar et al., 2012)</ref> and found mixed results. Higher income was not associated with decreased trait empathic concern, b = -0.04, SE = 0.05, t(232) = -0.73, p = .466, r = .05, or decreased extent of compassion in daily life, b = 0.06, SE = 0.06, t(200) = 0.88, p = .380, r = .06. However, higher income was associated with a lower proportion of feeling compassion in the presence of an empathy opportunity, b = -0.04, SE = 0.02, t(208) = -2.34, p = .020, r = .16, indicating that although higher income participants felt compassion to a similar extent, they felt it less often. 3  We replicated previous reports that religiosity is correlated with increased empathy <ref type="bibr" target="#b69">(Watson et al., 1984)</ref>. Higher religiosity weakly predicted increased likelihood of reporting an empathy opportunity, b = 0.25, SE = 0.07, z = 3.47, p = .006, r = .07, and predicted increased extent of perspective taking, b = 0.19, SE = 0.06, t(166) = 3.29, p = .007, r = .25, in everyday life. After correction, religiosity was not associated with any other daily empathy or trait empathy measures (all ps &gt; .05), although it is possible that the true effects were smaller than our study was powered to detect (d = 0.33, r = .16).</p><p>Prior work has found that liberals experience more empathy <ref type="bibr" target="#b32">(Hasson et al., 2018)</ref> than conservatives for a wider range of targets <ref type="bibr" target="#b70">(Waytz et al., 2019)</ref> in certain circumstances. However, we found that after adjustment, political orientation was related to only the fantasy subscale of the Interpersonal Reactivity Index, b = -0.09, SE = 0.03, t(236) = -3.19, p = .018, r = .20, in that more conservative participants reported empathizing less with fiction. We did not find any other associations between empathy and political orientation at the trait or state level (all ps &gt; .05). We note, however, that prior effects may be context specific <ref type="bibr" target="#b42">(Lucas &amp; Kteily, 2018)</ref>. Further, our study was powered to detect effects (ds) only as small as 0.33 (r = .16) at the trait level, so it is possible that there are true effects that were too small for us to detect.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>The majority of research on empathy has focused on negative emotions-typically of strangers and typically in laboratory settings. However, in everyday life, empathy was more often reported in response to positive emotions, not negative emotions, and participants empathized to a greater extent as emotions became more positive. Although these results may be influenced by reporting biases, they are consistent with the relative frequency of emotions experienced in daily life; positive emotions, such as excitement and enthusiasm, are experienced approximately 3 times more frequently than negative emotions, such as disgust, anger, and fear <ref type="bibr" target="#b74">(Zelenski &amp; Larsen, 2000)</ref>.</p><p>Empathy was most often reported in response to close others. This effect may be due to mere availability because many people likely have more social interactions within existing relationships than with strangers. However, empathy also may be biased in favor of close others <ref type="bibr" target="#b15">(Cikara et al., 2011)</ref>. Supporting this possibility, our results showed that individuals empathized to a greater extent as closeness increased.</p><p>These findings have implications for our understanding of empathy as a motivated phenomenon <ref type="bibr" target="#b72">(Zaki, 2014)</ref>. The emerging work on lack of motivation to empathize might be related, in some part, to most lab studies of empathy involving the negative emotions of strangers. Whereas some work suggests that people might avoid both positive and negative empathy <ref type="bibr" target="#b12">( Cameron et al., 2019)</ref>, empathy for strangers might be especially unmotivating <ref type="bibr" target="#b25">(Ferguson et al., 2020)</ref>. In future lab studies on motivation to empathize, researchers should consider including a range of expressed emotions and including empathy targets who are close to the participant, not just strangers.</p><p>In prior work, researchers have suggested that dissociable components of empathy interact in real-life interactions <ref type="bibr" target="#b48">(Morelli et al., 2014;</ref><ref type="bibr" target="#b73">Zaki &amp; Ochsner, 2012)</ref>. The current study shows that emotion sharing, compassion, and perspective taking are reported together almost all of the time and are rarely reported in isolation. Although these components of empathy can be theoretically differentiated, our data suggest that they are typically experienced together by most people in most daily situations.</p><p>Finally, we examined various established demographic findings about empathy to see which findings hold across people's experiences in daily life. Some established effects were replicated-for example, both women and religious participants tended to report experiencing empathy more often than men and the nonreligious. However, other relationships did not replicate in the context of daily life; we found a weak relationship between compassion and income and little to no relationship between empathy and political orientation-although the true effects of income and politics on empathy may be smaller than we were able to detect given our statistical power.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Limitations</head><p>Ground truth. Experience sampling allows us to get closer to the temporal, emotional, and social context of empathy, but it is still self-report data. The number of empathy opportunities and true ratios of positive and negative opportunities may vary from those reportedindeed, participants appeared selective in which observed emotions were perceived as empathy opportunities, consistent with motivational accounts of empathy <ref type="bibr" target="#b12">(Cameron et al., 2019;</ref><ref type="bibr" target="#b20">de Vignemont &amp; Singer, 2006;</ref><ref type="bibr" target="#b72">Zaki, 2014)</ref>. However, truly objective measures of empathy opportunities would be difficult to obtain, given that empathy cues in the environment may not be attended to. Furthermore, feeling empathy may be best captured via self-report, given that it is an internal and subjective phenomenon.</p><p>Representativeness. Our sample was quota matched to census data on six key demographics, making our results more representative than is typical. Because the sample is not random, representativeness cannot be assumed on other demographics. For example, to join the study, participants were required to have a smartphone. However, 81% of U.S. adults had a smartphone as of 2019 <ref type="bibr">(Pew Research Center, 2021)</ref>, and the results from our lowest income participants mirrored those from the entire sample. The generalizability of our findings to other populations, especially non-Western, educated, industrialized, rich, and democratic (WEIRD) populations, remains to be demonstrated.</p><p>Training and fatigue. Potentially, repeatedly responding to surveys on empathy might have trained participants to notice empathy opportunities. However, there was only one significant difference on trait empathy questionnaires at baseline compared with the final experiencesampling survey (all ps &gt; .05), and empathy itself did not become more prevalent over the course of the week. Empathy opportunities were reported slightly less frequently as the week progressed, suggesting that individuals may have become decreasingly inclined to report empathy. However, because we nested results within survey day, this shift should minimally affect our results.</p><p>Definitions and demand. We chose to supply a definition of empathy to our participants to reduce noise from varying lay theories of empathy <ref type="bibr" target="#b31">(Hall et al., 2021)</ref>. By defining empathy as a process involving three related but distinct experiences, however, we may have introduced demand, resulting in participants inflating reports of the co-occurrence of all three processes or otherwise influencing participants' reports (although similar results were reported for participants' own empathy and empathy received). Future work should replicate these findings with different definitions of empathy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Empathy in everyday life</head><p>Our data suggest that people commonly experience empathy in daily life. Examining the raw data, we found that individuals reported perceiving an empathy opportunity in the past 15 min across 19% of all surveys (see Fig. <ref type="figure" target="#fig_0">2</ref>; SD = 39%, 95% confidence interval [CI] = [18%, 20%]) and reported perceiving an opportunity to receive empathy in the past 15 min across 12% of surveys (SD = 32%, 95% CI = [11%, 13%]). Participants had been informed that an opportunity to empathize was defined as any exposure to the emotions of other people (see Material S2), such as reading a sad status from a friend on social media or watching a stranger laugh. Looking at the mean of participant means yields similar rates (M = 21%, SD = 20%, 95% CI = [18%, 23%]; M = 13%, SD = 18%, 95% CI = [11%, 15%]), showing that these estimates are not unduly influenced by response-rate bias.</p><p>Using participant means from our data, we estimated that-over the course of a 12-hr day-an average individual may perceive 8.92 opportunities to empathize (SD = 9.93, 95% CI = [7.68, 10.16]) and perceive 5.71 opportunities to receive empathy (SD = 8.87, 95% CI = [4.60, 6.82]). These estimates may underestimate how often empathy opportunities are truly perceived, given that (a) participants were able to report on only a single empathy opportunity from the prior 15 min, whereas multiple opportunities may have occurred during that time period, and (b) participants may have forgotten or failed to report an opportunity to empathize. Alternatively, these estimates may overestimate the true perceived frequency because participants may feel demand to report empathy opportunities and empathy within the context of the study because of social desirability, or they may prefer to answer surveys when they have an opportunity to report. However, these initial estimates suggest that experiencing and receiving empathy occur frequently enough to have a significant psychological impact.</p><p>Missed opportunities. If participants reported no opportunity to empathize, they were later asked whether they had observed the emotions of another person in the same time frame. They responded affirmatively to this question on roughly 9% of occasions (SD = 29%, 95% CI = [9%, 10%]). On the basis of the definition that participants were taught and tested on at baseline (see Material S3), these emotional exposures were, by definition, opportunities to empathize. Therefore, participants missed numerous empathy opportunities in daily life, even when the cue was salient enough to be noticed. These findings are in line with research showing that empathy opportunities are often missed, for example, in physician-patient interactions (e.g., <ref type="bibr" target="#b26">Giroldi et al., 2020;</ref><ref type="bibr" target="#b47">Morse et al., 2008)</ref>.</p><p>When an opportunity was reported, participants reported actually feeling empathy 88% of the time (SD = 32%, 95% CI = [86%, 90%]). The same was true when participants reported an opportunity to receive empathythey reported actually receiving empathy in 88% of these opportunities (SD = 23%, 95% CI = [87%, 90%]). These data suggest that people often experience empathy after noticing an opportunity but also miss many opportunities in daily life. These missed opportunities may help to reconcile the discrepancy between the very high rates of choosing to empathize that we observed in daily life and the tendency to avoid empathy that has been previously observed in the lab using the empathy-selection task <ref type="bibr" target="#b10">(Cameron et al., 2019)</ref>.</p><p>Components of empathy. When engaging in empathy, which facets of empathy do people report? In the current study, the co-occurrence of the three different components was very high. All three components-emotion sharing, perspective taking, and compassion-were reported to occur together 75% of the time, and a single component occurred in isolation in only 5% of cases (see Fig. <ref type="figure" target="#fig_1">3</ref>). Participants nearly always reported feeling compassion (94%), whereas perspective taking was the least frequently reported (85%). When participants reported a component, they were asked to rate the extent to which it occurredfor example, the extent to which they felt compassion or shared the person's emotion. Component-extent ratings showed significant medium-size correlations (r) ranging from .45 to .49. These data provide evidence that theoretically distinct components of empathy tend to co-occur and interact during the complex social interactions of daily life <ref type="bibr" target="#b71">(Zaki &amp; Ochsner, 2012)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Contexts of empathy.</head><p>Participants rated how close they were to the other person in each empathy experience on a scale ranging from 1 (total stranger) to 7 (very close relationship). In most cases (57%), participants reported on an opportunity to empathize with someone with whom they had a very close relationship. In only 6% of cases did participants report on an opportunity to empathize with a total stranger. Participants were not significantly more likely to empathize, b = 0.12, SE = 0.07, z = 1.74, p = .082, r = .03, as closeness increased. When empathy occurred, participants exhibited a small effect of empathizing to a greater extent as closeness increased, b = 0.09, SE = 0.02, t(1023) = 5.11, p &lt; .001, r = .16. These results stand in contrast to the typical procedure used in empathy studies, in which the modal experience of empathy involves a stranger as the target.</p><p>In a similar vein-although "distress is the typical emotion of the object when the term empathy is used" <ref type="bibr">(Preston, 2007, p. 436)</ref> in the literature-in our data, participants reported perceiving an opportunity to empathize with a positive emotion (65.8%) about 3 times as often as they reported on an opportunity to empathize with negative emotions (21.3%), and the remainder (12.9%) were mixed valence. Not only were positive emotions reported as empathy opportunities more often, but also participants reported empathizing to a greater extent as valence became more positive, b = 0.11, SE = 0.02, t(991) = 6.61, p &lt; .001, r = .21, although the effect was small. Taken together, these data suggest that in daily life, empathy for positive emotions is a more common and more extensive experience than empathy for negative emotions, underscoring recent calls in the literature for more attention to this side of the empathy experience <ref type="bibr" target="#b45">(Morelli et al., 2015)</ref>.</p><p>Empathy and efficacy. In prior work, researchers have demonstrated that some individuals are more empathically accurate than others, and this accuracy has real-life consequences for relationships <ref type="bibr" target="#b32">(Ickes, 1993;</ref><ref type="bibr" target="#b59">Sened et al., 2017)</ref>. Not only does actual empathic accuracy matter, but also experimental research has demonstrated that perceptions of empathic accuracy can affect people's willingness to empathize with others, regardless of actual empathic accuracy <ref type="bibr" target="#b10">(Cameron et al., 2019)</ref>. People who believe that their empathizing is more accurate and effective are less likely to avoid empathy opportunities. Thus, in the current study, we asked participants how subjectively difficult their empathy experiences were and how (subjectively) confident they were about the accuracy of their empathy. The extent to which these perceptions of accuracy map onto actual accuracy is unknown.</p><p>However, participants' sense of confidence and difficulty when empathizing were important factors for their empathy and broader experience. Confidence and difficulty during empathy experiences impacted subjective well-being (see Table <ref type="table" target="#tab_2">1</ref>). Further, participants reported empathizing to a greater extent as their</p><p>10% (124) Emotion Sharing 2% (21) Perspective Taking 1% (10) Compassion 2% (29) All Three Co-Occurring 75% (916) 7% (88) 2% (22) confidence increased, b = 0.54, SE = 0.04, t(998) = 14.76, p &lt; .001, r = .42 (a medium-size effect), and to a lesser extent as difficulty increased, b = -0.21, SE = 0.03, t(982) = -8.20, p &lt; .001, r = .25 (a small effect).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Correlates of empathy</head><p>Subjective well-being. Empathy was generally associated with higher subjective well-being, but the relationship was complex (see Table <ref type="table" target="#tab_2">1</ref>). Overall, participants reported fairly high levels of subjective well-being (on a scale from 1 to 7; M = 5.02, SD = 1.59, 95% CI = [4.99, 5.06]). They reported higher subjective well-being when they had experienced an empathy opportunity (M = 5.48, SD = 1.47, 95% CI = [5.41, 5.56]) compared with when they had not (M = 4.92, SD = 1.60, 95% CI = [4.88, 4.96]), b = 0.18, SE = 0.03, t(6615) = 6.72, p &lt; .001, r = .08. Similarly, actually experiencing empathy, b = 0.25, SE = 0.08, t(1231) = 3.08, p = .002, r = .09, and the extent of empathy experienced, b = 0.17, SE = 0.03, t(992) = 5.73, p &lt; .001, r = .18, were further predictive of increased well-being. However, the positive impact of empathy opportunities was associated with the valence of the target emotion. Unlike empathy opportunities for positive emotions (M = 5.85, SD = 1.24, 95% CI = [5.78, 5.93]) and mixed emotions (M = 5.10, SD = 1.48, 95% CI = [4.89, 5.32]), empathy opportunities for negative emotions (M = 4.63, SD = 1.69, 95% CI = [4.44, 4.82]) were associated with lower levels of well-being than average (see Fig. <ref type="figure" target="#fig_3">4</ref>).</p><p>Further, not all aspects of everyday empathy were associated with increased subjective well-being. In particular, the extent to which participants found empathy difficult was negatively correlated with subjective wellbeing at both the within-subjects level, b = -0.12, SE = 0.03, t(965) = -4.59, p &lt; .001, r = .15, and betweensubjects level, b = -0.24, SE = 0.08, t(212) = -3.07, p = .002, r = .21. Extent of personal distress was similarly associated with decreased well-being both within subjects, b = -0.14, SE = 0.01, t(1152) = -9.71, p &lt; .001, r = .28, and between subjects, b = -0.39, SE = 0.06, t(222) = -6.89, p &lt; .001, r = .42, the latter being a medium-size effect. These data suggest that, although many components of empathy are associated with increased subjective well-being in daily life, others are associated with decreased well-being, and the overall effect is importantly influenced by the valence of the target emotion.</p><p>Prosocial behavior. Considerable research has found that empathy for negative emotions promotes helping behavior <ref type="bibr" target="#b16">(Davis et al., 2015;</ref><ref type="bibr" target="#b21">Eisenberg &amp; Miller, 1987)</ref>. More recently, researchers have reported that empathy for positive emotions may do the same <ref type="bibr" target="#b0">(Andreychik &amp; Lewis, 2017;</ref><ref type="bibr" target="#b46">Morelli et al., 2014;</ref><ref type="bibr" target="#b65">Telle &amp; Pfister, 2016)</ref>. We observed strong correlational support for both of these effects (see Fig. <ref type="figure" target="#fig_3">4</ref>), finding that several aspects of everyday empathy were correlated with prosocial behavior in daily life (see Table <ref type="table" target="#tab_3">2</ref>). Reported empathy opportunities showed a large correlation with reported prosocial behavior in the same 15-min window, and prosocial behaviors were much more likely when participants reported an empathy opportunity compared with no empathy opportunity, b = 4.41, SE = 0.15, z = 33.38, p &lt;</p><p>0 15 30 45 60 75 90 Negative Empathy Opportunity (n = 300) Mixed Valence Opportunity (n = 185) Positive Empathy Opportunity (n = 892) No Empathy Opportunity (n = 5,954) Cases of Prosocial Behavior (%) Negative Empathy Opportunity (n = 300) Mixed Valence Opportunity (n = 185) Positive Empathy Opportunity (n = 892) No Empathy Opportunity (n = 5,954) 7 6 5 4 3 2 1 b a Momentary Subjective Well-Being .001, r = .77. 2 Experiencing empathy in the presence of an opportunity was further predictive of prosocial behavior, b = 1.30, SE = 0.22, z = 5.85, p &lt; .001, r = .34 (a mediumsize effect). Interestingly, opportunities to receive empathy were also predictive of prosocial behavior, b = 2.11, SE = 0.10, z = 20.70, p &lt; .001, r = .50 (a large effect and a relatively unexplored link in the literature that merits further investigation). Prosocial behavior was often elicited in the presence of positive and mixed emotions (see Fig. <ref type="figure" target="#fig_3">4</ref>). In fact, positive empathy opportunities were a little more predictive of prosocial behavior than negative opportunities, b = 0.54, SE = 0.19, z = 2.79, p = .005, r = .15. Further-although participant-centered valence did not predict prosocial behavior, b = 0.08, SE = 0.05, z = 1.53, p = .159, r = .02-participants who typically experienced more positively valenced empathy opportunities were slightly more likely to report prosocial behaviors in a given survey, b = 0.13, SE = 0.04, z = 2.96, p = .009, r = .04 (a between-subjects effect). In sum, this set of results underscores the fact that perceived empathy opportunities are associated with prosocial behavior not only in the face of suffering but also when positive and mixed emotions are observed.</p><p>Trait versus state empathy predicting well-being and prosocial acts. Having described the association between daily empathy and well-being and between daily empathy and prosocial behavior, we conducted preregistered analyses to investigate whether trait empathy predicted these outcomes. After we controlled the FDR <ref type="bibr" target="#b6">(Benjamini &amp; Hochberg, 2007)</ref>, there were no significant associations between trait empathy and daily prosocial behavior (all ps &gt; .05; see Table <ref type="table" target="#tab_2">S1</ref> at <ref type="url" target="https://osf.io/zd6wv/">https://  osf.io/zd6wv/</ref>). Trait empathy also did not predict increased subjective well-being in daily life (all ps &gt; .05; see Table <ref type="table" target="#tab_3">S2</ref> at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>). If anything, we found evidence for the opposite: The associations between lower subjective well-being in daily life and both higher personal distress (measured via a subscale of the Interpersonal Reactivity Index), b = -0.47, SE = 0.10, t(236) = -4.46, p &lt; .001, r = .28, and higher empathy (measured via the Empathy Index), b = -0.33, SE = 0.11, t(236) = -2.89, p = .018, r = .19, were in fact associated with lower subjective well-being in daily life-though effects were small. Overall, higher trait empathy did not seem to be associated with more prosocial behaviors or higher well-being in momentary assessments. However, many aspects of empathy in everyday life were positively associated with momentary assessments of prosocial behavior, and these associations held after adjustments for multiple comparisons (see Table <ref type="table" target="#tab_2">1</ref>). In addition, many aspects of daily empathy were associated with increased subjective well-being at both the within-and between-subjects levels (see Table <ref type="table" target="#tab_3">2</ref>). These effects highlight the importance of empathy and support prior reports that experience sampling may uncover associations with well-being not captured by more global trait measures (e.g., <ref type="bibr" target="#b56">Runyan et al., 2019)</ref>.</p><p>Empathic facilitation. Moral licensing is the phenomenon whereby behaving morally can lead to future immoral behaviors <ref type="bibr" target="#b42">(Merritt et al., 2010)</ref>. Although the robustness of the effect has been questioned <ref type="bibr" target="#b8">(Blanken et al., 2015;</ref><ref type="bibr" target="#b38">Kuper &amp; Bott, 2019)</ref>, there is evidence for its existence in daily life <ref type="bibr" target="#b31">(Hofmann et al., 2014)</ref>. Whether there is a similar effect with empathy-or whether empathy tends to promote more empathy (i.e., empathy facilitation)-is unknown. To explore this question, we examined whether aspects of empathy at Time 1 would predict the likelihood of empathy opportunities or empathy itself at Time 2. These surveys occurred 90 min apart on average.</p><p>For the most part, after FDR correction, there was little evidence of any licensing or facilitation effects. However, noticing opportunities to receive empathy at Time 1 predicted noticing opportunities to provide empathy, b = 0.28, SE = 0.10, z = 2.71, p = .043, r = .08, and act prosocially, b = 0.23, SE = 0.11, z = 2.09, p = .037, r = .06, at Time 2, although both effects were very small. That is, when participants had an emotional experience and felt that someone had an opportunity to empathize with them, they were more likely to report a prosocial behavior and more likely to report an opportunity to empathize with someone else on the next survey they answered.</p><p>Although perceiving an opportunity to empathize at Time 1 did not predict noticing another opportunity at Time 2, b = -0.02, SE = 0.09, z = -0.23, p = .817, r = -.01, missing an opportunity at Time 1 did predict noticing an opportunity at Time 2, b = 0.32, SE = 0.12, z = 2.64, p = .008, r = .09. In other words, when participants reported no empathy opportunity but reported observing the emotions of another person, they were more likely to report an empathy opportunity at their next survey. No aspects of empathy at Time 1 predicted whether participants actually engaged in empathy given the opportunity at Time 2 (all ps &gt; .05). In sum, we did not find robust support for empathic licensing, instead finding preliminary evidence that receiving empathy or missing an opportunity to empathize may facilitate future empathy opportunities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Who feels empathy: demographics of daily empathy</head><p>In addition to conducting the analyses above, we tested previously reported demographic differences in empathy. In our only preregistered demographic test, sex was a small but significant predictor of empathy. Women scored higher than men on trait empathic concern, b = 0.36, SE = 0.09, t(232) = 4.17, p &lt; .001, r = .26. Congruent with this, results showed that women reported feeling compassion, b = 0.30, SE = 0.11, t(187) = 2.75, p = .007, r = .20, and sharing emotions, b = 0.30, SE = 0.13, t(166) = 2.26, p = .025, r = .17, to a greater extent than men in everyday life. Women also reported higher confidence that their empathy was accurate, b = 0.29, SE = 0.10, t(180) = 2.80, p = .006, r = .20, which may in part explain their increased willingness to empathize <ref type="bibr" target="#b10">(Cameron et al., 2019)</ref>.</p><p>We next performed nonpreregistered tests on three other previously reported demographic differences. We examined whether compassion varied across income levels <ref type="bibr" target="#b63">(Stellar et al., 2012)</ref> and found mixed results. Higher income was not associated with decreased trait empathic concern, b = -0.04, SE = 0.05, t(232) = -0.73, p = .466, r = .05, or decreased extent of compassion in daily life, b = 0.06, SE = 0.06, t(200) = 0.88, p = .380, r = .06. However, higher income was associated with a lower proportion of feeling compassion in the presence of an empathy opportunity, b = -0.04, SE = 0.02, t(208) = -2.34, p = .020, r = .16, indicating that although higher income participants felt compassion to a similar extent, they felt it less often. 3  We replicated previous reports that religiosity is correlated with increased empathy <ref type="bibr" target="#b67">(Watson et al., 1984)</ref>. Higher religiosity weakly predicted increased likelihood of reporting an empathy opportunity, b = 0.25, SE = 0.07, z = 3.47, p = .006, r = .07, and predicted increased extent of perspective taking, b = 0.19, SE = 0.06, t(166) = 3.29, p = .007, r = .25, in everyday life. After correction, religiosity was not associated with any other daily empathy or trait empathy measures (all ps &gt; .05), although it is possible that the true effects were smaller than our study was powered to detect (d = 0.33, r = .16).</p><p>Prior work has found that liberals experience more empathy <ref type="bibr" target="#b30">(Hasson et al., 2018)</ref> than conservatives for a wider range of targets <ref type="bibr" target="#b68">(Waytz et al., 2019)</ref> in certain circumstances. However, we found that after adjustment, political orientation was related to only the fantasy subscale of the Interpersonal Reactivity Index, b = -0.09, SE = 0.03, t(236) = -3.19, p = .018, r = .20, in that more conservative participants reported empathizing less with fiction. We did not find any other associations between empathy and political orientation at the trait or state level (all ps &gt; .05). We note, however, that prior effects may be context specific <ref type="bibr" target="#b40">(Lucas &amp; Kteily, 2018)</ref>. Further, our study was powered to detect effects (ds) only as small as 0.33 (r = .16) at the trait level, so it is possible that there are true effects that were too small for us to detect.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>The majority of research on empathy has focused on negative emotions-typically of strangers and typically in laboratory settings. However, in everyday life, empathy was more often reported in response to positive emotions, not negative emotions, and participants empathized to a greater extent as emotions became more positive. Although these results may be influenced by reporting biases, they are consistent with the relative frequency of emotions experienced in daily life; positive emotions, such as excitement and enthusiasm, are experienced approximately 3 times more frequently than negative emotions, such as disgust, anger, and fear <ref type="bibr" target="#b72">(Zelenski &amp; Larsen, 2000)</ref>.</p><p>Empathy was most often reported in response to close others. This effect may be due to mere availability because many people likely have more social interactions within existing relationships than with strangers. However, empathy also may be biased in favor of close others <ref type="bibr" target="#b13">(Cikara et al., 2011)</ref>. Supporting this possibility, our results showed that individuals empathized to a greater extent as closeness increased.</p><p>These findings have implications for our understanding of empathy as a motivated phenomenon <ref type="bibr" target="#b70">(Zaki, 2014)</ref>. The emerging work on lack of motivation to empathize might be related, in some part, to most lab studies of empathy involving the negative emotions of strangers. Whereas some work suggests that people might avoid both positive and negative empathy <ref type="bibr" target="#b10">( Cameron et al., 2019)</ref>, empathy for strangers might be especially unmotivating <ref type="bibr" target="#b23">(Ferguson et al., 2020)</ref>. In future lab studies on motivation to empathize, researchers should consider including a range of expressed emotions and including empathy targets who are close to the participant, not just strangers.</p><p>In prior work, researchers have suggested that dissociable components of empathy interact in real-life interactions <ref type="bibr" target="#b46">(Morelli et al., 2014;</ref><ref type="bibr" target="#b71">Zaki &amp; Ochsner, 2012)</ref>. The current study shows that emotion sharing, compassion, and perspective taking are reported together almost all of the time and are rarely reported in isolation. Although these components of empathy can be theoretically differentiated, our data suggest that they are typically experienced together by most people in most daily situations.</p><p>Finally, we examined various established demographic findings about empathy to see which findings hold across people's experiences in daily life. Some established effects were replicated-for example, both women and religious participants tended to report experiencing empathy more often than men and the nonreligious. However, other relationships did not replicate in the context of daily life; we found a weak relationship between compassion and income and little to no relationship between empathy and political orientation-although the true effects of income and politics on empathy may be smaller than we were able to detect given our statistical power.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Limitations</head><p>Ground truth. Experience sampling allows us to get closer to the temporal, emotional, and social context of empathy, but it is still self-report data. The number of empathy opportunities and true ratios of positive and negative opportunities may vary from those reportedindeed, participants appeared selective in which observed emotions were perceived as empathy opportunities, consistent with motivational accounts of empathy <ref type="bibr" target="#b10">(Cameron et al., 2019;</ref><ref type="bibr" target="#b18">de Vignemont &amp; Singer, 2006;</ref><ref type="bibr" target="#b70">Zaki, 2014)</ref>. However, truly objective measures of empathy opportunities would be difficult to obtain, given that empathy cues in the environment may not be attended to. Furthermore, feeling empathy may be best captured via self-report, given that it is an internal and subjective phenomenon.</p><p>Representativeness. Our sample was quota matched to census data on six key demographics, making our results more representative than is typical. Because the sample is not random, representativeness cannot be assumed on other demographics. For example, to join the study, participants were required to have a smartphone. However, 81% of U.S. adults had a smartphone as of 2019 <ref type="bibr">(Pew Research Center, 2021)</ref>, and the results from our lowest income participants mirrored those from the entire sample. The generalizability of our findings to other populations, especially non-Western, educated, industrialized, rich, and democratic (WEIRD) populations, remains to be demonstrated.</p><p>Training and fatigue. Potentially, repeatedly responding to surveys on empathy might have trained participants to notice empathy opportunities. However, there was only one significant difference on trait empathy questionnaires at baseline compared with the final experiencesampling survey (all ps &gt; .05), and empathy itself did not become more prevalent over the course of the week. Empathy opportunities were reported slightly less frequently as the week progressed, suggesting that individuals may have become decreasingly inclined to report empathy. However, because we nested results within survey day, this shift should minimally affect our results.</p><p>Definitions and demand. We chose to supply a definition of empathy to our participants to reduce noise from varying lay theories of empathy <ref type="bibr" target="#b29">(Hall et al., 2021)</ref>. By defining empathy as a process involving three related but distinct experiences, however, we may have introduced demand, resulting in participants inflating reports of the co-occurrence of all three processes or otherwise influencing participants' reports (although similar results were reported for participants' own empathy and empathy received). Future work should replicate these findings with different definitions of empathy.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusion</head><p>The current study has shaped how we think about empathy. People readily empathize when they recognize the opportunity but often notice other people's emotions without flagging them as empathy opportunities. In daily life, empathy is often elicited by positive rather than negative emotions and by emotional expressions of close others rather than strangers. These caveats are critical to consider in future experiments because they alter the experience of empathy itself and likely moderate the effects of empathy on subjective wellbeing and prosocial behavior. If our experiments are to inform us about the causal role of empathy outside of the lab, they must in turn be informed by how empathy is actually experienced in everyday life.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Transparency</head><p>Action Editor: Mark Brandt Editor: Patricia J. Bauer Notes 1. The richness of the data set and diversity of preregistered questions mean that some of the preregistered questions are best addressed in separate articles. Importantly, other articles using these data will be nonoverlapping, addressing distinct preregistered questions (see Table <ref type="table">S3</ref> in at <ref type="url" target="https://osf.io/zd6wv/">https://osf.io/zd6wv/</ref>). 2. This estimate implies that prosocial acts are 85 times more likely when an empathy opportunity is reported. Empathy opportunities were defined to participants as "any situation where you see/hear about an event that probably caused an emotional response for the person involved," and it is not clear whether the opportunity precedes or follows the prosociality. However, this effect size is implausibly large and may be inflated by overfitting and demand. 3. Income was also unassociated with the binomial and extent of perspective taking and emotion sharing in daily life. Further, it was unassociated with reports of prosocial behavior in daily life.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Sankey network diagram showing the number of each type of event.Beginning on the left, the diagram illustrates whether an empathy opportunity was reported. The valence ratings of reported opportunities and whether participants actually felt empathy are displayed next. Finally, the right side of the diagram displays whether a prosocial behavior was reported in the same 15-min time frame. Pathways are weighted to the number of surveys going through each pathway (except for the no-empathy/no-prosocial-behavior pathway, which has its width truncated as indicated by the dotted line).</figDesc><graphic coords="6,49.01,310.39,471.50,103.58" type="bitmap" /></figure>
 <figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig.3. Components of empathy in daily life. The area of each circle reflects the relative percentage of the three components of empathy occurring individually or concurrently when empathy is reported. The large middle circle shows the 75% of occurrences in which all three facets co-occurred, and the three circles in the light gray ring reflect cases in which only two facets co-occurred. Not shown, on 1% of reports, participants said "no" to all three of the empathy components. Values in parentheses indicate numbers of empathy reports.</figDesc></figure>
@@ -125,46 +131,21 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 			</div>
 			<div type="funding">
 <div><head>Funding</head><p>This research was supported by a grant from the <rs type="funder">Social Sciences and Humanities Research Council of Canada</rs> to <rs type="person">M. Inzlicht</rs> (No. <rs type="grantNumber">435-2019-0144</rs>).</p></div>
-<div><head>Open Practices</head><p>All data, code, and materials have been made publicly available via OSF and can be accessed at <ref type="url" target="https://osf.io/y3ud7">https://osf.io/ y3ud7</ref>. The design and analysis plan were preregistered at <ref type="url" target="https://osf.io/aeqgn">https://osf.io/aeqgn</ref>. Deviations from the preregistration (preregistered analyses not reported here as well as addi-</p></div>
+<div><head>Open Practices</head><p>All data, code, and materials have been made publicly available via OSF and can be accessed at <ref type="url" target="https://osf.io/y3ud7">https://osf.io/  y3ud7</ref>. The design and analysis plan were preregistered at <ref type="url" target="https://osf.io/aeqgn">https://osf.io/aeqgn</ref>. Deviations from the preregistration (preregistered analyses not reported here as well as additional nonpreregistered analyses conducted) are noted in the text. This article has received the badges for Open Data, Open Materials, and Preregistration. More information about the Open Practices badges can be found at <ref type="url" target="http://www.psychologicalscience.org/publications/badges">http://www.psychologicalscience.org/publications/  badges</ref>.</p></div>
 			</div>
 			<listOrg type="funding">
-				<org type="funding" xml:id="_29XJ7rH">
+				<org type="funding" xml:id="_nchp6hx">
 					<idno type="grant-number">435-2019-0144</idno>
 				</org>
 			</listOrg>
 			<div type="annex">
-<div xmlns="http://www.tei-c.org/ns/1.0"><p>Author Contributions G. J. Depow and M. Inzlicht conceived the idea for the project. G. J. Depow collected the data in conjunction with a survey company and an experience-sampling company. Z. Francis and M. Inzlicht provided critical support. G. J. Depow analyzed the data; Z. Francis provided guidance and created the figures. G. J. Depow wrote the first draft of the manuscript with advice from M. Inzlicht. Z. Francis and M. Inzlicht provided critical revisions. All the authors revised the manuscript in response to reviews and approved the final manuscript for submission.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Author Contributions</head><p>G. J. Depow and M. Inzlicht conceived the idea for the project. G. J. Depow collected the data in conjunction with a survey company and an experience-sampling company. Z. Francis and M. Inzlicht provided critical support. G. J. Depow analyzed the data; Z. Francis provided guidance and created the figures. G. J. Depow wrote the first draft of the manuscript with advice from M. Inzlicht. Z. Francis and M. Inzlicht provided critical revisions. All the authors revised the manuscript in response to reviews and approved the final manuscript for submission.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Declaration of Conflicting Interests</head><p>The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.</p></div>			</div>
 			<div type="references">
 
 				<listBibl>
 
 <biblStruct xml:id="b0">
-	<monogr>
-		<title/>
-		<author>
-			<persName><forename type="first">T</forename><forename type="middle">C</forename><surname>Orcid</surname></persName>
-		</author>
-		<author>
-			<persName><forename type="first">Gregory</forename><surname>John</surname></persName>
-		</author>
-		<ptr target="https://orcid.org/0000-0002-9488-9132" />
-		<imprint/>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b1">
-	<monogr>
-		<title/>
-		<author>
-			<persName><forename type="first">Michael</forename><surname>Inzlicht</surname></persName>
-		</author>
-		<ptr target="https://orcid.org/0000-0001-9297-6497References" />
-		<imprint/>
-	</monogr>
-</biblStruct>
-
-<biblStruct xml:id="b2">
 	<analytic>
 		<title level="a" type="main">Will you help me to suffer less? How about to feel more joy? Positive and negative empathy are associated with different other-oriented motivations</title>
 		<author>
@@ -186,7 +167,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b3">
+<biblStruct xml:id="b1">
 	<analytic>
 		<title level="a" type="main">Empathizing with others&apos; pain versus empathizing with others&apos; joy: Examining the separability of positive and negative empathy and their relation to different types of social behaviors and social emotions</title>
 		<author>
@@ -208,7 +189,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b4">
+<biblStruct xml:id="b2">
 	<analytic>
 		<title level="a" type="main">Geographic variation in empathy: A state-level analysis</title>
 		<author>
@@ -236,7 +217,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b5">
+<biblStruct xml:id="b3">
 	<analytic>
 		<title level="a" type="main">Fitting linear mixed-effects models using lme4</title>
 		<author>
@@ -264,7 +245,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b6">
+<biblStruct xml:id="b4">
 	<analytic>
 		<title level="a" type="main">These things called empathy: Eight related but distinct phenomena</title>
 		<author>
@@ -289,7 +270,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b7">
+<biblStruct xml:id="b5">
 	<analytic>
 		<title level="a" type="main">Immorality from empathy-induced altruism: When compassion and justice conflict</title>
 		<author>
@@ -318,7 +299,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b8">
+<biblStruct xml:id="b6">
 	<analytic>
 		<title level="a" type="main">Controlling the false discovery rate: A practical and powerful approach to multiple testing</title>
 		<author>
@@ -339,7 +320,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b9">
+<biblStruct xml:id="b7">
 	<analytic>
 		<title level="a" type="main">Researching children&apos;s individual empathic abilities in the context of their daily lives: The importance of mixed methods</title>
 		<author>
@@ -376,7 +357,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b10">
+<biblStruct xml:id="b8">
 	<analytic>
 		<title level="a" type="main">A meta-analytic review of moral licensing</title>
 		<author>
@@ -402,7 +383,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b11">
+<biblStruct xml:id="b9">
 	<analytic>
 		<title level="a" type="main">Causal processes in psychology are heterogeneous</title>
 		<author>
@@ -429,7 +410,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b12">
+<biblStruct xml:id="b10">
 	<analytic>
 		<title level="a" type="main">Empathy is hard work: People choose to avoid empathy because of its cognitive costs</title>
 		<author>
@@ -464,7 +445,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b13">
+<biblStruct xml:id="b11">
 	<analytic>
 		<title level="a" type="main">Intergroup empathy: How does race affect empathic neural responses</title>
 		<author>
@@ -487,7 +468,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b14">
+<biblStruct xml:id="b12">
 	<analytic>
 		<title level="a" type="main">Empathy: Gender effects in brain and behavior</title>
 		<author>
@@ -522,7 +503,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<note>Pt. 4</note>
 </biblStruct>
 
-<biblStruct xml:id="b15">
+<biblStruct xml:id="b13">
 	<analytic>
 		<title level="a" type="main">Us versus them: Social identity shapes neural responses to intergroup competition and harm</title>
 		<author>
@@ -548,7 +529,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b16">
+<biblStruct xml:id="b14">
 	<analytic>
 		<title level="a" type="main">Empathy: A review of the concept</title>
 		<author>
@@ -577,7 +558,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b17">
+<biblStruct xml:id="b15">
 	<analytic>
 		<title level="a" type="main">Measuring individual differences in empathy: A multidimensional approach</title>
 		<author>
@@ -597,7 +578,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b18">
+<biblStruct xml:id="b16">
 	<analytic>
 		<title level="a" type="main">Empathy and prosocial behavior</title>
 		<author>
@@ -622,7 +603,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b19">
+<biblStruct xml:id="b17">
 	<analytic>
 		<title level="a" type="main">Empathy as a driver of prosocial behaviour: Highly conserved neurobehavioural mechanisms across species</title>
 		<author>
@@ -651,7 +632,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b20">
+<biblStruct xml:id="b18">
 	<analytic>
 		<title level="a" type="main">The empathic brain: How, when and why?</title>
 		<author>
@@ -674,7 +655,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b21">
+<biblStruct xml:id="b19">
 	<analytic>
 		<title level="a" type="main">The current state of empathy research</title>
 		<author>
@@ -697,7 +678,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b22">
+<biblStruct xml:id="b20">
 	<analytic>
 		<title level="a" type="main">An R 2 statistic for fixed effects in the linear mixed model</title>
 		<author>
@@ -729,7 +710,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b23">
+<biblStruct xml:id="b21">
 	<analytic>
 		<title level="a" type="main">The relation of empathy to prosocial and related behaviors</title>
 		<author>
@@ -751,7 +732,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b24">
+<biblStruct xml:id="b22">
 	<analytic>
 		<title level="a" type="main">Is there a core neural network in empathy? An fMRI based quantitative meta-analysis</title>
 		<author>
@@ -780,7 +761,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b25">
+<biblStruct xml:id="b23">
 	<analytic>
 		<title level="a" type="main">Motivational effects on empathic choices</title>
 		<author>
@@ -805,7 +786,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b26">
+<biblStruct xml:id="b24">
 	<analytic>
 		<title level="a" type="main">From dehumanization and objectification to rehumanization: Neuroimaging studies on the building blocks of empathy</title>
 		<author>
@@ -824,7 +805,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b27">
+<biblStruct xml:id="b25">
 	<analytic>
 		<title level="a" type="main">You seem tired, but so am I: Willpower theories and intention to provide support in romantic relationships</title>
 		<author>
@@ -850,7 +831,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b28">
+<biblStruct xml:id="b26">
 	<analytic>
 		<title level="a" type="main">How doctors recognise that their patients are worried: A qualitative study of patient cues</title>
 		<author>
@@ -885,7 +866,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b29">
+<biblStruct xml:id="b27">
 	<analytic>
 		<title level="a" type="main">Empathy across the adult lifespan: Longitudinal and experience-sampling findings</title>
 		<author>
@@ -917,7 +898,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b30">
+<biblStruct xml:id="b28">
 	<analytic>
 		<title level="a" type="main">Empathy present and future</title>
 		<author>
@@ -940,7 +921,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b31">
+<biblStruct xml:id="b29">
 	<analytic>
 		<title level="a" type="main">How do laypeople define empathy</title>
 		<author>
@@ -966,7 +947,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b32">
+<biblStruct xml:id="b30">
 	<analytic>
 		<title level="a" type="main">Are liberals and conservatives equally motivated to feel empathy toward others?</title>
 		<author>
@@ -998,7 +979,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b33">
+<biblStruct xml:id="b31">
 	<analytic>
 		<title level="a" type="main">Morality in everyday life</title>
 		<author>
@@ -1027,7 +1008,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b34">
+<biblStruct xml:id="b32">
 	<analytic>
 		<title level="a" type="main">Empathic accuracy</title>
 		<author>
@@ -1047,7 +1028,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b35">
+<biblStruct xml:id="b33">
 	<analytic>
 		<title level="a" type="main">Are empathy and concern psychologically distinct?</title>
 		<author>
@@ -1073,7 +1054,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b36">
+<biblStruct xml:id="b34">
 	<analytic>
 		<title level="a" type="main">Self and other ratings of dyadic empathy as predictors of relationship satisfaction</title>
 		<author>
@@ -1102,7 +1083,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b37">
+<biblStruct xml:id="b35">
 	<monogr>
 		<title level="m" type="main">Understanding and analyzing multilevel data from real-time monitoring studies: An easily-accessible tutorial using R. PsyArXiv</title>
 		<author>
@@ -1116,7 +1097,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b38">
+<biblStruct xml:id="b36">
 	<analytic>
 		<title level="a" type="main">The positive (and negative) psychology of empathy</title>
 		<author>
@@ -1142,7 +1123,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b39">
+<biblStruct xml:id="b37">
 	<analytic>
 		<title level="a" type="main">Changes in dispositional empathy in American college students over time: A meta-analysis</title>
 		<author>
@@ -1168,7 +1149,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b40">
+<biblStruct xml:id="b38">
 	<analytic>
 		<title level="a" type="main">Has the evidence for moral licensing been inflated by publication bias?</title>
 		<author>
@@ -1189,7 +1170,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b41">
+<biblStruct xml:id="b39">
 	<analytic>
 		<title level="a" type="main">hauselin/hausekeep: Third release</title>
 		<author>
@@ -1207,7 +1188,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<note>Version 0.0.0.9003</note>
 </biblStruct>
 
-<biblStruct xml:id="b42">
+<biblStruct xml:id="b40">
 	<analytic>
 		<title level="a" type="main">Anti-)egalitarianism differentially predicts empathy for members of advantaged versus disadvantaged groups</title>
 		<author>
@@ -1230,7 +1211,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b43">
+<biblStruct xml:id="b41">
 	<analytic>
 		<title level="a" type="main">Sample size planning for statistical power and accuracy in parameter estimation</title>
 		<author>
@@ -1255,7 +1236,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b44">
+<biblStruct xml:id="b42">
 	<analytic>
 		<title level="a" type="main">Moral selflicensing: When being good frees us to be bad</title>
 		<author>
@@ -1281,7 +1262,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b45">
+<biblStruct xml:id="b43">
 	<analytic>
 		<title level="a" type="main">MetricWire</title>
 		<author>
@@ -1295,10 +1276,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 			<date type="published" when="2019">2019</date>
 		</imprint>
 	</monogr>
-	<note>Version 4.1.2. Mobile app</note>
+	<note>Version 4.1.2 Mobile app</note>
 </biblStruct>
 
-<biblStruct xml:id="b46">
+<biblStruct xml:id="b44">
 	<analytic>
 		<title level="a" type="main">Empathy for the social suffering of friends and strangers recruits distinct patterns of brain activation</title>
 		<author>
@@ -1336,7 +1317,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b47">
+<biblStruct xml:id="b45">
 	<analytic>
 		<title level="a" type="main">The emerging study of positive empathy</title>
 		<author>
@@ -1362,7 +1343,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b48">
+<biblStruct xml:id="b46">
 	<analytic>
 		<title level="a" type="main">The neural components of empathy: Predicting daily prosocial behavior</title>
 		<author>
@@ -1388,7 +1369,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b49">
+<biblStruct xml:id="b47">
 	<analytic>
 		<title level="a" type="main">Missed opportunities for interval empathy in lung cancer communication</title>
 		<author>
@@ -1414,7 +1395,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b50">
+<biblStruct xml:id="b48">
 	<analytic>
 		<title level="a" type="main">Day-to-day variability in empathy as a function of daily events and mood</title>
 		<author>
@@ -1443,7 +1424,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b51">
+<biblStruct xml:id="b49">
 	<analytic>
 		<title level="a" type="main">Empathic concern and perspective taking: Linear and quadratic effects of age across the adult life span</title>
 		<author>
@@ -1472,7 +1453,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b52">
+<biblStruct xml:id="b50">
 	<monogr>
 		<ptr target="https://www.pewresearch.org/internet/fact-sheet/mobile/" />
 		<title level="m">Demographics of mobile device ownership and adoption in the United States</title>
@@ -1485,7 +1466,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b53">
+<biblStruct xml:id="b51">
 	<analytic>
 		<title level="a" type="main">From glue to gasoline: How competition turns perspective takers unethical</title>
 		<author>
@@ -1514,7 +1495,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b54">
+<biblStruct xml:id="b52">
 	<analytic>
 		<title level="a" type="main">A perception-action model for empathy</title>
 		<author>
@@ -1539,7 +1520,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b55">
+<biblStruct xml:id="b53">
 	<analytic>
 		<title level="a" type="main">R: A language and environment for statistical computing</title>
 		<author>
@@ -1557,7 +1538,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	<note>Computer software</note>
 </biblStruct>
 
-<biblStruct xml:id="b56">
+<biblStruct xml:id="b54">
 	<analytic>
 		<title level="a" type="main">Social psychology and science: Some lessons from Solomon Asch</title>
 		<author>
@@ -1577,7 +1558,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b57">
+<biblStruct xml:id="b55">
 	<analytic>
 		<title/>
 		<idno type="DOI">10.1207/S15327957PSPR0501_1</idno>
@@ -1590,7 +1571,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b58">
+<biblStruct xml:id="b56">
 	<analytic>
 		<title level="a" type="main">Using experience sampling to examine links between compassion, eudaimonia, and pro-social behavior</title>
 		<author>
@@ -1625,7 +1606,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b59">
+<biblStruct xml:id="b57">
 	<analytic>
 		<title level="a" type="main">At what sample size do correlations stabilize</title>
 		<author>
@@ -1647,7 +1628,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b60">
+<biblStruct xml:id="b58">
 	<analytic>
 		<title level="a" type="main">Empathy in adults with clinical or subclinical depressive symptoms</title>
 		<author>
@@ -1673,7 +1654,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b61">
+<biblStruct xml:id="b59">
 	<analytic>
 		<title level="a" type="main">Empathic accuracy and relationship satisfaction: A meta-analytic review</title>
 		<author>
@@ -1708,7 +1689,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b62">
+<biblStruct xml:id="b60">
 	<analytic>
 		<title level="a" type="main">Ecological momentary assessment</title>
 		<author>
@@ -1734,7 +1715,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b63">
+<biblStruct xml:id="b61">
 	<analytic>
 		<title level="a" type="main">Empathy and compassion</title>
 		<author>
@@ -1757,7 +1738,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b64">
+<biblStruct xml:id="b62">
 	<analytic>
 		<title level="a" type="main">The next Big Five Inventory (BFI-2): Developing and assessing a hierarchical model with 15 facets to enhance bandwidth, fidelity, and predictive power</title>
 		<author>
@@ -1780,7 +1761,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b65">
+<biblStruct xml:id="b63">
 	<analytic>
 		<title level="a" type="main">Class and compassion: Socioeconomic factors predict responses to suffering social class and responses to threat</title>
 		<author>
@@ -1809,7 +1790,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b66">
+<biblStruct xml:id="b64">
 	<analytic>
 		<title level="a" type="main">Not only the miserable receive help: Empathy promotes prosocial behaviour toward the happy</title>
 		<author>
@@ -1832,7 +1813,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b67">
+<biblStruct xml:id="b65">
 	<analytic>
 		<title level="a" type="main">Positive empathy and prosocial behavior: A neglected link</title>
 		<author>
@@ -1855,7 +1836,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b68">
+<biblStruct xml:id="b66">
 	<analytic>
 		<title level="a" type="main">The empathy enigma: An empirical study of decline in empathy among undergraduate nursing students</title>
 		<author>
@@ -1884,7 +1865,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b69">
+<biblStruct xml:id="b67">
 	<analytic>
 		<title level="a" type="main">Empathy, religious orientation, and social desirability</title>
 		<author>
@@ -1913,7 +1894,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b70">
+<biblStruct xml:id="b68">
 	<analytic>
 		<title level="a" type="main">Ideological differences in the expanse of the moral circle</title>
 		<author>
@@ -1945,7 +1926,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b71">
+<biblStruct xml:id="b69">
 	<analytic>
 		<title level="a" type="main">Social cognition in aggressive offenders: Impaired empathy, but intact theory of mind</title>
 		<author>
@@ -1977,7 +1958,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b72">
+<biblStruct xml:id="b70">
 	<analytic>
 		<title level="a" type="main">Empathy: A motivated account</title>
 		<author>
@@ -1997,7 +1978,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b73">
+<biblStruct xml:id="b71">
 	<analytic>
 		<title level="a" type="main">The neuroscience of empathy: Progress, pitfalls and promise</title>
 		<author>
@@ -2020,7 +2001,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 	</monogr>
 </biblStruct>
 
-<biblStruct xml:id="b74">
+<biblStruct xml:id="b72">
 	<analytic>
 		<title level="a" type="main">The distribution of basic emotions in everyday life: A state and trait perspective from experience sampling data</title>
 		<author>
