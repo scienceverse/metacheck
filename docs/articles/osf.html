@@ -35,7 +35,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9042</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9043</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -123,18 +123,40 @@ Framework</a>. For this illustration we use an open access paper
 published in Psychological Science that has already been converted to a
 papercheck object using GROBID. There are 250 open access papers in the
 Papercheck object <code>psychsci</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># paper to use in this example</span></span>
+<span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="va">psychsci</span><span class="op">$</span><span class="va">`09567976241279291`</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="set-up-osf-functions">Set up OSF functions<a class="anchor" aria-label="anchor" href="#set-up-osf-functions"></a>
+</h3>
+<p>You can only make 100 API requests per hour, unless you authorise
+your requests, when you can make 10K requests per day. The OSF functions
+in papercheck often make several requests per URL to get all of the
+info, so it’s worthwhile setting your PAT. You can authorise them by
+creating an OSF token at <a href="https://osf.io/settings/tokens" class="external-link uri">https://osf.io/settings/tokens</a> and including the
+following line in your .Renviron file:</p>
+<pre><code><span><span class="va">OSF_PAT</span><span class="op">=</span><span class="st">"replace-with-your-token-string"</span></span></code></pre>
+<p>The OSF API server is down a lot, so it’s often good to check it
+before you run a bunch of OSF functions. When the server is down, it can
+take several seconds to return an error, so scripts where you are
+checking many URLs can take a long time before you realise they aren’t
+working.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/osf_api_check.html">osf_api_check</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "ok"</span></span></code></pre></div>
+</div>
 <div class="section level3">
 <h3 id="find-osf-links">Find OSF Links<a class="anchor" aria-label="anchor" href="#find-osf-links"></a>
 </h3>
-<p>We start by searching for a link to the Open Science Framework (OSF)
-by using “osf_check” module. This can let you know if a link is open,
-closed, view-only, or if there is an error with the URL.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#paper &lt;- psychsci$`09567976241279291`</span></span>
-<span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="va">psychsci</span><span class="op">$</span><span class="va">`0956797620955209`</span></span>
-<span><span class="va">osf_links</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"osf_check"</span><span class="op">)</span></span></code></pre></div>
+<p>We start by searching for all URLs by using “all_urls” module, then
+narrowing that down to just the probable links to the Open Science
+Framework (OSF).</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all_urls"</span><span class="op">)</span></span>
+<span><span class="va">osf_links</span> <span class="op">&lt;-</span> <span class="va">mod</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"osf\\s*\\.\\s*io"</span>, <span class="va">text</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-ac96cb3ee4656e2e9ec3" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-ac96cb3ee4656e2e9ec3">{"x":{"filter":"none","vertical":false,"data":[["https://osf.io/k2dbf","https://osf.io/k2dbf","https://osf.io/k2dbf"],["method","funding","funding"],["open","open","open"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>text<\/th>\n      <th>section<\/th>\n      <th>status<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"tip","columnDefs":[{"name":"text","targets":0},{"name":"section","targets":1},{"name":"status","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-ac96cb3ee4656e2e9ec3">{"x":{"filter":"none","vertical":false,"data":[["https://osf.io/hv29w","https://osf.io/2es6n","https://osf.io/jpm5a","https://osf.io/aux7s","https://osf.io/nw3mc","https://osf.io/ks639","https://osf.io/y75nu","https://doi.org/10.17605/OSF.IO/4TYM7","https://doi.org/10.17605/OSF.IO/X4T9A"],["method","method","method","method","method","method","method","funding","funding"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>text<\/th>\n      <th>section<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"tip","columnDefs":[{"name":"text","targets":0},{"name":"section","targets":1}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div class="section level3">
 <h3 id="retrieve-link-info">Retrieve Link Info<a class="anchor" aria-label="anchor" href="#retrieve-link-info"></a>
@@ -144,35 +166,44 @@ Interface (API) is used to retrieve whether the link points to a file,
 project, or registration, and what the overarching project is, in case
 this is not the folder linked to. This is achieved through the
 <code><a href="../reference/osf_retrieve.html">osf_retrieve()</a></code> function.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">link_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_retrieve.html">osf_retrieve</a></span><span class="op">(</span><span class="va">osf_links</span><span class="op">$</span><span class="va">table</span><span class="op">$</span><span class="va">text</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Retrieving info from https://osf.io/k2dbf...</span></span></code></pre></div>
+<p>This function can take a vector of OSF IDs or URLs, or a table that
+contains them. If the IDs aren’t in the first column, you will need to
+specify the name of the column. The function will return your table with
+added information.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">link_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_retrieve.html">osf_retrieve</a></span><span class="op">(</span><span class="va">osf_links</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Retrieving info from hv29w...</span></span>
+<span><span class="co">#&gt; Retrieving info from 2es6n...</span></span>
+<span><span class="co">#&gt; Retrieving info from jpm5a...</span></span>
+<span><span class="co">#&gt; Retrieving info from aux7s...</span></span>
+<span><span class="co">#&gt; Retrieving info from nw3mc...</span></span>
+<span><span class="co">#&gt; Retrieving info from ks639...</span></span>
+<span><span class="co">#&gt; Retrieving info from y75nu...</span></span>
+<span><span class="co">#&gt; Retrieving info from 4tym7...</span></span>
+<span><span class="co">#&gt; Retrieving info from x4t9a...</span></span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-e5c8c404fe174e4c81bd" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-e5c8c404fe174e4c81bd">{"x":{"filter":"none","vertical":false,"data":[["k2dbf","k2dbf","k2dbf"],["Preregistered replication of “Sick body, vigilant mind: The biological immune system activates the behavioral immune system”","Preregistered replication of “Sick body, vigilant mind: The biological immune system activates the behavioral immune system”","Preregistered replication of “Sick body, vigilant mind: The biological immune system activates the behavioral immune system”"],["node","node","node"],["k2dbf","k2dbf","k2dbf"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>osf_id<\/th>\n      <th>name<\/th>\n      <th>osf_type<\/th>\n      <th>project<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"tip","columnDefs":[{"name":"osf_id","targets":0},{"name":"name","targets":1},{"name":"osf_type","targets":2},{"name":"project","targets":3}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script><p>There are multiple OSF links in this paper, but they are all part of
+<script type="application/json" data-for="htmlwidget-e5c8c404fe174e4c81bd">{"x":{"filter":"none","vertical":false,"data":[["hv29w","2es6n","jpm5a","aux7s","nw3mc","ks639","y75nu","4tym7","x4t9a"],["Kim,Doeller_Prereg_OSF.pdf","suppleVideo1_learnSph.mp4","suppleVideo2_learnPlane.mp4","suppleVideo3_objlocSph.mp4","suppleVideo4_objlocPlane.mp4","suppleVideo5_triangleSph.mp4","suppleVideo6_trianglePlane.mp4","Cognitive maps for a spherical surface","Cognitive maps for a spherical surface"],["files","files","files","files","files","files","files","registrations","nodes"],["x4t9a","x4t9a","x4t9a","x4t9a","x4t9a","x4t9a","x4t9a","x4t9a","x4t9a"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>osf_id<\/th>\n      <th>name<\/th>\n      <th>osf_type<\/th>\n      <th>project<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"tip","columnDefs":[{"name":"osf_id","targets":0},{"name":"name","targets":1},{"name":"osf_type","targets":2},{"name":"project","targets":3}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script><p>There are multiple OSF links in this paper, but they are all part of
 the same overarching OSF project, with the project ID
-<em>k2dbf</em>.</p>
+<em>x4t9a</em>.</p>
 </div>
 <div class="section level3">
-<h3 id="get-all-osf-contents">Get all OSF Contents<a class="anchor" aria-label="anchor" href="#get-all-osf-contents"></a>
+<h3 id="get-all-project-contents">Get all Project Contents<a class="anchor" aria-label="anchor" href="#get-all-project-contents"></a>
 </h3>
-<p>The function <code><a href="../reference/osf_contents.html">osf_contents()</a></code> will loop over all files and
-folders in this project (and in all other projects, if a manuscript
-points to multiple overarching IDs), and retrieve all available
-information about the files in each project, such as file names, file
-paths, project titles, folder names, and the wiki.</p>
-<p>If you give this function a list with duplicate projects, it will
-only get the contents for each project once.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">osf_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_contents.html">osf_contents</a></span><span class="op">(</span><span class="va">link_info</span><span class="op">$</span><span class="va">project</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Retrieving contents from k2dbf...</span></span>
-<span><span class="co">#&gt; Retrieving contents from 5e344fb4f6631d013e5a48c9...</span></span>
-<span><span class="co">#&gt; Retrieving contents from 5b88067b7b17570016f95389...</span></span></code></pre></div>
+<p>The function <code><a href="../reference/osf_retrieve.html">osf_retrieve()</a></code> will also retrieve all child
+components, files and folders if you set the argument
+<code>recursive = TRUE</code>. We can retrieve all of the contents under
+the parent project(s) with the following code.</p>
+<p>If you give this function a list with duplicate projects or missing
+values, it will only get the contents for each project once.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">osf_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_retrieve.html">osf_retrieve</a></span><span class="op">(</span><span class="va">link_info</span><span class="op">$</span><span class="va">project</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Retrieving info from x4t9a...</span></span></code></pre></div>
 <p>We can take a look at these results. The OSF allows you to categorize
 components by category, and we can also determine file types using
 extensions. It looks like these authors did not use any categories
 beyond the default project one.</p>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-36aa3d2a04d42bbc2145" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-36aa3d2a04d42bbc2145">{"x":{"filter":"none","vertical":false,"data":[["k2dbf","5f212f53320805020315a476","5ecbe9de17ac9e018762a075","5ecbe9ddaeeb6d0173087227","5f212f5232080501ef15cd3e","5e344fdff6631d013e5a4940","5e344fdff6631d01305a7b74","5ecbe96817ac9e0191624b2b","5e344fb4f6631d013e5a48c9","5d760e821e603a0019329572","5b88067b7b17570016f95389","5e36d6fd57427b00d40c3a30","5c50658f568329001e7fe710","5c50658ebf723100177acd04"],["Preregistered replication of “Sick body, vigilant mind: The biological immune system activates the behavioral immune system”","rawdata.zip","SBVM_stage2rev.html","SBVM_stage2rev.Rmd","SBVM_data_aggregated.csv","SBVM_stage2.html","SBVM_stage2.Rmd","SBVM Transparency Checklist.pdf","IPA Files","Illness Recency Proposal_IPA.docx","R Code","analysis.zip","SBVM_rep_v4.Rmd","SBVM_rep_v4.html"],["node","file","file","file","file","file","file","file","folder","file","folder","file","file","file"],["project","project","project","project","project","project","project","project","folder",null,"folder",null,null,null],[null,"archive","web","code","data","web","code","text",null,"text",null,"archive","code","web"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>osf_id<\/th>\n      <th>name<\/th>\n      <th>type<\/th>\n      <th>category<\/th>\n      <th>filetype<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"tip","columnDefs":[{"name":"osf_id","targets":0},{"name":"name","targets":1},{"name":"type","targets":2},{"name":"category","targets":3},{"name":"filetype","targets":4}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-36aa3d2a04d42bbc2145">{"x":{"filter":"none","vertical":false,"data":[["x4t9a","6621454e716cb7048fa45a2a","6293d1cab59d5f1df8720db5","6293d1bfbbdcde278f4269ed","6293d1c5bbdcde278f4269f7","6339c10031d65306e12de5a2","662145f3716cb7048fa45a58","662146fa8df04804d3177e59","6293d2e3b59d5f1df0720c6b","64f0aaf4d9f2c905a0d04821","64f0aaf7f3dcd105dbddd396","64f0aaf9989de605c3dd152a","6293d2d5b59d5f1df7720e41","6614017dc053943058b4d41c","6293d2d5b59d5f1df0720c66","6293d26c86324127ca5b5862","6293d29eb7e8c726edc2dc38","6293d2a1bbdcde278b42696a","6293d271ddbe49279ba215f6","6293d275bbdcde278f426b25","6293d282ddbe49279aa21548","6293d1e8b59d5f1df7720d4c","6293d310b7e8c726ecc2db7d","6293d30fb7e8c726ecc2db79","6293d30ebbdcde278f426c49","6293d310b59d5f1df3720cf4","661402d9e65c603b737d9c10","64f0ac666d1e8905f21516b2","661402b4943bee32eadfebdd","6293d30d86324127d25b5c27","6293d30d86324127ce5b5a91","6293d30db7e8c726edc2dcb7","6339c121ec7f3f0704f5fbf0"],["Cognitive maps for a spherical surface","experiment","script","video","data","Manuscript","virtualizerStudy1-main.zip","ReadMe.txt","utility","main_analyseTriangleComple_20230423.m","main_simulate_objlocTraj.m","supple_learningTrajectory.m","poweranalysis_sph.R","supple_sphWithVariousRadius_clean.m","main_analyseObjLocTest.m","suppleVideo2_learnPlane.mp4","suppleVideo3_objlocSph.mp4","suppleVideo6_trianglePlane.mp4","suppleVideo1_learnSph.mp4","suppleVideo4_objlocPlane.mp4","suppleVideo5_triangleSph.mp4","suppleMovie_legend.txt","sumDemograph.csv","rawdata_plane_triangle.csv","rawdata_sph_objlocTest.csv","rawdata_sph_triangle.csv","cleanData_combine.mat","traj_learning","pilotData_triangle_combine_clean.csv","rawdata_plane_objlocIdentity.csv","rawdata_sph_objlocIdentity.csv","rawdata_plane_objlocTest.csv","Kim,Doeller_Prereg_OSF.pdf"],["nodes","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files","files"],[null,"folder","folder","folder","folder","folder","file","file","folder","file","file","file","file","file","file","file","file","file","file","file","file","file","file","file","file","file","file","folder","file","file","file","file","file"],[null,"NA","NA","NA","NA","NA","archive","text","NA","code","code","code","NA","code","code","video","video","video","video","video","video","text","data","data","data","data","code","NA","data","data","data","data","text"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>osf_id<\/th>\n      <th>name<\/th>\n      <th>osf_type<\/th>\n      <th>kind<\/th>\n      <th>filetype<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"tip","columnDefs":[{"name":"osf_id","targets":0},{"name":"name","targets":1},{"name":"osf_type","targets":2},{"name":"kind","targets":3},{"name":"filetype","targets":4}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div class="section level3">
 <h3 id="summarize-contents">Summarize Contents<a class="anchor" aria-label="anchor" href="#summarize-contents"></a>
@@ -183,10 +214,10 @@ determine what is being shared. A simple regular expression text search
 for ‘ReadMe’, ‘codebook’, ‘script’, and ‘data’ (in a number of possible
 ways that these words can be written) is used to automatically detect
 what is shared.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">osf_files_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_contents.html">summarize_contents</a></span><span class="op">(</span><span class="va">osf_files</span><span class="op">)</span></span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-febe03efa1a2d8d52a86" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-febe03efa1a2d8d52a86">{"x":{"filter":"none","vertical":false,"data":[["rawdata.zip","SBVM_stage2rev.html","SBVM_stage2rev.Rmd","SBVM_data_aggregated.csv","SBVM_stage2.html","SBVM_stage2.Rmd","SBVM Transparency Checklist.pdf","Illness Recency Proposal_IPA.docx","analysis.zip","SBVM_rep_v4.Rmd","SBVM_rep_v4.html"],["archive","web","code","data","web","code","text","text","archive","code","web"],["data","","code","data","","code","","","","code",""]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>name<\/th>\n      <th>filetype<\/th>\n      <th>best_guess<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"tip","columnDefs":[{"name":"name","targets":0},{"name":"filetype","targets":1},{"name":"best_guess","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-febe03efa1a2d8d52a86">{"x":{"filter":"none","vertical":false,"data":[["virtualizerStudy1-main.zip","ReadMe.txt","main_analyseTriangleComple_20230423.m","main_simulate_objlocTraj.m","supple_learningTrajectory.m","poweranalysis_sph.R","supple_sphWithVariousRadius_clean.m","main_analyseObjLocTest.m","suppleVideo2_learnPlane.mp4","suppleVideo3_objlocSph.mp4","suppleVideo6_trianglePlane.mp4","suppleVideo1_learnSph.mp4","suppleVideo4_objlocPlane.mp4","suppleVideo5_triangleSph.mp4","suppleMovie_legend.txt","sumDemograph.csv","rawdata_plane_triangle.csv","rawdata_sph_objlocTest.csv","rawdata_sph_triangle.csv","cleanData_combine.mat","pilotData_triangle_combine_clean.csv","rawdata_plane_objlocIdentity.csv","rawdata_sph_objlocIdentity.csv","rawdata_plane_objlocTest.csv","Kim,Doeller_Prereg_OSF.pdf"],["archive","text","code","code","code","NA","code","code","video","video","video","video","video","video","text","data","data","data","data","code","data","data","data","data","text"],["","readme","code","code","code","","code","code","","","","","","","","data","data","data","data","code","data","data","data","data",""]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>name<\/th>\n      <th>filetype<\/th>\n      <th>best_guess<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"tip","columnDefs":[{"name":"name","targets":0},{"name":"filetype","targets":1},{"name":"best_guess","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div class="section level3">
 <h3 id="report-text">Report Text<a class="anchor" aria-label="anchor" href="#report-text"></a>
@@ -205,11 +236,12 @@ case any information is missing. Papercheck might miss data and code
 that is shared, but not clearly named, but by indicating this, users
 might realize that the data repository can be improved by more clearly
 naming folders and files.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">osf_report</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">summary</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">files</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">summary</span>, <span class="va">type</span> <span class="op">==</span> <span class="st">"file"</span><span class="op">)</span></span>
+<span>  <span class="va">files</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">summary</span>, <span class="va">osf_type</span> <span class="op">==</span> <span class="st">"files"</span><span class="op">)</span></span>
 <span>  <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">files</span>, <span class="va">best_guess</span> <span class="op">==</span> <span class="st">"data"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="va">code</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">files</span>, <span class="va">best_guess</span> <span class="op">==</span> <span class="st">"code"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">codebook</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">files</span>, <span class="va">best_guess</span> <span class="op">==</span> <span class="st">"codebook"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="va">readme</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">files</span>, <span class="va">best_guess</span> <span class="op">==</span> <span class="st">"readme"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="va">traffic_light</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
@@ -221,6 +253,11 @@ naming folders and files.</p>
 <span>  <span class="va">data_report</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
 <span>    <span class="va">data</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"\u26A0\uFE0F There was no data detected. Are you sure you cannot share any of the underlying data? If you did share the data, consider naming the file(s) or file folder with 'data'."</span>,</span>
 <span>    <span class="va">data</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"\u2705 Data file(s) were detected. Great job making your research more transparent and reproducible!"</span></span>
+<span>  <span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="va">codebook_report</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
+<span>    <span class="va">codebook</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"\u26A0\uFE0F️ No codebooks or data dictionaries were found. Consider adding one to make it easier for others to know which variables you have collected, and how to re-use them. The codebook package in R can automate a substantial part of the generation of a codebook: https://rubenarslan.github.io/codebook/"</span>,</span>
+<span>    <span class="va">codebook</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"\u2705 Codebook(s) were detected. Well done!"</span></span>
 <span>  <span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="va">code_report</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
@@ -236,6 +273,7 @@ naming folders and files.</p>
 <span>  <span class="va">report_message</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span></span>
 <span>    <span class="va">readme_report</span>,</span>
 <span>    <span class="va">data_report</span>, </span>
+<span>    <span class="va">codebook_report</span>,</span>
 <span>    <span class="va">code_report</span>,</span>
 <span>    <span class="st">"Learn more about reproducible data practices: https://www.projecttier.org/tier-protocol/"</span>,</span>
 <span>    sep <span class="op">=</span> <span class="st">"\n\n"</span></span>
@@ -243,13 +281,16 @@ naming folders and files.</p>
 <span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">report_message</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">osf_report</span><span class="op">(</span><span class="va">osf_files_summary</span><span class="op">)</span> <span class="op">|&gt;</span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>⚠️ No README files were identified. A read me is best practice to
-facilitate re-use. If you have a read me, please name it explicitly
-(e.g., read_me.txt).</p>
+<p>✅ Read Me detected. Great job making it easier to understand how to
+re-use files in your repository!</p>
 <p>✅ Data file(s) were detected. Great job making your research more
 transparent and reproducible!</p>
+<p>⚠️️ No codebooks or data dictionaries were found. Consider adding one
+to make it easier for others to know which variables you have collected,
+and how to re-use them. The codebook package in R can automate a
+substantial part of the generation of a codebook: <a href="https://rubenarslan.github.io/codebook/" class="external-link uri">https://rubenarslan.github.io/codebook/</a></p>
 <p>✅ Code file(s) were detected. Great job making it easier to
 reproduce your results!</p>
 <p>Learn more about reproducible data practices: <a href="https://www.projecttier.org/tier-protocol/" class="external-link uri">https://www.projecttier.org/tier-protocol/</a></p>
@@ -276,7 +317,7 @@ instead of fixed paths (e.g.,
 version), the version of packages that were used, and properties of the
 computer that the analyses was performed on. In R, this can be achieved
 by:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.4.3 (2025-02-28)</span></span>
 <span><span class="co">#&gt; Platform: aarch64-apple-darwin20</span></span>
@@ -296,28 +337,27 @@ by:</p>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt;  [1] progress_1.2.3        httr_1.4.7            lubridate_1.9.4      </span></span>
-<span><span class="co">#&gt;  [4] forcats_1.0.0         stringr_1.5.1         dplyr_1.1.4          </span></span>
-<span><span class="co">#&gt;  [7] purrr_1.0.4           readr_2.1.5           tidyr_1.3.1          </span></span>
-<span><span class="co">#&gt; [10] tibble_3.2.1          ggplot2_3.5.1         tidyverse_2.0.0      </span></span>
-<span><span class="co">#&gt; [13] papercheck_0.0.0.9042</span></span>
+<span><span class="co">#&gt;  [1] lubridate_1.9.4       forcats_1.0.0         stringr_1.5.1        </span></span>
+<span><span class="co">#&gt;  [4] dplyr_1.1.4           purrr_1.0.4           readr_2.1.5          </span></span>
+<span><span class="co">#&gt;  [7] tidyr_1.3.1           tibble_3.2.1          ggplot2_3.5.1        </span></span>
+<span><span class="co">#&gt; [10] tidyverse_2.0.0       papercheck_0.0.0.9043</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] gtable_0.3.6      xfun_0.51         bslib_0.9.0       htmlwidgets_1.6.4</span></span>
-<span><span class="co">#&gt;  [5] tzdb_0.5.0        vctrs_0.6.5       tools_4.4.3       crosstalk_1.2.1  </span></span>
-<span><span class="co">#&gt;  [9] generics_0.1.3    curl_6.0.1        pkgconfig_2.0.3   desc_1.4.3       </span></span>
-<span><span class="co">#&gt; [13] lifecycle_1.0.4   compiler_4.4.3    textshaping_0.4.1 munsell_0.5.1    </span></span>
-<span><span class="co">#&gt; [17] htmltools_0.5.8.1 sass_0.4.9        yaml_2.3.10       pillar_1.10.1    </span></span>
-<span><span class="co">#&gt; [21] pkgdown_2.1.1     crayon_1.5.3      jquerylib_0.1.4   DT_0.33          </span></span>
-<span><span class="co">#&gt; [25] cachem_1.1.0      tidyselect_1.2.1  digest_0.6.37     stringi_1.8.4    </span></span>
-<span><span class="co">#&gt; [29] fastmap_1.2.0     grid_4.4.3        colorspace_2.1-1  cli_3.6.4        </span></span>
-<span><span class="co">#&gt; [33] magrittr_2.0.3    triebeard_0.4.1   crul_1.5.0        osfr_0.2.9       </span></span>
-<span><span class="co">#&gt; [37] withr_3.0.2       prettyunits_1.2.0 scales_1.3.0      timechange_0.3.0 </span></span>
-<span><span class="co">#&gt; [41] roxygen2_7.3.2    rmarkdown_2.29    ragg_1.3.3        hms_1.1.3        </span></span>
-<span><span class="co">#&gt; [45] memoise_2.0.1     evaluate_1.0.3    knitr_1.50        rlang_1.1.5      </span></span>
-<span><span class="co">#&gt; [49] urltools_1.7.3    Rcpp_1.0.14       glue_1.8.0        httpcode_0.3.0   </span></span>
-<span><span class="co">#&gt; [53] xml2_1.3.6        rstudioapi_0.17.1 jsonlite_1.9.1    R6_2.6.1         </span></span>
-<span><span class="co">#&gt; [57] systemfonts_1.1.0 fs_1.6.5</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] sass_0.4.9        generics_0.1.3    xml2_1.3.6        stringi_1.8.4    </span></span>
+<span><span class="co">#&gt;  [5] httpcode_0.3.0    hms_1.1.3         digest_0.6.37     magrittr_2.0.3   </span></span>
+<span><span class="co">#&gt;  [9] evaluate_1.0.3    grid_4.4.3        timechange_0.3.0  fastmap_1.2.0    </span></span>
+<span><span class="co">#&gt; [13] jsonlite_1.9.1    crul_1.5.0        urltools_1.7.3    httr_1.4.7       </span></span>
+<span><span class="co">#&gt; [17] crosstalk_1.2.1   scales_1.3.0      textshaping_0.4.1 jquerylib_0.1.4  </span></span>
+<span><span class="co">#&gt; [21] cli_3.6.4         rlang_1.1.5       triebeard_0.4.1   munsell_0.5.1    </span></span>
+<span><span class="co">#&gt; [25] withr_3.0.2       cachem_1.1.0      yaml_2.3.10       tools_4.4.3      </span></span>
+<span><span class="co">#&gt; [29] tzdb_0.5.0        memoise_2.0.1     colorspace_2.1-1  DT_0.33          </span></span>
+<span><span class="co">#&gt; [33] curl_6.0.1        vctrs_0.6.5       R6_2.6.1          lifecycle_1.0.4  </span></span>
+<span><span class="co">#&gt; [37] fs_1.6.5          htmlwidgets_1.6.4 ragg_1.3.3        osfr_0.2.9       </span></span>
+<span><span class="co">#&gt; [41] pkgconfig_2.0.3   desc_1.4.3        pkgdown_2.1.1     pillar_1.10.1    </span></span>
+<span><span class="co">#&gt; [45] bslib_0.9.0       gtable_0.3.6      Rcpp_1.0.14       glue_1.8.0       </span></span>
+<span><span class="co">#&gt; [49] systemfonts_1.1.0 xfun_0.51         tidyselect_1.2.1  rstudioapi_0.17.1</span></span>
+<span><span class="co">#&gt; [53] knitr_1.50        htmltools_0.5.8.1 rmarkdown_2.29    compiler_4.4.3   </span></span>
+<span><span class="co">#&gt; [57] roxygen2_7.3.2</span></span></code></pre></div>
 <p>As most scientists have not been taught how to code explicitly, it is
 common to see scripts that do not adhere to best coding practices. We
 are no exception ourselves (e.g., you will not find a sessioninfo.txt
@@ -327,10 +367,10 @@ which R version was used, and by changing fixed paths, reproducibility
 is facilitated if best practices are used. The whole point of automated
 checks is to have algorithms that capture expertise make recommendations
 that improve how we currently work.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">check_r_files</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">summary</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">r_files</span> <span class="op">&lt;-</span> <span class="va">summary</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">type</span> <span class="op">==</span> <span class="st">"file"</span>,</span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">osf_type</span> <span class="op">==</span> <span class="st">"files"</span>,</span>
 <span>                  <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"\\.R(md)?"</span>, <span class="va">name</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>abs_report <span class="op">=</span> <span class="cn">NA</span>, </span>
 <span>                  pkg_report <span class="op">=</span> <span class="cn">NA</span>,</span>
@@ -382,10 +422,10 @@ that improve how we currently work.</p>
 <span>  </span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">report</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">r_file_results</span> <span class="op">&lt;-</span> <span class="fu">check_r_files</span><span class="op">(</span><span class="va">osf_files_summary</span><span class="op">)</span></span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-1fb4450895fe099f74a1" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-1fb4450895fe099f74a1">{"x":{"filter":"none","vertical":false,"data":[["SBVM_stage2rev.Rmd","SBVM_stage2rev.Rmd","SBVM_stage2rev.Rmd","SBVM_stage2.Rmd","SBVM_stage2.Rmd","SBVM_stage2.Rmd","SBVM_rep_v4.Rmd","SBVM_rep_v4.Rmd","SBVM_rep_v4.Rmd"],["abs","pkg","session","abs","pkg","session","abs","pkg","session"],["✅ No absolute paths were detected","✅ Packages are loaded in a single block.","❌️ No session info was found in this script.","✅ No absolute paths were detected","✅ Packages are loaded in a single block.","❌️ No session info was found in this script.","✅ No absolute paths were detected","✅ Packages are loaded in a single block.","❌️ No session info was found in this script."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>name<\/th>\n      <th>report<\/th>\n      <th>feedback<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"tip","columnDefs":[{"name":"name","targets":0},{"name":"report","targets":1},{"name":"feedback","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1fb4450895fe099f74a1">{"x":{"filter":"none","vertical":false,"data":[["poweranalysis_sph.R","poweranalysis_sph.R","poweranalysis_sph.R"],["abs","pkg","session"],["✅ No absolute paths were detected","✅ Packages are loaded in a single block.","❌️ No session info was found in this script."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>name<\/th>\n      <th>report<\/th>\n      <th>feedback<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"tip","columnDefs":[{"name":"name","targets":0},{"name":"report","targets":1},{"name":"feedback","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <div class="section level2">
@@ -394,16 +434,128 @@ that improve how we currently work.</p>
 <p>Let’s put everything together in one block of code, and perform all
 automated checks for another open access paper in Psychological
 Science.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">papercheck</span><span class="fu">::</span><span class="fu"><a href="../reference/verbose.html">verbose</a></span><span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="co"># quiets progress messages</span></span>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Add this and the custom functions to a file called osf_file_check.R</span></span>
 <span></span>
-<span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="va">psychsci</span><span class="op">$</span><span class="va">`0956797620955209`</span></span>
-<span><span class="va">osf_links</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"osf_check"</span><span class="op">)</span></span>
-<span><span class="va">link_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_retrieve.html">osf_retrieve</a></span><span class="op">(</span><span class="va">osf_links</span><span class="op">$</span><span class="va">table</span><span class="op">$</span><span class="va">text</span><span class="op">)</span></span>
-<span><span class="va">osf_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_contents.html">osf_contents</a></span><span class="op">(</span><span class="va">link_info</span><span class="op">$</span><span class="va">project</span><span class="op">)</span></span>
-<span><span class="va">osf_files_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_contents.html">summarize_contents</a></span><span class="op">(</span><span class="va">osf_files</span><span class="op">)</span></span>
-<span><span class="va">report_message</span> <span class="op">&lt;-</span> <span class="fu">osf_report</span><span class="op">(</span><span class="va">osf_files_summary</span><span class="op">)</span></span>
-<span><span class="va">r_file_results</span> <span class="op">&lt;-</span> <span class="fu">check_r_files</span><span class="op">(</span><span class="va">osf_files_summary</span><span class="op">)</span>   </span></code></pre></div>
+<span><span class="va">osf_file_check</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">paper</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all_urls"</span><span class="op">)</span></span>
+<span>  <span class="va">osf_links</span> <span class="op">&lt;-</span> <span class="va">mod</span><span class="op">$</span><span class="va">table</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"osf\\s*\\.\\s*io"</span>, <span class="va">text</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="va">link_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_retrieve.html">osf_retrieve</a></span><span class="op">(</span><span class="va">osf_links</span><span class="op">)</span></span>
+<span>  <span class="va">osf_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_retrieve.html">osf_retrieve</a></span><span class="op">(</span><span class="va">link_info</span><span class="op">$</span><span class="va">project</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="va">osf_files_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_contents.html">summarize_contents</a></span><span class="op">(</span><span class="va">osf_files</span><span class="op">)</span></span>
+<span>  <span class="va">report_message</span> <span class="op">&lt;-</span> <span class="fu">osf_report</span><span class="op">(</span><span class="va">osf_files_summary</span><span class="op">)</span></span>
+<span>  <span class="va">r_file_results</span> <span class="op">&lt;-</span> <span class="fu">check_r_files</span><span class="op">(</span><span class="va">osf_files_summary</span><span class="op">)</span>  </span>
+<span>  </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    table <span class="op">=</span> <span class="va">r_file_results</span>,</span>
+<span>    report <span class="op">=</span> <span class="va">report_message</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">module_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">$</span><span class="va">`0956797620955209`</span>, <span class="st">"osf_file_check.R"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Retrieving info from k2dbf...</span></span>
+<span><span class="co">#&gt; Retrieving info from k2dbf...</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/module_report.html">module_report</a></span><span class="op">(</span><span class="va">module_results</span>, header <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="section level4 info">
+<h4 class="info" id="osf-file-check">OSF File Check<a class="anchor" aria-label="anchor" href="#osf-file-check"></a>
+</h4>
+<p>⚠️ No README files were identified. A read me is best practice to
+facilitate re-use. If you have a read me, please name it explicitly
+(e.g., read_me.txt).</p>
+<p>✅ Data file(s) were detected. Great job making your research more
+transparent and reproducible!</p>
+<p>⚠️️ No codebooks or data dictionaries were found. Consider adding one
+to make it easier for others to know which variables you have collected,
+and how to re-use them. The codebook package in R can automate a
+substantial part of the generation of a codebook: <a href="https://rubenarslan.github.io/codebook/" class="external-link uri">https://rubenarslan.github.io/codebook/</a></p>
+<p>✅ Code file(s) were detected. Great job making it easier to
+reproduce your results!</p>
+<p>Learn more about reproducible data practices: <a href="https://www.projecttier.org/tier-protocol/" class="external-link uri">https://www.projecttier.org/tier-protocol/</a></p>
+<table class="table">
+<colgroup>
+<col width="9%">
+<col width="7%">
+<col width="3%">
+<col width="2%">
+<col width="1%">
+<col width="2%">
+<col width="3%">
+<col width="3%">
+<col width="2%">
+<col width="3%">
+<col width="2%">
+<col width="2%">
+<col width="4%">
+<col width="4%">
+<col width="13%">
+<col width="15%">
+<col width="16%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">osf_id</th>
+<th align="left">name</th>
+<th align="left">osf_type</th>
+<th align="left">parent</th>
+<th align="left">kind</th>
+<th align="right">size</th>
+<th align="right">downloads</th>
+<th align="left">filetype</th>
+<th align="left">project</th>
+<th align="left">is_readme</th>
+<th align="left">is_data</th>
+<th align="left">is_code</th>
+<th align="left">is_codebook</th>
+<th align="left">best_guess</th>
+<th align="left">abs</th>
+<th align="left">pkg</th>
+<th align="left">session</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">5ecbe9ddaeeb6d0173087227</td>
+<td align="left">SBVM_stage2rev.Rmd</td>
+<td align="left">files</td>
+<td align="left">k2dbf</td>
+<td align="left">file</td>
+<td align="right">37994</td>
+<td align="right">30</td>
+<td align="left">NA</td>
+<td align="left">k2dbf</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left"></td>
+<td align="left">✅ No absolute paths were detected</td>
+<td align="left">✅ Packages are loaded in a single block.</td>
+<td align="left">❌️ No session info was found in this script.</td>
+</tr>
+<tr class="even">
+<td align="left">5e344fdff6631d01305a7b74</td>
+<td align="left">SBVM_stage2.Rmd</td>
+<td align="left">files</td>
+<td align="left">k2dbf</td>
+<td align="left">file</td>
+<td align="right">34204</td>
+<td align="right">35</td>
+<td align="left">NA</td>
+<td align="left">k2dbf</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="left"></td>
+<td align="left">✅ No absolute paths were detected</td>
+<td align="left">✅ Packages are loaded in a single block.</td>
+<td align="left">❌️ No session info was found in this script.</td>
+</tr>
+</tbody>
+</table>
+<p>Showing 2 of 2 rows</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="future-developments">Future Developments<a class="anchor" aria-label="anchor" href="#future-developments"></a>

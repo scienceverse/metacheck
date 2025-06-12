@@ -4,10 +4,14 @@
 \alias{osf_retrieve}
 \title{Retrieve info from the OSF by ID}
 \usage{
-osf_retrieve(id)
+osf_retrieve(osf_url, id_col = 1, recursive = FALSE)
 }
 \arguments{
-\item{id}{an OSF ID or URL}
+\item{osf_url}{an OSF ID or URL, or a table containing them}
+
+\item{id_col}{the index or name of the column that contains OSF IDs or URLs, if id is a table}
+
+\item{recursive}{whether to retrieve all children}
 }
 \value{
 a data frame of information

@@ -35,7 +35,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9042</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9043</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -152,12 +152,13 @@ languages, as detected and classified by GitHub.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/github_languages.html">github_languages</a></span><span class="op">(</span><span class="st">"scienceverse/papercheck"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     language  bytes</span></span>
-<span><span class="co">#&gt; 1          R 299984</span></span>
+<span><span class="co">#&gt; 1          R 317171</span></span>
 <span><span class="co">#&gt; 2       AMPL   7578</span></span>
 <span><span class="co">#&gt; 3     Python   6986</span></span>
-<span><span class="co">#&gt; 4        CSS   3358</span></span>
-<span><span class="co">#&gt; 5 JavaScript   1018</span></span>
-<span><span class="co">#&gt; 6       SCSS     19</span></span></code></pre></div>
+<span><span class="co">#&gt; 4        TeX   4463</span></span>
+<span><span class="co">#&gt; 5        CSS   3358</span></span>
+<span><span class="co">#&gt; 6 JavaScript   1018</span></span>
+<span><span class="co">#&gt; 7       SCSS     19</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="github_files">github_files<a class="anchor" aria-label="anchor" href="#github_files"></a>
@@ -171,24 +172,25 @@ directory, non-recursively.</p>
 <span><span class="co">#&gt;                name             path size          ext   type</span></span>
 <span><span class="co">#&gt; 1            _stuff           _stuff    0                 dir</span></span>
 <span><span class="co">#&gt; 2           .github          .github    0       github    dir</span></span>
-<span><span class="co">#&gt; 3        .gitignore       .gitignore  272    gitignore config</span></span>
-<span><span class="co">#&gt; 4     .Rbuildignore    .Rbuildignore  177 rbuildignore   file</span></span>
+<span><span class="co">#&gt; 3        .gitignore       .gitignore  267    gitignore config</span></span>
+<span><span class="co">#&gt; 4     .Rbuildignore    .Rbuildignore  198 rbuildignore   file</span></span>
 <span><span class="co">#&gt; 5              data             data    0                 dir</span></span>
 <span><span class="co">#&gt; 6          data-raw         data-raw    0                 dir</span></span>
-<span><span class="co">#&gt; 7       DESCRIPTION      DESCRIPTION 1575                file</span></span>
-<span><span class="co">#&gt; 8              inst             inst    0                 dir</span></span>
-<span><span class="co">#&gt; 9           LICENSE          LICENSE   48                file</span></span>
-<span><span class="co">#&gt; 10       LICENSE.md       LICENSE.md 1077           md   text</span></span>
-<span><span class="co">#&gt; 11              man              man    0                 dir</span></span>
-<span><span class="co">#&gt; 12        NAMESPACE        NAMESPACE 1223                file</span></span>
-<span><span class="co">#&gt; 13          NEWS.md          NEWS.md 5629           md   text</span></span>
-<span><span class="co">#&gt; 14 papercheck.Rproj papercheck.Rproj  462        rproj config</span></span>
-<span><span class="co">#&gt; 15          pkgdown          pkgdown    0                 dir</span></span>
-<span><span class="co">#&gt; 16          profile          profile    0                 dir</span></span>
-<span><span class="co">#&gt; 17                R                R    0                 dir</span></span>
-<span><span class="co">#&gt; 18        README.md        README.md  722           md   text</span></span>
-<span><span class="co">#&gt; 19            tests            tests    0                 dir</span></span>
-<span><span class="co">#&gt; 20        vignettes        vignettes    0                 dir</span></span></code></pre></div>
+<span><span class="co">#&gt; 7       DESCRIPTION      DESCRIPTION 1617                file</span></span>
+<span><span class="co">#&gt; 8              docs             docs    0                 dir</span></span>
+<span><span class="co">#&gt; 9              inst             inst    0                 dir</span></span>
+<span><span class="co">#&gt; 10          LICENSE          LICENSE   48                file</span></span>
+<span><span class="co">#&gt; 11       LICENSE.md       LICENSE.md 1077           md   text</span></span>
+<span><span class="co">#&gt; 12              man              man    0                 dir</span></span>
+<span><span class="co">#&gt; 13        NAMESPACE        NAMESPACE 1377                file</span></span>
+<span><span class="co">#&gt; 14          NEWS.md          NEWS.md 5714           md   text</span></span>
+<span><span class="co">#&gt; 15 papercheck.Rproj papercheck.Rproj  462        rproj config</span></span>
+<span><span class="co">#&gt; 16          pkgdown          pkgdown    0                 dir</span></span>
+<span><span class="co">#&gt; 17          profile          profile    0                 dir</span></span>
+<span><span class="co">#&gt; 18                R                R    0                 dir</span></span>
+<span><span class="co">#&gt; 19        README.md        README.md  722           md   text</span></span>
+<span><span class="co">#&gt; 20            tests            tests    0                 dir</span></span>
+<span><span class="co">#&gt; 21        vignettes        vignettes    0                 dir</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/github_files.html">github_files</a></span><span class="op">(</span><span class="st">"scienceverse/papercheck"</span>, dir <span class="op">=</span> <span class="st">".github"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         name               path size       ext   type</span></span>
@@ -203,8 +205,8 @@ recursively can take a few seconds.</p>
 <span><span class="co">#&gt;                 name                                 path size       ext   type</span></span>
 <span><span class="co">#&gt; 1         .gitignore                   .github/.gitignore    7 gitignore config</span></span>
 <span><span class="co">#&gt; 2          workflows                    .github/workflows    0              dir</span></span>
-<span><span class="co">#&gt; 3       pkgdown.yaml       .github/workflows/pkgdown.yaml 1304      yaml config</span></span>
-<span><span class="co">#&gt; 4 test-coverage.yaml .github/workflows/test-coverage.yaml 1813      yaml config</span></span></code></pre></div>
+<span><span class="co">#&gt; 3       pkgdown.yaml       .github/workflows/pkgdown.yaml 1316      yaml config</span></span>
+<span><span class="co">#&gt; 4 test-coverage.yaml .github/workflows/test-coverage.yaml 1817      yaml config</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="github_info">github_info<a class="anchor" aria-label="anchor" href="#github_info"></a>
@@ -218,15 +220,16 @@ with items named “repo”, “readme”, “languages”, and “files”.</p>
 <span><span class="va">info</span><span class="op">$</span><span class="va">files</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">type</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         type    n</span></span>
 <span><span class="co">#&gt; 1      audio    9</span></span>
-<span><span class="co">#&gt; 2       code 1212</span></span>
-<span><span class="co">#&gt; 3  code;data    4</span></span>
-<span><span class="co">#&gt; 4     config    8</span></span>
-<span><span class="co">#&gt; 5       data   11</span></span>
-<span><span class="co">#&gt; 6        dir   45</span></span>
-<span><span class="co">#&gt; 7       file    4</span></span>
-<span><span class="co">#&gt; 8      image   11</span></span>
-<span><span class="co">#&gt; 9       text   17</span></span>
-<span><span class="co">#&gt; 10       web    4</span></span></code></pre></div>
+<span><span class="co">#&gt; 2       code 1473</span></span>
+<span><span class="co">#&gt; 3  code;data    3</span></span>
+<span><span class="co">#&gt; 4     config   10</span></span>
+<span><span class="co">#&gt; 5       data   12</span></span>
+<span><span class="co">#&gt; 6        dir  118</span></span>
+<span><span class="co">#&gt; 7       file   16</span></span>
+<span><span class="co">#&gt; 8       font  140</span></span>
+<span><span class="co">#&gt; 9      image   24</span></span>
+<span><span class="co">#&gt; 10      text   28</span></span>
+<span><span class="co">#&gt; 11       web  170</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

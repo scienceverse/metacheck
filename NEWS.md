@@ -1,3 +1,7 @@
+# papercheck 0.0.0.9043
+
+* Totally re-wrote the OSF functions
+
 # papercheck 0.0.0.9042
 
 * New OSF functions and vignette
