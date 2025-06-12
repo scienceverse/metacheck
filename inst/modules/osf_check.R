@@ -23,7 +23,7 @@ osf_check <- function(paper, ...) {
   # detailed table of results ----
   # get OSF links
   found_urls <- papercheck::module_run(paper, "all_urls")$table
-  found_osf <- papercheck::search_text(found_urls, "osf\\.io")
+  found_osf <- papercheck::search_text(found_urls, "osf\\s*\\.io")
   unique_urls <- unique(found_osf["text"])
 
   if (papercheck:::site_down("osf.io", error = FALSE)) {

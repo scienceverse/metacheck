@@ -4,7 +4,7 @@
 \alias{osf_parent_project}
 \title{Get OSF Parent Project}
 \usage{
-osf_parent_project(id)
+osf_parent_project(osf_id)
 }
 \arguments{
 \item{id}{an OSF ID}
