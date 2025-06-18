@@ -1,3 +1,10 @@
+# papercheck 0.0.0.9044
+
+* Revised the OSF functions again!
+* Organised the Reference section of the website
+* Added some blog posts to the website
+* Upgraded the "osf_check" module to give more info
+
 # papercheck 0.0.0.9043
 
 * Totally re-wrote the OSF functions

@@ -15,6 +15,50 @@ osf_headers <- function() {
 }
 
 
+
+#' Find OSF Links in Papers
+#'
+#' OSF links can be tricky to find in PDFs, since they can insert spaces in odd places, and view-only links that contain a ? are often interpreted as being split across sentences. This function is our best attempt at catching and fixing them all.
+#'
+#' @param paper a paper object or paperlist object
+#'
+#' @returns a table with the OSF url in the first (text) column
+#' @export
+#'
+#' @examples
+#' osf_links(psychsci)
+osf_links <- function(paper) {
+  # get OSF links
+  OSF_RGX <- "\\bosf\\s*\\.\\s*io\\s*/\\s*[a-z0-9]{5}\\s*/?\\s*\\??\\b"
+  found_osf <- search_text(paper, OSF_RGX, return = "match")
+
+  #get ? links (often in next sentence)
+  VO_RGX <- paste0(
+    "\\bosf\\s*\\.\\s*io\\s*/", # osf.io
+    "\\s*[a-z0-9]{5}", # 5-letter code
+    "\\s*/?\\s*\\?\\s*view_only\\s*=\\s*[0-9a-f]+" #vo-link
+  )
+
+  found_vo <- found_osf |>
+    dplyr::filter(grepl("\\?", text)) |>
+    expand_text(paper, plus = 1) |>
+    dplyr::mutate(
+      old_text = text,
+      text = expanded) |>
+    search_text(VO_RGX, return = "match") |>
+    dplyr::mutate(expanded = text, text = old_text) |>
+    dplyr::select(-old_text)
+
+  # combine
+  all_osf <- dplyr::left_join(found_osf, found_vo,
+                              by = names(found_osf)) |>
+    dplyr::mutate(text = ifelse(is.na(expanded), text, expanded)) |>
+    dplyr::select(-expanded)
+
+  return(all_osf)
+}
+
+
 #' Check OSF API Server Status
 #'
 #' Check the status of the OSF API server.
@@ -35,9 +79,15 @@ osf_api_check <- function(osf_api = getOption("papercheck.osf.api")) {
   status <- dplyr::case_match(
     h$status_code,
     200 ~ "ok",
-    404 ~ "page not found",
+    204 ~ "no content",
+    400 ~ "bad request",
+    403 ~ "forbidden",
+    404 ~ "not found",
+    405 ~ "method not allowed",
+    409 ~ "conflict",
+    410 ~ "gone",
     429 ~ "too many requests",
-    502 ~ "server error",
+    500:599 ~ "server error",
     .default = "unknown"
   )
 
@@ -81,7 +131,19 @@ osf_retrieve <- function(osf_url, id_col = 1, recursive = FALSE) {
   valid_ids <- unique(ids$osf_id)
 
   # iterate over valid IDs
-  info <- lapply(valid_ids, osf_info) |>
+  message("Starting OSF retrieval for ", length(valid_ids), ", files...")
+
+  id_info <- vector("list", length(valid_ids))
+  too_many <- FALSE
+  i = 0
+  while (!too_many & i < length(valid_ids)) {
+    i = i + 1
+    oi <- osf_info(valid_ids[[i]])
+    if (oi$osf_type == "too many requests") break
+    id_info[[i]] <- oi
+  }
+
+  info <- id_info |>
     do.call(dplyr::bind_rows, args = _) |>
     dplyr::left_join(ids, by = "osf_id")
 
@@ -91,6 +153,9 @@ osf_retrieve <- function(osf_url, id_col = 1, recursive = FALSE) {
                            suffix = c("", ".osf"))
 
   if (isTRUE(recursive)) {
+    message("...Main retrieval complete")
+    message("Starting retrieval of children...")
+
     children <- info
     child_collector <- data.frame()
 
@@ -132,8 +197,10 @@ osf_retrieve <- function(osf_url, id_col = 1, recursive = FALSE) {
   } else {
     data <- dplyr::left_join(data, parents, by = "parent")
   }
-  is_project <- data$osf_type == "nodes" & is.na(data$parent)
+  is_project <- sapply(data$osf_type, identical, "nodes") & is.na(data$parent)
   data$project[is_project] <- data$osf_id[is_project]
+
+  message("...OSF retrieval complete!")
 
   return(data)
 }
@@ -145,8 +212,9 @@ osf_retrieve <- function(osf_url, id_col = 1, recursive = FALSE) {
 #'
 #' @returns a data frame of information
 #' @export
+#' @keywords internal
 osf_info <- function(osf_id) {
-  message("Retrieving info from ", osf_id, "...")
+  message("* Retrieving info from ", osf_id, "...")
   osf_api <- getOption("papercheck.osf.api")
 
   # double-check ID
@@ -181,10 +249,17 @@ osf_info <- function(osf_id) {
       } else {
         warning <- dplyr::case_match(
           node_get$status_code,
-          401 ~ "private",
-          404 ~ "missing",
-          502 ~ "server error",
+          200 ~ "ok",
+          204 ~ "no content",
+          400 ~ "bad request",
+          401 ~ "unauthorized",
+          403 ~ "forbidden",
+          404 ~ "not found",
+          405 ~ "method not allowed",
+          409 ~ "conflict",
+          410 ~ "gone",
           429 ~ "too many requests",
+          500:599 ~ "server error",
           .default = paste("error", node_get$status_code)
         )
 
@@ -192,7 +267,8 @@ osf_info <- function(osf_id) {
       }
     }, error = function(e) return(NULL) )
 
-    if (identical(warning, "private")) {
+    # deal wiuth warnings ----
+    if (identical(warning, "unauthorized")) {
       return(data.frame(
         osf_id = valid_id,
         osf_type = "private",
@@ -218,9 +294,17 @@ osf_info <- function(osf_id) {
   if (osf_type == "registrations") return(osf_reg_data(data))
   if (osf_type == "users") return(osf_user_data(data))
 
+  if (osf_type == "too many requests") {
+    warning("Too many requests", call. = FALSE)
+    obj <- data.frame(
+      osf_id = osf_id,
+      osf_type = osf_type
+    )
+    return(obj)
+  }
+
   # unfound but valid ID
-  warning(osf_id, " could not be found",
-          call. = FALSE, immediate. = FALSE)
+  warning(osf_id, " could not be found", call. = FALSE)
   obj <- data.frame(
     osf_id = osf_id,
     osf_type = "unfound"
@@ -283,10 +367,11 @@ osf_file_data <- function(data) {
   filetype <- data.frame(
     id = seq_along(obj$name),
     ext = strsplit(obj$name, "\\.") |>
-      sapply(\(x) x[[length(x)]])
+      sapply(\(x) x[[length(x)]]) |>
+      tolower()
   ) |>
     dplyr::left_join(file_types, by = "ext") |>
-    dplyr::summarise(type = paste(type, collapse = ";"), .by = "id")
+    dplyr::summarise(type = paste(type, collapse = ";"), .by = c("id", "ext"))
   obj$filetype <- filetype$type
 
   return(obj)
@@ -400,6 +485,15 @@ osf_check_id <- function(osf_id) {
   }, USE.NAMES = FALSE)
 }
 
+#' Get All OSF API Query Pages
+#'
+#' OSF API queries only return up to 10 items per page, so this helper functions checks for extra pages and returns all of them
+#'
+#' @param url the OSF API URL
+#'
+#' @returns a table of the returned data
+#' @export
+#' @keywords internal
 osf_get_all_pages <- function(url) {
   Sys.sleep(osf_delay())
 
@@ -431,9 +525,12 @@ osf_get_all_pages <- function(url) {
 #'
 #' @returns a data frame with file info
 #' @export
+#' @keywords internal
 osf_files <- function(osf_id) {
   osf_api <- getOption("papercheck.osf.api")
   node_id <- osf_check_id(osf_id)
+
+  message("* Retrieving files for ", node_id, "...")
 
   if (nchar(node_id) == 5) {
     url <- sprintf("%s/nodes/%s/files/osfstorage/", osf_api, node_id)
@@ -449,9 +546,18 @@ osf_files <- function(osf_id) {
   return(obj)
 }
 
+#' List Children of an OSF Component
+#'
+#' @param osf_id an OSF ID
+#'
+#' @returns a data frame with child info
+#' @export
+#' @keywords internal
 osf_children <- function(osf_id) {
   osf_api <- getOption("papercheck.osf.api")
   node_id <- osf_check_id(osf_id)
+
+  message("* Retrieving children for ", node_id, "...")
 
   url <- sprintf("%s/nodes/%s/children/",
                  osf_api, node_id)
@@ -510,6 +616,7 @@ summarize_contents <- function(contents) {
 #'
 #' @returns the ID of the parent project
 #' @export
+#' @keywords internal
 osf_parent_project <- function(osf_id) {
   valid_id <- osf_check_id(osf_id)
   if (is.na(valid_id)) return(NA_character_)

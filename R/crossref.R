@@ -172,6 +172,7 @@ ref_info <- function(paper) {
 #'
 #' @returns the updated paper object
 #' @export
+#' @keywords internal
 #'
 #' @examples
 #' ps1 <- paper_info(psychsci[[1]])

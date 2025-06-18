@@ -18,3 +18,4 @@ Check OpenAlex and/or CrossRef for paper info and update the paper object accord
 \examples{
 ps1 <- paper_info(psychsci[[1]])
 }
+\keyword{internal}

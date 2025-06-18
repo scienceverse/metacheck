@@ -5,6 +5,9 @@ verbose(FALSE)
 test_that("exists", {
   expect_true(is.function(papercheck::osf_check_id))
 
+  expect_true(is.function(papercheck::osf_links))
+  expect_no_error(helplist <- help(osf_links, papercheck))
+
   expect_true(is.function(papercheck::osf_retrieve))
   expect_no_error(helplist <- help(osf_retrieve, papercheck))
 
@@ -29,6 +32,28 @@ test_that("osf_api_check", {
 test_that("osf_headers", {
   header <- osf_headers()
   expect_equal(header$`User-Agent`, "Papercheck")
+})
+
+test_that("osf_links", {
+  paper <- psychsci$`0956797614557697`
+  obs <- osf_links(paper)
+  exp <- c("osf.io/e2aks", "osf.io/tvyxz/")
+  expect_equal(obs$text, exp)
+
+  # has view-only link across sentences
+  paper <- psychsci$`0956797615569889`
+  obs <- osf_links(paper)
+  exp <- "osf.io/t9j8e/? view_only=f171281f212f4435917b16a9e581a73b"
+  expect_equal(obs$text, exp)
+
+  # check vo links
+  info <- osf_info("t9j8e")
+  expect_equal(info$osf_type, "private")
+  expect_equal(info$public, FALSE)
+
+  skip("long")
+  obs <- osf_links(psychsci)
+  ids <- osf_check_id(obs$text)
 })
 
 test_that("osf_check_id", {
@@ -131,6 +156,7 @@ test_that("osf_children", {
 })
 
 test_that("osf_info", {
+  skip("long")
   # project
   osf_id <- "pngda"
   info <- osf_info(osf_id)

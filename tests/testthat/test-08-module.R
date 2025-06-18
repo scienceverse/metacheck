@@ -184,23 +184,21 @@ test_that("all_urls", {
 
 test_that("osf_check", {
   skip_on_ci()
-  skip_if_offline("osf.io")
+  skip_if_not(osf_api_check() == "ok")
   module <- "osf_check"
 
   text <- data.frame(
     text = c("https://osf.io/5tbm9/",
-             "https://osf.io/629bx/"),
-    section = NA, # TODO: search_text not require section column
-    id = c("private", "public")
+             "https://osf.io/629bx/",
+             "osf.io/ abcd5"),
+    id = c("private", "public", "unfound")
   )
-  mo <- module_run(text, module)
+  expect_warning( mo <- module_run(text, module), "abcd5" )
 
   if (all(mo$table$status == "unknown")) {
     skip("OSF is down")
   }
-  exp <- c(`https://osf.io/5tbm9` = "closed",
-           `https://osf.io/629bx` = "open"
-  )
+  exp <- c("closed", "open", "unfound")
   expect_equal(mo$table$status, exp)
 
   # iteration

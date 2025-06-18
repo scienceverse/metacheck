@@ -7,9 +7,7 @@
 #'
 #' @return An object with class scivrs_paper
 #' @export
-#' @examples
-#'
-#' p <- paper("Demo Paper")
+#' @keywords internal
 paper <- function(name = "Demo Paper", ...) {
   is_xml <- isTRUE(grepl("\\.xml$", name, ignore.case = TRUE))
   is_pdf <- isTRUE(grepl("\\.pdf$", name, ignore.case = TRUE))
@@ -46,6 +44,7 @@ paper <- function(name = "Demo Paper", ...) {
 #'
 #' @return An object with class scivrs_paperlist
 #' @export
+#' @keywords internal
 #' @examples
 #'
 #' p1 <- psychsci[[1]]

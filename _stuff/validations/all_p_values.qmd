@@ -18,7 +18,7 @@ devtools::load_all("../../")
 
 ## all_p_values
 
-This module just needs a logical check that it;'s mnatching what we'd hope and not what we don't.
+This module just needs a logical check that it's mnatching what we'd hope and not what we don't.
 
 ```{r}
 operators <- c("=", "<", ">", "~",  

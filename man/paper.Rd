@@ -17,7 +17,4 @@ An object with class scivrs_paper
 \description{
 Create a new paper object or load a paper from PDF or XML
 }
-\examples{
-
-p <- paper("Demo Paper")
-}
+\keyword{internal}

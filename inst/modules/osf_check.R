@@ -21,67 +21,35 @@ osf_check <- function(paper, ...) {
   # test public: url = "https://osf.io/629bx"
 
   # detailed table of results ----
-  # get OSF links
-  found_urls <- papercheck::module_run(paper, "all_urls")$table
-  found_osf <- papercheck::search_text(found_urls, "osf\\s*\\.io")
-  unique_urls <- unique(found_osf["text"])
+  found_osf <- osf_links(paper)
 
-  if (papercheck:::site_down("osf.io", error = FALSE)) {
-    unique_urls$status <- "unknown"
-    message("osf.io cannot be reached to assess link status")
-  } else {
-    # set up progress bar ----
-    if (papercheck::verbose() & nrow(unique_urls)) {
-      pb <- progress::progress_bar$new(
-        total = nrow(unique_urls), clear = FALSE, show_after = 0,
-        format = "Checking OSF availability [:bar] :current/:total :elapsedfull"
-      )
-      pb$tick(0)
-    }
-
-    # Check for closed OSF links
-    unique_urls$status <- sapply(unique_urls$text, \(url) {
-      status <- tryCatch({
-        resp <- httr::GET(url)
-        if (resp$status_code == 404) {
-          return("missing")
-        } else if (resp$status_code != 200) {
-          return("error")
-        }
-
-        txt <- httr::content(resp, "text")
-        if (grepl("Sign in with your OSF account to continue", txt)) {
-          "closed"
-        } else if (grepl("view-only link", txt)) {
-          "view-only"
-        } else {
-          "open"
-        }
-      }, error = \(e) {
-        return("error")
-      })
-
-      if (papercheck::verbose()) pb$tick()
-
-      return(status)
-    })
-  }
-
-  table <- dplyr::left_join(found_osf, unique_urls, by = "text")
+  table <- osf_retrieve(found_osf)
+  table$status <- dplyr::case_when(
+    is.na(table$osf_id) ~ "invalid",
+    table$osf_type == "too many requests" ~ "too many requests",
+    table$osf_type == "unfound" ~ "unfound",
+    table$osf_type == "private" ~ "closed",
+    table$public == FALSE ~ "closed",
+    table$public == TRUE ~ "open",
+    !is.na(table$osf_type) ~ "open",
+    .default = ""
+  )
 
   # summary output for paperlists ----
   summary_table <- dplyr::count(table, id, status) |>
     tidyr::pivot_wider(names_from = status,
                        names_prefix = "osf.",
-                       values_from = n)
+                       values_from = n, values_fill = 0)
 
   # determine the traffic light ----
   tl <- dplyr::case_when(
-    nrow(unique_urls) == 0 ~ "na",
-    all(unique_urls$status == "error") ~ "fail",
-    all(unique_urls$status == "unknown") ~ "fail",
-    any(unique_urls$status == "closed") ~ "red",
-    all(unique_urls$status == "open") ~ "green",
+    nrow(table) == 0 ~ "na",
+    all(table$status == "error") ~ "fail",
+    all(table$status == "unknown") ~ "fail",
+    any(table$status == "unfound") ~ "red",
+    any(table$status == "invalid") ~ "red",
+    any(table$status == "closed") ~ "red",
+    all(table$status == "open") ~ "green",
     .default = "yellow"
   )
 

@@ -18,6 +18,11 @@ template:
   params:
     ganalytics: UA-160147578-1
 articles:
+  - title: "Blog Posts"
+    contents:
+        - articles/intro
+        - articles/jars
+        - articles/osf
   - title: "Articles"
     contents:
       - report-example
@@ -28,4 +33,88 @@ articles:
       - creating_modules
       - validate
       - github
-      - articles/osf
+
+reference:
+- title: Reading in Papers
+  desc: ~
+  contents:
+  - '`pdf2grobid`'
+  - '`read_grobid`'
+  - '`read_cermine`'
+  - '`read_text`'
+  - '`paper_validate`'
+- title: Demo Resources
+  desc: ~
+  contents:
+  - '`demoxml`'
+  - '`demopdf`'
+  - '`demodir`'
+  - '`psychsci`'
+- title: Search Papers
+  desc: ~
+  contents:
+  - '`search_text`'
+  - '`expand_text`'
+  - '`concat_tables`'
+  - '`info_table`'
+  - '`author_table`'
+- title: Module Functions
+  desc: ~
+  contents:
+  - '`module_list`'
+  - '`module_help`'
+  - '`module_info`'
+  - '`module_run`'
+  - '`module_report`'
+  - '`report`'
+  - '`papercheck_app`'
+- title: LLM Functions
+  desc: Useful functions for checking GitHub repositories
+  contents:
+  - '`llm`'
+  - '`llm_max_calls`'
+  - '`llm_model`'
+  - '`llm_model_list`'
+- title: OSF Functions
+  desc: Useful functions for checking OSF URLs
+  contents:
+  - '`osf_api_check`'
+  - '`osf_check_id`'
+  - '`osf_delay`'
+  - '`osf_links`'
+  - '`osf_retrieve`'
+  - '`summarize_contents`'
+- title: GitHub Functions
+  desc: Useful functions for checking GitHub repositories
+  contents:
+  - '`github_config`'
+  - '`github_repo`'
+  - '`github_info`'
+  - '`github_files`'
+  - '`github_readme`'
+  - '`github_languages`'
+- title: Integrations
+  desc: ~
+  contents:
+  - '`openalex`'
+  - '`crossref`'
+  - '`retractionwatch`'
+  - '`file_types`'
+  - '`check_orcid`'
+  - '`get_orcid`'
+  - '`credit_roles`'
+- title: Validation Functions
+  desc: ~
+  contents:
+  - '`validate`'
+  - '`accuracy`'
+  - '`text_features`'
+  - '`distinctive_words`'
+- title: Extras
+  desc: ~
+  contents:
+  - '`verbose`'
+  - '`stats`'
+  - '`verbose`'
+  - '`op-null-default`'
+
