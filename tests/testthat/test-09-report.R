@@ -11,11 +11,14 @@ test_that("error", {
 
 test_that("defaults", {
   paper <- demoxml() |> read_grobid()
+  # skip modules that require osf.api
+  modules <- c("exact_p", "marginal", "effect_size", "statcheck",
+               "retractionwatch", "ref_consistency")
 
   # qmd
   qmd <- tempfile(fileext = ".qmd")
   if (file.exists(qmd)) unlink(qmd)
-  paper_report <- report(paper,
+  paper_report <- report(paper, modules,
                          output_file = qmd,
                          output_format = "qmd")
   expect_equal(paper_report, qmd)
@@ -28,7 +31,7 @@ test_that("defaults", {
   # html
   html <- tempfile(fileext = ".html")
   if (file.exists(html)) unlink(html)
-  paper_report <- report(paper,
+  paper_report <- report(paper, modules,
                          output_file = html,
                          output_format = "html")
   expect_equal(paper_report, html)
@@ -39,7 +42,7 @@ test_that("defaults", {
   skip("pdf")
   pdf <- tempfile(fileext = ".pdf")
   if (file.exists(pdf)) unlink(pdf)
-  paper_report <- report(paper,
+  paper_report <- report(paper, modules,
                          output_file = pdf,
                          output_format = "pdf")
   expect_equal(paper_report, pdf)
@@ -52,12 +55,20 @@ test_that("detected", {
   skip_on_cran()
 
   paper <- demoxml() |> read_grobid()
+  # skip modules that require osf.api
+  modules <- c("exact_p", "marginal", "effect_size", "statcheck",
+               "retractionwatch", "ref_consistency")
 
   # add a retracted paper
   retracted <- data.frame(
     bib_id = "x",
+    ref = "Test retracted paper",
     doi = retractionwatch$doi[[1]],
-    ref = "Test retracted paper"
+    bibtype = "Article",
+    title = "Fake",
+    journal = "Fake Journal",
+    year = 2025,
+    authors = "Hmmm"
   )
   paper$references <- rbind(paper$references, retracted)
 
@@ -84,7 +95,7 @@ test_that("detected", {
   # qmd
   qmd <- tempfile(fileext = ".qmd")
   if (file.exists(qmd)) unlink(qmd)
-  paper_report <- report(paper,
+  paper_report <- report(paper, modules,
                          output_file = qmd,
                          output_format = "qmd")
   expect_equal(paper_report, qmd)
@@ -95,7 +106,7 @@ test_that("detected", {
   # html
   html <- tempfile(fileext = ".html")
   if (file.exists(html)) unlink(html)
-  paper_report <- report(paper,
+  paper_report <- report(paper, modules,
                          output_file = html,
                          output_format = "html")
   expect_equal(paper_report, html)
@@ -106,7 +117,7 @@ test_that("detected", {
   skip("pdf")
   pdf <- tempfile(fileext = ".pdf")
   if (file.exists(pdf)) unlink(pdf)
-  paper_report <- report(paper,
+  paper_report <- report(paper, modules,
                          output_file = pdf,
                          output_format = "pdf")
   expect_equal(paper_report, pdf)

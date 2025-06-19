@@ -401,13 +401,22 @@ get_refs <- function(xml) {
     ref_table <- data.frame(
       bib_id = xml2::xml_attr(refs, "id")
     )
-    ref_table$doi <- xml2::xml_find_first(refs, ".//analytic //idno[@type='DOI']") |>
-      xml2::xml_text()
+    # ref_table$doi <- xml2::xml_find_first(refs, ".//analytic //idno[@type='DOI']") |>
+    #   xml2::xml_text()
 
-    ref_table$ref <- lapply(refs, xml2bib) |>
+    bibs <- lapply(refs, xml2bib)
+
+    ref_table$ref <- bibs |>
       sapply(format) |>
       gsub("\\n", " ", x = _)
 
+    ref_table$doi <- sapply(bibs, \(x) x$doi %||% NA_character_)
+    ref_table$bibtype <- sapply(bibs, \(x) x$bibtype %||% NA_character_)
+    ref_table$title <- sapply(bibs, \(x) x$title %||% NA_character_)
+    ref_table$journal <- sapply(bibs, \(x) x$journal %||% NA_character_)
+    ref_table$year <- sapply(bibs, \(x) x$year %||% NA_integer_)
+    ref_table$authors <- lapply(bibs, \(x) x$author %||% NA_character_) |>
+      sapply(paste, collapse = ", ")
   } else {
     ref_table <- data.frame(
       bib_id = character(0),
@@ -638,7 +647,7 @@ get_app_info <- function(xml) {
 #'
 #' @param paper a paper object or a list of paper objects
 #'
-#' @returns a list or dat frame of checks
+#' @returns a list or data frame of checks
 #' @export
 #'
 #' @examples

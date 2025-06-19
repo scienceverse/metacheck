@@ -49,3 +49,6 @@ file_types <- unique(file_types) |>
 
 usethis::use_data(file_types, overwrite = TRUE, compress = "xz")
 usethis::use_r("file_types")
+
+
+

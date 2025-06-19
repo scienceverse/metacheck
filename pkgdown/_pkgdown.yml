@@ -75,6 +75,7 @@ reference:
   - '`llm_max_calls`'
   - '`llm_model`'
   - '`llm_model_list`'
+  - '`json_expand`'
 - title: OSF Functions
   desc: Useful functions for checking OSF URLs
   contents:
@@ -84,6 +85,7 @@ reference:
   - '`osf_links`'
   - '`osf_retrieve`'
   - '`summarize_contents`'
+  - '`osf_api_calls`'
 - title: GitHub Functions
   desc: Useful functions for checking GitHub repositories
   contents:
@@ -115,6 +117,4 @@ reference:
   contents:
   - '`verbose`'
   - '`stats`'
-  - '`verbose`'
-  - '`op-null-default`'
 

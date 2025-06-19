@@ -185,7 +185,9 @@ test_that("get_refs", {
   refs <- get_refs(xml)
   expect_equal(names(refs), c("references", "citations"))
 
-  expect_equal(names(refs$references), c("bib_id", "doi", "ref"))
+  exp <- c("bib_id", "ref", "doi", "bibtype",
+           "title", "journal", "year", "authors")
+  expect_equal(names(refs$references), exp)
   expect_equal(nrow(refs$references), 2)
 
   expect_equal(names(refs$citations), c("bib_id", "text"))

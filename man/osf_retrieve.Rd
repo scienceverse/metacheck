@@ -4,7 +4,7 @@
 \alias{osf_retrieve}
 \title{Retrieve info from the OSF by ID}
 \usage{
-osf_retrieve(osf_url, id_col = 1, recursive = FALSE)
+osf_retrieve(osf_url, id_col = 1, recursive = FALSE, find_project = FALSE)
 }
 \arguments{
 \item{osf_url}{an OSF ID or URL, or a table containing them}
@@ -12,6 +12,8 @@ osf_retrieve(osf_url, id_col = 1, recursive = FALSE)
 \item{id_col}{the index or name of the column that contains OSF IDs or URLs, if id is a table}
 
 \item{recursive}{whether to retrieve all children}
+
+\item{find_project}{find the top-level project associated with a file (adds 1+ API calls)}
 }
 \value{
 a data frame of information

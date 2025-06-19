@@ -21,8 +21,13 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/scienceverse/papercheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/papercheck)
 <!-- badges: end -->
 
-PaperCheck provides extendanble and integrated tools for automatically checking scientific papers for best practices, developed by Lisa DeBruine and Daniel Lakens in 2024 during Lisa’s visiting professorship at the Eindhoven Artificial Intelligence Systems Institute (EAISI). 
+PaperCheck provides extendable and integrated tools for automatically checking scientific papers for best practices. 
 
+Papercheck is developed by a collaborative team of researchers, consisting of (from left to right in the picture below) [Lisa DeBruine](https://debruine.github.io) (developer and maintainer) and [Daniël Lakens](https://sites.google.com/site/lakens2/Home) (developer), [René Bekkers](https://research.vu.nl/en/persons/rene-bekkers) (collaborator and PI of [Transparency Check](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check)), [Cristian Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/) (postdoctoral researcher), and Max Littel and Jakub Werner (research assistants). Papercheck was initially developed by Lisa and Daniël in 2024 during Lisa’s visiting professorship at the Eindhoven Artificial Intelligence Systems Institute ([EAISI](https://www.tue.nl/en/research/institutes/eindhoven-artificial-intelligence-systems-institute)). 
+
+![](https://scienceverse.github.io/papercheck/articles/papercheck_team.png){fig-alt="Faces of the team"}
+
+Check out our series of [blog posts introducing Papercheck](https://scienceverse.github.io/papercheck/articles/index.html)!
 
 ## Installation
 
@@ -45,17 +50,31 @@ papercheck_app()
 library(papercheck)
 ```
 
+
+### Importing Papers
+
 Convert a PDF to grobid XML format, then read it in as a paper object.
 
 ```{r, eval = FALSE}
-pdf <- demopdf() # use the path of your own PDF
-grobid <- pdf2grobid(pdf)
-paper <- read_grobid(grobid)
+pdf <- demopdf()       # use the path of your own PDF
+xml <- pdf2grobid(pdf) # requires a web connection & resource-intensive, 
+                       # so save XMLs for use with scripts
+paper <- read_grobid(xml)
 ```
 
 ```{r, include = FALSE}
 # load paper without need for grobid server online
 paper <- demoxml() |> read_grobid()
+```
+
+### Batch Processing
+
+The functions `pdf2grobid()` and `read_grobid()` also work on a folder of files, returning a list of XML file paths or paper objects, respectively. Most functions also work on a list of paper objects.
+
+```{r}
+# read in all the XML files in the demo directory
+grobid_dir <- demodir()
+papers <- read_grobid(grobid_dir)
 ```
 
 
@@ -64,7 +83,7 @@ paper <- demoxml() |> read_grobid()
 Search the returned text. The regex pattern below searches for text that looks like statistical values (e.g., `N=313` or `p = 0.17`).
 
 ```{r}
-pattern <- "[a-zA-Z]\\S*\\s*(=|<)\\s*[0-9\\.-]*\\d"
+pattern <- "[a-zA-Z]+\\S*\\s*(=|<)\\s*[0-9\\.-]*\\d"
 text <- search_text(paper, pattern, 
                     return = "match", 
                     perl = TRUE)
@@ -75,48 +94,53 @@ knitr::kable(text)
 ```
 
 
-## Batch Processing
-
-The functions `pdf2grobid()` and `read_grobid()` also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions `search_text()`, `expand_text()` and `llm()` also work on a list of paper objects.
-
-```{r}
-# read in all the XML files in the demo directory
-grobid_dir <- demodir()
-papers <- read_grobid(grobid_dir)
-
-# select sentences in the intros containing the text "previous"
-previous <- search_text(papers, "previous", 
-                        section = "intro", 
-                        return = "sentence")
-```
-
-```{r, echo = FALSE}
-knitr::kable(previous)
-```
+See [Getting Started](https://scienceverse.github.io/papercheck/articles/papercheck.html#search-text) for even more text search capabilities.
 
 ### Large Language Models
 
 You can query the extracted text of papers with LLMs using [groq](https://console.groq.com/docs/). See `?llm` for details of how to get and set up your API key, choose an LLM, and adjust settings. 
 
-Use `search_text()` first to narrow down the text into what you want to query. Below, we limited search to the first two papers' introduction sections, and returned the full section. Then we asked an LLM "What is the hypothesis of this study?".
+Use `search_text()` first to narrow down the text into what you want to query. Below, we limited search to a paper's method section, and returned sentences that contains the word "power" and at least one number. Then we asked an LLM to determine if this is an a priori power analysis.
 
 ```{r, eval = FALSE}
-hypotheses <- search_text(papers[1:2], 
-                          section = "intro", 
-                          return = "section")
-query <- "What is the hypothesis of this study? Answer as briefly as possible."
-llm_hypo <- llm(hypotheses, query, seed = 8675309)
+power <- psychsci[9] |>
+  # sentences containing the word power
+  search_text("power", section = "method")
+
+# ask a specific question with specific response format
+query <- 'Does this sentence report an a priori power analysis? Answer only the words "TRUE" or "FALSE".'
+
+llm_power <- llm(power, query, seed = 8675309)
 ```
 
 ```{r, echo = FALSE}
-llm_hypo <- data.frame(
-  id = c("eyecolor", "incest"),
-  answer = c("The hypothesis of this study is that people's partner choice is influenced by positive sexual imprinting, meaning that they are attracted to partners who resemble their opposite-sex parent.", 
-             "The hypothesis is that moral opposition to third-party sibling incest is greater among people who have other-sex siblings than among people who do not have other-sex siblings.")
-)
+# dput(llm_power)
+llm_power <- structure(list(text = c("For the first part of the task, 11 static visual images, one from each of the scenes in the film were presented once each on a black background for 2 s using Power-Point.", 
+"A sample size of 26 per group was required to ensure 80% power to detect this difference at the 5% significance level.", 
+"A sample size of 18 per condition was required in order to ensure an 80% power to detect this difference at the 5% significance level."
+), section = c("method", "method", "method"), header = c("Tasks and measures", 
+"Intrusion-provocation task (IPT).", "Method"), div = c(4, 5, 
+10), p = c(2, 13, 3), s = c(3L, 3L, 3L), id = c("0956797615583071", 
+"0956797615583071", "0956797615583071"), answer = c("FALSE", 
+"TRUE", "TRUE"), time = c(0.01520404, 0.028227127, 0.02862874
+), tokens = c(99L, 87L, 90L)), row.names = c(NA, -3L), class = c("ppchk_llm", 
+"data.frame"), llm = list(messages = list(list(role = "system", 
+    content = "Does this sentence report an a priori power analysis? Answer only the words \"TRUE\" or \"FALSE\"."), 
+    list(role = "user", content = "")), model = "llama-3.3-70b-versatile", 
+    temperature = 0.5, max_completion_tokens = 1024L, top_p = 0.95, 
+    seed = 8675309, stream = FALSE, stop = NULL))
 
-knitr::kable(llm_hypo)
 ```
+
+
+```{r}
+#| echo: false
+llm_power |>
+  dplyr::select(text, answer, id) |>
+  knitr::kable()
+```
+
+See [Getting Started](articles/papercheck.html#large-language-models) for an example with more detailed responses.
 
 ### Modules
 
@@ -139,14 +163,19 @@ p <- module_run(paper, "all_p_values")
 knitr::kable(p$table)
 ```
 
+See the [Modules Vignette](https://scienceverse.github.io/papercheck/articles/modules.html) for more detail on the built-in modules, and [Creating Modules](https://scienceverse.github.io/papercheck/articles/creating_modules.html) for examples of how to make your own modules.
+
 ### Reports
 
 You can generate a report from any set of modules. The default set is `c("exact_p", "marginal", "effect_size", osf_check", "retractionwatch", "ref_consistency")`
 
 ```{r, eval = FALSE}
-paper_path <- report(paper, output_format = "html")
+paper_path <- report(paper, 
+                     output_format = "html", 
+                     output_file = "example_report")
 ```
 
 
+[Example Report](articles/report-example.html)
 
 

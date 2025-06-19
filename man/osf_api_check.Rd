@@ -7,7 +7,7 @@
 osf_api_check(osf_api = getOption("papercheck.osf.api"))
 }
 \arguments{
-\item{osf_api}{}
+\item{osf_api}{the OSF API to use (e.g., "https://api.osf.io/v2")}
 }
 \value{
 the OSF status

@@ -43,6 +43,10 @@ test_that("missing items", {
   expect_equal(names(infotable), expected)
 
   expect_equal(infotable$`not a column`, rep(NA, length(paper)))
+
+  info <- c("doi", "title", "id")
+  infotable <- info_table(paper, info)
+  expect_equal(names(infotable), info)
 })
 
 test_that("author_table", {

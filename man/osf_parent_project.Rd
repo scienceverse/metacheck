@@ -7,7 +7,7 @@
 osf_parent_project(osf_id)
 }
 \arguments{
-\item{id}{an OSF ID}
+\item{osf_id}{an OSF ID}
 }
 \value{
 the ID of the parent project

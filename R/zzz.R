@@ -6,7 +6,8 @@
     papercheck.llm_max_calls = 30L,
     papercheck.llm.model = "llama-3.3-70b-versatile",
     papercheck.osf.delay = 0,
-    papercheck.osf.api = "https://api.osf.io/v2"
+    papercheck.osf.api = "https://api.osf.io/v2",
+    papercheck.osf.api.calls = 0
   )
   # only set if not already set
   toset <- !(names(op.pkg) %in% names(op))
@@ -28,6 +29,10 @@
   stripe <- paste0("\033[32m",
                    rep("*", 43) |> paste(collapse = ""),
                    "\033[0m")
+
+  if (!interactive()) {
+    stripe <- rep("*", 43) |> paste(collapse = "")
+  }
   paste(
     "\n",
     stripe,

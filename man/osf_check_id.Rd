@@ -7,7 +7,7 @@
 osf_check_id(osf_id)
 }
 \arguments{
-\item{osf_id}{}
+\item{osf_id}{a vector of OSF IDs or URLs}
 }
 \value{
 a vector of valid IDs, with NA in place of invalid IDs

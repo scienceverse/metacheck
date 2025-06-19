@@ -28,6 +28,7 @@ info_table <- function(paper,
     info_table$id <- p$id
 
     for (item in info) {
+      if (item == "id") break
       value <- p$info[[item]]
 
       if (length(value) > 1) {
@@ -46,7 +47,8 @@ info_table <- function(paper,
   # add in any missing columns and reorder
   missing_cols <- setdiff(info, names(df))
   df[, missing_cols] <- NA
-  df <- df[, c("id", info)]
+  if (!"id" %in% info) info <- c("id", info)
+  df <- df[, info]
 
   # set filename to absolute or relative path
   if ("filename" %in% info) {

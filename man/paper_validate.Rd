@@ -10,7 +10,7 @@ paper_validate(paper)
 \item{paper}{a paper object or a list of paper objects}
 }
 \value{
-a list or dat frame of checks
+a list or data frame of checks
 }
 \description{
 A quick function to help diagnose problems with imported papers. It checks if there is a title, doi, abstract, and references.

@@ -1,3 +1,13 @@
+# papercheck 0.0.0.9045
+
+* When reading a paper with `read_grobid()`, the paper$references table now contains new columns for bibtype, title, journal, year, and authors to facilitate reference checks, and more reliably pulls DOIs.
+* The `psychsci` set has  been updated for the new reference tables
+* fixed bug in `info_table()` where adding "id" to the items argument borked the id column
+* Added `json_expand()` function to expand JSON-formatted LLM responses
+* Updated the LLM examples in the vignettes
+* Added `find_project` argument to `osf_retrieve()` to make searching for the parent project optional (it takes 1+ API calls)
+* Added `emojis` for convenience
+
 # papercheck 0.0.0.9044
 
 * Revised the OSF functions again!

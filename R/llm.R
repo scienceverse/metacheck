@@ -309,3 +309,57 @@ llm_model <- function(model = NULL) {
 #   message("Done!")
 # }
 
+
+
+#' Expand a JSON column
+#'
+#' It is useful to ask an LLM to return data in JSON structured format, but can be frustrating to extract the data, especially where the LLM makes syntax mistakes. This function tries to expand a column with a JSON-formatted response into columns and deals with it gracefully (sets an 'error' column to "parsing error") if there are errors. It also fixes column data types, if possible.
+#'
+#' @param table the table with a column to expand
+#' @param col the name or index of the column to expand (defaults to "answer" or the first column)
+#'
+#' @returns the table plus the expanded columns
+#' @export
+#'
+#' @examples
+#' table <- data.frame(
+#'   id = 1:5,
+#'   answer = c(
+#'     '{"number": "1", "letter": "A", "bool": true}',
+#'     '{"number": "2", "letter": "B", "bool": "FALSE"}',
+#'     '{"number": "3", "letter": "", "bool": null}',
+#'     'oh no, the LLM misunderstood',
+#'     '{"number": "5", "letter": ["E", "F"], "bool": false}'
+#'   )
+#' )
+#'
+#' expanded <- json_expand(table, "answer")
+#' expanded
+json_expand <- function(table, col = "answer") {
+  # handle non-table input
+  if (is.vector(table)) table <- data.frame(json = table)
+  if (is.null(table[[col]])) col <- 1
+
+  #table$.temp_id. <- seq_along(table[[1]])
+
+  # expand JSON text
+  to_expand <- table[[col]]
+  expanded <- lapply(to_expand, \(json) {
+    tryCatch({
+      j <- jsonlite::fromJSON(json)
+      lapply(j, \(x) paste(as.character(x), collapse = "; "))
+    }, error = \(e) {
+      return(data.frame(error = "parsing error"))
+    })
+  }) |>
+    do.call(dplyr::bind_rows, args = _)
+
+
+  # fix data types
+  for (i in names(expanded)) {
+    expanded[[i]] <- utils::type.convert(expanded[[i]], as.is = TRUE)
+  }
+
+  # add expanded to table
+  dplyr::bind_cols(table, expanded)
+}

@@ -236,6 +236,7 @@ test_that("osf_retrieve", {
     type = names(examples)
   )
   expect_warning(table <- osf_retrieve(osf_url))
+  expect_true(!"project" %in% names(table))
   expect_equal(table$url, osf_url$url)
   expect_equal(table$type, osf_url$type)
   expect_equal(table[2, 3:10], table[7, 3:10], ignore_attr = TRUE)
@@ -246,15 +247,16 @@ test_that("osf_retrieve", {
   expect_equal(table$osf_url, osf_url)
   expect_equal(table$name, "Papercheck Test")
 
-  # table with id_col
+  # table with id_col, find project
   osf_url <- data.frame(
     id = 100,
     osf_id = "pngda"
   )
   id_col <- "osf_id"
-  table <- osf_retrieve(osf_url, id_col)
+  table <- osf_retrieve(osf_url, id_col, find_project = TRUE)
   expect_equal(table$osf_id, osf_url$osf_id)
   expect_equal(table$name, "Papercheck Test")
+  expect_equal(table$project, "pngda")
 
   # recursive
   osf_url <- "yt32c"

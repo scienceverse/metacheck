@@ -17,3 +17,4 @@ This infix function makes it easy to replace \code{NULL}s with a default value. 
 1 \%||\% 2
 NULL \%||\% 2
 }
+\keyword{internal}
