@@ -23,6 +23,7 @@ articles:
         - articles/intro
         - articles/jars
         - articles/osf
+        - articles/aspredicted
   - title: "Articles"
     contents:
       - report-example

@@ -1,7 +1,7 @@
 Package: papercheck
 Title: Check Scientific Papers for Best Practices
-Version: 0.0.0.9045
-Date: 2025-06-19
+Version: 0.0.0.9046
+Date: 2025-06-20
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -19,7 +19,7 @@ Authors@R: c(
            email = "cristianmesquida@gmail.com",
            comment = c(ORCID = "0000-0002-1542-8355")))
 Description: A modular, extendable system for automatically checking scientific papers for best practices using text search, R code, and/or LLM queries.
-License: MIT + file LICENSE
+License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

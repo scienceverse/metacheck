@@ -1,3 +1,10 @@
+# papercheck 0.0.0.9046
+
+* New `aspredicted_links()` and `aspredicted_retrieve()` functions
+* New related blog post
+* General bug fixes in newer stuff
+* Updated license to AGPL (GNU Affero General Public License)
+
 # papercheck 0.0.0.9045
 
 * When reading a paper with `read_grobid()`, the paper$references table now contains new columns for bibtype, title, journal, year, and authors to facilitate reference checks, and more reliably pulls DOIs.

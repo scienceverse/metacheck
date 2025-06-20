@@ -146,7 +146,7 @@ osf_retrieve <- function(osf_url, id_col = 1,
   while (!too_many & i < length(valid_ids)) {
     i = i + 1
     oi <- osf_info(valid_ids[[i]])
-    if (oi$osf_type == "too many requests") break
+    if (oi$osf_type == "too many requests") too_many <- TRUE
     id_info[[i]] <- oi
   }
 
