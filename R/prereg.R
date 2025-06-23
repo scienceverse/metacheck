@@ -132,7 +132,7 @@ aspredicted_info <- function(ap_url) {
 
   # section borders
   sections <- c(
-    AP_authors = "Authors(s)",
+    AP_authors = "Author(s)",
     AP_created = "Pre-registered on",
     AP_data = "1) Have any data been collected for this study already?",
     AP_hypotheses = "2) What's the main question being asked or hypothesis being tested in this study?",
@@ -157,3 +157,4 @@ aspredicted_info <- function(ap_url) {
 
   return(obj)
 }
+
