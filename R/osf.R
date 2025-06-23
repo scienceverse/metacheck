@@ -137,6 +137,11 @@ osf_retrieve <- function(osf_url, id_col = 1,
 
   valid_ids <- unique(ids$osf_id)
 
+  if (length(valid_ids) == 0) {
+    message("No valid OSF links")
+    return(table)
+  }
+
   # iterate over valid IDs
   message("Starting OSF retrieval for ", length(valid_ids), " files...")
 
@@ -184,9 +189,12 @@ osf_retrieve <- function(osf_url, id_col = 1,
       do.call(dplyr::bind_rows, args = _)
 
     # TODO: handle nested folders
-    folders <- files$osf_id[files$kind == "folder"]
-    subfiles <- lapply(folders, osf_files) |>
-      do.call(dplyr::bind_rows, args = _)
+    subfiles <- data.frame()
+    if (nrow(files) > 0) {
+      folders <- files$osf_id[files$kind == "folder"]
+      subfiles <- lapply(folders, osf_files) |>
+        do.call(dplyr::bind_rows, args = _)
+    }
 
     data <- list(data, child_collector, files, subfiles) |>
       do.call(dplyr::bind_rows, args = _)
@@ -374,18 +382,37 @@ osf_file_data <- function(data) {
     parent = data$relationships$target$data$id %||% NA_character_
   )
 
-  filetype <- data.frame(
-    id = seq_along(obj$name),
-    ext = strsplit(obj$name, "\\.") |>
+  obj$filetype <- filetype(obj$name)
+
+  return(obj)
+}
+
+#' Get file Type from Extension
+#'
+#' @param filename the file name
+#'
+#' @returns a named vector of file types
+#' @export
+#'
+#' @examples
+#' filetype("script.R")
+filetype <- function(filename) {
+  ext <- data.frame(
+    id = seq_along(filename),
+    ext = strsplit(filename, "\\.") |>
       sapply(\(x) x[[length(x)]]) |>
       tolower()
-  ) |>
+  )
+
+  add_types <- ext |>
     dplyr::left_join(file_types, by = "ext") |>
     dplyr::summarise(type = paste(.data$type, collapse = ";"),
                      .by = c("id", "ext"))
-  obj$filetype <- filetype$type
 
-  return(obj)
+  filetype <- add_types$type
+  names(filetype) <- filename
+
+  return(filetype)
 }
 
 #' Structure OSF Preprint Data
@@ -584,38 +611,58 @@ osf_children <- function(osf_id) {
 #'
 #' @param contents a table with columns name, path such as from `osf_contents()`
 #'
-#' @returns the table with new columns is_readme, is_data, is_code, is_codebook, and best_guess
+#' @returns the table with new column file_category
 #' @export
 #'
 summarize_contents <- function(contents) {
-  contents$is_readme <- grepl("read[ _-]?me", contents$name, ignore.case = TRUE)
+  nm <- contents$name
+  cat <- contents$category
+  ft <- contents$filetype
 
-  contents$is_data <- dplyr::case_when(
-    contents$category == "data" ~ TRUE,
-    contents$filetype == "data" ~ TRUE,
-    grepl("data", contents$name, ignore.case = TRUE) ~ TRUE,
-    .default = FALSE
-  )
-  contents$is_code <- dplyr::case_when(
-    contents$category == "code" ~ TRUE,
-    contents$filetype == "code" ~ TRUE,
-    grepl("code|script", contents$name, ignore.case = TRUE) ~ TRUE,
-    .default = FALSE
-  )
+  # category is from OSF, so can be: analysis, communication, data, hypothesis, instrumentation, methods and measures, procedure, project, software, other, but mostly uncategorized (NA)
 
-  contents$is_codebook <- dplyr::case_when(
-    contents$category == "codebook" ~ TRUE,
-    grepl("code[ _]?book", contents$name, ignore.case = TRUE) ~ TRUE,
-    grepl("data[ _]?dict", contents$name, ignore.case = TRUE) ~ TRUE,
-    .default = FALSE
+  # hard rules
+  sure_class <- dplyr::case_when(
+    ft == "stats" ~ "code",
+    ft == "data" ~ "data",
+    ft == "code" ~ "code",
+    grepl("code[ _]?book", nm, ignore.case = TRUE) ~ "codebook",
+    grepl("data[ _]?dict", nm, ignore.case = TRUE) ~ "codebook",
   )
 
-  contents$best_guess <- dplyr::case_when(
-    contents$is_readme ~ "readme",
-    contents$is_code ~ "code",
-    contents$is_data ~ "data",
-    contents$is_codebook ~ "codebook",
-    .default = ""
+  is_readme <- grepl("read[ _-]?me", contents$name, ignore.case = TRUE)
+
+  # data
+  is_data <- dplyr::case_when(
+    cat == "data" ~ TRUE,
+    ft == "data" ~ TRUE,
+    grepl("data", nm, ignore.case = TRUE) ~ TRUE,
+    .default = FALSE
+  )
+
+  # code
+  is_code <- dplyr::case_when(
+    cat == "code" ~ TRUE,
+    ft == "code" ~ TRUE,
+    grepl("code|script", nm, ignore.case = TRUE) ~ TRUE,
+    .default = FALSE
+  )
+
+  # codebook
+  is_codebook <- dplyr::case_when(
+    cat == "codebook" ~ TRUE,
+    grepl("code[ _]?book", nm, ignore.case = TRUE) ~ TRUE,
+    grepl("data[ _]?dict", nm, ignore.case = TRUE) ~ TRUE,
+    .default = FALSE
+  )
+
+  contents$file_category <- dplyr::case_when(
+    !is.na(sure_class) ~ sure_class,
+    is_readme ~ "readme",
+    is_codebook ~ "codebook",
+    # is_code ~ "code",
+    # is_data ~ "data",
+    .default = NA_character_
   )
 
   return(contents)

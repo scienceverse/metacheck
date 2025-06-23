@@ -207,6 +207,19 @@ test_that("osf_info", {
   expect_equal(info$osf_type, "private")
   expect_equal(info$public, FALSE)
 
+  # view-only (private)
+  osf_id <- "https://osf.io/ybm3c/?view_only=5acf039f24ac4ea28afec473548dd7f4"
+  info <- osf_info(osf_id)
+  expect_equal(info$osf_id, "ybm3c")
+  expect_equal(osf_type, "private")
+
+  # view-only (public)
+  osf_id <- "https://osf.io/pngda/?view_only=5acf039f24ac4ea28afec473548dd7f4"
+  info <- osf_info(osf_id)
+  expect_equal(info$osf_id, "pngda")
+  expect_equal(info$osf_type, "nodes")
+  expect_equal(info$name, "Papercheck Test")
+
   # invalid
   osf_id <- "xx"
   expect_warning(info <- osf_info(osf_id))
@@ -275,6 +288,29 @@ test_that("osf_retrieve", {
   expect_warning(table <- osf_retrieve(osf_url, recursive = TRUE))
   expect_equal(nrow(table), 3 + 14)
   expect_equal(table$n, c(1:3, rep(NA, 14)))
+
+  # only one URL
+  osf_url <- "https://osf.io/pngda"
+  table <- osf_retrieve(osf_url)
+  expect_equal(table$name, "Papercheck Test")
+
+  osf_url <- "https://osf.io/ybm3c/?view_only=5acf039f24ac4ea28afec473548dd7f4"
+  table <- osf_retrieve(osf_url)
+  expect_equal(table$osf_url, osf_url)
+  expect_equal(table$osf_id, "ybm3c")
+
+  # children of private
+  osf_url <- "https://osf.io/ybm3c/?view_only=5acf039f24ac4ea28afec473548dd7f4"
+  table <- osf_retrieve(osf_url, recursive = TRUE)
+  expect_equal(table$osf_url, osf_url)
+  expect_equal(table$osf_id, "ybm3c")
+
+  # no links
+  paper <- psychsci[[180]]
+  osf_url <- osf_links(paper)
+  expect_message(info <- osf_retrieve(osf_url, recursive = TRUE, find_project = TRUE))
+  expect_equal(nrow(info), 0)
+  expect_equal(osf_url, info)
 })
 
 test_that("osf_parent_project", {
@@ -310,15 +346,44 @@ test_that("summarize_contents", {
   summary <- summarize_contents(contents)
 
   readme <- dplyr::filter(summary, name == "README")
-  expect_equal(readme$best_guess, "readme")
-  expect_equal(readme$is_data, FALSE)
-  expect_equal(readme$is_code, FALSE)
-  expect_equal(readme$is_codebook, FALSE)
-  expect_equal(readme$is_readme, TRUE)
+  expect_equal(readme$file_category, "readme")
 
   # handle zero results and/or OSF down
   summary <- summarize_contents(data.frame())
   expect_equal(nrow(summary), 0)
+})
+
+test_that("add_filetype", {
+  # edge case classification
+  files <- c(
+    "datarelease.pdf" = "text",    # pdf cannot be data or code
+    "my_r_code.pdf" = "text",
+    "data.sas" = "stats",          # sas is always code
+    "codebook.sas" = "stats",
+    "codebook.pdf" = "text"
+  )
+  ft <- filetype(names(files))
+  expect_equal(ft, files)
+})
+
+test_that("edge case summarise", {
+  # edge case classification
+  # category is from OSF, so can be: analysis, communication, data, hypothesis, instrumentation, methods and measures, procedure, project, software, other, but mostly uncategorized (NA)
+  contents <- dplyr::tribble(
+    ~name,              ~category, ~classify,
+    "datarelease.pdf",  NA,         NA,        # pdf cannot be data or code
+    "data.pdf",         "data",     NA,        # what about qual data?
+    "my_r_code.pdf",    NA,         NA,
+    "readme.xls",       "project",  "data",    # is an xls file always data?
+    "data.sas",         NA,         "code",    # sas is always code
+    "codebook.sas",     NA,         "code",
+    "readme.sas",       NA,         "code",
+    "codebook.pdf",     NA,         "codebook" # not a great format but possible
+  )
+  contents$filetype <- filetype(contents$name)
+
+  summary <- summarize_contents(contents)
+  expect_equal(summary$file_category, contents$classify)
 })
 
 
