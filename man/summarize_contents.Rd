@@ -10,7 +10,7 @@ summarize_contents(contents)
 \item{contents}{a table with columns name, path such as from \code{osf_contents()}}
 }
 \value{
-the table with new columns is_readme, is_data, is_code, is_codebook, and best_guess
+the table with new column file_category
 }
 \description{
 Summarize Directory Contents

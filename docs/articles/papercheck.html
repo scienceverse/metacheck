@@ -35,7 +35,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9045</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9047</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,8 +63,8 @@
 
 
 
-<link href="papercheck_files/tabwid-1.1.3/tabwid.css" rel="stylesheet">
-<script src="papercheck_files/tabwid-1.1.3/tabwid.js"></script><div class="row">
+
+<div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>papercheck</h1>
             
@@ -187,7 +187,7 @@ info, references, and citations.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">info</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; $filename</span></span>
-<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/Rtmp4omX34/temp_libpath1bb7aeed92d/papercheck/extdata/to_err_is_human.xml"</span></span>
+<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/Rtmp44S3Wx/temp_libpathce9b3e0227c3/papercheck/extdata/to_err_is_human.xml"</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $title</span></span>
 <span><span class="co">#&gt; [1] "To Err is Human: An Empirical Investigation"</span></span>
@@ -882,113 +882,138 @@ are errors. It also fixes column data types, if possible.</p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">llm_response</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/json_expand.html">json_expand</a></span><span class="op">(</span><span class="va">llm_power</span>, <span class="st">"answer"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">text</span>, <span class="va">apriori</span><span class="op">:</span><span class="va">es_metric</span><span class="op">)</span></span></code></pre></div>
-<div class="tabwid">
-<style>.cl-9cf2b182{}.cl-9cefe880{font-family:'Helvetica';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-9cf10580{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-9cf1058a{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-9cf11142{width:5in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-9cf1114c{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-9cf1114d{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-9cf1114e{width:5in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-9cf11156{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-9cf11157{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-9cf11158{width:5in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-9cf11159{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-9cf11160{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
-<table data-quarto-disable-processing="true" class="table cl-9cf2b182">
-<thead><tr style="overflow-wrap:break-word;">
-<th class="cl-9cf11142"><p class="cl-9cf10580"><span class="cl-9cefe880">text</span></p></th>
-<th class="cl-9cf1114c"><p class="cl-9cf1058a"><span class="cl-9cefe880">apriori</span></p></th>
-<th class="cl-9cf1114d"><p class="cl-9cf10580"><span class="cl-9cefe880">test</span></p></th>
-<th class="cl-9cf1114c"><p class="cl-9cf1058a"><span class="cl-9cefe880">sample</span></p></th>
-<th class="cl-9cf1114c"><p class="cl-9cf1058a"><span class="cl-9cefe880">alpha</span></p></th>
-<th class="cl-9cf1114c"><p class="cl-9cf1058a"><span class="cl-9cefe880">power</span></p></th>
-<th class="cl-9cf1114d"><p class="cl-9cf10580"><span class="cl-9cefe880">es</span></p></th>
-<th class="cl-9cf1114d"><p class="cl-9cf10580"><span class="cl-9cefe880">es_metric</span></p></th>
+<table class="table">
+<colgroup>
+<col width="83%">
+<col width="2%">
+<col width="4%">
+<col width="1%">
+<col width="1%">
+<col width="1%">
+<col width="2%">
+<col width="2%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">text</th>
+<th align="left">apriori</th>
+<th align="left">test</th>
+<th align="right">sample</th>
+<th align="right">alpha</th>
+<th align="right">power</th>
+<th align="left">es</th>
+<th align="left">es_metric</th>
 </tr></thead>
 <tbody>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-9cf1114e"><p class="cl-9cf10580"><span class="cl-9cefe880">Sample size was calculated with an a priori power analysis, using the effect sizes reported by Küpper et al. (2014), who used identical procedures, materials, and dependent measures.</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">TRUE</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
+<tr class="odd">
+<td align="left">Sample size was calculated with an a priori power
+analysis, using the effect sizes reported by Küpper et al. (2014), who
+used identical procedures, materials, and dependent measures.</td>
+<td align="left">TRUE</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-9cf1114e"><p class="cl-9cf10580"><span class="cl-9cefe880">We determined that a minimum sample size of 7 per group would be necessary for 95% power to detect an effect.</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">TRUE</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">7</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">0.95</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
+<tr class="even">
+<td align="left">We determined that a minimum sample size of 7 per group
+would be necessary for 95% power to detect an effect.</td>
+<td align="left">TRUE</td>
+<td align="left"></td>
+<td align="right">7</td>
+<td align="right">NA</td>
+<td align="right">0.95</td>
+<td align="left"></td>
+<td align="left"></td>
 </tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-9cf1114e"><p class="cl-9cf10580"><span class="cl-9cefe880">For the first part of the task, 11 static visual images, one from each of the scenes in the film were presented once each on a black background for 2 s using Power-Point.</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">FALSE</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
+<tr class="odd">
+<td align="left">For the first part of the task, 11 static visual
+images, one from each of the scenes in the film were presented once each
+on a black background for 2 s using Power-Point.</td>
+<td align="left">FALSE</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-9cf1114e"><p class="cl-9cf10580"><span class="cl-9cefe880">A sample size of 26 per group was required to ensure 80% power to detect this difference at the 5% significance level.</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">TRUE</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880">two-sample t-test</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">26</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">0.050</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">0.80</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
+<tr class="even">
+<td align="left">A sample size of 26 per group was required to ensure
+80% power to detect this difference at the 5% significance level.</td>
+<td align="left">TRUE</td>
+<td align="left">two-sample t-test</td>
+<td align="right">26</td>
+<td align="right">0.050</td>
+<td align="right">0.80</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-9cf1114e"><p class="cl-9cf10580"><span class="cl-9cefe880">A sample size of 18 per condition was required in order to ensure an 80% power to detect this difference at the 5% significance level.</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">TRUE</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880">t-test</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">18</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">0.050</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">0.80</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
+<tr class="odd">
+<td align="left">A sample size of 18 per condition was required in order
+to ensure an 80% power to detect this difference at the 5% significance
+level.</td>
+<td align="left">TRUE</td>
+<td align="left">t-test</td>
+<td align="right">18</td>
+<td align="right">0.050</td>
+<td align="right">0.80</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-9cf1114e"><p class="cl-9cf10580"><span class="cl-9cefe880">The 13,500 selected loan requests conservatively achieved a power of .98 for an effect size of .07 at an alpha level of .05.</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">TRUE</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">13,500</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">0.050</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">0.98</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880">0.07</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
+<tr class="even">
+<td align="left">The 13,500 selected loan requests conservatively
+achieved a power of .98 for an effect size of .07 at an alpha level of
+.05.</td>
+<td align="left">TRUE</td>
+<td align="left"></td>
+<td align="right">13500</td>
+<td align="right">0.050</td>
+<td align="right">0.98</td>
+<td align="left">0.07</td>
+<td align="left"></td>
 </tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-9cf1114e"><p class="cl-9cf10580"><span class="cl-9cefe880">On the basis of simulations over a range of expected effect sizes for contrasts of fMRI activity, we estimated that a sample size of 24 would provide .80 power at a conservative brainwide alpha threshold of .002 (although such thresholds ideally should be relaxed for detecting activity in regions where an effect is predicted).</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">TRUE</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880">unknown</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">24</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">0.002</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">0.80</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880">unknown</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880">unknown</span></p></td>
+<tr class="odd">
+<td align="left">On the basis of simulations over a range of expected
+effect sizes for contrasts of fMRI activity, we estimated that a sample
+size of 24 would provide .80 power at a conservative brainwide alpha
+threshold of .002 (although such thresholds ideally should be relaxed
+for detecting activity in regions where an effect is predicted).</td>
+<td align="left">TRUE</td>
+<td align="left">unknown</td>
+<td align="right">24</td>
+<td align="right">0.002</td>
+<td align="right">0.80</td>
+<td align="left">unknown</td>
+<td align="left">unknown</td>
 </tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-9cf1114e"><p class="cl-9cf10580"><span class="cl-9cefe880">Stimulus sample size was determined via power analysis of the sole existing similar study, which used neural activity to predict Internet downloads of music (Berns &amp; Moore, 2012).</span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880">TRUE</span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11156"><p class="cl-9cf1058a"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11157"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
+<tr class="even">
+<td align="left">Stimulus sample size was determined via power analysis
+of the sole existing similar study, which used neural activity to
+predict Internet downloads of music (Berns &amp; Moore, 2012).</td>
+<td align="left">TRUE</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-9cf11158"><p class="cl-9cf10580"><span class="cl-9cefe880">The effect size from that study implied that a sample size of 72 loan requests would be required to achieve .80 power at an alpha level of .05.</span></p></td>
-<td class="cl-9cf11159"><p class="cl-9cf1058a"><span class="cl-9cefe880">TRUE</span></p></td>
-<td class="cl-9cf11160"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11159"><p class="cl-9cf1058a"><span class="cl-9cefe880">72</span></p></td>
-<td class="cl-9cf11159"><p class="cl-9cf1058a"><span class="cl-9cefe880">0.050</span></p></td>
-<td class="cl-9cf11159"><p class="cl-9cf1058a"><span class="cl-9cefe880">0.80</span></p></td>
-<td class="cl-9cf11160"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
-<td class="cl-9cf11160"><p class="cl-9cf10580"><span class="cl-9cefe880"></span></p></td>
+<tr class="odd">
+<td align="left">The effect size from that study implied that a sample
+size of 72 loan requests would be required to achieve .80 power at an
+alpha level of .05.</td>
+<td align="left">TRUE</td>
+<td align="left"></td>
+<td align="right">72</td>
+<td align="right">0.050</td>
+<td align="right">0.80</td>
+<td align="left"></td>
+<td align="left"></td>
 </tr>
 </tbody>
 </table>
-</div>
 </div>
 <div class="section level3">
 <h3 id="rate-limiting">Rate Limiting<a class="anchor" aria-label="anchor" href="#rate-limiting"></a>

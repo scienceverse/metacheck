@@ -35,7 +35,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9045</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9047</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,11 +75,10 @@
 
     
     
-<p>There are some built-in functions in papercheck for exploring OSF
-repositories. You can use these in custom modules.</p>
 <p><em>In this blog post we will explain how Papercheck can
 automatically check the content of data repositories that are linked to
-in a scientific manuscript.</em></p>
+in a scientific manuscript, using some papercheck functions for
+exploring OSF repositories to create a custom module.</em></p>
 <p>There is an increasing awareness of the importance of open science
 practices, and widespread support among scientists for open science
 practices, such as data and code sharing <span class="citation">(Ferguson et al. 2023)</span>. As data and code sharing
@@ -504,48 +503,48 @@ what is shared.</p>
 <thead><tr class="header">
 <th align="left">name</th>
 <th align="left">filetype</th>
-<th align="left">best_guess</th>
+<th align="left">file_category</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td align="left">Kim,Doeller_Prereg_OSF.pdf</td>
 <td align="left">text</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">suppleVideo1_learnSph.mp4</td>
 <td align="left">video</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">suppleVideo2_learnPlane.mp4</td>
 <td align="left">video</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">suppleVideo3_objlocSph.mp4</td>
 <td align="left">video</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">suppleVideo4_objlocPlane.mp4</td>
 <td align="left">video</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">suppleVideo5_triangleSph.mp4</td>
 <td align="left">video</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">suppleVideo6_trianglePlane.mp4</td>
 <td align="left">video</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">virtualizerStudy1-main.zip</td>
 <td align="left">archive</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">ReadMe.txt</td>
@@ -585,37 +584,37 @@ what is shared.</p>
 <tr class="even">
 <td align="left">suppleVideo2_learnPlane.mp4</td>
 <td align="left">video</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">suppleVideo3_objlocSph.mp4</td>
 <td align="left">video</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">suppleVideo6_trianglePlane.mp4</td>
 <td align="left">video</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">suppleVideo1_learnSph.mp4</td>
 <td align="left">video</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">suppleVideo4_objlocPlane.mp4</td>
 <td align="left">video</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">suppleVideo5_triangleSph.mp4</td>
 <td align="left">video</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">suppleMovie_legend.txt</td>
 <td align="left">text</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">sumDemograph.csv</td>
@@ -665,7 +664,7 @@ what is shared.</p>
 <tr class="even">
 <td align="left">Kim,Doeller_Prereg_OSF.pdf</td>
 <td align="left">text</td>
-<td align="left"></td>
+<td align="left">NA</td>
 </tr>
 </tbody>
 </table>
@@ -690,10 +689,10 @@ naming folders and files.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">osf_report</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">summary</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">files</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">summary</span>, <span class="va">osf_type</span> <span class="op">==</span> <span class="st">"files"</span><span class="op">)</span></span>
-<span>  <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">files</span>, <span class="va">best_guess</span> <span class="op">==</span> <span class="st">"data"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="va">code</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">files</span>, <span class="va">best_guess</span> <span class="op">==</span> <span class="st">"code"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="va">codebook</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">files</span>, <span class="va">best_guess</span> <span class="op">==</span> <span class="st">"codebook"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="va">readme</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">files</span>, <span class="va">best_guess</span> <span class="op">==</span> <span class="st">"readme"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">files</span>, <span class="va">file_category</span> <span class="op">==</span> <span class="st">"data"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">code</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">files</span>, <span class="va">file_category</span> <span class="op">==</span> <span class="st">"code"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">codebook</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">files</span>, <span class="va">file_category</span> <span class="op">==</span> <span class="st">"codebook"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">readme</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">files</span>, <span class="va">file_category</span> <span class="op">==</span> <span class="st">"readme"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="va">traffic_light</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
 <span>    <span class="va">data</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">code</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">readme</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">"red"</span>,</span>
@@ -790,7 +789,7 @@ by:</p>
 <span><span class="co">#&gt; locale:</span></span>
 <span><span class="co">#&gt; [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; time zone: Europe/London</span></span>
+<span><span class="co">#&gt; time zone: Europe/Amsterdam</span></span>
 <span><span class="co">#&gt; tzcode source: internal</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; attached base packages:</span></span>
@@ -800,7 +799,7 @@ by:</p>
 <span><span class="co">#&gt;  [1] lubridate_1.9.4       forcats_1.0.0         stringr_1.5.1        </span></span>
 <span><span class="co">#&gt;  [4] dplyr_1.1.4           purrr_1.0.4           readr_2.1.5          </span></span>
 <span><span class="co">#&gt;  [7] tidyr_1.3.1           tibble_3.2.1          ggplot2_3.5.1        </span></span>
-<span><span class="co">#&gt; [10] tidyverse_2.0.0       papercheck_0.0.0.9045</span></span>
+<span><span class="co">#&gt; [10] tidyverse_2.0.0       papercheck_0.0.0.9047</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] sass_0.4.9        generics_0.1.3    stringi_1.8.4     httpcode_0.3.0   </span></span>
@@ -966,23 +965,18 @@ reproduce your results!</p>
 <p>Learn more about reproducible data practices: <a href="https://www.projecttier.org/tier-protocol/" class="external-link uri">https://www.projecttier.org/tier-protocol/</a></p>
 <table class="table">
 <colgroup>
-<col width="4%">
-<col width="2%">
+<col width="5%">
+<col width="3%">
 <col width="1%">
 <col width="1%">
 <col width="1%">
-<col width="2%">
-<col width="46%">
+<col width="3%">
+<col width="56%">
+<col width="5%">
 <col width="4%">
 <col width="3%">
-<col width="2%">
-<col width="3%">
 <col width="4%">
-<col width="3%">
-<col width="3%">
-<col width="2%">
-<col width="2%">
-<col width="4%">
+<col width="5%">
 <col width="4%">
 </colgroup>
 <thead><tr class="header">
@@ -999,11 +993,6 @@ reproduce your results!</p>
 <th align="left">category</th>
 <th align="left">registration</th>
 <th align="left">preprint</th>
-<th align="left">is_readme</th>
-<th align="left">is_data</th>
-<th align="left">is_code</th>
-<th align="left">is_codebook</th>
-<th align="left">best_guess</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
@@ -1022,11 +1011,6 @@ system”</td>
 <td align="left">project</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">osf.io/k2dbf</td>
@@ -1044,11 +1028,6 @@ system”</td>
 <td align="left">project</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">osf.io/k2dbf</td>
@@ -1066,11 +1045,6 @@ system”</td>
 <td align="left">project</td>
 <td align="left">FALSE</td>
 <td align="left">TRUE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left">FALSE</td>
-<td align="left"></td>
 </tr>
 </tbody>
 </table>
@@ -1097,6 +1071,8 @@ in the medical imaging literature</a>. We believe there will be many
 such field-dependent checks that can be automated, as the ability to
 automatically examine and/or retrieve files that are linked to in a
 paper should be useful for a large range of use-cases.</p>
+<p><strong>These examples were created using papercheck version
+0.0.0.9045.</strong></p>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

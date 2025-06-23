@@ -117,7 +117,7 @@ osf_files_summary <- summarize_contents(info)
 #| echo: false
 osf_files_summary |>
   filter(osf_type == "files", kind == "file") |>
-  select(name, filetype, best_guess) |>
+  select(name, filetype, file_category) |>
   mytable()
 ```
 
@@ -128,10 +128,10 @@ Finally, we print a report that communicates to the user - for example, a resear
 ```{r osf_report-func}
 osf_report <- function(summary) {
   files <- dplyr::filter(summary, osf_type == "files")
-  data <- dplyr::filter(files, best_guess == "data") |> nrow()
-  code <- dplyr::filter(files, best_guess == "code") |> nrow()
-  codebook <- dplyr::filter(files, best_guess == "codebook") |> nrow()
-  readme <- dplyr::filter(files, best_guess == "readme") |> nrow()
+  data <- dplyr::filter(files, file_category == "data") |> nrow()
+  code <- dplyr::filter(files, file_category == "code") |> nrow()
+  codebook <- dplyr::filter(files, file_category == "codebook") |> nrow()
+  readme <- dplyr::filter(files, file_category == "readme") |> nrow()
   
   traffic_light <- dplyr::case_when(
     data == 0 & code == 0 & readme == 0 ~ "red",

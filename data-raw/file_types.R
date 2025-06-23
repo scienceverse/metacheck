@@ -32,7 +32,7 @@ extensions[["config"]] <- data.frame(
 extensions[["config"]]$type <- "config"
 
 extensions[["stats"]] <- data.frame(
-  ext = c( "sas", "por", "jasp", "sps", "spss", "DO")
+  ext = c( "sas", "por", "jasp", "sps", "spss", "DO", "spv", "spo")
 )
 extensions[["stats"]]$type <- "stats"
 

@@ -1,3 +1,9 @@
+# papercheck 0.0.0.9047
+
+* fixed some bugs in osf and aspredicted functions (mainly around dealing with private or empty projects)
+* added rvest dependency for better webpage parsing
+* changed name of resulting column from `summarize_contents()` from `best_guess` to `file_category`
+
 # papercheck 0.0.0.9046
 
 * New `aspredicted_links()` and `aspredicted_retrieve()` functions

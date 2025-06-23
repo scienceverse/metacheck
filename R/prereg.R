@@ -64,7 +64,9 @@ aspredicted_retrieve <- function(ap_url, id_col = 1) {
   }
 
   # iterate over valid IDs
-  message("Starting AsPredicted retrieval for ", length(valid_ids), " files...")
+  message("Starting AsPredicted retrieval for ",
+          length(valid_ids), " file",
+          ifelse(length(valid_ids) == 1, "", "s"),"...")
 
   id_info <- vector("list", length(valid_ids))
   i = 0
@@ -119,7 +121,7 @@ aspredicted_info <- function(ap_url) {
     xml2::read_html()
 
   body <- xml2::xml_find_all(html, "//body") |>
-    xml2::xml_text()
+    rvest::html_text2() #xml2::xml_text()
 
   if (grepl("CLICK after solving captcha", body, fixed = TRUE)) {
     warning("Log in to AsPredicted to bypass the CAPTCHA", call. = FALSE)
@@ -132,7 +134,7 @@ aspredicted_info <- function(ap_url) {
 
   # section borders
   sections <- c(
-    AP_authors = "Authors(s)",
+    AP_authors = "Author(s)",
     AP_created = "Pre-registered on",
     AP_data = "1) Have any data been collected for this study already?",
     AP_hypotheses = "2) What's the main question being asked or hypothesis being tested in this study?",
@@ -140,8 +142,8 @@ aspredicted_info <- function(ap_url) {
     AP_conditions = "4) How many and which conditions will participants be assigned to?",
     AP_analyses = "5) Specify exactly which analyses you will conduct to examine the main question/hypothesis.",
     AP_outliers = "6) Describe exactly how outliers will be defined and handled, and your precise rule(s) for excluding observations.",
-    AP_sample_size = "7) How many observations will be collected or what will determine sample size? No need to justify decision, but be precise about exactly how the number will be determined.",
-    AP_anything_else = "8) Anything else you would like to pre-register? (e.g., secondary analyses, variables collected for exploratory purposes, unusual analyses planned?)",
+    AP_sample_size = "7) How many observations will be collected or what will determine sample size?\nNo need to justify decision, but be precise about exactly how the number will be determined.",
+    AP_anything_else = "8) Anything else you would like to pre-register?\n(e.g., secondary analyses, variables collected for exploratory purposes, unusual analyses planned?)",
     AP_version = "Version of AsPredicted Questions: ",
     bug = "Report a bug"
   )
