@@ -1,3 +1,7 @@
+# papercheck 0.0.0.9048
+
+* Functions to check ResearchBox.org (`researchbox_links()` and `researchbox_retrieve()`)
+
 # papercheck 0.0.0.9047
 
 * fixed some bugs in osf and aspredicted functions (mainly around dealing with private or empty projects)

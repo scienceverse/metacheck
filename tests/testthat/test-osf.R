@@ -112,6 +112,10 @@ test_that("osf_check_id", {
 })
 
 test_that("osf_get_all_pages", {
+  skip_on_cran()
+  skip_on_covr()
+  skip_if_not(osf_api_check() == "ok")
+
   osf_api <- getOption("papercheck.osf.api")
 
   # fewer than 10
@@ -235,6 +239,10 @@ test_that("osf_info", {
 
 
 test_that("osf_retrieve", {
+  skip_on_cran()
+  skip_on_covr()
+  skip_if_not(osf_api_check() == "ok")
+
   examples <- c(project = "pngda",
                 component = "https://osf.io/6nt4v",
                 private = "ybm3c",
@@ -308,12 +316,49 @@ test_that("osf_retrieve", {
   # no links
   paper <- psychsci[[180]]
   osf_url <- osf_links(paper)
-  expect_message(info <- osf_retrieve(osf_url, recursive = TRUE, find_project = TRUE))
+  info <- osf_retrieve(osf_url, recursive = TRUE, find_project = TRUE)
   expect_equal(nrow(info), 0)
   expect_equal(osf_url, info)
 })
 
+test_that("osf_retrieve recursive", {
+  skip_on_cran()
+  skip_on_covr()
+  skip_if_not(osf_api_check() == "ok")
+
+  # folders can only have wb IDs,
+  # files only have wb IDs until someone looks at them on the web
+  #  and then they get 5-letter guids
+  # currently just using wb IDs for all files
+
+  osf_url <- "j3gcx"
+  info <- osf_retrieve(osf_url, recursive = TRUE)
+  folders <- paste0("nest-", 1:4) |> c("empty")
+  files <- paste0("test-", 1:4, ".txt")
+  expect_true(all(folders %in% info$name))
+  expect_true(all(files %in% info$name))
+})
+
+test_that("osf_id vs wb_id", {
+  skip_on_cran()
+  skip_on_covr()
+  skip_if_not(osf_api_check() == "ok")
+
+  osf_id <- "k6gbt"
+  osf_info <- osf_info(osf_id)
+
+  osf_id <- "6846ed88e49694cd45ab8375"
+  wb_info <- osf_info(osf_id)
+
+  expect_equal(osf_info[, 2:11], wb_info[, 2:11])
+})
+
+
 test_that("osf_parent_project", {
+  skip_on_cran()
+  skip_on_covr()
+  skip_if_not(osf_api_check() == "ok")
+
   # has parent project
   osf_id <- "yt32c"
   parent <- osf_parent_project(osf_id)
@@ -336,9 +381,13 @@ test_that("osf_parent_project", {
 })
 
 test_that("summarize_contents", {
+  # handle zero results and/or OSF down
+  summary <- summarize_contents(data.frame())
+  expect_equal(nrow(summary), 0)
+
   skip_on_cran()
   skip_on_covr()
-  skip_if_offline("api.osf.io")
+  skip_if_not(osf_api_check() == "ok")
 
   osf_id <- "pngda"
   contents <- osf_retrieve(osf_id, recursive = TRUE)
@@ -347,10 +396,6 @@ test_that("summarize_contents", {
 
   readme <- dplyr::filter(summary, name == "README")
   expect_equal(readme$file_category, "readme")
-
-  # handle zero results and/or OSF down
-  summary <- summarize_contents(data.frame())
-  expect_equal(nrow(summary), 0)
 })
 
 test_that("add_filetype", {

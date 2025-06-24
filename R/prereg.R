@@ -18,7 +18,10 @@ aspredicted_links <- function(paper) {
   found_ap$text[blind] <- expanded$expanded
 
   # fix space stuff
-  found_ap$text <- gsub(RGX_ASPREDICTED, "/aspredicted\\.org", x = found_ap$text)
+  found_ap$text <- gsub(RGX_ASPREDICTED, "/aspredicted\\.org",
+                        x = found_ap$text)
+  found_ap$text <- gsub("blind\\.php\\s*\\?\\s*x\\s*=\\s*",
+                        "blind\\.php\\?x=", x = found_ap$text)
 
   # match up to ">"
   match_ap <- search_text(found_ap, "/aspredicted\\.org[^\\>]+", return = "match")
@@ -29,7 +32,12 @@ aspredicted_links <- function(paper) {
     gsub("\\.pdf.*", "\\.pdf", x = _) |> # some end in ".pdf)."
     paste0("https:/", x = _)
 
-  return(unique(match_ap))
+  # remove trailing blind links
+  unique_matches <- match_ap |>
+    dplyr::filter(text != "https://aspredicted.org/blind.php?") |>
+    unique()
+
+  return(unique_matches)
 }
 
 #' Retrieve info from AsPredicted by URL
@@ -40,6 +48,10 @@ aspredicted_links <- function(paper) {
 #' @returns a data frame of information
 #' @export
 aspredicted_retrieve <- function(ap_url, id_col = 1) {
+  if (is.null(curl::nslookup("aspredicted.org", error = FALSE))) {
+    stop("AsPredicted.org seems to be offline")
+  }
+
   # handle list of links
   if (is.data.frame(ap_url)) {
     table <- ap_url

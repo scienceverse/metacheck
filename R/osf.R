@@ -183,20 +183,25 @@ osf_retrieve <- function(osf_url, id_col = 1,
     # get all new node IDs to search for files
     all_nodes <- dplyr::bind_rows(info, child_collector)
     node_type <- all_nodes$osf_type == "nodes"
-    node_ids <- all_nodes[node_type, ]$osf_id |> unique()
-
-    files <- lapply(node_ids, osf_files) |>
-      do.call(dplyr::bind_rows, args = _)
-
-    # TODO: handle nested folders
-    subfiles <- data.frame()
-    if (nrow(files) > 0) {
-      folders <- files$osf_id[files$kind == "folder"]
-      subfiles <- lapply(folders, osf_files) |>
-        do.call(dplyr::bind_rows, args = _)
+    if ("kind" %in% names(all_nodes)) {
+      node_type <-  node_type || all_nodes$kind == "folder"
     }
 
-    data <- list(data, child_collector, files, subfiles) |>
+    folders <- all_nodes[node_type, ]$osf_id |> unique()
+
+    file_collector <- data.frame()
+    while(length(folders) > 0) {
+      subfiles <- lapply(folders, osf_files) |>
+        do.call(dplyr::bind_rows, args = _)
+      if (nrow(subfiles) > 0 && "kind" %in% names(subfiles)) {
+        folders <- subfiles$osf_id[subfiles$kind == "folder"]
+      } else {
+        folders <- data.frame()
+      }
+      file_collector <- dplyr::bind_rows(file_collector, subfiles)
+    }
+
+    data <- list(data, child_collector, file_collector) |>
       do.call(dplyr::bind_rows, args = _)
   }
 
@@ -370,19 +375,23 @@ osf_file_data <- function(data) {
   att <- data$attributes
 
   obj <- data.frame(
+    #osf_id = ifelse(is.na(att$guid), data$id, att$guid),
     osf_id = data$id,
     name = att$name,
     description = att$description %||% NA_character_,
     osf_type = data$type,
     kind = att$kind %||% NA_character_,
+    filetype = NA_character_,
     public = att$public %||% NA,
     category = att$category %||% NA_character_,
     size = att$size %||% NA_integer_,
     downloads = att$extra$downloads %||% NA_integer_,
-    parent = data$relationships$target$data$id %||% NA_character_
+    parent = data$relationships$parent_folder$data$id %||%
+      data$relationships$target$data$id %||% NA_character_
   )
 
-  obj$filetype <- filetype(obj$name)
+  is_file <- obj$kind == "file"
+  obj$filetype[is_file] <- filetype(obj$name[is_file])
 
   return(obj)
 }
@@ -581,6 +590,7 @@ osf_files <- function(osf_id) {
 
   data <- osf_get_all_pages(url)
   obj <- osf_file_data(data)
+  obj$parent <- rep(osf_id, nrow(obj))
 
   return(obj)
 }
@@ -742,3 +752,6 @@ osf_api_calls <- function(calls = NULL) {
     stop("set osf_api_calls with a numeric value (usually reset to 0)")
   }
 }
+
+
+

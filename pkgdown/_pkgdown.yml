@@ -70,7 +70,7 @@ reference:
   - '`report`'
   - '`papercheck_app`'
 - title: LLM Functions
-  desc: Useful functions for checking GitHub repositories
+  desc: ~
   contents:
   - '`llm`'
   - '`llm_max_calls`'
@@ -78,7 +78,7 @@ reference:
   - '`llm_model_list`'
   - '`json_expand`'
 - title: OSF Functions
-  desc: Useful functions for checking OSF URLs
+  desc: ~
   contents:
   - '`osf_api_check`'
   - '`osf_check_id`'
@@ -86,13 +86,15 @@ reference:
   - '`osf_links`'
   - '`osf_retrieve`'
   - '`osf_api_calls`'
-- title: AsPredicted Functions
-  desc: Useful functions for checking AsPredicted URLs
+- title: AsPredicted/ResearchBox Functions
+  desc: ~
   contents:
   - '`aspredicted_links`'
   - '`aspredicted_retrieve`'
+  - '`researchbox_links`'
+  - '`researchbox_retrieve`'
 - title: GitHub Functions
-  desc: Useful functions for checking GitHub repositories
+  desc: ~
   contents:
   - '`github_config`'
   - '`github_repo`'
@@ -103,11 +105,11 @@ reference:
 - title: Integrations
   desc: ~
   contents:
+  - '`filetype`'
   - '`summarize_contents`'
   - '`openalex`'
   - '`crossref`'
   - '`retractionwatch`'
-  - '`filetype`'
   - '`check_orcid`'
   - '`get_orcid`'
   - '`credit_roles`'

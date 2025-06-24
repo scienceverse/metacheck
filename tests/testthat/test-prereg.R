@@ -7,7 +7,7 @@ test_that("errors", {
   expect_error(aspredicted_links(bad_arg))
 })
 
-test_that("defaults", {
+test_that("aspredicted_links", {
   links <- aspredicted_links(psychsci)
   expect_equal(names(links)[[1]], "text")
   expect_true(all(grepl("^https://aspredicted\\.org", links$text)))
@@ -32,10 +32,22 @@ test_that("defaults", {
            "https://aspredicted.org/blind.php?x=stuff",
            "https://aspredicted.org/stuff.pdf")
   expect_equal(links$text, exp)
+
+  # second trailing blind links
+  paper <- psychsci$`09567976231204035`
+  links <- aspredicted_links(paper)
+  expect_true(all(links$text != "https://aspredicted.org/blind.php?"))
+
+  # wierd aspredicted> .org
+  paper <- psychsci$`0956797620948821`
+  links <- aspredicted_links(paper)
+  expect_true(any(grepl("/vp4rg", links$text)))
+  expect_true(any(grepl("/3kq9y", links$text)))
 })
 
 test_that("aspredicted_info", {
-  skip("aspredicted")
+  skip_on_covr()
+  skip_if_offline("aspredicted.org")
 
   proj <- "https://aspredicted.org/Y2F_6B7"
   pdf <- "https://aspredicted.org/ve2qn.pdf"
