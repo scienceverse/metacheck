@@ -1,4 +1,6 @@
 url: https://scienceverse.github.io/papercheck/
+development:
+  mode: auto
 template:
   # includes:
   #   in_header: <!-- inserted at the end of the head -->
