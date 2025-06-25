@@ -108,6 +108,14 @@ osf_api_check <- function(osf_api = getOption("papercheck.osf.api")) {
 #'
 #' @returns a data frame of information
 #' @export
+#' @examples
+#' \donttest{
+#'   # get info on one OSF node
+#'   osf_retrieve("pngda")
+#'
+#'   # also get child nodes and files, and parent project
+#'   osf_retrieve("https://osf.io/6nt4v", TRUE, TRUE)
+#' }
 osf_retrieve <- function(osf_url, id_col = 1,
                          recursive = FALSE,
                          find_project = FALSE) {
@@ -184,8 +192,9 @@ osf_retrieve <- function(osf_url, id_col = 1,
     all_nodes <- dplyr::bind_rows(info, child_collector)
     node_type <- all_nodes$osf_type == "nodes"
     if ("kind" %in% names(all_nodes)) {
-      node_type <-  node_type || all_nodes$kind == "folder"
+      node_type <-  node_type | all_nodes$kind == "folder"
     }
+    node_type <- sapply(node_type, isTRUE)
 
     folders <- all_nodes[node_type, ]$osf_id |> unique()
 

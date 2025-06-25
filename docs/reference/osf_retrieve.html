@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9047</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9047</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -74,6 +74,40 @@
     <p>a data frame of information</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span>  <span class="co"># get info on one OSF node</span></span></span>
+<span class="r-in"><span>  <span class="fu">osf_retrieve</span><span class="op">(</span><span class="st">"pngda"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">Starting OSF retrieval for 1 files...</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">* Retrieving info from pngda...</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">...OSF retrieval complete!</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   osf_url osf_id            name                 description osf_type public</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   pngda  pngda Papercheck Test This is my test description    nodes   TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   category registration preprint parent</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  project        FALSE    FALSE   &lt;NA&gt;</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># also get child nodes and files, and parent project</span></span></span>
+<span class="r-in"><span>  <span class="fu">osf_retrieve</span><span class="op">(</span><span class="st">"https://osf.io/6nt4v"</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">Starting OSF retrieval for 1 files...</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">* Retrieving info from 6nt4v...</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">...Main retrieval complete</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">Starting retrieval of children...</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">* Retrieving children for 6nt4v...</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">* Retrieving files for 6nt4v...</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">...OSF retrieval complete!</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                osf_url                   osf_id               name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 https://osf.io/6nt4v                    6nt4v     Processed Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                 &lt;NA&gt; 6846ed6a29684b023953943e processed-data.csv</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          description osf_type public category registration preprint parent kind</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 The processed data    nodes   TRUE     data        FALSE    FALSE  ckjef &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2               &lt;NA&gt;    files     NA     &lt;NA&gt;           NA       NA  6nt4v file</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   filetype size downloads</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     &lt;NA&gt;   NA        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     data  185         0</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

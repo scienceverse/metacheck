@@ -21,3 +21,12 @@ a data frame of information
 \description{
 Retrieve info from the OSF by ID
 }
+\examples{
+\donttest{
+  # get info on one OSF node
+  osf_retrieve("pngda")
+
+  # also get child nodes and files, and parent project
+  osf_retrieve("https://osf.io/6nt4v", TRUE, TRUE)
+}
+}

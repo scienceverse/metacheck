@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9047</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9047</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,44 +67,44 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span>  <span class="fu">llm_model_list</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                               id        owned_by    created</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1            meta-llama/llama-prompt-guard-2-86m            Meta 2025-05-30</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2            meta-llama/llama-prompt-guard-2-22m            Meta 2025-05-30</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  meta-llama/llama-4-maverick-17b-128e-instruct            Meta 2025-04-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                 llama3-8b-8192            Meta 2023-09-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                           llama-3.1-8b-instant            Meta 2023-09-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6                                   qwen-qwq-32b   Alibaba Cloud 2025-03-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8                                  compound-beta            Groq 2025-03-02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9                                   gemma2-9b-it          Google 2023-09-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10                              mistral-saba-24b      Mistral AI 2025-02-19</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11                                qwen/qwen3-32b   Alibaba Cloud 2025-05-28</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12                 deepseek-r1-distill-llama-70b DeepSeek / Meta 2025-01-26</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13                  meta-llama/llama-guard-4-12b            Meta 2025-05-09</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14                                    allam-2-7b           SDAIA 2025-01-23</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16                       llama-3.3-70b-versatile            Meta 2024-12-06</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18                                    playai-tts          PlayAI 2025-02-27</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19                             playai-tts-arabic          PlayAI 2025-02-27</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20     meta-llama/llama-4-scout-17b-16e-instruct            Meta 2025-04-05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21                               llama3-70b-8192            Meta 2023-09-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22                            compound-beta-mini            Groq 2025-03-26</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                 qwen/qwen3-32b   Alibaba Cloud 2025-05-28</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                llama3-70b-8192            Meta 2023-09-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                     allam-2-7b           SDAIA 2025-01-23</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4            meta-llama/llama-prompt-guard-2-86m            Meta 2025-05-30</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                               mistral-saba-24b      Mistral AI 2025-02-19</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                              playai-tts-arabic          PlayAI 2025-02-27</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  meta-llama/llama-4-maverick-17b-128e-instruct            Meta 2025-04-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                             compound-beta-mini            Groq 2025-03-26</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                           llama-3.1-8b-instant            Meta 2023-09-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10     meta-llama/llama-4-scout-17b-16e-instruct            Meta 2025-04-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                                  gemma2-9b-it          Google 2023-09-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13                                  qwen-qwq-32b   Alibaba Cloud 2025-03-05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14                       llama-3.3-70b-versatile            Meta 2024-12-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                                    playai-tts          PlayAI 2025-02-27</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18                                 compound-beta            Groq 2025-03-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19                                llama3-8b-8192            Meta 2023-09-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20                 deepseek-r1-distill-llama-70b DeepSeek / Meta 2025-01-26</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21           meta-llama/llama-prompt-guard-2-22m            Meta 2025-05-30</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22                  meta-llama/llama-guard-4-12b            Meta 2025-05-09</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    context_window</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1             512</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2             512</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          131072</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4            8192</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5          131072</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6          131072</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          131072</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            8192</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3            4096</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4             512</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5           32768</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6            8192</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7          131072</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 8          131072</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9            8192</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10          32768</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11         131072</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12         131072</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9          131072</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10         131072</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12           8192</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 13         131072</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14           4096</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16         131072</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18           8192</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14         131072</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16           8192</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18         131072</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 19           8192</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 20         131072</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21           8192</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21            512</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 22         131072</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>

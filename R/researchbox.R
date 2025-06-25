@@ -30,6 +30,11 @@ researchbox_links <- function(paper) {
 #'
 #' @returns a data frame of information
 #' @export
+#' @examples
+#' \donttest{
+#'   # get info on one OSF node
+#'   researchbox_retrieve("https://researchbox.org/801")
+#' }
 researchbox_retrieve <- function(rb_url, id_col = 1) {
   if (is.null(curl::nslookup("researchbox.org", error = FALSE))) {
     stop("ResearchBox.org seems to be offline")
