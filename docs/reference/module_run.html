@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9047</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9048</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,14 +73,14 @@
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">module_run</span><span class="op">(</span><span class="va">psychsci</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="st">"all_p_values"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |text     |section | div|  p|  s|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |:--------|:-------|---:|--:|--:|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |p &lt; .001 |results |   8|  1|  1|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |p &lt; .001 |results |   8|  1|  2|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |p &lt; .001 |results |   8|  1|  3|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |p = .016 |results |   8|  1|  4|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |p &lt; .001 |results |   8|  2|  1|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |p &lt; .001 |results |   8|  2|  1|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |text     |section | div|  p|  s|p_comp | p_value|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |:--------|:-------|---:|--:|--:|:------|-------:|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |p &lt; .001 |results |   8|  1|  1|&lt;      |   0.001|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |p &lt; .001 |results |   8|  1|  2|&lt;      |   0.001|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |p &lt; .001 |results |   8|  1|  3|&lt;      |   0.001|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |p = .016 |results |   8|  1|  4|=      |   0.016|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |p &lt; .001 |results |   8|  2|  1|&lt;      |   0.001|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |p &lt; .001 |results |   8|  2|  1|&lt;      |   0.001|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Showing 6 of 6 rows</span>
 </code></pre></div>

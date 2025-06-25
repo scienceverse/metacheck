@@ -35,7 +35,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9047</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9048</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -123,29 +123,29 @@ of 250 open-access papers from Psychological Science.</p>
 <code class="sourceCode R"><span><span class="va">all_p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all_p_values"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">all_p</span><span class="op">$</span><span class="va">table</span> <span class="co"># print table</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 7</span></span></span>
-<span><span class="co">#&gt;    text     section header           div     p     s id              </span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> p = .003 method  Questionnaires     6     2     3 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> p = .08  method  Questionnaires     6     2     3 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> p &lt; .001 results Results            9     2     1 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> p &lt; .025 results Results            9     2     3 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> p = .040 results Results            9     2     3 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> p = .173 results Results            9     2     3 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> p = .006 results Results            9     2     4 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> p = .02  results Results            9     2     4 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> p = .691 results Results            9     2     5 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> p = .303 results Results            9     2     5 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> p = .023 results Results            9     3     3 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> p &lt; .001 results Results            9     3     3 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> p = .006 results Results            9     4     2 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> p = .037 results Results            9     4     2 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> p = .038 results Results            9     4     2 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> p = .358 results Results            9     4     2 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">17</span> p &lt; .001 results Results            9     4     3 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">18</span> p = .127 results Results            9     4     3 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">19</span> p = .062 results Results            9     4     3 0956797620955209</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">20</span> p = .047 results Results            9     4     3 0956797620955209</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 9</span></span></span>
+<span><span class="co">#&gt;    text     section header           div     p     s id           p_comp p_value</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> p = .003 method  Questionnaires     6     2     3 09567976209… =        0.003</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> p = .08  method  Questionnaires     6     2     3 09567976209… =        0.08 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> p &lt; .001 results Results            9     2     1 09567976209… &lt;        0.001</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> p &lt; .025 results Results            9     2     3 09567976209… &lt;        0.025</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> p = .040 results Results            9     2     3 09567976209… =        0.04 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> p = .173 results Results            9     2     3 09567976209… =        0.173</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> p = .006 results Results            9     2     4 09567976209… =        0.006</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> p = .02  results Results            9     2     4 09567976209… =        0.02 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> p = .691 results Results            9     2     5 09567976209… =        0.691</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> p = .303 results Results            9     2     5 09567976209… =        0.303</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> p = .023 results Results            9     3     3 09567976209… =        0.023</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> p &lt; .001 results Results            9     3     3 09567976209… &lt;        0.001</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> p = .006 results Results            9     4     2 09567976209… =        0.006</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> p = .037 results Results            9     4     2 09567976209… =        0.037</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> p = .038 results Results            9     4     2 09567976209… =        0.038</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> p = .358 results Results            9     4     2 09567976209… =        0.358</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">17</span> p &lt; .001 results Results            9     4     3 09567976209… &lt;        0.001</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">18</span> p = .127 results Results            9     4     3 09567976209… =        0.127</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">19</span> p = .062 results Results            9     4     3 09567976209… =        0.062</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">20</span> p = .047 results Results            9     4     3 09567976209… =        0.047</span></span></code></pre>
 <p>If you run this module on all 250 papers, you will get more rows than
 you probably want to print in the full table one row for every p-value
 in each paper), so you can print the summary table, which gives you one

@@ -35,7 +35,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9047</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9048</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -187,7 +187,7 @@ info, references, and citations.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">info</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; $filename</span></span>
-<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/RtmpyMW7X3/temp_libpathedd731fb1aa2/papercheck/extdata/to_err_is_human.xml"</span></span>
+<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/Rtmp45XFtF/temp_libpathf3c16d028acf/papercheck/extdata/to_err_is_human.xml"</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $title</span></span>
 <span><span class="co">#&gt; [1] "To Err is Human: An Empirical Investigation"</span></span>
@@ -1060,6 +1060,17 @@ name.</p>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all_p_values"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
+<colgroup>
+<col width="14%">
+<col width="11%">
+<col width="11%">
+<col width="5%">
+<col width="4%">
+<col width="4%">
+<col width="28%">
+<col width="9%">
+<col width="11%">
+</colgroup>
 <thead><tr class="header">
 <th align="left">text</th>
 <th align="left">section</th>
@@ -1068,6 +1079,8 @@ name.</p>
 <th align="right">p</th>
 <th align="right">s</th>
 <th align="left">id</th>
+<th align="left">p_comp</th>
+<th align="right">p_value</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
@@ -1078,6 +1091,8 @@ name.</p>
 <td align="right">1</td>
 <td align="right">2</td>
 <td align="left">to_err_is_human.xml</td>
+<td align="left">=</td>
+<td align="right">0.005</td>
 </tr>
 <tr class="even">
 <td align="left">p = 0.152</td>
@@ -1087,6 +1102,8 @@ name.</p>
 <td align="right">2</td>
 <td align="right">1</td>
 <td align="left">to_err_is_human.xml</td>
+<td align="left">=</td>
+<td align="right">0.152</td>
 </tr>
 <tr class="odd">
 <td align="left">p &gt; .05</td>
@@ -1096,6 +1113,8 @@ name.</p>
 <td align="right">2</td>
 <td align="right">2</td>
 <td align="left">to_err_is_human.xml</td>
+<td align="left">&gt;</td>
+<td align="right">0.050</td>
 </tr>
 </tbody>
 </table>
