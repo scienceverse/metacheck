@@ -1,24 +1,24 @@
 test_that("exists", {
-  expect_true(is.function(papercheck::researchbox_links))
-  expect_no_error(helplist <- help(researchbox_links, papercheck))
+  expect_true(is.function(papercheck::rbox_links))
+  expect_no_error(helplist <- help(rbox_links, papercheck))
 })
 
 test_that("errors", {
-  expect_error(researchbox_links(bad_arg))
+  expect_error(rbox_links(bad_arg))
 })
 
-test_that("researchbox_links", {
-  links <- researchbox_links(psychsci)
+test_that("rbox_links", {
+  links <- rbox_links(psychsci)
   expect_equal(nrow(links), 3)
   expect_equal(links$text[[1]], "https://researchbox.org/801")
 })
 
-test_that("researchbox_info", {
+test_that("rbox_info", {
   skip_on_covr()
   skip_if_offline("researchbox.org")
 
   url <- "https://researchbox.org/801"
-  info <- researchbox_info(url)
+  info <- rbox_info(url)
 
   target <- "He JC, Côté S. (2023) 'Are Empathic People Better Adjusted? A Test of Competing Models of Empathic Accuracy and Intrapersonal and Interpersonal Facets of Adjustment Using Self- and Peer Reports'.Psychological Science. V34(9):955-967.\ndoi: 10.1177/09567976231185127"
   license <- "All content posted to ResearchBox is under a\r CC By 4.0 License(all use is allowed as long as authorship of the content is attributed). When using content from ResearchBox please\r cite the original work, and provide a link to the URL for this box (https://researchbox.org/801)."
@@ -39,12 +39,12 @@ test_that("researchbox_info", {
 
   ## peer review version
   rb_url <- "https://researchbox.org/1150&PEER_REVIEW_passcode=MJUAAS"
-  info <- researchbox_info(rb_url)
+  info <- rbox_info(rb_url)
 })
 
-test_that("researchbox_retrieve", {
-  links <- researchbox_links(psychsci)
-  info <- researchbox_retrieve(links)
+test_that("rbox_retrieve", {
+  links <- rbox_links(psychsci)
+  info <- rbox_retrieve(links)
 
   #expected
   public <- c("June 09, 2023", "June 09, 2023", "October 07, 2024")

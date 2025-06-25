@@ -93,8 +93,8 @@ reference:
   contents:
   - '`aspredicted_links`'
   - '`aspredicted_retrieve`'
-  - '`researchbox_links`'
-  - '`researchbox_retrieve`'
+  - '`rbox_links`'
+  - '`rbox_retrieve`'
 - title: GitHub Functions
   desc: ~
   contents:
