@@ -1,0 +1,77 @@
+---
+title: "osf"
+format: html
+---
+
+```{r}
+library(papercheck)
+library(tidyverse)
+```
+
+
+## One paper
+
+```{r}
+paper <- psychsci[10:20]
+links <- osf_links(paper)
+contents <- osf_retrieve(links,
+                         recursive = TRUE, 
+                         find_project = TRUE)
+summary <- summarize_contents(contents)
+
+summary |> filter(kind == "file") |> select(name, filetype, file_category)
+```
+
+## Fix the summary table
+
+```{r}
+# code to fix any problems
+expected <- summary |>
+  select(id, text, osf_id, name, osf_type, kind, filetype, file_category) |>
+  mutate(file_category = ifelse(name == "data_experiment1'.txt", "data", file_category))
+
+expected
+```
+
+
+### Make Module
+
+Paste code below into osf_module.R file
+
+```{r}
+# very basic module
+
+osf_module <- function(paper) {
+  links <- osf_links(paper)
+  contents <- osf_retrieve(links,
+                           recursive = TRUE, 
+                           find_project = TRUE)
+  summary <- summarize_contents(contents)
+  
+  #return
+  list(
+    check = 1,
+    summary = summary
+  )
+}
+```
+
+```{r}
+# test module
+mod_output <- module_run(paper, "osf_module.R")
+```
+
+## Validate
+
+```{r}
+v <- validate(paper, "osf_module.R", 
+              summary = expected,
+              check = 1)
+
+v$observed
+```
+
+
+
+
+
