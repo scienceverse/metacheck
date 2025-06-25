@@ -1,6 +1,7 @@
 # papercheck 0.0.0.9048
 
-* Functions to check ResearchBox.org (`researchbox_links()` and `researchbox_retrieve()`)
+* Functions to check ResearchBox.org (`rbox_links()` and `rbox_retrieve()`) -- very preliminary
+* The module "all_p_values" now returns the p-value as a numeric column `p_value` and the comparator as `p_comp`, like "exact_p"
 
 # papercheck 0.0.0.9047
 
