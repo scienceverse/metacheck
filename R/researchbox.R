@@ -6,8 +6,8 @@
 #' @export
 #'
 #' @examples
-#' researchbox_links(psychsci)
-researchbox_links <- function(paper) {
+#' rbox_links(psychsci)
+rbox_links <- function(paper) {
   found <- search_text(paper, "researchbox")
 
   # match up to ">"
@@ -25,7 +25,7 @@ researchbox_links <- function(paper) {
 
 #' Retrieve info from ResearchBox by URL
 #'
-#' @param ap_url an ResearchBox URL, or a table containing them (e.g., as created by `researchbox_links()`)
+#' @param ap_url an ResearchBox URL, or a table containing them (e.g., as created by `rbox_links()`)
 #' @param id_col the index or name of the column that contains ResearchBox URLs, if id is a table
 #'
 #' @returns a data frame of information
@@ -33,9 +33,9 @@ researchbox_links <- function(paper) {
 #' @examples
 #' \donttest{
 #'   # get info on one OSF node
-#'   researchbox_retrieve("https://researchbox.org/801")
+#'   rbox_retrieve("https://researchbox.org/801")
 #' }
-researchbox_retrieve <- function(rb_url, id_col = 1) {
+rbox_retrieve <- function(rb_url, id_col = 1) {
   if (is.null(curl::nslookup("researchbox.org", error = FALSE))) {
     stop("ResearchBox.org seems to be offline")
   }
@@ -73,7 +73,7 @@ researchbox_retrieve <- function(rb_url, id_col = 1) {
   error <- FALSE
   while (!error & i < length(valid_ids)) {
     i = i + 1
-    info <- researchbox_info(valid_ids[[i]])
+    info <- rbox_info(valid_ids[[i]])
     if ("error" %in% names(info)) error <- TRUE
     id_info[[i]] <- info
   }
@@ -99,7 +99,7 @@ researchbox_retrieve <- function(rb_url, id_col = 1) {
 #' @returns a data frame of information
 #' @export
 #' @keywords internal
-researchbox_info <- function(rb_url) {
+rbox_info <- function(rb_url) {
   message("* Retrieving info from ", rb_url, "...")
 
   # set up return table
