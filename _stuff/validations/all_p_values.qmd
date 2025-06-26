@@ -18,7 +18,7 @@ devtools::load_all("../../")
 
 ## all_p_values
 
-This module just needs a logical check that it's mnatching what we'd hope and not what we don't.
+This module just needs a logical check that it's matching what we'd hope and not what we don't.
 
 ```{r}
 operators <- c("=", "<", ">", "~",  
@@ -33,7 +33,9 @@ operators <- c("=", "<", ">", "~",
 pattern <- paste0(
   "\\bp-?(value)?\\s*", # ways to write p
   "[", operators, "]{1,2}\\s*", # 1-2 operators
-  "(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?" # ns or valid numbers
+  "(n\\.?s\\.?|\\d?\\.\\d+)",# ns or valid numbers
+  "\\s*(e\\s*-\\d+)?", # also match scientific notation
+  "(\\s*[x\\*]\\s*10\\s*\\^\\s*-\\d+)?" 
 )
 
 expected <- c(
@@ -58,7 +60,14 @@ expected <- c(
   "p = 0.05229381290",
   "p = 1.2e-5",
   "p = n.s.",
-  "p = ns"
+  "p = ns",
+  "p = 1.23x10^-3",
+  "p = 1.23 x 10^-3",
+  "p = 1.23 x 10 ^ -3",
+  "p = 1.23 * 10 ^ -3",
+  "p = 1.23e-4",
+  "p = 1.23 e-4",
+  "p = 1.23 e -4"
 )
 not <- c(
   "up = 0.23",
@@ -78,6 +87,19 @@ table$observed <- grepl(pattern, table$text, "perl" = TRUE)
 # filter to mismatches
 table[table$expected != table$observed, ]
 ```
+
+```{r}
+table$id <- 1:nrow(table)
+m <- module_run(table, "all_p_values")
+wrong <- m$table$text != table$text[table$expected]
+table[which(wrong), ]
+```
+
+```{r}
+m$table[, c("text", "p_comp", "p_value")]
+```
+
+
 
 ```{r}
 all_p <- module_run(psychsci, "all_p_values")
@@ -146,4 +168,18 @@ ggplot(p, aes(x = p_value, color = p_comp)) +
 ggsave("~/Desktop/pval.png", width = 7, height= 5)
 ```
 
+
+## text
+
+An issue was filed about text ways of stating a p-value, like "the p-value was 0.03". However, all ways to catch that produce way more fale positives for threshold sentences.
+
+https://github.com/scienceverse/papercheck/issues/24
+
+```{r}
+pattern <- "\\b\\w+\\s+p(-| )?values?\\s+.{1,20}\\s+[0-9\\.]+"
+ptext <- search_text(psychsci, pattern, return = "match")
+  
+
+dplyr::count(ptext, text, sort = TRUE)
+```
 

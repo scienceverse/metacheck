@@ -18,26 +18,6 @@ exact_p <- function(paper, ...) {
   # detailed table of results ----
   p <- module_run(paper, "all_p_values")$table
 
-  operators <- c("=", "<", ">", "~",
-                 "\u2248", # ~~
-                 "\u2260", # !=
-                 "\u2264", # <=
-                 "\u2265", # >=
-                 "\u226A", # <<
-                 "\u226B" # >>
-  ) |> paste(collapse = "")
-
-  # get operator
-  pattern <- paste0("[", operators, "]{1,2}")
-  matches <- gregexpr(pattern, p$text, perl = TRUE)
-  p$p_comp <- regmatches(p$text, matches) |> sapply(`[[`, 1)
-
-  # get value
-  pattern <- paste0("(?<=[", operators, "]{1,2}).*$")
-  matches <- gregexpr(pattern, p$text, perl = TRUE)
-  p$p_value <- regmatches(p$text, matches) |> trimws()
-  p$p_value <- suppressWarnings(as.numeric(p$p_value))
-
   p$imprecise <- p$p_comp == "<" & p$p_value > .001
   p$imprecise <- p$imprecise | !p$p_comp %in% c("=", "<")
   p$imprecise <- p$imprecise | is.na(p$p_value)
