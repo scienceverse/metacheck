@@ -1,0 +1,1822 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Environmental context shapes the relationship between grass consumption and body size in African herbivore communities</title>
+				<funder ref="#_gShmgJm #_vuBQRGv">
+					<orgName type="full">unknown</orgName>
+				</funder>
+				<funder ref="#_zvCh3Gf #_9SHnQqX">
+					<orgName type="full">National Science Foundation</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Joel</forename><forename type="middle">O</forename><surname>Abraham</surname></persName>
+							<email>joeloa@princeton.edu</email>
+							<idno type="ORCID">0000-0002-4704-1593</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Ecology and Evolutionary Biology</orgName>
+								<orgName type="institution">Princeton University</orgName>
+								<address>
+									<settlement>Princeton</settlement>
+									<region>New Jersey</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">John</forename><surname>Rowan</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Anthropology</orgName>
+								<orgName type="institution">University at Albany</orgName>
+								<address>
+									<settlement>Albany</settlement>
+									<region>New York</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">|</forename><surname>Kaedan O'brien</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department">Department of Anthropology</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<settlement>Salt Lake City</settlement>
+									<region>Utah</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff3">
+								<orgName type="department">Natural History Museum of Utah</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<settlement>Salt Lake City</settlement>
+									<region>Utah</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Kathryn</forename><forename type="middle">G</forename><surname>Sokolowski</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department">Department of Anthropology</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<settlement>Salt Lake City</settlement>
+									<region>Utah</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff3">
+								<orgName type="department">Natural History Museum of Utah</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<settlement>Salt Lake City</settlement>
+									<region>Utah</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">|</forename><forename type="middle">J Tyler</forename><surname>Faith</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department">Department of Anthropology</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<settlement>Salt Lake City</settlement>
+									<region>Utah</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff3">
+								<orgName type="department">Natural History Museum of Utah</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<settlement>Salt Lake City</settlement>
+									<region>Utah</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff4">
+								<orgName type="department">Origins Centre</orgName>
+								<orgName type="institution">University of the Witwatersrand</orgName>
+								<address>
+									<settlement>Johannesburg</settlement>
+									<country key="ZA">South Africa</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff5">
+								<orgName type="department">Department of Ecology and Evolutionary Biology</orgName>
+								<orgName type="institution">Princeton University</orgName>
+								<address>
+									<settlement>Princeton</settlement>
+									<region>NJ</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Environmental context shapes the relationship between grass consumption and body size in African herbivore communities</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">4EA351F189D35FEE734E87E480CE3B25</idno>
+					<idno type="DOI">10.1002/ece3.11050</idno>
+					<note type="submission">Received: 7 September 2023 | Revised: 24 January 2024 | Accepted: 5 February 2024</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2025-06-26T09:31+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Though herbivore grass dependence has been shown to increase with body size across herbivore species, it is unclear whether this relationship holds at the community level.</p><p>Here we evaluate whether grass consumption scales positively with body size within African large mammalian herbivore communities and how this relationship varies with environmental context. We used stable carbon isotope and community occurrence</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>data to investigate how grass dependence scales with body size within 23 savanna herbivore communities throughout eastern and central Africa. We found that dietary grass fraction increased with body size for the majority of herbivore communities considered, especially when complete community data were available. However, the slope of this relationship varied, and rainfall seasonality and elephant presence were key drivers of the variation-grass dependence increased less strongly with body size where rainfall was more seasonal and where elephants were present. We found also that the dependence of the herbivore community as a whole on grass peaked at intermediate woody cover. Intraspecific diet variation contributed to these communitylevel patterns: common hippopotamus (Hippopotamus amphibius) and giraffe (Giraffa camelopardalis) ate less grass where rainfall was more seasonal, whereas Cape buffalo (Syncerus caffer) and savanna elephant (Loxodonta africana) grass consumption were parabolically related to woody cover. Our results indicate that general rules appear to govern herbivore community assembly, though some aspects of herbivore foraging behavior depend upon local environmental context.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>K E Y W O R D S</head><p>African savannas, body mass, community assembly, diet, grass dependence, Jarman-Bell principle, large mammalian herbivores, metabolic theory, optimal foraging theory</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>T A X O N O M Y C L A S S I F I C A T I O N</head><p>Behavioural ecology, Biogeography, Community ecology, Spatial ecology, Trophic interactions, Zoology</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">| INTRODUC TI ON</head><p>Do general rules govern community assembly? Within some of the hyperdiverse large mammalian herbivore communities that occupy African savannas, it has been observed that larger species tend to consume more grass <ref type="bibr" target="#b6">(Bell, 1971;</ref><ref type="bibr" target="#b13">Cerling et al., 2003;</ref><ref type="bibr" target="#b26">Jarman, 1974)</ref>, a pattern that has also been shown to hold across mammalian herbivore species in the tropics <ref type="bibr" target="#b1">(Abraham et al., 2022;</ref><ref type="bibr" target="#b20">Gagnon &amp; Chew, 2000)</ref>.</p><p>Two potential mechanisms have been suggested to explain this relationship. The first derives from optimal foraging theory and hinges on differences in the distributions of plant functional types (e.g., trees and grasses) and how plant distributions scale with body size <ref type="bibr" target="#b7">(Bhat et al., 2020;</ref><ref type="bibr" target="#b24">Hempson, Illius, et al., 2015;</ref><ref type="bibr" target="#b45">Staver, 2018)</ref>. At small body sizes, all food appears patchily distributed, so search costs and the risk of starvation are always high. At large body sizes, in contrast, the distribution of browse remains highly clustered <ref type="bibr" target="#b45">(Staver, 2018;</ref><ref type="bibr" target="#b48">Staver, Asner, et al., 2019)</ref>, whereas grass is distributed more homogeneously (at least in grass-dominated systems) <ref type="bibr" target="#b7">(Bhat et al., 2020;</ref><ref type="bibr" target="#b45">Staver, 2018)</ref>.</p><p>As such, large herbivores can minimize search costs and therefore lessen starvation risk by specializing in grass <ref type="bibr" target="#b7">(Bhat et al., 2020)</ref>.</p><p>The second mechanism derives from metabolic theory, which suggests that small herbivores require high-quality forage but in small quantities, whereas large herbivores can tolerate lower-quality forage but require large quantities of it (the Jarman-Bell Principle; <ref type="bibr" target="#b6">Bell, 1971;</ref><ref type="bibr" target="#b25">Hopcraft et al., 2010;</ref><ref type="bibr" target="#b26">Jarman, 1974;</ref><ref type="bibr" target="#b32">Olff et al., 2002;</ref><ref type="bibr" target="#b34">Potter &amp; Pringle, 2023)</ref>. Because woody plants have steeper nutrient gradients across tissues than do grasses <ref type="bibr" target="#b21">(Güsewell, 2004;</ref><ref type="bibr" target="#b37">Reich &amp; Oleksyn, 2004)</ref>, small herbivores can meet their nutritional needs by selectively feeding on only the high-quality parts of woody plants, such as fruit, buds, and young leaves. In contrast, larger herbivores can satisfy their greater forage requirements by eating grass in bulk <ref type="bibr" target="#b1">(Abraham et al., 2022;</ref><ref type="bibr" target="#b34">Potter &amp; Pringle, 2023)</ref>. Regardless of the mechanism, the pattern of increasing grass dependence with increasing body size has emerged as a robust pattern across tropical herbivore species <ref type="bibr" target="#b1">(Abraham et al., 2022)</ref>.</p><p>Though this pattern was initially noted at the community level <ref type="bibr" target="#b6">(Bell, 1971;</ref><ref type="bibr" target="#b13">Cerling et al., 2003;</ref><ref type="bibr" target="#b26">Jarman, 1974)</ref>, it is unclear whether a positive relationship between body size and grass consumption is ubiquitous across savanna herbivore communities. It is well-documented that the composition of herbivores' diets vary considerably within species across space <ref type="bibr" target="#b13">(Cerling et al., 2003</ref><ref type="bibr" target="#b10">(Cerling et al., , 2015;;</ref><ref type="bibr" target="#b14">Codron et al., 2007;</ref><ref type="bibr" target="#b33">Pansu et al., 2022;</ref><ref type="bibr" target="#b39">Robinson et al., 2021)</ref>, as does herbivore community composition: not all species are present in every community <ref type="bibr" target="#b22">(Hempson, Archibald, &amp; Bond, 2015;</ref><ref type="bibr" target="#b30">Lomolino et al., 2010;</ref><ref type="bibr" target="#b40">Rowan et al., 2020)</ref>.</p><p>As a result, though body mass and dietary grass fraction are correlated across herbivore species in the tropics <ref type="bibr" target="#b1">(Abraham et al., 2022)</ref> and within certain communities <ref type="bibr" target="#b6">(Bell, 1971;</ref><ref type="bibr" target="#b13">Cerling et al., 2003;</ref><ref type="bibr" target="#b26">Jarman, 1974)</ref>, these characteristics might be decoupled within communities that differ in local environmental context. Indeed, it is probable that the strength (and possibly even the direction) of the relationship should vary between herbivore communities. Both hypothesized mechanisms for this relationship implicate plant characteristics-either their spatial distributions (per optimal foraging theory) or relative quality (per metabolic theory)-in driving the relationship, characteristics that vary substantially across the tropics <ref type="bibr" target="#b32">(Olff et al., 2002;</ref><ref type="bibr" target="#b37">Reich &amp; Oleksyn, 2004;</ref><ref type="bibr" target="#b45">Staver, 2018;</ref><ref type="bibr" target="#b47">Staver et al., 2011)</ref>. Across the tropics, the availability and quality of plant functional types are highly dependent on environmental factors, such as rainfall, temperature, and the seasonality of both <ref type="bibr" target="#b21">(Güsewell, 2004;</ref><ref type="bibr" target="#b22">Hempson, Archibald, et al., 2015;</ref><ref type="bibr" target="#b32">Olff et al., 2002;</ref><ref type="bibr" target="#b37">Reich &amp; Oleksyn, 2004;</ref><ref type="bibr" target="#b42">Sala et al., 2012;</ref><ref type="bibr" target="#b43">Scanlon et al., 2005)</ref>. As such, the strength, and possibly direction, of the relationship between body size and grass consumption should likewise vary across herbivore communities in relation to environmental context, further bolstering the predictability of community assembly.</p><p>To determine the relationship between body size and grass consumption at the community level, we combined local diet data derived from stable carbon isotope data (from <ref type="bibr" target="#b10">Cerling et al., 2015)</ref> with species occurrence data (from <ref type="bibr" target="#b40">Rowan et al., 2020)</ref> for herbivore communities throughout eastern and central Africa (Figure <ref type="figure">1</ref>).</p><p>We then evaluated the factors that best predict variation in the relationship between body size and grass dependence across these communities, revealing insights into herbivore foraging ecology and community assembly.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">| MATERIAL S AND ME THODS</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">| Local diet data</head><p>We obtained local diet data from a published stable isotope dataset for large mammalian herbivores (orders Artiodactyla, Perissodactyla, and Proboscidea) from across central and eastern Africa <ref type="bibr" target="#b10">(Cerling et al., 2015)</ref>. This dataset contains isotope data from 1917 specimens collected between 1896 and 2012 from 59 species across 30 communities. These communities were predefined in the dataset and correspond to single or multiple adjacent protected areas, including national parks and preserves. For four of these communities, Athi Plains (ATHI) and Nairobi National Park (NBNP) as well as Turkana grassland (TRKG) and Turkana regional (TRKX), sample localities were contiguous and/or nested, so these communities were merged: Nairobi National Park was merged with Athi Plains and Turkana grassland was merged into Turkana regional, reducing the number of communities to 28.</p><p>From these stable isotope data, we were able to calculate local grass dependence for herbivore species in each community. Stable isotope data can be used to reconstruct animal feeding habits so long as dietary functional groups of interest are sufficiently differentiated isotopically <ref type="bibr" target="#b10">(Cerling et al., 2015;</ref><ref type="bibr" target="#b14">Codron et al., 2007;</ref><ref type="bibr" target="#b41">Rowan et al., 2017)</ref>. In tropical Africa, nearly all low-elevation (&lt;2000 m) grasses employ the C 4 photosynthetic pathway <ref type="bibr" target="#b17">(Edwards et al., 2010)</ref>, whereas other plant functional groups-trees, shrubs, and forbs-predominantly employ the C 3 photosynthetic pathway <ref type="bibr" target="#b10">(Cerling et al., 2015;</ref><ref type="bibr" target="#b14">Codron et al., 2007;</ref><ref type="bibr" target="#b41">Rowan et al., 2017)</ref>. These two photosynthetic pathways fractionate CO 2 differently during the process of carbon fixation, such that C 3 plants have a strongly negative carbon isotopic signature (δ 13 C) relative to atmospheric CO 2 , about -26.6‰ for tropical African C 3 plants, whereas the δ 13 C for C 4 -photosynthesizing plants, while still negative, is less extreme, at about -10.0‰ for tropical African C 4 grasses <ref type="bibr" target="#b3">(Ambrose &amp; DeNiro, 1986;</ref><ref type="bibr" target="#b10">Cerling et al., 2015;</ref><ref type="bibr">Cerling &amp; Harris, 1999;</ref><ref type="bibr" target="#b14">Codron et al., 2007;</ref><ref type="bibr" target="#b41">Rowan et al., 2017)</ref>. The isotopic differences between plant functional groups are preserved in the isotopic composition of the herbivores that consume them <ref type="bibr" target="#b3">(Ambrose &amp; DeNiro, 1986;</ref><ref type="bibr" target="#b10">Cerling et al., 2015;</ref><ref type="bibr">Cerling &amp; Harris, 1999;</ref><ref type="bibr" target="#b41">Rowan et al., 2017)</ref>. Thus, throughout much of tropical Africa where plant functional groups employ distinct photosynthetic pathways, it is possible to reconstruct the relative proportions of C 4 versus C 3 plants (and therefore grasses vs. non-grasses) consumed by herbivores via stable carbon isotope analysis of their tissues.</p><p>Following Cerling and others <ref type="bibr" target="#b10">(Cerling et al., 2015;</ref><ref type="bibr" target="#b39">Robinson et al., 2021)</ref>, we analyzed the δ 13 C enamel -equivalent values in the dataset, which included converted δ 13 C hair-keratin and δ 13 C collagen samples. The relative contributions of C 3 and C 4 plants to diet were then estimated from the δ 13 C enamel values using a dual endpoint mixing model with known C 3 and C 4 plant end member δ 13 C values <ref type="bibr" target="#b2">(Abraham et al., 2019;</ref><ref type="bibr" target="#b10">Cerling et al., 2015;</ref><ref type="bibr" target="#b14">Codron et al., 2007;</ref><ref type="bibr" target="#b41">Rowan et al., 2017)</ref>:</p><p>where f C3 and f C4 correspond to the fractions of C 3 and C 4 plants consumed respectively. We assumed an enrichment factor ɛ of +14.1‰ between diet and tooth enamel, per previous studies (see <ref type="bibr">Cerling &amp; Harris, 1999)</ref>. The C 3 and C 4 endmembers we employed here were calculated based on mean values for plants and were -26.6‰ and -10.0‰ for C 3 and C 4 plant biomass respectively, corresponding to δ 13 C enamel values of -12.5‰ and 4.1‰ <ref type="bibr" target="#b10">(Cerling et al., 2015;</ref><ref type="bibr" target="#b41">Rowan et al., 2017)</ref>.</p><p>Once isotope values had been converted to dietary grass fraction estimates, we then calculated local estimates of dietary grass fraction for every species within each community as well as corresponding standard deviations (see Appendix S1). To account for within-site variation in species' diets and to capture uncertainty in diet estimates, mean dietary grass fraction estimates were weighted by their corresponding standard deviations in all analyses (see Section 2.4 below).</p><p>Because most grasses in Africa are C 4 -photosynthesizing and other plants employing the C 4 photosynthetic pathway are relatively rare <ref type="bibr" target="#b17">(Edwards et al., 2010)</ref>, the above approach reliably recapitulates dietary grass fraction for herbivores throughout most of tropical Africa <ref type="bibr" target="#b10">(Cerling et al., 2015;</ref><ref type="bibr" target="#b14">Codron et al., 2007;</ref><ref type="bibr" target="#b39">Robinson et al., 2021)</ref>. However, within some high-altitude (&gt;2000 m) regions in tropical Africa, C 3 -photosynthesizing grasses are present <ref type="bibr" target="#b17">(Edwards et al., 2010)</ref>, making it impossible to isolate the grass component of herbivore diets from stable isotope analysis alone. Three of the communities in the isotope dataset-Aberdare (ABER), Bale Mountains (BALE), and Simien Mountains (SIME)-are at sufficiently high elevations such that C 3 grasses are prevalent and dietary grass fraction therefore cannot be reliably estimated from stable isotope data. Thus, to avoid introducing directional bias into our analyses by  <ref type="bibr" target="#b10">Cerling et al. (2015)</ref> but data were lacking for some species in particular communities. Using community occurrence data from <ref type="bibr" target="#b40">Rowan et al. (2020)</ref>, we used regional diet estimates to fill in diet data for missing taxa, though this was only possible for the 15 communities which overlapped between the two datasets, represented here by dark blue points. Communities represented by light blue points were absent from our community composition dataset, and therefore herbivore community data may be incomplete. underestimating species' grass consumption in these communities, these three high-elevation communities were excluded from our analyses.</p><formula xml:id="formula_0">δ 13 C measured -= δ 13 C C3 × f C3 + δ 13 C C4 × f C4 , F I G U R</formula><p>In addition, for two communities, Ituri forest (ITRI) and Kahuzi-Biega (KZBG), stable isotope data indicated that all herbivore species therein were pure browsers (dietary grass fraction = 0). Indeed, Ituri forest and Kahuzi-Biega are both closed-canopy forest sites wherein grass is scarce. Consequently, these two communities were also removed from our analyses, as there was no within-community diet variation, and calculating a slope between dietary grass fraction and body mass would therefore have been inappropriate. No other communities had any obvious reason to be excluded from analyses and were therefore retained.</p><p>With these five communities excluded, the filtered isotope dataset included 1493 samples representing 46 species across 23 communities (Figure <ref type="figure">1</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">| Herbivore community composition data</head><p>Though extensive, this stable isotope dataset lacked local data for some species known to occur within the 23 communities. To determine which species were present in a particular community but lacking isotope data, we used a dataset of herbivore community composition across Africa <ref type="bibr" target="#b40">(Rowan et al., 2020)</ref>. These herbivore community composition data were derived from field surveys, species lists, and local databases <ref type="bibr" target="#b40">(Rowan et al., 2020)</ref>. Community data were cross-checked with multiple sources, including species range maps derived from the International Union for Conservation of Nature (IUCN), and were standardized to the IUCN's Red List taxonomy <ref type="bibr" target="#b40">(Rowan et al., 2020)</ref>. In some cases, however, local isotope data for a species within a particular community were available in the stable isotope dataset but that species was not listed as present in the community composition dataset. In such instances, that species was considered to be present in the community and its isotope data were retained.</p><p>Fifteen of the 23 communities included in our analyses were present in the community composition dataset; for the other eight communities included in the isotopic dataset but not present in the community composition dataset, community data could not be assumed to be complete (Figure <ref type="figure">1</ref>). Within the 15 communities overlapping between the two datasets, local isotope data were lacking for 155 community members. To derive diet grass fraction estimates for these community members, we calculated regional species-level dietary grass fraction averages-the mean dietary grass fraction of all samples for a given species across all 23 sites-as well as corresponding standard deviations from the stable isotope dataset. We used those regional diet estimates as the dietary grass fraction values for those taxa missing local diet data within the 15 communities shared between the two datasets only; community-specific diet estimates derived from local isotope data were retained for all other community members (see Appendix S1). Some species present in the communities (N = 11; see Appendix S1) were missing from the stable isotope dataset altogether, such that it was not possible to calculate regional averages for those species from the stable isotope dataset. Global estimates of dietary grass fraction for those species were therefore derived from other published syntheses of herbivore diet composition <ref type="bibr" target="#b1">(Abraham et al., 2022;</ref><ref type="bibr" target="#b20">Gagnon &amp; Chew, 2000)</ref>.</p><p>For all 57 species present across the 23 communities in our analyses, we extracted species-level body mass data from EltonTraits, a dataset compiled from primary literature containing species-level trait data and foraging attributes for all bird and mammal species <ref type="bibr" target="#b54">(Wilman et al., 2014)</ref>. Site-specific body mass data do not exist for most communities, which prevented us from evaluating the impact of spatial variation in herbivore body mass on grass dependence in this study.</p><p>Note that body mass values were log-transformed for all analyses.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">| Environmental covariates</head><p>To evaluate whether environmental drivers altered the relationship between grass dependence and body mass across herbivore communities, we downloaded shapefile polygons for the protected areas corresponding to each herbivore community in our analysis from the World Database on Protected Areas (WDPA); though some of the communities spanned multiple protected areas <ref type="bibr" target="#b10">(Cerling et al., 2015)</ref>, the majority of samples for each community were collected from within a single protected area, which was the protected area we used to extract environmental covariates (see Appendix S1 for the primary protected area corresponding to each community).</p><p>Using climatic data layers downloaded from WorldClim 2.0 at a spatial resolution of 30′ <ref type="bibr" target="#b18">(Fick &amp; Hijmans, 2017)</ref>, we then calculated mean annual rainfall ('MARain'), mean rainfall seasonality ('RainS'), mean annual temperature ('MATemp'), and mean temperature seasonality ('TempS') for each community. Rainfall seasonality data from WorldClim are quantified in terms of the coefficient of variation (standard deviation divided by the mean) in precipitation throughout the year, whereas temperature seasonality values are quantified as the standard deviation in temperature across the seasonal cycle; they are measured differently because temperature can take on zero or negative values, whereas precipitation cannot <ref type="bibr" target="#b18">(Fick &amp; Hijmans, 2017)</ref>.</p><p>WorldClim data layers were generated by aggregating data spanning 1970-2000 from 9000 to 60,000 weather stations and interpolating weather station data with covariates including elevation, distance to coast, and satellite-derived land surface temperatures to produce high-resolution global layers <ref type="bibr" target="#b18">(Fick &amp; Hijmans, 2017)</ref>. Climatic data used in this study therefore reflect long-term (e.g., decadal) climate averages experienced by each herbivore community.</p><p>We also wanted to evaluate whether differences in grass availability might underlie variation in the relationship between grass dependence and body mass across communities. Though datasets of grass biomass across regional scales are largely lacking (but see <ref type="bibr" target="#b42">Sala et al., 2012)</ref>, grass biomass should vary inversely with woody cover to some degree (though not perfectly; see <ref type="bibr" target="#b44">Sokolowski et al., 2023)</ref>. We therefore extracted estimates of woody cover for each community ('Woody_cover') from a data layer of fractional woody cover for sub-Saharan Africa <ref type="bibr" target="#b53">(Venter et al., 2018)</ref>. This data layer was generated via a Random Forest regression model using Landsat surface reflectance data available for Africa  from the USGS Earth Resources Observation and Science archive <ref type="bibr" target="#b53">(Venter et al., 2018)</ref>. The Random Forest model was trained on high-resolution images derived from Google Earth (4000 randomly scattered 30 × 30 m sampling quadrats aligned with the Landsat pixel grid) for which fractional woody cover was then manually classified (by identifying woody plant canopies using texture, color, and canopy shadows; <ref type="bibr" target="#b53">Venter et al., 2018)</ref>. Then, using the Landsat data to extrapolate from these 4000 manually classified quadrats, the Random Forest model was used to predict fractional woody plant cover (defined as fractional woody cover within each 30 × 30 m pixel of the Landsat grid) for the whole of sub-Saharan Africa <ref type="bibr" target="#b53">(Venter et al., 2018)</ref>. Woody cover data employed here therefore reflect the areal extent of trees and shrubs relative to grasses, herbaceous vegetation, and unvegetated landscape for each herbivore community <ref type="bibr" target="#b44">(Sokolowski et al., 2023;</ref><ref type="bibr" target="#b53">Venter et al., 2018)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">| Data analysis</head><p>Data were analyzed in R v3.6.1 (R Core Team, 2020). Because dietary grass fraction values were bounded between 0 and 1, we modeled the relationship between dietary grass values and body mass within each community using beta-regression, which prevents fitting values beyond 0 and 1, using the R package 'betareg' <ref type="bibr" target="#b15">(Cribari-Neto &amp; Zeileis, 2010)</ref>. Beta-regression does not allow input data to take on values of 0 or 1 however, so 0s were converted to .001 and 1s to .999. To evaluate the impact of incomplete community data on results, we built two separate beta-regression models: one model included only the local diet estimates but included data from all 23 communities, and a second model included both local and regional diet estimates for the 15 communities for which we had complete community data. To avoid type I errors resulting from multiple hypothesis testing, relationships between body mass and grass dependence were modeled simultaneously for all communities: we built a single model of dietary grass fraction and included community identity and log-transformed body mass as interacting predictors of dietary grass fraction, which yielded separate slope estimates (and associated errors) for each community. Model fit statistics and coefficient estimates therefore account for multiple comparisons (see Appendix S2). To incorporate local within-species diet variation and propagate uncertainty across analyses, species-level dietary grass fraction values were weighted by their corresponding standard deviations in the beta-regression models.</p><p>Because some of the most grass-specialist herbivores are of intermediate body size (~50 to 400 kg) <ref type="bibr" target="#b14">(Codron et al., 2007;</ref><ref type="bibr" target="#b20">Gagnon &amp; Chew, 2000;</ref><ref type="bibr" target="#b22">Hempson, Archibald, et al., 2015;</ref><ref type="bibr" target="#b26">Jarman, 1974)</ref>, it is plausible that the relationship between body size and grass dependence might be parabolic, with grass intake peaking at intermediate body sizes. To evaluate whether a first-order or second-order relationship between body mass and grass dependence better accorded with available data, we constructed beta-regression models with linear and parabolic relationships and compared both model-corrected Akaike information criterion (AIC c ) and Root Mean Square Error (RMSE) values between the models. For both AIC c and RMSE, lower values are indicative of a better model fit. When only local diet data were considered, a linear relationship (AIC c = -34.486, RMSE = 0.320) fit the data better than did a parabolic relationship (AIC c = -30.106, RMSE = 0.325); likewise, when communities with complete data were considered, a linear relationship (AIC c = -82.142, RMSE = 0.297) again better fit the data than did a parabolic relationship (AIC c = -71.680, RMSE = 0.299). We thus assumed a first-order relationship between body size and grass dependence for all subsequent analyses. Aspects of the herbivore community might also contribute to variation in the strength of the body mass-dietary grass fraction relationship, either in concert with or independently of the environmental variables described above. To visualize variation in herbivore community composition and to evaluate the impacts of community composition on the relationship between body mass and grass dependence, we used Jaccard-based principle coordinates analysis (PCoA) to ordinate community composition (Figure <ref type="figure">2</ref>) in the R package 'vegan' <ref type="bibr" target="#b16">(Dixon, 2003)</ref>. Also using the R package 'vegan' <ref type="bibr" target="#b16">(Dixon, 2003)</ref>, we plotted environmental co-variates on our ordination to assess whether environmental predictors were colinear with community composition variables (see also Figure <ref type="figure">S1</ref>). Indeed, woody cover ('Woody_cover') and mean annual rainfall ('MARain') loaded strongly on axis 1 of our PCoA (Figure <ref type="figure">2</ref>; Figure <ref type="figure">S1</ref>). To account for variation in community composition not explained by environmental variables, we extracted the values for each herbivore community along the first two PCoA axes, axis 1 ('PCoA1') and axis 2 ('PCoA2'), as well as the herbivore species richness ('SpN') and mean grass dependence ('mean_C 4 ') of each community, for inclusion as predictors of the body mass-grass dependence relationship. We included species richness ('SpN') as a predictor because a strongly positive relationship between body mass and dietary grass fraction might only manifest in species-rich communities where herbivores are sufficiently specialized in different plant functional types <ref type="bibr" target="#b33">(Pansu et al., 2022;</ref><ref type="bibr" target="#b35">Pringle et al., 2023)</ref>. Similarly, we included communityaveraged grass dependence ('mean_C 4 ') because a positive relationship might only arise in communities where grass is readily available and herbivores consume significant amounts of grass <ref type="bibr" target="#b7">(Bhat et al., 2020)</ref>. We also categorized communities by whether or not elephants (Loxodonta spp.) were present and included this ('Elephant') as a categorical predictor of slope. Our rationale for treating elephants uniquely was that elephants are the largest extant herbivore in these communities and often dominate savanna herbivore communities in terms of biomass <ref type="bibr" target="#b22">(Hempson, Archibald, et al., 2015)</ref>; elephants play an outsized role in structuring vegetation communities <ref type="bibr" target="#b0">(Abraham et al., 2021;</ref><ref type="bibr" target="#b8">Cardoso et al., 2020)</ref>; elephants are known to induce fear effects in co-occurring herbivores <ref type="bibr" target="#b19">(Fletcher et al., 2023)</ref>, altering the foraging behavior of heterospecifics <ref type="bibr" target="#b28">(Landman et al., 2013;</ref><ref type="bibr" target="#b51">Valeix et al., 2007)</ref>; and finally, though modern-day elephants incorporate substantial amounts of browse in their diets, elephantids were predominately grazers for much of their fossil history (up until ~1 Ma), such that their current predominately browsing habit is not entirely representative <ref type="bibr">(Cerling et al., 1999;</ref><ref type="bibr" target="#b29">Lister, 2013)</ref>.</p><p>To determine which of these predictors best-explained variation in the relationship between body mass and grass dependence, we constructed a series of linear models including all possible combinations of predictor variables and compared AIC c values to assess model fit using the R package 'MuMIn' <ref type="bibr" target="#b5">(Bartoń, 2019)</ref>. We did this using two different datasets, one with the slope estimates from the beta-regression model that included the local diet data for all 23 communities ('Local diet data only') and another with the slope estimates from the beta-regression model that included both local and regional diet estimates but only the 15 communities for which we had complete community data ('Full community diet data') (see Tables <ref type="table">S3-S6</ref>). The relationship between body mass and dietary grass fraction was weighted by the standard error on the slope, as above, to propagate uncertainty in the slope estimates across analyses. Because communities were distributed unevenly in space (Figure <ref type="figure">1</ref>), we accounted for potential spatial autocorrelation by including various spatial covariance structures in global models and evaluating whether they improved model fit (Table <ref type="table">S3</ref>). The spatial covariance structure that resulted in the lowest AIC c value was then included in all models within a given model set.</p><p>Due to the collinearity, we observed above between herbivore community and environmental variables (Figure <ref type="figure">S1</ref>), we evaluated three separate model sets for both of these datasets (Table <ref type="table">S3</ref>): one with only environmental predictors (i.e., 'MARain', 'RainS', 'MATemp', 'TempS', and 'Woody_cover'), one with only herbivore community predictors (i.e., 'PCoA1', 'PCoA2', 'SpN', 'mean_C 4 ', and 'Elephant'), and one with both environmental and community predictors (see Table <ref type="table">S3</ref>). In the two model sets including environmental predictors, we also included the second-order polynomial transformations of 'MARain' and 'Woody_cover' as predictors (Table <ref type="table">S3</ref>), to evaluate whether the slope of the body mass-grass dependence relationship might be most extreme at intermediate rainfall and/or woody cover (see <ref type="bibr" target="#b32">Olff et al., 2002)</ref>. As a further precaution against overfitting, we excluded from model selection any models with predictors that covaried significantly with one another, such that only one of any pair of correlated variables (defined here as significantly correlated variables with correlation coefficients r &gt; .5) was included in any given model (Figure <ref type="figure">S1</ref>). We then compared model sets to determine which predictors arose regularly in plausible models and had consistent directional effects across models (Tables <ref type="table">S4-S6</ref>). We considered all models with ΔAIC c &lt; 2 as 'equally plausible' models <ref type="bibr" target="#b4">(Anderson &amp; Burnham, 2002)</ref>.</p><p>We repeated the above modeling procedure with communityaveraged dietary grass fraction as the response variable (instead of the slope of the grass dependence-body mass relationship) to evaluate predictors of variation in the average reliance of the herbivore communities on grass (Tables <ref type="table">S7-S10</ref>).</p><p>For all of the above analyses, we also ran models that excluded pure browsers (i.e., herbivores with dietary grass fraction &gt;0), to assess if results were consistent when considering only herbivores that consume some amount of grass (see Tables <ref type="table">S3-S10</ref>). Results presented below were qualitatively the same between models including all herbivores and only herbivores consuming some grass unless otherwise noted.</p><p>Lastly, to explicitly interrogate the role of intraspecific diet shifts in contributing to community-level patterns, we modeled intraspecific diet variation for seven widespread herbivore species (see Table <ref type="table">S11</ref>): plains zebra (Equus quagga), giraffe (Giraffa camelopardalis), common hippopotamus (Hippopotamus amphibius), waterbuck (Kobus ellipsiprymnus), savanna elephant (Loxodonta africana), common warthog (Phacochoerus africanus), and Cape buffalo (Syncerus caffer). We restricted our analyses to these seven species because local diet data for these species were available from more than half of the communities (N ≥ 12). We replicated the modeling approach employed above for each species: we constructed species-specific linear models of dietary grass fraction that included the same predictor variables as above and compared AIC c values to assess F I G U R E 2 Jaccard-based principle coordinate analysis (PCoA) of herbivore species composition within central and eastern African herbivore communities: AMBO, Amboseli; ATHI, Athi Plains and Nairobi; AWSH, Awash; CHYU, Chyulu Hills; ETHR, Ethiopian Rift Lakes; GMBA, Garamba; KBLE, Kibale; KCST, Kenya Coast; KDPO, Kidepo; LAIK, Laikipia; LEDW, Lake Edward; LOPE, Lopé; MAGO, Omo/Mago; MARA, Maasai Mara-Serengeti; MBRO, Lake Mburo; MERU, Meru National Park; MTKE, Mount Kenya; NAKG, Nakuru; RFTV, Kenya Rift Valley; SAMB, Samburu; TANA, Tana River; TRKX, Turkana; TSVO, Tsavo. Communities represented by dark blue points were present in both stable isotope and community composition datasets and therefore reflect the complete herbivore community. Communities represented by light blue points were absent from our community composition dataset, and therefore herbivore community composition data may be incomplete. Relevant variables are plotted as well (depicted in bold), with gray arrows corresponding to continuous environmental variables and red arrows corresponding to continuous community variables. Red diamonds correspond to categorical community variables.   <ref type="table">S11</ref>). As above, we evaluated three separate model sets (Table <ref type="table">S11</ref>): one with only environmental predictors (Table <ref type="table">S12</ref>), one with only herbivore community predictors (Table <ref type="table">S13</ref>), and one with both environmental and community predictors (Table <ref type="table">S14</ref>). Note that, in contrast to the community-level analyses, which we performed both on local diet data only as well as including regional diet averages for those species lacking local data, we only conducted these analyses using local diet data. Likewise, because all seven species ate some amount of grass in every community, it was not necessary to evaluate models that excluded pure browsers, as we had done for community-level analyses.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">| RE SULTS</head><p>When only local diet data were considered (beta-regression; pseudo-R 2 = .362, N = 288, logLik = 73.643, df = 47, AIC c = -34.486), 18 out of 23 communities exhibited positive relationships between body mass and dietary grass fraction (Figure <ref type="figure">3</ref>), though the two communities that exhibited robustly directional slopes (p &lt; .1), Meru National Park (MERU) and Kenya Rift Valley (RFTV), had negative relationships (Table <ref type="table">S1</ref>). When data on the full herbivore community were considered, incorporating both local diet data and regional averages for taxa missing local data (betaregression; pseudo-R 2 = .255, N = 443, logLik = 93.782, df = 47, AIC c = -82.142), 14 out of the 15 communities for which herbivore community data were available exhibited positive relationships (Figure <ref type="figure">3</ref>), and for four communities the relationship between body mass and dietary grass fraction was robustly positive (p &lt; .1; Table <ref type="table">S1</ref>). These patterns were qualitatively consistent when only herbivores consuming some amount of grass (dietary grass fraction &gt;0) were considered (Table <ref type="table">S2</ref>), with 17 out of 22 communities exhibiting positive relationships between body mass and dietary grass fraction when local diet data only were considered (betaregression; pseudo-R 2 = .267, N = 275, logLik = 39.046, df = 45, AIC c = 29.986) (Table <ref type="table">S2</ref>). When data on the full herbivore community were considered (beta-regression; pseudo-R 2 = .184, N = 428, logLik = 51.298, df = 47, AIC c = 3.278), all 15 communities exhibited positive relationships, and four robustly so (p &lt; .1; Table <ref type="table">S2</ref>).</p><p>Though the relationship between body mass and dietary grass fraction was positive for most communities, larger herbivores did not universally eat more grass within these communities. Instead, the range of diets seemed to increase with body size: small herbivores (&lt;10 kg) were almost universally browsers, whereas larger herbivores ranged from specialist browsers to specialist grazers, such that larger-bodied herbivores did eat more grass on average (Figure <ref type="figure">3</ref>). The positive relationship between body size and dietary grass fraction within these communities thus reflects the fact that variability in dietary grass fraction increases with body size.</p><p>Though the slope of the relationship between body mass and dietary grass fraction was positive for the majority of communities, the magnitude of the slope did vary across communities even so, and rainfall seasonality proved predictive of that variation (Figure <ref type="figure">4a</ref>): increasing rainfall seasonality resulted in less positive slopes, especially when local diet data only were considered (Figure <ref type="figure">4a</ref>; Table <ref type="table">S4</ref>). In other words, grass intake increased less predictably with body size where rainfall was more seasonally variable. When complete community data were considered, however, rainfall seasonality had less predictive power for explaining variation in slope (Figure <ref type="figure">4a</ref>; Table <ref type="table">S4</ref>).</p><p>Whether or not elephants were present in a community was highly predictive of variation in the relationship between body mass and dietary grass fraction across communities (Figure <ref type="figure">4b</ref>; Tables <ref type="table">S5</ref> and<ref type="table">S6</ref>), more so even than rainfall seasonality. The presence of elephants consistently decreased the slope of the relationship, indicating that grass dependence did not increase as strongly with body size in communities where elephants were present. The negative effect of elephant presence on the slope of the body mass-dietary grass fraction relationship was remarkably consistent across datasets: elephant presence featured within the plausible model sets for all datasets (Tables <ref type="table">S4</ref> and<ref type="table">S6</ref>), and in every plausible model when only local diet data for herbivores consuming some amount of grass (dietary grass fraction &gt;0) were considered (Table <ref type="table">S6</ref>). Furthermore, for 16 out of the 18 communities in which elephants were present, the slope of the relationship between body mass and dietary grass fraction became substantially more positive when elephants were excluded (Figure <ref type="figure">3</ref>).</p><p>Though other herbivore community composition variables did feature variously in plausible models, their effects were not consistent across datasets, indicating that the strength of the relationship between body mass and dietary grass fraction does not otherwise strongly depend on the composition of the herbivore community.</p><p>We also evaluated what underlay variation in the average reliance of these herbivore communities on grass. The average proportion of grass consumed by herbivore community members was strongly influenced by woody cover, with community-averaged dietary grass fraction peaking at intermediate woody cover (Figure <ref type="figure">5a</ref>; Tables <ref type="table">S9</ref> and<ref type="table">S10</ref>). This pattern held regardless of whether only local diet data or complete community data were considered (Figure <ref type="figure">5a</ref>; Tables <ref type="table">S9</ref> and<ref type="table">S10</ref>). The species composition of herbivore communities was also highly predictive of community-averaged dietary grass fraction (Tables <ref type="table">S8</ref> and<ref type="table">S10</ref>). The average grass dependence of a community was strongly negatively correlated with that community's position along PCoA axis 2 (Figure <ref type="figure">5b</ref>; Table <ref type="table">S8</ref>), indicating that the average grass dependence of a community depends strongly upon the species present in that community.</p><p>Last, we evaluated how intraspecific dietary variation for widely distributed herbivore taxa contributed to these community-level patterns. Species differed markedly in how predictable their diets were overall and the factors that best predicted intraspecific diet variation (Tables <ref type="table">S11-S14</ref>). Rainfall seasonality was a key predictor of intraspecific diet variation for the common hippopotamus    <ref type="table">S13</ref> and<ref type="table">S14</ref>):</p><formula xml:id="formula_1">(c) (d) (e) (f) (g) (h) (i) (j) (k) (l) (m) (n) (o) (p) (q) (r) (s) (t) (u) (v) (w)</formula><p>the grass dependence of both species declined with increasing rainfall seasonality (Figure <ref type="figure">6a</ref>,b), much as the slope of the body mass-dietary grass fraction relationship declined with increasing rainfall (Figure <ref type="figure">4a</ref>). Similarly, woody cover was a key predictor of intraspecific diet variation for Cape buffalo (S. caffer) and savanna The slope of the relationship between body mass and dietary grass fraction was positive for most herbivore communities, especially when data on the entire herbivore community were considered, but the magnitude of the slope varied across communities. Point shapes correspond to mammalian herbivore orders, point colors correspond to whether diet data were local (light blue points) or regional (average dietary grass fraction for a species across all communities; dark blue points). Light blue lines reflect the relationship for only those species for which local diet data were available; dark blue lines reflect the relationship for the entire community (including species for which only regional averages were available).</p><formula xml:id="formula_2">F I G U R E 3</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>F I G U R E 4</head><p>Determinants of the slope of the relationship between body mass and dietary grass fraction for large mammalian herbivore communities. Across data subsets, the slope of the relationship between body mass and dietary grass fraction declined with increasing rainfall seasonality and where elephants were present in the community. Point colors correspond to whether only local diet data were considered (light blue points) or whether regional diet data were also included (for systems where full community composition data were available; dark blue points). Light blue lines reflect the relationships across all 23 communities but considering only local diet data; dark blue lines reflect the relationships across communities considering only those 15 communities with full community composition data (and therefore both local and regional diet data). F I G U R E 5 Determinants of community-averaged dietary grass fraction for large mammalian herbivore communities. Across all data subsets, community-averaged dietary grass fraction peaked at intermediate woody cover and declined with a community's position along PCoA axis 2. Point colors correspond to whether only local diet data were considered (light blue points) or whether regional diet data were also included (for systems where full community composition data were available; dark blue points). Light blue lines reflect the relationships across all 23 communities but considering only local diet data; dark blue lines reflect the relationships across communities considering only those 15 communities with full community composition data (and therefore both local and regional diet data). elephant (L. africana) (Tables <ref type="table">S13</ref> and<ref type="table">S14</ref>): grass dependence for both species was parabolically related to woody cover (Figure <ref type="figure">6c,</ref><ref type="figure">d</ref>),</p><p>paralleling the parabolic relationship between community-averaged dietary grass fraction and woody cover (Figure <ref type="figure">5a</ref>).</p><p>Herbivore community composition variables had limited predictive power for explaining spatial variation in dietary grass fraction for these seven herbivore species. Across all the models of intraspecific diet variation that included herbivore community composition variables only, the null model was always the model with the lowest AIC c , except in the case of Cape buffalo (S. caffer), where dietary grass fraction declined with the location of the broader herbivore community along PCoA axis 1 (Table <ref type="table">S12</ref>). However, the predictive power of PCoA1 for explaining buffalo diet variation appeared to be a consequence of the fact that woody cover loaded strongly on</p><p>PCoA axis 1 (Figure <ref type="figure">2</ref>): woody cover was the best predictor of intraspecific dietary variation when environmental variables were included, both when only environmental variables were considered (Table <ref type="table">S13</ref>) and when environmental and community variables were considered together (Table <ref type="table">S14</ref>). As such, dietary grass fraction for these seven herbivore species is largely decoupled from characteristics of the herbivore communities within which they are situated.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">| DISCUSS ION</head><p>Here we found that (1) dietary grass fraction increased with body size for the majority of African herbivore communities we considered (Figure <ref type="figure">3</ref>), especially when complete community data were considered. That said, the magnitude of this relationship varied, and (2) rainfall seasonality underlay some of the variation in the strength of the relationship (Figure <ref type="figure">4</ref>): grass dependence increased less strongly with body size where rainfall seasonality was greater.</p><p>Similarly, (3) dietary grass fraction also did not increase as strongly with body size in communities where elephants were present (Figure <ref type="figure">4</ref>). Furthermore, (4) the reliance of herbivore communities on grass was strongly tied to woody cover, peaking at intermediate woody cover, as well as the species composition of the community (Figure <ref type="figure">5</ref>). Finally, we found that (5) intraspecific diet shifts contributed to these community-level patterns: common hippopotamus (H. amphibius) and giraffe (G. camelopardalis) grass dependence decreased with increasing rainfall seasonality, whereas Cape buffalo (S. caffer) and savanna elephant (L. africana) grass dependence were parabolically related to woody cover (Figure <ref type="figure">6</ref>).</p><p>The positive relationship between body size and grass consumption documented within certain herbivore communities and across herbivore species <ref type="bibr" target="#b1">(Abraham et al., 2022;</ref><ref type="bibr" target="#b6">Bell, 1971;</ref><ref type="bibr" target="#b13">Cerling et al., 2003;</ref><ref type="bibr" target="#b20">Gagnon &amp; Chew, 2000;</ref><ref type="bibr" target="#b26">Jarman, 1974</ref>) largely held at the community level: within the majority of communities analyzed here, dietary grass fraction increased with body size on average. This was particularly true when complete community data were analyzed, emphasizing the importance of having complete data when drawing conclusions about community-level patterns.</p><p>Furthermore, we found that herbivore community variables, such as herbivore species richness, community-averaged grass dependence, and species composition, had little power for explaining variation in the relationship between body mass and grass   dependence. The positive relationship between grass dependence and body size is therefore not unique to particular community configurations, but rather a general principle of savanna herbivore community assembly. That the positive relationship between body mass and grass dependence manifests across a diversity of herbivore communities is encouraging, as it suggests that some general (and scale-independent) principles do underlie herbivore foraging behavior <ref type="bibr" target="#b1">(Abraham et al., 2022;</ref><ref type="bibr" target="#b32">Olff et al., 2002)</ref> and therefore also their impacts on plants <ref type="bibr">(Karp et al., in revision;</ref><ref type="bibr" target="#b46">Staver et al., 2021)</ref>.</p><formula xml:id="formula_3">F I G U R</formula><p>Still, the mechanism behind this relationship remains elusive, and further research should attempt to disentangle whether high grass dependence is possible for large herbivores due to the comparatively homogeneous distribution of grasses <ref type="bibr" target="#b7">(Bhat et al., 2020;</ref><ref type="bibr" target="#b48">Staver, Asner, et al., 2019)</ref> or shallower nutrient gradients across grass tissues <ref type="bibr" target="#b21">(Güsewell, 2004;</ref><ref type="bibr" target="#b34">Potter &amp; Pringle, 2023;</ref><ref type="bibr" target="#b37">Reich &amp; Oleksyn, 2004)</ref>.</p><p>One herbivore community variable that did explain variation in the magnitude of the slope was the presence of elephants.</p><p>Elephant presence consistently decreased the slope of the relationship between grass dependence and body size. There are two pathways by which elephant presence might negatively impact the slope. First, elephants might induce diet shifts in other herbivores, either via resource competition or via fear effects <ref type="bibr" target="#b19">(Fletcher et al., 2023;</ref><ref type="bibr" target="#b28">Landman et al., 2013;</ref><ref type="bibr" target="#b51">Valeix et al., 2007)</ref>, causing heterospecifics to eat less grass and thereby deflating the slope.</p><p>While such competitive and fear effects are well-documented for elephants <ref type="bibr" target="#b19">(Fletcher et al., 2023;</ref><ref type="bibr" target="#b28">Landman et al., 2013;</ref><ref type="bibr" target="#b51">Valeix et al., 2007)</ref>, our results suggest that these effects do not alter the amount of grass that other herbivore species consume: elephant presence was not included in any species-specific models of intraspecific dietary variation across communities. The alternative pathway by which elephant presence might drag down the slope is simply by their being so large and consuming relatively little grass.</p><p>Indeed, excluding elephants from our analyses made the slope substantially more positive for 16 out of the 18 communities in which elephants were present (Figure <ref type="figure">3</ref>). As such, elephants appear to eat substantially less grass than might be expected from their body size alone, a pattern that has been noted elsewhere <ref type="bibr">(Cerling et al., 1999;</ref><ref type="bibr" target="#b29">Lister, 2013)</ref>: despite the fact that they are the largest extant herbivores in these communities <ref type="bibr" target="#b33">(Pansu et al., 2022;</ref><ref type="bibr" target="#b40">Rowan et al., 2020)</ref> and possess morphological adaptations to grazing, such as high-crowned teeth <ref type="bibr">(Cerling et al., 1999;</ref><ref type="bibr" target="#b29">Lister, 2013)</ref>, elephants in eastern and central Africa <ref type="bibr">(Cerling et al., 1999</ref><ref type="bibr" target="#b10">(Cerling et al., , 2015;;</ref><ref type="bibr" target="#b39">Robinson et al., 2021)</ref> and beyond <ref type="bibr" target="#b2">(Abraham et al., 2019;</ref><ref type="bibr" target="#b33">Pansu et al., 2022)</ref> are predominantly browsers. Furthermore, though modern African elephants mainly browse, elephantids were grazers for much of their evolutionary history, such that their current browsing habit may not be broadly representative: grasses dominated the diets of Loxodonta from 5 to 1 Ma <ref type="bibr">(Cerling et al., 1999)</ref>.</p><p>Why modern elephants eat so little grass remains a mystery <ref type="bibr">(Cerling et al., 1999)</ref> but implies that some change in their resource environment has occurred within the last 1 million years; elephants are one of the few taxa whose diets vary predictably with woody cover (Figure <ref type="figure">6</ref>; see also <ref type="bibr" target="#b39">Robinson et al., 2021)</ref>, indicating that they may be more sensitive to changes in resource availability relative to other herbivores (see also <ref type="bibr" target="#b2">Abraham et al., 2019</ref><ref type="bibr" target="#b0">Abraham et al., , 2021))</ref>.</p><p>Regardless, the centrality of elephants to our results underscores the unique position that elephants occupy within herbivore communities: not only do elephants forage differently than other herbivores <ref type="bibr" target="#b0">(Abraham et al., 2021;</ref><ref type="bibr" target="#b39">Robinson et al., 2021)</ref>, they consume immense amounts of plant biomass, often constitute the majority of herbivore biomass within herbivore communities, and play a key role in ecosystem construction overall <ref type="bibr" target="#b0">(Abraham et al., 2021;</ref><ref type="bibr" target="#b8">Cardoso et al., 2020;</ref><ref type="bibr" target="#b22">Hempson, Archibald, et al., 2015)</ref>.</p><p>Rainfall seasonality also explained some of the variations in the relationship between body mass and grass dependence, with increasing rainfall seasonality leading to less strongly positive slopes.</p><p>Rainfall seasonality likely modifies herbivore foraging behavior by altering plant availability and quality. Grass is particularly responsive to rainfall <ref type="bibr" target="#b42">(Sala et al., 2012;</ref><ref type="bibr" target="#b43">Scanlon et al., 2005;</ref><ref type="bibr" target="#b49">Staver, Wigley-Coetsee, et al., 2019)</ref>, such that severe dry seasons may result in seasonally sparse <ref type="bibr" target="#b1">(Abraham et al., 2022;</ref><ref type="bibr" target="#b24">Hempson, Illius, et al., 2015)</ref> or especially low quality <ref type="bibr" target="#b23">(Hempson et al., 2019;</ref><ref type="bibr" target="#b37">Reich &amp; Oleksyn, 2004</ref>) grass forage, undermining any foraging advantage that specializing on grass presents <ref type="bibr" target="#b7">(Bhat et al., 2020)</ref>. Indeed, we found that some species did consume less grass where rainfall was more seasonal. The two species for which this was the case, the common hippopotamus and giraffe, are also two of the largest species in our analyses. Thus, highly seasonal rainfall seems to erode the foraging advantage of consuming grass, particularly for large herbivores. Still, whether this is driven by changes in grass availability <ref type="bibr" target="#b1">(Abraham et al., 2022;</ref><ref type="bibr" target="#b7">Bhat et al., 2020;</ref><ref type="bibr" target="#b24">Hempson, Illius, et al., 2015)</ref> or relative quality <ref type="bibr" target="#b23">(Hempson et al., 2019;</ref><ref type="bibr" target="#b37">Reich &amp; Oleksyn, 2004</ref>) remains unclear. Regardless, these results indicate that herbivore diets result from the dynamic interplay between herbivore physiology and environmental context <ref type="bibr" target="#b2">(Abraham et al., 2019;</ref><ref type="bibr" target="#b25">Hopcraft et al., 2010;</ref><ref type="bibr" target="#b52">Veldhuis et al., 2019)</ref>, with cascading consequences for community assembly.</p><p>Environmental context also altered the average grass dependence of the herbivore community as a whole. Dietary grass fraction peaked at intermediate woody cover, somewhat surprisingly:</p><p>we expected dietary grass fraction to monotonically decrease with woody cover, as herbivores should presumably eat more browse where it is more abundant <ref type="bibr" target="#b33">(Pansu et al., 2022;</ref><ref type="bibr" target="#b39">Robinson et al., 2021)</ref>. However, grass biomass might not be negatively related to woody cover, which would result in non-linearities in the relative abundance of grasses with increasing woody cover; savannas have a continuous grassy understory <ref type="bibr" target="#b38">(Riginos et al., 2009;</ref><ref type="bibr" target="#b42">Sala et al., 2012;</ref><ref type="bibr" target="#b45">Staver, 2018)</ref>, and both woody cover and grass biomass increase with rainfall <ref type="bibr" target="#b42">(Sala et al., 2012;</ref><ref type="bibr" target="#b47">Staver et al., 2011;</ref><ref type="bibr" target="#b53">Venter et al., 2018)</ref>, such that grass biomass may be largely invariant with, or even increase with, tree cover up to a certain threshold. Also, savanna trees have been observed to facilitate grasses, locally increasing grass biomass <ref type="bibr" target="#b31">(Moustakas et al., 2013;</ref><ref type="bibr" target="#b38">Riginos et al., 2009)</ref> that likely have some amount of unvegetated land, which would further decouple grass biomass from woody cover <ref type="bibr" target="#b44">(Sokolowski et al., 2023)</ref>. Unfortunately, fine-grained, temporally explicit datasets of local grass biomass across regional scales are lacking (but see <ref type="bibr" target="#b42">Sala et al., 2012)</ref>, which prevents us from explicitly considering the role of grass availability in mediating the effects of woody cover on herbivore community grass dependence here. An additional possibility is that systems with intermediate woody cover might have a greater potential diversity of dietary niches due to greater resource diversity therein <ref type="bibr" target="#b32">(Olff et al., 2002;</ref><ref type="bibr" target="#b50">Tilman, 1982)</ref>; in our analyses, sites with intermediate woody cover also had intermediate MARain values (Figure <ref type="figure">S1</ref>; see also <ref type="bibr" target="#b44">Sokolowski et al., 2023)</ref>, which is where theory predicts forage quality and quantity to be mutually maximized <ref type="bibr" target="#b32">(Olff et al., 2002)</ref>. Thus, grass may only be sufficiently palatable and abundant at intermediate woody cover, such that specialist grazers might be uniquely able to persist in communities with some amount of woody cover <ref type="bibr" target="#b22">(Hempson, Archibald, et al., 2015)</ref>, inflating the average grass dependence of those communities with intermediate woody cover.</p><p>In support of this latter possibility, we note that both overall herbivore biomass densities and grazer biomass densities specifically are observed to peak at intermediate woody cover <ref type="bibr" target="#b22">(Hempson, Archibald, et al., 2015;</ref><ref type="bibr" target="#b46">Staver et al., 2021)</ref>. To determine how grass availability alters the grass dependence of individual community members and the community as a whole, we require better data on grass availability across continental scales <ref type="bibr" target="#b42">(Sala et al., 2012)</ref>:</p><p>with ongoing advances in remote sensing technologies <ref type="bibr" target="#b9">(Cavender-Bares et al., 2022;</ref><ref type="bibr" target="#b43">Scanlon et al., 2005)</ref>, this will become increasingly possible. Regardless, these patterns suggest that herbivore impacts on the grass layer should peak at intermediate woody cover (see also <ref type="bibr">Karp et al., in revision;</ref><ref type="bibr" target="#b46">Staver et al., 2021)</ref>.</p><p>Finally, we found that both species turnover and intraspecific diet shifts contributed to variation in community-averaged dietary grass fraction. Grass fraction was anti-correlated with PCoA axis 2, such that PCoA axis 2 appears to differentiate those herbivore communities with both grazing and browsing species from communities dominated mainly by browsers. That species composition contributes to how dependent a community is on grass underscores the fact that herbivore species in the tropics differ markedly in their dietary niches: species range from pure browsers to near-obligate grazers <ref type="bibr" target="#b1">(Abraham et al., 2022;</ref><ref type="bibr" target="#b20">Gagnon &amp; Chew, 2000;</ref><ref type="bibr" target="#b33">Pansu et al., 2022)</ref>. Still, variation in community-level grass dependence was not entirely driven by species turnover between communities. Paralleling the parabolic relationship between community-averaged grass dependence and woody cover, we found that Cape buffalo and savanna elephant diets were likewise parabolically related to woody cover (see also <ref type="bibr" target="#b39">Robinson et al., 2021)</ref>. Therefore, while the dietary niches of species present in a community play a large role in mediating communityaveraged grass dependence, spatial shifts in herbivore diets also appear to contribute. These findings emphasize that intraspecific dietary variation can have community-level consequences <ref type="bibr" target="#b33">(Pansu et al., 2022;</ref><ref type="bibr" target="#b35">Pringle et al., 2023)</ref> and that local diet data are therefore essential for understanding community processes and accurately estimating local herbivore impacts <ref type="bibr" target="#b35">(Pringle et al., 2023)</ref>.</p><p>In summary, we found that herbivore diets were somewhat predictable from body size, even at the scale of particular herbivore communities. That dietary grass fraction, or rather the variability of possible diets, increases with body size therefore appears to be a general principle of community assembly across savanna herbivore communities. Consequently, the body size distribution of herbivore communities defines the magnitude of herbivore impacts on the grass and tree layers, especially within JTF is supported by grants from the United States National Science Foundation (CNH-1826666 and 2224318).</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head></head><label></label><figDesc>less rainfall-seasonal systems where the relationship between body size and grass dependence is strongest. Still, the mechanism behind this positive body size-grass dependence relationship remains unclear. Future research should leverage variation in the relationship between body size and grass dependence such as we have documented here to identify the mechanism by which this relationship manifests, explicitly linking the strength of the body mass-grass dependence relationship to differences in resource quality and resource distributions across large mammalian herbi-Conceptualization (equal); data curation (equal); formal analysis (lead); investigation (lead); methodology (lead); project administration (lead); visualization (lead); writing -original draft (lead); writing -review and editing (lead). John Rowan: Conceptualization (equal); data curation (supporting); investigation (supporting); methodology (supporting); project administration (supporting); writing -review and editing (supporting). Kaedan O'Brien: Data curation (supporting); methodology (supporting); writing -review and editing (supporting). Kathryn G. Sokolowski: Investigation (supporting); writing -review and editing (supporting). J. Tyler Faith: Conceptualization (equal); data curation (lead); formal analysis (supporting); investigation (equal); methodology (supporting); project administration (supporting); supervision (equal); writing -review and editing (supporting). ACK N OWLED G M ENTS JOA and KO are supported by the NSF Graduate Research Fellowship Program (respective Fellow IDs: 2019256075 and 2020294514).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>20457758, 2024, 2, Downloaded from https://onlinelibrary.wiley.com/doi/10.1002/ece3.11050 by NHS Education for Scotland NES, Edinburgh Central Office, Wiley Online Library on [26/06/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head></head><label></label><figDesc>20457758, 2024, 2, Downloaded from https://onlinelibrary.wiley.com/doi/10.1002/ece3.11050 by NHS Education for Scotland NES, Edinburgh Central Office, Wiley Online Library on [26/06/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head></head><label></label><figDesc>20457758, 2024, 2, Downloaded from https://onlinelibrary.wiley.com/doi/10.1002/ece3.11050 by NHS Education for Scotland NES, Edinburgh Central Office, Wiley Online Library on [26/06/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head></head><label></label><figDesc>Downloaded from https://onlinelibrary.wiley.com/doi/10.1002/ece3.11050 by NHS Education for Scotland NES, Edinburgh Central Office, Wiley Online Library on [26/06/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License model fit. As above, species-level dietary grass fraction values were weighted by their corresponding standard deviations in all models, to account for local intraspecies diet variation and propagate uncertainty. We again accounted for potential spatial autocorrelation by evaluating various spatial covariance structures and selecting the spatial covariance structure that resulted in the lowest AIC c value for inclusion in the global model (Table</figDesc><table><row><cell></cell><cell></cell><cell>20457758, 2024, 2,</cell></row><row><cell></cell><cell></cell><cell>Continuous environmental variables</cell></row><row><cell>•</cell><cell>Full community composition data</cell><cell>Continuous community variables</cell></row><row><cell>•</cell><cell>Partial community composition data</cell><cell>Categorical community variables</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head></head><label></label><figDesc>20457758, 2024, 2, Downloaded from https://onlinelibrary.wiley.com/doi/10.1002/ece3.11050 by NHS Education for Scotland NES, Edinburgh Central Office, Wiley Online Library on [26/06/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head></head><label></label><figDesc>Downloaded from https://onlinelibrary.wiley.com/doi/10.1002/ece3.11050 by NHS Education for Scotland NES, Edinburgh Central Office, Wiley Online Library on [26/06/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License</figDesc><table><row><cell>AMBO</cell><cell>ATHI</cell><cell>AWSH</cell><cell>CHYU</cell><cell>20457758, 2024, 2,</cell></row><row><cell>ETHR</cell><cell>GMBA</cell><cell>KBLE</cell><cell>K CST</cell><cell></cell></row><row><cell>KDPO</cell><cell>LAIK</cell><cell>LEDW</cell><cell>LOPE</cell><cell></cell></row><row><cell>MAGO</cell><cell>MARA</cell><cell>M BRO</cell><cell>M ERU</cell><cell></cell></row><row><cell>MTKE</cell><cell>NAKG</cell><cell>RFTV</cell><cell>SAMB</cell><cell></cell></row><row><cell>TANA</cell><cell>TRKX</cell><cell>TSVO</cell><cell></cell><cell></cell></row></table><note><p>(H. amphibius) and giraffe (G. camelopardalis) (Tables</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7"><head></head><label></label><figDesc>The relationship between body mass and dietary grass fraction within African large mammalian herbivore communities: (a) AMBO, Amboseli; (b) ATHI, Athi Plains and Nairobi; (c) AWSH, Awash; (d) CHYU, Chyulu Hills; (e) ETHR, Ethiopian Rift Lakes; (f) GMBA, Garamba; (g) KBLE, Kibale; (h) KCST, Kenya Coast; (i) KDPO, Kidepo; (j) LAIK, Laikipia; (k) LEDW, Lake Edward; (l) LOPE, Lopé; (m) MAGO, Omo/Mago; (n) MARA, Maasai Mara-Serengeti; (o) MBRO, Lake Mburo; (p) MERU, Meru National Park; (q) MTKE, Mount Kenya; (r) NAKG, Nakuru; (s) RFTV, Kenya Rift Valley; (t) SAMB, Samburu; (u) TANA, Tana River; (v) TRKX, Turkana; (w) TSVO, Tsavo.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_9"><head></head><label></label><figDesc>20457758, 2024, 2, Downloaded from https://onlinelibrary.wiley.com/doi/10.1002/ece3.11050 by NHS Education for Scotland NES, Edinburgh Central Office, Wiley Online Library on [26/06/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License</figDesc><table><row><cell>ABRAHAM et al.</cell><cell>| 11 of 14</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_10"><head></head><label></label><figDesc>, 2024, 2, Downloaded from https://onlinelibrary.wiley.com/doi/10.1002/ece3.11050 by NHS Education for Scotland NES, Edinburgh Central Office, Wiley Online Library on [26/06/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License communities with sparse woody cover are necessarily grasslandsmany of the communities in our analyses, especially those with low woody cover, are arid or semi-arid systems (MARain &lt;800 mm)</figDesc><table /><note><p>, such that systems with intermediate woody cover may have higher grass biomass than those without trees. Finally, not all 20457758</p></note></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_0"><p>20457758, 2024, 2, Downloaded from https://onlinelibrary.wiley.com/doi/10.1002/ece3.11050 by NHS Education for Scotland NES, Edinburgh Central Office, Wiley Online Library on [26/06/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License</p></note>
+		</body>
+		<back>
+
+			<div type="funding">
+<div><head>Funding information</head><p><rs type="funder">National Science Foundation</rs>, Grant/ Award Number: <rs type="grantNumber">2019256075</rs>,  <rs type="grantNumber">2020294514</rs>, <rs type="grantNumber">2224318</rs> and <rs type="grantNumber">CNH-1826666</rs> </p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_zvCh3Gf">
+					<idno type="grant-number">2019256075</idno>
+				</org>
+				<org type="funding" xml:id="_9SHnQqX">
+					<idno type="grant-number">2020294514</idno>
+				</org>
+				<org type="funding" xml:id="_gShmgJm">
+					<idno type="grant-number">2224318</idno>
+				</org>
+				<org type="funding" xml:id="_vuBQRGv">
+					<idno type="grant-number">CNH-1826666</idno>
+				</org>
+			</listOrg>
+
+			<div type="availability">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>DATA AVA I L A B I L I T Y S TAT E M E N T</head><p>Data are available in the supplementary data file associated with this publication and from the Dryad Data Repository (<ref type="url" target="https://doi">https:// doi</ref>. org/ 10.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>5061/ dryad. rv15d v4fs</head><p>). O RCI D Joel O. Abraham <ref type="url" target="https://orcid.org/0000-0002-4704-1593">https://orcid.org/0000-0002-4704-1593</ref> 20457758, 2024, 2, Downloaded from <ref type="url" target="https://onlinelibrary.wiley.com/doi/10.1002/ece3.11050">https://onlinelibrary.wiley.com/doi/10.1002/ece3.11050</ref> by NHS Education for Scotland NES, Edinburgh Central Office, Wiley Online Library on [26/06/2025]. See the Terms and Conditions (<ref type="url" target="https://onlinelibrary.wiley.com/terms-and-conditions">https://onlinelibrary.wiley.com/terms-and-conditions</ref>) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>| 13 of 14</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>S U PP O RTI N G I N FO R M ATI O N</head><p>Additional supporting information can be found online in the Supporting Information section at the end of this article.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Heterogeneity in African savanna elephant distributions and their impacts on trees in Kruger National Park, South Africa</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">O</forename><surname>Abraham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">R</forename><surname>Goldberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Botha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Staver</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ecology and Evolution</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="5624" to="5634" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Seasonal strategies differ between tropical and extratropical herbivores</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">O</forename><surname>Abraham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">P</forename><surname>Hempson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Faith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Staver</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Animal Ecology</title>
+		<imprint>
+			<biblScope unit="volume">91</biblScope>
+			<biblScope unit="page" from="681" to="692" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Droughtresponse strategies of savanna herbivores</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">O</forename><surname>Abraham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">P</forename><surname>Hempson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Staver</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ecology and Evolution</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="7047" to="7056" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">The isotopic ecology of East African mammals</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Ambrose</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Deniro</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Oecologia</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="page" from="395" to="406" />
+			<date type="published" when="1986">1986</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Avoiding pitfalls when using information-theoretic methods</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">R</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">P</forename><surname>Burnham</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">The Journal of Wildlife Management</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="page" from="912" to="918" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Package &apos;MuMIn&apos;. Model selection and model averaging base on information criteria</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Bartoń</surname></persName>
+		</author>
+		<ptr target="https://cran.r-project.org/web/packages/MuMIn/index.html" />
+	</analytic>
+	<monogr>
+		<title level="m">R package version 1.43</title>
+		<meeting><address><addrLine>Vienna, Austria</addrLine></address></meeting>
+		<imprint>
+			<publisher>R Foundation for Statistical Computing</publisher>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">A grazing ecosystem in the Serengeti</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H V</forename><surname>Bell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Scientific American</title>
+		<imprint>
+			<biblScope unit="volume">225</biblScope>
+			<biblScope unit="page" from="86" to="93" />
+			<date type="published" when="1971">1971</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Scaling the risk landscape drives optimal life-history strategies and the evolution of grazing</title>
+		<author>
+			<persName><forename type="first">U</forename><surname>Bhat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">P</forename><surname>Kempes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Yeakel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences of the United States of America</title>
+		<imprint>
+			<biblScope unit="volume">117</biblScope>
+			<biblScope unit="page" from="1580" to="1586" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">The role of forest elephants in shaping tropical forest-savanna coexistence</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">W</forename><surname>Cardoso</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Malhi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Oliveras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lehmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Ndong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Dimoto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Bush</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jeffery</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Labriere</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">L</forename><surname>Lewis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">T J</forename><surname>White</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Bond</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Abernethy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ecosystems</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="page" from="602" to="616" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Integrating remote sensing with ecology and evolution to advance biodiversity conservation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cavender-Bares</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">D</forename><surname>Schneider</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Santos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Armstrong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Carnaval</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Dahlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fatoyinbo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">C</forename><surname>Hurtt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Schimel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Townsend</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">L</forename><surname>Ustin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Wilson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Ecology &amp; Evolution</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="506" to="519" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Dietary changes of large herbivores in the Turkana Basin, Kenya from 4 to 1 Ma</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">E</forename><surname>Cerling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Andanje</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Blumenthal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">H</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">L</forename><surname>Chritz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Harris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Hart</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">M</forename><surname>Kirera</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Kaleme</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">N</forename><surname>Leakey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Leakey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">E</forename><surname>Levin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">K</forename><surname>Manthi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">H</forename><surname>Passey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">T</forename><surname>Uno</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences of the United States of America</title>
+		<imprint>
+			<biblScope unit="volume">112</biblScope>
+			<biblScope unit="page" from="11467" to="11472" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Carbon isotope fractionation between diet and bioapatite in ungulate mammals and implications for ecological and paleoecological studies</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">E</forename><surname>Cerling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Harris</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Oecologia</title>
+		<imprint>
+			<biblScope unit="volume">120</biblScope>
+			<biblScope unit="page" from="347" to="363" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Browsing and grazing in elephants: The isotope record of modern and fossil proboscideans</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">E</forename><surname>Cerling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Harris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Leakey</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Oecologia</title>
+		<imprint>
+			<biblScope unit="volume">120</biblScope>
+			<biblScope unit="page" from="364" to="374" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Diets of East African Bovidae based on stable isotope analysis</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">E</forename><surname>Cerling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Harris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">H</forename><surname>Passey</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Mammalogy</title>
+		<imprint>
+			<biblScope unit="volume">84</biblScope>
+			<biblScope unit="page" from="456" to="470" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Diets of savanna ungulates from stable carbon isotope composition of faeces</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Codron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Codron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Lee-Thorp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sponheimer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">D</forename><surname>Ruiter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sealy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Grant</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Fourie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Zoology</title>
+		<imprint>
+			<biblScope unit="volume">273</biblScope>
+			<biblScope unit="page" from="21" to="29" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Beta regression in R</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Cribari-Neto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zeileis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Statistical Software</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="1" to="24" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">VEGAN, a package of R functions for community ecology</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dixon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Vegetation Science</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="927" to="930" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">The origins of C4 grasslands: Integrating evolutionary and ecosystem science</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">J</forename><surname>Edwards</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">P</forename><surname>Osborne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">A E</forename><surname>Strömberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><surname>C4 Grasses Consortium</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">J</forename><surname>Bond</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Christin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Cousins</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Duvall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Fox</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">P</forename><surname>Freckleton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ghannoum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hartwell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Janis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Keeley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">A</forename><surname>Kellogg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Knapp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">D</forename><surname>Leakey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Tipple</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">328</biblScope>
+			<biblScope unit="page" from="587" to="591" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">WorldClim 2: New 1-km spatial resolution climate surfaces for global land areas</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Fick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Hijmans</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">International Journal of Climatology</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="4302" to="4315" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Frightened of giants: Fear responses to elephants approach that of predators</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Fletcher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>O'brien</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">F</forename><surname>Hall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">D</forename><surname>Potash</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kruger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Simelane</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Roques</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Monadjem</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Mccleery</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biology Letters</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page">20230202</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Dietary preferences in extant African Bovidae</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gagnon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Chew</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Mammalogy</title>
+		<imprint>
+			<biblScope unit="volume">81</biblScope>
+			<biblScope unit="page" from="490" to="511" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">N : P ratios in terrestrial plants: Variation and functional significance</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Güsewell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">New Phytologist</title>
+		<imprint>
+			<biblScope unit="volume">164</biblScope>
+			<biblScope unit="page" from="243" to="266" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">A continent-wide assessment of the form and intensity of large mammal herbivory in Africa</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">P</forename><surname>Hempson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Archibald</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">J</forename><surname>Bond</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">350</biblScope>
+			<biblScope unit="page" from="1056" to="1061" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Alternate grassy ecosystem states are determined by palatabilityflammability trade-offs</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">P</forename><surname>Hempson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Archibald</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Donaldson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">E R</forename><surname>Lehmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Trends in Ecology &amp; Evolution</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="286" to="290" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Herbivore population regulation and resource heterogeneity in a stochastic environment</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">P</forename><surname>Hempson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">W</forename><surname>Illius</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">H</forename><surname>Hendricks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">J</forename><surname>Bond</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Vetter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ecology</title>
+		<imprint>
+			<biblScope unit="volume">96</biblScope>
+			<biblScope unit="page" from="2170" to="2180" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Herbivores, resources and risks: Alternating regulation along primary environmental gradients in savannas</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">G C</forename><surname>Hopcraft</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Olff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">R E</forename><surname>Sinclair</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Trends in Ecology &amp; Evolution</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="119" to="128" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">The social organisation of antelope in relation to their ecology</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Jarman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Behaviour</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="page" from="215" to="267" />
+			<date type="published" when="1974">1974</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Grazing herbivores reduce herbaceous biomass and fire activity across broad-scale savanna gradients</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">T</forename><surname>Karp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Koerner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">P</forename><surname>Hempson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">O</forename><surname>Abraham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">J</forename><surname>Bond</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">E</forename><surname>Burkepole</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">N</forename><surname>Fillion</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Goheen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Guyton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">R</forename><surname>Kartzinel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Kimuyu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Mohanbabu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Palmer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Porensky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Pringle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Ritchie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Thompson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Staver</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ecology Letters</title>
+		<imprint/>
+	</monogr>
+	<note>in revision</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Shift in black rhinoceros diet in the presence of elephant: Evidence for competition?</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Landman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Schoeman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">I H</forename><surname>Kerley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS One</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page">69771</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">The role of behaviour in adaptive morphological evolution of African proboscideans</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Lister</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">500</biblScope>
+			<biblScope unit="page" from="331" to="334" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">Biogeography</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">V</forename><surname>Lomolino</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">R</forename><surname>Riddle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Whittaker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Brown</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010">2010</date>
+			<publisher>Sinauer Associates</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Facilitation or competition? Tree effects on grass biomass across a precipitation gradient</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Moustakas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">E</forename><surname>Kunin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">C</forename><surname>Cameron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sankaran</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS One</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page">57025</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Global environmental controls of diversity in large herbivores</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Olff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Ritchie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">H T</forename><surname>Prins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">415</biblScope>
+			<biblScope unit="page" from="901" to="904" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">The generality of cryptic dietary niche differences in diverse large-herbivore assemblages</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pansu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Hutchinson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Beest</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Begg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">S</forename><surname>Begg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bonin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chama</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Chamaillé-Jammes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Coissac</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P G M</forename><surname>Cromsigt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Y</forename><surname>Demmel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Donaldson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Guyton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Hansen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">I</forename><surname>Imakando</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Iqbal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">F</forename><surname>Kalima</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">I H</forename><surname>Kerley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Pringle</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences of the United States of America</title>
+		<imprint>
+			<biblScope unit="volume">119</biblScope>
+			<biblScope unit="page">2204400119</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Revisiting the Jarman-Bell principle</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Potter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Pringle</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">The equids: A suite of splendid species, fascinating life series</title>
+		<editor>
+			<persName><forename type="first">H</forename><forename type="middle">H T</forename><surname>Prins</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">I</forename><forename type="middle">A</forename><surname>Gordon</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Springer International Publishing</publisher>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="171" to="207" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Impacts of large herbivores on terrestrial ecosystems</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Pringle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">O</forename><surname>Abraham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">C</forename><surname>Coverdale</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Davies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">L</forename><surname>Dutton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gaylard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Goheen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Holdo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Hutchinson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Kimuyu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Subalusky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Veldhuis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Current Biology</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="R584" to="R610" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">R: A language and environment for statistical computing</title>
+		<author>
+			<persName><forename type="first">Team</forename><surname>Core</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">R Foundation for Statistical Computing</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Global patterns of plant leaf N and P in relation to temperature and latitude</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">B</forename><surname>Reich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Oleksyn</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/ece3.11050</idno>
+		<ptr target="https://onlinelibrary.wiley.com/terms-and-conditions" />
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences of the United States of America</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">20457758</biblScope>
+			<date type="published" when="2004">2004. 2024. 26/06/2025</date>
+			<publisher>Wiley Online Library</publisher>
+		</imprint>
+		<respStmt>
+			<orgName>Scotland NES, Edinburgh Central Office</orgName>
+		</respStmt>
+	</monogr>
+	<note>See the Terms and Conditions</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Local versus landscape-scale effects of savanna trees on grasses</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Riginos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Grace</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Augustine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">P</forename><surname>Young</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Ecology</title>
+		<imprint>
+			<biblScope unit="volume">97</biblScope>
+			<biblScope unit="page" from="1337" to="1345" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Intrataxonomic trends in herbivore enamel δ 13 C are decoupled from ecosystem woody cover</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Robinson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Rowan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">A</forename><surname>Barr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sponheimer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Ecology &amp; Evolution</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="995" to="1002" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Geographically divergent evolutionary and ecological legacies shape mammal biodiversity in the global tropics and subtropics</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Rowan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Beaudrot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Franklin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">E</forename><surname>Reed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">E</forename><surname>Smail</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zamora</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Kamilar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences of the United States of America</title>
+		<imprint>
+			<biblScope unit="volume">117</biblScope>
+			<biblScope unit="page" from="1559" to="1565" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Fossil Giraffidae (Mammalia, Artiodactyla) from Lee Adoyta, Ledi-Geraru, and late Pliocene dietary evolution in giraffids from the Lower Awash Valley, Ethiopia</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Rowan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">M</forename><surname>Locke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Robinson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Campisano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">G</forename><surname>Wynn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">E</forename><surname>Reed</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Mammalian Evolution</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="359" to="371" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Legacies of precipitation fluctuations on primary production: Theory and data synthesis</title>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">E</forename><surname>Sala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Gherardi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Reichmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Jobbágy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Peters</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Philosophical Transactions of the Royal Society B: Biological Sciences</title>
+		<imprint>
+			<biblScope unit="volume">367</biblScope>
+			<biblScope unit="page" from="3135" to="3144" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Dynamic response of grass cover to rainfall variability: Implications for the function and persistence of savanna ecosystems</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Scanlon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">K</forename><surname>Caylor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Manfreda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Levin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Rodriguez-Iturbe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Water Resources</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="291" to="302" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Do grazers equal grasslands? Strengthening paleoenvironmental inferences through analysis of present-day African mammals</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">G</forename><surname>Sokolowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">F</forename><surname>Codding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Faith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Palaeogeography, Palaeoclimatology</title>
+		<imprint>
+			<biblScope unit="volume">629</biblScope>
+			<biblScope unit="page">111786</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note>Palaeoecology</note>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Prediction and scale in savanna ecosystems</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Staver</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">New Phytologist</title>
+		<imprint>
+			<biblScope unit="volume">219</biblScope>
+			<biblScope unit="page" from="52" to="57" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">The past, present, and future of herbivore impacts on savanna vegetation</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Staver</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">O</forename><surname>Abraham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">P</forename><surname>Hempson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">T</forename><surname>Karp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Faith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Ecology</title>
+		<imprint>
+			<biblScope unit="volume">109</biblScope>
+			<biblScope unit="page" from="2804" to="2822" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">The global extent and determinants of savanna and forest as alternative biome states</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Staver</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Archibald</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Levin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">334</biblScope>
+			<biblScope unit="page" from="230" to="232" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Spatial patterning among savanna trees in high-resolution, spatially extensive data</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Staver</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">P</forename><surname>Asner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Rodriguez-Iturbe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Levin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">P J</forename><surname>Smit</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences of the United States of America</title>
+		<imprint>
+			<biblScope unit="volume">116</biblScope>
+			<biblScope unit="page" from="10681" to="10685" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Grazer movements exacerbate grass declines during drought in an African savanna</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Staver</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wigley-Coetsee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Botha</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Ecology</title>
+		<imprint>
+			<biblScope unit="volume">107</biblScope>
+			<biblScope unit="page" from="1482" to="1491" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tilman</surname></persName>
+		</author>
+		<title level="m">Resource competition and community structure</title>
+		<imprint>
+			<publisher>Princeton University Press</publisher>
+			<date type="published" when="1982">1982</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Interference competition and temporal niche shifts: Elephants and herbivore communities at waterholes</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Valeix</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Chamaillé-Jammes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fritz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Oecologia</title>
+		<imprint>
+			<biblScope unit="volume">153</biblScope>
+			<biblScope unit="page" from="739" to="748" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">Large herbivore assemblages in a changing climate: Incorporating water dependence and thermoregulation</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Veldhuis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">S</forename><surname>Kihwele</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P G M</forename><surname>Cromsigt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">O</forename><surname>Ogutu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">G C</forename><surname>Hopcraft</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Owen-Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Olff</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ecology Letters</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="page" from="1536" to="1546" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Drivers of woody plant encroachment over Africa</title>
+		<author>
+			<persName><forename type="first">Z</forename><forename type="middle">S</forename><surname>Venter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Cramer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H.-J</forename><surname>Hawkins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Communications</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<date type="published" when="2018">2018. 2272</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">EltonTraits 1.0: Species-level foraging attributes of the world&apos;s birds and mammals</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wilman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Belmaker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Simpson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>De La Rosa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Rivadeneira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Jetz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ecology</title>
+		<imprint>
+			<biblScope unit="volume">95</biblScope>
+			<date type="published" when="2014">2014. 2027</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

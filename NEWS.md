@@ -1,3 +1,9 @@
+# papercheck 0.0.0.9049
+
+* Updated `read_grobid()` to classify headers as intro, method, results, discussion with better accuracy (to handle garbled headers)
+* Updated `pdf2grobid()` to allow some grobid parameters
+* Updated the module "all_p_values" to handle more scientific notation formats
+
 # papercheck 0.0.0.9048
 
 * Functions to check ResearchBox.org (`rbox_links()` and `rbox_retrieve()`) -- very preliminary

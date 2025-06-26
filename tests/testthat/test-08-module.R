@@ -75,6 +75,11 @@ test_that("module_info", {
 })
 
 test_that("module_help", {
+  ml <- capture.output(module_list())
+  mh <- capture.output(module_help())
+  expect_equal(mh, ml)
+
+  # marginal
   help <- module_help("marginal")
 
   title <- "Marginal Significance"
@@ -165,6 +170,57 @@ test_that("all_p_values", {
 
   expect_equal(length(minus), 0)
   expect_equal(length(e), 9L)
+
+  # specific values
+  expected <- c(
+    "p=.05",
+    "p\n=\n.05",
+    "p = .05",
+    "p < .05",
+    "p > .05",
+    "p <= .05",
+    "p >= .05",
+    "p == .05",
+    "p << .05",
+    "p >> .05",
+    "p ≤ .05",
+    "p ≥ .05",
+    "p ≪ .05",
+    "p ≫ .05",
+    "p ≠ .05",
+    "p-value = .05",
+    "pvalue = .05",
+    "p = 0.05",
+    "p = 0.05",
+    "p = 0.5e-1",
+    "p = n.s.",
+    "p = ns",
+    "p = 5.0x10^-2",
+    "p = 5.0 x 10^-2",
+    "p = 5.0 x 10 ^ -2",
+    "p = 5.0 * 10 ^ -2",
+    "p = 5.0e-2",
+    "p = 5.0 e-2",
+    "p = 5.0 e -2"
+  )
+  not <- c(
+    "up = 0.05",
+    "p = stuff",
+    "p = -0.05",
+    "p less than 0.05",
+    "p = 12.05"
+  )
+
+  paper <- data.frame(
+    id = 1,
+    text = c(expected, not),
+    expected = rep(c(T, F), c(length(expected), length(not)))
+  )
+  mod_output <- module_run(paper, module)
+  expect_true(!"" %in% mod_output$table$p_comp)
+  expect_equal(mod_output$table$p_value[1:20], rep(0.05, 20))
+  expect_equal(mod_output$table$p_value[21:22], rep(NA_real_, 2))
+  expect_equal(mod_output$table$p_value[23:29], rep(0.05, 7))
 })
 
 test_that("all_urls", {
@@ -187,6 +243,8 @@ test_that("osf_check", {
   skip_if_not(osf_api_check() == "ok")
   module <- "osf_check"
 
+  verbose(FALSE)
+
   text <- data.frame(
     text = c("https://osf.io/5tbm9/",
              "https://osf.io/629bx/",
@@ -208,6 +266,8 @@ test_that("osf_check", {
   expect_equal(ids, c("0956797615569001",
                       "0956797615569889",
                       "0956797615583071"))
+
+  verbose(TRUE)
 })
 
 test_that("retractionwatch", {

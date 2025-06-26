@@ -25,7 +25,7 @@ rbox_links <- function(paper) {
 
 #' Retrieve info from ResearchBox by URL
 #'
-#' @param ap_url an ResearchBox URL, or a table containing them (e.g., as created by `rbox_links()`)
+#' @param rb_url an ResearchBox URL, or a table containing them (e.g., as created by `rbox_links()`)
 #' @param id_col the index or name of the column that contains ResearchBox URLs, if id is a table
 #'
 #' @returns a data frame of information
@@ -46,7 +46,7 @@ rbox_retrieve <- function(rb_url, id_col = 1) {
     id_col_name <- colnames(table[id_col])
     raw_urls <- table[[id_col]]
   } else {
-    id_col_name <- "ap_url"
+    id_col_name <- "rb_url"
     raw_urls <- unique(rb_url) |> stats::na.omit()
     table <- data.frame(rb_url = raw_urls)
   }

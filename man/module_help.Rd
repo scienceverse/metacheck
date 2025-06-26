@@ -4,7 +4,7 @@
 \alias{module_help}
 \title{Get Module Help}
 \usage{
-module_help(module)
+module_help(module = NULL)
 }
 \arguments{
 \item{module}{the name of a module or path to a module}

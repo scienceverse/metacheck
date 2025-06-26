@@ -7,9 +7,9 @@
 rbox_retrieve(rb_url, id_col = 1)
 }
 \arguments{
-\item{id_col}{the index or name of the column that contains ResearchBox URLs, if id is a table}
+\item{rb_url}{an ResearchBox URL, or a table containing them (e.g., as created by \code{rbox_links()})}
 
-\item{ap_url}{an ResearchBox URL, or a table containing them (e.g., as created by \code{rbox_links()})}
+\item{id_col}{the index or name of the column that contains ResearchBox URLs, if id is a table}
 }
 \value{
 a data frame of information

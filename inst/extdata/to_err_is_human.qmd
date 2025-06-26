@@ -25,7 +25,7 @@ library(faux)
 set.seed(1243)
 ```
 
-This paper demonstrates some good and poor practices for use with the {papercheck} R package and Shiny app. All data are simulated. The paper shows examples of (1) open and closed OSF links; (2) citation of retracted papers; (3) missing/mismatched citations and references; (4) imprecise reporting of p-values; and (5) use of "marginally significant" to describe non-significant findings.
+This paper demonstrates some good and poor practices for use with the {papercheck} R package and Shiny app. All data are simulated. The paper shows examples of (1) open and closed OSF links; (2) citation of retracted papers; (3) missing/mismatched/incorrect citations and references; (4) imprecise reporting of p-values; and (5) use of "marginally significant" to describe non-significant findings.
 
 ## Introduction
 
@@ -109,3 +109,4 @@ Gino, F., & Wiltermuth, S. S. (2014). Retracted: Evil Genius? How Dishonesty Can
 
 Smith, F. (2021). Human error is a symptom of a poor design. Journal of Journals, 0(0), 0. https://doi.org/10.0000/0123456789
 
+Lakens, D. (2018). Equivalence testing for psychological research. AMPPS, 1, 259-270. https://doi.org/10.1177/2515245918770963
