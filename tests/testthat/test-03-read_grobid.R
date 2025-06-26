@@ -79,6 +79,7 @@ test_that("read_grobid_xml", {
   expect_equal(title, exp)
 })
 
+
 test_that("get_full_text", {
   xml <- read_grobid_xml("examples/0956797613520608.xml")
   body <- get_full_text(xml, "test")
@@ -86,6 +87,13 @@ test_that("get_full_text", {
                 "discussion", "acknowledgement","funding",
                 "annex", "fig", "tab")
   expect_equal(unique(body$section), sections)
+})
+
+test_that("sections", {
+  # sections read in correctly
+  xml <- read_grobid_xml("examples/10.1002_ece3.11050.xml")
+  body <- get_full_text(xml, id = "test")
+  expect_equal(body$section[35:37], rep("method", 3))
 })
 
 test_that("get figures ", {

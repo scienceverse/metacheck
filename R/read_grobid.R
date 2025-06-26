@@ -297,11 +297,12 @@ get_full_text<- function(xml, id = "") {
   # classify headers ----
   back <- !is.na(ft$section)
   back_sections <- ft$section[back]
-  abstract <- grepl("abstract", ft$header, ignore.case = TRUE)
-  intro <- grepl("intro", ft$header, ignore.case = TRUE)
-  method <- grepl("method", ft$header, ignore.case = TRUE)
-  results <- grepl("result", ft$header, ignore.case = TRUE)
-  discussion <- grepl("discuss", ft$header, ignore.case = TRUE)
+  nospace_headers <- gsub("\\s", "", ft$header)
+  abstract <- grepl("abstract", nospace_headers, ignore.case = TRUE)
+  intro <- grepl("intro", nospace_headers, ignore.case = TRUE)
+  method <- grepl("method|material", nospace_headers, ignore.case = TRUE)
+  results <- grepl("result", nospace_headers, ignore.case = TRUE)
+  discussion <- grepl("discuss", nospace_headers, ignore.case = TRUE)
   ft$section <- rep(NA_character_, nrow(ft))
   ft$section[abstract] <- "abstract"
   ft$section[intro] <- "intro"
