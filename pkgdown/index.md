@@ -21,11 +21,11 @@ Inspired by practices in software development, where automated checks
 (e.g., CRAN checks for R packages) are used to identify issues before
 release, Papercheck aims to screen scientific manuscripts to identify
 potential issues or areas for improvement and guide researchers in
-adopting best practices. It also has use as a tool for assisting with
-processing large numbers of papers for metascientific enquiry.
+adopting best practices. It can also assist with processing large
+numbers of papers for metascientific enquiry.
 
-See [Getting Started](articles/papercheck.html) for the basics,
-[articles](articles/) for more detailed examples of what you can do, or
+See [Get Started](articles/papercheck.html) for the basics,
+[Articles](articles/) for more detailed examples of what you can do, or
 our [introductory blog post](articles/intro.html) for a more conceptual
 overview.
 
