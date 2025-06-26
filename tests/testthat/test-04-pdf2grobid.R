@@ -69,14 +69,14 @@ test_that("defaults", {
 
   wrongtitle <- "Equivalence testing for psychological research"
   righttitle <- "Equivalence Testing for Psychological Research: A Tutorial"
-  expect_equal(ref$references$title[[3]], righttitle)
+  expect_equal(ref$references$title[[3]], wrongtitle)
   expect_equal(ref0$references$title[[3]], wrongtitle)
   expect_equal(ref1$references$title[[3]], righttitle)
   expect_equal(ref2$references$title[[3]], wrongtitle)
 
   rightauthors <- "Daniël Lakens, Anne M Scheel, Peder M Isager"
   wrongauthors <- "D Lakens"
-  expect_equal(ref$references$authors[[3]], rightauthors)
+  expect_equal(ref$references$authors[[3]], wrongauthors)
   expect_equal(ref0$references$authors[[3]], wrongauthors)
   expect_equal(ref1$references$authors[[3]], rightauthors)
   expect_equal(ref2$references$authors[[3]], wrongauthors)

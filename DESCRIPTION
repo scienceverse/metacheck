@@ -1,7 +1,7 @@
 Package: papercheck
 Title: Check Scientific Papers for Best Practices
-Version: 0.0.0.9048
-Date: 2025-06-25
+Version: 0.0.0.9049
+Date: 2025-06-26
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -53,7 +53,8 @@ Imports:
     gitcreds,
     roxygen2,
     osfr,
-    rvest
+    rvest,
+    curl
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/papercheck, https://scienceverse.github.io/papercheck/
 BugReports: https://github.com/scienceverse/papercheck/issues

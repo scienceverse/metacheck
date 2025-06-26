@@ -30,7 +30,7 @@ test_that("error", {
   expect_warning(all <- read_grobid("examples"),
                  "The file examples/badxml.xml was not valid XML",
                  fixed = TRUE)
-  expect_equal(length(all), 5)
+  expect_equal(length(all), 6)
 })
 
 test_that("basics", {

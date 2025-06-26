@@ -10,9 +10,9 @@ pdf2grobid(
   grobid_url = "https://kermitt2-grobid.hf.space",
   start = -1,
   end = -1,
-  consolidateCitations = 1,
-  consolidateHeader = 1,
-  consolidateFunders = 1
+  consolidateCitations = 0,
+  consolidateHeader = 0,
+  consolidateFunders = 0
 )
 }
 \arguments{
@@ -22,15 +22,15 @@ pdf2grobid(
 
 \item{grobid_url}{the URL to the grobid server}
 
-\item{start}{the start page of the PDF (defaults to -1 to read all pages)}
+\item{start}{the first page of the PDF to read (defaults to -1 to read all pages)}
 
-\item{end}{the end page of the PDF (defaults to -1 to read all pages)}
+\item{end}{the last page of the PDF to read (defaults to -1 to read all pages)}
 
-\item{consolidateCitations}{whether to use CrossRef to fix/enhance citations}
+\item{consolidateCitations}{whether to fix/enhance citations}
 
-\item{consolidateHeader}{whether to use CrossRef to fix/enhance paper info}
+\item{consolidateHeader}{whether to fix/enhance paper info}
 
-\item{consolidateFunders}{whether to use CrossRef to fix/enhance funder info}
+\item{consolidateFunders}{whether to fix/enhance funder info}
 }
 \value{
 XML object
@@ -39,5 +39,5 @@ XML object
 This function uses a public grobid server maintained by Patrice Lopez. You can set up your own local grobid server following instructions from \url{https://grobid.readthedocs.io/} and set the argument \code{grobid_url} to its path (probably \url{http://localhost:8070})
 }
 \details{
-Consolidation of citations, headers, and funders looks up these items in CrossRef or another database to fix or enhance information. This can slow down conversion. Consolidating headers is only useful for published papers, and can be set to 0 for work in prep.
+Consolidation of citations, headers, and funders looks up these items in CrossRef or another database to fix or enhance information (see \url{https://grobid.readthedocs.io/en/latest/Consolidation/}). This can slow down conversion. Consolidating headers is only useful for published papers, and can be set to 0 for work in prep.
 }

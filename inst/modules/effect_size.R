@@ -1,9 +1,9 @@
 #' Missing Effect Sizes
 #'
 #' @description
-#' Detect t-tests and F-tests  with missing effect sizes
+#' Detect t-tests and F-tests with missing effect sizes
 #'
-#' @author Daniel Laken
+#' @author Daniel Lakens
 #' @author Lisa DeBruine
 #'
 #' @import dplyr

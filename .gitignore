@@ -13,4 +13,5 @@ tests/testthat/pdf
 /Meta/
 /tests/testthat/grobid-test/pdf/
 /data-raw/psychsci/pdf/
+/data-raw/psychsci/*_consolidated
 _stuff/modules-old/sample-size*

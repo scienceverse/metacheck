@@ -11,7 +11,7 @@ test_that("aspredicted_links", {
   links <- aspredicted_links(psychsci)
   expect_equal(names(links)[[1]], "text")
   expect_true(all(grepl("^https://aspredicted\\.org", links$text)))
-  expect_equal(nrow(links), 78)
+  expect_equal(nrow(links), 74)
   expect_equal(links, unique(links))
 
   sentences <- expand_text(links, psychsci)
