@@ -75,6 +75,11 @@ test_that("module_info", {
 })
 
 test_that("module_help", {
+  ml <- capture.output(module_list())
+  mh <- capture.output(module_help())
+  expect_equal(mh, ml)
+
+  # marginal
   help <- module_help("marginal")
 
   title <- "Marginal Significance"
@@ -187,6 +192,8 @@ test_that("osf_check", {
   skip_if_not(osf_api_check() == "ok")
   module <- "osf_check"
 
+  verbose(FALSE)
+
   text <- data.frame(
     text = c("https://osf.io/5tbm9/",
              "https://osf.io/629bx/",
@@ -208,6 +215,8 @@ test_that("osf_check", {
   expect_equal(ids, c("0956797615569001",
                       "0956797615569889",
                       "0956797615583071"))
+
+  verbose(TRUE)
 })
 
 test_that("retractionwatch", {

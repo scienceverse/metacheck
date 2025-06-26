@@ -198,39 +198,7 @@ print.scivrs_paperlist <- function(x, ...) {
   paperlist(NextMethod())
 }
 
-#' Print Module List Object
-#'
-#' @param x The ppchk_module_list object
-#' @param ... Additional parameters for print
-#'
-#' @export
-#' @keywords internal
-#'
-print.ppchk_module_list <- function(x, ...) {
-  txt <- paste0("* ", x$name, ": ", x$description, "\n")
-  cat("", txt)
-}
 
-#' Print Module Output
-#'
-#' @param x The ppchk_module_output object
-#' @param ... Additional parameters for `module_report()`
-#'
-#' @export
-#' @keywords internal
-#'
-print.ppchk_module_output <- function(x, ...) {
-  args <- list(...)
-  args$module_output <- x
-
-  # set defaults
-  if (!"header" %in% names(args)) args$header = ""
-  if (!"maxrows" %in% names(args)) args$maxrows = 20
-  if (!"trunc_cell" %in% names(args)) args$trunc_cell = 100
-
-  txt <- do.call(module_report, args)
-  cat(txt)
-}
 
 
 #' Get demo PDF file

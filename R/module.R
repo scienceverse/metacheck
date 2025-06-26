@@ -214,7 +214,12 @@ module_info <- function(module) {
 #'
 #' @examples
 #' module_help("marginal")
-module_help <- function(module) {
+module_help <- function(module = NULL) {
+  if (is.null(module)) {
+    module_list() |> print()
+    return(invisible(NULL))
+  }
+
   info <- module_info(module)
 
   help <- info[c("title", "description", "details", "examples")]
@@ -222,6 +227,40 @@ module_help <- function(module) {
   class(help) <- "ppchk_module_help"
 
   return(help)
+}
+
+#' Print Module List Object
+#'
+#' @param x The ppchk_module_list object
+#' @param ... Additional parameters for print
+#'
+#' @export
+#' @keywords internal
+#'
+print.ppchk_module_list <- function(x, ...) {
+  txt <- paste0("* ", x$name, ": ", x$description, "\n")
+  cat("", txt, "\nUse `module_help(\"module_name\")` for help with a specific module\n")
+}
+
+#' Print Module Output
+#'
+#' @param x The ppchk_module_output object
+#' @param ... Additional parameters for `module_report()`
+#'
+#' @export
+#' @keywords internal
+#'
+print.ppchk_module_output <- function(x, ...) {
+  args <- list(...)
+  args$module_output <- x
+
+  # set defaults
+  if (!"header" %in% names(args)) args$header = ""
+  if (!"maxrows" %in% names(args)) args$maxrows = 20
+  if (!"trunc_cell" %in% names(args)) args$trunc_cell = 100
+
+  txt <- do.call(module_report, args)
+  cat(txt)
 }
 
 #' Print Module Help Object
