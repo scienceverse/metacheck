@@ -17,17 +17,84 @@ test_that("defaults", {
   skip_if_offline(grobid_server)
 
   filename <- demopdf()
+  first_sentence <- "Although intentional dishonestly might be a successful way to boost creativity"
+  last_sentence <- "We conclude the use of automated checks has potential to reduce the number of mistakes in scientific manuscripts"
 
   xml <- pdf2grobid(filename, NULL)
   expect_s3_class(xml, "xml_document")
+  body <- xml2::xml_find_all(xml, "//body") |> xml2::xml_text()
+  expect_true(grepl(first_sentence, body))
+  expect_true(grepl(last_sentence, body))
 
   file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
+
+  # save to tempdir
   xml_file <- pdf2grobid(filename, tempdir())
   exp <- file.path(tempdir(), "to_err_is_human.xml")
   expect_equal(xml_file, exp)
-
   xml2 <- read_grobid_xml(xml_file)
-  expect_equal(xml, xml2) # fails if when is not identical
+
+  # fails if when is not identical, so remove it
+  when <- "when=\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}\\+0000\""
+  xml_txt <- sub(when, "", xml)
+  xml2_txt <- sub(when, "", xml2)
+  expect_equal(xml_txt, xml2_txt)
+
+  # parameters
+  # https://grobid.readthedocs.io/en/latest/Grobid-service/
+
+  default_params <- list(
+    start=-1,
+    end=-1,
+    consolidateCitations=0, # 0, 1, 2
+    consolidateHeader=0, # 0, 1, 2, 3
+    consolidateFunders=0, # 0, 1, 2
+    includeRawAffiliations=0,
+    includeRawCitations=0,
+    includeRawCopyrights=0,
+    teiCoordinates=list(),
+    segmentSentences=0,
+    generateIDs=0,
+    flavor=NULL # https://grobid.readthedocs.io/en/latest/Grobid-specialized-processes/
+  )
+
+  # reference consolidation
+  ref <- get_refs(xml)
+  xml_cite0 <- pdf2grobid(filename, NULL, consolidateCitations = 0)
+  xml_cite1 <- pdf2grobid(filename, NULL, consolidateCitations = 1)
+  xml_cite2 <- pdf2grobid(filename, NULL, consolidateCitations = 2)
+  ref0 <- get_refs(xml_cite0)
+  ref1 <- get_refs(xml_cite1)
+  ref2 <- get_refs(xml_cite2)
+
+  wrongtitle <- "Equivalence testing for psychological research"
+  righttitle <- "Equivalence Testing for Psychological Research: A Tutorial"
+  expect_equal(ref$references$title[[3]], righttitle)
+  expect_equal(ref0$references$title[[3]], wrongtitle)
+  expect_equal(ref1$references$title[[3]], righttitle)
+  expect_equal(ref2$references$title[[3]], wrongtitle)
+
+  rightauthors <- "Daniël Lakens, Anne M Scheel, Peder M Isager"
+  wrongauthors <- "D Lakens"
+  expect_equal(ref$references$authors[[3]], rightauthors)
+  expect_equal(ref0$references$authors[[3]], wrongauthors)
+  expect_equal(ref1$references$authors[[3]], rightauthors)
+  expect_equal(ref2$references$authors[[3]], wrongauthors)
+
+  # change start and end pages
+  xml3 <- pdf2grobid(filename, NULL, start = 2, end = 3)
+  body <- xml2::xml_find_all(xml3, "//body") |> xml2::xml_text()
+  expect_false(grepl(first_sentence, body))
+  expect_true(grepl("^\\s*Results", body))
+  expect_true(grepl(last_sentence, body))
+
+  xml4 <- pdf2grobid(filename, NULL, start = 2, end = 2)
+  body <- xml2::xml_find_all(xml4, "//body") |> xml2::xml_text()
+  expect_false(grepl(first_sentence, body))
+  expect_true(grepl("^\\s*Results", body))
+  expect_false(grepl(last_sentence, body))
+
+  # clean up
   file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
 })
 

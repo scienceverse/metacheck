@@ -2,15 +2,27 @@
 #'
 #' This function uses a public grobid server maintained by Patrice Lopez. You can set up your own local grobid server following instructions from <https://grobid.readthedocs.io/> and set the argument `grobid_url` to its path (probably <http://localhost:8070>)
 #'
+#' Consolidation of citations, headers, and funders looks up these items in CrossRef or another database to fix or enhance information (see <https://grobid.readthedocs.io/en/latest/Consolidation/>). This can slow down conversion. Consolidating headers is only useful for published papers, and can be set to 0 for work in prep.
+#'
 #' @param filename path to the PDF
 #' @param save_path directory or file path to save to; set to NULL to save to a temp file
 #' @param grobid_url the URL to the grobid server
+#' @param start the first page of the PDF to read (defaults to -1 to read all pages)
+#' @param end the last page of the PDF to read (defaults to -1 to read all pages)
+#' @param consolidateCitations whether to fix/enhance citations
+#' @param consolidateHeader whether to fix/enhance paper info
+#' @param consolidateFunders whether to fix/enhance funder info
 #'
 #' @return XML object
 #' @export
 #'
 pdf2grobid <- function(filename, save_path = ".",
-                       grobid_url = "https://kermitt2-grobid.hf.space") {
+                       grobid_url = "https://kermitt2-grobid.hf.space",
+                       start = -1,
+                       end = -1,
+                       consolidateCitations = 0,
+                       consolidateHeader = 0,
+                       consolidateFunders = 0) {
   # "http://localhost:8070"
   # "https://grobid.work.abed.cloud"
   site_down(grobid_url, "The grobid server %s is not available")
@@ -34,7 +46,17 @@ pdf2grobid <- function(filename, save_path = ".",
     }
 
     xmls <- lapply(filename, \(pdf) {
-      xml <- tryCatch(pdf2grobid(pdf, save_path, grobid_url),
+      args <- list(
+        filename = pdf,
+        save_path = save_path,
+        grobid_url = grobid_url,
+        start = start,
+        end = end,
+        consolidateCitations = consolidateCitations,
+        consolidateHeader = consolidateHeader,
+        consolidateFunders = consolidateFunders
+      )
+      xml <- tryCatch(do.call(pdf2grobid, args),
                       error = function(e) { return(FALSE) })
       if (verbose()) pb$tick()
       xml
@@ -64,8 +86,14 @@ pdf2grobid <- function(filename, save_path = ".",
 
   file <- httr::upload_file(filename)
   post_url <- paste0(grobid_url, "/api/processFulltextDocument")
-  resp <- httr::POST(post_url, body = list(input = file),
-                     encode = "multipart")
+  args <- list(input = file,
+               start = start,
+               end = end,
+               consolidateCitations = consolidateCitations,
+               consolidateHeader = consolidateHeader,
+               consolidateFunders = consolidateFunders,
+               includeRawCitations = 1)
+  resp <- httr::POST(post_url, body = args, encode = "multipart")
 
   # Check if the request was successful
   status <- httr::http_status(resp)
