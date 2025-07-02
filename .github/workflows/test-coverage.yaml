@@ -39,6 +39,7 @@ jobs:
         shell: Rscript {0}
 
       - uses: codecov/codecov-action@v5
+        if: always()
         with:
           fail_ci_if_error: true
           files: ./cobertura.xml
