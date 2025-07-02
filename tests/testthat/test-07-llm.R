@@ -1,5 +1,7 @@
 test_that("exists", {
   expect_true(is.function(llm))
+  skip_on_ci()
+
   skip_on_cran()
   skip_if_offline("api.groq.com")
 

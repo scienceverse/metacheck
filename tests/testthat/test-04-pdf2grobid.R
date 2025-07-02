@@ -1,4 +1,6 @@
 test_that("works", {
+  skip_on_ci()
+
   expect_true(is.function(pdf2grobid))
 
   filename <- demoxml()

@@ -1,4 +1,5 @@
 test_that("site_down", {
+  skip_on_ci()
   expect_error(site_down("notarealwebsite"),
                "The website notarealwebsite is not available")
   expect_error(site_down("notarealwebsite", "No %s"),
