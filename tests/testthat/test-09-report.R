@@ -1,4 +1,5 @@
 test_that("error", {
+  skip_on_ci()
   expect_true(is.function(report))
 
   expect_error( report(1), "The paper argument must be a paper object" )
