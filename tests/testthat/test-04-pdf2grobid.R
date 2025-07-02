@@ -15,6 +15,7 @@ test_that("works", {
 grobid_server <- "kermitt2-grobid.hf.space"
 
 test_that("defaults", {
+  skip_on_ci()
   skip_on_cran()
   skip_if_offline(grobid_server)
 
@@ -101,6 +102,7 @@ test_that("defaults", {
 })
 
 test_that("batch", {
+  skip_on_ci()
   skip_if_offline(grobid_server)
 
   grobid_dir <- demodir()
@@ -122,6 +124,7 @@ test_that("batch", {
 
 
 test_that("local", {
+  skip_on_ci()
   skip_on_cran()
   skip_if_offline("localhost:8070")
   local_url <- "http://localhost:8070"
