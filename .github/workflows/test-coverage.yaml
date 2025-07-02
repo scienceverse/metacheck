@@ -29,7 +29,9 @@ jobs:
           needs: coverage
           cache-version: 1
 
-      - name: Test coverage
+        # this step should be revisited to still publish a report when a test fails
+        # , which is not the case now
+      - name: Test coverage 
         run: |
           cov <- covr::package_coverage(
             quiet = FALSE,
@@ -39,7 +41,6 @@ jobs:
           print(cov)
           covr::to_cobertura(cov)
         shell: Rscript {0}
-        continue-on-error: true
         
       - uses: codecov/codecov-action@v5
         with:
