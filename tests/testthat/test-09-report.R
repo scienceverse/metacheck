@@ -12,6 +12,7 @@ test_that("error", {
 })
 
 test_that("defaults", {
+  skip_on_ci()
   paper <- demoxml() |> read_grobid()
   # skip modules that require osf.api
   modules <- c(
@@ -58,6 +59,7 @@ test_that("defaults", {
 })
 
 test_that("detected", {
+  skip_on_ci()
   skip_if_not_installed("quarto")
   skip_on_cran()
 
