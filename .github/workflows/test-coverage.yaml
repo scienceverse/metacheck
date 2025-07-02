@@ -39,8 +39,9 @@ jobs:
           print(cov)
           covr::to_cobertura(cov)
         shell: Rscript {0}
-
+        
       - name: Debug file list
+        if: always()
         run: ls -R
         shell: bash
 
