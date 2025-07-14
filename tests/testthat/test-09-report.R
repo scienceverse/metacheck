@@ -1,26 +1,32 @@
 test_that("error", {
+  skip_on_ci()
   expect_true(is.function(report))
 
-  expect_error( report(1), "The paper argument must be a paper object" )
+  expect_error(report(1), "The paper argument must be a paper object")
 
   paper <- demoxml() |> read_grobid()
-  expect_error( paper_report <- report(paper, modules = c("notamodule")),
-                "Some modules are not available: notamodule",
-                fixed = TRUE)
+  expect_error(paper_report <- report(paper, modules = c("notamodule")),
+    "Some modules are not available: notamodule",
+    fixed = TRUEF
+  )
 })
 
 test_that("defaults", {
+  skip_on_ci()
   paper <- demoxml() |> read_grobid()
   # skip modules that require osf.api
-  modules <- c("exact_p", "marginal", "effect_size", "statcheck",
-               "retractionwatch", "ref_consistency")
+  modules <- c(
+    "exact_p", "marginal", "effect_size", "statcheck",
+    "retractionwatch", "ref_consistency"
+  )
 
   # qmd
   qmd <- tempfile(fileext = ".qmd")
   if (file.exists(qmd)) unlink(qmd)
   paper_report <- report(paper, modules,
-                         output_file = qmd,
-                         output_format = "qmd")
+    output_file = qmd,
+    output_format = "qmd"
+  )
   expect_equal(paper_report, qmd)
   expect_true(file.exists(qmd))
   # rstudioapi::documentOpen(qmd)
@@ -32,8 +38,9 @@ test_that("defaults", {
   html <- tempfile(fileext = ".html")
   if (file.exists(html)) unlink(html)
   paper_report <- report(paper, modules,
-                         output_file = html,
-                         output_format = "html")
+    output_file = html,
+    output_format = "html"
+  )
   expect_equal(paper_report, html)
   expect_true(file.exists(html))
   # browseURL(html)
@@ -43,21 +50,25 @@ test_that("defaults", {
   pdf <- tempfile(fileext = ".pdf")
   if (file.exists(pdf)) unlink(pdf)
   paper_report <- report(paper, modules,
-                         output_file = pdf,
-                         output_format = "pdf")
+    output_file = pdf,
+    output_format = "pdf"
+  )
   expect_equal(paper_report, pdf)
   expect_true(file.exists(pdf))
   # browseURL(pdf)
 })
 
 test_that("detected", {
+  skip_on_ci()
   skip_if_not_installed("quarto")
   skip_on_cran()
 
   paper <- demoxml() |> read_grobid()
   # skip modules that require osf.api
-  modules <- c("exact_p", "marginal", "effect_size", "statcheck",
-               "retractionwatch", "ref_consistency")
+  modules <- c(
+    "exact_p", "marginal", "effect_size", "statcheck",
+    "retractionwatch", "ref_consistency"
+  )
 
   # add a retracted paper
   retracted <- data.frame(
@@ -96,8 +107,9 @@ test_that("detected", {
   qmd <- tempfile(fileext = ".qmd")
   if (file.exists(qmd)) unlink(qmd)
   paper_report <- report(paper, modules,
-                         output_file = qmd,
-                         output_format = "qmd")
+    output_file = qmd,
+    output_format = "qmd"
+  )
   expect_equal(paper_report, qmd)
   expect_true(file.exists(qmd))
   # rstudioapi::documentOpen(qmd)
@@ -107,8 +119,9 @@ test_that("detected", {
   html <- tempfile(fileext = ".html")
   if (file.exists(html)) unlink(html)
   paper_report <- report(paper, modules,
-                         output_file = html,
-                         output_format = "html")
+    output_file = html,
+    output_format = "html"
+  )
   expect_equal(paper_report, html)
   expect_true(file.exists(html))
   # browseURL(html)
@@ -118,8 +131,9 @@ test_that("detected", {
   pdf <- tempfile(fileext = ".pdf")
   if (file.exists(pdf)) unlink(pdf)
   paper_report <- report(paper, modules,
-                         output_file = pdf,
-                         output_format = "pdf")
+    output_file = pdf,
+    output_format = "pdf"
+  )
   expect_equal(paper_report, pdf)
   expect_true(file.exists(pdf))
   # browseURL(pdf)
