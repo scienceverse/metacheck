@@ -521,7 +521,19 @@ test_that("osf_file_download retry", {
   dl <- osf_file_download(osf_id)
   f <- file.path(getwd(), osf_id)
   expect_true(dir.exists(f))
-
-
   unlink(f, recursive = TRUE)
+
+  # in if (nrow(files) == 0) { : argument is of length zero
+  osf_id <- "t9j8e"
+  dl <- osf_file_download(osf_id)
+  f <- file.path(getwd(), osf_id)
+  expect_false(dir.exists(f))
+
+  # lots of links
+  osf_id <- osf_links(psychsci[1:10])$text
+  dl <- osf_file_download(osf_id, max_file_size = 0.01)
+
+  file.path(getwd(), names(dl)) |> unlink(recursive = TRUE)
 })
+
+
