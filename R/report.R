@@ -11,7 +11,7 @@
 #' @examples
 #' \dontrun{
 #' filename <- demoxml()
-#' paper <- read_grobid(filename)
+#' paper <- read(filename)
 #' report(paper)
 #' }
 report <- function(paper,
@@ -22,7 +22,7 @@ report <- function(paper,
 
   # check paper has required things
   if (!"scivrs_paper" %in% class(paper)) {
-    stop("The paper argument must be a paper object (e.g., created with `read_grobid()`)")
+    stop("The paper argument must be a paper object (e.g., created with `read()`)")
   }
 
   # check if modules are available ----
@@ -146,7 +146,7 @@ report <- function(paper,
 #'
 #' @examples
 #' filename <- demoxml()
-#' paper <- read_grobid(filename)
+#' paper <- read(filename)
 #' op <- module_run(paper, "exact_p")
 #' module_report(op) |> cat()
 module_report <- function(module_output,

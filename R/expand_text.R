@@ -13,12 +13,12 @@
 #'
 #' @examples
 #' # single paper search
-#' paper <- demoxml() |> read_grobid()
+#' paper <- demoxml() |> read()
 #' res_tbl <- search_text(paper, "p =", return = "match")
 #' expanded <- expand_text(res_tbl, paper)
 #'
 #' # multiple paper search
-#' papers <- demodir() |> read_grobid()
+#' papers <- demodir() |> read()
 #' res_tbl <- search_text(papers, "replicate", return = "sentence")
 #' expanded <- expand_text(res_tbl, papers, plus = 1, minus = 1)
 expand_text <- function(results_table,
