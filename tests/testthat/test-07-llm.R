@@ -104,7 +104,7 @@ test_that("sample size", {
   skip_if_offline("api.groq.com")
   skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
-  papers <- read_grobid(demodir())
+  papers <- read(demodir())
   text <- search_text(papers, section = "method", return = "section")
   query <- "What is the sample size of this study (e.g., the number of participants tested?
 

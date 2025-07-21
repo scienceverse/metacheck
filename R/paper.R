@@ -13,10 +13,10 @@ paper <- function(name = "Demo Paper", ...) {
   is_pdf <- isTRUE(grepl("\\.pdf$", name, ignore.case = TRUE))
 
   if (is_xml & file.exists(name)) {
-    paper <- read_grobid(name)
+    paper <- read(name)
   } else if (is_pdf & file.exists(name)) {
     xml <- pdf2grobid(name, ...)
-    paper <- read_grobid(xml)
+    paper <- read(xml)
   } else {
     # make empty paper object
     paper <- list(

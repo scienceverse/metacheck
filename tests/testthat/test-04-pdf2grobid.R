@@ -25,7 +25,7 @@ test_that("defaults", {
 
   xml <- pdf2grobid(filename, NULL)
   expect_s3_class(xml, "xml_document")
-  body <- xml2::xml_find_all(xml, "//body") |> xml2::xml_text()
+  body <- xml2::xml_find_all(xml, "//text") |> xml2::xml_text()
   expect_true(grepl(first_sentence, body))
   expect_true(grepl(last_sentence, body))
 
@@ -35,7 +35,7 @@ test_that("defaults", {
   xml_file <- pdf2grobid(filename, tempdir())
   exp <- file.path(tempdir(), "to_err_is_human.xml")
   expect_equal(xml_file, exp)
-  xml2 <- read_grobid_xml(xml_file)
+  xml2 <- read_xml(xml_file)
 
   # fails if when is not identical, so remove it
   when <- "when=\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}\\+0000\""
@@ -62,13 +62,13 @@ test_that("defaults", {
   )
 
   # reference consolidation
-  ref <- get_refs(xml)
+  ref <- tei_bib(xml)
   xml_cite0 <- pdf2grobid(filename, NULL, consolidateCitations = 0)
   xml_cite1 <- pdf2grobid(filename, NULL, consolidateCitations = 1)
   xml_cite2 <- pdf2grobid(filename, NULL, consolidateCitations = 2)
-  ref0 <- get_refs(xml_cite0)
-  ref1 <- get_refs(xml_cite1)
-  ref2 <- get_refs(xml_cite2)
+  ref0 <- tei_bib(xml_cite0)
+  ref1 <- tei_bib(xml_cite1)
+  ref2 <- tei_bib(xml_cite2)
 
   wrongtitle <- "Equivalence testing for psychological research"
   righttitle <- "Equivalence Testing for Psychological Research: A Tutorial"

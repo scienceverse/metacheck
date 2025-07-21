@@ -1,3 +1,8 @@
+# papercheck 0.0.0.9050
+
+* Added `read()` function, which superceeds `read_grobid()`, `read_cermine()` and `read_text()` (they are still available, but are now just aliases to `read()`). This should work with XML files in TEI (grobid), JATS APA-DTD, NLM-DTD and cermine formats, plus full text-only parsing of .docx and plain text files.
+* Added `osf_file_download()` function, which downloads all files under a project or node and structures them the same as the project.
+
 # papercheck 0.0.0.9049
 
 * Updated `read_grobid()` to classify headers as intro, method, results, discussion with better accuracy (to handle garbled headers)

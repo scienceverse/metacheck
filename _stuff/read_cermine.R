@@ -151,9 +151,9 @@ read_cermine_xml <- function(filename) {
 }
 
 
-#' Get author info from CermineXML
+#' Get author info from Cermine XML
 #'
-#' @param xml The grobid XML
+#' @param xml The cermine XML
 #'
 #' @return an author list
 #' @keywords internal

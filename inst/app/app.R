@@ -148,7 +148,7 @@ server <- function(input, output, session) {
   observeEvent(input$demo, {
     debug_msg("demo")
 
-    p <- list(read_grobid(demoxml()))
+    p <- list(read(demoxml()))
     id <- "to_err_is_human.xml"
     names(p) <- id
     p[[1]]$name <- id
@@ -161,7 +161,7 @@ server <- function(input, output, session) {
   observeEvent(input$batch_demo, {
     debug_msg("batch_demo")
 
-    s <- read_grobid(demodir())
+    s <- read(demodir())
     update_from_paper(s)
   })
 
@@ -178,7 +178,7 @@ server <- function(input, output, session) {
 
         for (i in seq_along(input$load_xml$datapath)) {
           path <- input$load_xml$datapath[[i]]
-          s[[i]] <- read_grobid(path)
+          s[[i]] <- read(path)
           if (i < n) {
             detail <- paste(i+1, "/", n, " (",
                             input$load_xml$name[[i+1]], ")")

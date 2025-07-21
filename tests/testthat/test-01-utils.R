@@ -29,7 +29,7 @@ test_that("demo functions", {
 })
 
 test_that("concat_tables", {
-  papers <- read_grobid(demodir())
+  papers <- read(demodir())
 
   refs <- concat_tables(papers, c("references"))
   expect_equal(nrow(refs), 48)
@@ -52,7 +52,7 @@ test_that("is_paper_list", {
 })
 
 test_that("print.scivrs_paper", {
-  paper <- demoxml() |> read_grobid()
+  paper <- demoxml() |> read()
   op <- capture_output(print(paper))
   op.sv <- capture_output(print.scivrs_paper(paper))
   expected <- "---------------\nto_err_is_human\n---------------\n\nTo Err is Human: An Empirical Investigation\n\n* Sections: 4\n* Sentences: 24\n* References: 2\n* Citations: 2\n"

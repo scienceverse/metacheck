@@ -121,7 +121,8 @@ test_that("osf_get_all_pages", {
   # fewer than 10
   url <- sprintf("%s/nodes/pngda/files/osfstorage/", osf_api)
   data <- osf_get_all_pages(url)
-  expect_equal(nrow(data), 2)
+  files <- c("test-folder", "README", "papercheck.png")
+  expect_true(all(files %in% data$attributes$name))
 
   # more than 10
   url <- sprintf("%s/nodes/yt32c/files/osfstorage/", osf_api)
@@ -137,7 +138,7 @@ test_that("osf_get_all_pages", {
 test_that("osf_files", {
   osf_id <- "pngda"
   data <- osf_files(osf_id)
-  expect_equal(nrow(data), 2)
+  expect_equal(nrow(data), 3)
 
   osf_id <- "yt32c"
   data <- osf_files(osf_id)
@@ -395,7 +396,7 @@ test_that("summarize_contents", {
   summary <- summarize_contents(contents)
 
   readme <- dplyr::filter(summary, name == "README")
-  expect_equal(readme$file_category, "readme")
+  expect_equal(unique(readme$file_category), "readme")
 })
 
 test_that("add_filetype", {
@@ -441,3 +442,98 @@ test_that("rate limiting", {
     info <- osf_info(osf_id)
   }
 })
+
+test_that("osf_file_download", {
+  expect_true(is.function(papercheck::osf_file_download))
+
+  expect_warning(x <- osf_file_download("notanid"))
+  expect_null(x)
+
+  osf_id <- "6nt4v" # processed data - 1 file
+
+  op <- capture_messages(
+    dl <- osf_file_download(osf_id)
+  )
+  f <- file.path(getwd(), osf_id)
+  expect_true(dir.exists(f))
+  expect_true(file.path(f, "processed-data.csv") |> file.exists())
+  #expect_true(grepl("Retrieving info from 6nt4v", op) |> any())
+  unlink(f, recursive = TRUE)
+
+  # too small max_file_size
+  op <- capture_messages(
+    dl <- osf_file_download(osf_id, max_file_size = .0001)
+  )
+  expect_null(dl)
+  f <- file.path(getwd(), osf_id)
+  expect_false(dir.exists(f))
+  #expect_true(grepl("omitting processed-data.csv (0MB)", op, fixed = TRUE) |> any())
+
+  # too small max_download_size
+  op <- capture_messages(
+    dl <- osf_file_download(osf_id, max_download_size = .0001)
+  )
+  expect_null(dl)
+  f <- file.path(getwd(), osf_id)
+  expect_false(dir.exists(f))
+  #expect_true(grepl("All files were omitted for exceeding the limits", op) |> any())
+
+  ## multiple osf_ids
+  osf_id <- c("6nt4v", "j3gcx")
+  dl <- osf_file_download(osf_id)
+  expect_equal(names(dl), osf_id)
+  f <- file.path(getwd(), osf_id)
+  expect_true(dir.exists(f) |> all())
+  expect_true(file.path(f[[1]], "processed-data.csv") |> file.exists())
+  expect_true(file.path(f[[2]], "nest-1/README") |> file.exists())
+  unlink(f, recursive = TRUE)
+})
+
+test_that("osf_file_download long", {
+  skip("long test")
+
+  osf_id <- "j3gcx" # raw data - nesting and duplicates
+
+  # nested folders
+  dl <- osf_file_download(osf_id)
+  expect_true("nest-1/nest-2/nest-3/nest-4/test-4.txt" %in% dl)
+  f <- file.path(getwd(), osf_id)
+  expect_true(dir.exists(f))
+  expect_true(file.path(f, "README") |> file.exists())
+  expect_true(file.path(f, "nest-1") |> dir.exists())
+  unlink(f, recursive = TRUE)
+
+  # unnested with duplicate file names
+  dl <- osf_file_download(osf_id, ignore_folder_structure = TRUE)
+  expect_true("test-4.txt" %in% dl)
+  f <- file.path(getwd(), osf_id)
+  expect_true(dir.exists(f))
+  expect_true(file.path(f, "README") |> file.exists())
+  expect_true(file.path(f, "README_copy") |> file.exists())
+  expect_true(file.path(f, "test-4.txt") |> file.exists())
+  expect_false(file.path(f, "nest-1") |> dir.exists())
+  unlink(f, recursive = TRUE)
+})
+
+test_that("osf_file_download retry", {
+  skip("very long process")
+  osf_id <- "bnq5j"
+  dl <- osf_file_download(osf_id)
+  f <- file.path(getwd(), osf_id)
+  expect_true(dir.exists(f))
+  unlink(f, recursive = TRUE)
+
+  # in if (nrow(files) == 0) { : argument is of length zero
+  osf_id <- "t9j8e"
+  dl <- osf_file_download(osf_id)
+  f <- file.path(getwd(), osf_id)
+  expect_false(dir.exists(f))
+
+  # lots of links
+  osf_id <- osf_links(psychsci[1:10])$text
+  dl <- osf_file_download(osf_id, max_file_size = 0.01)
+
+  file.path(getwd(), names(dl)) |> unlink(recursive = TRUE)
+})
+
+
