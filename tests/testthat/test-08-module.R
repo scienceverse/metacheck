@@ -39,6 +39,12 @@ test_that("errors", {
 
   expect_error(module_run(paper, "modules/code-error.R"),
                "Running the module produced errors")
+
+  expect_error(module_run(paper, "modules/missing-pkg.R"),
+               "notarealpkg")
+
+  expect_error(module_run(paper, "modules/missing-importFrom.R"),
+               "dplyr::notarealfunction")
 })
 
 test_that("module_list", {

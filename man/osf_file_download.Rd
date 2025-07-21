@@ -7,9 +7,9 @@
 osf_file_download(
   osf_id,
   download_to = ".",
-  max_file_size = 1,
-  max_download_size = 10,
-  max_folder_length = 40,
+  max_file_size = 10,
+  max_download_size = 100,
+  max_folder_length = Inf,
   ignore_folder_structure = FALSE
 )
 }
@@ -22,7 +22,7 @@ osf_file_download(
 
 \item{max_download_size}{maximum total size to download (largest files will be omitted until total size is under the limit)}
 
-\item{max_folder_length}{maximum folder name length}
+\item{max_folder_length}{maximum folder name length (set to make sure paths are <260 character on some Windows OS)}
 
 \item{ignore_folder_structure}{if TRUE, download all files into a single folder}
 }

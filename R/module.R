@@ -38,8 +38,10 @@ module_run <- function(paper, module, ...) {
       if (!require(pkg[[1]], quietly = TRUE,
                    warn.conflicts = FALSE,
                    character.only = TRUE,
-                   include.only = arg)) {
-        stop("The '", pkg[[1]], "' package is required but not installed.")
+                   include.only = arg) ||
+          !exists(arg)) {
+        stop("The function '", pkg[[1]], "::", arg,
+             "' is required but not installed.")
       }
     }
   }
@@ -190,6 +192,10 @@ module_info <- function(module) {
     val <- vals[names == n]
     if (length(val) == 1) val <- val[[1]]
     info[[n]] <- val
+  }
+
+  if (is.vector(info$importFrom)) {
+    info$importFrom <- list(info$importFrom)
   }
 
   # get function name
