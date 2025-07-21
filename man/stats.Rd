@@ -19,6 +19,6 @@ Check Stats
 }
 \examples{
 filename <- demoxml()
-papers <- read_grobid(filename)
+papers <- read(filename)
 stats(papers)
 }

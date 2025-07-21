@@ -23,7 +23,7 @@ Report from module output
 }
 \examples{
 filename <- demoxml()
-paper <- read_grobid(filename)
+paper <- read(filename)
 op <- module_run(paper, "exact_p")
 module_report(op) |> cat()
 }

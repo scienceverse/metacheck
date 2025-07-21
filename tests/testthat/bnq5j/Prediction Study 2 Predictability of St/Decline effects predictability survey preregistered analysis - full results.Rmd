@@ -1,0 +1,1323 @@
+---
+title: "Decline Effects Predictability Survey"
+subtitle: "Pre-registered analysis plan, full data"
+author: "James E. Pustejovsky"
+date: '`r Sys.Date()`'
+always_allow_html: true
+output: 
+  html_document:
+    number_sections: true
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, fig.retina = 2, fig.align = "center")
+library(tidyverse)
+library(lubridate)
+library(qualtRics)
+library(ggridges)
+library(patchwork)
+library(wesanderson)
+library(knitr)
+library(kableExtra)
+library(lme4)
+library(clubSandwich)
+options(knitr.kable.na = '-')
+
+pal <- wes_palette("Zissou1", type = "discrete")[c(4,1)]
+```
+
+# Study design
+
+We obtain responses from $N$ participants through Prolific. 
+Each respondent answers six prompts, three of which are sampled at random from among the 16 effects described in the Decline Effects replication study and three of which are sampled at random from among 20 effects selected from other replication studies in the same general field.  
+For each prompt, we collect the following pieces of information:
+
+* The respondent's prediction regarding the _sign_ of the effect
+* The respondent's level of understanding, rated on a scale from 1 ("Not at all well") to 5 ("Very well")
+* The respondent's confidence in their prediction, rated on a scale from 1 ("Not at all sure") to 5 ("Extremely sure")
+* The response time (in seconds) to the sign prediction item
+* The respondent's prediction regarding whether the effect would replicate (yes or no).
+
+Let $Y_{ij}$ be an indicator for whether participant $i$ correctly predicted the sign based on prompt $j$, for $i = 1,...,N$ and $j = 1,...,36$ (noting that only a subset of the $j$'s are observed for each $i$). Let $\mathcal{D}$ denote the set of indices corresponding to decline effects prompts and $\mathcal{C}$ denote the set of indices corresponding to comparison prompts. 
+
+Let $\pi_j = \text{Pr}(Y_{ij} = 1)$ denote the probability (represented as a percentage) that participants can correctly predict the sign of the effect described in prompt $j$, for $j = 1,...,36$, and let 
+$$
+\bar\pi_{\mathcal{D}} = \frac{1}{16}\sum_{j\in\mathcal{D}} \pi_j, \qquad \bar\pi_{\mathcal{C}} = \frac{1}{20}\sum_{j\in\mathcal{C}} \pi_j
+$$
+denote the average predictability of each set of prompts. We aim to test the equivalence of $\bar\pi_{\mathcal{D}}$ and $\bar\pi_{\mathcal{C}}$. Specifically, using a conventional level of $\alpha = .05$, we test the null hypothesis that the average predictability of the Decline Effects prompts exceeds the average predictability of the comparison prompts by a threshold of 5 percentage points or greater: 
+$$
+\mathcal{H}_0: \ \bar\pi_{\mathcal{D}} - \bar\pi_{\mathcal{C}} \geq 5 \qquad \text{vs.} \qquad  \mathcal{H}_A: \ \bar\pi_{\mathcal{D}} - \bar\pi_{\mathcal{C}} < 5.
+$$ 
+
+## Estimation strategy
+
+We test our focal hypothesis by directly estimating each predictability rate $\pi_j$, using the results to calculate the average predictability of each set of prompts, and then testing whether the difference between the Decline Effects prompts and comparison prompts is no more than $\delta_0 = 5$. 
+
+Let $\mathcal{N}_j$ denote the set of respondents who receive prompt $j$ and let $n_j$ denote the size of this set. We take
+$$
+\hat\pi_j = \frac{1}{n_j} \sum_{i \in \mathcal{N}_j} Y_{ij},
+$$
+for $j = 1,...,36$ and then calculate 
+$$
+\hat\pi_{\mathcal{D}} = \frac{1}{16}\sum_{j\in\mathcal{D}} \hat\pi_j, \qquad \hat\pi_{\mathcal{C}} = \frac{1}{20}\sum_{j\in\mathcal{C}} \hat\pi_j
+$$
+and $\hat\delta = \hat\pi_{\mathcal{D}} - \hat\pi_{\mathcal{C}}$. Because each respondent receives multiple prompts, the predictability estimates may be correlated across prompts. We therefore use clustered standard errors (clustering by respondent) to estimate the uncertainty in the predictability rates for each prompt, in the average predictability rates from each set, and in the focal parameter estimate $\hat\delta$.
+
+# Power analysis
+
+## Data-generating process
+
+To examine the power of the focal hypothesis test, we simulated data following a basic (1-parameter) normal ogive item response theory model.
+Under this model, we assume that the prompt responses relate to the predictability rates according to 
+$$
+\text{Pr}(Y_{ij} = 1) = \Phi\left(\gamma_j + \epsilon_i\right),
+$$
+where $\gamma_j$ is the difficulty level of prompt $j$ and $\epsilon_i$ is a respondent-specific error term, included in order to allow respondents to differ in their general skill at predicting the effects. 
+We assume that 
+$$
+\epsilon_i \ \sim \ N(0, \sigma^2),
+$$
+which implies that $\gamma_j = \sqrt{1 + \sigma^2} \times \Phi^{-1}(\pi_j)$.
+
+We further assume that the Comparison Effect prompt probabilities are sampled from a beta distribution with mean $\mu$ and variance $\tau^2$,
+$$
+\pi_j | j \in \mathcal{C} \ \sim \ B\left(\alpha_C, \beta_C\right), \qquad \text{for} \quad \alpha_C = \mu \left(\frac{\mu(1 - \mu)}{\tau^2} - 1\right), \beta_C = (1 - \mu) \left(\frac{\mu(1 - \mu)}{\tau^2} - 1\right).
+$$
+We assume that the Decline Effects prompt probabilities are sampled from a beta distribution with mean $\mu + \delta$ and variance $\tau^2$, with the further restriction that, for every realized set of probabilities, the sample averages differ by exactly $\delta$. 
+We enforce this by taking
+$$
+\pi_j^* | j \in \mathcal{D} \ \sim \ B\left(\alpha_D, \beta_D\right), \qquad \text{for} \quad \alpha_D = (\mu + \delta)\left(\frac{(\mu + \delta)(1 - \mu - \delta)}{\tau^2} - 1\right), \beta_D = (1 - \mu - \delta) \left(\frac{(\mu + \delta)(1 - \mu - \delta)}{\tau^2} - 1\right)
+$$
+and then calculating
+$$
+\pi_j = \pi_j^* - \frac{1}{16}\sum_{j \in \mathcal{D}} \pi_j^* + \delta + \frac{1}{20} \sum_{j \in \mathcal{C}} \pi_j
+$$
+for each $j \in \mathcal{D}$.
+
+The main parameters of the data-generating model are thus:
+
+- $\mu$, the average predictability of the comparison prompts; 
+- $\tau^2$, the between-prompt variance in predictability of the comparison prompts and the Decline Effects prompts;
+- $\delta$, the difference in predictability between the Decline Effects prompts and the comparison prompts; and
+- $\sigma^2$, the between-individual variance in general predictive skill.
+
+## Assumptions 
+
+To determine an adequate sample size for this study, we need to make assumptions regarding the parameters of the data-generating process, including $\mu$, $\tau^2$, $\sigma^2$, and $\delta$. We will determine power under the assumption that the Decline Effects prompts have average predictability that is exactly equal to the comparison prompts, so $\delta = 0$. Further, we will use a threshold of equivalence of 5 percentage points, as noted above. It remains to determine $\mu$, $\tau^2$, and $\sigma^2$. 
+
+To inform our assumptions about these parameters, we use data from a prior study, conducted by Hoogeveen and colleagues, which examined the lay public's ability to predict replicability of findings. This study focused on predicting replication success, and so it is not exactly aligned with the present survey's focus on predicting the sign of effects. The Hoogeveen study also differed in that each respondent provided predictions for each of 27 prompts, whereas the present survey asks each respondent to make predictions for a randomly selected subsample of prompts. However, in our view, the Hoogeveen study is nonetheless similar enough in structure and content to inform our power analysis assumptions. 
+
+We estimate a 1-parameter normal ogive item response theory model using the primary analytic sample of Hoogeveen, controlling for whether respondents were given prompts with statistical information (in the form of Bayes factors for study results) or only a description of the effect. 
+
+```{r}
+responses_with_results <- readRDS("Hoogeveen/cleaned response data.rds")
+
+NO_1PL <- glmer(correct ~ 0 + condition + (1 | ID) + (1 | StudyID),
+                data = responses_with_results,
+                family = binomial(link = "probit"))
+summary(NO_1PL)
+beta <- fixef(NO_1PL)
+omega <- getME(NO_1PL, "theta")[["StudyID.(Intercept)"]]
+sigma <- getME(NO_1PL, "theta")[["ID.(Intercept)"]]
+
+pi_vals <- pnorm(beta / sqrt(1 + sigma^2))
+dpi_dgamma <- dnorm(beta / sqrt(1 + sigma^2)) / sqrt(1 + sigma^2)
+tau <- omega * dpi_dgamma
+```
+
+The estimates of average item difficulties correspond to average predictability rates of `r round(pi_vals[["conditionBayes factor"]],2)` when respondents are provided with Bayes factors and 
+`r round(pi_vals[["conditionDescription only"]],2)` when respondents are provided only with effect descriptions. The estimated between-individual variance is $\hat\sigma^2 = `r round(sigma^2,3)`$. The estimated between-item variance is $\hat\omega^2 = `r round(omega^2,3)`$; however, this variance is on the scale of the item difficult parameters rather than a raw probability. Using a delta-method approximation, $\hat\omega^2$ corresponds to a between-item variance of $\hat\tau^2 = `r round(tau[["conditionDescription only"]]^2, 3)`$ on the probability scale. 
+
+Informed by these estimates, we examined power under conditions where $\mu \in \{0.2, 0.3, 0.4, 0.5\}$, where $\tau^2 \in \{0.01, 0.0225, 0.04, 0.0625\}$, and where $\sigma^2 \in \{0.0004, 0.0016, 0.01, 0.04\}$. 
+We simulated total samples ranging from $N = 200$ to $3000$, using 500 replications per condition. 
+We estimated power rates for other sample sizes by interpolating the simulated power rates based on a generalized linear model with probit link function, where power is modeled as a function of $\sqrt{N}$ with a unique slope for each combination of the other design factors. 
+
+## Power
+
+The figure below depicts the total sample size required to attain selected power levels for given values of $\mu$, $\sigma^2$, and $\tau^2$. Colors correspond to target power levels of 80% (red), 90% (green), or 95% (blue). It can be seen that the required sample size is largest (because power is lowest) when $\mu = 0.5$. 
+
+```{r}
+
+sim_results <- 
+  readRDS(file = "Power calculations/simulated power rates.rds") %>%
+  mutate(
+    mu_fac = factor(mu),
+    sigmasq_fac = paste("sigma^2 ==", formatC(sigmasq, format = "f")),
+    sigmasq_fac = factor(sigmasq_fac, levels = paste("sigma^2 ==", c("0.0004", "0.0016", "0.0100", "0.0400"))),
+    tausq_fac = factor(paste("tau^2 ==", tausq))
+  )
+
+power_fit <- glm(
+  reject ~ mu_fac * tausq_fac * sigmasq_fac * Coef * I(sqrt(N)),
+  data = sim_results,
+  family = binomial(link = "probit"),
+  weights = reps
+)
+
+power_predictions <- 
+  sim_results %>%
+  select(-mean, -sd, -reject, -N, -reps) %>%
+  distinct() %>%
+  crossing(N = seq(10,3000,10)) %>%
+  mutate(
+    power = predict(power_fit, newdata = ., type = "response")
+  ) %>%
+  left_join(sim_results)
+
+# power_predictions %>%
+#   filter(!is.na(reject), Coef == "marginal", p_c == 3) %>%
+#   ggplot(aes(x = power, y = reject, color = factor(mu))) +
+#   geom_abline(slope = 1) +
+#   geom_point() +
+#   facet_grid(tausq_fac ~ sigmasq_fac)
+
+# power_predictions %>%
+#   filter(!is.na(reject), Coef == "marginal", p_c == 3) %>%
+#   ggplot(aes(x = N, y = reject, color = factor(mu))) +
+#   geom_point() + geom_line() +
+#   facet_grid(tausq_fac ~ sigmasq_fac)
+
+
+required_sample_sizes <- 
+  power_predictions %>% 
+  group_by(mu, sigmasq, tausq, sigmasq_fac, tausq_fac, Coef) %>%
+  summarise(
+    N_80 = min(N[power > 0.80]),
+    N_90 = min(N[power > 0.90]),
+    N_95 = min(N[power > 0.95]),
+    .groups = "drop"
+  ) %>%
+  pivot_longer(starts_with("N_"), names_to = "power", values_to = "N") %>%
+  mutate(power = str_sub(power, 3,-1))
+
+sample_size_table <- 
+  required_sample_sizes %>%
+  filter(Coef == "marginal") %>%
+  select(-Coef, -sigmasq_fac, -tausq_fac) %>%
+  pivot_wider(names_from = power, values_from = N, names_prefix = "Power = ")
+
+sample_req <- 
+  required_sample_sizes %>%
+  filter(Coef == "marginal", 0.2 < mu, mu < 0.4) %>%
+  group_by(power) %>%
+  summarise(N = max(N)) %>%
+  pivot_wider(names_from = power, values_from = N, names_prefix = "N_")
+
+```
+
+```{r req-sample-size, fig.width = 8, fig.height = 8, out.width = "\\linewidth"}
+
+required_sample_sizes %>%
+  filter(Coef == "marginal") %>%
+  ggplot(aes(mu, N, color = power)) + 
+  geom_point() + geom_line() + 
+  geom_hline(yintercept = 0) + 
+  scale_color_discrete(type = wes_palette("Darjeeling1", type = "continuous")) + 
+  facet_grid(tausq_fac ~ sigmasq_fac, labeller = "label_parsed") + 
+  theme_minimal() + 
+  labs(x = expression(mu))
+```
+
+
+The table below displays the minimum required sample size for the focal hypothesis test, under the assumption of $\mu = 0.3$. Using the most cautious assumptions regarding $\sigma^2$ and $\tau^2$, we require $N = `r sample_req$N_95`$ participants to ensure 95% power, $N = `r sample_req$N_90`$ to ensure 90% power, or $N = `r sample_req$N_80`$ to ensure 80% power. Based on this a priori power analysis, we set a target sample size of $N = 1200$ respondents (after excluding any ineligible respondents).
+
+```{r sample-size-table}
+
+sample_size_table %>%
+  filter(0.2 < mu, mu < 0.4) %>%
+  select(-mu) %>% 
+  kable(
+    col.names = c("$\\sigma^2$","$\\tau^2$", paste0("Power = ", c(80,90,95), "%")),
+    caption = "Minimum required sample size, $\\mu = 0.3$",
+    escape = FALSE
+  ) %>%
+  kable_styling(bootstrap_options = c("striped","condensed"), full_width = FALSE)
+```
+
+# Preliminary analysis
+
+```{r}
+
+# Read in Decline Effects results
+decline_effects <- 
+  read_csv("../Decline Effect Data.csv") %>%
+  select(study:selfrep, se1750, se2750, notes) %>%
+  filter(is.na(notes) | notes == "acceptability") %>%
+  mutate(
+    N = if_else(N==0, as.numeric(NA), N)
+  )
+
+ES_experiments <- 
+  decline_effects %>%
+  rename(s1750 = se1750, s2750 = se2750) %>%
+  select(study, secondfirst:selfrep, contains("750")) %>%
+  gather("key","value", contains("750")) %>%
+  separate(key, into = c("stat","half","key","group"), sep = c(1,2,5)) %>%
+  select(-key) %>%
+  unite("stat", stat, group, sep = "") %>%
+  spread(stat, value) %>%
+  rename(se = s) %>%
+
+# Calculate sampling variances
+  mutate(
+    study = str_remove(study, " "),
+    v_basic = 1 / ne + 1 / nc + d^2 / (2 * (n - 2)),
+    v = if_else(is.na(se), v_basic, se^2)
+  ) %>%
+  group_by(origlab, study, replab, wave) %>%
+  summarise(
+    k = n(),
+    d = mean(d),
+    v = sum(v) / k^2,
+    n = sum(n)
+  ) %>%
+  ungroup() 
+
+ES_pooled <-
+  ES_experiments %>%
+  mutate(
+    indep_rep = if_else(origlab == replab, "original","independent")
+  ) %>%
+  group_by(study, indep_rep) %>%
+  summarise(
+    d = mean(d),
+    se = sqrt(sum(v)) / n(),
+    n = sum(n),
+    .groups = "drop"
+  ) %>%
+  pivot_wider(names_from = indep_rep, values_from = c(d, se, n)) 
+```
+
+```{r}
+#-------------------------------------------------------------------------------
+# Read in survey data, limit to relevant variables 
+
+prompt_labels <- 
+  read_csv("Raw data/PostDecline Survey Loop Items.csv") %>%
+  select(
+    effect = `Survey Code`, source = `Replication Source`,
+    prompt = `Decline Effect (coded 1) or not (coded 0)`,
+    replicated = `Replicated? (1 = Yes, 2 = No)`,
+    correct_initial = `Correct Answer (Based on the Initial Study)`,
+    correct_replication = `Correct Answer (Based on the Aggregated Replications)`,
+    d_source = `Original d`,
+    d_replication = `Replication d`,
+    notes = `Notes?`
+  ) %>%
+  mutate(
+    prompt = recode(prompt, `1` = "Decline", `0` = "Comparison"),
+    effect = str_remove(effect, "Decline"),
+    across(starts_with("correct"), ~ str_sub(., -1, -1)),
+    notes = recode(notes, .missing = ""),
+    d_source = if_else(str_detect(notes, "d is a q-statistic"), NA_real_, d_source),
+    d_replication = if_else(str_detect(notes, "d is a q-statistic"), NA_real_, d_replication)
+  ) %>%
+  left_join(ES_pooled, by = c(effect = "study")) %>%
+  mutate(
+    d_original = if_else(is.na(d_original), d_source, d_original),
+    d_independent = if_else(is.na(d_independent), d_replication, d_independent),
+    d_abs_original = abs(d_original),
+    d_abs_independent = abs(d_independent)
+  )
+
+predict_survey <- 
+  read_survey("Raw data/Decline Effect Generalizability - full data.csv") %>%
+  select(
+    StartDate, EndDate,  
+    Finished, serious,
+    Duration = `Duration (in seconds)`, Finished, ResponseId, 
+    screener, phd_studies, university_studies, education,
+    matches("^prediction_decline[123](\\.|$)"), matches("vigpred_decline[1-3]_tm_Page Submit"), 
+    matches("^replication_decline[123]"), 
+    starts_with("understand_decline"), starts_with("confidence_decline"),
+    matches("^prediction_other[123]$"), matches("vigpred_other[1-3]_tm_Page Submit"),
+    matches("^replication_other[123]"), 
+    starts_with("understand_other"), starts_with("confidence_other"),
+    starts_with("Effect"), 
+  ) %>%
+  rename(
+    effect_decline1 = Effect1, effect_decline2 = Effect2, effect_decline3 = Effect3,
+    effect_other1 = Effect4, effect_other2 = Effect5, effect_other3 = Effect6
+  ) %>%
+  rename_with(
+    .fn = ~ paste0("timing_", str_sub(.x, 9, -16)), starts_with("vigpred_")
+  ) %>%
+  mutate(
+    screener = recode(screener, `1` = "PhD in Psychology (exclude)", `5` = "No PhD in Psychology"),
+    screener = fct_rev(screener),
+    Finished = recode(Finished, `1` = "yes (passed Captcha)", .default = "no (failed Captcha)"),
+    serious = recode(serious, `1` = "Yes", `0` = "No"),
+    StartDate = parse_date_time(StartDate, "Ymd HMS")
+  ) %>%
+  # Limit to Prolific respondents during full data collection period
+  filter(StartDate >= ymd("2022-12-12"))
+
+```
+
+Based on a priori power analysis, we planned to collect data from a total of 1200 respondents who meet inclusion criteria. 
+We obtained a total of `r nrow(predict_survey)` partial or complete responses to the survey. 
+
+## Inclusion criteria
+
+The analysis is based on data from respondents who meet all of the following criteria:
+
+* indicate that they do not hold a Ph.D. in Psychology;
+* pass the Captcha at the end of the survey;
+* indicate at the end of the survey that they provided serious responses (not agreeing with "I have just clicked through, please throw my data away.").
+
+The following table displays the number of respondents meeting each combination of criteria.
+
+```{r}
+predict_survey %>% 
+  group_by(screener, Finished, serious) %>%
+  count() %>%
+  ungroup() %>%
+  rename(Screener = screener, Serious = serious, Respondents = n) %>%
+  kable() %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped","condensed"))
+```
+```{r}
+#-------------------------------------------------------------------------------
+# Apply exclusion criteria
+# Exclude respondents who do not pass screener
+# Exclude captcha failures
+# Exclude respondents indicating they were not serious ("I have just clicked through, please throw my data away.")
+
+predict_survey <- 
+  predict_survey %>%
+  filter(
+    screener == "No PhD in Psychology",
+    Finished == "yes (passed Captcha)",
+    serious == "Yes"
+  ) %>% 
+  select(-screener, -Finished, -serious)
+
+#-------------------------------------------------------------------------------
+# Transform to long
+
+predict_survey_long <- 
+  predict_survey %>%
+  pivot_longer(
+    matches("_(decline|other)[1-3]$"), names_to = c(".value","prompt"), names_pattern = "(.+)_(decline|other)[1-3]"
+  ) %>%
+  mutate(
+    across(c(education, prediction, replication, understand, confidence), ~ recode(.x, `9999` = NA_real_)),
+    prompt = recode(prompt, decline = "Decline", other = "Comparison"),
+    effect = str_remove(effect, "Decline"),
+    effect = recode(effect, Label = "Labels"),
+    # Reverse coding of understanding, so that 5 = "Extremely well", 1 = "Not at all well" 
+    understand = 6 - understand,
+    ResponseId_timing = fct_reorder(ResponseId, timing, .fun = median),
+    ResponseId_understand = fct_reorder(ResponseId, understand, .fun = mean),
+    effect_timing = fct_reorder(effect, timing, .fun = median),
+    effect_understand = fct_reorder(effect, understand, .fun = mean)
+  ) %>%
+  left_join(prompt_labels, by = c("prompt", "effect")) %>%
+  mutate(
+    correct = prediction == correct_replication,
+    correct_repl = replication == replicated,
+    repl_prediction = 2 - replication,
+    conf_dir = (2 * correct - 1) * (5 - confidence)
+  )
+  
+#-------------------------------------------------------------------------------
+# Respondent-level and prompt-level summaries
+
+predict_respondent_summary <- 
+  predict_survey_long %>%
+  group_by(ResponseId, ResponseId_timing, ResponseId_understand) %>%
+  summarise(
+    timing = median(timing),
+    understand = mean(understand),
+    correct = mean(correct),
+    conf_dir = mean(conf_dir),
+    .groups = "drop"
+  )
+
+predict_prompt_summary <- 
+  predict_survey_long %>%
+  group_by(prompt, effect, effect_timing, effect_understand) %>%
+  summarise(
+    timing = median(timing),
+    understand = mean(understand),
+    correct = mean(correct),
+    conf_dir = mean(conf_dir),
+    .groups = "drop"
+  )
+
+```
+
+After applying these inclusion criteria, we have a total sample size of $N = `r nrow(predict_survey)`$.
+
+## Response times
+
+For our primary analysis, we did not plan to exclude any data based on response times. However, we planned to conduct sensitivity analysis after excluding respondents with very short median response times to the study prompts.
+
+The following plot depicts the distribution of completion times for the full survey. About `r round(100 * mean(predict_survey$Duration / 60 < 2))`% of respondents completed the survey in under 2 minutes; about `r round(100 * mean(predict_survey$Duration / 60 < 3))`% completed the survey in under 3 minutes.
+
+```{r, fig.width = 5, fig.height = 2}
+
+#-------------------------------------------------------------------------------
+# Response time analysis
+
+ggplot(predict_survey, aes(Duration / 60)) + 
+  geom_density(alpha = 0.5, fill = "red") + 
+  geom_rug(alpha = 0.15) + 
+  theme_minimal() + 
+  labs(x = "Full survey completion time (minutes)", y = "")
+```
+
+The following plot depicts the item-level response times for each participant (upper plot), as well as the distribution of respondents' median response times (lower plot). About `r round(100 * mean(predict_respondent_summary$timing < 4))`% of respondents had a median response time of less than 4 seconds. About `r round(100 * mean(predict_respondent_summary$timing < 8))`% of respondents had a median response time of less than 8 seconds.
+
+```{r, fig.width = 5, fig.height = 8}
+
+item_RT_plot <- 
+  ggplot(predict_survey_long, aes(timing, ResponseId_timing)) + 
+  geom_point() + 
+  geom_point(data = predict_respondent_summary, color = "red") + 
+  theme_minimal() + 
+  scale_y_discrete(breaks = NULL) + 
+  scale_x_continuous(breaks = 2^(1:10), limits = c(1, 624)) + 
+  coord_trans(x = "log2") + 
+  labs(x = "Prompt completion time (seconds)", y = "Respondent")
+
+median_RT_plot <- 
+  ggplot(predict_respondent_summary, aes(timing)) + 
+  geom_density(alpha = 0.5, fill = "red") +
+  geom_rug() + 
+  theme_minimal() + 
+  scale_x_continuous(breaks = 2^(1:10), limits = c(1, 624)) + 
+  scale_y_continuous(breaks = NULL) + 
+  coord_trans(x = "log2") + 
+  labs(x = "Median prompt completion time (seconds)", y = "")
+
+item_RT_plot / median_RT_plot + 
+  plot_layout(heights = c(4, 1))
+
+```
+
+## Item comprehension
+
+In addition to the inclusion criteria described above, we also excluded responses to specific items that participants indicated they did not understand. The following plot depicts the level of understanding of each respondent to each item (upper plot) and the distribution of respondents' average levels of understanding (lower plot).
+
+```{r, fig.width = 5, fig.height = 8}
+item_understand_plot <- 
+  ggplot(predict_survey_long, aes(understand, ResponseId_understand)) + 
+  geom_point(alpha = 0.15) + 
+  geom_point(data = predict_respondent_summary, color = "purple") + 
+  theme_minimal() + 
+  scale_y_discrete(breaks = NULL) + 
+  scale_x_continuous(limits = c(1,5), breaks = c(1,3,5), minor_breaks = NULL, labels = c("Not at all well","Moderately","Extremely well")) + 
+  labs(x = "How well did you understand\nthe study description you just read?", y = "Respondent")
+
+mean_understand_plot <- 
+  ggplot(predict_respondent_summary, aes(understand)) + 
+  geom_density(alpha = 0.5, fill = "purple") +
+  theme_minimal() + 
+  scale_x_continuous(limits = c(1,5), breaks = c(1,3,5), minor_breaks = NULL, labels = c("Not at all well","Moderately","Extremely well")) + 
+  scale_y_continuous(breaks = NULL) + 
+  labs(x = "Mean understanding rating", y = "")
+
+item_understand_plot / mean_understand_plot + 
+  plot_layout(heights = c(4, 1))
+
+```
+
+```{r}
+#-------------------------------------------------------------------------------
+# Exclude respondents with low levels of understanding (mean understanding >= 4)
+# Exclude item-level responses indicating dont understand (Understand == 5)
+
+
+n_excluded <- sum(predict_respondent_summary$understand <= 2)
+
+understand_counts <- 
+  predict_survey_long %>%
+  group_by(ResponseId) %>%
+  filter(
+    mean(understand) > 2
+  ) %>%
+  group_by(ResponseId, understand) %>%
+  count() %>%
+  group_by(understand) %>%
+  summarise(
+    responses = sum(n),
+    respondents = n()
+  )
+
+understand_items_excluded <- filter(understand_counts, understand == 1)
+
+predict_respondent_summary_stats <- 
+  predict_respondent_summary %>%
+  select(ResponseId, timing_med = timing, understand_mn = understand)
+
+predict_analytic <- 
+  predict_survey_long %>%
+  group_by(ResponseId) %>%
+  filter(
+    understand > 1, 
+    mean(understand) > 2
+  ) %>% 
+  ungroup() %>%
+  left_join(predict_respondent_summary_stats, by = "ResponseId")
+
+```
+
+We apply two criteria related to participant understanding. 
+First, we excluded all data from participants whose mean level of understanding was 2 ("slightly") or lower. 
+This resulted in exclusion of `r if_else(n_excluded > 1, paste(n_excluded, "respondents"), "1 respondent")`. 
+Second, we exclude responses to specific _items_ if the respondent indicated the lowest level of understanding ("Not at all well"). 
+This resulted in exclusion of an additional `r understand_items_excluded$responses` responses from `r understand_items_excluded$respondents` unique respondents. 
+The following table reports the number of respondents by the number of prompts to which they replied, after applying all exclusion criteria.
+
+```{r}
+predict_analytic %>%
+  count(ResponseId, name = "Prompts") %>%
+  count(Prompts, name = "N") %>%
+  mutate(`%` = round(100 * N / sum(N))) %>%
+  kable() %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped","condensed"))
+
+```
+
+## Respondent characteristics
+
+The following table summarizes the self-reported background characteristics of respondents after applying all inclusion and exclusion criteria.
+
+```{r}
+ed_labels <- c(
+  `0` = "Less than 1st grade",
+  `1` = "1st, 2nd, 3rd or 4th grade",
+  `2` = "5th or 6th grade",
+  `3` = "7th or 8th grade",
+  `4` = "9th grade",
+  `5` = "10th grade",
+  `6` = "11th grade",
+  `7` = "12th grade, no diploma",
+  `8` = "High school graduate, high school diploma or the equivalent",
+  `9` = "Some college but no degree",
+  `10` = "Associate degree in college",
+  `11` = "Bachelor's degree",
+  `12` = "Master's degree",
+  `13` = "Professional School Degree",
+  `14` = "Doctorate degree"
+)
+
+predict_char <-
+  predict_analytic %>%
+  select(ResponseId, education, university_studies, phd_studies) %>%
+  distinct() %>%
+  mutate(
+        education = factor(education, levels = 0:14, labels = ed_labels),
+        university_studies = recode(university_studies, `1` = "Yes", `0` = "No"),
+    phd_studies = recode(phd_studies, `1` = "Yes", `0` = "No"),
+  )
+
+phd_studies <- 
+  predict_char %>%
+  count(cat = phd_studies) %>%
+  mutate(
+    var = "Are you currently enrolled in a PhD program in psychology at a college or university?",
+  )
+
+university_studies <- 
+  predict_char %>%
+  count(cat = university_studies) %>%
+  mutate(
+    var = "Have you ever taken a college or university course in psychology?",
+  )
+
+education <- 
+  predict_char %>%
+  count(cat = education) %>%
+  mutate(
+    var = "What is the highest level of school you have completed or the highest degree you have received?",
+  )
+
+
+N <- nrow(predict_char)
+
+
+bind_rows(education, university_studies, phd_studies) %>%
+  select(var, cat, n) %>%
+  mutate(pct = round(100 * n / N, 1)) %>%
+  kable(col.names = c("Characteristic","Category","N","%")) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped","condensed")) %>%
+  collapse_rows(1, valign = "top")
+
+```
+
+
+# Results 
+
+## Primary outcome
+
+Our primary outcome analysis examined whether respondents could correctly predict the sign of the effect described in each prompt. We estimated prompt-specific percentages as described in Section 1.1. The following figure depicts the percentage of correct predictions by prompt. Prompts are ordered from most to least predictable, and the final two lines depict the average percentage of correct predictions across all Decline Effects and Comparison Effects prompts, respectively.
+
+```{r, fig.width = 7, fig.height = 8.5}
+#-------------------------------------------------------------------------------
+# Primary analysis: Percent correct predictions
+
+analyze_effects <- function(dat, outcome, level = 0.90, units = "points", digits = 2, exponentiate = FALSE, delta = NULL) {
+
+  frml <- substitute(y ~ 0 + effect, list(y=substitute(outcome)))
+  lm_fit <- lm(frml, data = dat)
+  
+  effect_summary <- 
+    conf_int(lm_fit, vcov = "CR2", cluster = dat$ResponseId, level = level) %>%
+    as_tibble() %>%
+    mutate(
+      effect = str_sub(Coef, 7, -1),
+      n = df + 1
+    ) %>%
+    left_join(prompt_labels, by = "effect") %>%
+    select(prompt, effect, n, beta, CI_L, CI_U, source, replicated, starts_with("correct")) %>%
+    mutate(
+      effect_ord = fct_reorder(effect, beta)
+    )
+  
+  DE <- effect_summary$prompt == "Decline"
+  contrast_mats <- matrix(c(DE / sum(DE), (1 - DE) / sum(1 - DE), DE / sum(DE) - (1 - DE) / sum(1 - DE)), nrow = 3, byrow = TRUE)
+  rownames(contrast_mats) <- c("All Decline effects", "All Comparison effects", "Decline - Comparison")
+  
+  prompt_summary <- 
+    linear_contrast(
+      lm_fit, vcov = "CR2", cluster = dat$ResponseId, 
+      contrasts = contrast_mats, level = level
+    ) %>%
+    as_tibble() %>%
+    select(effect = Coef, beta = Est, SE, df, CI_L, CI_U) %>%
+    mutate(
+      prompt = if_else(effect == "Decline - Comparison", NA_character_, str_sub(effect, 5, -9)),
+      effect_ord = fct_reorder(effect, beta)
+    )
+
+  if (!is.null(delta)) {
+    diff <- prompt_summary %>% filter(effect == "Decline - Comparison")
+    tstat <- (diff$beta - delta) / diff$SE
+    pval <- pt(tstat, df = diff$df)
+    prompt_summary$diff_df <- c(NA, NA, diff$df)
+    prompt_summary$tstat <- c(NA, NA, tstat)
+    prompt_summary$pval <- c(NA, NA, pval)
+  }
+  
+  res <- bind_rows(prompt_summary, effect_summary) 
+  
+  if (exponentiate) {
+    res <- res %>%
+      mutate(
+        across(c(beta, CI_L, CI_U), exp)
+      )
+  } 
+  
+  res %>%
+    mutate(
+      est_CI = paste0(
+        formatC(beta, format = "f", digits = digits), " ",units, ", ", 
+        100 * level, "% CI: [", 
+        formatC(CI_L, format = "f", digits = digits), ", ", 
+        formatC(CI_U, format = "f", digits = digits), "]"
+      )
+    )
+    
+}
+
+pct_correct <- 
+  analyze_effects(predict_analytic, 100 * correct, units = "percentage points", digits = 1, delta = 5) %>%
+  mutate(
+    analysis = "primary analysis",
+    outcome = "percent correct"
+  )
+
+pct_correct %>%
+  filter(!is.na(prompt)) %>%
+  mutate(x = recode(prompt, Decline = 0, Comparison = 80)) %>%
+ggplot(aes(beta, effect_ord, color = prompt)) + 
+  geom_pointrange(aes(xmin = CI_L, xmax = CI_U)) + 
+  geom_text(
+    aes(x = x, label = effect_ord, hjust = (1 - (x - 0) / (80 - 0))),
+    nudge_y = 0.1
+  ) + 
+  theme_minimal() + 
+  scale_y_discrete(breaks = NULL) + 
+  scale_x_continuous(breaks = seq(10,70,10), limits = c(-30,120)) + 
+  scale_fill_discrete(type = pal) + 
+  scale_color_discrete(type = pal) + 
+  labs(x = "Percent correctly predicting sign of effect (90% CI)", y = "") + 
+  theme(legend.position = "none")
+
+pct_correct_p <- 
+  pct_correct %>% 
+  filter(effect == "Decline - Comparison") %>% 
+  pull(pval)
+  
+pct_correct_p <- ifelse(pct_correct_p < .0001, "< .0001", paste("=", formatC(pct_correct_p, digits = 4, format = "f")))
+```
+
+Based on our pre-specified analysis plan, we estimate that the average predictability of Decline Effect prompts differed from that of the Comparison Effect prompts by `r pct_correct %>% filter(effect == "Decline - Comparison") %>% pull(est_CI)`. Under the null of $\delta_0 = 5$, this result corresponds to $t(`r pct_correct %>% filter(effect == "Decline - Comparison") %>% pull(diff_df)`) = `r pct_correct %>% filter(effect == "Decline - Comparison") %>% pull(tstat)`$, $p `r pct_correct_p`$.
+
+## Directional confidence scores
+
+As a secondary outcome, we repeated the analysis using directional confidence scores as the outcome. We calculated directional confidence scores by multiplying the self-reported confidence level (shifted by 1) by -1 if the respondent's prediction for sign of the effect was incorrect and +1 if the respondent's prediction was correct. This yielded a scale ranging from -4 (very confident, incorrect prediction) to +4 (very confident, correct prediction), with a mid-point of 0 (not at all confident). The following figure depicts the average directional confidence scores by prompt, with the overall average levels in the final two rows.
+
+```{r, fig.width = 7, fig.height = 8.5}
+
+conf_dir <- 
+  analyze_effects(predict_analytic, conf_dir) %>%
+  mutate(
+    analysis = "primary analysis",
+    outcome = "directional confidence"
+  )
+
+conf_dir %>%
+  filter(!is.na(prompt)) %>%
+  mutate(x = recode(prompt, Decline = -3, Comparison = 2)) %>%
+  ggplot(aes(beta, effect_ord, color = prompt)) + 
+  geom_vline(xintercept = 0) + 
+  geom_pointrange(aes(xmin = CI_L, xmax = CI_U)) + 
+  geom_text(
+    aes(x = x, label = effect_ord, hjust = (1 - (x - -3) / (2 - -3))),
+    nudge_y = 0.1
+  ) + 
+  theme_minimal() + 
+  scale_fill_discrete(type = pal) + 
+  scale_color_discrete(type = pal) + 
+  scale_y_discrete(breaks = NULL) + 
+  scale_x_continuous(breaks = seq(-3, 2), minor_breaks = NULL, labels = c(-3, "-2\n(Moderately confident,\nincorrect)", -1, "0\n(Not at all confident)",1,"2\n(Moderately confident,\ncorrect)"), limits = c(-5,5)) + 
+  labs(x = "Average directional confidence level (90% CI)", y = "") + 
+  theme(legend.position = "none")
+
+```
+
+Following the same analytic approach as for the primary outcome, we estimate that the average directional confidence score of Decline Effect prompts differed from that of the Comparison Effect prompts by `r conf_dir %>% filter(effect == "Decline - Comparison") %>% pull(est_CI)`. 
+
+## Levels of understanding
+
+Although not an outcome per se, readers may wonder about how the Decline Effects and Comparison Effects prompts differed in terms of respondents' self-reported levels of understanding. The following figure depicts the average level of understanding by prompt, with the overall average levels in the final two rows.
+
+```{r, fig.width = 7, fig.height = 8.5}
+
+understanding <- 
+  analyze_effects(predict_analytic, understand) %>%
+  mutate(
+    analysis = "primary analysis",
+    outcome = "level of understanding"
+  )
+
+understanding %>%
+  filter(!is.na(prompt)) %>%
+  mutate(x = recode(prompt, Decline = 3, Comparison = 4.75)) %>%
+  ggplot(aes(beta, effect_ord, color = prompt)) + 
+  geom_vline(xintercept = 0) + 
+  geom_pointrange(aes(xmin = CI_L, xmax = CI_U)) + 
+  geom_text(
+    aes(x = x, label = effect_ord, hjust = (1 - (3 - x) / (3 - 4.75))),
+    nudge_y = 0.1
+  ) + 
+  theme_minimal() + 
+  scale_fill_discrete(type = pal) + 
+  scale_color_discrete(type = pal) + 
+  scale_y_discrete(breaks = NULL) + 
+  scale_x_continuous(limits = c(2,6), breaks = c(1,3,5), minor_breaks = seq(3,5,0.5), labels = c("Not at all well","Moderately","Extremely well")) + 
+  labs(x = "How well did you understand the study description you just read? (90% CI)", y = "") + 
+  theme(legend.position = "none")
+
+```
+
+Following the same analytic approach as for the primary outcome, we estimate that the average level of understanding of Decline Effect prompts differed from that of the Comparison Effect prompts by `r understanding %>% filter(effect == "Decline - Comparison") %>% pull(est_CI)`. 
+
+## Response times
+
+Although not an outcome per se, readers may wonder about how the Decline Effects and Comparison Effects prompts differed in terms of response times. The following figure depicts the average response time by prompt, with the overall average response times in the final two rows. Response times are analyzed on a logarithmic scale, then back-transformed to the original units.
+
+```{r, fig.width = 7, fig.height = 8.5}
+
+response_times <- 
+  analyze_effects(predict_analytic, log(timing), units = "seconds", digits = 1, exponentiate = TRUE) %>%
+  mutate(
+    analysis = "primary analysis",
+    outcome = "response time"
+  )
+
+upper <- max(response_times$CI_U)
+
+response_times %>%
+  filter(!is.na(prompt)) %>%
+  mutate(x = recode(prompt, Decline = 5, Comparison = upper)) %>%
+  ggplot(aes(beta, effect_ord, color = prompt)) + 
+  geom_pointrange(aes(xmin = CI_L, xmax = CI_U)) + 
+  geom_text(
+    aes(x = x, label = effect_ord, hjust = (1 - (5 - x) / (10 - upper))),
+    nudge_y = 0.1
+  ) + 
+  theme_minimal() + 
+  scale_fill_discrete(type = pal) + 
+  scale_color_discrete(type = pal) + 
+  scale_y_discrete(breaks = NULL) + 
+  scale_x_continuous(breaks = seq(00,upper,10), minor_breaks = NULL, limits = c(-10, upper + 10)) + 
+  labs(x = "Prompt completion time (seconds) (90% CI)", y = "") + 
+  theme(legend.position = "none")
+
+```
+
+Following the same analytic approach as for the primary outcome, we estimate that the average response time for Decline Effect prompts differed from that for the Comparison Effect prompts by `r response_times %>% filter(effect == "Decline - Comparison") %>% pull(est_CI)`. 
+
+## Replication predictions
+
+Although not an outcome per se, readers may wonder about how the Decline Effects and Comparison Effects prompts differed in terms of predicted replicability. The following figure depicts the percentage of respondents who predicted that each prompt would replicate, with the overall average of replicability predictions in the final two rows. 
+
+```{r, fig.width = 7, fig.height = 8.5}
+
+replication_predictions <- 
+  analyze_effects(predict_analytic, 100 * (2 - replication), units = "percentage points", digits = 1, delta = 5) %>%
+  mutate(
+    analysis = "primary analysis",
+    outcome = "replication predictions"
+  )
+
+replication_predictions %>%
+  filter(!is.na(prompt)) %>%
+  mutate(
+    x = recode(prompt, Decline = 0, Comparison = 100),
+    replicated = recode(replicated, `1` = "Replicated", `2` = "Did not replicate", .missing = "summary")
+  ) %>%
+ggplot(aes(beta, effect_ord, color = prompt, shape = replicated)) + 
+  geom_pointrange(aes(xmin = CI_L, xmax = CI_U)) + 
+  geom_text(
+    aes(x = x, label = effect_ord, hjust = (1 - (x - 0) / (100 - 0))),
+    nudge_y = 0.1
+  ) + 
+  theme_minimal() + 
+  scale_y_discrete(breaks = NULL) + 
+  scale_x_continuous(breaks = seq(10,90,10), limits = c(-30,130)) + 
+  scale_fill_discrete(type = pal, guide = "none") + 
+  scale_color_discrete(type = pal, guide = "none") + 
+  labs(x = "Percent predicting replication of effect (90% CI)", y = "") + 
+  theme(legend.position = c(0.3, 0.95))
+```
+
+Following the same analytic approach as for the primary outcome, we estimate that the average percentage of correctly predicted replications for Decline Effect prompts differed from that for the Comparison Effect prompts by `r replication_predictions %>% filter(effect == "Decline - Comparison") %>% pull(est_CI)`. 
+
+# Sensitivity analysis
+
+We planned two forms of sensitivity analysis. First, we repeated the analysis reported above after excluding items that respondents understood "slightly." This resulted in exclusion of `r understand_counts %>% filter(understand == 2) %>% pull(responses)` responses from `r understand_counts %>% filter(understand == 2) %>% pull(respondents)` unique respondents. Second, we repeated the analysis using all of our original inclusion criteria but also excluding respondents whose median response time was 4 seconds or less. This resulted in exclusion of `r predict_respondent_summary_stats %>% filter(understand_mn > 2, timing_med <= 4) %>% nrow()` respondents.
+
+The following table reports the primary outcome, secondary outcome, and additional variables analyzed for the Decline Effect prompts and the Comparison Effect prompts, along with the estimated difference between the two sets of effects, based on our primary analysis and two planned sensitivity analyses.
+
+```{r}
+#-------------------------------------------------------------------------------
+# Sensitivity analysis
+
+# excluding understanding < 3
+
+pct_correct_high_understanding <- 
+  predict_analytic %>%
+  filter(understand > 2) %>%
+  analyze_effects(100 * correct, units = "percentage points", digits = 1, delta = 5) %>%
+  mutate(
+    analysis = "high understanding",
+    outcome = "percent correct"
+  )
+
+conf_dir_high_understanding <- 
+  predict_analytic %>%
+  filter(understand > 2) %>%
+  analyze_effects(conf_dir) %>%
+  mutate(
+    analysis = "high understanding",
+    outcome = "directional confidence"
+  )
+
+understanding_high_understanding <- 
+  predict_analytic %>%
+  filter(understand > 2) %>%
+  analyze_effects(understand) %>%
+  mutate(
+    analysis = "high understanding",
+    outcome = "level of understanding"
+  )
+
+response_times_high_understanding <- 
+  predict_analytic %>%
+  filter(understand > 2) %>%
+  analyze_effects(log(timing), units = "seconds", digits = 1, exponentiate = TRUE) %>%
+  mutate(
+    analysis = "high understanding",
+    outcome = "response time"
+  )
+
+replication_predictions_high_understanding <- 
+  predict_analytic %>%
+  filter(understand > 2) %>%
+  analyze_effects(100 * (2 - replication), units = "percentage points", digits = 1, delta = 5) %>%
+  mutate(
+    analysis = "high understanding",
+    outcome = "replication predictions"
+  )
+
+# excluding speeders
+
+pct_correct_reasonable_RT <- 
+  predict_analytic %>%
+  filter(timing_med > 4) %>%
+  analyze_effects(100 * correct, units = "percentage points", digits = 1, delta = 5) %>%
+  mutate(
+    analysis = "excluding rapid responders",
+    outcome = "percent correct"
+  )
+
+conf_dir_reasonable_RT <- 
+  predict_analytic %>%
+  filter(timing_med > 4) %>%
+  analyze_effects(conf_dir) %>%
+  mutate(
+    analysis = "excluding rapid responders",
+    outcome = "directional confidence"
+  )
+
+understanding_reasonable_RT <- 
+  predict_analytic %>%
+  filter(timing_med > 4) %>%
+  analyze_effects(understand) %>%
+  mutate(
+    analysis = "excluding rapid responders",
+    outcome = "level of understanding"
+  )
+
+response_times_reasonable_RT <- 
+  predict_analytic %>%
+  filter(timing_med > 4) %>%
+  analyze_effects(log(timing), units = "seconds", digits = 1, exponentiate = TRUE) %>%
+  mutate(
+    analysis = "excluding rapid responders",
+    outcome = "response time"
+  )
+
+replication_predictions_reasonable_RT <- 
+  predict_analytic %>%
+  filter(timing_med > 4) %>%
+  analyze_effects(100 * (2 - replication), units = "percentage points", digits = 1, delta = 5) %>%
+  mutate(
+    analysis = "excluding rapid responders",
+    outcome = "replication predictions"
+  )
+# Summary table
+
+sensitivity_table <- 
+  bind_rows(
+    pct_correct, conf_dir, understanding, response_times, replication_predictions, 
+    pct_correct_high_understanding, conf_dir_high_understanding, understanding_high_understanding, response_times_high_understanding, replication_predictions_high_understanding,
+    pct_correct_reasonable_RT, conf_dir_reasonable_RT, understanding_reasonable_RT, response_times_reasonable_RT, replication_predictions_reasonable_RT
+  ) %>%
+  select(outcome, analysis, effect, beta, CI_L, CI_U) %>%
+  filter(
+    effect %in% c("All Decline effects", "All Comparison effects", "Decline - Comparison")
+  ) %>%
+  pivot_wider(names_from = effect, values_from = c(beta, CI_L, CI_U)) %>%
+  select(outcome, analysis, ends_with("Decline effects"), ends_with("Comparison effects"), ends_with("Comparison")) %>%
+  mutate(
+    outcome = factor(outcome, 
+                     levels = c("percent correct","directional confidence","level of understanding","response time","replication predictions"),
+                     labels = c("Percent correctly predicting sign of effect","Directional confidence level", "Level of understanding",  "Response time (seconds)","Percent predicting that effect would replicate")),
+    analysis = recode(analysis,
+                      `primary analysis` = "Primary analysis",
+                      `high understanding` = "Excluding low understanding responses",
+                      `excluding rapid responders` = "Excluding rapid responders")
+  ) %>%
+  arrange(outcome)
+  
+sensitivity_header <- 
+  tibble(col = names(sensitivity_table)) %>%
+  mutate(
+    head = if_else(col %in% c("outcome","analysis"), "",str_sub(col, 6, -1)),
+    lab = if_else(col %in% c("outcome","analysis"), str_to_title(col), str_sub(col, 1, 4)),
+    lab = recode(lab, beta = "Est.", CI_L = "90% CI(low)", CI_U = "90% CI(high)")
+  )
+
+sensitivity_table %>%
+  kable(
+    digits = 2,
+    col.names = c("Outcome","Analysis",rep(c("Est.", "90% CI (lower)","90% CI (upper)"), 3)),
+    format = "html"
+  ) %>%
+  kable_classic(full_width = FALSE) %>%
+  add_header_above(header = c(" " = 2, "Decline Effects" = 3, "Comparison Effects" = 3, "Decline - Comparison" = 3)) %>%
+  collapse_rows(columns = 1, valign = "top")
+
+
+```
+
+# Item response theory analysis of predictability
+
+For reference, it may be of interest to understand how the assumptions of our a priori power analysis compare to the features of the survey data. Furthermore, an item response model provides a useful platform for understanding how  predictability varies across prompts. We therefore estimate a 1-parameter normal ogive item response theory model using the primary outcome (i.e., an indicator for correctly predicting the sign of effect described by each prompt). We use the main analytic sample, with $N = `r N`$. 
+
+```{r}
+predict_NO_1PL <- glmer(correct ~ 0 + prompt + (1 | ResponseId) + (1 | effect),
+                data = predict_analytic,
+                family = binomial(link = "probit"))
+summary(predict_NO_1PL)
+
+beta_p <- fixef(predict_NO_1PL)
+omega_p <- getME(predict_NO_1PL, "theta")[["effect.(Intercept)"]]
+sigma_p <- getME(predict_NO_1PL, "theta")[["ResponseId.(Intercept)"]]
+
+pi_p <- pnorm(beta_p / sqrt(1 + sigma_p^2))
+dpi_dgamma_p <- dnorm(beta_p / sqrt(1 + sigma_p^2)) / sqrt(1 + sigma_p^2)
+tau_p <- omega_p * dpi_dgamma_p
+```
+
+These parameter estimates correspond to average predictability rates of `r round(pi_p[["promptDecline"]],2)` for the Decline Effects prompts and 
+`r round(pi_p[["promptComparison"]],2)` for the Comparison Effects prompts. The estimated between-individual variance is $\hat\sigma^2 = `r round(sigma_p^2,3)`$. The estimated between-item variance is $\hat\omega^2 = `r round(omega_p^2,3)`$ on the scale of the item difficult parameters, corresponding to $\hat\tau^2 = `r round(tau_p[["promptComparison"]]^2, 3)`$ on the probability scale. 
+
+## Does predictability vary?
+
+```{r}
+predict_common_difficulty <- glmer(correct ~ 0 + prompt + (1 | ResponseId),
+                data = predict_analytic,
+                family = binomial(link = "probit"))
+LRT_difficulty <- anova(predict_common_difficulty, predict_NO_1PL)
+```
+
+As a formal test of whether the prompts vary in difficulty, we use a likelihood ratio test of the null hypothesis that the between-item variance is zero, $H_0: \ \omega^2 = 0$. We find $\chi^2_1= `r round(LRT_difficulty$Chisq[2],2)`$, with $p = `r LRT_difficulty[["Pr(>Chisq)"]][2]`$. 
+
+## Is predictability associated with effect size from independent replication studies?
+
+If the prompts vary in their degree of predictability, then one might expect that prompts describing larger effect sizes would be more predictable. For the prompts from the Decline Effects studies, we have highly precise estimates of effect size based on three replications of the effect by labs independent of the lab that initially demonstrated it. The plot below depicts the depicts the percentage of correct predictions (on the vertical axis) versus the absolute average effect size based on independent replication studies. 
+
+```{r, fig.width = 6, fig.height = 4}
+predictability_and_delta <- 
+  prompt_labels %>%
+  select(effect, d_original, d_independent, d_abs_original, d_abs_independent) %>%
+  inner_join(pct_correct, by = "effect")
+
+ggplot(predictability_and_delta, aes(d_abs_independent, beta, color = prompt)) + 
+  geom_hline(yintercept = 0) + 
+  geom_vline(xintercept = 0) + 
+  geom_pointrange(aes(ymin = CI_L, ymax = CI_U)) + 
+  # geom_smooth(method = "lm", formula = y ~ x) + 
+  expand_limits(y = 0) + 
+  scale_y_continuous(expand = expansion(0, 0)) + 
+  scale_color_discrete(type = pal) + 
+  theme_minimal() + 
+  theme(legend.position = c(0.9, 0.9)) + 
+  labs(
+    x = "Absolute effect size (standardized mean difference) from independent replication studies",
+    y = "Percent correctly predicting sign of effect",
+    color = ""
+  )
+
+```
+
+As a more formal test, we estimate a 1-PL normal ogive item response model to the predictions for the Decline Effects and comparison prompts, including the absolute value of the effect size estimate as a predictor. The model included separate intercepts for each prompt set and we interacted the effect size predictor with the prompt set. We use Wald tests to examine whether the magnitude of the effect size is associated with predictability for each prompt set separately. We also compare the estimated between-item variance to the estimated between-item variance from a model that does not include the predictor. 
+
+```{r}
+predict_DE <- glmer(correct ~ 0 + prompt + (1 | ResponseId) + (1 | effect),
+                data = filter(predict_analytic, !is.na(d_abs_independent)),
+                family = binomial(link = "probit"))
+
+predict_DE_delta <- glmer(correct ~ 0 + prompt + d_abs_independent:prompt + (1 | ResponseId) + (1 | effect),
+                data = filter(predict_analytic, !is.na(d_abs_independent)),
+                family = binomial(link = "probit"))
+
+delta_Rsq <- 100 * (1 - as.numeric(VarCorr(predict_DE_delta)$effect) / as.numeric(VarCorr(predict_DE)$effect))
+summary(predict_DE_delta)
+confint(predict_DE_delta, parm = "beta_", method = "Wald")
+```
+
+The estimated between-item variance is `r round(as.numeric(VarCorr(predict_DE_delta)$effect), 3)` in the model including the absolute magnitude of effect as a predictor, compared to `r round(as.numeric(VarCorr(predict_DE)$effect),3)` in a model that does not include this predictor $(R^2 = `r round(delta_Rsq, 1)`\%)$.
+
+## Is predictability associated with effect size from original source studies?
+
+For sake of completeness, we also considered whether predictability was associated with the magnitude of effect sizes reported in the original source studies. The plot below depicts the depicts the percentage of correct predictions (on the vertical axis) versus the absolute effect size as reported in the original source studies. 
+
+```{r, fig.width = 6, fig.height = 4}
+ggplot(predictability_and_delta, aes(d_abs_original, beta, color = prompt)) + 
+  geom_hline(yintercept = 0) + 
+  geom_vline(xintercept = 0) + 
+  geom_pointrange(aes(ymin = CI_L, ymax = CI_U)) + 
+  expand_limits(y = 0) + 
+  scale_y_continuous(expand = expansion(0, 0)) + 
+  scale_color_discrete(type = pal) + 
+  theme_minimal() + 
+  theme(legend.position = c(0.9, 0.9)) + 
+  labs(
+    x = "Absolute effect size (standardized mean difference) from original studies",
+    y = "Percent correctly predicting sign of effect",
+    color = ""
+  )
+
+```
+
+As a more formal test, we estimate a 1-PL normal ogive item response model to the predictions for the Decline Effects prompts, following the same specification as above but with the effect sizes from the original studies instead of those from independent replications.
+
+```{r}
+predict_DE <- glmer(correct ~ 0 + prompt + (1 | ResponseId) + (1 | effect),
+                data = filter(predict_analytic, !is.na(d_abs_original)),
+                family = binomial(link = "probit"))
+
+predict_DE_delta <- glmer(correct ~ 0 + prompt + d_abs_original:prompt + (1 | ResponseId) + (1 | effect),
+                data = filter(predict_analytic, !is.na(d_abs_original)),
+                family = binomial(link = "probit"))
+
+delta_Rsq <- 100 * (1 - as.numeric(VarCorr(predict_DE_delta)$effect) / as.numeric(VarCorr(predict_DE)$effect))
+summary(predict_DE_delta)
+```
+
+The estimated between-item variance is `r round(as.numeric(VarCorr(predict_DE_delta)$effect), 3)` in the model including the absolute magnitude of effect as a predictor, compared to `r round(as.numeric(VarCorr(predict_DE)$effect),3)` in a model that does not include this predictor $(R^2 = `r round(delta_Rsq, 1)`\%)$.
+
+# Item response theory analysis of replicability
+
+We also applied an item response model to understand how participants' assessments of replicability varies across prompts. We estimate a 1-parameter normal ogive item response theory model using an indicator for predicting replication of the effect. We use the main analytic sample, with $N = `r N`$. 
+
+```{r}
+replicate_NO_1PL <- glmer(repl_prediction ~ 0 + prompt + (1 | ResponseId) + (1 | effect),
+                data = predict_analytic,
+                family = binomial(link = "probit"))
+summary(replicate_NO_1PL)
+
+beta_p <- fixef(replicate_NO_1PL)
+omega_p <- getME(replicate_NO_1PL, "theta")[["effect.(Intercept)"]]
+sigma_p <- getME(replicate_NO_1PL, "theta")[["ResponseId.(Intercept)"]]
+
+pi_p <- pnorm(beta_p / sqrt(1 + sigma_p^2))
+dpi_dgamma_p <- dnorm(beta_p / sqrt(1 + sigma_p^2)) / sqrt(1 + sigma_p^2)
+tau_p <- omega_p * dpi_dgamma_p
+```
+
+These parameter estimates correspond to average predicted replicability rates of `r round(pi_p[["promptDecline"]],2)` for the Decline Effects prompts and 
+`r round(pi_p[["promptComparison"]],2)` for the Comparison Effects prompts. The estimated between-individual variance is $\hat\sigma^2 = `r round(sigma_p^2,3)`$. The estimated between-item variance is $\hat\omega^2 = `r round(omega_p^2,3)`$ on the scale of the item difficult parameters, corresponding to $\hat\tau^2 = `r round(tau_p[["promptComparison"]]^2, 3)`$ on the probability scale. 
+
+## Does replicability vary?
+
+```{r}
+replicate_common_difficulty <- glmer(repl_prediction ~ 0 + prompt + (1 | ResponseId),
+                data = predict_analytic,
+                family = binomial(link = "probit"))
+LRT_difficulty_replicate <- anova(replicate_common_difficulty, replicate_NO_1PL)
+```
+
+As a formal test of whether the prompts vary in difficulty, we use a likelihood ratio test of the null hypothesis that the between-item variance is zero, $H_0: \ \omega^2 = 0$. We find $\chi^2_1= `r round(LRT_difficulty_replicate$Chisq[2],2)`$, with $p = `r LRT_difficulty_replicate[["Pr(>Chisq)"]][2]`$. 
+
+## Is replicability associated with effect size from independent replication studies?
+
+If the prompts vary in their degree of predicted replicability, then one might expect that prompts describing larger effect sizes would be more likely to be predicted as replicating. The plot below depicts the depicts the percentage of replication predictions (on the vertical axis) versus the absolute average effect size based on independent replication studies. 
+
+```{r, fig.width = 6, fig.height = 4}
+replicability_and_delta <- 
+  prompt_labels %>%
+  select(effect, d_original, d_independent, d_abs_original, d_abs_independent) %>%
+  inner_join(replication_predictions, by = "effect")
+
+ggplot(replicability_and_delta, aes(d_abs_independent, beta, color = prompt)) + 
+  geom_hline(yintercept = 0) + 
+  geom_vline(xintercept = 0) + 
+  geom_pointrange(aes(ymin = CI_L, ymax = CI_U)) + 
+  # geom_smooth(method = "lm", formula = y ~ x) + 
+  scale_y_continuous(expand = expansion(0, 0)) + 
+  scale_color_discrete(type = pal) + 
+  theme_minimal() + 
+  theme(legend.position = c(0.9, 0.1)) + 
+  labs(
+    x = "Absolute effect size (standardized mean difference) from independent replication studies",
+    y = "Percent predicting replication of effect",
+    color = ""
+  )
+
+```
+
+As a more formal test, we estimate a 1-PL normal ogive item response model to the replication predictions for the Decline Effects and comparison prompts, including the absolute value of the effect size estimate as a predictor. The model included separate intercepts for each prompt set and we interacted the effect size predictor with the prompt set. We use Wald tests to examine whether the magnitude of the effect size is associated with predictability for each prompt set separately. We also compare the estimated between-item variance to the estimated between-item variance from a model that does not include the predictor. 
+
+```{r}
+replicate_DE <- glmer(repl_prediction ~ 0 + prompt + (1 | ResponseId) + (1 | effect),
+                data = filter(predict_analytic, !is.na(d_abs_independent)),
+                family = binomial(link = "probit"))
+
+replicate_DE_delta <- glmer(repl_prediction ~ 0 + prompt + d_abs_independent:prompt + (1 | ResponseId) + (1 | effect),
+                data = filter(predict_analytic, !is.na(d_abs_independent)),
+                family = binomial(link = "probit"))
+
+delta_replicate_Rsq <- 100 * (1 - as.numeric(VarCorr(replicate_DE_delta)$effect) / as.numeric(VarCorr(replicate_DE)$effect))
+summary(replicate_DE_delta)
+```
+
+The estimated between-item variance is `r round(as.numeric(VarCorr(replicate_DE_delta)$effect), 3)` in the model including the absolute magnitude of effect as a predictor, compared to `r round(as.numeric(VarCorr(replicate_DE)$effect),3)` in a model that does not include this predictor $(R^2 = `r round(delta_replicate_Rsq, 1)`\%)$.
+
+## Is replicability associated with effect size from original source studies?
+
+For sake of completeness, we also considered whether replication predictability was associated with the magnitude of effect sizes reported in the original source studies. The plot below depicts the depicts the percentage of correct replicability predictions (on the vertical axis) versus the absolute effect size as reported in the original source studies. 
+
+```{r, fig.width = 6, fig.height = 4}
+ggplot(replicability_and_delta, aes(d_abs_original, beta, color = prompt)) + 
+  geom_hline(yintercept = 0) + 
+  geom_vline(xintercept = 0) + 
+  geom_pointrange(aes(ymin = CI_L, ymax = CI_U)) + 
+  expand_limits(y = 0) + 
+  scale_y_continuous(expand = expansion(0, 0)) + 
+  scale_color_discrete(type = pal) + 
+  theme_minimal() + 
+  theme(legend.position = c(0.9, 0.9)) + 
+  labs(
+    x = "Absolute effect size (standardized mean difference) from original studies",
+    y = "Percent predicting replication of effect",
+    color = ""
+  )
+
+```
+
+As a more formal test, we estimate a 1-PL normal ogive item response model to the predictions for the Decline Effects prompts, following the same specification as above but with the effect sizes from the original studies instead of those from independent replications.
+
+```{r}
+replicate_DE <- glmer(repl_prediction ~ 0 + prompt + (1 | ResponseId) + (1 | effect),
+                data = filter(predict_analytic, !is.na(d_abs_original)),
+                family = binomial(link = "probit"))
+
+replicate_DE_delta <- glmer(repl_prediction ~ 0 + prompt + d_abs_original:prompt + (1 | ResponseId) + (1 | effect),
+                data = filter(predict_analytic, !is.na(d_abs_original)),
+                family = binomial(link = "probit"))
+
+delta_replicate_Rsq <- 100 * (1 - as.numeric(VarCorr(replicate_DE_delta)$effect) / as.numeric(VarCorr(replicate_DE)$effect))
+summary(replicate_DE_delta)
+```
+
+The estimated between-item variance is `r round(as.numeric(VarCorr(predict_DE_delta)$effect), 3)` in the model including the absolute magnitude of effect as a predictor, compared to `r round(as.numeric(VarCorr(predict_DE)$effect),3)` in a model that does not include this predictor $(R^2 = `r round(delta_Rsq, 1)`\%)$.
+
+# Comparison with Hoogeveen
+
+Some of the prompts in our comparison set described the same studies used by Hoogeveen and colleagues. For reference, we report the percentage of respondents predicting that an effect would replicate in the Hoogeveen study and in our sample. Respondents in our sample were generally more likely to predict that an effect would replicate.
+
+```{r}
+Hoogeveen_rep_rates <- 
+  responses_with_results %>%
+  group_by(StudyID, correct_answer) %>%
+  summarise(predict_rep_Hoog = 100 * mean(belief == "Will replicate"), .groups = "drop") %>%
+  mutate(
+    correct_answer = recode(correct_answer, `Will replicate` = "Replicated",
+                            `Will not replicate` = "Did not replicate")
+  ) %>%
+  rename(effect = StudyID, replicated = correct_answer)
+
+rep_rates <- 
+  predict_analytic %>%
+  filter(prompt == "Comparison") %>%
+  group_by(effect, replicated) %>%
+  summarise(predict_rep_survey = 100 * mean(replication == 1, na.rm = TRUE)) %>%
+  mutate(replicated = recode(replicated, `1` = "Replicated", `2` = "Did not replicate"))
+
+Hoogeveen_rep_rates %>%
+  inner_join(rep_rates, by = c("effect", "replicated")) %>%
+  arrange(replicated, predict_rep_Hoog) %>%
+  kable(
+    col.names = c("Effect","True status", "Predicting replication (Hoogeveen)", "Predicting replication (this survey)"),
+    digits = 1
+  ) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped","condensed"))
+```
+
+# Colophon
+
+```{r, echo = FALSE}
+sessionInfo()
+```

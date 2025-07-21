@@ -65,33 +65,24 @@ xml_file <- pdf2grobid(pdf_file, grobid_url = "http://localhost:8070")
 
 ### Load from XML
 
-The function `read_grobid()` can read XML files parsed by grobid.
+The function `read()` can read XML files parsed by grobid or cermine, plus any XML files in JATS-DTD APA or NLM formats.
 
 ```{r}
-paper <- read_grobid(xml_file)
+paper <- read(xml_file)
 ```
 
-The function `read_cermine()` can read XML files parsed by [cermine](http://cermine.ceon.pl). This is not as good as grobid at parsing papers, and omits figure and table captions.
+XML files parsed by [cermine](http://cermine.ceon.pl) are not as good as grobid at parsing papers, and omits figure and table captions.
 
 ```{r}
 #| eval: false
 cermine_xml_file <- system.file("psychsci/0956797620955209.cermine.xml",
                                 package = "papercheck")
-paper <- read_cermine(cermine_xml_file)
+paper <- read(cermine_xml_file)
 ```
 
 ### Load from non-PDF document
 
-To take advantage of grobid's ability to parse references and other aspects of papers, for now the best way is to convert your papers to PDF. However, papercheck can read in plain text from a character object or text/docx file with `read_text()`.
-
-```{r}
-text <- "Abstract
-
-This is my very short paper. It has two sentences."
-shortpaper <- read_text(text, id = "shortpaper")
-shortpaper$full_text
-```
-
+To take advantage of grobid's ability to parse references and other aspects of papers, for now the best way is to convert your papers to PDF. However, papercheck can read in plain text from a text/docx file with `read()`.
 
 ```{r}
 #| eval: false
@@ -103,12 +94,12 @@ paper_from_doc <- read_text(filename)
 
 ### Batch Processing
 
-The functions `pdf2grobid()` and `read_grobid()` also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions `search_text()`, `expand_text()` and `llm()` also work on a list of paper objects.
+The functions `pdf2grobid()` and `read()` also work on a folder of files, returning a list of XML file paths or paper objects, respectively. The functions `search_text()`, `expand_text()` and `llm()` also work on a list of paper objects.
 
 ```{r}
 grobid_dir <- demodir()
 
-papers <- read_grobid(grobid_dir)
+papers <- read(grobid_dir)
 
 hypotheses <- search_text(papers, "hypothesi", 
                           section = "intro", 

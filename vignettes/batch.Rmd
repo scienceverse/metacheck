@@ -48,7 +48,7 @@ Then read in the XML files to papercheck and save in an object called `papers`.
 
 ```{r}
 #| eval: false
-papers <- read_grobid("xml")
+papers <- read("xml")
 ```
 
 These steps can take some time if you are processing a lot of papers, and only needs to happen once, so it is often useful to save the `papers` object as an Rds file, comment out the code above, and load `papers` from this object on future runs of your script.

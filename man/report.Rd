@@ -30,7 +30,7 @@ Create a report
 \examples{
 \dontrun{
 filename <- demoxml()
-paper <- read_grobid(filename)
+paper <- read(filename)
 report(paper)
 }
 }

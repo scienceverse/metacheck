@@ -18,7 +18,5 @@ a merged table
 Concatenate tables across a list of paper objects
 }
 \examples{
-grobid_dir <- system.file("grobid", package = "papercheck")
-papers <- read_grobid(grobid_dir)
-references <- concat_tables(papers, c("refs", "references"))
+references <- concat_tables(psychsci[1:10], "references")
 }

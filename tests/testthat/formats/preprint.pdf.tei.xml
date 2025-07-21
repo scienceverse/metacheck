@@ -1,0 +1,2479 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">"You're Just Envious": Inferring Benign and Malicious Envy from Facial Expressions and Contextual Information</title>
+				<funder ref="#_xSpaSWk #_tsME4bz">
+					<orgName type="full">German Research foundation (DFG)</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Jens</forename><surname>Lange</surname></persName>
+							<email>lange.jens@outlook.com.</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Differential Psychology and Psychological Assessment</orgName>
+								<orgName type="institution">University of Hamburg</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Agneta</forename><forename type="middle">H</forename><surname>Fischer</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department" key="dep1">Department of Social Psychology</orgName>
+								<orgName type="department" key="dep2">Differential Psychology and Psychological Assessment</orgName>
+								<orgName type="institution" key="instit1">University of Amsterdam</orgName>
+								<orgName type="institution" key="instit2">University of Hamburg</orgName>
+								<address>
+									<addrLine>Von-Melle-Park 5</addrLine>
+									<postCode>20146</postCode>
+									<settlement>Hamburg</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Gerben</forename><forename type="middle">A</forename><surname>Van Kleef</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department" key="dep1">Department of Social Psychology</orgName>
+								<orgName type="department" key="dep2">Differential Psychology and Psychological Assessment</orgName>
+								<orgName type="institution" key="instit1">University of Amsterdam</orgName>
+								<orgName type="institution" key="instit2">University of Hamburg</orgName>
+								<address>
+									<addrLine>Von-Melle-Park 5</addrLine>
+									<postCode>20146</postCode>
+									<settlement>Hamburg</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">"You're Just Envious": Inferring Benign and Malicious Envy from Facial Expressions and Contextual Information</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">8DD5498BF039AF507F591AA885479563</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2025-07-10T14:18+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>benign and malicious envy</term>
+					<term>social perception</term>
+					<term>facial expression</term>
+					<term>bodily expression</term>
+					<term>social context "</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Envy shapes social hierarchies. To protect their rank, envied persons react to the threat posed by enviers. Doing so requires that envied persons initially perceive who envies them. However, a common perspective is that envy lacks a unique expression and that enviers disguise their experience, preventing the social perception of envy. In contrast to this perspective, recent evidence indicates that observers perceive benign and malicious forms of envy accurately when they can integrate information about targets. These findings suggest that observers infer envy based on multiple, contextual cues. We hypothesized that observers infer envy from facial and bodily expressions in comparison situations. Specifically, observers should infer benign envy when a target, who encounters an advantaged person, turns with disappointment toward the advantage. Conversely, observers should infer malicious envy when the target turns with anger toward the advantaged person. Three preregistered studies tested these hypotheses (total N = 693). In Studies 1 and 2, targets turned with an emotional or neutral expression either toward a person silhouette or a valuable object, and participants rated targets' envy. In Study 3, participants performed the same task with more realistic stimuli. Across studies, emotional display and head turning had independent effects on inferences of benign and malicious envy. Furthermore, observers inferred envy more when the target expressed an emotion instead of remaining neutral. We discuss how the results inform research on the social perception of envy.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"> <ref type="bibr" target="#b49">(Rentzsch et al., 2015)</ref><p>. Therefore, scholars and the media alike preferably portray envy as socially undesirable. In line with this notion, a common perspective is that envy is an emotion that people typically disguise towards others and deny toward themselves <ref type="bibr" target="#b39">(Miceli &amp; Castelfranchi, 2007;</ref><ref type="bibr" target="#b61">Smith &amp; Kim, 2007)</ref>.</p><p>If enviers conceal their experience, accurately perceiving envy in others should be challenging. In general, many emotions involve facial, bodily, verbal, or vocal expressions that, in turn, play a pivotal role in communicating a person's experience <ref type="bibr" target="#b5">(Aviezer et al., 2012;</ref><ref type="bibr" target="#b18">Elfenbein &amp; Ambady, 2002;</ref><ref type="bibr" target="#b53">Sauter et al., 2010;</ref><ref type="bibr" target="#b77">Witkower &amp; Tracy, 2019)</ref>. That is, people express emotions in different ways and observers decode these expressions to infer associated emotional experiences. For envy, however, research has not yet proposed unique expressions. Given envy's socially undesirable character and disguised nature, enviers may simply not reveal many signs of their experience to observers.</p><p>There is, however, reason to predict that enviers cannot conceal their envy entirely.</p><p>As a starting point, research indicates that envy contributes to the regulation of social hierarchies <ref type="bibr" target="#b14">(Crusius &amp; Lange, 2017;</ref><ref type="bibr" target="#b22">Fiske, 2010)</ref>. The desire for social rank is a fundamental human motive (C. <ref type="bibr" target="#b2">Anderson et al., 2015)</ref>, and envy serves to level rank differences between the self and higher-ranked others <ref type="bibr" target="#b31">(Lange &amp; Crusius, 2015</ref>; see also <ref type="bibr" target="#b63">Van de Ven, 2016;</ref><ref type="bibr" target="#b64">Van de Ven et al., 2009)</ref>. An experience sampling study suggests that, to serve this fundamental need, enviers' cognitions and motivations following an envy-eliciting event guide their behavior over multiple days <ref type="bibr" target="#b35">(Lange et al., 2018)</ref>. Considering the importance of engaging in action to overcome painful rank differentials and the temporally extended character of envy, it is likely that enviers leak cues to their experience at some point in time. Furthermore, the importance of protecting social rank predicts that higher-ranked persons will be vigilant to perceive cues to other's envy (C. <ref type="bibr" target="#b2">Anderson et al., 2015)</ref>. Indeed, in line with this reasoning, research indicates that accurate social perception of envy is possible <ref type="bibr" target="#b33">(Lange et al., 2020)</ref>. People's self-ratings of their dispositional inclination to react with envy correlated positively with acquainted peers' perception of people's dispositional inclination. Further analyses implied that this correlation could not be explained by people and peers just being similar to each other and projecting their own personality onto each other. However, self-ratings of envy in a particular situation were uncorrelated with unacquainted dyad partners' perception of people's experience.</p><p>These findings imply that others may need to integrate multiple pieces of information to derive accurate insight in another person's envy (see also <ref type="bibr" target="#b46">Puranik et al., 2019)</ref>. Each cue to a person's envy considered in isolation is likely ambiguous, as is the case for most emotions that are considered non-prototypical <ref type="bibr" target="#b21">(Fehr &amp; Russell, 1984)</ref>. For instance, the painful inferiority people experience probably manifests in an expression, yet there is no distinct expression associated with envy. Moreover, envy may manifest in behaviors such as criticizing, congratulating, or gossiping, yet none of these behaviors is uniquely associated with envy. Inferring from such cues that a person is envious necessarily requires taking contextual information into account (e.g., that the person criticizes someone who is betteroff). The need to integrate information-to integrate multiple, contextual cues, which each considered separately are ambiguous-distinguishes envy from many other, primarily prototypical emotions. For instance, emotions such as anger, sadness, or pride but also boredom, embarrassment, or shame have unique facial expressions that already in isolation enable their recognition by observers <ref type="bibr" target="#b27">(Keltner et al., 2019)</ref>. Thus, people may not decode envy from a single cue such as a distinct facial expression, but from a combination of expressive displays and contextual information. When enviers express several cues in the same situation or when people can observe these cues across several situations, observers may integrate them and be able to put them together in a coherent picture. Supporting this idea, in one of the few studies on the social perception of envy, people judged others to be envious based on multiple, contextual cues, namely when targets uttered rude comments about a befriended, advantaged person towards an uninvolved third party <ref type="bibr" target="#b58">(Silver &amp; Sabini, 1978)</ref>. In line with the expectation that inferring others' envy requires the integration of multiple, contextual cues, evidence implies that envy can occur in different forms that are partly constituted by different feelings, cognitions, and motivations as well as manifest in different behaviors. This evidence is where we turn next.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Inferring Envy</head><p>The experience of envy involves changes in several feelings, cognitions, motivations, and expressive behaviors (e.g., <ref type="bibr" target="#b35">Lange et al., 2018;</ref><ref type="bibr" target="#b44">Parrott &amp; Smith, 1993)</ref>. Moreover, theories on envy argue that envy entails different emotions <ref type="bibr" target="#b60">(Smith, 2004)</ref>. In fact, complex emotions such as envy can involve or be accompanied by basic emotions, particularly if the complex and basic emotions result from similar appraisals (for related arguments see for instance <ref type="bibr" target="#b42">Oatley &amp; Johnson-Laird, 1987;</ref><ref type="bibr" target="#b45">Plutchik, 1982)</ref>. Therefore, the painful experience inherent in envy <ref type="bibr" target="#b35">(Lange et al., 2018;</ref><ref type="bibr" target="#b62">Tai et al., 2012)</ref> may lead to changes in the face or body, conveyed via the expression of more basic emotions. Accounting for envy's complexity, methodologically diverse research disentangled two qualitatively different manifestationsbenign and malicious envy <ref type="bibr" target="#b20">(Falcon, 2015;</ref><ref type="bibr" target="#b35">Lange et al., 2018;</ref><ref type="bibr" target="#b64">Van de Ven et al., 2009</ref>; for a comparison of different perspectives on envy see <ref type="bibr" target="#b12">Crusius et al., 2020)</ref>. As both forms of envy result from different appraisals <ref type="bibr" target="#b32">(Lange et al., 2016;</ref><ref type="bibr" target="#b66">Van de Ven et al., 2012)</ref>, they are likely to share similarities with different more basic emotions, the expression of which may therefore provide cues observers could use to infer different forms of envy.</p><p>Benign envy is constituted by feelings, cognitions, and motivations directed at improving the envier's position <ref type="bibr" target="#b35">(Lange et al., 2018;</ref><ref type="bibr" target="#b64">Van de Ven et al., 2009)</ref>. It manifests in improvement behaviors such as increased effort in achievement tasks <ref type="bibr" target="#b31">(Lange &amp; Crusius, 2015;</ref><ref type="bibr" target="#b65">Van de Ven et al., 2011)</ref> or risk-taking <ref type="bibr" target="#b29">(Kwon et al., 2017)</ref>. Moreover, when experiencing benign envy, people direct attention equally to the envied person as well as the envied person's advantage and focus on means to improve their situation <ref type="bibr" target="#b13">(Crusius &amp; Lange, 2014)</ref>. Benign envy results from enviers' evaluation that they failed to reach a desired outcome <ref type="bibr" target="#b35">(Lange et al., 2018;</ref><ref type="bibr" target="#b66">Van de Ven et al., 2012)</ref>. This appraisal also leads to disappointment <ref type="bibr" target="#b69">(Van Dijk et al., 1999)</ref>. Disappointment is part of the basic sadness emotion family (e.g., <ref type="bibr" target="#b56">Shaver et al., 1987)</ref> and, correspondingly, shares a facial expression with it (e.g., <ref type="bibr" target="#b17">Ekman, 1993;</ref><ref type="bibr" target="#b41">Niewiadomski &amp; Pelachaud, 2007;</ref><ref type="bibr" target="#b70">Van Doorn et al., 2012)</ref>. Hence, in benign envy situations, enviers may express disappointment and direct attention to the envied person or the object of their desire, which could serve as cues to their experience.</p><p>Malicious envy is constituted by feelings, cognitions, and motivations directed at harming the envied person's position <ref type="bibr" target="#b35">(Lange et al., 2018;</ref><ref type="bibr" target="#b64">Van de Ven et al., 2009)</ref>. It manifests in aggressive behaviors such as withholding money from the envied person <ref type="bibr" target="#b40">(Moyal et al., 2020)</ref> or feeling schadenfreude when the envied person fails <ref type="bibr" target="#b35">(Lange et al., 2018)</ref>.</p><p>Moreover, when experiencing malicious envy, people direct attention to the envied person at the expense of the envied person's advantage <ref type="bibr" target="#b13">(Crusius &amp; Lange, 2014)</ref>. Malicious envy results from enviers' evaluation that the successful person's advantage is undeserved and that they blame others for the unfavorable rank difference <ref type="bibr" target="#b64">(Van de Ven et al., 2009</ref><ref type="bibr">, 2012)</ref>. These appraisals also lead to anger <ref type="bibr" target="#b19">(Ellsworth &amp; Scherer, 2003)</ref>, which has a recognizable facial display <ref type="bibr" target="#b18">(Elfenbein &amp; Ambady, 2002)</ref>. Hence, in malicious envy, enviers may express anger and direct attention to the envied person, which could serve as cues to their experience.</p><p>The foregoing considerations suggest that the different forms of envy manifest themselves in different cues in the context of an upward comparison. This is important, because contextual information shapes which emotions observers infer (e.g., <ref type="bibr" target="#b7">Barrett &amp; Kensinger, 2010;</ref><ref type="bibr" target="#b26">Kayyal et al., 2015)</ref>, especially when the emotion implied by the respective context is a non-basic emotion <ref type="bibr" target="#b10">(Carroll &amp; Russell, 1996)</ref>. That is, expressions of certain emotions in a particular context may lead observers to infer a different emotion. Investigating such cues could therefore illuminate the social perception of envy. Following this notion, we focus on a minimal set of theoretically relevant expressive behaviors in a particular context that people may use as cues to infer envy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Cues of Benign and Malicious Envy</head><p>Envy always occurs in situations in which a person has an advantage that is widely regarded as conveying high status. By definition, envy is a response to another person's higher quality, achievement, or possession <ref type="bibr" target="#b44">(Parrott &amp; Smith, 1993)</ref>, especially when this advantage is relevant and valuable in the eyes of others <ref type="bibr" target="#b14">(Crusius &amp; Lange, 2017;</ref><ref type="bibr" target="#b22">Fiske, 2010)</ref>.</p><p>As another person's advantage is the basis of envy, benign and malicious envy similarly result from it (e.g., <ref type="bibr" target="#b35">Lange et al., 2018)</ref>. When encountering a disadvantaged person vis-à-vis an advantaged person, observers may already infer that envy is likely to occur (e.g., <ref type="bibr" target="#b58">Silver &amp; Sabini, 1978)</ref>. Beyond this general contextual information, observers may base their inferences on enviers' facial expressions of disappointment or anger together with the different foci of attention on the envied person or the envied person's advantage. Research indeed suggests that observers can make inferences from such cues.</p><p>First, observers can derive information from people's facial expressions. Observers have affective reactions to facial expressions or infer a target's personal and situational characteristics from them <ref type="bibr" target="#b34">(Lange et al., 2021;</ref><ref type="bibr">Van Kleef &amp; Côté, in press</ref>). Moreover, observers use facial expressions to infer the underlying appraisal of the target <ref type="bibr" target="#b55">(Scherer &amp; Grandjean, 2008)</ref> and draw conclusions about the target's motivation <ref type="bibr" target="#b24">(Hareli &amp; Hess, 2010)</ref>.</p><p>In envy situations, enviers' disappointment or anger could reveal information about the envier's desires to observers. Given that disappointment is associated with a missed positive outcome <ref type="bibr" target="#b69">(Van Dijk et al., 1999;</ref><ref type="bibr"/> here the envied person's advantage), observers may infer that the (benign) envier desires the advantage. Conversely, given that anger is associated with blaming others <ref type="bibr" target="#b19">(Ellsworth &amp; Scherer, 2003</ref>; here the envied person) for an unfair situation, observers may infer that the (malicious) envier wants to harm the envied person.</p><p>Second, observers can also derive information from people's eye gaze. Where people direct their attention provides information to observers regarding people's motivational orientation <ref type="bibr" target="#b23">(Frischen et al., 2007)</ref>, also because motivation drives attention allocation <ref type="bibr" target="#b73">(Vogt et al., 2010)</ref>. The differential foci on the envied person or the envied person's advantage may similarly convey information about enviers' goals. Benign enviers direct attention equally to the envied person and the envied person's advantage <ref type="bibr" target="#b13">(Crusius &amp; Lange, 2014</ref>). Yet, attention towards the advantage should signal to observers that the envier has the goal to improve, leading to inferences of benign envy more than when the envier simultaneously focuses on the envied person. Malicious enviers direct attention to the envied person more than the envied person's advantage <ref type="bibr" target="#b13">(Crusius &amp; Lange, 2014)</ref>. This attentional focus would therefore indicate to observers that the person's motivational orientation is directed at the envied person.</p><p>We hypothesize that observers' inferences of benign and malicious envy result from the combination of these two nonverbal cues in the presence of an advantaged person. Indeed, the recognition of emotional displays improves when the faces' focus of attention matches the motivational direction of the emotion <ref type="bibr" target="#b1">(Adams &amp; Kleck, 2005)</ref>. We predict that inferences of benign envy are more likely when a person looks with disappointment at the successful person's advantage. This combined set of cues signals to observers that the person failed to reach the desired advantage, implying that the envier is motivated to overcome the rank differential by improving the self. We further predict that inferences of malicious envy are more likely when a person looks with anger at the envied person. This combined set of cues signals to observers that the person blames others for an undeserved disadvantage and is motivated to aggress against the envied person. Thus, we argue that the combination of nonverbal expressions and contextual information provides cues that lead observers to infer that a person experiences benign or malicious envy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>The Current Research</head><p>In most previous theorizing it has been argued that it is impossible for observers to infer that another person is envious. In contrast, in line with research on the contextualized nature of emotion perception, we argue that observers can infer benign and malicious envy from multiple, contextual cues. Specifically, we predict that people infer benign or malicious envy from a combination of expressive displays and contextual information, namely when a person encounters an advantaged other person and expresses either disappointment or anger and directs attention either to the envied person or the envy object. Inferences of benign envy should be more likely when the person looks with disappointment at the envied other's advantage. Inferences of malicious envy should be more likely when the person looks with anger at the envied other. We tested these hypotheses in three studies.</p><p>We report all studies we ever conducted in this line of research. We report how we determined our sample size, all data exclusions (if any), all manipulations, and all measures in the study. The anonymized data, analysis scripts, and materials are available on the Open Science Framework (<ref type="url" target="https://osf.io/n9uvj/">https://osf.io/n9uvj/</ref>). The studies were conducted in accordance with the Declaration of Helsinki and received ethics approval from the Institutional Review Board of the University of Amsterdam <ref type="bibr" target="#b50">(2018</ref><ref type="bibr">-SP-8824, 2018-SP-9418)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study 1</head><p>The goal of Study 1 was to test whether target's nonverbal displays when encountering an advantaged person predict observers' inferences of benign and malicious envy. Participants rated targets' envy across multiple trials involving varying combinations of the targets' emotional display and head turning. That is, the targets looked with anger or disappointment at either the successful person or the high-status object. As a comparison, the targets also sometimes remained neutral. We predicted combined effects of emotion displays and head turning on inferences of both benign and malicious envy. Participants should be more likely to infer benign envy when a target looks with disappointment at the envied person's advantage as compared to all other conditions. Conversely, they should be more likely to infer malicious envy when the target looks with anger at the envied person as compared to all other conditions. As research suggests that disappointment shares a facial expression with sadness (e.g., <ref type="bibr" target="#b17">Ekman, 1993;</ref><ref type="bibr" target="#b70">Van Doorn et al., 2012)</ref>, we used displays of sadness to operationalize disappointment. To clarify this adapted usage, we refer to the expressions as sadness in the context of the study but will interpret them as expressions of disappointment in the discussion. We preregistered our hypotheses, design, and analysis plan on AsPredicted.org (<ref type="url" target="https://aspredicted.org/3tq2y.pdf">https://aspredicted.org/3tq2y.pdf</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Participants</head><p>Ninety students from different majors at a Dutch university and volunteers participated in Study 1. Their mean age was 23.89 years (SD = 8.77, range: 18 -68; 25 male).</p><p>The sample provided approximately 90% power to find an effect of dZ = 0.35 for our predicted contrasts using α = .05 in a two-tailed test.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Materials and Procedure</head><p>We invited participants to a study investigating inferences of persons' emotional states. They were confronted with a context in which an avatar (a person silhouette) called either Marc or Anna (gender-matched) is proud of an object they possess. Participants were randomly allocated to one of nine objects, namely a bike, a car, a bachelor thesis grade, a laptop, a phone, a trophy, a tv, a vacation spot, or a watch. Participants were distributed equally across conditions. Each object had 10 participants. Because of a coding error, however, 11 participants were allocated to the vacation spot and nine people to the tv.</p><p>The categories of objects and the specific pictures were chosen from a larger sample of objects based on a pretest with N = 50 participants from the same subject pool 1 . In the pretest, participants rated the objects on a scale from 1 (not at all) to 7 (very much) with respect to how attractive they are, how much they are associated with high status in society, and how easy it would be to imagine possessing them. For Study 1, we picked objects perceived as attractive (M = 6.02, SD = 0.60, range: 4.92 -6.74), granting status (M = 5.02, SD = 0.72, range: 3.70 -5.90), and at least possible to possess (M = 4.00, SD = 0.82, range: 2.86 -5.28) without gender differences (corrected for multiple testing). This ensures that the objects could potentially elicit envy in all participants.</p><p>In the main study, participants' task was to imagine that Marc/Anna meets target persons and shows them the object across multiple, entirely independent situations. Marc/Anna was displayed on the left side of the screen, the target was in the center, and the object was on the right side (Figure <ref type="figure" target="#fig_0">1</ref>). In each encounter, the target was initially looking straight with a neutral expression. Participants could start a video in which the target then displayed a specific emotional reaction. In particular, the target turned with an angry, neutral, or sad expression towards either Marc/Anna or the object. The sad expression operationalized disappointment, as the two share a facial display <ref type="bibr" target="#b17">(Ekman, 1993;</ref><ref type="bibr"/> for the same approach see <ref type="bibr" target="#b70">Van Doorn et al., 2012</ref><ref type="bibr" target="#b20">, 2015)</ref>. Participants could watch the video as often as they wanted. In total, there were four male and four female expressers. We took the stimuli from the validated Amsterdam Dynamic Facial Expression Set ( <ref type="bibr" target="#b67">Van der Schalk et al., 2011)</ref>. Thus, in total there were 24 trials in a 3 Emotion (anger vs. neutral vs. sadness) X 2 Turning (towards person vs. towards object) X 4 Expresser within-subjects design matched for gender.</p><p>In each trial, participants rated how much pain, benign envy, and malicious envy they thought the target was experiencing using Dutch translations of scales based on the Paindriven Dual Envy Theory <ref type="bibr" target="#b35">(Lange et al., 2018)</ref>. The scales measured painful inferiority (e.g., "The person feels inadequate") with three items and benign (e.g., "The person feels a deep longing for X") as well as malicious envy (e.g., "The person secretly wishes that the Marc/Anna would lose X") with four items each. Methodological advice recommends the use of such rating scales in research on emotion perception because they allow participants to indicate their confidence that none of the emotions applies to a stimulus or that multiple emotions apply to a stimulus (e.g., <ref type="bibr" target="#b52">Russell, 1994)</ref>. Across the 24 trials, the scales measuring pain (αs = .61 -.93), benign envy (αs = .74 -.92), and malicious envy (αs = .80 -.96) were reliable. We collapsed responses to each scale across expressers.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>We conducted the analyses in R (R Core Team, 2019; version 3.6.3) using the packages psych <ref type="bibr" target="#b50">(Revelle, 2018;</ref><ref type="bibr">version 1.9.12.31)</ref>, ez <ref type="bibr" target="#b36">(Lawrence, 2016;</ref><ref type="bibr">version 4.4-0)</ref>, afex <ref type="bibr" target="#b59">(Singmann et al., 2020;</ref><ref type="bibr">version 0.27-2)</ref>, emmeans <ref type="bibr" target="#b37">(Lenth, 2019;</ref><ref type="bibr">version 1.4.5)</ref> and lmerTest <ref type="bibr" target="#b28">(Kuznetsova et al., 2017;</ref><ref type="bibr">version 3.1-1)</ref>. We also used the packages rio <ref type="bibr" target="#b11">(Chan et al., 2018;</ref><ref type="bibr">version 0.5.16)</ref>, plyr <ref type="bibr" target="#b74">(Wickham, 2011;</ref><ref type="bibr">version 1.8.6)</ref>, dyplr <ref type="bibr">(Wickham et al., 2019;</ref><ref type="bibr">version 0.8.5)</ref>, and tidyr <ref type="bibr">(Wickham &amp; Henry, 2019</ref>; version 1.0.2).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Preregistered Analyses</head><p>We initially tested for effects across all dependent variables. Specifically, we conducted a MANOVA with Emotion (anger vs. neutral vs. sadness) and Turning (towards person vs. towards object) as within-subject factors and Object (nine different) as betweensubject factor. Benign envy, malicious envy, and pain served as dependent variables. All effects of Object and all effects on pain were exploratory. The analysis resulted in multivariate effects for Emotion, Λ = .05, F(6, 320) = 196.33, p &lt; .001, Turning, Λ = .60, F(3, 79) = 17.65, p &lt; .001, and Emotion X Turning, Λ = .90, F(6, 320) = 2.90, p = .01. The multivariate effects of Object, Λ = .72, F(24, 229.73) = 1.14, p = .31, Object X Emotion, Λ = .77, F(48, 476.67) = 0.90, p = .67, Object X Turning, Λ = .76, F(24, 229.73) = 0.96, p = .52, and the three-way interaction, Λ = .70, F(48, 476.67) = 1.26, p = .12, were not significant.</p><p>To test our specific hypotheses, we conducted univariate ANOVAs separately for benign and malicious envy. As Object did not have any effect, we excluded it from the analyses. The results are displayed in Figure <ref type="figure" target="#fig_1">2</ref>. For benign envy, there were main effects of Emotion, F(2, 178) = 60.05, p &lt; .001, ηG 2 = .20 and Turning, F(1, 89) = 17.75, p &lt; .001, ηG 2 = .01, but, unexpectedly, no overall interaction, F(2, 178) = 2.10, p = .13, ηG 2 = .001. Our predicted contrast, comparing the condition in which the target turned with a sad expression towards the object (weight = 5) with all other conditions (weights = -1), was nevertheless significant, t(89) = 8.44, p &lt; .001, dZ = 0.89. More specifically, the condition in which the target turned with a sad expression towards the object (M = 4.45, SD = 1.12) led to higher ratings than the conditions in which the target turned towards the person with an angry (M = 4.07, SD = 1.23), t(89) = 3.19, p = .002, dZ = 0.34, neutral (M = 3.00, SD = 1.12), t(89) = 10.92, p &lt; .001, dZ = 1.15, or sad expression (M = 4.23, SD = 1.16), t(89) = 3.09, p = .003, dZ = 0.33, or in which the target turned towards the object with a neutral expression (M = 3.06, SD = 1.12), t(89) = 10.04, p &lt; .001, dZ = 1.06. However, contrary to predictions, it led to similar ratings as the condition in which the target turned with an angry expression towards the object (M = 4.32, SD = 1.23), t(89) = 1.01, p = .31, dZ = 0.11.</p><p>For malicious envy, there were main effects of Emotion, F(2, 178) = 358.83, p &lt; .001, ηG 2 = .59 and Turning, F(1, 89) = 46.92, p &lt; .001, ηG 2 = .01, as well as an interaction, F(2, 178) = 6.91, p = .001, ηG 2 = .003. Our predicted contrast, comparing the condition in which the target turned with an angry expression towards the person (weight = 5) to all other conditions (weights = -1), was significant, t(89) = 26.52, p &lt; .001, dZ = 2.80. More specifically, the condition in which the target turned with an angry expression towards the person (M = 5.62, SD = 0.98) led to higher ratings than the conditions in which the target turned towards the person with a neutral (M = 2.52, SD = 1.17), t(89) = 23.36, p &lt; .001, dZ = 2.46, or sad expression (M = 2.79, SD = 1.09), t(89) = 22.10, p &lt; .001, dZ = 2.33, or in which the target turned towards the object with an angry (M = 5.20, SD = 1.23), t(89) = 5.25, p &lt; .001, dZ = 0.55, neutral (M = 2.41, SD = 1.17), t(89) = 23.90, p &lt; .001, dZ = 2.52, or sad expression (M = 2.52, SD = 1.04), t(89) = 24.95, p &lt; .001, dZ = 2.63.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Exploratory Analyses</head><p>We conducted additional analyses to test the robustness of the findings and further explore the results pattern. First, we ran the same univariate ANOVA with pain as the dependent variable to investigate how observers inferred general negative feelings from the cues. The analysis resulted in a main effect of Emotion, F(2, 178) = 240.99, p &lt; .001, ηG 2 = .51. The main effect of Turning, F(1, 89) = 0.83, p = .36, ηG 2 &lt; .001, and the interaction of Emotion X Turning, F(2, 178) = 0.04, p = .96, ηG 2 &lt; .001, were not significant. Specifically, pain was higher when the target turned with an angry expression towards the person (M = 3.81, SD = 1.11) or the object (M = 3.78, SD = 1.06) as well as with a sad expression towards the person (M = 5.35, SD = 0.98) or the object (M = 5.31, SD = 1.01) as compared to when the target turned with a neutral expression towards the person (M = 2.73, SD = 1.12) or the object (M = 2.71, SD = 1.05).</p><p>Second, we tested for stimulus effects, that is, the effect of different expressers, in order to rule out that the findings were driven by particular stimuli <ref type="bibr" target="#b25">(Judd et al., 2017)</ref>. As participants judged the standardized emotional displays of expressers and not the expressers themselves, we reasoned that judgments would not vary much across them. We tested the robustness of our results with linear mixed models. In separate analyses, benign envy, malicious envy, and pain served as dependent variables and we treated both participant and Expresser as random. The analyses had the same fixed effects as the preregistered analyses.</p><p>The effects of Emotion, Turning, and Emotion X Turning had the same level of significance as in the univariate ANOVAs and the variance of the pattern of results between different expressors was minor. Details of these analyses are available in the supplementary materials.</p><p>Finally, we sought to tap into the differences of the envy scales more directly. Even though our predicted contrasts were significant, the pattern of results did not fit entirely to our predictions. That is, inferences of benign envy were not particularly high when the target turned with a sad expression toward the envy object as compared to all other conditions, but were also rather high when the target turned with anger towards the object and, to a lesser degree, when the target turned with sadness or anger toward the person. Moreover, inferences of malicious envy were not particularly high when the target turned with an angry expression toward the envied person as compared to all other conditions, but were also high when the target turned with anger toward the object.</p><p>To explore the differences of benign and malicious envy, we repeated the main analyses including the type of scale (benign vs. malicious) as another within-subjects factor.</p><p>That is, we ran a univariate ANOVA with Emotion (anger vs. neutral vs sadness), Turning (towards person vs. towards object), and Scale (benign envy vs. malicious envy) as withinsubjects factors and the intensity rating of the scales as the dependent variable. Scale had a main effect, F(1, 89) = 27.82, p &lt; .001, ηG 2 = .02, reflecting higher values for benign than malicious envy. More importantly, there was a Scale X Emotion interaction, F(2, 178) = 193.87, p &lt; .001, ηG 2 = .22. Specifically, neutral expressions elicited lower scores than anger and sadness combined for both benign, ΔM = -1.24, SE = 0.13, t(89) = -9.40, p &lt; .001, dZ = -0.99, and malicious envy, ΔM = -1.57, SE = 0.11, t(89) = -14.89, p &lt; .001, dZ = -1.57.</p><p>Furthermore, there was no difference between anger and sadness for benign envy, ΔM = -0.14, SE = 0.11, t(89) = -1.33, p = .19, dZ = -0.14, but anger led to higher ratings than sadness for malicious envy, ΔM = 2.75, SE = 0.12, t(89) = 22.15, p &lt; .001, dZ = 2.33. Moreover, as expected based on the main analysis, there was a Scale X Turning interaction, F(1, 89) = 50.95, p &lt; .001, ηG 2 = .01. Benign envy was higher when the target turned towards the object than towards the person, ΔM = -0.18, SE = 0.04, t(89) = -4.21, p &lt; .001, dZ = -0.44, whereas this pattern reversed for malicious envy, ΔM = 0.27, SE = 0.04, t(89) = 6.85, p &lt; .001, dZ = 0.72. Finally, there was also a three-way interaction, F(2, 178) = 7.97, p &lt; .001, ηG 2 = .002, indicating that the results pattern differed in strength between the envy scales. In sum, participants' inferences of envy based on emotional displays and head turning were independent from each other. Participants inferred more benign envy when the target was emotional and when the target turned toward the object, whereas participants inferred more malicious envy when the target was angry and when the target turned toward the person.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>Study 1 was only partly in line with our hypotheses. As predicted, inferences of benign envy were highest when the target turned with a sad (i.e., disappointed) expression towards the object. However, inferences of benign envy were high for both angry and sad (i.e., disappointed) as compared to neutral expressions. Turning towards the object rather than the person had a small additional main effect. The combination of both cues did not lead to particularly high inferences of benign envy. Moreover, as predicted, inferences of malicious envy were highest when the target turned with an angry expression towards the person.</p><p>However, inferences of malicious envy were also rather high when the target turned with an angry expression towards the object. Even though the interaction of Emotion and Turning was significant for inferences of malicious envy, it was driven mostly by a smaller effect of Turning in the neutral condition. Our expectation was, instead, that the interaction would result from a higher effect of Turning in the anger condition. Thus, also for malicious envy, the results support main effects of Emotion and Turning more than our predicted contrasts.</p><p>Interestingly, inferences of pain were higher for both angry and sad (i.e., disappointed) as compared to neutral expressions independent of Turning. The same contrasts were significant for benign and malicious envy. In all these tests, effect sizes were large. This finding indicates that participants were more likely to infer envy when the target reacted emotionally to another person's advantage, but not when the target remained neutral.</p><p>Collectively, these results imply that the nonverbal expressions of the target independently contributed to observer's inferences of both benign and malicious envy. Inferences of envy were substantially higher when a target reacted emotionally to an advantaged other than with a neutral expression. Inferences of benign envy were independent of whether the target was angry or disappointed but were higher when the target turned toward the object. Inferences of malicious envy were higher when the target was angry rather than disappointed, and when the target turned toward the envied person rather than the object.</p><p>As Study 1 supported these patterns at least partly based on exploratory analyses, we deemed it important to replicate them.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study 2</head><p>The goal of Study 2 was to replicate the patterns we found in Study 1. We aimed at corroborating that the main effects of Emotion and Turning varied across the envy forms as measured with different scales. Specifically, we predicted an interaction of Scale X Emotion.</p><p>Inferences of benign envy should be higher when the target displays anger or sadness (i.e., disappointment) as compared to remaining neutral. For inferences of malicious envy, the same contrast should be significant, and inferences of malicious envy should also be higher when the target displays anger as compared to sadness (i.e., disappointment). We further predicted an interaction of Scale X Turning. Inferences of benign envy should be higher when the target turns towards the object as compared to the person, whereas for malicious envy this effect should be reversed. We preregistered our hypotheses, design, and analysis plan on AsPredicted.org (<ref type="url" target="https://aspredicted.org/i9vw6.pdf">https://aspredicted.org/i9vw6.pdf</ref>) 2 .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Participants</head><p>Ninety-eight students from different majors of a Dutch university and volunteers participated in Study 2. Their mean age was 24.53 years (SD = 10, range: 17 -69; 23 male).</p><p>We excluded two additional participants because they mentioned after finishing the study that they did not understand that the target, the person, and the object were supposed to be in the same situation. Even though this exclusion criterion was not preregistered, we reasoned that these participants' responses would work against proper tests of our hypotheses. The sample provided approximately 90% power to find an effect of dZ = 0.33 for our predicted contrasts using α = .05 in a two-tailed test.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Materials and Procedure</head><p>The design was identical to Study 1 except for one change: we excluded the pain items as they were not central to our hypothesis tests. Instead, we included two other items 2 In the preregistration, we erroneously refer to the predicted Scale X Turning interaction as Emotion X Turning. Note, however, that the specific contrasts we describe for the interaction are indeed the predicted contrasts.</p><p>that should measure benign and malicious envy. The items were originally in Dutch. They translate to "The person feels benign envy towards Marc/Anna" and "The person feels malicious envy", respectively.</p><p>These new single items could address another concern of Study 1. Most benign envy items we used in Study 1 referred to the envy object, whereas most malicious envy items referred to the envied person. This difference in focus reflects the different motivational orientations of benign and malicious envy <ref type="bibr" target="#b35">(Lange et al., 2018;</ref><ref type="bibr" target="#b63">Van de Ven, 2016;</ref><ref type="bibr" target="#b64">Van de Ven et al., 2009</ref>). Yet, in the current case it could additionally lead participants to map the target's head turning onto the respective items. Finding evidence for an effect of Turning in benign and malicious envy independent of this potential confound would provide stronger evidence for our hypotheses. The new single items not only excluded this confound, they even partly worked against our hypotheses. That is, the benign envy item mentioned the envied person, because this was grammatically required in Dutch, while we predicted that for this item, participants should infer envy when the target turns toward the envy object.</p><p>For 10 participants each, the envy object was the car or the watch. For 12 participants, it was the bike. For all other objects, there were 11 participants. Across the 24 trials, the scales measuring benign (αs = .73 -.95) and malicious envy (αs = .82 -.97) were reliable. We collapsed responses to each scale or single item across expressers.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>We again analyzed the data in R using packages listed in Study 1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Preregistered Analyses</head><p>We first tested our specific hypotheses for different effects of Emotion and Turning on inferences of benign and malicious envy. We tested the hypotheses for both the scales and the single items to compare the results. Specifically, we conducted two repeated-measures ANOVAs, one for the benign and malicious envy scales and one for the two single items.</p><p>Beyond this, the analyses were identical. Emotion (anger vs. neutral vs. sadness), Turning (towards person vs. towards object), and Scale (benign envy vs. malicious envy) served as independent variables. The intensity rating was the dependent variable.</p><p>The results for the scales are depicted in Figure <ref type="figure" target="#fig_2">3</ref>. The analysis resulted in main effects for Scale, F(1, 97) = 56.97, p &lt; .001, ηG 2 = .04, and Emotion, F(2, 194) = 294.55, p &lt; .001, ηG 2 = .40. The effect of Turning was not significant, F(1, 97) = 1.04, p = .31, ηG 2 &lt; .001, as was the interaction of Emotion X Turning, F(2, 194) = 1.14, p = .32, ηG 2 &lt; .001. More importantly, there was the predicted Scale X Emotion interaction, F(2, 194) = 259.79, p &lt; .001, ηG 2 = .25. Replicating Study 1, neutral expressions as compared to anger and sadness led to lower ratings of benign, ΔM = -1.71, SE = 0.13, t(97) = -13.63, p &lt; .001, dZ = -1.38, and malicious envy, ΔM = -1.79, SE = 0.10, t(97) = -17.71, p &lt; .001, dZ = -1.79. Moreover, anger led to higher ratings of malicious envy than sadness, ΔM = 2.81, SE = 0.11, t(97) = 25.14, p &lt; .001, dZ = 2.54. Contrary to Study 1 but in line with our initial hypotheses, anger led to lower ratings of benign envy than sadness, ΔM = -0.51, SE = 0.10, t(97) = -4.91, p &lt; .001, dZ = -0.50. Moreover, also in line with our predictions, there was a Scale X Turning interaction, F(1, 97) = 16.21, p &lt; .001, ηG 2 = .004. Replicating Study 1, turning towards the person as compared to the object led to lower ratings of benign envy, ΔM = -0.18, SE = 0.05, t(97) = -3.37, p = .001, dZ = -0.34, but higher ratings of malicious envy, ΔM = 0.13, SE = 0.04, t(97) = 3.21, p = .002, dZ = 0.32. Finally, the analysis also produced an unexpected three-way interaction, F(2, 194) = 4.60, p = .01, ηG 2 = .001, again indicating that the results pattern differed in strength between the envy scales.</p><p>The results for the single items are depicted in Figure <ref type="figure" target="#fig_3">4</ref>. The analysis resulted in main effects for Scale, F(1, 97) = 22.44, p &lt; .001, ηG 2 = .02, Emotion, F(2, 194) = 218.31, p &lt; .001, ηG 2 = .43, and Turning, F(1, 97) = 7.13, p = .01, ηG 2 = .002, but no interaction of Emotion X Turning, F(2, 194) = 1.95, p = .14, ηG 2 &lt; .001, and no three-way-interaction, F(2, 194) = 0.26, p = .77, ηG 2 &lt; .001. Importantly, there was the predicted Scale X Emotion interaction, F(2, 194) = 45.85, p &lt; .001, ηG 2 = .06. As for the scales, neutral expressions, compared to anger and sadness, led to lower ratings of benign, ΔM = -2.18, SE = 0.14, t(97) = -15.36, p &lt; .001, dZ = -1.55, and malicious envy, ΔM = -1.94, SE = 0.13, t(97) = -15.40, p &lt; .001, dZ = -1.56. Anger led to higher ratings of malicious envy than sadness, ΔM = 2.42, SE = 0.16, t(97) = 15.40, p &lt; .001, dZ = 1.56. In direct opposition to the results for the scales, benign envy ratings were also higher for anger than for sadness, ΔM = 0.82, SE = 0.18, t(97) = 4.57, p &lt; .001, dZ = 0.46, even though the effect was smaller than for malicious envy.</p><p>Finally, the predicted Scale X Turning interaction was not significant, F(1, 97) = 1.80, p = .18, ηG 2 &lt; .001. That is, contrary to predictions, ratings tended to be higher when the target turned towards the person as compared to the object for both benign, ΔM = 0.15, SE = 0.05, t(97) = 2.91, p = .01, dZ = 0.29, and malicious envy, ΔM = 0.08, SE = 0.05, t(97) = 1.54, p = .13, dZ = 0.16.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Exploratory Analyses</head><p>We again tested the robustness of our findings in different ways. First, as in Study 1, we explored whether the preregistered analyses were unchanged when treating Expresser as another random effect. This was the case. The results are available in the supplementary materials.</p><p>Second, we conducted another test to see whether the effect of Turning on benign and malicious envy depends on the frequency with which the envy object and the envied person are mentioned in the benign and malicious envy scales, respectively. The analysis of the single items supported that the interaction of Scale X Turning is absent when the frequency is controlled for. However, talking to participants after the study and inspecting Figure <ref type="figure" target="#fig_3">4</ref> led us to doubt whether the single items indeed captured benign and malicious envy as we had intended. In informal conversations after the study, participants especially indicated that the benign envy item may capture malicious envy as well, just not as explicitly.</p><p>Therefore, we conducted another test with selected items from the benign and malicious envy scales that do not confound the mentioning of the envied person and envy object in favor of our hypotheses. Specifically, we selected an item from the benign envy scale that mentioned the envied person. This item even works against our hypothesis because we predicted that benign envy is higher when the target turns toward the envy object. Moreover, we selected an item from the malicious envy scale that measured non-directed feelings of hatred. This item therefore neither mentions the envied person nor the envy object and, hence, cannot have biased participants' responses in the direction of our hypothesis. Thus, repeating the analyses with these selected items constitutes a robustness check of the preregistered analyses, testing whether support for our hypotheses is driven by a demand effect.</p><p>The results of these selected items are depicted in Figure <ref type="figure" target="#fig_4">5</ref>. The analysis resulted in main effects of Scale, F(1, 97) = 50.06, p &lt; .001, ηG 2 = .06, and Emotion, F(2, 194) = 284.08, p &lt; .001, ηG 2 = .38, a marginally significant effect of Turning, F(1, 97) = 3.24, p = .07, ηG 2 &lt; .001, but no interaction of Emotion X Turning, F(2, 194) = 0.77, p = .46, ηG 2 &lt; .001.</p><p>Importantly, there was the predicted Scale X Emotion interaction, F(2, 194) = 279.40, p &lt; .001, ηG 2 = .33. In line with the results for the full scales, neutral expressions led to lower ratings than anger and sadness for both benign, ΔM = -1.75, SE = 0.15, t(97) = -11.41, p &lt; .001, dZ = -1.15, and malicious envy, ΔM = -1.90, SE = 0.10, t(97) = -18.84, p &lt; .001, dZ = -1.90. Furthermore, also in line with the full scales, anger led to lower ratings of benign envy than sadness, ΔM = -0.92, SE = 0.13, t(97) = -7.03, p &lt; .001, dZ = -0.71, whereas anger led to higher ratings of malicious envy than sadness, ΔM = 3.56, SE = 0.13, t(97) = 26.88, p &lt; .001, dZ = 2.72. Next to this, there was no Scale X Turning interaction, F(1, 97) = 1.19, p = .28, ηG 2 &lt; .001. Nevertheless, turning towards the person as compared to the object led to higher malicious envy, ΔM = 0.12, SE = 0.05, t(97) = 2.48, p = .01, dZ = 0.25, but there was no effect for benign envy, ΔM = 0.04, SE = 0.06, t(97) = 0.56, p = .58, dZ = 0.06. Finally, there was also a significant three-way interaction, F(2, 194) = 3.16, p = .04, ηG 2 = .001, again indicating that the results pattern differed in strength between the envy scales. In sum, using selected items, we replicated the effect of Emotion for benign and malicious envy as well as the effect of Turning for malicious envy. The effect of Turning in benign envy, however, was not significant anymore.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>Study 2 mostly replicated the findings from Study 1. Inferences of benign envy were higher when the target turned with a sad (i.e., disappointed) or angry rather than a neutral expression towards the person. Contrary to Study 1, but in line with our initial hypotheses, inferences of benign envy were higher for sad (i.e., disappointed) than angry expressions. Yet, this effect was rather small. Inferences of benign envy were also higher when the target turned towards the envy object as compared to the envied person. This effect, however, occurred only for the benign envy scale and not for the single items in which the envy object was not mentioned. Exploratory analyses with one item of the scale in which the envy object was not mentioned also supported that there is no effect of Turning. This finding implies that inferences of benign envy less strongly depend on the target's attention allocation to either the envied person or envy object. Potentially, only inferences of a few components of benign envy (desire, improvement motivation) hinge on the attention to the envy object. However, the different effects could also be a consequence of more measurement error, resulting from selecting single items with unknown reliability from a full scale.</p><p>For malicious envy, Study 2 also replicated Study 1 in that inferences of malicious envy were more likely when the target expressed anger as compared to sadness (i.e., disappointment) or remaining neutral. Moreover, malicious envy inferences were higher when the target turned towards the person for the scale and the selected scale item that did not mention the envied person. For the single item, the test was not significant but tended in the predicted direction. Hence, as for inferences of benign envy, the effect of the emotion display was stronger and more robust than the effect of head turning. However, this change could also be a consequence of measurement error.</p><p>Notably, Study 2 also replicated that inferences of benign and malicious envy were generally higher when the target was emotional as compared to neutral. As in Study 1, corresponding effect sizes were large. Therefore, simply being in the context of an advantaged other person may not suffice to lead observers to infer envy. Instead, the target must be affected emotionally.</p><p>Collectively, these results replicate Study 1 in that they indicate that the nonverbal expressions of the target independently contributed to observer's inferences of benign and malicious envy. As before, inferences of envy were substantially higher when a target reacted emotionally to an advantaged other. Contrary to Study 1 but in line with our initial hypotheses, inferences of benign envy were higher when the target was disappointed and when the target turned toward the object. However, the effect of attention allocation was small and potentially confounded. Replicating Study 1, inferences of malicious envy were higher when the target was angry and when the target turned toward the envied person. To bolster our confidence in these conclusions, we sought to conceptually replicate them in a different design using different stimuli.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study 3</head><p>The goal of Study 3 was to conceptually replicate the results of Studies 1 and 2. We primarily wanted to replicate the results in a between-subject design, using a more realistic setting than the design we used so far. To this end, we created pictures of scenes in which one person looked with either anger or sadness (i.e., disappointment) at another person's superior bike or the person. For making the social comparison of both persons more explicit, the emotional person had an inferior bike. Given the strong and consistent effects of the emotional displays compared to the neutral expression in the previous studies, we excluded the neutral expression from Study 3. All participants saw four pictures combining the manipulation of the expressed emotion and attention allocation in a within-subjects design, allowing to run the same analyses as in Studies 1 and 2. We used the first picture each participant rated for between-subjects tests of our hypotheses. Following the results of Study 2, we predicted that inferences of benign envy are higher when the person displays a disappointed as compared to an angry expression and when the person turns toward the bike as compared to the person. For inferences of malicious envy, we predicted the reversed pattern for both effects. We preregistered our hypotheses, design, and analysis plan on AsPredicted.org (<ref type="url" target="https://aspredicted.org/ej26f.pdf">https://aspredicted.org/ej26f.pdf</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Participants</head><p>Four hundred and ninety-five US workers from Amazon Mechanical Turk participated in Study 3. Their mean age was 35.67 years (SD = 11.2, range: 19 -73; 311 male, 183 female, one other). We excluded six additional participants because they indicated we should not use their data <ref type="bibr" target="#b38">(Meade &amp; Craig, 2012)</ref>.</p><p>We had preregistered a sequential analysis <ref type="bibr" target="#b30">(Lakens, 2014)</ref>. That is, we used the R package gsDesign (K. <ref type="bibr" target="#b3">Anderson, 2016</ref>; version 3.0-1) to determine three equally spaced time points at which we would peak at the data. At the first and second peak, the preregistered criteria for finishing the study earlier were not fulfilled. Hence, we continued data collection until we reached the planned final sample size. To control for the peaks into the data, Study 3 had an adjusted α = .0278. We will consider all p-values below this level as significant. For details on the sequential analysis plan, see the preregistration.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Materials and Procedure</head><p>We invited participants to a study investigating how people interpret situations. They sequentially saw four pictures in random order (for exemplary pictures see Figure <ref type="figure" target="#fig_5">6</ref>). On the pictures, there were two persons, each pushing a bike, who just happened to pass each other on a path. One person's bike was old and shabby, while the other person's bike was fancy and neat. The person with the inferior bike was the target and expressed an emotion. The four pictures resulted from crossing Emotion (anger vs. sadness) and Turning (towards person vs. towards bike). As the kind of expresser did not affect the results of Studies 1 and 2 systematically or substantially (see results of the linear mixed models in the Supplementary Materials), we decided to create pictures of only two women and two men, in which the same person was always the target.</p><p>We selected these pictures based on a pretest with MTurk workers (N = 59). We cropped the heads of the inferior persons from a larger set of pictures in which each expresser served as target. In this pretest, participants' task was to look at each picture and rate how much the person expresses anger, contempt, disgust, fear, sadness, and surprise, using a scale from 1 (not at all) to 7 (very much). For females (n = 20), the selected picture in which the target expressed anger towards the person was rated at least marginally significantly higher on anger (M = 5.35, SE = 0.30) than any other emotion (Ms &lt; 4.48, ps &lt; .053). The picture in which the target expressed anger towards the bike was mostly rated at least marginally significantly higher on anger (M = 5.00, SE = 0.34) than any other emotion (Ms &lt; 4.21, ps &lt; .10), except for contempt (M = 4.30, SE = 0.39, p = .13). The picture in which the target expressed sadness towards the person was rated higher on sadness (M = 5.15, SE = 0.46) than any other emotion (Ms &lt; 3.16, ps &lt; .003). And the picture in which the target expressed sadness towards the bike was rated higher on sadness (M = 5.60, SE = 0.37) than any other emotion (Ms &lt; 3.21, ps &lt; .001). For males (n = 39), the selected picture in which the target expressed anger towards the person was rated higher on anger (M = 5.05, SE = 0.26) than any other emotion (Ms &lt; 4.45, ps &lt; .05). The picture in which the target expressed anger towards the bike was rated higher on anger (M = 4.67, SE = 0.31) than most other emotions (Ms &lt; 3.83, ps &lt; .04), except for sadness (M = 4.08, SE = 0.34, p = .30). The picture in which the target expressed sadness towards the person was rated higher on sadness (M = 5.46, SE = 0.25) than any other emotion (Ms &lt; 3.68, ps &lt; .001). And the picture in which the target expressed sadness towards the bike was rated higher on sadness (M = 6.10, SE = 0.18) than any other emotion (Ms &lt; 3.37, ps &lt; .001). Thus, all pictures were valid. Only the female and male pictures with anger at the bike were not significantly higher on anger than one other emotion rating. Nevertheless, the pattern of results clearly aligned with the intended emotion rating. Furthermore, the female picture was confused only with contempt, which is an emotion that is conceptually close to anger. Moreover, even if the male picture was also rated rather high on sadness, the actual sadness pictures were rated much higher in sadness.</p><p>Therefore, we concluded that the entire set of pictures allowed a fair test of our hypotheses.</p><p>In the main study, participants rated each picture on the English version of the benign and malicious envy scales from Studies 1 and 2 adapted to the current context. Across the pictures, the benign (αs = .83 -.91) and malicious scales (αs = .79 -.90) were reliable.</p><p>Finally, we took the first picture each participant rated for a between-subjects test of our hypotheses. In line with the within-subjects design, there were four conditions, namely anger at the person (n = 128), anger at the bike (n = 140), sadness at the person (n = 118), and sadness at the bike (n = 109).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>We again analyzed the data in R using packages listed in Study 1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Preregistered Analyses</head><p>We first tested our specific hypotheses for different effects of Emotion and Turning on inferences of benign and malicious envy for both the within-and between-subjects design.</p><p>For both designs, we conducted the same ANOVA. Emotion (anger vs. sadness), Turning (towards person vs. towards bike), and Scale (benign envy vs. malicious envy) served as independent variables. The intensity rating was the dependent variable.</p><p>The results for the within-subjects design are depicted in Figure <ref type="figure" target="#fig_6">7</ref>. As one participant did not rate three of the four pictures, we excluded this person from the analysis. The ANOVA resulted in main effects for Emotion, F(1, 493) = 157.40, p &lt; .001, ηG 2 = .02, a marginally significant main effect for Turning, F(1, 493) = 3.35, p = .07, ηG 2 &lt; .001, and a significant interaction for Emotion X Turning, F(1, 493) = 30.07, p &lt; .001, ηG 2 = .002. The effect of Scale was not significant, F(1, 493) = 0.06, p = .81, ηG 2 &lt; .001. More importantly, there was a Scale X Emotion interaction, F(1, 493) = 359.10, p &lt; .001, ηG 2 = .06. Replicating Study 2, anger led to lower ratings of benign envy than sadness, ΔM = -0.35, SE = 0.04, t(493) = -8.60, p &lt; .001, dZ = -0.39, and anger led to higher ratings of malicious envy than sadness, ΔM = 1.19, SE = 0.06, t(493) = 19.05, p &lt; .001, dZ = 0.86. Moreover, there was also a Scale X Turning interaction, F(1, 493) = 128.83, p &lt; .001, ηG 2 = .01. Replicating Study 2, turning towards the person as compared to the bike led to lower ratings of benign envy, ΔM = -0.37, SE = 0.05, t(493) = -8.02, p &lt; .001, dZ = -0.36, but higher ratings of malicious envy, ΔM = 0.25, SE = 0.04, t(493) = 6.76, p &lt; .001, dZ = 0.30. Finally, the analysis also produced an unexpected three-way interaction, F(1, 493) = 26.56, p &lt; .001, ηG 2 = .002, again indicating that the results pattern differed in strength between the envy scales.</p><p>The results for the between-subjects design are depicted in Figure <ref type="figure" target="#fig_7">8</ref>. The ANOVA resulted in main effects for Scale, F(1, 491) = 6.40, p = .01, ηp 2 = .01, and Emotion, F(1, 491) = 10.79, p = .001, ηp 2 = .02, and a significant interaction for Emotion X Turning, F(1, 491) = 8.61, p = .004, ηp 2 = .02. The effect of Turning was not significant, F(1, 491) = 0.10, p = .75, ηp 2 &lt; .001. More importantly, there was a Scale X Emotion interaction, F(1, 491) = 74.95, p &lt; .001, ηp 2 = .13. In line with the within-subjects analyses, anger led to higher ratings of malicious envy than sadness, ΔM = 0.98, SE = 0.14, t(491) = 6.92, p &lt; .001, d = 0.63. In contrast to the within-subjects analysis and Study 2, but in line with Study 1, anger did not lead to lower ratings of benign envy than sadness, ΔM = -0.11, SE = 0.15, t(491) = -0.76, p = .45, d = -0.07, but the effect tended in the predicted direction. Moreover, there was also a Scale X Turning interaction, F(1, 491) = 53.39, p &lt; .001, ηp 2 = .10. In line with the withinsubjects analyses, turning towards the person as compared to the bike led to lower ratings of benign envy, ΔM = -0.50, SE = 0.15, t(491) = -3.34, p &lt; .001, d = -0.30, but higher ratings of malicious envy, ΔM = 0.42, SE = 0.14, t(491) = 2.97, p = .003, d = 0.27. Finally, the analysis also produced an unexpected three-way interaction, F(1, 491) = 13.98, p &lt; .001, ηp 2 = .03, again indicating that the results pattern differed in strength between the envy scales.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Exploratory Analyses</head><p>We again tested the robustness of our findings. Specifically, to control for how often the scale items mentioned the envied person and envy object, we ran the analysis for the selected items that do not have this confound, as we did in Study 2. The within-subjects analysis had three participants less because of missing data. The ANOVA resulted in main effects for Scale, F(1, 491) = 7.34, p = .01, ηG 2 = .002, Emotion, F(1, 491) = 177.81, p &lt; .001, ηG 2 = .02, and Turning, F(1, 491) = 8.12, p = .01, ηG 2 &lt; .001, and an interaction of Emotion X Turning, F(1, 491) = 10.88, p = .001, ηG 2 &lt; .001. More importantly, there was a Scale X Emotion interaction, F(1, 491) = 375.18, p &lt; .001, ηG 2 = .08. Replicating the analysis with the full scales, anger led to lower ratings of benign envy than sadness, ΔM = -0.55, SE = 0.06, t(491) = -9.92, p &lt; .001, dZ = -0.45, and anger led to higher ratings of malicious envy than sadness, ΔM = 1.64, SE = 0.08, t(491) = 20.03, p &lt; .001, dZ = 0.90. Moreover, there was also a Scale X Turning interaction, F(1, 491) = 48.37, p &lt; .001, ηG 2 = .004. Even though the effect was smaller as compared to the analysis with the full scales, turning towards the person as compared to the bike led to lower ratings of benign envy, ΔM = -0.15, SE = 0.05, t(491) = -2.79, p = .01, dZ = -0.13. The effect for malicious envy, that turning towards the person as compared to the bike led to higher ratings, even slightly increased in size, ΔM = 0.35, SE = 0.05, t(491) = 7.28, p &lt; .001, dZ = 0.33. Finally, the analysis also produced an unexpected three-way interaction, F(1, 491) = 37.20, p &lt; .001, ηG 2 = .003, again indicating that the results pattern differed in strength between the envy scales.</p><p>For the between-subjects analyses, the ANOVA resulted in main effects for Scale, F(1, 491) = 7.73, p = .01, ηp 2 = .02, and Emotion, F(1, 491) = 12.94, p &lt; .001, ηp 2 = .03, and a significant interaction for Emotion X Turning, F(1, 491) = 8.06, p = .01, ηp 2 = .02. The effect of Turning was not significant, F(1, 491) &lt; 0.01, p = .99, ηp 2 &lt; .001. More importantly, there was a Scale X Emotion interaction, F(1, 491) = 72.48, p &lt; .001, ηp 2 = .13. In line with the analyses of the full scales, anger led to higher ratings of malicious envy than sadness, ΔM = 1.28, SE = 0.17, t(491) = 7.73, p &lt; .001, d = 0.70. The effect on benign envy was still not significant, yet the effect increased slightly, ΔM = -0.24, SE = 0.17, t(491) = -1.37, p = .17, d = -0.12, still tending in the predicted direction. Moreover, there was also a Scale X Turning interaction, F(1, 491) = 20.66, p &lt; .001, ηp 2 = .04. Even though both effects were smaller as compared to the analysis with the full scales, turning towards the person as compared to the object led to lower ratings of benign envy, ΔM = -0.40, SE = 0.17, t(491) = -2.31, p = .02, d = -0.21, but higher ratings of malicious envy, ΔM = 0.41, SE = 0.17, t(491) = 2.46, p = .01, d = 0.22. Finally, the analysis also produced an unexpected three-way interaction, F(1, 491) = 14.23, p &lt; .001, ηp 2 = .03, again indicating that the results pattern differed in strength between the envy scales. In sum, these results show that ruling out the confound of the scales with the mentioning of the envied person and envy object reduced the effect of Turning on the scales, yet the pattern remained robust.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>Study 3 replicated the results of Study 2. Specifically, inferences of benign envy were higher when the target expressed sadness (i.e., disappointment) as compared to anger and the reversed occurred for malicious envy. Moreover, inferences of benign envy were higher when the target turned towards the bike as compared to the person and the reversed occurred for malicious envy. These results were present in both the within-and betweensubjects analysis with one exception. That is, for the between-subjects analyses, inferences of benign envy were not significantly higher for sadness (i.e., disappointment) than anger, while the effect tended in the predicted direction. Importantly, in contrast to Study 2, the entire pattern of results was stable when focusing on scale items that do not mention the envied person or envy object in line with our hypotheses. Nevertheless, excluding these items substantially reduced the effect size of the effect of Turning on inferences of benign envy.</p><p>Again, this reduction could also be a consequence of measurement error resulting from selecting single items with unknown reliability from a full scale.</p><p>Notably, even though the analyses supported the preregistered hypotheses, the pattern of results for malicious envy were not fully in line with expectations. In particular, turning toward the person as compared to the bike led to higher inferences of malicious envy only when the target expressed anger but not sadness (i.e., disappointment). This, in fact, is in line with our initial predictions for Study 1. However, as we did not observe this pattern in Studies 1 and 2, it appears to be less robust.</p><p>Collectively, these results replicate Studies 1 and 2 in that they indicate that targets' nonverbal expressions independently contributed to observer's inferences of benign and malicious envy. Importantly, Study 3 used a between-and a within-subjects design, new stimuli, and a different participant pool, speaking to the generality of the findings. Inferences of benign envy were higher when the target expressed disappointment and when the target turned toward the object, even when controlling for whether the scale mentioned the envy object. In the between-subjects analyses, however, the effect of the expressed emotion on benign envy was not significant but in the predicted direction. Furthermore, inferences of malicious envy were higher when the target expressed anger and when the target turned toward the envied person.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>General Discussion</head><p>Three studies support three conclusions about inferences of envy. First, observers infer envy when the target reacts emotionally to an advantaged person as compared to remaining neutral. Second, observers infer benign envy when the target expresses disappointment and when the target turns toward the advantage as compared to the person. Third, observers infer malicious envy when the target expresses anger and when the target turns toward the person as compared to the advantage. Even though not each conclusion found full support in each study, the pattern was robust across the studies. Notably, the studies varied in the kind of experimental design (i.e., within and between), the kind of stimuli used (i.e., assembled stimuli and actual scenes), and the sample (i.e., Dutch and US American), collectively speaking to the generality of the findings. Thus, a minimal set of expressive displays combined with contextual information fosters inferences of envy in observers.</p><p>Interestingly, the pattern of findings is not fully in line with our original hypotheses.</p><p>We predicted that inferences of benign and malicious envy particularly result from the combined effect of the target's emotional display and attention allocation. However, the three studies indicate that the emotional display and attention allocation have independent main effects. Observers may not need to interactively combine both cues to infer the targets motivational orientation as either benign or malicious. Indeed, both emotional displays (e.g., <ref type="bibr" target="#b24">Hareli &amp; Hess, 2010)</ref> and attention allocation (e.g., <ref type="bibr" target="#b23">Frischen et al., 2007)</ref> may independently tell observers something about the targets motivational orientation. For instance, if observers infer from a display of disappointment that a target failed to reach a desired outcome <ref type="bibr" target="#b69">(Van Dijk et al., 1999)</ref>, then observing such a display when a target encounters an advantaged other may suffice to foster inferences of benign envy. Moreover, turning toward the advantage may imply to the observer that the target will focus any future motivation on getting the advantage, again fostering inferences of benign envy independent of the emotional display. For malicious envy, observers may infer from a display of anger that the target blames the other person <ref type="bibr" target="#b19">(Ellsworth &amp; Scherer, 2003)</ref> which already implicitly implies a focus on the other person independent of attention allocation. And turning toward the person may imply to the observer the target will direct future motivation at the envied person. To corroborate the conclusion that different nonverbal expressions have independent effects on inferences of benign and malicious envy, future research should conduct studies with other stimuli.</p><p>Together with previous findings, the current results suggest that the social perception of envy is possible, despite previous theoretical statements to the contrary (e.g., <ref type="bibr" target="#b39">Miceli &amp; Castelfranchi, 2007;</ref><ref type="bibr" target="#b61">Smith &amp; Kim, 2007)</ref>. Observers can accurately perceive envy when they can integrate information about a target's experience, for instance when they judge an acquainted person's inclination to react with envy across situations <ref type="bibr" target="#b33">(Lange et al., 2020)</ref>. The current results add to this previous research by shedding light on what cues observers may use to infer envy. Future research should investigate the entire process of the social perception of envy. Specifically, do inferior persons express emotions as well as direct their attention differently when experiencing benign or malicious envy and do observers then use these cues to infer envy? Investigating these questions may require having dyads of participants interact over multiple envy-eliciting situations and measuring expressed cues as well as envy inferences (for an approach see <ref type="bibr" target="#b6">Back et al., 2011)</ref>.</p><p>Potentially, such research could also incorporate other cues than the ones we investigated. For instance, the verbal content of what persons say or the tone in which they say it may also allow inferring their envy <ref type="bibr" target="#b51">(Rodriguez Mosquera et al., 2010;</ref><ref type="bibr" target="#b58">Silver &amp; Sabini, 1978)</ref>. In addition, contextual information about how highly ranked persons display their success (e.g., by showing off) may also add relevant information observers could use (for a starting point see <ref type="bibr" target="#b9">Brooks et al., 2019;</ref><ref type="bibr" target="#b31">Lange &amp; Crusius, 2015)</ref>. Relatedly, future research could present these cues successively as compared to simultaneously. In many real-world cases, cues to a person's envy may not all be available in the same situation. Instead, observers probably often need to accumulate information across situations. For instance, observers may initially see an anger display when a person receives a bad grade in an exam and may only learn in a subsequent conversation that the anger was directed at a successful person who showed off repeatedly. Hence, initially observers likely infer that the person is angry, whereas additional, contextual information may foster inferences of malicious envy.</p><p>More generally, our results contribute to research on the contextualized nature of emotion inferences. Initial research tested the recognition of emotions primarily with idealized pictures of targets' faces alone <ref type="bibr" target="#b18">(Elfenbein &amp; Ambady, 2002)</ref>. More recent research emphasizes that contextual cues may change which emotion an observer infers from facial expressions (e.g., <ref type="bibr" target="#b5">Aviezer et al., 2012;</ref><ref type="bibr" target="#b7">Barrett &amp; Kensinger, 2010;</ref><ref type="bibr" target="#b10">Carroll &amp; Russell, 1996;</ref><ref type="bibr" target="#b26">Kayyal et al., 2015)</ref>. In line with this research, our results indicate that observers may infer a complex emotion such as envy from facial displays of more basic emotions such as anger or disappointment together with contextual information. Moreover, we extend this research by taking into account additional dynamic information about the target's attention allocation in addition to facial expressions. Future research should investigate whether such multiple, contextual cues may also foster inferences of other complex emotions such as gratitude.</p><p>If future research indeed corroborates that emotion inferences rely on the integration of multiple, contextual cues, this evidence should also inform practical applications.</p><p>Currently, industry develops more and more technology dedicated to recognizing emotions from isolated cues. Specific software and wearables specialize in recognizing emotions from facial expressions, vocal indicators, or physiological changes, yet technology hardly integrates multiple cues simultaneously <ref type="bibr" target="#b16">(Egger et al., 2019)</ref>. As far as we know, context information is never considered. The current findings suggest that developing technology that integrates information from multiple, contextual cues will be superior to unimodal or uncontextualized implementations.</p><p>Despite the robust support for independent effects of nonverbal expressions on inferences of envy, our studies also have limitations that future research could address. First, we did not investigate depictions of actual enviers. We followed the common tradition to investigate when observers will infer a particular emotion from an idealized expression (e.g., <ref type="bibr" target="#b18">Elfenbein &amp; Ambady, 2002)</ref>. We varied certain nonverbal expressions that previous research suggested could be present in benign and malicious envy. In reality, people hardly express emotions fully in an idealized fashion (e.g., <ref type="bibr" target="#b4">Atias et al., 2019;</ref><ref type="bibr" target="#b48">Reisenzein et al., 2006;</ref><ref type="bibr" target="#b57">Shuster et al., 2020)</ref>, which at least somewhat reduces the consistency with which observers infer a particular emotion <ref type="bibr" target="#b54">(Sauter &amp; Fischer, 2018)</ref> or sometimes even limits observers' ability to accurately state whether the person experiences something positive or negative <ref type="bibr" target="#b5">(Aviezer et al., 2012)</ref>. Future research could use stimuli showing people in actual envy situations or turn to actual interaction studies that we outlined for investigating the full process of the social perception of envy.</p><p>Second, we had only Western participants. In other cultures, emotions may communicate different information and hence imply other inferences. For instance, anger can manifest in different action tendencies in different cultures <ref type="bibr" target="#b8">(Boiger et al., 2018)</ref> and may have different interpersonal effects depending on whether a participant comes from a Western or Eastern cultural background (e.g., <ref type="bibr" target="#b0">Adam et al., 2010)</ref>. If nonverbal expressions convey different information to observers in different cultures, inferences of envy may differ accordingly. Therefore, future research should investigate the robustness of these findings across cultures.</p><p>Third, even though we controlled for demand effects by using rating scales and by conducting additional analyses with selected items, other demand effects may still partly underly the effects. Future research should therefore further test the robustness of the findings. For instance, studies should manipulate more emotional displays and different ways in which targets allocate their attention. Moreover, they should measure inferences of additional emotions. In addition, they should use other response formats such as free labeling. These studies will also provide important information about the distinctiveness of inferences of benign and malicious envy.</p><p>Finally, we used the sadness facial display to operationalize disappointment. We based this decision on previous theorizing and empirical research that implied that both emotions share a facial display (e.g., <ref type="bibr" target="#b17">Ekman, 1993;</ref><ref type="bibr" target="#b41">Niewiadomski &amp; Pelachaud, 2007;</ref><ref type="bibr" target="#b70">Van Doorn et al., 2012</ref><ref type="bibr" target="#b20">, 2015)</ref>. Yet, equating both displays means that we cannot know whether any of the effects we found resulted from a display of disappointment or instead from the sadness display itself. Future research could assess appraisals that distinguish the two emotions (for research on appraisal patterns of disappointment and sadness see <ref type="bibr" target="#b68">Van Dijk &amp; Zeelenberg, 2002)</ref>. This research should investigate whether observers infer these appraisals from our stimuli and whether these inferred appraisals explain the effect of the emotional display on envy inferences (for a similar approach see <ref type="bibr" target="#b24">Hareli &amp; Hess, 2010;</ref><ref type="bibr" target="#b55">Scherer &amp; Grandjean, 2008)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusion</head><p>The current findings provide further insight in the social perception of envy.</p><p>Observers use multiple cues when inferring the intensity of benign and malicious envy of targets who encounter advantaged others. Facial displays and bodily changes independently contribute to these inferences. Together with previous evidence, the studies therefore imply that inferences of envy hinge on the integration of multiple expressive and contextual cues.        </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. Schematic display of the start of an exemplary trial for male participants in Study 1.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. The effects of Emotion (anger vs. neutral vs. sadness) and Turning</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3. The effects of Emotion (anger vs. neutral vs. sadness) and Turning</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 4 .</head><label>4</label><figDesc>Figure 4. The effects of Emotion (anger vs. neutral vs. sadness) and Turning</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 5 .</head><label>5</label><figDesc>Figure 5. The effects of Emotion (anger vs. neutral vs. sadness) and Turning</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 6 .</head><label>6</label><figDesc>Figure 6. Exemplary stimuli from Study 3. Left picture: the female picture in which</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 7 .</head><label>7</label><figDesc>Figure 7. The effects of Emotion (anger vs. sadness) and Turning (towards person</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 8 .</head><label>8</label><figDesc>Figure 8. The effects of Emotion (anger vs. sadness) and Turning (towards person</figDesc></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>We also pretested low-status objects for different purposes. The entire stimulus and data sets are available on OSF.</p></note>
+		</body>
+		<back>
+
+			<div type="funding">
+<div><p>The research reported in this article was supported by grants from the <rs type="funder">German Research foundation (DFG)</rs> awarded to <rs type="person">Jens Lange</rs> (<rs type="grantNumber">LA 4029/1-1</rs>, <rs type="grantNumber">LA 4029/2-1</rs>). We thank the members of the <rs type="institution">Department of Social Psychology at the University of Amsterdam</rs> for valuable feedback. We also thank <rs type="person">Sami Paul Chakkour</rs>, <rs type="person">Niklas Koch</rs>, <rs type="person">Franziska Thomiczny</rs>, and <rs type="person">Johanna Woitzel</rs> for serving as actors in Study 3.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_xSpaSWk">
+					<idno type="grant-number">LA 4029/1-1</idno>
+				</org>
+				<org type="funding" xml:id="_tsME4bz">
+					<idno type="grant-number">LA 4029/2-1</idno>
+				</org>
+			</listOrg>
+
+			<div type="availability">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>how we determined our sample size, all data exclusions (if anyanalysis scripts, and materials are available on the Open Science Framework (<ref type="url" target="https://osf.io/n9uvj/">https://osf.io/n9uvj/</ref>). All studies were preregistered (see <ref type="url" target="https://aspredicted.org/3tq2y.pdf">https://aspredicted.org/3tq2y.pdf</ref>, <ref type="url" target="https://aspredicted.org/i9vw6.pdf">https://aspredicted.org/i9vw6.pdf</ref>, <ref type="url" target="https://aspredicted.org/ej26f.pdf">https://aspredicted.org/ej26f.pdf</ref>).</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Cultural Variance in the Interpersonal Effects of Anger in Negotiations</title>
+		<author>
+			<persName><forename type="first">Hajo</forename><surname>Adam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aiwa</forename><surname>Shirako</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">William</forename><forename type="middle">W</forename><surname>Maddux</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0956797610370755</idno>
+		<ptr target="https://doi.org/10.1177/0956797610370755"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Science</title>
+		<title level="j" type="abbrev">Psychol Sci</title>
+		<idno type="ISSN">0956-7976</idno>
+		<idno type="ISSNe">1467-9280</idno>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="882" to="889"/>
+			<date type="published" when="2010-05-05">2010</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Adam, H., Shirako, A., &amp; Maddux, W. W. (2010). Cultural variance in the interpersonal effects of anger in negotiations. Psychological Science, 21(6), 882-889. https://doi.org/10.1177/0956797610370755</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Effects of direct and averted gaze on the perception of facially communicated emotion</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">B</forename><surname>Adams</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Kleck</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/1528-3542.5.1</idno>
+		<ptr target="https://doi.org/10.1037/1528-3542.5.1"/>
+	</analytic>
+	<monogr>
+		<title level="j">Emotion</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="3" to="11"/>
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Adams, R. B., &amp; Kleck, R. E. (2005). Effects of direct and averted gaze on the perception of facially communicated emotion. Emotion, 5(1), 3-11. https://doi.org/10.1037/1528- 3542.5.1.</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Is the desire for status a fundamental human motive? A review of the empirical literature.</title>
+		<author>
+			<persName><forename type="first">Cameron</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><forename type="middle">Angus D</forename><surname>Hildreth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Laura</forename><surname>Howland</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/a0038781</idno>
+		<ptr target="https://doi.org/10.1037/a0038781"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Bulletin</title>
+		<title level="j" type="abbrev">Psychological Bulletin</title>
+		<idno type="ISSN">0033-2909</idno>
+		<idno type="ISSNe">1939-1455</idno>
+		<imprint>
+			<biblScope unit="volume">141</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="574" to="601"/>
+			<date type="published" when="2015-05">2015</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Anderson, C., Hildreth, J. A. D., &amp; Howland, L. (2015). Is the desire for status a fundamental human motive? A review of the empirical literature. Psychological Bulletin, 141(3), 574-601. https://doi.org/10.1037/a0038781</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">gsDesign: Group Sequential Design</title>
+		<author>
+			<persName><forename type="first">Keaven</forename><surname>Anderson</surname></persName>
+		</author>
+		<idno type="DOI">10.32614/cran.package.gsdesign</idno>
+		<ptr target="https://CRAN.R-project.org/package=gsDesign"/>
+	</analytic>
+	<monogr>
+		<title level="m">gsDesign: Group sequential design</title>
+		<imprint>
+			<publisher>The R Foundation</publisher>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Anderson, K. (2016). gsDesign: Group sequential design. https://CRAN.R- project.org/package=gsDesign</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Loud and unclear: Intense real-life vocalizations during affective situations are perceptually ambiguous and contextually malleable.</title>
+		<author>
+			<persName><forename type="first">Doron</forename><surname>Atias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alexander</forename><surname>Todorov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shai</forename><surname>Liraz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Arella</forename><surname>Eidinger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ilan</forename><surname>Dror</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yaacov</forename><surname>Maymon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hillel</forename><surname>Aviezer</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/xge0000535</idno>
+		<ptr target="https://doi.org/10.1037/xge0000535"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Experimental Psychology: General</title>
+		<title level="j" type="abbrev">Journal of Experimental Psychology: General</title>
+		<idno type="ISSN">0096-3445</idno>
+		<idno type="ISSNe">1939-2222</idno>
+		<imprint>
+			<biblScope unit="volume">148</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="1842" to="1848"/>
+			<date type="published" when="2019-10">2019</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Atias, D., Todorov, A., Liraz, S., Eidinger, A., Dror, I., Maymon, Y., &amp; Aviezer, H. (2019). Loud and unclear: Intense real-life vocalizations during affective situations are perceptually ambiguous and contextually malleable. Journal of Experimental Psychology: General, 148(10), 1842-1848. https://doi.org/10.1037/xge0000535</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Body Cues, Not Facial Expressions, Discriminate Between Intense Positive and Negative Emotions</title>
+		<author>
+			<persName><forename type="first">Hillel</forename><surname>Aviezer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yaacov</forename><surname>Trope</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alexander</forename><surname>Todorov</surname></persName>
+		</author>
+		<idno type="DOI">10.1126/science.1224313</idno>
+		<ptr target="https://doi.org/10.1126/science.1224313"/>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<title level="j" type="abbrev">Science</title>
+		<idno type="ISSN">0036-8075</idno>
+		<idno type="ISSNe">1095-9203</idno>
+		<imprint>
+			<biblScope unit="volume">338</biblScope>
+			<biblScope unit="issue">6111</biblScope>
+			<biblScope unit="page" from="1225" to="1229"/>
+			<date type="published" when="2012-11-30">2012</date>
+			<publisher>American Association for the Advancement of Science (AAAS)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Aviezer, H., Trope, Y., &amp; Todorov, A. (2012). Body cues, not facial expressions, discriminate between intense positive and negative emotions. Science, 338(6111), 1225-1229. https://doi.org/10.1126/science.1224313</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">A Closer Look at First Sight: Social Relations Lens Model Analysis of Personality and Interpersonal Attraction at Zero Acquaintance</title>
+		<author>
+			<persName><forename type="first">Mitja</forename><forename type="middle">D</forename><surname>Back</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stefan</forename><forename type="middle">C</forename><surname>Schmukle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Boris</forename><surname>Egloff</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/per.790</idno>
+		<ptr target="https://doi.org/10.1002/per.790"/>
+	</analytic>
+	<monogr>
+		<title level="j">European Journal of Personality</title>
+		<title level="j" type="abbrev">Eur J Pers</title>
+		<idno type="ISSN">0890-2070</idno>
+		<idno type="ISSNe">1099-0984</idno>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="225" to="238"/>
+			<date type="published" when="2011-05">2011</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Back, M. D., Schmukle, S. C., &amp; Egloff, B. (2011). A closer look at first sight: Social relations lens model analysis of personality and interpersonal attraction at zero acquaintance. European Journal of Personality, 25(3), 225-238. https://doi.org/10.1002/per.790</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Context Is Routinely Encoded During Emotion Perception</title>
+		<author>
+			<persName><forename type="first">Lisa</forename><forename type="middle">Feldman</forename><surname>Barrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Elizabeth</forename><forename type="middle">A</forename><surname>Kensinger</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0956797610363547</idno>
+		<ptr target="https://doi.org/10.1177/0956797610363547"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Science</title>
+		<title level="j" type="abbrev">Psychol Sci</title>
+		<idno type="ISSN">0956-7976</idno>
+		<idno type="ISSNe">1467-9280</idno>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="595" to="599"/>
+			<date type="published" when="2010-02-26">2010</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Barrett, L. F., &amp; Kensinger, E. A. (2010). Context is routinely encoded during emotion perception. Psychological Science, 21(4), 595-599. https://doi.org/10.1177/0956797610363547</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Beyond essentialism: Cultural differences in emotions revisited.</title>
+		<author>
+			<persName><forename type="first">Michael</forename><surname>Boiger</surname></persName>
+			<idno type="ORCID">0000-0003-4311-7236</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Eva</forename><surname>Ceulemans</surname></persName>
+			<idno type="ORCID">0000-0002-7611-4683</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Jozefien</forename><surname>De Leersnyder</surname></persName>
+			<idno type="ORCID">0000-0002-4486-878X</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Yukiko</forename><surname>Uchida</surname></persName>
+			<idno type="ORCID">0000-0002-8336-2423</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Vinai</forename><surname>Norasakkunkit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Batja</forename><surname>Mesquita</surname></persName>
+			<idno type="ORCID">0000-0001-8065-1089</idno>
+		</author>
+		<idno type="DOI">10.1037/emo0000390</idno>
+		<ptr target="https://doi.org/10.1037/emo0000390"/>
+	</analytic>
+	<monogr>
+		<title level="j">Emotion</title>
+		<title level="j" type="abbrev">Emotion</title>
+		<idno type="ISSN">1528-3542</idno>
+		<idno type="ISSNe">1931-1516</idno>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1142" to="1162"/>
+			<date type="published" when="2018-12">2018</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Boiger, M., Ceulemans, E., De Leersnyder, J., Uchida, Y., Norasakkunkit, V., &amp; Mesquita, B. (2018). Beyond essentialism: Cultural differences in emotions revisited. Emotion, 19(8), 1142-1162. https://doi.org/10.1037/emo0000390</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Mitigating malicious envy: Why successful individuals should reveal their failures.</title>
+		<author>
+			<persName><forename type="first">Alison</forename><forename type="middle">Wood</forename><surname>Brooks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Karen</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nicole</forename><surname>Abi-Esber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ryan</forename><forename type="middle">W</forename><surname>Buell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Laura</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Brian</forename><surname>Hall</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/xge0000538</idno>
+		<ptr target="https://doi.org/10.1037/xge0000538"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Experimental Psychology: General</title>
+		<title level="j" type="abbrev">Journal of Experimental Psychology: General</title>
+		<idno type="ISSN">0096-3445</idno>
+		<idno type="ISSNe">1939-2222</idno>
+		<imprint>
+			<biblScope unit="volume">148</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="667" to="687"/>
+			<date type="published" when="2019-04">2019</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Brooks, A. W., Huang, K., Abi-Esber, N., Buell, R. W., Huang, L., &amp; Hall, B. (2019). Mitigating malicious envy: Why successful individuals should reveal their failures. Journal of Experimental Psychology: General, 148(4), 667-687. https://doi.org/10.1037/xge0000538</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Do facial expressions signal specific emotions? Judging emotion from the face in context.</title>
+		<author>
+			<persName><forename type="first">James</forename><forename type="middle">M</forename><surname>Carroll</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">James</forename><forename type="middle">A</forename><surname>Russell</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0022-3514.70.2.205</idno>
+		<ptr target="https://doi.org/10.1037/0022-3514.70.2.205"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Personality and Social Psychology</title>
+		<title level="j" type="abbrev">Journal of Personality and Social Psychology</title>
+		<idno type="ISSN">0022-3514</idno>
+		<idno type="ISSNe">1939-1315</idno>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="205" to="218"/>
+			<date type="published" when="1996">1996</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Carroll, J. M., &amp; Russell, J. A. (1996). Do facial expressions signal specific emotions? Judging emotion from the face in context. Journal of Personality and Social Psychology, 70(2), 205-218. https://doi.org/10.1037/0022-3514.70.2.205</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chan</surname></persName>
+		</author>
+		<author>
+			<persName><surname>-H</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">C H</forename><surname>Chan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">J</forename><surname>Leeper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Becker</surname></persName>
+		</author>
+		<ptr target="https://CRAN.R-project.org/package=rio"/>
+		<title level="m">rio: A Swiss-army knife for data file I/O</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Chan, C. -h., Chan, G. C. H., Leeper, T. J., &amp; Becker, J. (2018). rio: A Swiss-army knife for data file I/O. https://CRAN.R-project.org/package=rio</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Envy: An Adversarial Review and Comparison of Two Competing Views</title>
+		<author>
+			<persName><forename type="first">Jan</forename><surname>Crusius</surname></persName>
+			<idno type="ORCID">0000-0002-9403-6084</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Manuel</forename><forename type="middle">F</forename><surname>Gonzalez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jens</forename><surname>Lange</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yochi</forename><surname>Cohen-Charash</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1754073919873131</idno>
+		<ptr target="https://doi.org/10.1177/1754073919873131"/>
+	</analytic>
+	<monogr>
+		<title level="j">Emotion Review</title>
+		<title level="j" type="abbrev">Emotion Review</title>
+		<idno type="ISSN">1754-0739</idno>
+		<idno type="ISSNe">1754-0747</idno>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="3" to="21"/>
+			<date type="published" when="2020">2020</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Crusius, J., Gonzalez, M. F., Lange, J., &amp; Cohen-Charash, Y. (2020). Envy: An adversarial review and comparison of two competing views. Emotion Review, 12(1), 3-21. https://doi.org/10.1177/1754073919873131</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">What catches the envious eye? Attentional biases within malicious and benign envy</title>
+		<author>
+			<persName><forename type="first">Jan</forename><surname>Crusius</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jens</forename><surname>Lange</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jesp.2014.05.007</idno>
+		<ptr target="https://doi.org/10.1016/j.jesp.2014.05.007"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Experimental Social Psychology</title>
+		<title level="j" type="abbrev">Journal of Experimental Social Psychology</title>
+		<idno type="ISSN">0022-1031</idno>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="page" from="1" to="11"/>
+			<date type="published" when="2014-11">2014</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Crusius, J., &amp; Lange, J. (2014). What catches the envious eye? Attentional biases within malicious and benign envy. Journal of Experimental Social Psychology, 55, 1-11. https://doi.org/10.1016/j.jesp.2014.05.007</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">How Do People Respond to Threatened Social Status?</title>
+		<author>
+			<persName><forename type="first">Jan</forename><surname>Crusius</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jens</forename><surname>Lange</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/acprof:oso/9780190228057.003.0004</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Envy at Work and in Organizations</title>
+		<editor>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Smith</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">U</forename><surname>Merlone</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">K</forename><surname>Duffy</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Oxford University Press</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="85" to="110"/>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Crusius, J., &amp; Lange, J. (2017). How do people respond to threatened social status? Moderators of benign versus malicious envy. In R. H. Smith, U. Merlone, &amp; M. K. Duffy (Eds.), Envy at work and in organizations: Research, theory, and applications (pp. 85-110). Oxford University Press.</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">A Social Context Model of Envy and Social Undermining</title>
+		<author>
+			<persName><forename type="first">Michelle</forename><forename type="middle">K</forename><surname>Duffy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kristin</forename><forename type="middle">L</forename><surname>Scott</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jason</forename><forename type="middle">D</forename><surname>Shaw</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bennett</forename><forename type="middle">J</forename><surname>Tepper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Karl</forename><surname>Aquino</surname></persName>
+		</author>
+		<idno type="DOI">10.5465/amj.2009.0804</idno>
+		<ptr target="https://doi.org/10.5465/amj.2009.0804"/>
+	</analytic>
+	<monogr>
+		<title level="j">Academy of Management Journal</title>
+		<title level="j" type="abbrev">AMJ</title>
+		<idno type="ISSN">0001-4273</idno>
+		<idno type="ISSNe">1948-0989</idno>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="643" to="666"/>
+			<date type="published" when="2012-06">2012</date>
+			<publisher>Academy of Management</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Duffy, M. K., Scott, K. L., Shaw, J. D., Tepper, B. J., &amp; Aquino, K. (2012). A social context model of envy and social undermining. Academy of Management Journal, 55(3), 643- 666. https://doi.org/10.5465/amj.2009.0804</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Emotion Recognition from Physiological Signal Analysis: A Review</title>
+		<author>
+			<persName><forename type="first">Maria</forename><surname>Egger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Matthias</forename><surname>Ley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sten</forename><surname>Hanke</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.entcs.2019.04.009</idno>
+		<ptr target="https://doi.org/10.1016/j.entcs.2019.04.009"/>
+	</analytic>
+	<monogr>
+		<title level="j">Electronic Notes in Theoretical Computer Science</title>
+		<title level="j" type="abbrev">Electronic Notes in Theoretical Computer Science</title>
+		<idno type="ISSN">1571-0661</idno>
+		<imprint>
+			<biblScope unit="volume">343</biblScope>
+			<biblScope unit="page" from="35" to="55"/>
+			<date type="published" when="2019-05">2019</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Egger, M., Ley, M., &amp; Hanke, S. (2019). Emotion recognition from physiological signal analysis: A review. Electronic Notes in Theoretical Computer Science, 343, 35-55. https://doi.org/10.1016/j.entcs.2019.04.009</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Facial expression and emotion.</title>
+		<author>
+			<persName><forename type="first">Paul</forename><surname>Ekman</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0003-066x.48.4.384</idno>
+		<ptr target="https://doi.org/10.1037/0003-066X.48.4.384"/>
+	</analytic>
+	<monogr>
+		<title level="j">American Psychologist</title>
+		<title level="j" type="abbrev">American Psychologist</title>
+		<idno type="ISSN">0003-066X</idno>
+		<idno type="ISSNe">1935-990X</idno>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="384" to="392"/>
+			<date type="published" when="1993">1993</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ekman, P. (1993). Facial expression and emotion. American Psychologist, 48(4), 384-392. https://doi.org/10.1037/0003-066X.48.4.384</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">On the universality and cultural specificity of emotion recognition: A meta-analysis.</title>
+		<author>
+			<persName><forename type="first">Hillary</forename><forename type="middle">Anger</forename><surname>Elfenbein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nalini</forename><surname>Ambady</surname></persName>
+		</author>
+		<idno type="DOI">10.1037//0033-2909.128.2.203</idno>
+		<ptr target="https://doi.org/10.1037//0033-2909.128.2.203"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Bulletin</title>
+		<title level="j" type="abbrev">Psychological Bulletin</title>
+		<idno type="ISSN">0033-2909</idno>
+		<imprint>
+			<biblScope unit="volume">128</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="235"/>
+			<date type="published" when="2002">2002</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Elfenbein, H. A., &amp; Ambady, N. (2002). On the universality and cultural specificity of emotion recognition: A meta-analysis. Psychological Bulletin, 128(2), 203-235. https://doi.org/10.1037//0033-2909.128.2.203</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Appraisal Processes In Emotion</title>
+		<author>
+			<persName><forename type="first">Phoebe</forename><forename type="middle">C</forename><surname>Ellsworth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Klaus</forename><forename type="middle">R</forename><surname>Scherer</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/oso/9780195126013.003.0029</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Handbook of Affective Sciences</title>
+		<editor>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Davidson</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><forename type="middle">R</forename><surname>Scherer</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><forename type="middle">H</forename><surname>Goldsmith</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Oxford University PressNew York, NY</publisher>
+			<date type="published" when="2003">2003</date>
+			<biblScope unit="page" from="572" to="595"/>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ellsworth, P. C., &amp; Scherer, K. R. (2003). Appraisal processes in emotion. In R. J. Davidson, K. R. Scherer, &amp; H. H. Goldsmith (Eds.), Handbook of affective sciences. (pp. 572- 595). Oxford University Press.</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Is envy categorical or dimensional? An empirical investigation using taxometric analysis.</title>
+		<author>
+			<persName><forename type="first">Rachael</forename><forename type="middle">G</forename><surname>Falcon</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/emo0000102</idno>
+		<ptr target="https://doi.org/10.1037/emo0000102"/>
+	</analytic>
+	<monogr>
+		<title level="j">Emotion</title>
+		<title level="j" type="abbrev">Emotion</title>
+		<idno type="ISSN">1528-3542</idno>
+		<idno type="ISSNe">1931-1516</idno>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="694" to="698"/>
+			<date type="published" when="2015">2015</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Falcon, R. G. (2015). Is envy categorical or dimensional? An empirical investigation using taxometric analysis. Emotion, 15(6), 694-698. https://doi.org/10.1037/emo0000102</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Concept of emotion viewed from a prototype perspective.</title>
+		<author>
+			<persName><forename type="first">Beverley</forename><surname>Fehr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">James</forename><forename type="middle">A</forename><surname>Russell</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0096-3445.113.3.464</idno>
+		<ptr target="https://doi.org/10.1037/0096-3445.113.3.464"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Experimental Psychology: General</title>
+		<title level="j" type="abbrev">Journal of Experimental Psychology: General</title>
+		<idno type="ISSN">0096-3445</idno>
+		<idno type="ISSNe">1939-2222</idno>
+		<imprint>
+			<biblScope unit="volume">113</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="464" to="486"/>
+			<date type="published" when="1984-09">1984</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fehr, B., &amp; Russell, J. A. (1984). Concept of emotion viewed from a prototype perspective. Journal of Experimental Psychology: General, 113(3), 464-486. https://doi.org/10.1037/0096-3445.113.3.464</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Envy up, scorn down: How comparison divides us.</title>
+		<author>
+			<persName><forename type="first">Susan</forename><forename type="middle">T</forename><surname>Fiske</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0003-066x.65.8.698</idno>
+		<ptr target="https://doi.org/10.1037/0003-066X.65.8.698"/>
+	</analytic>
+	<monogr>
+		<title level="j">American Psychologist</title>
+		<title level="j" type="abbrev">American Psychologist</title>
+		<idno type="ISSN">0003-066X</idno>
+		<idno type="ISSNe">1935-990X</idno>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="698" to="706"/>
+			<date type="published" when="2010-11">2010</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fiske, S. T. (2010). Envy up, scorn down: How comparison divides us. American Psychologist, 65(8), 698-706. https://doi.org/10.1037/0003-066X.65.8.698</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Gaze cueing of attention: Visual attention, social cognition, and individual differences.</title>
+		<author>
+			<persName><forename type="first">Alexandra</forename><surname>Frischen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andrew</forename><forename type="middle">P</forename><surname>Bayliss</surname></persName>
+			<idno type="ORCID">0000-0003-4810-7758</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Steven</forename><forename type="middle">P</forename><surname>Tipper</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0033-2909.133.4.694</idno>
+		<ptr target="https://doi.org/10.1037/0033-2909.133.4.694"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Bulletin</title>
+		<title level="j" type="abbrev">Psychological Bulletin</title>
+		<idno type="ISSN">0033-2909</idno>
+		<idno type="ISSNe">1939-1455</idno>
+		<imprint>
+			<biblScope unit="volume">133</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="694" to="724"/>
+			<date type="published" when="2007-07">2007</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Frischen, A., Bayliss, A. P., &amp; Tipper, S. P. (2007). Gaze cueing of attention: Visual attention, social cognition, and individual differences. Psychological Bulletin, 133(4), 694-724. https://doi.org/10.1037/0033-2909.133.4.694</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">What emotional reactions can tell us about the nature of others: An appraisal perspective on person perception</title>
+		<author>
+			<persName><forename type="first">Shlomo</forename><surname>Hareli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ursula</forename><surname>Hess</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/02699930802613828</idno>
+		<ptr target="https://doi.org/10.1080/02699930802613828"/>
+	</analytic>
+	<monogr>
+		<title level="j">Cognition &amp; Emotion</title>
+		<title level="j" type="abbrev">Cognition &amp; Emotion</title>
+		<idno type="ISSN">0269-9931</idno>
+		<idno type="ISSNe">1464-0600</idno>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="128" to="140"/>
+			<date type="published" when="2010-01">2010</date>
+			<publisher>Informa UK Limited</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hareli, S., &amp; Hess, U. (2010). What emotional reactions can tell us about the nature of others: An appraisal perspective on person perception. Cognition &amp; Emotion, 24(1), 128-140. https://doi.org/10.1080/02699930802613828</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Experiments with More Than One Random Factor: Designs, Analytic Models, and Statistical Power</title>
+		<author>
+			<persName><forename type="first">Charles</forename><forename type="middle">M</forename><surname>Judd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jacob</forename><surname>Westfall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">David</forename><forename type="middle">A</forename><surname>Kenny</surname></persName>
+		</author>
+		<idno type="DOI">10.1146/annurev-psych-122414-033702</idno>
+		<ptr target="https://doi.org/10.1146/annurev-psych-122414-033702"/>
+	</analytic>
+	<monogr>
+		<title level="j">Annual Review of Psychology</title>
+		<title level="j" type="abbrev">Annu. Rev. Psychol.</title>
+		<idno type="ISSN">0066-4308</idno>
+		<idno type="ISSNe">1545-2085</idno>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="601" to="625"/>
+			<date type="published" when="2017-01-03">2017</date>
+			<publisher>Annual Reviews</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Judd, C. M., Westfall, J., &amp; Kenny, D. A. (2017). Experiments with more than one random factor: Designs, analytic models, and statistical power. Annual Review of Psychology, 68(1), 601-625. https://doi.org/10.1146/annurev-psych-122414-033702</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Context is more powerful than we think: Contextual cues override facial cues even for valence.</title>
+		<author>
+			<persName><forename type="first">Mary</forename><surname>Kayyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sherri</forename><surname>Widen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">James</forename><forename type="middle">A</forename><surname>Russell</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/emo0000032</idno>
+		<ptr target="https://doi.org/10.1037/emo0000032"/>
+	</analytic>
+	<monogr>
+		<title level="j">Emotion</title>
+		<title level="j" type="abbrev">Emotion</title>
+		<idno type="ISSN">1528-3542</idno>
+		<idno type="ISSNe">1931-1516</idno>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="287" to="291"/>
+			<date type="published" when="2015">2015</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kayyal, M., Widen, S., &amp; Russell, J. A. (2015). Context is more powerful than we think: Contextual cues override facial cues even for valence. Emotion, 15(3), 287-291. https://doi.org/10.1037/emo0000032</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Emotional Expression: Advances in Basic Emotion Theory</title>
+		<author>
+			<persName><forename type="first">Dacher</forename><surname>Keltner</surname></persName>
+			<idno type="ORCID">0000-0001-9061-5292</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Disa</forename><surname>Sauter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jessica</forename><surname>Tracy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alan</forename><surname>Cowen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s10919-019-00293-3</idno>
+		<ptr target="https://doi.org/10.1007/s10919-019-00293-3"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Nonverbal Behavior</title>
+		<title level="j" type="abbrev">J Nonverbal Behav</title>
+		<idno type="ISSN">0191-5886</idno>
+		<idno type="ISSNe">1573-3653</idno>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="133" to="160"/>
+			<date type="published" when="2019-02-07">2019</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Keltner, D., Sauter, D., Tracy, J., &amp; Cowen, A. (2019). Emotional expression: Advances in Basic Emotion Theory. Journal of Nonverbal Behavior, 43(2), 133-160. https://doi.org/10.1007/s10919-019-00293-3</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">&lt;b&gt;lmerTest&lt;/b&gt; Package: Tests in Linear Mixed Effects Models</title>
+		<author>
+			<persName><forename type="first">Alexandra</forename><surname>Kuznetsova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Per</forename><forename type="middle">B</forename><surname>Brockhoff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rune</forename><forename type="middle">H B</forename><surname>Christensen</surname></persName>
+		</author>
+		<idno type="DOI">10.18637/jss.v082.i13</idno>
+		<ptr target="https://doi.org/10.18637/jss.v082.i13"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Statistical Software</title>
+		<title level="j" type="abbrev">J. Stat. Soft.</title>
+		<idno type="ISSNe">1548-7660</idno>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="issue">13</biblScope>
+			<date type="published" when="2017">2017</date>
+			<publisher>Foundation for Open Access Statistic</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kuznetsova, A., Brockhoff, P. B., &amp; Christensen, R. H. B. (2017). lmerTest package: Tests in linear mixed effects models. Journal of Statistical Software, 82(13). https://doi.org/10.18637/jss.v082.i13</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Envy takes you further: The influence of benign envy on risk taking</title>
+		<author>
+			<persName><forename type="first">Mijin</forename><surname>Kwon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Youngjee</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Myungwoo</forename><surname>Nam</surname></persName>
+		</author>
+		<idno type="DOI">10.2224/sbp.5977</idno>
+		<ptr target="https://doi.org/10.2224/sbp.5977"/>
+	</analytic>
+	<monogr>
+		<title level="j">Social Behavior and Personality: an international journal</title>
+		<title level="j" type="abbrev">soc behav pers</title>
+		<idno type="ISSN">0301-2212</idno>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="39" to="50"/>
+			<date type="published" when="2017-02-07">2017</date>
+			<publisher>Scientific Journal Publishers Ltd</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kwon, M., Han, Y., &amp; Nam, M. (2017). Envy takes you further: The influence of benign envy on risk taking. Social Behavior and Personality, 45(1), 39-50. https://doi.org/10.2224/sbp.5977</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Performing high‐powered studies efficiently with sequential analyses</title>
+		<author>
+			<persName><forename type="first">Daniël</forename><surname>Lakens</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/ejsp.2023</idno>
+		<ptr target="https://doi.org/10.1002/ejsp.2023"/>
+	</analytic>
+	<monogr>
+		<title level="j">European Journal of Social Psychology</title>
+		<title level="j" type="abbrev">Euro J Social Psych</title>
+		<idno type="ISSN">0046-2772</idno>
+		<idno type="ISSNe">1099-0992</idno>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="701" to="710"/>
+			<date type="published" when="2014-08-15">2014</date>
+			<publisher>Wiley</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lakens, D. (2014). Performing high-powered studies efficiently with sequential analyses. European Journal of Social Psychology, 44(7), 701-710. https://doi.org/10.1002/ejsp.2023</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">The tango of two deadly sins: The social-functional relation of envy and pride.</title>
+		<author>
+			<persName><forename type="first">Jens</forename><surname>Lange</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jan</forename><surname>Crusius</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/pspi0000026</idno>
+		<ptr target="https://doi.org/10.1037/pspi0000026"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Personality and Social Psychology</title>
+		<title level="j" type="abbrev">Journal of Personality and Social Psychology</title>
+		<idno type="ISSN">0022-3514</idno>
+		<idno type="ISSNe">1939-1315</idno>
+		<imprint>
+			<biblScope unit="volume">109</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="453" to="472"/>
+			<date type="published" when="2015">2015</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lange, J., &amp; Crusius, J. (2015). The tango of two deadly sins: The social-functional relation of envy and pride. Journal of Personality and Social Psychology, 109(3), 453-472. https://doi.org/10.1037/pspi0000026</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">The Evil Queen's Dilemma: Linking Narcissistic Admiration and Rivalry to Benign and Malicious Envy</title>
+		<author>
+			<persName><forename type="first">Jens</forename><surname>Lange</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jan</forename><surname>Crusius</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Birk</forename><surname>Hagemeyer</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/per.2047</idno>
+		<ptr target="https://doi.org/10.1002/per.2047"/>
+	</analytic>
+	<monogr>
+		<title level="j">European Journal of Personality</title>
+		<title level="j" type="abbrev">Eur J Pers</title>
+		<idno type="ISSN">0890-2070</idno>
+		<idno type="ISSNe">1099-0984</idno>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="168" to="188"/>
+			<date type="published" when="2016-03">2016</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lange, J., Crusius, J., &amp; Hagemeyer, B. (2016). The Evil Queen's dilemma: Linking narcissistic admiration and rivalry to benign and malicious envy. European Journal of Personality, 30(2), 168-188. https://doi.org/10.1002/per.2047</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Accuracy and bias in the social perception of envy.</title>
+		<author>
+			<persName><forename type="first">Jens</forename><surname>Lange</surname></persName>
+			<idno type="ORCID">0000-0002-5375-3247</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Birk</forename><surname>Hagemeyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Thomas</forename><surname>Lösch</surname></persName>
+			<idno type="ORCID">0000-0002-2582-6787</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Katrin</forename><surname>Rentzsch</surname></persName>
+			<idno type="ORCID">0000-0001-8632-6842</idno>
+		</author>
+		<idno type="DOI">10.1037/emo0000652</idno>
+		<ptr target="https://doi.org/10.1037/emo0000652"/>
+	</analytic>
+	<monogr>
+		<title level="j">Emotion</title>
+		<title level="j" type="abbrev">Emotion</title>
+		<idno type="ISSN">1528-3542</idno>
+		<idno type="ISSNe">1931-1516</idno>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1399" to="1410"/>
+			<date type="published" when="2020-12">2020</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lange, J., Hagemeyer, B., Lösch, T., &amp; Rentzsch, K. (2020). Accuracy and bias in the social perception of envy. Emotion, 20(8), 1399-1410. https://doi.org/10.1037/emo0000652</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Reading emotions, reading people: Emotion perception and inferences drawn from perceived emotions</title>
+		<author>
+			<persName><forename type="first">Jens</forename><surname>Lange</surname></persName>
+			<idno type="ORCID">0000-0002-5375-3247</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Marc</forename><forename type="middle">W</forename><surname>Heerdink</surname></persName>
+			<idno type="ORCID">0000-0002-6931-6519</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Gerben</forename><forename type="middle">A</forename><surname>Van Kleef</surname></persName>
+			<idno type="ORCID">0000-0003-0823-7654</idno>
+		</author>
+		<idno type="DOI">10.1016/j.copsyc.2021.06.008</idno>
+		<ptr target="https://doi.org/10.1016/j.copsyc.2021.06.008"/>
+	</analytic>
+	<monogr>
+		<title level="j">Current Opinion in Psychology</title>
+		<title level="j" type="abbrev">Current Opinion in Psychology</title>
+		<idno type="ISSN">2352-250X</idno>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="85" to="90"/>
+			<date type="published" when="2021">2021</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lange, J., Heerdink, M. W., &amp; Van Kleef, G. A. (2021). Reading emotions, reading people: Emotion perception and inferences drawn from perceived emotions. Current Opinion in Psychology. https://doi.org/10.1016/j.copsyc.2021.06.008</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">The painful duality of envy: Evidence for an integrative theory and a meta-analysis on the relation of envy and schadenfreude.</title>
+		<author>
+			<persName><forename type="first">Jens</forename><surname>Lange</surname></persName>
+			<idno type="ORCID">0000-0002-5375-3247</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Aaron</forename><forename type="middle">C</forename><surname>Weidman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jan</forename><surname>Crusius</surname></persName>
+			<idno type="ORCID">0000-0002-9403-6084</idno>
+		</author>
+		<idno type="DOI">10.1037/pspi0000118</idno>
+		<ptr target="https://doi.org/10.1037/pspi0000118"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Personality and Social Psychology</title>
+		<title level="j" type="abbrev">Journal of Personality and Social Psychology</title>
+		<idno type="ISSN">0022-3514</idno>
+		<idno type="ISSNe">1939-1315</idno>
+		<imprint>
+			<biblScope unit="volume">114</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="572" to="598"/>
+			<date type="published" when="2018-04">2018</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lange, J., Weidman, A. C., &amp; Crusius, J. (2018). The painful duality of envy: Evidence for an integrative theory and a meta-analysis on the relation of envy and schadenfreude. Journal of Personality and Social Psychology, 114(4), 572-598. https://doi.org/10.1037/pspi0000118</note>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">ez: Easy Analysis and Visualization of Factorial Experiments</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Lawrence</surname></persName>
+		</author>
+		<idno type="DOI">10.32614/cran.package.ez</idno>
+		<ptr target="https://CRAN.R-project.org/package=ez"/>
+	</analytic>
+	<monogr>
+		<title level="m">ez: Easy analysis and visualization of factorial experiments</title>
+		<imprint>
+			<publisher>The R Foundation</publisher>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lawrence, M. A. (2016). ez: Easy analysis and visualization of factorial experiments. https://CRAN.R-project.org/package=ez</note>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">emmeans: Estimated Marginal Means, aka Least-Squares Means</title>
+		<author>
+			<persName><forename type="first">Russell</forename><forename type="middle">V</forename><surname>Lenth</surname></persName>
+		</author>
+		<idno type="DOI">10.32614/cran.package.emmeans</idno>
+		<ptr target="https://CRAN.R-project.org/package=emmeans"/>
+	</analytic>
+	<monogr>
+		<title level="j">R package version</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<date type="published" when="2019">2019</date>
+			<publisher>The R Foundation</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lenth, R. (2019). Emmeans: Estimated marginal means, aka least-squares means. R package version 1.3.5.1. https://CRAN.R-project.org/package=emmeans</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Identifying careless responses in survey data.</title>
+		<author>
+			<persName><forename type="first">Adam</forename><forename type="middle">W</forename><surname>Meade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">Bartholomew</forename><surname>Craig</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/a0028085</idno>
+		<ptr target="https://doi.org/10.1037/a0028085"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Methods</title>
+		<title level="j" type="abbrev">Psychological Methods</title>
+		<idno type="ISSN">1082-989X</idno>
+		<idno type="ISSNe">1939-1463</idno>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="437" to="455"/>
+			<date type="published" when="2012-09">2012</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Meade, A. W., &amp; Craig, S. B. (2012). Identifying careless responses in survey data. Psychological Methods, 17(3), 437-455. https://doi.org/10.1037/a0028085</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">The envious mind</title>
+		<author>
+			<persName><forename type="first">Maria</forename><surname>Miceli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Cristiano</forename><surname>Castelfranchi</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/02699930600814735</idno>
+		<ptr target="https://doi.org/10.1080/02699930600814735"/>
+	</analytic>
+	<monogr>
+		<title level="j">Cognition &amp; Emotion</title>
+		<title level="j" type="abbrev">Cognition &amp; Emotion</title>
+		<idno type="ISSN">0269-9931</idno>
+		<idno type="ISSNe">1464-0600</idno>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="449" to="479"/>
+			<date type="published" when="2007-04">2007</date>
+			<publisher>Informa UK Limited</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Miceli, M., &amp; Castelfranchi, C. (2007). The envious mind. Cognition &amp; Emotion, 21(3), 449- 479. https://doi.org/10.1080/02699930600814735</note>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Arbitrary social comparison, malicious envy, and generosity</title>
+		<author>
+			<persName><forename type="first">Adiel</forename><surname>Moyal</surname></persName>
+			<idno type="ORCID">0000-0001-6620-3175</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Marina</forename><surname>Motsenok</surname></persName>
+			<idno type="ORCID">0000-0002-1532-9461</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Ilana</forename><surname>Ritov</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/bdm.2172</idno>
+		<ptr target="https://doi.org/10.1002/bdm.2172"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Behavioral Decision Making</title>
+		<title level="j" type="abbrev">Behavioral Decision Making</title>
+		<idno type="ISSN">0894-3257</idno>
+		<idno type="ISSNe">1099-0771</idno>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="444" to="462"/>
+			<date type="published" when="2020-01-14">2020</date>
+			<publisher>Wiley</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Moyal, A., Motsenok, M., &amp; Ritov, I. (2020). Arbitrary social comparison, malicious envy, and generosity. Journal of Behavioral Decision Making, 33(4), 444-462. https://doi.org/10.1002/bdm.2172</note>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Fuzzy Similarity of Facial Expressions of Embodied Agents</title>
+		<author>
+			<persName><forename type="first">Radosław</forename><surname>Niewiadomski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Catherine</forename><surname>Pelachaud</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-540-74997-4_9</idno>
+		<ptr target="https://doi.org/10.1007/978-3-540-74997-4_9"/>
+	</analytic>
+	<monogr>
+		<title level="m">Lecture Notes in Computer Science</title>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Pelachaud</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-C</forename><surname>Martin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">E</forename><surname>André</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Chollet</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Karpouzis</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Pelé</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Springer Berlin Heidelberg</publisher>
+			<date type="published" when="2007">2007</date>
+			<biblScope unit="volume">4722</biblScope>
+			<biblScope unit="page" from="86" to="98"/>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Niewiadomski, R., &amp; Pelachaud, C. (2007). Fuzzy similarity of facial expressions of embodied agents. In C. Pelachaud, J.-C. Martin, E. André, G. Chollet, K. Karpouzis, &amp; D. Pelé (Eds.), Intelligent Virtual Agents (Vol. 4722, pp. 86-98). Springer. https://doi.org/10.1007/978-3-540-74997-4_9</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Towards a Cognitive Theory of Emotions</title>
+		<author>
+			<persName><forename type="first">Keith</forename><surname>Oatley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">N</forename><surname>Johnson-Laird</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/02699938708408362</idno>
+		<ptr target="https://doi.org/10.1080/02699938708408362"/>
+	</analytic>
+	<monogr>
+		<title level="j">Cognition &amp; Emotion</title>
+		<title level="j" type="abbrev">Cognition &amp; Emotion</title>
+		<idno type="ISSN">0269-9931</idno>
+		<idno type="ISSNe">1464-0600</idno>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="29" to="50"/>
+			<date type="published" when="1987-03">1987</date>
+			<publisher>Informa UK Limited</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Oatley, K., &amp; Johnson-Laird, P. N. (1987). Towards a cognitive theory of emotions. Cognition &amp; Emotion, 1(1), 29-50. https://doi.org/10.1080/02699938708408362</note>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">The Benefits and Threats from Being Envied in Organizations</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">G</forename><surname>Parrott</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/acprof:oso/9780190228057.003.0019</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Envy at Work and in Organizations</title>
+		<editor>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Smith</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">U</forename><surname>Merlone</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">K</forename><surname>Duffy</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Oxford University Press</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="455" to="474"/>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Parrott, W. G. (2017). The benefits and threats from being envied in organizations. In R. H. Smith, U. Merlone, &amp; M. K. Duffy (Eds.), Envy at work and in organizations (pp. 455-474). Oxford University Press.</note>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Distinguishing the experiences of envy and jealousy.</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">Gerrod</forename><surname>Parrott</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Richard</forename><forename type="middle">H</forename><surname>Smith</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0022-3514.64.6.906</idno>
+		<ptr target="https://doi.org/10.1037/0022-3514.64.6.906"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Personality and Social Psychology</title>
+		<title level="j" type="abbrev">Journal of Personality and Social Psychology</title>
+		<idno type="ISSN">0022-3514</idno>
+		<idno type="ISSNe">1939-1315</idno>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="906" to="920"/>
+			<date type="published" when="1993">1993</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Parrott, W. G., &amp; Smith, R. H. (1993). Distinguishing the experiences of envy and jealousy. Journal of Personality and Social Psychology, 64(6), 906-920. https://doi.org/10.1037/0022-3514.64.6.906</note>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">A psychoevolutionary theory of emotions</title>
+		<author>
+			<persName><forename type="first">Robert</forename><surname>Plutchik</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/053901882021004003</idno>
+		<ptr target="https://doi.org/10.1177/053901882021004003"/>
+	</analytic>
+	<monogr>
+		<title level="j">Social Science Information</title>
+		<title level="j" type="abbrev">Social Science Information</title>
+		<idno type="ISSN">0539-0184</idno>
+		<idno type="ISSNe">1461-7412</idno>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">4-5</biblScope>
+			<biblScope unit="page" from="529" to="553"/>
+			<date type="published" when="1982-07">1982</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Plutchik, R. (1982). A psychoevolutionary theory of emotions. Social Science Information, 21(4-5), 529-553. https://doi.org/10.1177/053901882021004003</note>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">They Want What I’ve Got (I Think): The Causes and Consequences of Attributing Coworker Behavior to Envy</title>
+		<author>
+			<persName><forename type="first">Harshad</forename><surname>Puranik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Joel</forename><surname>Koopman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Heather</forename><forename type="middle">C</forename><surname>Vough</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daniel</forename><forename type="middle">L</forename><surname>Gamache</surname></persName>
+		</author>
+		<idno type="DOI">10.5465/amr.2016.0191</idno>
+		<ptr target="https://doi.org/10.5465/amr.2016.0191"/>
+	</analytic>
+	<monogr>
+		<title level="j">Academy of Management Review</title>
+		<title level="j" type="abbrev">AMR</title>
+		<idno type="ISSN">0363-7425</idno>
+		<idno type="ISSNe">1930-3807</idno>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="424" to="449"/>
+			<date type="published" when="2019-04">2019</date>
+			<publisher>Academy of Management</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Puranik, H., Koopman, J., Vough, H. C., &amp; Gamache, D. L. (2019). They want what I've got (I think): The causes and consequences of attributing coworker behavior to envy. Academy of Management Review, 44(2), 424-449. https://doi.org/10.5465/amr.2016.0191</note>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">R: A Language and Environment for Statistical Computing</title>
+		<author>
+			<persName><forename type="first">Team</forename><surname>Core</surname></persName>
+		</author>
+		<idno type="DOI">10.32614/r.manuals</idno>
+		<ptr target="https://www.R-project.org/"/>
+	</analytic>
+	<monogr>
+		<title level="m">R Foundation for Statistical Computing</title>
+		<imprint>
+			<publisher>R Foundation for Statistical Computing</publisher>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">R Core Team. (2019). R: A language and environment for statistical computing. R Foundation for Statistical Computing. https://www.R-project.org/</note>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Evidence for strong dissociation between emotion and facial displays: The case of surprise.</title>
+		<author>
+			<persName><forename type="first">Rainer</forename><surname>Reisenzein</surname></persName>
+			<idno type="ORCID">0000-0002-6091-108X</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Sandra</forename><surname>Bördgen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Thomas</forename><surname>Holtbernd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Denise</forename><surname>Matz</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0022-3514.91.2.295</idno>
+		<ptr target="https://doi.org/10.1037/0022-3514.91.2.295"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Personality and Social Psychology</title>
+		<title level="j" type="abbrev">Journal of Personality and Social Psychology</title>
+		<idno type="ISSN">0022-3514</idno>
+		<idno type="ISSNe">1939-1315</idno>
+		<imprint>
+			<biblScope unit="volume">91</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="295" to="315"/>
+			<date type="published" when="2006">2006</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Reisenzein, R., Bördgen, S., Holtbernd, T., &amp; Matz, D. (2006). Evidence for strong dissociation between emotion and facial displays: The case of surprise. Journal of Personality and Social Psychology, 91(2), 295-315. https://doi.org/10.1037/0022- 3514.91.2.295</note>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Envy mediates the relation between low academic self-esteem and hostile tendencies</title>
+		<author>
+			<persName><forename type="first">Katrin</forename><surname>Rentzsch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michela</forename><surname>Schröder-Abé</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Astrid</forename><surname>Schütz</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jrp.2015.08.001</idno>
+		<ptr target="https://doi.org/10.1016/j.jrp.2015.08.001"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Research in Personality</title>
+		<title level="j" type="abbrev">Journal of Research in Personality</title>
+		<idno type="ISSN">0092-6566</idno>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="page" from="143" to="153"/>
+			<date type="published" when="2015-10">2015</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rentzsch, K., Schröder-Abé, M., &amp; Schütz, A. (2015). Envy mediates the relation between low academic self-esteem and hostile tendencies. Journal of Research in Personality, 58, 143-153. https://doi.org/10.1016/j.jrp.2015.08.001</note>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">psych: Procedures for Psychological, Psychometric, and Personality Research</title>
+		<author>
+			<persName><forename type="first">William</forename><surname>Revelle</surname></persName>
+			<idno type="ORCID">0000-0003-4880-9610</idno>
+		</author>
+		<idno type="DOI">10.32614/cran.package.psych</idno>
+		<ptr target="https://CRAN.R-project.org/package=psych"/>
+	</analytic>
+	<monogr>
+		<title level="m">psych: Procedures for personality and psychological research</title>
+		<imprint>
+			<publisher>The R Foundation</publisher>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+		<respStmt>
+			<orgName>Northwestern University</orgName>
+		</respStmt>
+	</monogr>
+	<note type="raw_reference">Revelle, W. (2018). psych: Procedures for personality and psychological research. Northwestern University. https://CRAN.R-project.org/package=psych</note>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">I fear your envy, I rejoice in your coveting: On the ambivalent experience of being envied by others.</title>
+		<author>
+			<persName><forename type="first">Patricia</forename><forename type="middle">M</forename><surname>Rodriguez Mosquera</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">Gerrod</forename><surname>Parrott</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alejandra</forename><surname>Hurtado De Mendoza</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/a0020965</idno>
+		<ptr target="https://doi.org/10.1037/a0020965"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Personality and Social Psychology</title>
+		<title level="j" type="abbrev">Journal of Personality and Social Psychology</title>
+		<idno type="ISSN">0022-3514</idno>
+		<idno type="ISSNe">1939-1315</idno>
+		<imprint>
+			<biblScope unit="volume">99</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="842" to="854"/>
+			<date type="published" when="2010-11">2010</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rodriguez Mosquera, P. M., Parrott, W. G., &amp; Hurtado de Mendoza, A. (2010). I fear your envy, I rejoice in your coveting: On the ambivalent experience of being envied by others. Journal of Personality and Social Psychology, 99(5), 842-854. https://doi.org/10.1037/a0020965</note>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">Is there universal recognition of emotion from facial expression? A review of the cross-cultural studies.</title>
+		<author>
+			<persName><forename type="first">James</forename><forename type="middle">A</forename><surname>Russell</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0033-2909.115.1.102</idno>
+		<ptr target="https://doi.org/10.1037/0033-2909.115.1.102"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Bulletin</title>
+		<title level="j" type="abbrev">Psychological Bulletin</title>
+		<idno type="ISSN">0033-2909</idno>
+		<idno type="ISSNe">1939-1455</idno>
+		<imprint>
+			<biblScope unit="volume">115</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="102" to="141"/>
+			<date type="published" when="1994">1994</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Russell, J. A. (1994). Is there universal recognition of emotion from facial expressions? A review of the cross-cultural studies. Psychological Bulletin, 115(1), 102-141. https://doi.org/10.1037/0033-2909.115.1.102</note>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Cross-cultural recognition of basic emotions through nonverbal emotional vocalizations</title>
+		<author>
+			<persName><forename type="first">Disa</forename><forename type="middle">A</forename><surname>Sauter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Frank</forename><surname>Eisner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Paul</forename><surname>Ekman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sophie</forename><forename type="middle">K</forename><surname>Scott</surname></persName>
+		</author>
+		<idno type="DOI">10.1073/pnas.0908239106</idno>
+		<ptr target="https://doi.org/10.1073/pnas.0908239106"/>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences</title>
+		<title level="j" type="abbrev">Proc. Natl. Acad. Sci. U.S.A.</title>
+		<idno type="ISSN">0027-8424</idno>
+		<idno type="ISSNe">1091-6490</idno>
+		<imprint>
+			<biblScope unit="volume">107</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="2408" to="2412"/>
+			<date type="published" when="2010-01-25">2010</date>
+			<publisher>Proceedings of the National Academy of Sciences</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sauter, D. A., Eisner, F., Ekman, P., &amp; Scott, S. K. (2010). Cross-cultural recognition of basic emotions through nonverbal emotional vocalizations. Proceedings of the National Academy of Sciences, 107(6), 2408-2412. https://doi.org/10.1073/pnas.0908239106</note>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">Can perceivers recognise emotions from spontaneous expressions?</title>
+		<author>
+			<persName><forename type="first">Disa</forename><forename type="middle">A</forename><surname>Sauter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Agneta</forename><forename type="middle">H</forename><surname>Fischer</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/02699931.2017.1320978</idno>
+		<ptr target="https://doi.org/10.1080/02699931.2017.1320978"/>
+	</analytic>
+	<monogr>
+		<title level="j">Cognition and Emotion</title>
+		<title level="j" type="abbrev">Cognition and Emotion</title>
+		<idno type="ISSN">0269-9931</idno>
+		<idno type="ISSNe">1464-0600</idno>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="504" to="515"/>
+			<date type="published" when="2018">2018</date>
+			<publisher>Informa UK Limited</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sauter, D. A., &amp; Fischer, A. H. (2018). Can perceivers recognise emotions from spontaneous expressions? Cognition and Emotion, 32(3), 504-514. https://doi.org/10.1080/02699931.2017.1320978</note>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<analytic>
+		<title level="a" type="main">Facial expressions allow inference of both emotions and their components</title>
+		<author>
+			<persName><forename type="first">Klaus</forename><forename type="middle">R</forename><surname>Scherer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Didier</forename><surname>Grandjean</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/02699930701516791</idno>
+		<ptr target="https://doi.org/10.1080/02699930701516791"/>
+	</analytic>
+	<monogr>
+		<title level="j">Cognition &amp; Emotion</title>
+		<title level="j" type="abbrev">Cognition &amp; Emotion</title>
+		<idno type="ISSN">0269-9931</idno>
+		<idno type="ISSNe">1464-0600</idno>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="789" to="801"/>
+			<date type="published" when="2008-08">2008</date>
+			<publisher>Informa UK Limited</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Scherer, K. R., &amp; Grandjean, D. (2008). Facial expressions allow inference of both emotions and their components. Cognition &amp; Emotion, 22(5), 789-801. https://doi.org/10.1080/02699930701516791</note>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">Emotion knowledge: Further exploration of a prototype approach.</title>
+		<author>
+			<persName><forename type="first">Phillip</forename><surname>Shaver</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Judith</forename><surname>Schwartz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Donald</forename><surname>Kirson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Cary</forename><surname>O'connor</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0022-3514.52.6.1061</idno>
+		<ptr target="https://doi.org/10.1037/0022-3514.52.6.1061"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Personality and Social Psychology</title>
+		<title level="j" type="abbrev">Journal of Personality and Social Psychology</title>
+		<idno type="ISSN">0022-3514</idno>
+		<idno type="ISSNe">1939-1315</idno>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1061" to="1086"/>
+			<date type="published" when="1987">1987</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Shaver, P., Schwartz, J., Kirson, D., &amp; O'Connor, C. (1987). Emotion knowledge: Further exploration of a prototype approach. Journal of Personality and Social Psychology, 52(6), 1061-1086. https://doi.org/10.1037/0022-3514.52.6.1061</note>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Faces in the wild: A naturalistic study of children’s facial expressions in response to an Internet prank</title>
+		<author>
+			<persName><forename type="first">Michael</forename><forename type="middle">M</forename><surname>Shuster</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Linda</forename><forename type="middle">A</forename><surname>Camras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Adam</forename><surname>Grabell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Susan</forename><forename type="middle">B</forename><surname>Perlman</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/02699931.2019.1611542</idno>
+		<ptr target="https://doi.org/10.1080/02699931.2019.1611542"/>
+	</analytic>
+	<monogr>
+		<title level="j">Cognition and Emotion</title>
+		<title level="j" type="abbrev">Cognition and Emotion</title>
+		<idno type="ISSN">0269-9931</idno>
+		<idno type="ISSNe">1464-0600</idno>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="359" to="366"/>
+			<date type="published" when="2020">2020</date>
+			<publisher>Informa UK Limited</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Shuster, M. M., Camras, L. A., Grabell, A., &amp; Perlman, S. B. (2020). Faces in the wild: A naturalistic study of children's facial expressions in response to an Internet prank. Cognition and Emotion, 34(2), 359-366. https://doi.org/10.1080/02699931.2019.1611542</note>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">The Perception of Envy</title>
+		<author>
+			<persName><forename type="first">Maury</forename><surname>Silver</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><surname>Sabini</surname></persName>
+		</author>
+		<idno type="DOI">10.2307/3033570</idno>
+		<ptr target="https://doi.org/10.2307/3033570"/>
+	</analytic>
+	<monogr>
+		<title level="j">Social Psychology</title>
+		<title level="j" type="abbrev">Social Psychology</title>
+		<idno type="ISSN">0147-829X</idno>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">105</biblScope>
+			<date type="published" when="1978-06">1978</date>
+			<publisher>JSTOR</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Silver, M., &amp; Sabini, J. (1978). The perception of envy. Social Psychology, 41(2), 105-117. https://doi.org/10.2307/3033570</note>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">afex: Analysis of Factorial Experiments</title>
+		<author>
+			<persName><forename type="first">Henrik</forename><surname>Singmann</surname></persName>
+			<idno type="ORCID">0000-0002-4842-3657</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Ben</forename><surname>Bolker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jake</forename><surname>Westfall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Frederik</forename><surname>Aust</surname></persName>
+			<idno type="ORCID">0000-0003-4900-788X</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Mattan</forename><forename type="middle">S</forename><surname>Ben-Shachar</surname></persName>
+		</author>
+		<idno type="DOI">10.32614/cran.package.afex</idno>
+		<ptr target="https://CRAN.R-project.org/package=afex"/>
+	</analytic>
+	<monogr>
+		<title level="m">afex: Analysis of factorial experiments</title>
+		<imprint>
+			<publisher>The R Foundation</publisher>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Singmann, H., Bolker, B., Westfall, J., Aust, F., &amp; Ben-Shachar, M. S. (2020). afex: Analysis of factorial experiments. https://CRAN.R-project.org/package=afex</note>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Envy and Its Transmutations</title>
+		<author>
+			<persName><forename type="first">Richard</forename><forename type="middle">H</forename><surname>Smith</surname></persName>
+		</author>
+		<idno type="DOI">10.1017/cbo9780511819568.004</idno>
+	</analytic>
+	<monogr>
+		<title level="m">The Social Life of Emotions</title>
+		<editor>
+			<persName><forename type="first">L</forename><forename type="middle">Z</forename><surname>Tiedens</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Leach</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="2004-09-27">2004</date>
+			<biblScope unit="page" from="43" to="63"/>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Smith, R. H. (2004). Envy and its transmutations. In L. Z. Tiedens &amp; C. Leach (Eds.), The social life of emotions (pp. 43-63). Cambridge University Press.</note>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">Comprehending envy</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Kim</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0033-2909.133.1</idno>
+		<ptr target="https://doi.org/10.1037/0033-2909.133.1"/>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Bulletin</title>
+		<imprint>
+			<biblScope unit="volume">133</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="46" to="64"/>
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Smith, R. H., &amp; Kim, S. H. (2007). Comprehending envy. Psychological Bulletin, 133(1), 46- 64. https://doi.org/10.1037/0033-2909.133.1.</note>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Envy As Pain: Rethinking the Nature of Envy and Its Implications for Employees and Organizations</title>
+		<author>
+			<persName><forename type="first">Kenneth</forename><surname>Tai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jayanth</forename><surname>Narayanan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daniel</forename><forename type="middle">J</forename><surname>Mcallister</surname></persName>
+		</author>
+		<idno type="DOI">10.5465/amr.2009.0484</idno>
+		<ptr target="https://doi.org/10.5465/amr.2009.0484"/>
+	</analytic>
+	<monogr>
+		<title level="j">Academy of Management Review</title>
+		<title level="j" type="abbrev">AMR</title>
+		<idno type="ISSN">0363-7425</idno>
+		<idno type="ISSNe">1930-3807</idno>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="107" to="129"/>
+			<date type="published" when="2012-01">2012</date>
+			<publisher>Academy of Management</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Tai, K., Narayanan, J., &amp; McAllister, D. J. (2012). Envy as pain: Rethinking the nature of envy and its implications for employees and organizations. Academy of Management Review, 37(1), 107-129. https://doi.org/10.5465/amr.2009.0484</note>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<analytic>
+		<title level="a" type="main">Envy and Its Consequences: Why It Is Useful to Distinguish between Benign and Malicious Envy</title>
+		<author>
+			<persName><forename type="first">Niels</forename><surname>Van De Ven</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/spc3.12253</idno>
+		<ptr target="https://doi.org/10.1111/spc3.12253"/>
+	</analytic>
+	<monogr>
+		<title level="j">Social and Personality Psychology Compass</title>
+		<title level="j" type="abbrev">Social &amp; Personality Psych</title>
+		<idno type="ISSN">1751-9004</idno>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="337" to="349"/>
+			<date type="published" when="2016-06">2016</date>
+			<publisher>Wiley</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Van de Ven, N. (2016). Envy and its consequences: Why it is useful to distinguish between benign and malicious envy. Social and Personality Psychology Compass, 10(6), 337- 349. https://doi.org/10.1111/spc3.12253</note>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<analytic>
+		<title level="a" type="main">Leveling up and down: The experiences of benign and malicious envy.</title>
+		<author>
+			<persName><forename type="first">Niels</forename><surname>Van De Ven</surname></persName>
+			<idno type="ORCID">0000-0002-6730-9200</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Marcel</forename><surname>Zeelenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rik</forename><surname>Pieters</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/a0015669</idno>
+		<ptr target="https://doi.org/10.1037/a0015669"/>
+	</analytic>
+	<monogr>
+		<title level="j">Emotion</title>
+		<title level="j" type="abbrev">Emotion</title>
+		<idno type="ISSN">1528-3542</idno>
+		<idno type="ISSNe">1931-1516</idno>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="419" to="429"/>
+			<date type="published" when="2009">2009</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Van de Ven, N., Zeelenberg, M., &amp; Pieters, R. (2009). Leveling up and down: The experiences of benign and malicious envy. Emotion, 9(3), 419-429. https://doi.org/10.1037/a0015669</note>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<analytic>
+		<title level="a" type="main">Why Envy Outperforms Admiration</title>
+		<author>
+			<persName><forename type="first">Niels</forename><surname>Van De Ven</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marcel</forename><surname>Zeelenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rik</forename><surname>Pieters</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0146167211400421</idno>
+		<ptr target="https://doi.org/10.1177/0146167211400421"/>
+	</analytic>
+	<monogr>
+		<title level="j">Personality and Social Psychology Bulletin</title>
+		<title level="j" type="abbrev">Pers Soc Psychol Bull</title>
+		<idno type="ISSN">0146-1672</idno>
+		<idno type="ISSNe">1552-7433</idno>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="784" to="795"/>
+			<date type="published" when="2011-03-07">2011</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Van de Ven, N., Zeelenberg, M., &amp; Pieters, R. (2011). Why envy outperforms admiration. Personality and Social Psychology Bulletin, 37(6), 784-795. https://doi.org/10.1177/0146167211400421</note>
+</biblStruct>
+
+<biblStruct xml:id="b66">
+	<analytic>
+		<title level="a" type="main">Appraisal patterns of envy and related emotions</title>
+		<author>
+			<persName><forename type="first">Niels</forename><surname>Van De Ven</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marcel</forename><surname>Zeelenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rik</forename><surname>Pieters</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11031-011-9235-8</idno>
+		<ptr target="https://doi.org/10.1007/s11031-011-9235-8"/>
+	</analytic>
+	<monogr>
+		<title level="j">Motivation and Emotion</title>
+		<title level="j" type="abbrev">Motiv Emot</title>
+		<idno type="ISSN">0146-7239</idno>
+		<idno type="ISSNe">1573-6644</idno>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="195" to="204"/>
+			<date type="published" when="2012">2012</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Van de Ven, N., Zeelenberg, M., &amp; Pieters, R. (2012). Appraisal patterns of envy and related emotions. Motivation and Emotion, 36(2), 195-204. https://doi.org/10.1007/s11031- 011-9235-8</note>
+</biblStruct>
+
+<biblStruct xml:id="b67">
+	<analytic>
+		<title level="a" type="main">Moving faces, looking places: Validation of the Amsterdam Dynamic Facial Expression Set (ADFES).</title>
+		<author>
+			<persName><forename type="first">Job</forename><surname>Van Der Schalk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Skyler</forename><forename type="middle">T</forename><surname>Hawk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Agneta</forename><forename type="middle">H</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bertjan</forename><surname>Doosje</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/a0023853</idno>
+		<ptr target="https://doi.org/10.1037/a0023853"/>
+	</analytic>
+	<monogr>
+		<title level="j">Emotion</title>
+		<title level="j" type="abbrev">Emotion</title>
+		<idno type="ISSN">1528-3542</idno>
+		<idno type="ISSNe">1931-1516</idno>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="907" to="920"/>
+			<date type="published" when="2011">2011</date>
+			<publisher>American Psychological Association (APA)</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Van der Schalk, J., Hawk, S. T., Fischer, A. H., &amp; Doosje, B. (2011). Moving faces, looking places: Validation of the Amsterdam Dynamic Facial Expression Set (ADFES). Emotion, 11(4), 907-920. https://doi.org/10.1037/a0023853</note>
+</biblStruct>
+
+<biblStruct xml:id="b68">
+	<analytic>
+		<title level="a" type="main">Investigating the Appraisal Patterns of Regret and Disappointment</title>
+		<author>
+			<persName><forename type="first">Wilco</forename><forename type="middle">W</forename><surname>Van Dijk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marcel</forename><surname>Zeelenberg</surname></persName>
+		</author>
+		<idno type="DOI">10.1023/a:1022823221146</idno>
+		<ptr target="https://doi.org/10.1023/A:1022823221146"/>
+	</analytic>
+	<monogr>
+		<title level="j">Motivation and Emotion</title>
+		<title level="j" type="abbrev">Motivation and Emotion</title>
+		<idno type="ISSN">0146-7239</idno>
+		<idno type="ISSNe">1573-6644</idno>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="321" to="331"/>
+			<date type="published" when="2002-12">2002</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Van Dijk, W. W., &amp; Zeelenberg, M. (2002). Investigating the appraisal patterns of regret and disappointment. Motivation and Emotion, 26(4), 321-331. https://doi.org/10.1023/A:1022823221146</note>
+</biblStruct>
+
+<biblStruct xml:id="b69">
+	<analytic>
+		<title level="a" type="main">Not Having What You Want versus Having What You Do Not Want: The Impact of Type of Negative Outcome on the Experience of Disappointment and Related Emotions</title>
+		<author>
+			<persName><forename type="first">Wilco</forename><forename type="middle">W</forename><surname>Van Dijk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zeelenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Van Der Pligt</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/026999399379302</idno>
+		<ptr target="https://doi.org/10.1080/026999399379302"/>
+	</analytic>
+	<monogr>
+		<title level="j">Cognition and Emotion</title>
+		<title level="j" type="abbrev">Cognition and Emotion</title>
+		<idno type="ISSN">0269-9931</idno>
+		<idno type="ISSNe">1464-0600</idno>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="129" to="148"/>
+			<date type="published" when="1999-03">1999</date>
+			<publisher>Informa UK Limited</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Van Dijk, W. W., Zeelenberg, M., &amp; Van der Pligt, J. (1999). Not having what you want versus having what you do not want: The impact of type of negative outcome on the experience of disappointment and related emotions. Cognition and Emotion, 13(2), 129-148. https://doi.org/10.1080/026999399379302</note>
+</biblStruct>
+
+<biblStruct xml:id="b70">
+	<analytic>
+		<title level="a" type="main">Emotion and the construal of social situations: Inferences of cooperation versus competition from expressions of anger, happiness, and disappointment</title>
+		<author>
+			<persName><forename type="first">Evert</forename><forename type="middle">A</forename><surname>Van Doorn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marc</forename><forename type="middle">W</forename><surname>Heerdink</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Gerben</forename><forename type="middle">A</forename><surname>Van Kleef</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/02699931.2011.648174</idno>
+		<ptr target="https://doi.org/10.1080/02699931.2011.648174"/>
+	</analytic>
+	<monogr>
+		<title level="j">Cognition and Emotion</title>
+		<title level="j" type="abbrev">Cognition and Emotion</title>
+		<idno type="ISSN">0269-9931</idno>
+		<idno type="ISSNe">1464-0600</idno>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="442" to="461"/>
+			<date type="published" when="2012-04">2012</date>
+			<publisher>Informa UK Limited</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Van Doorn, E. A., Heerdink, M. W., &amp; Van Kleef, G. A. (2012). Emotion and the construal of social situations: Inferences of cooperation versus competition from expressions of anger, happiness, and disappointment. Cognition &amp; Emotion, 26(3), 442-461. https://doi.org/10.1080/02699931.2011.648174</note>
+</biblStruct>
+
+<biblStruct xml:id="b71">
+	<analytic>
+		<title level="a" type="main">How emotional expressions shape prosocial behavior: Interpersonal effects of anger and disappointment on compliance with requests</title>
+		<author>
+			<persName><forename type="first">Evert</forename><forename type="middle">A</forename><surname>Van Doorn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Gerben</forename><forename type="middle">A</forename><surname>Van Kleef</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Joop</forename><surname>Van Der Pligt</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11031-014-9421-6</idno>
+		<ptr target="https://doi.org/10.1007/s11031-014-9421-6"/>
+	</analytic>
+	<monogr>
+		<title level="j">Motivation and Emotion</title>
+		<title level="j" type="abbrev">Motiv Emot</title>
+		<idno type="ISSN">0146-7239</idno>
+		<idno type="ISSNe">1573-6644</idno>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="128" to="141"/>
+			<date type="published" when="2015">2015</date>
+			<publisher>Springer Science and Business Media LLC</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Van Doorn, E. A., Van Kleef, G. A., &amp; Van der Pligt, J. (2015). How emotional expressions shape prosocial behavior: Interpersonal effects of anger and disappointment on compliance with requests. Motivation and Emotion, 39(1), 128-141. https://doi.org/10.1007/s11031-014-9421-6</note>
+</biblStruct>
+
+<biblStruct xml:id="b72">
+	<analytic>
+		<title level="a" type="main">The Social Effects of Emotions</title>
+		<author>
+			<persName><forename type="first">Gerben</forename><forename type="middle">A</forename><surname>Van Kleef</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stéphane</forename><surname>Côté</surname></persName>
+		</author>
+		<idno type="DOI">10.1146/annurev-psych-020821-010855</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Annual Review of Psychology</title>
+		<title level="j" type="abbrev">Annu. Rev. Psychol.</title>
+		<idno type="ISSN">0066-4308</idno>
+		<idno type="ISSNe">1545-2085</idno>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="629" to="658"/>
+			<date type="published" when="2022-01-04"/>
+			<publisher>Annual Reviews</publisher>
+		</imprint>
+	</monogr>
+	<note>in press</note>
+	<note type="raw_reference">Van Kleef, G. A., &amp; Côté, S. (in press). The social effects of emotions. Annual Review of Psychology.</note>
+</biblStruct>
+
+<biblStruct xml:id="b73">
+	<analytic>
+		<title level="a" type="main">The automatic orienting of attention to goal-relevant stimuli</title>
+		<author>
+			<persName><forename type="first">Julia</forename><surname>Vogt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jan</forename><surname>De Houwer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Agnes</forename><surname>Moors</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stefaan</forename><surname>Van Damme</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Geert</forename><surname>Crombez</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.actpsy.2009.12.006</idno>
+		<ptr target="https://doi.org/10.1016/j.actpsy.2009.12.006"/>
+	</analytic>
+	<monogr>
+		<title level="j">Acta Psychologica</title>
+		<title level="j" type="abbrev">Acta Psychologica</title>
+		<idno type="ISSN">0001-6918</idno>
+		<imprint>
+			<biblScope unit="volume">134</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="61" to="69"/>
+			<date type="published" when="2010-05">2010</date>
+			<publisher>Elsevier BV</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Vogt, J., De Houwer, J., Moors, A., Van Damme, S., &amp; Crombez, G. (2010). The automatic orienting of attention to goal-relevant stimuli. Acta Psychologica, 134(1), 61-69. https://doi.org/10.1016/j.actpsy.2009.12.006</note>
+</biblStruct>
+
+<biblStruct xml:id="b74">
+	<analytic>
+		<title level="a" type="main">The Split-Apply-Combine Strategy for Data Analysis</title>
+		<author>
+			<persName><forename type="first">Hadley</forename><surname>Wickham</surname></persName>
+		</author>
+		<idno type="DOI">10.18637/jss.v040.i01</idno>
+		<ptr target="https://doi.org/10.18637/jss.v040.i01"/>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Statistical Software</title>
+		<title level="j" type="abbrev">J. Stat. Soft.</title>
+		<idno type="ISSNe">1548-7660</idno>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="29"/>
+			<date type="published" when="2011">2011</date>
+			<publisher>Foundation for Open Access Statistic</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wickham, H. (2011). The split-apply-combine strategy for data analysis. Journal of Statistical Software, 40(1), 1-29. https://doi.org/10.18637/jss.v040.i01</note>
+</biblStruct>
+
+<biblStruct xml:id="b75">
+	<analytic>
+		<title level="a" type="main">dplyr: A Grammar of Data Manipulation</title>
+		<author>
+			<persName><forename type="first">Hadley</forename><surname>Wickham</surname></persName>
+			<idno type="ORCID">0000-0003-4757-117X</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Romain</forename><surname>François</surname></persName>
+			<idno type="ORCID">0000-0002-2444-4226</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Lionel</forename><surname>Henry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kirill</forename><surname>Müller</surname></persName>
+			<idno type="ORCID">0000-0002-1416-3412</idno>
+		</author>
+		<author>
+			<persName><forename type="first">Davis</forename><surname>Vaughan</surname></persName>
+			<idno type="ORCID">0000-0003-4777-038X</idno>
+		</author>
+		<idno type="DOI">10.32614/cran.package.dplyr</idno>
+		<ptr target="https://CRAN.R-project.org/package=dplyr"/>
+	</analytic>
+	<monogr>
+		<title level="m">dplyr: A grammar of data manipulation</title>
+		<imprint>
+			<publisher>The R Foundation</publisher>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wickham, H., Francois, R., Henry, L., &amp; Müller, K. (2019). dplyr: A grammar of data manipulation. https://CRAN.R-project.org/package=dplyr</note>
+</biblStruct>
+
+<biblStruct xml:id="b76">
+	<analytic>
+		<title level="a" type="main">tidyr: Tidy Messy Data</title>
+		<author>
+			<persName><forename type="first">Hadley</forename><surname>Wickham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Davis</forename><surname>Vaughan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maximilian</forename><surname>Girlich</surname></persName>
+		</author>
+		<idno type="DOI">10.32614/cran.package.tidyr</idno>
+		<ptr target="https://CRAN.R-project.org/package=tidyr"/>
+	</analytic>
+	<monogr>
+		<title level="m">tidyr: Easily tidy data with "spread()" and "gather</title>
+		<imprint>
+			<publisher>The R Foundation</publisher>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note>functions</note>
+	<note type="raw_reference">Wickham, H., &amp; Henry, L. (2019). tidyr: Easily tidy data with "spread()" and "gather()" functions . https://CRAN.R-project.org/package=tidyr</note>
+</biblStruct>
+
+<biblStruct xml:id="b77">
+	<analytic>
+		<title level="a" type="main">Bodily Communication of Emotion: Evidence for Extrafacial Behavioral Expressions and Available Coding Systems</title>
+		<author>
+			<persName><forename type="first">Zachary</forename><surname>Witkower</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jessica</forename><forename type="middle">L</forename><surname>Tracy</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1754073917749880</idno>
+		<ptr target="https://doi.org/10.1177/1754073917749880"/>
+	</analytic>
+	<monogr>
+		<title level="j">Emotion Review</title>
+		<title level="j" type="abbrev">Emotion Review</title>
+		<idno type="ISSN">1754-0739</idno>
+		<idno type="ISSNe">1754-0747</idno>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="184" to="193"/>
+			<date type="published" when="2019">2019</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Witkower, Z., &amp; Tracy, J. L. (2019). Bodily communication of emotion: Evidence for extrafacial behavioral expressions and available coding systems. Emotion Review, 11(2), 184-193. https://doi.org/10.1177/1754073917749880</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

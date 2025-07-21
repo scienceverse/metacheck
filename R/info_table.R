@@ -8,8 +8,7 @@
 #' @export
 #'
 #' @examples
-#' paper <- demodir() |> read_grobid()
-#' info_table(paper)
+#' info_table(psychsci[1:10])
 info_table <- function(paper,
                        info = c("filename",
                                 "title",

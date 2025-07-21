@@ -24,6 +24,5 @@ a data frame with each paper id and info columns
 Get paper information in a table
 }
 \examples{
-paper <- demodir() |> read_grobid()
-info_table(paper)
+info_table(psychsci[1:10])
 }

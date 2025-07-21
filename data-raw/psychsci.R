@@ -15,7 +15,7 @@ sink <- pdf2grobid(
 # make relative filename make sense
 dir <- "data-raw/psychsci/grobid_0.8.2/"
 setwd(dir)
-psychsci <- read_grobid(".")
+psychsci <- read(".")
 setwd("../../../")
 
 usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")
@@ -34,9 +34,9 @@ info[bad_dois, c("id", "doi", "title")]
 
 
 # test full vs light ----
-full <- read_grobid("data-raw/psychsci/grobid_0.8.2-full/")
-light <- read_grobid("data-raw/psychsci/grobid_0.8.2/")
-consolidated <- read_grobid("data-raw/psychsci/grobid_0.8.1_consolidated/")
+full <- read("data-raw/psychsci/grobid_0.8.2-full/")
+light <- read("data-raw/psychsci/grobid_0.8.2/")
+consolidated <- read("data-raw/psychsci/grobid_0.8.2_consolidated/")
 
 info <- c("filename", "title", "keywords", "doi", "description")
 light_info <- info_table(light, info)
@@ -69,3 +69,5 @@ title_mismatch <- data.frame(
   cons = cons_info$title
 ) |>
   dplyr::filter(light != cons)
+
+allref <- concat_tables(consolidated, "references")

@@ -15,7 +15,7 @@
 #'
 #' @examples
 #' filename <- demoxml()
-#' paper <- read_grobid(filename)
+#' paper <- read(filename)
 #'
 #' search_text(paper, "p\\s*(=|<)\\s*[0-9\\.]+", return = "match")
 search_text <- function(paper, pattern = ".*", section = NULL,

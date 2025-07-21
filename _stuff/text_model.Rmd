@@ -243,7 +243,7 @@ power_log_model <- function(paper) {
 Now you can use `module_run()` to run the module on a new paper or set of papers.
 
 ```{r}
-m <- demodir() |> read_grobid() |>
+m <- demodir() |> read() |>
   module_run("power/power_log_model.R")
 ```
 

@@ -8,7 +8,7 @@
 #'
 #' @examples
 #' filename <- demoxml()
-#' papers <- read_grobid(filename)
+#' papers <- read(filename)
 #' stats(papers)
 stats <- function(text, ...) {
   # lines with stats must have at least one number

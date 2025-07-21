@@ -109,7 +109,7 @@ RGX_DF1_I_L <- "I|l"
 #'
 #' @examples
 #' filename <- system.file("grobid", "incest.xml", package="papercheck")
-#' study <- read_grobid(filename)
+#' study <- read(filename)
 #' stats(study)
 stats <- function(text, ...) {
   if (!is.data.frame(text)) {
@@ -142,7 +142,7 @@ stats <- function(text, ...) {
 #'
 #' @examples
 #' filename <- system.file("grobid", "incest.xml", package="papercheck")
-#' study <- read_grobid(filename)
+#' study <- read(filename)
 #' check_p_values(study)
 check_p_values <- function(text) {
   p <- stats(text, AllPValues = TRUE)

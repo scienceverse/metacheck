@@ -121,7 +121,7 @@ pdf2grobid <- function(filename, save_path = ".",
 
   # read in as xml
   if (is.null(save_path)) {
-    xml <- read_grobid_xml(save_file)
+    xml <- read_xml(save_file)
     return(xml)
   } else {
     save_file

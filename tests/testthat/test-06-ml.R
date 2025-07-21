@@ -40,7 +40,7 @@
 #
 #   # paper ----
 #   skip("long")
-#   paper <- read_grobid(demoxml())
+#   paper <- read(demoxml())
 #   text <- search_text(paper, section = "method")
 #   system.time( gresults <- ml(text, model_dir) )
 #

@@ -18,7 +18,7 @@ test_that("errors", {
 
 test_that("defaults", {
   # list of papers
-  paper <- demodir() |> read_grobid()
+  paper <- demodir() |> read()
   info <- c("id", "filename", "title", "keywords", "doi")
   infotable <- info_table(paper)
 
@@ -26,7 +26,7 @@ test_that("defaults", {
   expect_equal(names(infotable), info)
 
   # one paper
-  paper <- demoxml() |> read_grobid()
+  paper <- demoxml() |> read()
   infotable <- info_table(paper)
 
   expect_equal(infotable$id, paper$id)
@@ -35,7 +35,7 @@ test_that("defaults", {
 
 test_that("missing items", {
   # list of papers
-  paper <- demodir() |> read_grobid()
+  paper <- demodir() |> read()
   info <- c("doi", "title", "not a column")
   infotable <- info_table(paper, info)
 

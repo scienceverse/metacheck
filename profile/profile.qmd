@@ -19,7 +19,7 @@ files <- list.files("psych_science_xml", "xml$", full.names = TRUE)
 ### read_grobid
 
 ```{r}
-lineprof( papers <- read_grobid(files[1:50]) )
+lineprof( papers <- read(files[1:50]) )
 ```
 
 

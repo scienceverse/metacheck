@@ -43,7 +43,7 @@ Papercheck is modular, with each module focused on a specific practice that the 
 ## An example of the "retractionwatch" module
 
 ```{r, results='asis'}
-paper <- read_grobid(demoxml())
+paper <- read(demoxml())
 module_run(paper, "retractionwatch")
 ```
 :::

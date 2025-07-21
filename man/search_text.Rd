@@ -37,7 +37,7 @@ Search the text of a paper or list of paper objects. Also works on the table res
 }
 \examples{
 filename <- demoxml()
-paper <- read_grobid(filename)
+paper <- read(filename)
 
 search_text(paper, "p\\\\s*(=|<)\\\\s*[0-9\\\\.]+", return = "match")
 }

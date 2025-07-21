@@ -3,14 +3,14 @@ test_that("exists", {
   expect_no_error(helplist <- help(expand_text, papercheck))
   #expect_equal(helplist$topic, "expand_text")
 
-  paper <- demoxml() |> read_grobid()
+  paper <- demoxml() |> read()
   expect_error(expand_text(1, paper), "The results table was not a table or object containing a table")
 
   expect_error(expand_text(paper$full_text, 1), "The paper argument doesn't seem to be a scivrs_paper object or a list of paper objects")
 })
 
 test_that("basic", {
-  paper <- demoxml() |> read_grobid()
+  paper <- demoxml() |> read()
   res_tbl <- search_text(paper, "p =", return = "match")
 
   # defaults
@@ -41,7 +41,7 @@ test_that("basic", {
 })
 
 test_that("plus/minus", {
-  paper <- demoxml() |> read_grobid()
+  paper <- demoxml() |> read()
   res_tbl <- search_text(paper, "p =", return = "match")
   expected <- paper$full_text |>
     dplyr::filter(div == 3,
@@ -61,7 +61,7 @@ test_that("plus/minus", {
 })
 
 test_that("multiple papers", {
-  paper <- read_grobid(demodir())
+  paper <- read(demodir())
   res_tbl <- search_text(paper, "replicate",
                          section = "intro", return = "match")
   expanded <- expand_text(res_tbl, paper)
@@ -76,7 +76,7 @@ test_that("multiple papers", {
 })
 
 test_that("module output", {
-  paper <- demoxml() |> read_grobid()
+  paper <- demoxml() |> read()
   module_res <- module_run(paper, "all_p_values")
   expected <- module_res$table |>
     dplyr::left_join(paper$full_text, by = c("div", "p", "s")) |>

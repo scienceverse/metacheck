@@ -96,9 +96,7 @@ site_down <- function(url, msg = "The website %s is not available", error = TRUE
 #' @export
 #'
 #' @examples
-#' grobid_dir <- system.file("grobid", package = "papercheck")
-#' papers <- read_grobid(grobid_dir)
-#' references <- concat_tables(papers, c("refs", "references"))
+#' references <- concat_tables(psychsci[1:10], "references")
 concat_tables <- function(papers, name_path) {
   if (!is_paper_list(papers)) papers <- list(papers)
 

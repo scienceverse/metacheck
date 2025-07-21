@@ -1,0 +1,697 @@
+---
+title: "Decline Effects Main Analysis"
+author: "James E. Pustejovsky"
+date:  "`r format(Sys.time(), '%B %d, %Y %H:%M')`"
+output:
+  html_document:
+    number_sections: true
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(pander)
+library(kableExtra)
+library(metafor)
+library(clubSandwich)
+library(colorblindr)
+
+decline_effects <- 
+  read_csv("Decline Effect Data.csv") %>%
+  select(study:selfrep, se1750, se2750, notes) %>%
+  filter(is.na(notes) | notes == "acceptability") %>%
+  mutate(
+    origlab = factor(origlab),
+    replab = factor(replab),
+    N = if_else(N==0, as.numeric(NA), N)
+  )
+
+study_order <- 
+  decline_effects %>%
+  select(origlab, study) %>%
+  arrange(origlab) %>%
+  distinct() %>%
+  mutate(
+    study_lab = paste0(study, " (Lab ", origlab,")")
+  )
+
+```
+
+```{r}
+
+half_true <- function(x) if_else(x, 1/2, -1/2)
+
+# Pivot to one row per half-experiment
+ES_halfs <- 
+  decline_effects %>%
+  rename(s1750 = se1750, s2750 = se2750) %>%
+  select(study, secondfirst:selfrep, contains("750")) %>%
+  gather("key","value", contains("750")) %>%
+  separate(key, into = c("stat","half","key","group"), sep = c(1,2,5)) %>%
+  select(-key) %>%
+  unite("stat", stat, group, sep = "") %>%
+  spread(stat, value) %>%
+  rename(se = s) %>%
+
+# Calculate A_hijk, B_jk, H_jijk variables
+  mutate(
+    A = half_true(half == 2 & secondfirst == 0 | half == 1 & secondfirst == 1),
+    B = half_true(blind == 1),
+    H = half_true(half == 2),
+    experiment = paste(study, wave)
+  ) %>%
+  
+# Calculate sampling variances
+  mutate(
+    v_basic = 1 / ne + 1 / nc + d^2 / (2 * (n - 2)),
+    v = if_else(is.na(se), v_basic, se^2)
+  )
+
+ES_experiments <- 
+  ES_halfs %>%
+  group_by(origlab, study, experiment, replab, wave, blind, confirmation, selfrep) %>%
+  summarise(
+    k = n(),
+    d = mean(d),
+    v = sum(v) / k^2,
+    B = mean(B)
+  ) %>%
+  ungroup() %>%
+  mutate(
+    pval = 2 * pnorm(abs(d / sqrt(v)), lower.tail = FALSE),
+    sig = pval < .05,
+    study = factor(study, levels = study_order$study),
+    lab_study = factor(study, levels = study_order$study, labels = study_order$study_lab),
+    replab_study = paste(study, replab),
+    lab = factor(origlab, levels = 4:1, labels = paste("Lab",4:1)),
+    replication = 1 - confirmation,
+    self_replication = replication * (origlab == replab),
+    other_replication = replication - self_replication,
+    other_rep_lab = factor(other_replication, levels = 0:1, labels = c("Original lab","Independent lab")),
+    con_lab = factor(confirmation, levels = 0:1, 
+                     labels = c("Replications","Confirmation")),
+    rep_lab = paste("Lab", replab),
+    lab_match = case_when(
+      confirmation == 1 ~ "Confirmatory test",
+      origlab == replab ~ "Self-replication",
+      TRUE ~ "Independent replication"
+    ),
+    lab_match = factor(lab_match, levels = c("Confirmatory test","Self-replication","Independent replication")),
+    d_min = d - sqrt(v) * qnorm(0.975),
+    d_max = d + sqrt(v) * qnorm(0.975),
+    esID = row_number()
+  )
+
+```
+
+```{r}
+robustify <- function(res, cluster = NULL, coverage = 0.95) {
+  
+  # robust standard errors and confidence intervals
+  if (is.null(cluster)) {
+    rob <- coef_test(res, vcov = "CR2")
+  } else {
+    rob <- coef_test(res, vcov = "CR2", cluster = cluster)
+  }
+  res$b <- rob$beta
+  names(res$b) <- rownames(rob)
+  res$se <- rob$SE
+  res$zval <- rob$beta / rob$SE
+  res$pval <- rob$p_Satt
+  res$df <- rob$df
+  crit <- qt((1 + coverage) / 2, df = rob$df)
+  res$ci.lb <- with(rob, beta - SE * crit)
+  res$ci.ub <- with(rob, beta + SE * crit)
+  res$QE <- NA
+  res$QM <- NA
+  
+  if (!"robust.rma.mv" %in% class(res)) class(res) <- c("robust.rma.mv", class(res))
+  res
+}
+```
+
+# Effect size estimates
+
+```{r, fig.width = 9, fig.height = 6, fig.retina=1.5}
+
+lab_shapes <- c("circle filled","square filled","diamond filled", "triangle filled")
+
+ggplot(ES_experiments) + 
+  geom_hline(yintercept = 0) + 
+  geom_pointrange(
+    aes(x = con_lab, y = d, ymin = d_min, ymax = d_max, 
+        color = lab_match, fill = lab_match, 
+        shape = rep_lab, group = 4 - wave),
+    position = position_dodge(width = 0.8)
+  ) + 
+  theme_minimal() + 
+  scale_shape_manual(values = lab_shapes) + 
+  scale_color_OkabeIto() + 
+  scale_fill_OkabeIto() + 
+  scale_x_discrete(labels = NULL, breaks = NULL) + 
+  scale_y_continuous(breaks = seq(0,0.6,0.2), minor_breaks = NULL) + 
+  coord_flip() + 
+  facet_wrap(~ lab_study) + 
+  labs(shape = "", color = "", fill = "",
+       x = "", y = "Effect size (Standardized mean difference)") + 
+  guides(
+    color = guide_legend(override.aes = list(size = 0.6)),
+    shape = "none"
+  ) + 
+  theme(
+    legend.position = "top",
+    strip.text = element_text(hjust = 0),
+    axis.text.x = element_text(margin = margin(5, b = 10))
+  )
+
+```
+
+## Multi-level meta-analysis
+
+To characterize variability in the effect sizes across studies and replications, we fit a multi-level meta-regression model. The model includes indicators to distinguish replication studies from the original confirmatory studies, plus random effects for each unique study (comprised of a confirmation and four replications) and each unique effect size nested within study. The study-level variance component describes heterogeneity in the phenomena investigated in different studies and labs. The effect size-level variance component describes heterogeneity across replications of the same phenomena; we would expect it to be small if replications of the studies are exact, so that replication effect size estimates vary only due to sampling error.  
+
+```{r}
+RMA_study_het <- rma.mv(d ~ 0 + con_lab, V = v,
+                        random = ~ 1 | study / esID, method = "REML",
+                        data = ES_experiments)
+
+vc_between_CI <- confint(RMA_study_het, sigma2 = 1)$random["sigma.1",]
+vc_within_CI <- confint(RMA_study_het, sigma2 = 2)$random["sigma.2",]
+
+robustify(RMA_study_het)
+```
+
+One way to assess replicability is to examine the consistency of effect size estimates generated by the initial confirmatory test and the subsequent replications of the same phenomenon (effect/study) Based on a multi-level meta-analysis, we found a small level of variation in effect sizes ($\hat\tau_{within}$ = `r round(vc_within_CI[["estimate"]], 3)`, 95% CI = `r round(vc_within_CI[["ci.lb"]], 3)` to `r round(vc_within_CI[["ci.ub"]], 3)`) beyond what would be expected by sampling variation alone. This indicates that the self- and independent replications would not have perfectly replicated the effect size magnitude of the confirmatory tests, even if all studies were so large that sampling error was negligible. The degree of variation was, however, smaller than the variation in effect sizes across the sixteen conducted studies ($\hat\tau_{between}$ = `r round(vc_between_CI[["estimate"]], 3)`, 95% CI = `r round(vc_between_CI[["ci.lb"]], 3)` to `r round(vc_between_CI[["ci.ub"]], 3)`).
+
+## Alternative specification 
+
+One alternative specification for the above model is to allow the between-study and within-study variance components to differ depending on whether the effect size was generated by the original lab or by an independent lab. At the between-study level, we allow the effect studied in the original lab to covary with the _average_ effect of the replicating labs. At the within-study level, we allow for random variation in the effect sizes of the confirmatory test and the self-replication, and then a separate degree of random variation in the effects sizes across the independent replications. The results of this model are given below.
+
+```{r}
+RMA_study_het_het <- 
+  rma.mv(d ~ 0 + con_lab, V = v,
+  random = list(~ other_rep_lab | study, ~ other_rep_lab | esID), 
+  struct = c("CS","DIAG"), 
+  method = "REML",
+  data = ES_experiments)
+
+rho <- confint(RMA_study_het_het, rho = 1)$random["rho",]
+gamma1 <- confint(RMA_study_het_het, gamma2 = 1)$random["gamma.1",]
+gamma2  <- confint(RMA_study_het_het, gamma2 = 2)$random["gamma.2",]
+
+robustify(RMA_study_het_het)
+```
+
+In a further, exploratory model, we found that differences between confirmatory test and self-replication effect sizes was fully attributable to sampling error; that average effects in independent replications correlated at r = `r round(rho[["estimate"]], 3)` (95% CI = `r round(rho[["ci.lb"]], 3)` to `r round(rho[["ci.ub"]], 3)`) with the effect sizes from confirmatory and self-replication studies; and that there was a small amount of heterogeneity in effect size estimates across the independent replications ($\hat\tau_{within}$ = `r round(gamma2[["estimate"]], 3)`, 95% CI = `r round(gamma2[["ci.lb"]], 3)` to `r round(gamma2[["ci.ub"]], 3)`). These results indicate that heterogeneity of effects may be attributed partly to the challenge of communicating study methods to the independent replicating labs and partly to varying interpretation or implementation of the study methods by replicating labs.
+
+```{r}
+LRT <- anova(RMA_study_het, RMA_study_het_het)
+LRT
+```
+
+The elaborated model provides a better description of how effect sizes vary between- and within-studies ($\chi^2(`r LRT$p.f - LRT$p.r`)$ = `r round(LRT$LRT, 1)`, p = `r round(LRT$pval,3)`).
+
+# Replicability rate
+
+## Confirmatory tests
+
+```{r}
+confirmation_ES <- filter(ES_experiments, lab_match == "Confirmatory test")
+sig <- table(confirmation_ES$sig)
+sig_rate <- round(100 * sig["TRUE"] / sum(sig))
+
+meta_confirm <- rma(yi = d, vi = v, data = confirmation_ES, method = "REML", knha = TRUE)
+summary(meta_confirm)
+```
+
+Each of the 16 included findings was a novel result from pilot and exploratory research conducted independently in each laboratory. Labs decided when they thought they had a finding that was novel and interesting and that they presumed would be replicable by their own criteria. These were submitted for a preregistered, confirmatory test. `r sig_rate`% (`r sig["TRUE"]`/`r sum(sig)`) of the confirmation studies produced statistically significant results; the average effect size across all confirmation studies was d = `r round(as.numeric(meta_confirm$beta), 3)` (95% CI = `r round(meta_confirm$ci.lb,3)` to `r round(meta_confirm$ci.ub,3)`), with estimated between-study heterogeneity of `r round(sqrt(meta_confirm$tau2), 3)` SD.
+
+```{r}
+meta_confirm_lab <- rma(yi = d ~ origlab, vi = v, data = confirmation_ES, method = "REML", knha = TRUE)
+summary(meta_confirm_lab)
+
+```
+
+No lab discovered findings with larger or smaller effect sizes than the other labs on average ($Q_B = `r round(meta_confirm_lab$QM,2)`$, p = `r round(meta_confirm_lab$QMp, 3)`).
+
+```{r}
+confirmation_d_by_sig <- 
+  confirmation_ES %>%
+  group_by(sig) %>%
+  summarise(
+    d = mean(d),
+    SE = sqrt(sum(v) / n()^2)
+  ) %>% 
+  mutate(
+    L = d - qnorm(.975) * SE,
+    U = d + qnorm(.975) * SE
+  )
+
+confirmation_d_by_sig %>%
+  kable(digits = 3, 
+        caption = "Average effect size by statistical significance",
+        col.names = c("p < .05", "Average d","SE","CI-lower","CI-upper")) %>%
+  kable_styling(bootstrap_options = "basic", full_width = FALSE)
+```
+
+## Replication studies
+
+```{r}
+replication_ES <- filter(ES_experiments, lab_match != "Confirmatory test")
+
+sig_rep <- table(replication_ES$sig)
+sig_rep_rate <- round(100 * sig_rep["TRUE"] / sum(sig_rep))
+
+```
+
+```{r}
+meta_rep <- rma.mv(yi = d, V = v, 
+                   random = list(~ 1 | study, ~ 1| experiment),
+                   data = replication_ES, method = "REML")
+
+summary(meta_rep)
+
+```
+Including all 16 studies, `r sig_rep["TRUE"]` of the `r sum(sig_rep)` (`r sig_rep_rate`%) replications produced statistically significant effects in the hypothesized direction. The average effect size across all replications was d = `r round(as.numeric(meta_rep$beta), 3)` (95% CI = `r round(meta_rep$ci.lb,3)` to `r round(meta_rep$ci.ub,3)`), barely smaller than the effect sizes observed in the confirmatory tests (d = `r round(as.numeric(meta_confirm$beta), 3)`).
+
+```{r}
+confirm_and_rep <-
+  confirmation_ES %>% 
+  select(origlab, study, d_orig = d, v_orig = v, orig_sig = sig) %>%
+  left_join(replication_ES)
+  
+d_by_sig <- 
+  confirm_and_rep %>%
+  group_by(orig_sig, sig) %>%
+  summarise(
+    n = n(),
+    d = mean(d),
+    SE = sqrt(sum(v)) / n()
+  ) %>% 
+  mutate(
+    L = d - qnorm(.975) * SE,
+    U = d + qnorm(.975) * SE
+  )
+
+rep_rate_sig <- 
+  d_by_sig %>%
+  group_by(orig_sig) %>% 
+  summarise(rate = n[sig] / sum(n)) %>% 
+  pull(rate)
+
+d_by_sig %>%
+  kable(digits = 3, 
+        caption = "Average effect size in replications, by statistical significance of the confirmatory test and replication",
+        col.names = c("Confirmatory test p < .05","Replication p < .05", "N","Average d","SE","CI-lower","CI-upper")) %>%
+  kable_styling(bootstrap_options = "basic", full_width = FALSE)
+```
+
+When restricted to only the 13 studies for which the confirmatory test had a statistically significant result supporting the original hypothesis, `r filter(d_by_sig, orig_sig, sig) %>% pull(n)` of the `r filter(d_by_sig, orig_sig) %>% pull(n) %>% sum()` (`r round(rep_rate_sig[2] * 100)`%) replications produced statistically significant effects in the hypothesized direction. The average effect size of these replications was d = `r filter(d_by_sig, orig_sig, sig) %>% pull(d) %>% round(3)` (95% CI = `r filter(d_by_sig, orig_sig, sig) %>% pull(L) %>% round(3)` to `r filter(d_by_sig, orig_sig, sig) %>% pull(U) %>% round(3)`), very similar to the effect sizes observed in the original confirmatory tests of those 13 findings (d = `r filter(confirmation_d_by_sig, sig) %>% pull(d) %>% round(3)`). 
+
+```{r}
+
+reps_by_study <- 
+  confirm_and_rep %>%
+  filter(!orig_sig) %>%
+  group_by(study) %>%
+  summarize(
+    sig = sum(sig),
+    d = mean(d),
+    SE = sqrt(sum(v)) / n()
+  ) %>% 
+  mutate(
+    L = d - qnorm(.975) * SE,
+    U = d + qnorm(.975) * SE
+  ) %>%
+  arrange(sig)
+    
+```
+
+We also examined the replications of the three findings that had failed the initial confirmatory test, but had been submitted for confirmation because the lab had confidence in their replicability. `r filter(d_by_sig, !orig_sig, sig)` of the `r filter(d_by_sig, !orig_sig) %>% pull(n) %>% sum()` (`r round(rep_rate_sig[1] * 100)`%) replications produced statistically significant effects in the hypothesized direction: `r reps_by_study$sig[1]` of 4 for one (d = `r round(reps_by_study$d[1],3)`, 95 %CI = `r round(reps_by_study$L[1],3)` to `r round(reps_by_study$U[1],3)`); `r reps_by_study$sig[2]` of 4 for the second (d = `r round(reps_by_study$d[2],3)`, 95 %CI = `r round(reps_by_study$L[2],3)` to `r round(reps_by_study$U[2],3)`); and `r reps_by_study$sig[3]` of 4 for the third (d = `r round(reps_by_study$d[3],3)`, 95 %CI = `r round(reps_by_study$L[3],3)` to `r round(reps_by_study$U[3],3)`). These are all small effect sizes, but also larger than the effect sizes observed in the original confirmatory tests of those 3 findings (d = `r filter(confirmation_d_by_sig, !sig) %>% pull(d) %>% round(3)`).
+
+## Expected replication rates
+
+```{r}
+pwr <- function(delta, v, alpha = .05) {
+  crit <- qnorm(1 - alpha / 2)
+  pnorm(crit, mean = delta / sqrt(v), lower.tail = FALSE)
+}
+
+ES_power <- 
+  confirm_and_rep %>%
+  mutate(
+    power = pwr(delta = d_orig, v = v)
+  ) %>%
+  group_by(study) %>%
+  summarise(
+    orig_sig = unique(orig_sig),
+    d_orig = mean(d_orig),
+    power = mean(power)
+  )
+
+power_dist <- 
+  ES_power %>%
+  mutate(Sample = "All studies") %>%
+  bind_rows(ES_power) %>%
+  mutate(Sample = if_else(is.na(Sample), "Significant confirmatory tests", Sample)) %>%
+  filter(Sample == "All studies" | orig_sig) %>%
+  group_by(Sample) %>%
+  summarise_at(vars(power), list(min = min, median = median, mean = mean, max = max, n = length))
+
+power_dist %>%
+  mutate(
+    Sample = paste0(Sample, " (n = ", n,")")
+  ) %>%
+  select(-n) %>%
+  kable(digits = 3, caption = "Range of power rates based on estimated effect sizes in confirmatory studies") %>%
+  kable_styling(full_width = FALSE)
+```
+
+We can compute the expected positive resultreplication rate among the replications based on the confirmatory test effect size of each study, and the observed sample size of each replication. The average power was `r round(power_dist$mean, 3)` with a median of `r round(power_dist$median, 3)` and a range of `r round(power_dist$min, 3)` to `r round(power_dist$max, 3)`. Thus, our observed positive result rate of `r sig_rep_rate`% in the replication studies for all 16 original hypotheses is consistent with the expected rate based on these power estimates. 
+
+## Confidence intervals of confirmatory tests
+
+```{r}
+CI_covers <- 
+  confirm_and_rep %>%
+  mutate(
+    L_orig = d_orig - qnorm(.975) * sqrt(v_orig),
+    U_orig = d_orig + qnorm(.975) * sqrt(v_orig),
+    rep_within = L_orig < d & d < U_orig
+  ) %>%
+  group_by(lab_match) %>%
+  summarise(
+    inside = sum(rep_within),
+    n = n()
+  ) %>%
+  mutate(
+    rate = 100 * inside / n
+  )
+
+CI_covers <- 
+  CI_covers %>%
+  summarise(
+    inside = sum(inside),
+    n = sum(n)
+  ) %>%
+  mutate(
+    lab_match = "Overall",
+    rate = 100 * inside / n
+  ) %>%
+  bind_rows(CI_covers) %>%
+  select(lab_match, inside, n, rate)
+
+CI_covers %>%
+  kable(caption = "Number and rate of replication studies falling within 95% CI of confirmatory test",
+        col.names = c("Replication type","Inside CI","N","Rate"),
+        digits = 1) %>%
+  kable_styling(full_width = FALSE)
+```
+
+We calculated the 95% confidence intervals of the confirmatory test effect sizes and observed that `r CI_covers$inside[1]` of the `r CI_covers$n[1]` (`r round(CI_covers$rate[1])`%) replication effect sizes fell within those intervals, including `r CI_covers$inside[2]` of `r CI_covers$n[2]` (`r round(CI_covers$rate[2])`%) self-replications and `r CI_covers$inside[3]` of `r CI_covers$n[3]` (`r round(CI_covers$rate[3])`%) independent replications. 
+
+## Replications versus confirmatory tests
+
+```{r}
+replication_diffs <- 
+  ES_experiments %>%
+  group_by(origlab, lab, study, lab_study, con_lab) %>%
+  summarise(
+    blind = mean(blind),
+    k = sum(k),
+    d_rep = weighted.mean(d, w = 1 / v),
+    v_rep = 1 / sum(1 / v),
+    d_indep = weighted.mean(d[selfrep==0], w = 1 / v[selfrep==0]),
+    v_indep = 1 / sum(1 / v[selfrep==0]),
+    d_self = d[lab_match %in% c("Confirmatory test","Self-replication")],
+    v_self = v[lab_match %in% c("Confirmatory test","Self-replication")]
+  ) %>%
+  summarise(
+    blind = mean(blind),
+    d_rep = -diff(d_rep),
+    v_rep = sum(v_rep),
+    d_indep = -diff(d_indep),
+    v_indep = sum(v_indep),
+    d_self = -diff(d_self),
+    v_self = sum(v_self)
+  )
+
+rep_diffs_long <- 
+  replication_diffs %>%
+  ungroup() %>%
+  select(-d_rep, -v_rep) %>%
+  pivot_longer(
+    cols = c(d_indep, v_indep, d_self, v_self), 
+    names_to = c(".value","type"),
+    names_pattern = "(d|v)_(.+)"
+  ) %>%
+  mutate(
+    blind = if_else(blind == 1, "blind", "non-blind"),
+    d_min = d - sqrt(v) * qnorm(0.975),
+    d_max = d + sqrt(v) * qnorm(0.975)
+  )
+```
+
+```{r}
+library(metafor)
+indep_diff_meta <- rma(yi = d_indep, vi = v_indep, data = replication_diffs, method = "REML", knha = TRUE)
+self_diff_meta <- rma(yi = d_self, vi = v_self, data = replication_diffs, method = "REML", knha = TRUE)
+
+indep_meta_res <- 
+  tibble(
+    lab = "Meta-analysis",
+    study = "Independent replications",
+    type = "indep",
+    d = as.numeric(indep_diff_meta$beta),
+    v = indep_diff_meta$vb,
+    d_min = indep_diff_meta$ci.lb,
+    d_max = indep_diff_meta$ci.ub,
+    pi_min = predict(indep_diff_meta)$cr.lb,
+    pi_max = predict(indep_diff_meta)$cr.ub
+  )
+
+self_meta_res <- 
+  tibble(
+    lab = "Meta-analysis",
+    study = "Self-replications",
+    type = "self",
+    d = as.numeric(self_diff_meta$beta),
+    v = self_diff_meta$vb,
+    d_min = self_diff_meta$ci.lb,
+    d_max = self_diff_meta$ci.ub,
+    pi_min = predict(self_diff_meta)$cr.lb,
+    pi_max = predict(self_diff_meta)$cr.ub
+  )
+
+meta_res <- bind_rows(self_meta_res, indep_meta_res)
+
+rep_diffs_long_plus <- 
+  rep_diffs_long %>%
+  bind_rows(meta_res) %>% 
+  mutate(
+    type = factor(type, levels = c("self","indep"), labels = c("Self-replication","Independent replication")),
+    study = factor(study, levels = c(study_order$study, "Self-replications", "Independent replications")),
+    study = fct_rev(study),
+    lab = factor(lab)
+  )
+```
+
+
+```{r, fig.width = 5, fig.height = 9, fig.retina=1.5}
+label_dat <- 
+  rep_diffs_long_plus %>%
+  filter(study == "Tumor") %>%
+  mutate(
+    lab_y = d_max + 0.08,
+    arrow_end = (2 * d + d_max) / 3
+  )
+
+PI_label <- 
+  rep_diffs_long_plus %>%
+  filter(study == "Self-replications") %>%
+  mutate(
+    lab_y = pi_max + 0.1,
+    label = "95% Prediction intervals",
+    study_end = "Independent replications"
+  )
+
+curve1 <- filter(label_dat, type == "Independent replication")
+curve2 <- filter(label_dat, type == "Self-replication")
+
+p <- 
+  ggplot(
+    rep_diffs_long_plus,
+    aes(study, d, ymin = d_min, ymax = d_max, color = type, shape = type, group = type)
+  ) + 
+  geom_hline(yintercept = 0) + 
+  geom_linerange(
+    aes(ymin = pi_min, ymax = pi_max), 
+    color = "black", alpha = 0.5, size = 3
+  ) + 
+  geom_pointrange(
+    position = position_dodge(width = 0.5),
+    size = 0.75,
+  ) + 
+  geom_label(
+    data = label_dat,
+    aes(x = study, y = lab_y, label = type, fill = type),
+    position = position_dodge(width = 1.5),
+    color = "black",
+    alpha = 0.5, hjust = 0, size = 3, label.size = 0
+  ) + 
+  geom_curve(
+    data = curve1,
+    aes(x = study, y = lab_y, xend = study, yend = arrow_end, color = type),
+    position = position_nudge(x = 0.3),
+    curvature = 0.3,
+    arrow = arrow(angle = 20, length = unit(0.05, "npc"), type = "closed")
+  ) +
+  geom_curve(
+    data = curve2,
+    aes(x = study, y = lab_y, xend = study, yend = arrow_end, color = type),
+    position = position_nudge(x = -0.3),
+    curvature = -0.3,
+    arrow = arrow(angle = 20, length = unit(0.05, "npc"), type = "closed")
+  ) +
+  geom_label(
+    data = PI_label,
+    aes(x = study, y = lab_y, label = label),
+    position = position_nudge(x = 0.1),
+    color = "black", fill = "grey",
+    alpha = 0.5, hjust = 0, size = 3, label.size = 0
+  ) + 
+  geom_curve(
+    data = PI_label,
+    aes(x = study, y = lab_y, xend = study, yend = 0.03),
+    position = position_nudge(x = 0.1),
+    curvature = 0.3, color = "grey",
+    arrow = arrow(angle = 20, length = unit(0.05, "npc"), type = "closed")
+  ) + 
+  geom_curve(
+    data = PI_label,
+    aes(x = study, y = lab_y, xend = study_end, yend = 0.10),
+    position = position_nudge(x = 0.1),
+    curvature = 0.3, color = "grey",
+    arrow = arrow(angle = 20, length = unit(0.05, "npc"), type = "closed")
+  ) +
+  expand_limits(y = c(-0.4,0.6)) +
+  facet_wrap(~ lab, ncol = 1, scales = "free_y") + 
+  scale_y_continuous(breaks = seq(-0.4, 0.4, 0.2), minor_breaks = NULL) + 
+  scale_color_OkabeIto() + 
+  scale_fill_OkabeIto() + 
+  theme_minimal() + 
+  coord_flip() + 
+  labs(shape = "", color = "", fill = "", x = "", 
+       y = "Replication ES - Confirmation ES") + 
+  theme(
+    legend.position = "none",
+    legend.direction = "vertical",
+    strip.text.x = element_text(hjust = 0),
+    axis.text.x = element_text(margin = margin(5, b = 10))
+  )
+
+p + 
+  facet_wrap(~ lab, ncol = 1, scales = "free") + 
+  expand_limits(y = c(-0.4, 0.6))
+```
+
+
+### Self-replications meta-analysis
+
+```{r}
+summary(self_diff_meta)
+```
+
+On average, the self-replications were the same size as the confirmatory tests ($d_{difference}$ = `r round(as.numeric(self_diff_meta$beta), 3)`, p = `r round(self_diff_meta$pval,3)`, 95 %CI =  `r round(self_diff_meta$ci.lb,3)` to `r round(self_diff_meta$ci.ub,3)`, between study heterogeneity $\hat\tau$ = `r round(sqrt(self_diff_meta$tau2),3)`).
+
+```{r}
+self_diff_blinding <- rma(yi = d_self, vi = v_self, mods = ~ blind, 
+                          data = replication_diffs, method = "REML", knha = TRUE)
+summary(self_diff_blinding)
+```
+
+Whether the studies results were ‘blinded’ or not did not qualify these results ($b$ = `r round(as.numeric(self_diff_blinding$beta["blind",]), 3)`, p = `r round(self_diff_blinding$pval[2],3)` for differences between self-replications and confirmatory tests).
+
+### Independent replications meta-analysis
+
+```{r}
+indep_tau_CI <- confint(indep_diff_meta)$random["tau",-1]
+indep_diff_PI <- predict(indep_diff_meta)
+
+summary(indep_diff_meta)
+```
+
+In three cases, however, there was statistically significant difference between the effect size in the confirmatory test and the average effect size in the independent replications. Both positive and negative discrepancies occurred, so that independent replication effect sizes were the same size as confirmatory tests, on average ($d_{difference}$ = `r round(as.numeric(indep_diff_meta$beta), 3)`, p = `r round(indep_diff_meta$pval,3)`, 95 %CI =  `r round(indep_diff_meta$ci.lb,3)` to `r round(indep_diff_meta$ci.ub,3)`). The discrepancies were heterogeneous across studies, with an estimated between-study standard deviation of $\hat\tau$ = `r round(sqrt(indep_diff_meta$tau2),3)` (95% CI = `r round(indep_tau_CI[1], 3)` to `r round(indep_tau_CI[2], 3)`). Based on this degree of heterogeneity, we would predict that independent replications of a new study could differ from the effect size of the confirmatory test by as much as 0.2 SD (95% prediction interval = `r round(indep_diff_PI$cr.lb, 3)` to `r round(indep_diff_PI$cr.ub, 3)`).
+
+
+```{r}
+indep_diff_blinding <- rma(yi = d_indep, vi = v_indep, mods = ~ blind, 
+                           data = replication_diffs, method = "REML", knha = TRUE)
+summary(indep_diff_blinding)
+```
+
+Whether the studies results were ‘blinded’ or not did not qualify these results ($b$ = `r round(as.numeric(indep_diff_blinding$beta["blind",]), 3)`, p = `r round(indep_diff_blinding$pval[2],3)` for differences between independent replications and confirmatory tests).
+
+# Effects over time
+
+```{r, fig.width = 7, fig.height = 6, fig.retina = 1.5, fig.cap = "ES estimates versus replication wave, by study"}
+
+ggplot(ES_experiments, aes(wave, d, color = study)) + 
+  geom_hline(yintercept = 0) + 
+  geom_point() + 
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) + 
+  facet_wrap(~ lab_study) + 
+  theme_minimal() +
+  labs(y = "Effect size estimate") + 
+  scale_y_continuous(minor_breaks = NULL) + 
+  scale_x_continuous(breaks = 0:4, minor_breaks = NULL) + 
+  theme(
+    legend.position = "none",
+    strip.text.x = element_text(hjust = 0),
+    axis.text.x = element_text(margin = margin(5, b = 10))
+  )
+```
+## Multi-level meta-analysis
+
+To formally test for time trends across waves, we estimated the following meta-regression model based on the aggregated effect size estimates:
+$$
+d_{\bullet ijk} = \alpha_k + \beta_1(i) + \beta_2 B_{jk} + \beta_3(i)B_{jk} + u_{ijk} + e_{ijk},
+$$
+where $\alpha_k$ is a fixed effect for each lab, representing the average effect size in confirmation studies originating from that lab, $\beta_1$ is the average change in effect size for each successive replication study, $\beta_2$ is the average difference in effect sizes between blinded studies and unblinded studies, and $\beta_3$ represents the difference in slopes between blinded and unblended studies (i.e., the interaction between the temporal decline effect and blinding). The model also includes random effects for each confirmation or replication attempt of each study ($u_{ijk}$ for $i=0,...,4$; $j=1,...,4$; $k=1,...,4$). The random effects are allowed to covary within study according to an auto-regressive structure, such that $\text{Var}(u_{ijk}) = \tau^2$, $\text{Cov}(u_{ijk}, u_{i'jk}) = \tau^2 \rho^{|i' - i|}$, and $\text{Cov}(u_{ijk}, u_{i'j'k'}) = 0$ when $j \neq j'$ or $k \neq k'$. The sampling error term $e_{ijk}$ is assumed to have known variance $\sigma_{\bullet ijk}^2$. 
+We tested the hypothesis $\beta_1 = 0$ to examine temporal decline effects and $\beta_3 = 0$ to examine whether temporal declines are moderated by blinding. 
+
+```{r}
+RMA_slopes <- rma.mv(d ~ 0 + origlab + wave + B + wave:B, V = v,
+                       random = ~ wave | study, struct = "AR",
+                       data = ES_experiments)
+
+b_wave <- conf_int(RMA_slopes, vcov = "CR2", coefs = "wave")
+p_wave <- coef_test(RMA_slopes, vcov = "CR2", coefs = "wave")
+p_blinding <- coef_test(RMA_slopes, vcov = "CR2", coefs = "wave:B")
+robustify(RMA_slopes)
+```
+
+When testing effect sizes sequentially over time, we observe no evidence for a decline effect from the confirmatory test through the final replication ($b$ = `r round(b_wave$beta, 3)`, p = `r round(p_wave$p_Satt, 3)`, 95% CI = `r round(b_wave$CI_L, 3)` to `r round(b_wave$CI_U, 3)`; see Figure 3). These results were the same for ‘blind’ and ‘not blind’ studies ($b$ = `r round(p_blinding$beta, 3)`, p = `r round(p_blinding$p_Satt, 3)`). 
+
+```{r}
+RMA_slopes_simple <- 
+  rma.mv(d ~ wave + B + wave:B, V = v,
+         random = ~ wave | study, struct = "AR",
+         data = ES_experiments)
+robustify(RMA_slopes_simple)
+```
+
+The results do not change when removing the fixed effect for each individual lab.
+
+# Colophon
+
+```{r, echo = FALSE}
+sessionInfo() %>%
+  pander()
+```

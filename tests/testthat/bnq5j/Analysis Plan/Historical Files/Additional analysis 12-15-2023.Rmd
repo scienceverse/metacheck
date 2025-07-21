@@ -1,0 +1,213 @@
+---
+title: "Decline Effects: Additional Analysis to Align with Pre-registration"
+author: "James E. Pustejovsky"
+date:  "`r format(Sys.time(), '%B %d, %Y %H:%M')`"
+output:
+  html_document:
+    number_sections: true
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(pander)
+library(kableExtra)
+library(googledrive)
+library(metafor)
+library(clubSandwich)
+
+decline_effects <- 
+  read_csv("Decline Effect Data.csv") %>%
+  select(study:selfrep, se1750, se2750, notes) %>%
+  filter(is.na(notes) | notes == "acceptability") %>%
+  mutate(
+    origlab = factor(origlab),
+    replab = factor(replab),
+    study = factor(study),
+    N = if_else(N==0, as.numeric(NA), N)
+  )
+
+```
+
+# Study design
+
+## Data preparation and notation
+
+We computed the standardized mean difference between the two treatment groups, Cohen’s $d$, for each original study and each half-sample from the confirmation and replication studies. For studies using a binary dependent variable, Cohen's $d$ was estimated from marginal predicted probabilities and standard errors. All effect sizes were re-coded so that the predicted direction from the confirmation studies is positive. 
+
+We use the following notation to describe the analyses:
+
+- Let $d_{hijk}$ be the effect size estimate and let $\sigma_{hijk}$ be the corresponding standard error, both from half $h=1,2$ of experiment $i=0,...,4$ in study $j=1,...,4$ from originating lab $k=1,...,4$. Take $i=0$ for the original confirmation experiment and $i=1,...,4$ for the subsequent replications in chronological order. 
+- Let $A_{hijk}$ be an predictor variable equal to $\frac{1}{2}$ if half $h$ of experiment $i$ from study $j$ from originating lab $k$ was analyzed second and equal to $-\frac{1}{2}$ if it was analyzed first.
+- Let $B_{jk}$ be an predictor variable equal to $\frac{1}{2}$ if half study $j$ from originating lab $k$ was blinded and equal to -$\frac{1}{2}$ if it was non-blinded.
+- Let $L_{ijk}$ be the index of the lab that conducts replication $i$ of study $j$ from originating lab $k$, for $i=1,...,4$, $j=1,...,4$, and $k=1,...,4$. Thus $L_{ijk}=k$ for self-replications, where replication $i$ of study $j$ from originating lab $k$ is conducted by the same lab that originated the study. Let $R_{jk}$ be the index of the self-replication study, i.e., the replication for which $L_{ijk}=k$.
+
+```{r}
+
+half_true <- function(x) if_else(x, 1/2, -1/2)
+
+# Pivot to one row per half-experiment
+ES_halfs <- 
+  decline_effects %>%
+  rename(s1750 = se1750, s2750 = se2750) %>%
+  select(study, secondfirst:selfrep, contains("750")) %>%
+  gather("key","value", contains("750")) %>%
+  separate(key, into = c("stat","half","key","group"), sep = c(1,2,5)) %>%
+  select(-key) %>%
+  unite("stat", stat, group, sep = "") %>%
+  spread(stat, value) %>%
+  rename(se = s) %>%
+
+# Calculate A_hijk, B_jk, H_jijk variables
+  mutate(
+    A = half_true(half == 2 & secondfirst == 0 | half == 1 & secondfirst == 1),
+    B = half_true(blind == 1),
+    H = half_true(half == 2),
+    experiment = paste(study, wave)
+  ) %>%
+  
+# Calculate sampling variances
+  mutate(
+    v_basic = 1 / ne + 1 / nc + d^2 / (2 * (n - 2)),
+    v = if_else(is.na(se), v_basic, se^2)
+  )
+
+```
+
+## General estimation methods
+
+All analyses were conducted using the R statistical computing environment. In all of the meta-analytic models described below, we estimated random effects using restricted maximum likelihood with the `metafor` package (Version `r packageVersion("metafor")`). In the event of non-convergence, variance components were constrained to zero and then the model was re-estimated. Standard errors for overall average effect sizes and for meta-regression coefficients were calculated using cluster-robust standard errors (CR2-type), clustering by study, using the `clubSandwich` package (Version `r packageVersion("clubSandwich")`). Hypothesis tests were based on Satterthwaite-type small-sample corrections to account for the limited number of independent studies.
+
+```{r}
+
+robustify <- function(res, cluster = NULL, coverage = 0.95) {
+  
+  # robust standard errors and confidence intervals
+  if (is.null(cluster)) {
+    rob <- coef_test(res, vcov = "CR2")
+  } else {
+    rob <- coef_test(res, vcov = "CR2", cluster = cluster)
+  }
+  res$b <- rob$beta
+  names(res$b) <- rownames(rob)
+  res$se <- rob$SE
+  res$zval <- rob$beta / rob$SE
+  res$pval <- rob$p_Satt
+  res$df <- rob$df
+  crit <- qt((1 + coverage) / 2, df = rob$df)
+  res$ci.lb <- with(rob, beta - SE * crit)
+  res$ci.ub <- with(rob, beta + SE * crit)
+  res$QE <- NA
+  res$QM <- NA
+  
+  if (!"robust.rma.mv" %in% class(res)) class(res) <- c("robust.rma.mv", class(res))
+  res
+}
+
+```
+
+# Additional Analysis and Results
+
+```{r}
+ES_experiments <- 
+  ES_halfs %>%
+  group_by(origlab, study, experiment, replab, wave, blind, confirmation, selfrep) %>%
+  summarise(
+    k = n(),
+    d = mean(d),
+    v = sum(v) / k^2,
+    B = mean(B)
+  ) %>%
+  ungroup() %>%
+  mutate(
+    lab_study = factor(paste0("Lab ", origlab,": ", study)),
+    replication = 1 - confirmation,
+    self_replication = replication * (origlab == replab),
+    other_replication = replication - self_replication,
+    esID = row_number()
+  )
+
+ES_selfreps <- 
+  ES_experiments %>%
+  filter(origlab == replab) %>%
+  select(origlab, study, wave, blind, B, d, v) %>%
+  group_by(origlab, study, blind) %>%
+  arrange(wave) %>%
+  summarise(
+    wave = diff(wave),
+    B = mean(B),
+    d = diff(d),
+    v = sum(v)
+  ) %>%
+  ungroup() %>%
+  mutate(
+    blind = if_else(blind == 1, "blind", "non-blind"),
+    R = wave - mean(wave),
+    d_min = d - sqrt(v) * qnorm(0.975),
+    d_max = d + sqrt(v) * qnorm(0.975)
+  )
+
+```
+
+## Slope across replications
+
+The third test of the decline effect looks at the change in effect size over time as replications accumulate for a given study—a temporal decline effect. We further examined whether the temporal decline effect is moderated by whether the study (confirmation experiment and replications) was blinded. If observer effects are the cause of the decline effect, then we would expect the slope of the temporal decline to be moderated by whether a study was blind, with temporal declines being stronger in non-blind studies and blinded studies showing little or no decline.
+
+To examine temporal decline effects, we first aggregated effect size estimates across the half-samples from each confirmation study and each of the replication studies. Thus, let $d_{\bullet ijk} = \frac{1}{2} \left(d_{1ijk} + d_{2ijk}\right)$, with standard error $\sigma_{\bullet ijk} = \frac{1}{2} \sqrt{\sigma_{1ijk}^2 + \sigma_{2ijk}^2}$. The figure below depicts the temporal trend in effect size across replication waves, for each of the 16 unique studies.
+
+```{r, fig.width = 7, fig.height = 6, fig.cap = "ES estimates versus replication wave, by study"}
+
+ggplot(ES_experiments, aes(wave, d, color = study)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  facet_wrap(~ lab_study, scales = "free_x") + 
+  theme_minimal() +
+  labs(y = "Effect size estimate") + 
+  guides(color = "none") + 
+  theme(legend.position = "bottom")
+
+```
+
+To formally test for time trends across waves, we estimated the following meta-regression model based on the aggregated effect size estimates:
+$$
+d_{\bullet ijk} = \alpha_k + \beta_1(i) + \beta_2 B_{jk} + \beta_3(i)B_{jk} + u_{0jk} + (i) u_{1jk} +  e_{ijk},
+$$
+where $\alpha_k$ is a fixed effect for each lab, representing the average effect size in confirmation studies originating from that lab, $\beta_1$ is the average change in effect size for each successive replication study, $\beta_2$ is the average difference in effect sizes between blinded studies and unblinded studies, and $\beta_3$ represents the difference in slopes between blinded and unblended studies (i.e., the interaction between the temporal decline effect and blinding). The model also includes random effects for each study intercept ($u_{0jk}$) and study-specific slopes for the temporal decline effects ($u_{1jk}$), both for $j=1,...,4$; $k=1,...,4$. The random effects are allowed to covary. The sampling error term $e_{ijk}$ is assumed to have known variance $\sigma_{\bullet ijk}^2$. 
+
+We tested the hypothesis $\beta_1 = 0$ to examine temporal decline effects and $\beta_3 = 0$ to examine whether temporal declines are moderated by blinding. Hypothesis tests for $\beta_1$ and $\beta_3$ used test-wise alpha levels of $\alpha = .025$ to control the family-wise error rate. We did not test $\beta_2$ because it is not relevant to the theory of decline effects. 
+
+```{r}
+RMA_slopes <- rma.mv(d ~ 0 + origlab + wave + B + wave:B, V = v,
+                       random = ~ wave | study, struct = "GEN",
+                       data = ES_experiments,
+                     method = "REML", test = "t", dfs = "contain")
+
+b_wave <- conf_int(RMA_slopes, vcov = "CR2", coefs = "wave")
+p_wave <- coef_test(RMA_slopes, vcov = "CR2", coefs = "wave")
+p_blinding <- coef_test(RMA_slopes, vcov = "CR2", coefs = "wave:B")
+robustify(RMA_slopes)
+```
+When testing effect sizes sequentially over time, we observe no evidence for a decline effect from the confirmatory test through the final replication ($b$ = `r round(b_wave$beta, 3)`, p = `r round(p_wave$p_Satt, 3)`, 95% CI = `r round(b_wave$CI_L, 3)` to `r round(b_wave$CI_U, 3)`). These results were the same for ‘blind’ and ‘not blind’ studies ($b$ = `r round(p_blinding$beta, 3)`, p = `r round(p_blinding$p_Satt, 3)`). 
+
+```{r}
+RMA_slopes_simple <- 
+  rma.mv(d ~ wave + B + wave:B, V = v,
+         random = ~ wave | study, struct = "GEN",
+         data = ES_experiments)
+robustify(RMA_slopes_simple)
+```
+
+The results do not change when removing the fixed effect for each individual lab.
+
+# Colophon
+
+```{r, echo = FALSE}
+sessionInfo() %>%
+  pander()
+```

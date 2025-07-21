@@ -1,0 +1,2610 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Characterisation of facial expressions and behaviours of horses in response to positive and negative emotional anticipation using network analysis</title>
+				<funder>
+					<orgName type="full">French Horse and Riding Institute</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">EQUIACTION</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability  status="unknown">
+					<licence/>
+				</availability>
+				<date type="published" when="2025-05-14">May 14, 2025</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Romane</forename><surname>Phelipon</surname></persName>
+							<email>rphelipon.pro@gmail.com</email>
+							<idno type="ORCID">0009-0004-9622-9893</idno>
+							<affiliation key="aff1">
+								<orgName type="laboratory">INRAE</orgName>
+								<orgName type="institution" key="instit1">CNRS</orgName>
+								<orgName type="institution" key="instit2">Université de Tours</orgName>
+								<orgName type="institution" key="instit3">PRC</orgName>
+								<address>
+									<settlement>Nouzilly</settlement>
+									<country key="FR">France</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Léa</forename><surname>Bertrand</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="laboratory">INRAE</orgName>
+								<orgName type="institution" key="instit1">CNRS</orgName>
+								<orgName type="institution" key="instit2">Université de Tours</orgName>
+								<orgName type="institution" key="instit3">PRC</orgName>
+								<address>
+									<settlement>Nouzilly</settlement>
+									<country key="FR">France</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Plotine</forename><surname>Jardat</surname></persName>
+							<idno type="ORCID">0000-0003-0374-5588</idno>
+							<affiliation key="aff1">
+								<orgName type="laboratory">INRAE</orgName>
+								<orgName type="institution" key="instit1">CNRS</orgName>
+								<orgName type="institution" key="instit2">Université de Tours</orgName>
+								<orgName type="institution" key="instit3">PRC</orgName>
+								<address>
+									<settlement>Nouzilly</settlement>
+									<country key="FR">France</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Fabrice</forename><surname>Reigner</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution" key="instit1">UEPAO</orgName>
+								<orgName type="institution" key="instit2">INRAE</orgName>
+								<address>
+									<settlement>Nouzilly</settlement>
+									<country key="FR">France</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Kate</forename><surname>Lewis</surname></persName>
+							<affiliation key="aff3">
+								<orgName type="department" key="dep1">Department of Psychology</orgName>
+								<orgName type="department" key="dep2">Centre for Comparative and Evolutionary Psychology</orgName>
+								<orgName type="institution">University of Portsmouth</orgName>
+								<address>
+									<settlement>Portsmouth</settlement>
+									<country key="GB">United Kingdom</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jérôme</forename><surname>Micheletta</surname></persName>
+							<affiliation key="aff3">
+								<orgName type="department" key="dep1">Department of Psychology</orgName>
+								<orgName type="department" key="dep2">Centre for Comparative and Evolutionary Psychology</orgName>
+								<orgName type="institution">University of Portsmouth</orgName>
+								<address>
+									<settlement>Portsmouth</settlement>
+									<country key="GB">United Kingdom</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Léa</forename><surname>Lansade</surname></persName>
+							<email>lea.lansade@inrae.fr</email>
+							<affiliation key="aff1">
+								<orgName type="laboratory">INRAE</orgName>
+								<orgName type="institution" key="instit1">CNRS</orgName>
+								<orgName type="institution" key="instit2">Université de Tours</orgName>
+								<orgName type="institution" key="instit3">PRC</orgName>
+								<address>
+									<settlement>Nouzilly</settlement>
+									<country key="FR">France</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">Island University-CW Post Campus</orgName>
+								<orgName type="institution" key="instit2">Long Island University</orgName>
+								<address>
+									<country key="US">UNITED STATES OF AMERICA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Characterisation of facial expressions and behaviours of horses in response to positive and negative emotional anticipation using network analysis</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2025-05-14">May 14, 2025</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">05D51F3C304DA0D9E2644F4E6A4FE2C1</idno>
+					<idno type="DOI">10.1371/journal.pone.0319315</idno>
+					<note type="submission">Received: January 30, 2025 Accepted: April 7, 2025</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2025-07-14T10:01+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The welfare of an animal is closely linked to their emotional experiences, making it essential to identify reliable indicators of these emotions. This study aimed to identify behaviours and facial movements in horses experiencing contrasting emotional valence, triggered by the anticipation of a positive condition (going to pasture) or a negative condition (going alone to a novel environment). Twenty horses were daily trained to wait in a starting box before being exposed to these two conditions. After one week of positive training or negative training, we analysed horses' behaviours, cortisol variations, and facial movements while they waited in their starting box. First, we confirmed that the two conditions induced contrasting emotional valence, as evidenced by the shorter time taken to approach in the positive condition compared to the negative, and by the higher maximal heart rate and cortisol variation in the negative condition. Then using the Equine Facial Action Coding System (EquiFACS) and network analysis (NetFACS) we revealed distinct behaviours and facial expression profiles. In positive anticipation, the horses exhibited a greater range of behaviours, including shaking their heads from side to side, stepping back, sniffing, and pawing at the ground. Additionally, two distinct facial expression profiles were identified as specific to positive and negative anticipation. In positive anticipation, the horses displayed a higher neck, accompanied by a greater frequency of half-blinks and mouth movements. Conversely, in negative anticipation, the horses exhibited a medium neck, with ears backward accompanied by more flattened ears and expressed more nostril movements. The findings highlight the importance of these indicators in characterising horses' emotions and emphasise their significance for assessing equine welfare.</p><p>which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are credited.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introduction</head><p>The well-being of animals is indissociably linked to their emotions, both positive and negative. Consequently, in order to assess well-being, it is also necessary to be able to assess emotions. To date, there is no single definition of emotion <ref type="bibr" target="#b0">[1]</ref><ref type="bibr" target="#b1">[2]</ref><ref type="bibr" target="#b2">[3]</ref>, however, in 2010 Mendl and his colleagues proposed a two-dimensional definition <ref type="bibr" target="#b3">[4]</ref>. This approach defines an emotion in terms of its valence (positive or negative) and its arousal (low or high). For instance, fear would be characterised by a negative valence and high arousal, while relaxation would be characterised by a positive valence and low arousal.</p><p>A major challenge is to identify indicators of these emotional states. This can be achieved by directly observing animals in situations known to have intrinsically positive valence (e.g., providing palatable food) or negative valence (e.g., isolating a social animal). This approach involves analysing the immediate phase of emotion, which overlaps with what can be referred to as the 'consummatory' phase, as seen in studies seeking emotional indicators during play in dogs <ref type="bibr" target="#b4">[5]</ref> or while being groomed manually or with automatic brushes in horses <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b6">7]</ref>. However, analysing indicators during this immediate or consummatory phase can be complicated, as the animal is often directly engaged in an action (such as eating or exerting effort) or may be difficult to observe (e.g., when transported in a trailer).</p><p>An alternative solution is to examine the anticipatory phase of these events (pre-consummatory phase). This has been done in several studies in different species <ref type="bibr" target="#b7">[8]</ref><ref type="bibr" target="#b8">[9]</ref><ref type="bibr" target="#b9">[10]</ref><ref type="bibr" target="#b10">[11]</ref><ref type="bibr" target="#b11">[12]</ref><ref type="bibr" target="#b12">[13]</ref><ref type="bibr" target="#b13">[14]</ref>. To illustrate, a study of domestic fowl utilising Pavlovian conditioning revealed that the birds exhibited increased relaxation behaviour during the positive anticipation phase and conversely, displayed heightened locomotion behaviour during the negative anticipation phase <ref type="bibr" target="#b7">[8]</ref>. If we can identify indicators of positive or negative emotional anticipation, it may also help determine whether the subsequent event is perceived positively or negatively, especially in cases where the intrinsic valence of these events is unclear. This is particularly relevant for horses, where the question arises as to whether they enjoy certain events they encounter during their life, such as participating in races or competitions. Identifying indicators of positive or negative event anticipation could provide valuable insights into the valence of these experiences.</p><p>Therefore, the question arises regarding the types of measures needed to find these emotional indicators. This can be achieved through various approaches, including physiological and behavioural indicators, or more recently, through the study of facial expressions <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b14">[15]</ref><ref type="bibr" target="#b15">[16]</ref><ref type="bibr" target="#b16">[17]</ref><ref type="bibr" target="#b17">[18]</ref><ref type="bibr" target="#b18">[19]</ref><ref type="bibr" target="#b19">[20]</ref>, characterised by a combination of different facial movements.</p><p>Regarding the physiological variables, a classic indicator is the cortisol level, as short-term changes in blood or salivary cortisol levels often occur in response to an induced emotional state. Generally, it is reported to increase in response to stressful events in domesticated farm animals <ref type="bibr" target="#b20">[21]</ref>, including horses <ref type="bibr" target="#b21">[22]</ref><ref type="bibr" target="#b22">[23]</ref><ref type="bibr" target="#b23">[24]</ref><ref type="bibr" target="#b24">[25]</ref>. By contrast, some studies report a decrease in cortisol level in more positive situations such as during affiliative interactions in dogs <ref type="bibr" target="#b25">[26]</ref> or during positive anticipation in horses <ref type="bibr" target="#b26">[27]</ref>. Another well-established physiological indicator reflecting the arousal of a situation is the heart rate <ref type="bibr" target="#b27">[28,</ref><ref type="bibr" target="#b28">29]</ref>. In horses, numerous studies have demonstrated an increase in heart rate in the context of fear or stress <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b29">[30]</ref><ref type="bibr" target="#b30">[31]</ref><ref type="bibr" target="#b31">[32]</ref>. Behaviour can also provide insights into an individual's emotional state. Studies have demonstrated an increase in activity during positive anticipation in rats <ref type="bibr" target="#b32">[33]</ref>, ferrets <ref type="bibr" target="#b8">[9]</ref> pigs <ref type="bibr" target="#b33">[34]</ref> and sheep <ref type="bibr" target="#b34">[35]</ref>. The experience of negative anticipation has been demonstrated to induce stress in animals, resulting in behavioural responses such as increased time spent in a cage <ref type="bibr" target="#b8">[9]</ref> or freezing behaviour in mice <ref type="bibr" target="#b35">[36]</ref>. In Equids, studies have shown that positive anticipation contexts induce an overall increase in locomotor activity <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b36">37]</ref>, a decrease in maintenance behaviour <ref type="bibr" target="#b10">[11]</ref>, and an increase in exploratory behaviour <ref type="bibr" target="#b26">[27]</ref>. These behaviours, as well as avoidance and attraction behaviours, provide information about the valence of a stimulus or situation <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b37">38]</ref>. Finally, the analysis of facial movements can be employed as a promising indicator for characterising facial expressions linked to emotional states. A number of studies have described different facial expressions or specific facial movements such as in mice <ref type="bibr" target="#b14">[15]</ref>, foxes <ref type="bibr" target="#b38">[39]</ref>, cows <ref type="bibr" target="#b39">[40]</ref> and horses <ref type="bibr" target="#b36">[37,</ref><ref type="bibr" target="#b40">[41]</ref><ref type="bibr" target="#b41">[42]</ref><ref type="bibr" target="#b42">[43]</ref>, which has facilitated the identification of emotional states. For instance, in horses, recent studies have demonstrated that specific facial movements are indicative of negative emotional states, including food frustration <ref type="bibr" target="#b36">[37,</ref><ref type="bibr" target="#b43">44]</ref> as well as social isolation and road transportation <ref type="bibr" target="#b16">[17]</ref>. Furthermore, research indicated that facial movements in horses may also indicate positive emotional states, such as during gentle grooming <ref type="bibr" target="#b5">[6]</ref> or feeding reinforcement <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b36">37]</ref>. A promising method to analyse facial movements across species <ref type="bibr" target="#b44">[45]</ref> is the Facial Action Coding System (FACS). This method, initially developed for humans <ref type="bibr" target="#b45">[46]</ref> and later adapted for various species, including horses <ref type="bibr" target="#b46">[47]</ref>, consists of the objective and accurate identification of the muscular movements (or action units, hereafter: AU) of the animal's face, enabling comparisons to be made under different conditions <ref type="bibr" target="#b47">[48]</ref>. In addition to being an objective and standardised method, this approach is particularly relevant for horses, as they possess 17 primary facial action units, which is more than dogs, who have 16, or chimpanzees, who have 13 <ref type="bibr" target="#b46">[47]</ref>. In horses, studies have been conducted using the EquiFACS system <ref type="bibr" target="#b46">[47]</ref> in rather negative contexts, such as frustration <ref type="bibr" target="#b43">[44,</ref><ref type="bibr" target="#b48">49]</ref> or fatigue <ref type="bibr" target="#b41">[42]</ref>. To the best of our knowledge, only one study presents the use of this system in the positive context of positive anticipation, but no facial movements were specifically associated <ref type="bibr" target="#b43">[44]</ref>. Two additional studies on positive food reinforcement demonstrate increased attention in horses, as evidenced by their ears being oriented forward more often, fewer eye blinks, and an increase in nose movements <ref type="bibr" target="#b18">[19]</ref> and micro-movements of the mouth <ref type="bibr" target="#b49">[50]</ref>.</p><p>Moreover, a recent and novel statistical analysis method has been proposed to analyse data obtained using FACS: NetFACS <ref type="bibr" target="#b50">[51]</ref>. Until now, FACS were analysed action unit by action unit (AU by AU), focusing on each facial movement independently. NetFACS allows for the calculation of the probability of co-occurrence (when action units are expressed together) between action units in a specific context. In addition to providing a more comprehensive and standardised method to analyse FACS data, NetFACS also provides more visual illustrations of facial movements in different contexts. Facial expressions are therefore conceptualized as a network of facial action units that interact with each other, offering a more accurate reflection of their complexity compared to traditional analyses. It has already been employed in the study of human facial movements <ref type="bibr" target="#b50">[51]</ref>, primate communication <ref type="bibr" target="#b51">[52,</ref><ref type="bibr" target="#b52">53]</ref>, and more recently, horse-to-horse interactions <ref type="bibr" target="#b47">[48]</ref>.</p><p>The objective of this study was to identify new indicators of emotional valence associated with positive and negative anticipation, based on facial expressions and behaviours. Two distinct procedures were employed to induce anticipatory responses in the individuals. One procedure involved the potential for access to a pasture, which was expected to be perceived as a positive stimulus, while the other involved social isolation in a box with predator sounds and new objects, which was expected to be perceived as a negative stimulus. First, we aimed to validate our two experimental procedures by demonstrating that they indeed induce contrasting emotional valences. To achieve this, we utilised established behavioural and physiological indicators, namely approach latency, heart rate and cortisol variation <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b37">38,</ref><ref type="bibr" target="#b53">54]</ref>. We hypothesized that horses would show lower cortisol variation in the positive condition (going to pasture) compared to the negative condition (social isolation) and would take less time to approach the pasture than to enter the social isolation box, reflecting attraction versus avoidance. Second, we aimed to identify new indicators of these two emotional states, based on specific behavioural responses and facial movements in horses. We hypothesized that our analysis, particularly through network analysis using the NetFACS method <ref type="bibr" target="#b50">[51]</ref>, would reveal distinct behavioural profiles and facial expressions specific to each condition. These new indicators could serve as reliable indicators of emotional valence associated with positive and negative anticipation in the future.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Materiel and methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Ethics statement</head><p>This study was approved by the Val de Loire Ethics Committee (CEEA VdL) and received a positive recommendation (authorisation number: CE19 -2024-1302-1). Animal care and experimental treatments adhered to French and European regulations for housing and caring for animals used in scientific research (European Union Directive 2010/63/EU). All procedures were conducted under the authorisation and supervision of official veterinary authorities (agreement number F371752 delivered to the UEPAO animal facility by the veterinary service of the Indre-et-Loire department, France). Animals were not subjected to food deprivation during the experiment, and did not experience any invasive procedures. A 'limit point' was established before the start of the experiment to indicate when the distress of an experimental animal should be stopped. In the event that physical encouragement, such as tightening the lead rope or exerting pressure on the horse, was deemed necessary to facilitate movement, the procedure was halted. The individual was then returned to the living quarters, and horses were never tested again in this condition. In addition, for ethical reasons and because herd animals can experience stress when isolated, the horses were never left alone except during the social isolation phase in the negative condition (=2 minutes). Therefore, a familiar companion horse (not involved in the tests) was always visible to the tested horse during all experimental phases, except during the social isolation phase (under the negative condition).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Subjects and groups</head><p>Twenty Welsh mares from the Experimental Unit UEPAO (INRAE Nouzilly 37380, France), aged between 4 and 11 years (7.3 ± 2.6) were studied. They lived in groups in indoor stalls bedded with straw and had direct, unrestricted access to an outdoor paddock without grass. During the study, which took place between late February and early March, the horses did not have access to pasture, as they were not turned out to graze by the caretakers during this period. Hay and water were available ad libitum. These horses were used exclusively for research purposes and were handled daily by humans.</p><p>The twenty individuals were divided into two groups. During the first week of experimentation, ten individuals were trained and tested exclusively in the positive anticipation condition, while the remaining ten were tested in the negative anticipation condition. The following week, the groups were reversed, such that each individual was tested in both conditions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Experimental protocol</head><p>The procedure consisted of training the horses to undergo conditions of opposite valence. In the positive condition, the horses were trained to anticipate a positive event (access to a pasture), whereas in the negative condition, the horses were trained to anticipate a negative event (social isolation).</p><p>The experimental procedure lasted 12 days, consisting of a Pre-Training Day, a 3-day Training phase and a Test Day for each condition over two consecutive weeks, separated by a 2-day rest period (Fig <ref type="figure" target="#fig_0">1</ref>).</p><p>The experimental set-up consisted of two different devices. The positive condition set-up consisted of an enclosed starting box with a door leading to a ten-metre corridor leading to a pasture (Fig <ref type="figure" target="#fig_1">2A</ref>). The negative condition set-up consisted of an enclosed starting stall with a door leading to a ten-metre corridor leading to a stall unknown to the horses, containing new objects (plastic bags and a plastic tunnel) (Fig 2B ).</p><p>Pre-Training Day. The Pre-Training Day corresponded to the first day of the experimental procedure for each condition. This consisted of placing the individual in a starting box, secured on both sides of the halter with lead ropes, and facing a closed door. The anticipation phase was marked by the opening of the door by an experimenter standing out of sight, giving the individual a view of a ten metres long corridor. After 30 seconds, the door was closed again and opened a second time for a further 30 seconds. At the end of the thirty seconds, the experimenter untethered the lead ropes from the horse's halter to allow the subject access to the ten metres corridor.</p><p>In the positive anticipation condition, the corridor led to a pasture (Fig <ref type="figure" target="#fig_1">2A</ref>). The pasture is known to have a positive impact on horses <ref type="bibr" target="#b54">[55,</ref><ref type="bibr" target="#b55">56]</ref> and represented a familiar, highly valued environment, particularly as the individuals did not have access to it during the test period. To strengthen the association of the situation with a permanent cue, the experimenter opening the door was always dressed in a green coat. When the individual was untied after the two thirty-second periods marking the positive anticipation phase, she was free to move around the experimental set-up and access the pasture. If the individual was still in the starting box or in the corridor after the thirty seconds allowed, the experimenter guided her with a lead rope towards the pasture. After a period of two minutes in the pasture, the individual was given three handfuls of palatable concentrate feed and then returned to the living quarters.</p><p>In the negative anticipation condition, the corridor led to a box that was initially unfamiliar to the individuals (social isolation box) containing new objects (Fig <ref type="figure" target="#fig_1">2B</ref>). To strengthen the association of the situation with a permanent cue, the experimenter opening the door was always dressed in a blue coat. When the individual was untied after the two thirty-second periods marking the negative anticipation phase, she was free to move around the experimental set-up and access the social isolation box. If the individual was still in the starting box or in the corridor after thirty seconds allowed, the experimenter guided her with a lead rope to the isolation box. The individual then underwent a two-minute period of social isolation, without visual contact with conspecifics, in a box containing new objects (five plastic bags hanging from the walls and one plastic tunnel, which changed position from day to day) and a loudspeaker broadcasting recordings of predator calls <ref type="bibr" target="#b56">[57]</ref>. The sound level ranged between 60 and 75 decibels, depending on the horse's position, as she was free to move around in the isolation box. Once the two minutes of social isolation had elapsed, the procedure was terminated, and the individual was returned to the living quarters.</p><p>Training. The Training Days were conducted in accordance with the established procedure of the Pre-Training Day, with the exception of two adaptations. Firstly, the experimenter did not open the door a second time during the anticipation phase. Secondly, once the horses had undergone the positive condition (being in the pasture for two minutes) or the negative condition (being in social isolation for 2 minutes), they were not returned directly to their living quarters but the entire procedure was carried out a second time immediately.</p><p>Test Day. The Test Day corresponded to the last day of the procedure, after the training period. It followed exactly the same procedure as the Pre-Training Day.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Number of sessions</head><p>We planned for each horse to undergo 1 Pre-Training, 6 training sessions (2 per day), and 1 Test in each condition (Fig <ref type="figure" target="#fig_0">1</ref>). Prior to the experiment, we also defined a 'limit point' with the regional ethics committee for animal experimentation, which indicated the point at which the distress of an experimental animal had to be stopped (see the ethics statement section of the experimental protocol above). This limit point was reached when one horse did not spontaneously follow the experimenter, and it became necessary to physically encourage the horse to move forward by tightening the lead rope or pushing in any way. After 5 sessions of training in the negative condition, this limit was reached for one individual. Consequently, we stopped the procedure for all animals, as previously decided, and all the animals were subjected to 5 sessions of the negative condition instead of 6. For the positive anticipation condition, we conducted the initially planned number of sessions. The difference in the number of training sessions was not an issue with regard to the goal of this study, which was to induce, by the end of the procedure, emotional reactions contrasting in valence, regardless of the number of sessions required to achieve this.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data collection</head><p>Approach latency. The time taken for the horses to enter the pasture or the social isolation box spontaneously (without being led by the experimenter) was recorded on the Pre-Training Day and the Test Day for each condition (Fig <ref type="figure" target="#fig_0">1</ref>). This time was measured from the moment the horse was untied by the experimenter until the moment the horse placed their fourth foot in the pasture or the isolation box.</p><p>Heart rate. For each horse, heart rate was monitored during Pre-Training and Test Days for each condition (positive or negative) using the Polar system recording (Polar Equine RS800CX Science, Polar Oy, Finland) on the tested horse (Fig <ref type="figure" target="#fig_0">1</ref>). Horses were clipped in advance, in the areas where the external sensors would be positioned. During fitting, the external sensors, consisting of two electrodes placed on the withers and behind the left front leg, were applied with ultrasound gel to obtain a better signal. The recording started at the opening of the stall door, marking the anticipation phase, and stopped at the end of the anticipation phase, just before the test horse was released. After data collection, heart rate data was visually corrected in order to remove artifacts that might result from poor electrode-skin conductance or equipment malfunction and were detected visually, with the criterion being any isolated point creating a peak too rapid to be physiological in the heart rate curve <ref type="bibr" target="#b57">[58]</ref>. Then the mean heart rate and the maximal heart rate were calculated. Out of 160 cardiac data recordings <ref type="bibr">(</ref> Cortisol. During Pre-Training and Test Days for each condition (positive or negative), two saliva samples were taken from each individual tested with Salivette® Cortisol (Sarstedt, Nümbrecht, Germany) to measure cortisol concentrations: one just before the anticipation phase and one fifteen minutes after. A cotton swab held by a metal clamp was kept in the horse's mouth between 30 and 40 seconds, positioned above and below the tongue before being placed in Salivettes. In order to avoid any effect of the daily cortisol cycle, each horse was always tested at the same time of the day. Once collected, the saliva samples were centrifuged for ten minutes (Heraeus Megafuge 40R, 4°C, 2500g), then supernatant was placed in 1mL micro-tubes before being frozen at -20°C. The analyses were conducted at the INRAE Laboratory in Nouzilly, France. The concentration of cortisol in saliva was determined using enzyme immunoassay (EIA), which involved a competition between the cortisol in the saliva and a cortisol alkaline phosphatase solution. Cortisol was measured in two 50 µL aliquots, and all samples were analysed in duplicate within the same assay. The limit of detection of the assay was 2 ng/mL. The mean value of cortisol concentration from the two 50 µL aliquots was retained. At the end of the study, eight samples had been collected from each individual (Fig <ref type="figure" target="#fig_0">1</ref>). The variation in salivary cortisol was calculated for each horse in each condition as the variation between the mean value of cortisol of the saliva sample taken after the anticipation phase minus the mean value of cortisol of the saliva sample taken before the anticipation phase. The total cortisol variation was then calculated as the variation in cortisol on the Test Day minus the variation on the Pre-Training Day.</p><p>Behaviours and facial movements. Behavioural and facial movements data were collected for each horse on the Test Day for each condition (positive or negative) (Fig 1 ). A camera (Sony FDR-AX53 4K) was positioned so as to have a wide angle of view, making it possible to film the behaviour or positions of certain parts of the individual's body during the anticipation phase. Two other cameras were fixed to the wall on either side of the tested subject and oriented towards the head, providing an optimum view for video analysis of facial movements. These cameras recorded continuously during the anticipation phase. A total of 80 videos were recorded and analysed, with four videos per subject: one capturing behaviours in the positive condition, one focusing on facial movements in the positive condition, one capturing behaviours in the negative condition, and one focusing on facial movements in the negative condition. These videos were coded using BORIS software <ref type="bibr" target="#b58">[59]</ref>. After excluding periods when the individual was outside the camera's field of view, the analysable anticipation time was used for video coding, including behavioural data (mean ± SD: 35.19 ± 3.04 seconds) and facial movements data (mean ± SD: 30.97 ± 6.04 seconds).</p><p>For facial movements, the eyes, the lower part of the face (nostrils and lips) and part of the ears were coded according to the action units (AU) and action descriptors (AD) of EquiFACS, a system for coding facial actions in domestic horses <ref type="bibr" target="#b46">[47]</ref>. One certified EquiFACS coder coded all the videos. To ensure the reliability of the coding of behaviours and facial movements, a second certified EquiFACS coder independently coded 10% of the videos, which were randomly selected. This second coder was blind to the condition, as the starting boxes were similar and the angle of the camera did not show the pasture or the isolation box. The same proportion of videos was coded in positive and negative conditions.</p><p>All the action units and descriptors listed for the horse (Table <ref type="table" target="#tab_0">1</ref>) were used, following the recommendations of the Equi-FACS. For practical reasons, the ears action descriptor EAD101 'Ears Forward' and EAD104 'Ear Rotator' were coded in one-second scan intervals as realised in other studies in horses <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b36">37]</ref>. Also, EAD103 'Ear Flattener' was coded in duration and not in occurrence. For simplicity of reading, action units (AU), action descriptors (AD), Ear action descriptors (EAD) and position of the ears and neck will be referred to as 'action units' in the remainder of this text.</p><p>The behaviours and body positions observed were previously defined by an ethogram based on bibliographical knowledge <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b43">44]</ref> of horse behaviour in positive and negative contexts (Table <ref type="table" target="#tab_0">1</ref>). All the behaviours were coded continuously over the duration of the video (all occurrences method <ref type="bibr" target="#b59">[60]</ref>), in terms of duration or occurrence. The position of the neck was characterised based on the angle between the line from the withers to the ears and the horizontal line: if it was less than 0 degrees the neck was defined as low, if it was between 0 and 30 degrees the neck was defined as medium, and if it was greater than 30 degrees the neck was defined as high.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statistical analysis</head><p>All statistical analyses were carried out using the version 4.4.0 of RStudio software <ref type="bibr" target="#b60">[61]</ref>, with the significance threshold set at 0.05.</p><p>Inter-coder and Intra-coder reliability. The level of agreement on the coded action units was calculated using twofactor intra-class correlation coefficients (ICC) for each action unit and each behaviour separately. Only the variables exhibiting at least 'moderate' agreement (&gt;50) <ref type="bibr" target="#b61">[62]</ref> were retained for subsequent data analysis. As the position of the ears was coded using a distinct methodology (categorial data), a Cohen's Kappa test was conducted. The same approach was employed for intra-coder reliability, whereby 10% of the selected videos were re-coded by the initial coder.</p><p>Evolution and comparison of the behavioural and physiological indicators across conditions. To assess the evolution of the behavioural and physiological indicators between the Pre-Training and Test Days in the positive and the negative condition, as well as their comparison on the Test Day, approach latency, mean heart rate, maximal heart rate, and cortisol variation were analysed using generalized linear mixed models (GLMM) with the glmmTMB package <ref type="bibr" target="#b60">[61]</ref>.</p><p>To analyse the evolution of the behavioural and physiological indicators between the Pre-Training and Test Days in the positive and negative conditions, the Day (Pre-Training Day or Test Day) was set as the fixed variable. Similarly, to compare these indicators on the Test Day between the positive and negative conditions, the variable condition (positive or negative) was used as the fixed variable. Two variables were incorporated into the explicative models as random effects: the individual, which accounted for inter-individual differences, and the order of conditions (positive then negative or negative then positive). The explicative model was then compared to a null model using an analysis of variance (ANOVA), to test whether the condition had a significant effect on the behavioural or physiological indicator considered. Then, the reliability of the model selected was evaluated using the DHARMa package <ref type="bibr" target="#b62">[63]</ref> to check distributions, homoscedasticity of the residuals and within-group variance. For explicative models that explained data variability significantly better than the null model, an ANOVA was carried out using the Anova () function from the car package <ref type="bibr" target="#b63">[64]</ref>.</p><p>In the negative condition, all horses consistently took more than 30 seconds for the approach latency variable during both the Pre-Training and Test Days, resulting in no variability within the data. Because the data were censored at the maximum value of 30 seconds, there was a total lack of within-group variation. This made it impossible to perform statistical analyses using generalized linear mixed models (GLMM), as the absence of variation prevented accurate estimation of model parameters.</p><p>Characterisation of specific behaviours and facial expressions in response to positive and negative conditions. Prior to analysis, behavioural and action unit data (Table <ref type="table" target="#tab_0">1</ref>) were transformed into frequencies to account for the unequal time periods spent by each individual within the camera's field of vision. Each behaviour and action unit was investigated using the same method as described above using generalized linear mixed models. The explicative model took as a fixed variable the type of condition (positive or negative) and as random effects the individual, which accounts for inter-individual differences, and the order of conditions (positive then negative or negative then positive).</p><p>NetFACS analysis. The NetFACS package for R <ref type="bibr" target="#b50">[51]</ref> was used to explore interconnections between simultaneously expressed action units, which enables network-based analysis of action units rather than examining them in isolation. Details of the methodology are provided in Mielke et al. <ref type="bibr" target="#b50">[51]</ref> and in the NetFACS manual (<ref type="url" target="https://github.com/NetFACS">https://github.com/NetFACS</ref>).</p><p>To achieve this, the BORIS software <ref type="bibr" target="#b58">[59]</ref> was employed to export the dataset of all the negative and positive anticipation phases of each horse in the form of a binary matrix. For each action unit, the matrix indicated the presence (1) or absence (0) of the unit at each second. In this manner, the different action units expressed during a scan constituted a combination of action units.</p><p>To represent the combinations of action units between them (their co-occurrences), in order to obtain the visual representation of the positive and negative anticipation face, we used the conditional probability network. This tool highlights the significant connections between the action units expressed simultaneously, providing a clear view of the interactions between them. Only action units for which the coding prevalence in the study was over 10% were included <ref type="bibr" target="#b43">[44]</ref> (Table <ref type="table" target="#tab_0">1</ref>). The 'Medium Neck Position 'was considered the baseline position; therefore, the two selected neck positions were the 'High Neck Position' and the 'Low Neck Position', as they provide more detailed information about horse's arousal state and were considered as events.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Inter-coder and Intra-coder reliability</head><p>Following the second coding by a different EquiFACS certified coder, three of all the action units and behaviours analysed had a level of concordance that was insufficient for inclusion in the statistical analyses (S1 Table, 'poor' level agreement). Thus, 'Blow' (AD133), 'Lower Lip Depressor' (AU16) and 'Head Nod Up and Down' (AD85) were not analysed (Table <ref type="table" target="#tab_0">1</ref>). All variables showed at least a 'moderate' level of agreement for intra-encoder reliability (S2 Table ). In the negative condition, no statistically significant difference was observed in the approach latency between the Pre-Training Day and the Test Day (Table <ref type="table">2</ref>). The mean heart rate decreased on the Test Day compared to the Pre-Training Day (GLMM, p-value = 0.008, Table <ref type="table">2,</ref><ref type="table">Fig 3)</ref>, but not the maximal heart rate (GLMM, p-value = 0.87, Table <ref type="table">2,</ref><ref type="table">Fig</ref>  <ref type="bibr" target="#b2">3)</ref>. The cortisol variation tended to increase on the Test Day compared to the Pre-Training Day (GLMM, p-value = 0.06, Table <ref type="table">2,</ref><ref type="table">Fig 3)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Evolution and comparison of the behavioural and physiological indicators across conditions</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Evolution of behavioural and physiological indicators between the</head><p>Comparison of physiological indicators between the positive and negative conditions on the Test Day. The maximal heart rate was higher in the negative condition compared to the positive condition on the Test Day (GLMM, p-value = 0.02, Table <ref type="table">3</ref>, Fig <ref type="figure" target="#fig_5">3</ref>). There was no significant difference in the mean heart rate between the positive and negative conditions on the Test Day (GLMM, p-value = 0.12, Table <ref type="table">3</ref>). The total cortisol variation was significantly higher in the negative condition than in the positive condition on the Test Day (GLMM, p-value = 0.001, Table <ref type="table">3</ref>, Fig <ref type="figure" target="#fig_5">3</ref>) and the cortisol variation tended to be higher in the negative compared to the positive condition (GLMM, p-value = 0.09, Table <ref type="table">3</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Characterisation of specific behaviours and facial expressions in response to positive and negative conditions</head><p>With regard to the behaviours, AD84 'Head Shake Side to Side' (GLMM, p = 0.001), as well as the 'Step Back' (GLMM, p-value = 0.02), 'Sniff the Ground' (GLMM, p-value &lt;0.001) and 'Paw the Ground' (GLMM, p-value = 0.03) were exhibited with greater frequency by the horses in the positive anticipation compared to the negative anticipation on the Test Day (Table <ref type="table" target="#tab_2">4</ref>). In addition, results showed that horses in positive anticipation expressed more 'High Neck Position' than in negative anticipation (GLMM, p-value = 0.02, Table <ref type="table" target="#tab_2">4</ref>). Conversely, in negative anticipation, horses expressed more 'Medium Neck Position' than in positive anticipation (GLMM, p-value = 0.03, Table <ref type="table" target="#tab_2">4</ref>).</p><p>For the facial movements, the results showed that the action units AU113 'Sharp Lip Puller' (GLMM, p-value = 0.003) and AU47 'Half Blink' (GLMM, p-value &lt;0.001) were expressed more by horses in positive anticipation than in negative anticipation whereas EAD103 'Ear Flattener' (GLMM, p-value &lt;0.007) was expressed more in negative anticipation than in positive anticipation on Test Day (Table <ref type="table" target="#tab_2">4</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>NetFACS</head><p>Conditional probability networks. Conditional probability networks represented the probability of co-occurrence of the action units in the positive and the negative anticipation phases (Fig <ref type="figure" target="#fig_6">4</ref>).  Firstly, we observed that the positive and negative anticipation faces had the same base, composed of 'On the side ears', AU145 'Blink' and AU47 'Half Blink' connected only to AU101 'Inner Brow Raiser'.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Table 2. Results of the comparison of approach latency (in seconds), heart rate (in bpm) and cortisol variation (in ng/mL) between the Pre-Training Day and the Test Day, using generalized linear mixed models on 20 horses.</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Evolution of physiological indicators between the Pre-Training Day and the</head><p>Between the two types of anticipation, we also found AU5 'Upper Lid Raiser' and AD1 'Eye White Increase', with the difference that in positive anticipation they were connected to High Neck Position whereas in negative they were only connected to AU101 'Inner Brow Raiser'.</p><p>AD81 'Chewing' was also common to both of the two networks but was not connected in the same way: in positive anticipation it was connected to AD19 'Tongue Show' which was itself connected to 'Ears forward', whereas in negative anticipation it was connected to 'Ears backward'.</p><p>Finally, 'Ears forward' was also in both types of anticipation but was connected in a different way. In positive anticipation, this ear position was linked as mentioned above to AD19 'Tongue Show' and AD81 'Chewing', whereas in negative anticipation 'Ears forward' was linked to 'High Neck' position and AD38 'Nostril Dilator', itself linked to AUH13 'Nostril Lift'. There were therefore many action units that were common to both types of anticipation, but their combinations were very different.</p><p>Table <ref type="table">3</ref>. Results of the comparison of approach latency (in seconds), heart rate (in bpm) and cortisol variation (in ng/mL) between the positive and negative conditions on the Test Day, using generalized linear mixed models on 20 horses.  Ultimately, a number of action units were identified as exclusive to a single type of anticipation. This was the case for AD19'Tongue Show', AU10 'Upper Lip Raiser' and AU17 'Chin Raiser' in positive anticipation and AD38 'Nostril Dilator', AUH13 'Nostril Lift', AU113 'Sharp Lip Puller' and 'Ears backward' in negative anticipation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Comparison of physiological indicators between conditions on the Test</head><p>By combining the results of our two analyses, the individual analysis and the network analysis (Table <ref type="table" target="#tab_3">5</ref>), we propose two different facial expression profiles related to positive and negative anticipation (Fig <ref type="figure" target="#fig_7">5</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>The objective of this study was to identify the behavioural and facial movements responses of horses to conditions of opposite emotional valences: positive and negative anticipation. After validating the emotional valence of the two conditions using existing indicators, we identified two distinct profiles of behaviour and facial expression, each corresponding to one of the conditions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Evolution and comparison of the behavioural and physiological indicators across conditions</head><p>Firstly, we validated the emotional valence of the two conditions of the procedure, using existing indicators: approach latency, heart rate and cortisol level <ref type="bibr" target="#b20">[21,</ref><ref type="bibr" target="#b27">28,</ref><ref type="bibr" target="#b37">38]</ref>.</p><p>The horses took less time to reach the pasture (positive condition) compared to the isolation box (negative condition), where all horses exceeded the maximum time limit of 30 seconds on both the Pre-Training Day and the Test Day. Furthermore, in the positive condition, horses reached the pasture more quickly on the Test Day compared to the Pre-Training Day. Thus, horses, when given the choice whether or not to approach the pasture or the social isolation box, exhibited a clear preference for approaching the pasture over the social isolation box, which was avoided during all the procedure.</p><p>With regard to the physiological variables, in both conditions, the horses' mean heart rate decreased during the Test Day compared to the Pre-Training Day. Arguably, despite the contrasting circumstances, the horses became habituated to the situations (presence in the starting box). However, the maximal heart rate only decreased in the positive condition and not in the negative condition, indicating a higher arousal state. Additionally, on the Test Day, the horses exhibited a higher maximal heart rate in the negative condition compared to the positive condition. Thus, the positive and negative conditions appeared to have contrasting arousal states, with the negative condition having a higher intensity. Furthermore, this result suggests that horses experienced a negative valence in the negative condition, supported by previous reports in equids showing increased heart rate in response to fear or stress stimuli <ref type="bibr" target="#b31">[32,</ref><ref type="bibr" target="#b64">[65]</ref><ref type="bibr" target="#b65">[66]</ref><ref type="bibr" target="#b66">[67]</ref>.</p><p>Finally, the variation in cortisol levels was lower in the positive condition on the Test Day compared to the Pre-Training Day, indicating that the horses were less stressed following the completion of the procedure. Conversely, in the negative condition, there was a tendency for cortisol variation to increase on the Test Day, suggesting that the horses continued to experience stress, or potentially heightened stress levels, after they underwent the negative condition procedure. Furthermore, the overall rate of change in cortisol remained higher in the negative condition than in the positive condition, indicating a more pronounced change in cortisol levels. Consequently, it can be deduced that the two conditions were contrasted in terms of valence, supported by higher cortisol levels in response to negative valence situations observed in horses <ref type="bibr" target="#b66">[67]</ref><ref type="bibr" target="#b67">[68]</ref><ref type="bibr" target="#b68">[69]</ref>, cows <ref type="bibr" target="#b69">[70]</ref>, sheep <ref type="bibr" target="#b70">[71]</ref>, dogs <ref type="bibr" target="#b71">[72]</ref> and many other species <ref type="bibr" target="#b72">[73]</ref>.</p><p>The differences in these three indicators, well established in the scientific literature as measures of valence-namely, approach and avoidance behavioural responses, heart rate, and variations in cortisol levels-clearly validated the 'Half Blink' has a 63% probability of activating AU101 'Inner Brow Raiser' in the positive anticipation face). More frequent elements appear larger on the graph. Action units that are not common to both networks are underlined in black. The dotted boxes represent combinations of action units that can be interpreted as being specific to postures or behaviours. <ref type="url" target="https://doi.org/10.1371/journal.pone.0319315.g004">https://doi.org/10.1371/journal.pone.0319315.g004</ref> contrasting valences of the two conditions: anticipation of a positive event (pasture) and anticipation of a negative event (isolation and novelty).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Characterisation of specific behaviours and facial expressions in response to positive and negative anticipations</head><p>In a first step, we analysed single actions units and behaviours using generalized linear mixed models. This enabled us to determine which action units and behaviours were more often expressed in one type of anticipation compared with the other. The behaviours of pawing the ground, sniffing the ground, stepping back and shaking the head side to side were more frequently expressed in positive anticipation. These behaviours, alongside greater motor activity, have already been identified in a context of positive anticipation in horses <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b36">37]</ref>, however these behaviours have also been observed as indicative of stress <ref type="bibr" target="#b73">[74]</ref><ref type="bibr" target="#b74">[75]</ref><ref type="bibr" target="#b75">[76]</ref>. This prompts the question of whether these behaviours reflect the arousal experienced by the horse rather than its valence. To achieve a more precise understanding, it is therefore necessary to take into account supplementary elements, such as the analysis of facial movements.</p><p>The initial analysis revealed that in positive anticipation, the horses exhibited more high neck position and a greater prevalence of half blinks. Conversely, in negative anticipation, the horses displayed a more medium neck position and a higher incidence of ears flattening movements.</p><p>The position of the neck may vary depending on the emotional context. Some studies reported a less lowered neck during positive reinforcement <ref type="bibr" target="#b18">[19]</ref>, while others reported a high neck in negative or frustrating situations <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b36">37]</ref>. The divergence in findings indicates that neck position may be a more accurate reflection of the intensity of the situation than its emotional valence. However, the position of the neck can also be influenced by what the horse is observing, as horses need to raise their heads to focus, depending on whether it is near or distant, or located above or below their line of sight <ref type="bibr" target="#b76">[77]</ref>.</p><p>Conversely, the position of the ears is frequently regarded as an indicator of valence <ref type="bibr" target="#b77">[78,</ref><ref type="bibr" target="#b78">79]</ref>. Some studies showed that backward ears were observed more often in negative contexts <ref type="bibr" target="#b36">[37,</ref><ref type="bibr" target="#b40">41,</ref><ref type="bibr" target="#b77">78]</ref> in agreement with our results which showed a more frequent expression of flattened ears in negative anticipation, however another one observed backward ears in a positive context <ref type="bibr" target="#b5">[6]</ref>. These divergent results underline the importance of analysing action units in combination with each other rather than in isolation. Nevertheless, our results revealed two action units more frequently expressed in positive anticipation that had not been previously identified in this context. The first is the 'Half-blink' (AU47), which differs from the full 'Blink' (AU145), typically linked to negative situations <ref type="bibr" target="#b36">[37,</ref><ref type="bibr" target="#b43">44,</ref><ref type="bibr" target="#b79">80]</ref>. Unlike the full blink, the half-blink may represent a more affiliative gesture, as seen in other species like cats <ref type="bibr" target="#b80">[81]</ref>. The second action unit that had never been associated with positive anticipation prior to this study is the 'Sharp Lip Puller' (AU113). However, an equivalent called 'lip tension' was associated with a negative context in another study <ref type="bibr" target="#b5">[6]</ref>.</p><p>The analyses conducted with the models examining the action units separately have permitted the identification of certain action units as being more expressed in one condition than another in the present study. However, given the divergent results concerning action units found in the scientific literature, it is important when studying facial expression to analyse the combination of facial action units with each other, which provides a second level of interpretation.</p><p>We subsequently conducted a network analysis using the NetFACS to examine the action units as a set of elements that can co-occur. This approach enabled the identification of the combinations of action units with one another, as Net-FACS facilitates the analysis of data from action units within networks, rather than in isolation <ref type="bibr" target="#b50">[51]</ref>. It is notable that action units are integral to the formation of larger facial expressions and can be combined and autocorrelated. An action unit can thus be observed in a variety of emotional contexts; however, it is the combination of action units that will define the profile of a facial expression. Consequently, two distinct networks were identified, one specific to positive anticipation and the other to negative anticipation (Fig <ref type="figure" target="#fig_6">4</ref>).</p><p>Through the integration of the two levels of analysis (Table <ref type="table" target="#tab_3">5</ref>), the facial expression profile of the horse in positive anticipation was characterised by a high neck position, with the eyes making half-blinks, a sharp lip puller, upper lip and chin raiser movements, and more visible tongue. In negative anticipation, the horse exhibited a medium neck position, with the ears back, flattened more, as well as making more nostril movements by dilating or lifting them, and also making sharp lip puller movements (Fig <ref type="figure" target="#fig_7">5</ref>).</p><p>Moreover, it was observed that some of the action units were shared by the two networks (Fig <ref type="figure" target="#fig_6">4</ref>). However, the manner in which they were connected provided a significant amount of additional information. It is essential to consider that, even when an action unit is shared between two networks, it is the connections between them that are important. For example, in humans, the 'Inner Brow Raiser' (AU1) can be found both in the facial expression profile of surprise and in that of sadness, but it is its connections with the other action units that differ <ref type="bibr" target="#b50">[51]</ref>.</p><p>For example, 'High Neck Position' was specific to both networks. However, in negative anticipation, this neck position was associated with 'Ears forward', 'Dilated Nostrils' (AU38) and 'Nostril Lift' (AUH13). This combination of high neck and forward ears has been identified in the vigilance posture <ref type="bibr" target="#b81">[82]</ref> (Fig 4 ), and the dilation of the nostrils has been observed in a context of a stressful event <ref type="bibr" target="#b79">[80]</ref>, as well as the nostril lift seen in frustration in horses <ref type="bibr" target="#b43">[44]</ref>. In contrast, in positive anticipation, the 'High Neck Position' was linked to 'Upper Lid Raiser' (AU10) and 'Eye White Increase' (AD1), which may suggest excitement or increased attention (Fig <ref type="figure" target="#fig_6">4</ref>). Although both types of anticipation included the high neck position, the interpretation of this feature may differ due to its connections with other action units, allowing for a divergent interpretation.</p><p>This was also the case for 'Chewing' (AD81). In the positive anticipation network, 'Chewing' (AD81) was associated with 'Tongue Show' (AD19), itself associated with 'Ears forward'. This suggests the development of a conditional response in the horses to the expectation of access to the pasture (Fig <ref type="figure" target="#fig_6">4</ref>). As demonstrated in Pavlov's experiments with dogs, in which salivation was elicited by the conditioned stimulus of a bell sound <ref type="bibr" target="#b82">[83]</ref>, the horses in our study exhibited chewing and tongue-out behaviours in positive anticipation. It remains to be determined whether this action unit is specific to the anticipation of food (since one aspect of going to the pasture is eating grass), or whether it reflects anticipation of a positive event in general, whether it involves food or not (another aspect of going to pasture is gaining space and freedom and movement).</p><p>In contrast, 'Chewing' (AD81) was connected only with 'Ears backward' in the negative anticipation network. These two action units have been described in negative situations such as food frustration <ref type="bibr" target="#b36">[37,</ref><ref type="bibr" target="#b43">44]</ref> pain <ref type="bibr" target="#b40">[41]</ref> and negative interactions <ref type="bibr" target="#b83">[84,</ref><ref type="bibr" target="#b84">85]</ref>. In this combination, chewing could therefore reflect stressful behaviour (Fig <ref type="figure" target="#fig_6">4</ref>). Network analysis is therefore a new and innovative way of evaluating facial expressions. It allows us to observe the combinations of action units in relation to each other, providing valuable additional information that enhances and completes our findings.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusions</head><p>This study enabled the characterisation of two contrasting facial expression profiles specific to positive and negative anticipation through an experimental protocol, where the opposite emotional valence of the conditions was validated using existing indicators. In addition to the conventional statistical analysis, NetFACS analysis, which represents an innovative approach to the analysis of facial expressions, enabled the acquisition of more detailed information about the combinations of action units, thereby facilitating a more comprehensive understanding of the activation of action units in relation to one another. Thus, the positive anticipation face was characterised by a high neck position, halfblinks, sharp lip puller, upper lip and chin raiser movements, and more visible tongue. The negative anticipation face was characterised by a medium neck position, the ears back, flattened more often, as well as more nostril movements by dilating or lifting them and sharp lip puller movements. Further studies are needed to determine if these facial expressions are very specific to the conditions used in this experiment or could be transposed to other positive and negative anticipation situations. This also raises the question of the function of these identified facial expression profiles. It seems plausible that they may serve a communicative function in interactions with both conspecifics and humans, a hypothesis that would benefit from further investigation. In conclusion, facial movements can offer insight into the emotional valence experienced by an animal, providing a window into its internal emotional processes. The ability to discern both positive and negative emotional states is crucial for the assessment of equine welfare. Facial expressions offer a valuable means of identifying positive experiences, and their incorporation can facilitate the improvement of practices aimed at enhancing the welfare of horses.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig 1 .</head><label>1</label><figDesc>Fig 1. Schematic representation of the experimental protocol conducted with 20 horses. Each condition (positive and negative) included one Pre-Training session (Day 1), six training sessions (two per day on Day 2 to Day 4), and one Test session (Day 5). Measurements of approach latency, heart rate, cortisol levels (before and after the session) were taken during Pre-Training and Test sessions. Measurements of behaviours and facial movements were taken on Test sessions. The first group of horses (n = 10) experienced the positive condition during the first week, followed by the negative condition in the second week. Conversely, the second group of horses (n = 10) underwent the negative condition in the first week, followed by the positive condition in the second week. https://doi.org/10.1371/journal.pone.0319315.g001</figDesc><graphic coords="5,36.00,97.33,282.46,206.69" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig 2 .</head><label>2</label><figDesc>Fig 2. Schematic representation of the experimental set-up. 20 horses were trained and tested in the A) positive anticipation set up B) negative anticipation set up. https://doi.org/10.1371/journal.pone.0319315.g002</figDesc><graphic coords="6,36.00,97.33,350.00,304.19" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>40 representing the mean heart rates of each horse at Pre-Training Day, 40 at Test Day, and 40 representing the maximal heart rate at Pre-Training Day and 40 at Test Day), 26 recordings were excluded from analysis due to either equipment failure during data acquisition or insufficient data quality following artifact correction.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>Occurence frequency = number of occurences × 100 visible time (sec) Duration frequency = duration of behaviour × 100 visible time (sec)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>Pre-Training Day and the Test Day in the positive and negative conditions. For the positive condition, a decrease was observed on the Test Day compared to the Pre-Training Day for the approach latency (GLMM, p-value &lt;0.001, Table 2, Fig 3), the mean heart rate (GLMM, p-value = 0.001, Table 2, Fig 3), the maximal heart rate (GLMM, p-value = 0.03, Table 2, Fig 3), and the cortisol variation (GLMM, p-value = 0.006, Table 2, Fig 3).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig 3 .</head><label>3</label><figDesc>Fig 3. Evolution and comparison of behavioural and physiological indicators during the procedure in 20 horses. Means and standard errors from the corresponding models presented in Tables 2 and 3. A) Evolution of the indicators between Pre-Training Day and Test Day: approach latency, mean heart rate, maximal heart rate and cortisol variation in the positive and the negative condition. B) Comparison of the indicators between conditions on the Test Day: maximal heart rate and total cortisol variation rate between the positive and negative condition. *p-value &lt; 0.05, **p-value &lt; 0.01, ***p-value &lt; 0.001. https://doi.org/10.1371/journal.pone.0319315.g003</figDesc><graphic coords="12,36.00,97.33,439.20,554.81" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Fig 4 .</head><label>4</label><figDesc>Fig 4. Networks based on the conditional probabilities of the co-occurrence of actions units in 20 horses, in A) positive anticipation and B) negative anticipation. Only action units with at least five co-occurrences, a significant association (p-value &lt; 0.05), and probabilities exceeding 0.55 are displayed to facilitate understanding. The direction of activation of the connections is represented by the arrows linking the action units (i.e., AU47</figDesc><graphic coords="14,36.00,97.33,326.62,570.98" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Fig 5 .</head><label>5</label><figDesc>Fig 5. Facial expression profiles related to positive and negative anticipation, composed of action units identified in 20 horses as specific to each anticipation ( Table 5). Non-specific facial features are shown in shaded areas in the illustration. https://doi.org/10.1371/journal.pone.0319315.g005</figDesc><graphic coords="17,36.00,97.33,237.92,452.47" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 . Variables used for video coding of 20 horses, derived from EquiFACS: The Equine Facial Action Coding System.</head><label>1</label><figDesc></figDesc><table><row><cell>Category</cell><cell>Code</cell><cell>Variable name</cell><cell>Description</cell><cell>Coding type</cell></row><row><cell>Lower Face Action Units</cell><cell>AU113</cell><cell>Sharp Lip Puller</cell><cell>Derived from the EquiFACS method, see [47].</cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU16</cell><cell>[Lower Lip Depressor]</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU17</cell><cell>Chin Raiser</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU10</cell><cell>Upper Lip Raiser</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU12</cell><cell>Lip Corner Puller</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU18</cell><cell>Lip Pucker</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU122</cell><cell>Upper Lip Curl</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU25</cell><cell>Lips Part</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU26</cell><cell>Jaw Drop</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU27</cell><cell>Mouth Stretch</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AUH13</cell><cell>Nostril Lift</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU24</cell><cell>Lip Presser</cell><cell></cell><cell>Occurrence</cell></row><row><cell cols="2">Lower Face Action Descriptors AD160</cell><cell>Lower Lip Relax</cell><cell></cell><cell>Occurrence</cell></row><row><cell>Ear Action Descriptor</cell><cell cols="2">EAD103 Ear Flattener</cell><cell></cell><cell>Duration</cell></row><row><cell></cell><cell cols="2">EAD101 (Ears Forward)</cell><cell></cell><cell>Duration</cell></row><row><cell></cell><cell cols="2">EAD102 Ear Adductor</cell><cell></cell><cell>Duration</cell></row><row><cell></cell><cell cols="2">EAD104 (Ear Rotator)</cell><cell></cell><cell>Duration</cell></row><row><cell>Upper Face Action Units</cell><cell>AU145</cell><cell>Blink</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU47</cell><cell>Half Blink</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AD1</cell><cell>Eye White Increase</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU101</cell><cell>Inner Brow Raiser</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU5</cell><cell>Upper Lid Raiser</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AU143</cell><cell>Eye Closure</cell><cell></cell><cell>Occurrence</cell></row><row><cell>Miscellaneous Actions</cell><cell>AD19</cell><cell>Tongue Show</cell><cell></cell><cell>Occurrence</cell></row><row><cell>and Supplementary Codes</cell><cell>AD29</cell><cell>Jaw Thrust</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AD30</cell><cell>Jaw Sideways</cell><cell></cell><cell>Occurrence</cell></row><row><cell>Gross Behaviours Codes</cell><cell>AD38</cell><cell>Nostril Dilator</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AD133</cell><cell>[Blow]</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AD81</cell><cell>Chewing</cell><cell></cell><cell>Duration</cell></row><row><cell></cell><cell>AD50</cell><cell>Vocalization</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AD84</cell><cell>Head Shake Side to Side</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AD85</cell><cell>Head Nod Up and Down</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>AD80</cell><cell>Swallow</cell><cell></cell><cell>Occurrence</cell></row><row><cell>Supplementary Ears Position</cell><cell>-</cell><cell>Ears forward</cell><cell>Derived from the one-second scan intervals, see [6,37].</cell><cell>Occurrence</cell></row><row><cell></cell><cell>-</cell><cell>Ears backward</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>-</cell><cell>On the side ears</cell><cell></cell><cell>Occurrence</cell></row><row><cell></cell><cell>-</cell><cell>Asymmetrical ears</cell><cell></cell><cell>Occurrence</cell></row><row><cell>Supplementary Neck Position</cell><cell>-</cell><cell>High Neck Position</cell><cell>Angle from the withers to the ears &gt;30°.</cell><cell>Duration</cell></row><row><cell></cell><cell>-</cell><cell>Medium Neck Position</cell><cell>Angle from the withers to the ears between 0° and 30°.</cell><cell>Duration</cell></row><row><cell></cell><cell>-</cell><cell>Low Neck Position</cell><cell>Angle from the withers to the ears &lt;0°.</cell><cell>Duration</cell></row><row><cell>Supplementary Behaviours</cell><cell>-</cell><cell>Observe</cell><cell>Stares at the experimenter or the accompanying horse.</cell><cell>Duration</cell></row><row><cell></cell><cell></cell><cell>Conspecific/Experimenter</cell><cell></cell><cell></cell></row><row><cell></cell><cell>-</cell><cell>Step Back</cell><cell>Moves at least two limbs backwards.</cell><cell>Occurrence</cell></row><row><cell></cell><cell>-</cell><cell>Step Further</cell><cell>Moves at least two limbs forward.</cell><cell>Occurrence</cell></row><row><cell></cell><cell>-</cell><cell>Sniff the Ground</cell><cell cols="2">The head is lowered towards the ground and the nostrils dilate. Duration</cell></row><row><cell></cell><cell>-</cell><cell>Paw the Ground</cell><cell>The hoof rises up and scratches the ground.</cell><cell></cell></row></table><note><p><p>Occurrence</p>Variables for which the strength of inter-reliability was less than 'moderate' are shown in brackets and uncoded variables are in parentheses. Variables in italics are additional variables not included in the EquiFACS added in the present study. In bold: variables for which the coding prevalence in this study was over 10%. https://doi.org/10.1371/journal.pone.0319315.t001</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Test Day</head><label></label><figDesc></figDesc><table><row><cell>Variable</cell><cell>Estimate</cell><cell>S.E.</cell><cell>Z</cell><cell>P-value</cell></row><row><cell>Approach latency in positive condition</cell><cell>-10.55</cell><cell>1.40</cell><cell>-7.53</cell><cell>&lt;0.001</cell></row><row><cell>Approach latency in negative condition</cell><cell>x</cell><cell>x</cell><cell>x</cell><cell>x</cell></row><row><cell>Mean heart rate in positive condition</cell><cell>-20.82</cell><cell>6.63</cell><cell>-3.13</cell><cell>0.001</cell></row><row><cell>Mean heart rate in negative condition</cell><cell>-8.85</cell><cell>3.35</cell><cell>-2.63</cell><cell>0.008</cell></row><row><cell>Maximal heart rate in positive condition</cell><cell>-25.14</cell><cell>12.15</cell><cell>-2.06</cell><cell>0.03</cell></row><row><cell>Maximal heart rate in negative condition</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>0.87</cell></row><row><cell>Cortisol variation in positive condition</cell><cell>-1.74</cell><cell>0.64</cell><cell>-2.70</cell><cell>0.006</cell></row><row><cell>Cortisol variation in negative condition</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>0.06</cell></row></table><note><p>Bold values indicate those with a p-value &lt; 0.5. "x": analysis not possible due to absence of variability in the data. "-": no significant difference was found between the explicative and the null model. https://doi.org/10.1371/journal.pone.0319315.t002</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 4 . Results of the comparison between positive and negative condition for each facial action unit variable and behaviour, using general- ized linear mixed models on the Test Day on 20 horses.</head><label>4</label><figDesc>Bold values indicate those with a p-value &lt; 0.5. "x": analysis not possible due to absence of variability in the data. "-": no significant difference was found between the explicative and the null model. https://doi.org/10.1371/journal.pone.0319315.t003</figDesc><table><row><cell>Day</cell></row></table><note><p>Only results where the explicative model explained data variability significantly better than the null model are presented. Bold values indicate those with a p-value &lt; 0.5. https://doi.org/10.1371/journal.pone.0319315.t004</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 5 . Summary of the action units in 20 horses found to be related to positive anticipation ('P') and negative anticipation ('N') according to the different statistical analyses.</head><label>5</label><figDesc></figDesc><table><row><cell>Variables</cell><cell>Glmm</cell><cell>Conditional probability networks</cell></row><row><cell></cell><cell>(Table 4)</cell><cell>(Fig 4)</cell></row><row><cell>AU113 'Sharp Lip Puller'</cell><cell>P</cell><cell>N</cell></row><row><cell>AU17 'Chin Raiser'</cell><cell></cell><cell>P</cell></row><row><cell>AU10 'Upper Lip Raiser'</cell><cell></cell><cell>P</cell></row><row><cell>AUH13 'Nostril Lift'</cell><cell></cell><cell>N</cell></row><row><cell>EAD103 'Ear Flattener'</cell><cell>N</cell><cell></cell></row><row><cell>AU47 'Half Blink'</cell><cell>P</cell><cell></cell></row><row><cell>AD19 'Tongue Show'</cell><cell></cell><cell>P</cell></row><row><cell>AD38 'Nostril Dilator'</cell><cell></cell><cell>N</cell></row><row><cell>High Neck Position</cell><cell>P</cell><cell></cell></row><row><cell>Medium Neck Position</cell><cell>N</cell><cell></cell></row><row><cell>Ears backward</cell><cell></cell><cell>N</cell></row><row><cell cols="3">For the conditional probability networks, only elements identified as exclusive to a type of anticipation were</cell></row><row><cell cols="3">noted as being related to positive anticipation ('P') and negative anticipation ('N').</cell></row></table><note><p>https://doi.org/10.1371/journal.pone.0319315.t005</p></note></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_0"><p>PLOS One | https://doi.org/10.1371/journal.pone.0319315May 14, 2025   </p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgments</head><p>We would like to thank the staff of the <rs type="institution">UEPAO experimental unit (Unité Expérimentale de Physiologie Animale de l'Orfrasière)</rs> for their help in setting up the experimental protocol. We would also like to thank <rs type="person">Anne-Lyse Lainé</rs> for the cortisol analyses of the saliva samples and <rs type="person">Alexandrine Wagner</rs> for the illustrations.</p></div>
+			</div>
+			<div type="funding">
+<div><p>'This work was funded by the <rs type="funder">EQUIACTION</rs> funds -<ref type="url" target="https://equiaction.org/">https://equiaction.org/</ref> (RP, LL) and IFCE: <rs type="funder">French Horse and Riding Institute</rs> -<ref type="url" target="https://www.ifce.fr/">https://www.ifce.fr/</ref> (RP, LL). These funding sources have no role in the study design, data collection and analyses or in the decision, preparation and submission of the manuscript'.</p></div>
+			</div>
+			<listOrg type="funding">
+			</listOrg>
+
+			<div type="availability">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>All dataset files are available from the online repository: <ref type="url" target="https://doi.org/10.57745/C9ND50">https://doi.org/10.57745/C9ND50</ref> (INRAE data repository).</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supporting information S1 Table. Results of inter-coder reliability (Intra-class correlation coefficient test and Cohen's Kappa test). (PDF)</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>S2 Table. Results of intra-coder reliability (Intra-class correlation coefficient test and Cohen's Kappa test). (PDF)</head><p>Author contributions Conceptualization: Romane Phelipon, Léa Bertrand, Plotine Jardat, Fabrice Reigner, Léa Lansade. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data curation:</head></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">A categorized list of emotion definitions, with suggestions for a consensual definition</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">R</forename><surname>Kleinginna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Kleinginna</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/BF00992553</idno>
+		<ptr target="https://doi.org/10.1007/BF00992553" />
+	</analytic>
+	<monogr>
+		<title level="j">Motiv Emot</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="345" to="379" />
+			<date type="published" when="1981">1981</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kleinginna PR, Kleinginna AM. A categorized list of emotion definitions, with suggestions for a consensual definition. Motiv Emot. 1981;5:345-379. https://doi.org/10.1007/BF00992553</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">The many meanings/aspects of emotion: Definitions, functions, activation, and regulation</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">E</forename><surname>Izard</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1754073910374661</idno>
+		<ptr target="https://doi.org/10.1177/1754073910374661" />
+	</analytic>
+	<monogr>
+		<title level="j">Emot Rev</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="363" to="370" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Izard CE. The many meanings/aspects of emotion: Definitions, functions, activation, and regulation. Emot Rev. 2010;2:363-370. https://doi. org/10.1177/1754073910374661</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Defining emotion: A brief history</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gendron</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1754073910374669</idno>
+		<ptr target="https://doi.org/10.1177/1754073910374669" />
+	</analytic>
+	<monogr>
+		<title level="j">Emotion Review</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="371" to="372" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gendron M. Defining emotion: A brief history. Emotion Review. 2010;2:371-372. https://doi.org/10.1177/1754073910374669</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">An integrative and functional framework for the study of animal emotion and mood</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mendl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ohp</forename><surname>Burman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">S</forename><surname>Paul</surname></persName>
+		</author>
+		<idno type="DOI">10.1098/rspb.2010.0303</idno>
+		<ptr target="https://doi.org/10.1098/rspb.2010.0303PMID:20685706" />
+	</analytic>
+	<monogr>
+		<title level="j">Proc R Soc B Biol Sci</title>
+		<imprint>
+			<biblScope unit="volume">277</biblScope>
+			<biblScope unit="page" from="2895" to="2904" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Mendl M, Burman OHP, Paul ES. An integrative and functional framework for the study of animal emotion and mood. Proc R Soc B Biol Sci. 2010;277:2895-2904. https://doi.org/10.1098/rspb.2010.0303 PMID: 20685706</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Dogs and humans respond to emotionally competent stimuli by producing different facial actions</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Cátia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Daniel</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41598-017-15091-4</idno>
+		<ptr target="https://doi.org/10.1038/s41598-017-15091-4PMID:29138393" />
+	</analytic>
+	<monogr>
+		<title level="j">Sci Rep</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="1" to="11" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Cátia C, Kun G, Daniel M. Dogs and humans respond to emotionally competent stimuli by producing different facial actions. Sci Rep. 2017;7:1-11. https://doi.org/10.1038/s41598-017-15091-4 PMID: 29138393</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Facial expression and oxytocin as possible markers of positive emotions in horses</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lansade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Nowak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A-L</forename><surname>Lainé</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Leterrier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Bonneau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Parias</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41598-018-32993-z</idno>
+		<ptr target="https://doi.org/10.1038/s41598-018-32993-zPMID:30279565" />
+	</analytic>
+	<monogr>
+		<title level="j">Sci Rep</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">14680</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lansade L, Nowak R, Lainé A-L, Leterrier C, Bonneau C, Parias C, et al. Facial expression and oxytocin as possible markers of positive emotions in horses. Sci Rep. 2018;8(1):14680. https://doi.org/10.1038/s41598-018-32993-z PMID: 30279565</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Automatic brushes induce positive emotions and foster positive social interactions in group-housed horses</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lansade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lemarchand</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Reigner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Arnould</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bertin</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2021.105538</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2021.105538" />
+	</analytic>
+	<monogr>
+		<title level="j">Applied Animal Behaviour Science</title>
+		<imprint>
+			<biblScope unit="volume">246</biblScope>
+			<biblScope unit="page">105538</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lansade L, Lemarchand J, Reigner F, Arnould C, Bertin A. Automatic brushes induce positive emotions and foster positive social interactions in group-housed horses. Applied Animal Behaviour Science. 2022;246:105538. https://doi.org/10.1016/j.applanim.2021.105538</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Behaviour of domestic fowl in anticipation of positive and negative stimuli</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H</forename><surname>Zimmerman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Saf</forename><surname>Buijs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Bolhuis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Keeling</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.anbehav.2010.11.028</idno>
+		<ptr target="https://doi.org/10.1016/j.anbehav.2010.11.028" />
+	</analytic>
+	<monogr>
+		<title level="j">Animal Behaviour</title>
+		<imprint>
+			<biblScope unit="volume">81</biblScope>
+			<biblScope unit="page" from="569" to="577" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Zimmerman PH, Buijs SAF, Bolhuis JE, Keeling LJ. Behaviour of domestic fowl in anticipation of positive and negative stimuli. Animal Behaviour. 2011;81:569-577. https://doi.org/10.1016/j.anbehav.2010.11.028</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Temperament, stereotypies and anticipatory behaviour as measures of welfare in mink</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">W</forename><surname>Hansen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">L</forename><surname>Jeppesen</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2005.10.005</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2005.10.005" />
+	</analytic>
+	<monogr>
+		<title level="j">Applied Animal Behaviour Science</title>
+		<imprint>
+			<biblScope unit="volume">99</biblScope>
+			<biblScope unit="page" from="172" to="182" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hansen SW, Jeppesen LL. Temperament, stereotypies and anticipatory behaviour as measures of welfare in mink. Applied Animal Behaviour Sci- ence. 2006;99:172-182. https://doi.org/10.1016/j.applanim.2005.10.005</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Differences in facial expressions during positive anticipation and frustration in dogs awaiting a reward</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bremhorst</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">A</forename><surname>Sutter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Würbel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Mills</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Riemer</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41598-019-55714-6</idno>
+		<ptr target="https://doi.org/10.1038/s41598-019-55714-6PMID:31848389" />
+	</analytic>
+	<monogr>
+		<title level="j">Sci Rep</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="1" to="13" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bremhorst A, Sutter NA, Würbel H, Mills DS, Riemer S. Differences in facial expressions during positive anticipation and frustration in dogs await- ing a reward. Sci Rep. 2019;9:1-13. https://doi.org/10.1038/s41598-019-55714-6 PMID: 31848389</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Characterization of anticipatory behaviour in domesticated horses (Equus caballus)</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Peters</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">H</forename><surname>Bleijenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Van Dierendonck</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Van</forename><surname>Der Harst</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Spruijt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">M</forename></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2012.01.018</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2012.01.018" />
+	</analytic>
+	<monogr>
+		<title level="j">Applied Animal Behaviour Science</title>
+		<imprint>
+			<biblScope unit="volume">138</biblScope>
+			<biblScope unit="page" from="60" to="69" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Peters SM, Bleijenberg EH, van Dierendonck MC, van der Harst JE, Spruijt BM. Characterization of anticipatory behaviour in domesticated horses (Equus caballus). Applied Animal Behaviour Science. 2012;138:60-69. https://doi.org/10.1016/j.applanim.2012.01.018</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Looking forward to interacting with their caretakers: dolphins&apos; anticipatory behaviour indicates motivation to participate in specific events</title>
+		<author>
+			<persName><forename type="first">Ilk</forename><surname>Clegg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">G</forename><surname>Rödel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Boivin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Delfour</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2018.01.015</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2018.01.015" />
+	</analytic>
+	<monogr>
+		<title level="j">Applied Animal Behaviour Science</title>
+		<imprint>
+			<biblScope unit="volume">202</biblScope>
+			<biblScope unit="page" from="85" to="93" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Clegg ILK, Rödel HG, Boivin X, Delfour F. Looking forward to interacting with their caretakers: dolphins&apos; anticipatory behaviour indicates motivation to participate in specific events. Applied Animal Behaviour Science. 2018;202:85-93. https://doi.org/10.1016/j.applanim.2018.01.015</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Anticipation is differently expressed in rats (Rattus norvegicus) and domestic cats (Felis silvestris catus) in the same Pavlovian conditioning paradigm</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Van Den Bos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">K</forename><surname>Meijer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Van Renselaar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Van Der Harst</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">M</forename><surname>Spruijt</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S0166-4328(02)00318-2</idno>
+		<ptr target="https://doi.org/10.1016/S0166-4328(02)00318-2PMID:12672562" />
+	</analytic>
+	<monogr>
+		<title level="j">Behav Brain Res</title>
+		<imprint>
+			<biblScope unit="volume">141</biblScope>
+			<biblScope unit="page" from="83" to="89" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Van Den Bos R, Meijer MK, Van Renselaar JP, Van der Harst JE, Spruijt BM. Anticipation is differently expressed in rats (Rattus norvegicus) and domestic cats (Felis silvestris catus) in the same Pavlovian conditioning paradigm. Behav Brain Res. 2003;141:83-89. https://doi.org/10.1016/ S0166-4328(02)00318-2 PMID: 12672562</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Standard housed rats are more sensitive to rewards than enriched housed rats as reflected by their anticipatory behaviour</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Van Der Harst</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Baars</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">M</forename><surname>Spruijt</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S0166-4328(02)00403-5</idno>
+		<ptr target="https://doi.org/10.1016/S0166-4328(02)00403-5PMID:12798276" />
+	</analytic>
+	<monogr>
+		<title level="j">Behav Brain Res</title>
+		<imprint>
+			<biblScope unit="volume">142</biblScope>
+			<biblScope unit="page" from="151" to="156" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">van der Harst JE, Baars AM, Spruijt BM. Standard housed rats are more sensitive to rewards than enriched housed rats as reflected by their antici- patory behaviour. Behav Brain Res. 2003;142:151-156. https://doi.org/10.1016/S0166-4328(02)00403-5 PMID: 12798276</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Facial expressions of emotion states and their neuronal correlates in mice</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Dolensek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Gehrlach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">S</forename><surname>Klein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Gogolla</surname></persName>
+		</author>
+		<idno type="DOI">10.1126/science.aaz9468</idno>
+		<idno type="PMID">32241948</idno>
+		<ptr target="https://doi.org/10.1126/science.aaz9468" />
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">368</biblScope>
+			<biblScope unit="page" from="89" to="94" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Dolensek N, Gehrlach DA, Klein AS, Gogolla N. Facial expressions of emotion states and their neuronal correlates in mice. Science. 2020;368:89- 94. https://doi.org/10.1126/science.aaz9468 PMID: 32241948</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Understanding cows&apos; emotions on farm: Are eye white and ear posture reliable indicators?</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Battini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Agostini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mattiello</surname></persName>
+		</author>
+		<idno type="DOI">10.3390/ani9080477</idno>
+		<ptr target="https://doi.org/10.3390/ani9080477" />
+	</analytic>
+	<monogr>
+		<title level="j">Animals</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Battini M, Agostini A, Mattiello S. Understanding cows&apos; emotions on farm: Are eye white and ear posture reliable indicators? Animals. 2019;9: 1-12. https://doi.org/10.3390/ani9080477</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Changes in facial expressions during short term emotional stress as described by a Facial Action Coding System in horses</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lundblad</surname></persName>
+		</author>
+		<ptr target="https://stud.epsilon.slu.se" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lundblad J. Changes in facial expressions during short term emotional stress as described by a Facial Action Coding System in horses. 2018. Available: https://stud.epsilon.slu.se</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Facial expressions of emotional stress in horses</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lundblad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rashid</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rhodin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H</forename><surname>Andersen</surname></persName>
+		</author>
+		<idno type="DOI">10.1101/2020.10.19.345231</idno>
+		<ptr target="https://doi.org/10.1101/2020.10.19.345231" />
+	</analytic>
+	<monogr>
+		<title level="j">Animal Behavior and Cognition</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lundblad J, Rashid M, Rhodin M, Andersen PH. Facial expressions of emotional stress in horses. Animal Behavior and Cognition. 2020. https://doi. org/10.1101/2020.10.19.345231</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Horse behavior and facial movements in relation to food rewards</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">G</forename><surname>Carmo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Werner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">V</forename><surname>Michelotto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">R</forename><surname>Daros</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pone.0286045</idno>
+		<ptr target="https://doi.org/10.1371/journal.pone.0286045" />
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="1" to="14" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Carmo LG, Werner LC, Michelotto PV, Daros RR. Horse behavior and facial movements in relation to food rewards. PLoS ONE. 2023;18: 1-14. https://doi.org/10.1371/journal.pone.0286045</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Development of an ethogram to describe facial expressions in ridden horses (FEReq)</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mullard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Berger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">D</forename><surname>Ellis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Dyson</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jveb.2016.11.005</idno>
+		<ptr target="https://doi.org/10.1016/j.jveb.2016.11.005" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Veterinary Behavior</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="7" to="12" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Mullard J, Berger JM, Ellis AD, Dyson S. Development of an ethogram to describe facial expressions in ridden horses (FEReq). Journal of Veteri- nary Behavior. 2017;18:7-12. https://doi.org/10.1016/j.jveb.2016.11.005</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Function of the hypothalamic-pituitary-adrenal axis and the sympathetic nervous system in models of acute stress in domestic farm animals</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Minton</surname></persName>
+		</author>
+		<idno type="DOI">10.2527/1994.7271891x</idno>
+		<ptr target="https://doi.org/10.2527/1994.7271891x" />
+	</analytic>
+	<monogr>
+		<title level="j">J Anim Sci</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="page" from="1891" to="1898" />
+			<date type="published" when="1994">1994</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Minton JE. Function of the hypothalamic-pituitary-adrenal axis and the sympathetic nervous system in models of acute stress in domestic farm animals. J Anim Sci. 1994;72: 1891-8. https://doi.org/10.2527/1994.7271891x</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Stress affects instrumental learning based on positive or negative reinforcement in interaction with personality in domestic horses</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Valenchon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Lévy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Moussu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lansade</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pone.0170783</idno>
+		<ptr target="https://doi.org/10.1371/journal.pone.0170783" />
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="1" to="16" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Valenchon M, Lévy F, Moussu C, Lansade L. Stress affects instrumental learning based on positive or negative reinforcement in interaction with personality in domestic horses. PLoS ONE. 2017;12: 1-16. https://doi.org/10.1371/journal.pone.0170783</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Cortisol concentration in the saliva of horses subjected to different kinds of exercise</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Strzelec</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kankofer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pietrzak</surname></persName>
+		</author>
+		<idno type="DOI">10.2754/avb201180010101</idno>
+		<ptr target="https://doi.org/10.2754/avb201180010101" />
+	</analytic>
+	<monogr>
+		<title level="j">Acta Vet Brno</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="page" from="101" to="105" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Strzelec K, Kankofer M, Pietrzak S. Cortisol concentration in the saliva of horses subjected to different kinds of exercise. Acta Vet Brno. 2011;80: 101-5. https://doi.org/10.2754/avb201180010101</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Changes in cortisol release and heart rate and heart rate variability during the initial training of 3-year-old sport horses</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Schmidt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Aurich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Möstl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Müller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Aurich</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.yhbeh.2010.06.011</idno>
+		<idno type="PMID">20600048</idno>
+		<ptr target="https://doi.org/10.1016/j.yhbeh.2010.06.011" />
+	</analytic>
+	<monogr>
+		<title level="j">Horm Behav</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="628" to="636" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Schmidt A, Aurich J, Möstl E, Müller J, Aurich C. Changes in cortisol release and heart rate and heart rate variability during the initial training of 3-year-old sport horses. Horm Behav. 2010;58(4):628-636. https://doi.org/10.1016/j.yhbeh.2010.06.011 PMID: 20600048</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Stress response after race and endurance training sessions and competitions in Arabian horses</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Witkowska-Piłaszewicz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Grzędzicka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Seń</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Czopowicz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Żmigrodzka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Winnicka</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.prevetmed.2021.105265</idno>
+		<idno type="PMID">33497894</idno>
+		<ptr target="https://doi.org/10.1016/j.prevetmed.2021.105265" />
+	</analytic>
+	<monogr>
+		<title level="j">Prev Vet Med</title>
+		<imprint>
+			<biblScope unit="volume">188</biblScope>
+			<biblScope unit="page">105265</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Witkowska-Piłaszewicz O, Grzędzicka J, Seń J, Czopowicz M, Żmigrodzka M, Winnicka A, et al. Stress response after race and endurance training sessions and competitions in Arabian horses. Prev Vet Med. 2021;188:105265. https://doi.org/10.1016/j.prevetmed.2021.105265 PMID: 33497894</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Affiliative and disciplinary behavior of human handlers during play with their dog affects cortisol concentrations in opposite directions</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Horváth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dóka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Á</forename><surname>Miklósi</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.yhbeh.2008.02.002</idno>
+		<ptr target="https://doi.org/10.1016/j.yhbeh.2008.02.002" />
+	</analytic>
+	<monogr>
+		<title level="j">Horm Behav</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="107" to="114" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Horváth Z, Dóka A, Miklósi Á. Affiliative and disciplinary behavior of human handlers during play with their dog affects cortisol concentrations in opposite directions. Horm Behav. 2008;54:107-14. https://doi.org/10.1016/j.yhbeh.2008.02.002</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Emotional state and personality influence cognitive flexibility in horses (Equus caballus)</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Fortin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Valenchon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Lévy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Calandreau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Arnould</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lansade</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/com0000091</idno>
+		<ptr target="https://doi.org/10.1037/com0000091PMID:29517248" />
+	</analytic>
+	<monogr>
+		<title level="j">J Comp Psychol</title>
+		<imprint>
+			<biblScope unit="volume">132</biblScope>
+			<biblScope unit="page" from="130" to="140" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fortin M, Valenchon M, Lévy F, Calandreau L, Arnould C, Lansade L. Emotional state and personality influence cognitive flexibility in horses (Equus caballus). J Comp Psychol. 2018;132:130-140. https://doi.org/10.1037/com0000091 PMID: 29517248</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">A critical review of fear tests used on cattle, pigs, sheep, poultry and horses</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Forkman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Boissy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Meunier-Salaün</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Canali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">B</forename><surname>Jones</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.physbeh.2007.03.016</idno>
+		<ptr target="https://doi.org/10.1016/j.physbeh.2007.03.016" />
+	</analytic>
+	<monogr>
+		<title level="j">Physiol Behav</title>
+		<imprint>
+			<biblScope unit="volume">92</biblScope>
+			<biblScope unit="page" from="340" to="374" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Forkman B, Boissy A, Meunier-Salaün MC, Canali E, Jones RB. A critical review of fear tests used on cattle, pigs, sheep, poultry and horses. Physiol Behav. 2007;92: 340-74. https://doi.org/10.1016/j.physbeh.2007.03.016</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<title level="m" type="main">Heart rate as a measure of emotional arousal in evolutionary biology</title>
+		<author>
+			<persName><forename type="first">Caf</forename><surname>Wascher</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+	<note type="raw_reference">Wascher CAF. Heart rate as a measure of emotional arousal in evolutionary biology.</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Segregation of information about emotional arousal and valence in horse whinnies</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">F</forename><surname>Briefer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A-L</forename><surname>Maigrot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Mandel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">B</forename><surname>Freymond</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Bachmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Hillmann</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/srep09989</idno>
+		<ptr target="https://doi.org/10.1038/srep09989PMID:25897781" />
+	</analytic>
+	<monogr>
+		<title level="j">Sci Rep</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Briefer EF, Maigrot A-L, Mandel R, Freymond SB, Bachmann I, Hillmann E. Segregation of information about emotional arousal and valence in horse whinnies. Sci Rep. 2015;4:1-12. https://doi.org/10.1038/srep09989 PMID: 25897781</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Behavioural fear and heart rate responses of horses after exposure to novel objects: Effects of habituation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Leiner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Fendt</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2011.02.004</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2011.02.004" />
+	</analytic>
+	<monogr>
+		<title level="j">Appl Anim Behav Sci</title>
+		<imprint>
+			<biblScope unit="volume">131</biblScope>
+			<biblScope unit="page" from="104" to="109" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Leiner L, Fendt M. Behavioural fear and heart rate responses of horses after exposure to novel objects: Effects of habituation. Appl Anim Behav Sci. 2011;131: 104-9. https://doi.org/10.1016/j.applanim.2011.02.004</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Heart rate and heart rate variability during a novel object test and a handling test in young horses</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">K</forename><surname>Visser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">G</forename><surname>Van Reenen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jtn</forename><surname>Van Der Werf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mbh</forename><surname>Schilder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Knaap</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Barneveld</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S0031-9384(02)00698-4</idno>
+		<ptr target="https://doi.org/10.1016/S0031-9384(02)00698-4PMID:12044602" />
+	</analytic>
+	<monogr>
+		<title level="j">Physiol Behav</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="289" to="296" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Visser EK, van Reenen CG, van der Werf JTN, Schilder MBH, Knaap JH, Barneveld A, et al. Heart rate and heart rate variability during a novel object test and a handling test in young horses. Physiol Behav. 2002;76(2):289-296. https://doi.org/10.1016/S0031-9384(02)00698-4 PMID: 12044602</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Access to enriched housing is rewarding to rats as reflected by their anticipatory behaviour</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Van Der Harst</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pcj</forename><surname>Fermont</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Bilstra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">M</forename><surname>Spruijt</surname></persName>
+		</author>
+		<idno type="DOI">10.1006/anbe.2003.2201</idno>
+		<ptr target="https://doi.org/10.1006/anbe.2003.2201" />
+	</analytic>
+	<monogr>
+		<title level="j">Animal Behaviour</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="page" from="493" to="504" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">van der Harst JE, Fermont PCJ, Bilstra AE, Spruijt BM. Access to enriched housing is rewarding to rats as reflected by their anticipatory behaviour. Animal Behaviour. 2003;66:493-504. https://doi.org/10.1006/anbe.2003.2201</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Announcing the arrival of enrichment increases play behaviour and reduces weaning-stress-induced behaviours of piglets directly after weaning</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Dudink</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Simonse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Marks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">H</forename><surname>De Jonge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">M</forename><surname>Spruijt</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2005.12.008</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2005.12.008" />
+	</analytic>
+	<monogr>
+		<title level="j">Appl Anim Behav Sci</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="page" from="86" to="101" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Dudink S, Simonse H, Marks I, de Jonge FH, Spruijt BM. Announcing the arrival of enrichment increases play behaviour and reduces weaning-stress-induced behaviours of piglets directly after weaning. Appl Anim Behav Sci. 2006;101: 86-101. https://doi.org/10.1016/j. applanim.2005.12.008</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Behavioural expression of positive anticipation for food or opportunity to play in lambs</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yngvesson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Boissy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Uvnäs-Moberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lidfors</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.beproc.2015.02.003</idno>
+		<idno type="PMID">25659525</idno>
+		<ptr target="https://doi.org/10.1016/j.beproc.2015.02.003" />
+	</analytic>
+	<monogr>
+		<title level="j">Behav Processes</title>
+		<imprint>
+			<biblScope unit="volume">113</biblScope>
+			<biblScope unit="page" from="152" to="158" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Anderson C, Yngvesson J, Boissy A, Uvnäs-Moberg K, Lidfors L. Behavioural expression of positive anticipation for food or opportunity to play in lambs. Behav Processes. 2015;113:152-158. https://doi.org/10.1016/j.beproc.2015.02.003 PMID: 25659525</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Computer-assisted behavioral assessment of Pavlovian fear conditioning in mice</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">G</forename><surname>Anagnostaras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Josselyn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">W</forename><surname>Frankland</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Silva</surname></persName>
+		</author>
+		<idno type="DOI">10.1101/lm.7.1.58</idno>
+		<ptr target="https://doi.org/10.1101/lm.7.1.58PMID:10706603" />
+	</analytic>
+	<monogr>
+		<title level="j">Learn Mem</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="58" to="72" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Anagnostaras SG, Josselyn SA, Frankland PW, Silva AJ. Computer-assisted behavioral assessment of Pavlovian fear conditioning in mice. Learn Mem. 2000;7:58-72. https://doi.org/10.1101/lm.7.1.58 PMID: 10706603</note>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Differences in behaviour, facial expressions and locomotion between positive anticipation and frustration in horses</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Phelipon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ascione</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ruet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bertin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Biau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Arnould</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2024.106262</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2024.106262" />
+	</analytic>
+	<monogr>
+		<title level="j">Applied Animal Behaviour Science</title>
+		<imprint>
+			<biblScope unit="volume">274</biblScope>
+			<biblScope unit="page">106262</biblScope>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Phelipon R, Ascione A, Ruet A, Bertin A, Biau S, Arnould C, et al. Differences in behaviour, facial expressions and locomotion between positive anticipation and frustration in horses. Applied Animal Behaviour Science. 2024;274:106262. https://doi.org/10.1016/j.applanim.2024.106262</note>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Approach and avoidance behaviour: Multiple systems and their interactions</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Corr</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1754073913477507</idno>
+		<ptr target="https://doi.org/10.1177/1754073913477507" />
+	</analytic>
+	<monogr>
+		<title level="j">Emot Rev</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="285" to="290" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Corr PJ. Approach and avoidance behaviour: Multiple systems and their interactions. Emot Rev. 2013;5:285-290. https://doi. org/10.1177/1754073913477507</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">A note on reward-related behaviour and emotional expressions in farmed silver foxes (Vulpes vulpes)-Basis for a novel tool to study animal welfare</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">O</forename><surname>Moe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bakken</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kittilsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kingsley-Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">M</forename><surname>Spruijt</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2006.02.004</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2006.02.004" />
+	</analytic>
+	<monogr>
+		<title level="j">Applied Animal Behaviour Science</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="page" from="362" to="368" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Moe RO, Bakken M, Kittilsen S, Kingsley-Smith H, Spruijt BM. A note on reward-related behaviour and emotional expressions in farmed sil- ver foxes (Vulpes vulpes)-Basis for a novel tool to study animal welfare. Applied Animal Behaviour Science. 2006;101:362-368. https://doi. org/10.1016/j.applanim.2006.02.004</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Positive and negative emotions in dairy cows: Can ear postures be used as a measure?</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lambert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Carder</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.beproc.2018.12.007</idno>
+		<idno type="PMID">30543843</idno>
+		<ptr target="https://doi.org/10.1016/j.beproc.2018.12.007" />
+	</analytic>
+	<monogr>
+		<title level="j">Behav Processes</title>
+		<imprint>
+			<biblScope unit="volume">158</biblScope>
+			<biblScope unit="page" from="172" to="180" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lambert H, Carder G. Positive and negative emotions in dairy cows: Can ear postures be used as a measure?. Behav Processes. 2019;158:172- 180. https://doi.org/10.1016/j.beproc.2018.12.007 PMID: 30543843</note>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Development of the Horse Grimace Scale (HGS) as a pain assessment tool in horses undergoing routine castration</title>
+		<author>
+			<persName><forename type="first">Dalla</forename><surname>Costa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Minero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lebelt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Stucke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Canali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Leach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pone.0092281</idno>
+		<ptr target="https://doi.org/10.1371/journal.pone.0092281PMID:24647606" />
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<editor>
+			<persName><forename type="first">E</forename><surname>Hillman</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page">e92281</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Dalla Costa E, Minero M, Lebelt D, Stucke D, Canali E, Leach MC. Development of the Horse Grimace Scale (HGS) as a pain assessment tool in horses undergoing routine castration. Hillman E, editor. PLoS ONE. 2014;9:e92281. https://doi.org/10.1371/journal.pone.0092281 PMID: 24647606</note>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Effect of work on body language of ranch horses in Brazil</title>
+		<author>
+			<persName><forename type="first">Phe</forename><surname>Trindade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Hartmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Keeling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H</forename><surname>Andersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Gdc</forename><surname>Ferraz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Paranhos</forename><surname>Da Costa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mjr</forename></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pone.0228130</idno>
+		<idno type="PMID">31990951</idno>
+		<ptr target="https://doi.org/10.1371/journal.pone.0228130" />
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="page" from="1" to="22" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Trindade PHE, Hartmann E, Keeling LJ, Andersen PH, Ferraz GDC, Paranhos da Costa MJR. Effect of work on body language of ranch horses in Brazil. PLoS ONE. 2020;15:1-22. https://doi.org/10.1371/journal.pone.0228130 PMID: 31990951</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Conflict behaviour in Icelandic horses during elite competition</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Christensen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jensen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Von</forename><surname>König</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><forename type="middle">U</forename><surname>Borstel</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2024.106166</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2024.106166" />
+	</analytic>
+	<monogr>
+		<title level="j">Applied Animal Behaviour Science</title>
+		<imprint>
+			<biblScope unit="volume">271</biblScope>
+			<biblScope unit="page" from="4" to="9" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Christensen JW, Jensen D, König von Borstel UU. Conflict behaviour in Icelandic horses during elite competition. Applied Animal Behaviour Sci- ence. 2024;271:4-9. https://doi.org/10.1016/j.applanim.2024.106166</note>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Recognising the facial expression of frustration in the horse during feeding period</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ricci-Bonot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Mills</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2023.105966</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2023.105966" />
+	</analytic>
+	<monogr>
+		<title level="j">Appl Anim Behav Sci</title>
+		<imprint>
+			<biblScope unit="volume">265</biblScope>
+			<biblScope unit="page">105966</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ricci-Bonot C, Mills DS. Recognising the facial expression of frustration in the horse during feeding period. Appl Anim Behav Sci. 2023;265:105966. https://doi.org/10.1016/j.applanim.2023.105966</note>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Measuring the evolution of facial &quot;expression&quot; using multi-species FACS</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">M</forename><surname>Waller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Julle-Daniere</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Micheletta</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neubiorev.2020.02.031</idno>
+		<idno type="PMID">32105704</idno>
+		<ptr target="https://doi.org/10.1016/j.neubiorev.2020.02.031" />
+	</analytic>
+	<monogr>
+		<title level="j">Neurosci Biobehav Rev</title>
+		<imprint>
+			<biblScope unit="volume">113</biblScope>
+			<biblScope unit="page" from="1" to="11" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Waller BM, Julle-Daniere E, Micheletta J. Measuring the evolution of facial &quot;expression&quot; using multi-species FACS. Neurosci Biobehav Rev. 2020;113:1-11. https://doi.org/10.1016/j.neubiorev.2020.02.031 PMID: 32105704</note>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Facial action coding system</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Ekman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">V</forename><surname>Friesen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Environ Psychol Nonverbal Behav</title>
+		<imprint>
+			<date type="published" when="1978">1978</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ekman P, Friesen WV. Facial action coding system. Environ Psychol Nonverbal Behav. 1978.</note>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">EquiFACS: The equine facial action coding system</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wathan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Burrows</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">M</forename><surname>Waller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mccomb</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pone.0131738</idno>
+		<idno type="PMID">26244573</idno>
+		<ptr target="https://doi.org/10.1371/journal.pone.0131738" />
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="1" to="35" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wathan J, Burrows AM, Waller BM, McComb K. EquiFACS: The equine facial action coding system. PLoS ONE. 2015;10:1-35. https://doi. org/10.1371/journal.pone.0131738 PMID: 26244573</note>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<monogr>
+		<title level="m" type="main">An ethogram of facial behaviour in domestic horses: evolutionary perspectives on form and function</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lewis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">D</forename><surname>Mcbride</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Micheletta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">O</forename><surname>Parker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Rincon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wathan</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+	<note>PeerJ. forthcoming</note>
+	<note type="raw_reference">Lewis K, McBride SD, Micheletta J, Parker MO, Rincon AV, Wathan J, et al. An ethogram of facial behaviour in domestic horses: evolutionary per- spectives on form and function. PeerJ. forthcoming.</note>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Qualitative Behaviour Assessment of horses exposed to short-term emotional treatments</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hintze</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Murphy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Bachmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Wemelsfelder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Würbel</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2017.06.012</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2017.06.012" />
+	</analytic>
+	<monogr>
+		<title level="j">Appl Anim Behav Sci</title>
+		<imprint>
+			<biblScope unit="volume">196</biblScope>
+			<biblScope unit="page" from="44" to="51" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hintze S, Murphy E, Bachmann I, Wemelsfelder F, Würbel H. Qualitative Behaviour Assessment of horses exposed to short-term emotional treat- ments. Appl Anim Behav Sci. 2017;196:44-51. https://doi.org/10.1016/j.applanim.2017.06.012</note>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Horses (Equus caballus) facial micro-expressions: insight into discreet social information</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tomberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Petagna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L-A</forename><surname>De Selliers De Moranville</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41598-023-35807-z</idno>
+		<ptr target="https://doi.org/10.1038/s41598-023-35807-zPMID:37244937" />
+	</analytic>
+	<monogr>
+		<title level="j">Sci Rep</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page" from="1" to="15" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Tomberg C, Petagna M, de Selliers de Moranville L-A. Horses (Equus caballus) facial micro-expressions: insight into discreet social information. Sci Rep. 2023;13:1-15. https://doi.org/10.1038/s41598-023-35807-z PMID: 37244937</note>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">NetFACS: Using network science to understand facial communication systems</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mielke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">M</forename><surname>Waller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Pérez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Rincon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Duboscq</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Micheletta</surname></persName>
+		</author>
+		<idno type="DOI">10.3758/s13428-021-01692-5</idno>
+		<ptr target="https://doi.org/10.3758/s13428-021-01692-5PMID:34755285" />
+	</analytic>
+	<monogr>
+		<title level="j">Behav Res Methods</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="1912" to="1927" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Mielke A, Waller BM, Pérez C, Rincon AV, Duboscq J, Micheletta J. NetFACS: Using network science to understand facial communication systems. Behav Res Methods. 2022;54:1912-27. https://doi.org/10.3758/s13428-021-01692-5 PMID: 34755285</note>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Chimpanzee play sequences are structured hierarchically as games</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mielke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Carvalho</surname></persName>
+		</author>
+		<idno type="DOI">10.7717/peerj.14294</idno>
+		<ptr target="https://doi.org/10.7717/peerj.14294PMID:36411837" />
+	</analytic>
+	<monogr>
+		<title level="j">PeerJ</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="1" to="29" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Mielke A, Carvalho S. Chimpanzee play sequences are structured hierarchically as games. PeerJ. 2022;10:1-29. https://doi.org/10.7717/ peerj.14294 PMID: 36411837</note>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">A network-based analysis of signal use during approach interactions across sexes in chacma baboons (Papio ursinus griseipes)</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Muschinski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mielke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Carvalho</surname></persName>
+		</author>
+		<idno type="DOI">10.1101/2023.02.04.527103</idno>
+		<ptr target="https://doi.org/10.1101/2023.02.04.527103" />
+	</analytic>
+	<monogr>
+		<title level="j">Animal Behavior and Cognition</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Muschinski J, Mielke A, Carvalho S. A network-based analysis of signal use during approach interactions across sexes in chacma baboons (Papio ursinus griseipes). Animal Behavior and Cognition. 2023. https://doi.org/10.1101/2023.02.04.527103</note>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">The nuts and bolts of animal emotion</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kremer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Klein</forename><surname>Holkenborg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sej</forename><surname>Reimert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Bolhuis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Webb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">E</forename></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neubiorev.2020.01.028</idno>
+		<idno type="PMID">31982603</idno>
+		<ptr target="https://doi.org/10.1016/j.neubiorev.2020.01.028" />
+	</analytic>
+	<monogr>
+		<title level="j">Neurosci Biobehav Rev</title>
+		<imprint>
+			<biblScope unit="volume">113</biblScope>
+			<biblScope unit="page" from="273" to="286" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kremer L, Klein Holkenborg SEJ, Reimert I, Bolhuis JE, Webb LE. The nuts and bolts of animal emotion. Neurosci Biobehav Rev. 2020;113:273- 286. https://doi.org/10.1016/j.neubiorev.2020.01.028 PMID: 31982603</note>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">Forage, freedom of movement, and social interactions remain essential fundamentals for the welfare of high-level sport horses</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Phelipon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Hennes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ruet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bret</forename><forename type="middle">-</forename><surname>Morel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Górecka-Bruzda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lansade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename></persName>
+		</author>
+		<idno type="DOI">10.3389/fvets.2024.1504116</idno>
+		<idno type="PMID">39634765</idno>
+		<ptr target="https://doi.org/10.3389/fvets.2024.1504116" />
+	</analytic>
+	<monogr>
+		<title level="j">Front Vet Sci</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page">1504116</biblScope>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Phelipon R, Hennes N, Ruet A, Bret-Morel A, Górecka-Bruzda A, Lansade L. Forage, freedom of movement, and social interactions remain essen- tial fundamentals for the welfare of high-level sport horses. Front Vet Sci. 2024;11:1504116. https://doi.org/10.3389/fvets.2024.1504116 PMID: 39634765</note>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<analytic>
+		<title level="a" type="main">Basic needs in horses?-A literature review</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Krueger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Esch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Farmer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Marr</surname></persName>
+		</author>
+		<idno type="DOI">10.3390/ani11061798</idno>
+		<ptr target="https://doi.org/10.3390/ani11061798PMID:34208615" />
+	</analytic>
+	<monogr>
+		<title level="j">Animals</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="1" to="16" />
+			<date type="published" when="2021">2021</date>
+			<pubPlace>Basel)</pubPlace>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Krueger K, Esch L, Farmer K, Marr I. Basic needs in horses?-A literature review. Animals (Basel). 2021;11:1-16. https://doi.org/10.3390/ ani11061798 PMID: 34208615</note>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">Heart rate variability in Konik and purebred Arabian horses in response to different predator vocalisations</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Janczarek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Stachurska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Kędzierski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">W</forename><surname>Pawlak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Wilk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zyglewska</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.animal.2020.100045</idno>
+		<idno type="PMID">33516023</idno>
+		<ptr target="https://doi.org/10.1016/j.animal.2020.100045" />
+	</analytic>
+	<monogr>
+		<title level="j">Animal</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="page">100045</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Janczarek I, Stachurska A, Kędzierski W, Pawlak EW, Wilk I, Zyglewska K, et al. Heart rate variability in Konik and purebred Arabian horses in response to different predator vocalisations. Animal. 2021;15:100045. https://doi.org/10.1016/j.animal.2020.100045 PMID: 33516023</note>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Heart rate variability as a measure of autonomic regulation of cardiac activity for assessing stress and welfare in farm animals -A review</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Von Borell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Langbein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Després</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hansen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Leterrier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Marchant</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.physbeh.2007.01.007</idno>
+		<idno type="PMID">17320122</idno>
+		<ptr target="https://doi.org/10.1016/j.phys-beh.2007.01.007" />
+	</analytic>
+	<monogr>
+		<title level="j">Physiol Behav</title>
+		<imprint>
+			<biblScope unit="volume">92</biblScope>
+			<biblScope unit="page" from="293" to="316" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">von Borell E, Langbein J, Després G, Hansen S, Leterrier C, Marchant J, et al. Heart rate variability as a measure of autonomic regulation of cardiac activity for assessing stress and welfare in farm animals -A review. Physiol Behav. 2007;92:293-316. https://doi.org/10.1016/j.phys- beh.2007.01.007 PMID: 17320122</note>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">BORIS: a free, versatile open-source event-logging software for video/audio coding and live observations</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Friard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gamba</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/2041-210X.12584</idno>
+		<ptr target="https://doi.org/10.1111/2041-210X.12584" />
+	</analytic>
+	<monogr>
+		<title level="j">Methods Ecol Evol</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="1325" to="1330" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Friard O, Gamba M. BORIS: a free, versatile open-source event-logging software for video/audio coding and live observations. Methods Ecol Evol. 2016;7:1325-30. https://doi.org/10.1111/2041-210X.12584</note>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">Observational study of behavior: sampling methods</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Altmann</surname></persName>
+		</author>
+		<idno type="DOI">10.1163/156853974X00534</idno>
+		<ptr target="https://doi.org/10.1163/156853974X00534PMID:4597405" />
+	</analytic>
+	<monogr>
+		<title level="j">Behaviour</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="page" from="227" to="266" />
+			<date type="published" when="1974">1974</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Altmann J. Observational study of behavior: sampling methods. Behaviour. 1974;49:227-266. https://doi.org/10.1163/156853974X00534 PMID: 4597405</note>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<monogr>
+		<title level="m" type="main">R: A language and environment for statistical computing</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Core</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Core RT. R: A language and environment for statistical computing. 2019.</note>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">The Measurement of Observer Agreement for Categorical Data</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Landis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">G</forename><surname>Koch</surname></persName>
+		</author>
+		<idno type="DOI">10.2307/2529310</idno>
+		<ptr target="https://doi.org/10.2307/2529310" />
+	</analytic>
+	<monogr>
+		<title level="j">Biometrics</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page">159</biblScope>
+			<date type="published" when="1977">1977</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Landis JR, Koch GG. The Measurement of Observer Agreement for Categorical Data. Biometrics. 1977;33:159. https://doi.org/10.2307/2529310</note>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">DHARMa: residual diagnostics for hierarchical (multi-level/mixed) regression models</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Hartig</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">R Packag Version</title>
+		<imprint>
+			<biblScope unit="volume">020</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hartig F. DHARMa: residual diagnostics for hierarchical (multi-level/mixed) regression models. R Packag Version 020. 2018.</note>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<monogr>
+		<title level="m" type="main">An R Companion to Applied Regression</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Fox</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Weisberg</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<publisher>SAGE Publications</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fox J, Weisberg S. An R Companion to Applied Regression. SAGE Publications; 2018.</note>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<analytic>
+		<title level="a" type="main">Horses give functionally relevant responses to human facial expressions of emotion: a response to Schmoll (2016)</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Proops</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Grounds</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wathan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mccomb</surname></persName>
+		</author>
+		<idno type="DOI">10.1098/rsbl.2016.0549</idno>
+		<ptr target="https://doi.org/10.1098/rsbl.2016.0549PMID:27624798" />
+	</analytic>
+	<monogr>
+		<title level="j">Biol Lett</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page">20160549</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Smith AV, Proops L, Grounds K, Wathan J, McComb K. Horses give functionally relevant responses to human facial expressions of emotion: a response to Schmoll (2016). Biol Lett. 2016;12:20160549. https://doi.org/10.1098/rsbl.2016.0549 PMID: 27624798</note>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<analytic>
+		<title level="a" type="main">Anxiety and pain in horses measured by heart rate variability and behavior</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Reid</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">W</forename><surname>Rogers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gronqvist</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">K</forename><surname>Gee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Bolwell</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jveb.2017.09.002</idno>
+		<ptr target="https://doi.org/10.1016/j.jveb.2017.09.002" />
+	</analytic>
+	<monogr>
+		<title level="j">J Vet Behav</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="page" from="1" to="6" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Reid K, Rogers CW, Gronqvist G, Gee EK, Bolwell CF. Anxiety and pain in horses measured by heart rate variability and behavior. J Vet Behav. 2017;22:1-6. https://doi.org/10.1016/j.jveb.2017.09.002</note>
+</biblStruct>
+
+<biblStruct xml:id="b66">
+	<analytic>
+		<title level="a" type="main">Cortisol release and heart rate variability in horses during road transport</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Schmidt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Möstl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wehnert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Aurich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Müller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Aurich</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.yhbeh.2009.11.003</idno>
+		<idno type="PMID">19944105</idno>
+		<ptr target="https://doi.org/10.1016/j.yhbeh.2009.11.003" />
+	</analytic>
+	<monogr>
+		<title level="j">Horm Behav</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page" from="209" to="215" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Schmidt A, Möstl E, Wehnert C, Aurich J, Müller J, Aurich C. Cortisol release and heart rate variability in horses during road transport. Horm Behav. 2010;57:209-215. https://doi.org/10.1016/j.yhbeh.2009.11.003 PMID: 19944105</note>
+</biblStruct>
+
+<biblStruct xml:id="b67">
+	<analytic>
+		<title level="a" type="main">Role of Cortisol in Horse&apos;s Welfare and Health</title>
+		<author>
+			<persName><forename type="first">U</forename><surname>Sikorska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Maśko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ciesielska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ł</forename><surname>Zdrojkowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Domino</surname></persName>
+		</author>
+		<idno type="DOI">10.3390/agriculture13122219</idno>
+		<ptr target="https://doi.org/10.3390/agriculture13122219" />
+	</analytic>
+	<monogr>
+		<title level="j">Agriculture</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page" from="1" to="17" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sikorska U, Maśko M, Ciesielska A, Zdrojkowski Ł, Domino M. Role of Cortisol in Horse&apos;s Welfare and Health. Agriculture. 2023;13:1-17. https:// doi.org/10.3390/agriculture13122219</note>
+</biblStruct>
+
+<biblStruct xml:id="b68">
+	<analytic>
+		<title level="a" type="main">The effect of training load stress on salivary cortisol concentrations, health parameters and hematological parameters in horses</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Massányi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Halo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Mlyneková</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kováčiková</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Tokárová</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Greń</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.heliyon.2023.e19037</idno>
+		<ptr target="https://doi.org/10.1016/j.heliyon.2023.e19037PMID:37636408" />
+	</analytic>
+	<monogr>
+		<title level="j">Heliyon</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page">e19037</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Massányi M, Halo M, Mlyneková E, Kováčiková E, Tokárová K, Greń A, et al. The effect of training load stress on salivary cortisol concentra- tions, health parameters and hematological parameters in horses. Heliyon. 2023;9:e19037. https://doi.org/10.1016/j.heliyon.2023.e19037 PMID: 37636408</note>
+</biblStruct>
+
+<biblStruct xml:id="b69">
+	<analytic>
+		<title level="a" type="main">Time lag between peak concentrations of plasma and salivary cortisol following a stressful procedure in dairy cattle</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">E</forename><surname>Hernandez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Thierfelder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Svennersten-Sjaunja</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Berg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Orihuela</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lidfors</surname></persName>
+		</author>
+		<idno type="DOI">10.1186/s13028-014-0061-3</idno>
+		<ptr target="https://doi.org/10.1186/s13028-014-0061-3PMID:25297979" />
+	</analytic>
+	<monogr>
+		<title level="j">Acta Vet Scand</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="page">61</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hernandez CE, Thierfelder T, Svennersten-Sjaunja K, Berg C, Orihuela A, Lidfors L. Time lag between peak concentrations of plasma and salivary cortisol following a stressful procedure in dairy cattle. Acta Vet Scand. 2014;56:61. https://doi.org/10.1186/s13028-014-0061-3 PMID: 25297979</note>
+</biblStruct>
+
+<biblStruct xml:id="b70">
+	<analytic>
+		<title level="a" type="main">Salivary cortisol as an indicator of stress in sheep (Ovis ovis)</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Cook</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">H</forename><surname>Jacobson</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/00480169.1995.35902</idno>
+		<ptr target="https://doi.org/10.1080/00480169.1995.35902" />
+	</analytic>
+	<monogr>
+		<title level="j">N Z Vet J</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="248" to="248" />
+			<date type="published" when="1995">1995</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Cook CJ, Jacobson LH. Salivary cortisol as an indicator of stress in sheep (Ovis ovis). N Z Vet J. 1995;43:248-248. https://doi. org/10.1080/00480169.1995.35902</note>
+</biblStruct>
+
+<biblStruct xml:id="b71">
+	<analytic>
+		<title level="a" type="main">Salivary cortisol as a marker of acute stress in dogs: a review</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Chmelíková</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bolechová</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chaloupková</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Svobodová</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jovičić</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sedmíková</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.domaniend.2019.106428</idno>
+		<idno type="PMID">32213439</idno>
+		<ptr target="https://doi.org/10.1016/j.domaniend.2019.106428" />
+	</analytic>
+	<monogr>
+		<title level="j">Domest Anim Endocrinol</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="page">106428</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Chmelíková E, Bolechová P, Chaloupková H, Svobodová I, Jovičić M, Sedmíková M. Salivary cortisol as a marker of acute stress in dogs: a review. Domest Anim Endocrinol. 2020;72:106428. https://doi.org/10.1016/j.domaniend.2019.106428 PMID: 32213439</note>
+</biblStruct>
+
+<biblStruct xml:id="b72">
+	<analytic>
+		<title level="a" type="main">Individual variation in glucocorticoid stress responses in animals</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">F</forename><surname>Cockrem</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.ygcen.2012.11.025</idno>
+		<idno type="PMID">23298571</idno>
+		<ptr target="https://doi.org/10.1016/j.ygcen.2012.11.025" />
+	</analytic>
+	<monogr>
+		<title level="j">Gen Comp Endocrinol</title>
+		<imprint>
+			<biblScope unit="volume">181</biblScope>
+			<biblScope unit="page" from="45" to="58" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Cockrem JF. Individual variation in glucocorticoid stress responses in animals. Gen Comp Endocrinol. 2013;181:45-58. https://doi.org/10.1016/j. ygcen.2012.11.025 PMID: 23298571</note>
+</biblStruct>
+
+<biblStruct xml:id="b73">
+	<analytic>
+		<title level="a" type="main">Reactivity to isolation and association with conspecifics: A temperament trait stable across time and situations</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lansade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M-F</forename><surname>Bouissou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Erhard</forename><surname>Hw</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2007.03.003</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2007.03.003" />
+	</analytic>
+	<monogr>
+		<title level="j">Applied Animal Behaviour Science</title>
+		<imprint>
+			<biblScope unit="volume">109</biblScope>
+			<biblScope unit="page" from="355" to="373" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lansade L, Bouissou M-F, Erhard HW. Reactivity to isolation and association with conspecifics: A temperament trait stable across time and situa- tions. Applied Animal Behaviour Science. 2008;109:355-373. https://doi.org/10.1016/j.applanim.2007.03.003</note>
+</biblStruct>
+
+<biblStruct xml:id="b74">
+	<analytic>
+		<title level="a" type="main">The effect of two different housing conditions on the welfare of young horses stabled for the first time</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">K</forename><surname>Visser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">D</forename><surname>Ellis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">G</forename><surname>Van Reenen</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2008.03.003</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2008.03.003" />
+	</analytic>
+	<monogr>
+		<title level="j">Appl Anim Behav Sci</title>
+		<imprint>
+			<biblScope unit="volume">114</biblScope>
+			<biblScope unit="page" from="521" to="533" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Visser EK, Ellis AD, Van Reenen CG. The effect of two different housing conditions on the welfare of young horses stabled for the first time. Appl Anim Behav Sci. 2008;114:521-533. https://doi.org/10.1016/j.applanim.2008.03.003</note>
+</biblStruct>
+
+<biblStruct xml:id="b75">
+	<analytic>
+		<title level="a" type="main">A novel scale of behavioural indicators of stress for use with domestic horses</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Young</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Creighton</forename><forename type="middle">E</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hosie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2012.05.008</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2012.05.008" />
+	</analytic>
+	<monogr>
+		<title level="j">Applied Animal Behaviour Science</title>
+		<imprint>
+			<biblScope unit="volume">140</biblScope>
+			<biblScope unit="page" from="33" to="43" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Young T, Creighton E, Smith T, Hosie C. A novel scale of behavioural indicators of stress for use with domestic horses. Applied Animal Behaviour Science. 2012;140:33-43. https://doi.org/10.1016/j.applanim.2012.05.008</note>
+</biblStruct>
+
+<biblStruct xml:id="b76">
+	<analytic>
+		<title level="a" type="main">Understanding the perceptual world of horses</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">A</forename><surname>Saslow</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S0168-1591(02)00092-8</idno>
+		<ptr target="https://doi.org/10.1016/S0168-1591(02)00092-8" />
+	</analytic>
+	<monogr>
+		<title level="j">Appl Anim Behav Sci</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="page" from="209" to="224" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Saslow CA. Understanding the perceptual world of horses. Appl Anim Behav Sci. 2002;78: 209-24. https://doi.org/10.1016/ S0168-1591(02)00092-8</note>
+</biblStruct>
+
+<biblStruct xml:id="b77">
+	<analytic>
+		<title level="a" type="main">Indicators of Horse Welfare: State-of-the-Art</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Lesimple</surname></persName>
+		</author>
+		<idno type="DOI">10.3390/ani10020294</idno>
+		<ptr target="https://doi.org/10.3390/ani10020294PMID:32069888" />
+	</analytic>
+	<monogr>
+		<title level="j">Animals</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">294</biblScope>
+			<date type="published" when="2020">2020</date>
+			<pubPlace>Basel)</pubPlace>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lesimple C. Indicators of Horse Welfare: State-of-the-Art. Animals (Basel). 2020;10(2):294. https://doi.org/10.3390/ani10020294 PMID: 32069888</note>
+</biblStruct>
+
+<biblStruct xml:id="b78">
+	<analytic>
+		<title level="a" type="main">Geometric morphometrics as a tool for improving the comparative study of behavioural postures</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Fureix</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hausberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Seneque</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Morisset</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Baylac</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Cornette</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s00114-011-0803-2</idno>
+		<ptr target="https://doi.org/10.1007/s00114-011-0803-2PMID:21573691" />
+	</analytic>
+	<monogr>
+		<title level="j">Naturwissenschaften</title>
+		<imprint>
+			<biblScope unit="volume">98</biblScope>
+			<biblScope unit="page" from="583" to="592" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fureix C, Hausberger M, Seneque E, Morisset S, Baylac M, Cornette R, et al. Geometric morphometrics as a tool for improving the comparative study of behavioural postures. Naturwissenschaften. 2011;98:583-592. https://doi.org/10.1007/s00114-011-0803-2 PMID: 21573691</note>
+</biblStruct>
+
+<biblStruct xml:id="b79">
+	<analytic>
+		<title level="a" type="main">Effect of transportation and social isolation on facial expressions of healthy horses</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lundblad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rashid</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rhodin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H</forename><surname>Andersen</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pone.0241532</idno>
+		<idno type="PMID">34086704</idno>
+		<ptr target="https://doi.org/10.1371/journal.pone.0241532" />
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="1" to="17" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lundblad J, Rashid M, Rhodin M, Andersen PH. Effect of transportation and social isolation on facial expressions of healthy horses. PLoS ONE. 2021;16:1-17. https://doi.org/10.1371/journal.pone.0241532 PMID: 34086704</note>
+</biblStruct>
+
+<biblStruct xml:id="b80">
+	<analytic>
+		<title level="a" type="main">The role of cat eye narrowing movements in cat-human communication</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Humphrey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Proops</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Forman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Spooner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mccomb</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41598-020-73426-0</idno>
+		<ptr target="https://doi.org/10.1038/s41598-020-73426-0" />
+	</analytic>
+	<monogr>
+		<title level="j">Sci Rep</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="1" to="8" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Humphrey T, Proops L, Forman J, Spooner R, McComb K. The role of cat eye narrowing movements in cat-human communication. Sci Rep. 2020;10:1-8. https://doi.org/10.1038/s41598-020-73426-0</note>
+</biblStruct>
+
+<biblStruct xml:id="b81">
+	<analytic>
+		<title level="a" type="main">Influence of housing on weanling horse behavior and subsequent welfare</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Heleski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Shelle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">D</forename><surname>Nielsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Zanella</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S0168-1591(02)00108-9</idno>
+		<ptr target="https://doi.org/10.1016/S0168-1591(02)00108-9" />
+	</analytic>
+	<monogr>
+		<title level="j">Applied Animal Behaviour Science</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="page" from="291" to="302" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Heleski CR, Shelle AC, Nielsen BD, Zanella AJ. Influence of housing on weanling horse behavior and subsequent welfare. Applied Animal Behaviour Science. 2002;78:291-302. https://doi.org/10.1016/S0168-1591(02)00108-9</note>
+</biblStruct>
+
+<biblStruct xml:id="b82">
+	<analytic>
+		<title level="a" type="main">Conditioned reflexes: An investigation of the physiological activity of the cerebral cortex</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">P</forename><surname>Pavlov</surname></persName>
+		</author>
+		<idno type="DOI">10.5214/ans.0972-7531.1017309</idno>
+		<idno type="PMID">25205891</idno>
+		<ptr target="https://doi.org/10.5214/ans.0972-7531.1017309" />
+	</analytic>
+	<monogr>
+		<title level="j">Ann Neurosci</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="136" to="141" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Pavlov IP. Conditioned reflexes: An investigation of the physiological activity of the cerebral cortex. Ann Neurosci. 2010;17:136-41. https://doi. org/10.5214/ans.0972-7531.1017309 PMID: 25205891</note>
+</biblStruct>
+
+<biblStruct xml:id="b83">
+	<analytic>
+		<title level="a" type="main">A brief note on some possible factors involved in the reactions of horses to humans</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hausberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Muller</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S0168-1591(02)00016-3</idno>
+		<ptr target="https://doi.org/10.1016/S0168-1591(02)00016-3" />
+	</analytic>
+	<monogr>
+		<title level="j">Applied Animal Behaviour Science</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="page" from="339" to="344" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hausberger M, Muller C. A brief note on some possible factors involved in the reactions of horses to humans. Applied Animal Behaviour Science. 2002;76:339-344. https://doi.org/10.1016/S0168-1591(02)00016-3</note>
+</biblStruct>
+
+<biblStruct xml:id="b84">
+	<analytic>
+		<title level="a" type="main">Exploring aggression regulation in managed groups of horses Equus caballus</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Fureix</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bourjade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Henry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Sankey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hausberger</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.applanim.2012.02.009</idno>
+		<ptr target="https://doi.org/10.1016/j.applanim.2012.02.009" />
+	</analytic>
+	<monogr>
+		<title level="j">Appl Anim Behav Sci</title>
+		<imprint>
+			<biblScope unit="volume">138</biblScope>
+			<biblScope unit="page" from="216" to="228" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fureix C, Bourjade M, Henry S, Sankey C, Hausberger M. Exploring aggression regulation in managed groups of horses Equus caballus. Appl Anim Behav Sci. 2012;138: 216-28. https://doi.org/10.1016/j.applanim.2012.02.009</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

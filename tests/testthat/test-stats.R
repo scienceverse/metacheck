@@ -7,7 +7,7 @@ test_that("exists", {
 
 test_that("defaults", {
   # search list of paper objects
-  s <- read_grobid(filename)
+  s <- read(filename)
   stat_table <- stats(s)
   expect_true(is.data.frame(stat_table))
   expect_equal(nrow(stat_table), 5)
