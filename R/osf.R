@@ -395,7 +395,7 @@ osf_file_data <- function(data) {
     category = att$category %||% NA_character_,
     size = att$size %||% NA_integer_,
     downloads = att$extra$downloads %||% NA_integer_,
-    download_url = data$links$download,
+    download_url = data$links$download %||% NA_character_,
     parent = data$relationships$parent_folder$data$id %||%
       data$relationships$target$data$id %||% NA_character_
   )
