@@ -6,16 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>papercheck • papercheck</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.9/font.css" rel="stylesheet">
-<link href="../deps/Fira_Code-0.4.9/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.10/font.css" rel="stylesheet">
+<link href="../deps/Fira_Code-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="papercheck">
@@ -35,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9049</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9050</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -114,7 +113,7 @@ interface</a>.</p>
 <p>You can set up your own local grobid server following instructions
 from <a href="https://grobid.readthedocs.io/" class="external-link uri">https://grobid.readthedocs.io/</a>. The easiest way is to
 use Docker.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">--init</span> <span class="at">--ulimit</span> core=0 <span class="at">-p</span> 8070:8070 lfoppiano/grobid:0.8.1</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">--init</span> <span class="at">--ulimit</span> core=0 <span class="at">-p</span> 8070:8070 lfoppiano/grobid:0.8.2</span></code></pre></div>
 <p>Then you can set your grobid_url to the local path <a href="http://localhost:8070" class="external-link uri">http://localhost:8070</a>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">xml_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pdf2grobid.html">pdf2grobid</a></span><span class="op">(</span><span class="va">pdf_file</span>, grobid_url <span class="op">=</span> <span class="st">"http://localhost:8070"</span><span class="op">)</span></span></code></pre></div>
@@ -122,54 +121,42 @@ use Docker.</p>
 <div class="section level3">
 <h3 id="load-from-xml">Load from XML<a class="anchor" aria-label="anchor" href="#load-from-xml"></a>
 </h3>
-<p>The function <code><a href="../reference/read_grobid.html">read_grobid()</a></code> can read XML files parsed by
-grobid.</p>
+<p>The function <code><a href="../reference/read.html">read()</a></code> can read XML files parsed by grobid
+or cermine, plus any XML files in JATS-DTD APA or NLM formats.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_grobid.html">read_grobid</a></span><span class="op">(</span><span class="va">xml_file</span><span class="op">)</span></span></code></pre></div>
-<p>The function <code><a href="../reference/read_cermine.html">read_cermine()</a></code> can read XML files parsed by
-<a href="http://cermine.ceon.pl" class="external-link">cermine</a>. This is not as good as
-grobid at parsing papers, and omits figure and table captions.</p>
+<code class="sourceCode R"><span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read.html">read</a></span><span class="op">(</span><span class="va">xml_file</span><span class="op">)</span></span></code></pre></div>
+<p>XML files parsed by <a href="http://cermine.ceon.pl" class="external-link">cermine</a> are
+not as good as grobid at parsing papers, and omits figure and table
+captions.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cermine_xml_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"psychsci/0956797620955209.cermine.xml"</span>,</span>
 <span>                                package <span class="op">=</span> <span class="st">"papercheck"</span><span class="op">)</span></span>
-<span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_cermine.html">read_cermine</a></span><span class="op">(</span><span class="va">cermine_xml_file</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read.html">read</a></span><span class="op">(</span><span class="va">cermine_xml_file</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="load-from-non-pdf-document">Load from non-PDF document<a class="anchor" aria-label="anchor" href="#load-from-non-pdf-document"></a>
 </h3>
 <p>To take advantage of grobid’s ability to parse references and other
 aspects of papers, for now the best way is to convert your papers to
-PDF. However, papercheck can read in plain text from a character object
-or text/docx file with <code><a href="../reference/read_text.html">read_text()</a></code>.</p>
+PDF. However, papercheck can read in plain text from a text/docx file
+with <code><a href="../reference/read.html">read()</a></code>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">text</span> <span class="op">&lt;-</span> <span class="st">"Abstract</span></span>
-<span><span class="st"></span></span>
-<span><span class="st">This is my very short paper. It has two sentences."</span></span>
-<span><span class="va">shortpaper</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_text.html">read_text</a></span><span class="op">(</span><span class="va">text</span>, id <span class="op">=</span> <span class="st">"shortpaper"</span><span class="op">)</span></span>
-<span><span class="va">shortpaper</span><span class="op">$</span><span class="va">full_text</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 7</span></span></span>
-<span><span class="co">#&gt;   text                         section  header     div     p     s id        </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Abstract                     abstract Abstract     1     0     1 shortpaper</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> This is my very short paper. abstract Abstract     1     1     1 shortpaper</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> It has two sentences.        abstract Abstract     1     1     2 shortpaper</span></span></code></pre>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">filename</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/to_err_is_human.docx"</span>, </span>
 <span>                        package <span class="op">=</span> <span class="st">"papercheck"</span><span class="op">)</span></span>
-<span><span class="va">paper_from_doc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_text.html">read_text</a></span><span class="op">(</span><span class="va">filename</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">paper_from_doc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read.html">read_text</a></span><span class="op">(</span><span class="va">filename</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="batch-processing">Batch Processing<a class="anchor" aria-label="anchor" href="#batch-processing"></a>
 </h3>
-<p>The functions <code><a href="../reference/pdf2grobid.html">pdf2grobid()</a></code> and
-<code><a href="../reference/read_grobid.html">read_grobid()</a></code> also work on a folder of files, returning a
-list of XML file paths or paper objects, respectively. The functions
-<code><a href="../reference/search_text.html">search_text()</a></code>, <code><a href="../reference/expand_text.html">expand_text()</a></code> and
-<code><a href="../reference/llm.html">llm()</a></code> also work on a list of paper objects.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<p>The functions <code><a href="../reference/pdf2grobid.html">pdf2grobid()</a></code> and <code><a href="../reference/read.html">read()</a></code> also
+work on a folder of files, returning a list of XML file paths or paper
+objects, respectively. The functions <code><a href="../reference/search_text.html">search_text()</a></code>,
+<code><a href="../reference/expand_text.html">expand_text()</a></code> and <code><a href="../reference/llm.html">llm()</a></code> also work on a list of
+paper objects.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">grobid_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/demodir.html">demodir</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">papers</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_grobid.html">read_grobid</a></span><span class="op">(</span><span class="va">grobid_dir</span><span class="op">)</span></span>
+<span><span class="va">papers</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read.html">read</a></span><span class="op">(</span><span class="va">grobid_dir</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">hypotheses</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">papers</span>, <span class="st">"hypothesi"</span>, </span>
 <span>                          section <span class="op">=</span> <span class="st">"intro"</span>, </span>
@@ -184,25 +171,25 @@ info, references, and citations.</p>
 <div class="section level3">
 <h3 id="info">Info<a class="anchor" aria-label="anchor" href="#info"></a>
 </h3>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">info</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; $filename</span></span>
-<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/RtmpLA1jfq/temp_libpath7e3d3b0651/papercheck/extdata/to_err_is_human.xml"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $title</span></span>
+<pre><code><span><span class="co">#&gt; $title</span></span>
 <span><span class="co">#&gt; [1] "To Err is Human: An Empirical Investigation"</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $description</span></span>
 <span><span class="co">#&gt; [1] "This paper demonstrates some good and poor practices for use with the {papercheck} R package and Shiny app. All data are simulated. The paper shows examples of (1) open and closed OSF links; (2) citation of retracted papers; (3) missing/mismatched citations and references; (4) imprecise reporting of p-values; and (5) use of \"marginally significant\" to describe non-significant findings."</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $keywords</span></span>
-<span><span class="co">#&gt; character(0)</span></span></code></pre>
+<span><span class="co">#&gt; [1] ""</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $filename</span></span>
+<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/RtmphFUVLH/temp_libpath10c277b84744/papercheck/extdata/to_err_is_human.xml"</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h3>
 <p>References are provided in a tabular format.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">references</span></span></code></pre></div>
 <table style="width:100%;" class="table">
 <colgroup>
@@ -258,7 +245,7 @@ design.” <em>Journal of Journals</em>, <em>0</em>(0), 0. <a href="doi:10.0000/
 </h3>
 <p>Citations are also provided in a tabular format, with a bib_id to
 match the references.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">citations</span></span></code></pre></div>
 <table class="table">
 <colgroup>
@@ -290,7 +277,7 @@ symptom of a poor design (Smithy, 2020).</td>
 <p>There are functions to combine the infomation from a list of papers,
 like the <code>psychsci</code> built-in dataset of 250 open access
 papers from Psychological Science.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/info_table.html">info_table</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"title"</span>, <span class="st">"doi"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 3</span></span></span>
 <span><span class="co">#&gt;   id               title                                                   doi  </span></span>
@@ -300,7 +287,7 @@ papers from Psychological Science.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0956797614527830 Serotonin and Social Norms: Tryptophan Depletion Impai… 10.1…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0956797614557697 Action-Specific Disruption of Perceptual Confidence     10.1…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0956797614560771 Emotional Vocalizations Are Recognized Across Cultures… 10.1…</span></span></code></pre>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/concat_tables.html">concat_tables</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>, <span class="st">"references"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">doi</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt;   bib_id</span></span>
@@ -345,7 +332,7 @@ papers from Psychological Science.</p>
 <span><span class="co">#&gt; 4                                           J A Russell 0956797614560771</span></span>
 <span><span class="co">#&gt; 5           D A Sauter, F Eisner, A J Calder, S K Scott 0956797614560771</span></span>
 <span><span class="co">#&gt; 6              D A Sauter, F Eisner, P Ekman, S K Scott 0956797614560771</span></span></code></pre>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/concat_tables.html">concat_tables</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">40</span><span class="op">]</span>, <span class="st">"citations"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"replicat"</span>, <span class="va">text</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">text</span><span class="op">)</span></span></code></pre></div>
@@ -378,17 +365,17 @@ the function <code><a href="../reference/search_text.html">search_text()</a></co
 table of each sentence, with the section type, header, div, paragraph
 and sentence numbers, and file name. (The section type is a best guess
 from the headers, so may not always be accurate.)</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">text</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">paper</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="72%">
+<col width="74%">
 <col width="4%">
 <col width="10%">
 <col width="1%">
 <col width="1%">
 <col width="1%">
-<col width="8%">
+<col width="6%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">text</th>
@@ -408,7 +395,7 @@ for use with the {papercheck} R package and Shiny app.</td>
 <td align="right">0</td>
 <td align="right">1</td>
 <td align="right">1</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="even">
 <td align="left">Although intentional dishonestly might be a successful
@@ -419,7 +406,7 @@ most mistakes researchers make are unintentional.</td>
 <td align="right">1</td>
 <td align="right">1</td>
 <td align="right">1</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="odd">
 <td align="left">In this study we examine whether automated checks
@@ -430,7 +417,7 @@ manuscripts.</td>
 <td align="right">2</td>
 <td align="right">1</td>
 <td align="right">1</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="even">
 <td align="left">All data needed to reproduce these analyses is
@@ -440,7 +427,7 @@ available from <a href="https://osf.io/5tbm9" class="external-link uri">https://
 <td align="right">3</td>
 <td align="right">1</td>
 <td align="right">1</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="odd">
 <td align="left">It seems automated tools can help prevent errors by
@@ -451,7 +438,7 @@ researchers feel the app is useful.</td>
 <td align="right">4</td>
 <td align="right">1</td>
 <td align="right">1</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 </tbody>
 </table>
@@ -462,17 +449,17 @@ researchers feel the app is useful.</td>
 <code>pattern</code> argument. The pattern is a regex string by default;
 set <code>fixed = TRUE</code> if you want to find exact text
 matches.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">text</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">paper</span>, pattern <span class="op">=</span> <span class="st">"papercheck"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="67%">
+<col width="69%">
 <col width="5%">
 <col width="8%">
 <col width="2%">
 <col width="1%">
 <col width="1%">
-<col width="12%">
+<col width="10%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">text</th>
@@ -492,7 +479,7 @@ for use with the {papercheck} R package and Shiny app.</td>
 <td align="right">0</td>
 <td align="right">1</td>
 <td align="right">1</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="even">
 <td align="left">In this study we examine the usefulness of Papercheck
@@ -502,7 +489,7 @@ to improve best practices.</td>
 <td align="right">1</td>
 <td align="right">1</td>
 <td align="right">4</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 </tbody>
 </table>
@@ -512,18 +499,18 @@ to improve best practices.</td>
 </h3>
 <p>Set <code>section</code> to a vector of the sections to search
 in.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">text</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"papercheck"</span>, </span>
 <span>                    section <span class="op">=</span> <span class="st">"abstract"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="69%">
+<col width="71%">
 <col width="5%">
 <col width="5%">
 <col width="2%">
 <col width="1%">
 <col width="1%">
-<col width="12%">
+<col width="10%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">text</th>
@@ -542,7 +529,7 @@ for use with the {papercheck} R package and Shiny app.</td>
 <td align="right">0</td>
 <td align="right">1</td>
 <td align="right">1</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr></tbody>
 </table>
 </div>
@@ -551,7 +538,7 @@ for use with the {papercheck} R package and Shiny app.</td>
 </h3>
 <p>Set <code>return</code> to one of “sentence”, “paragraph”, “section”,
 or “match” to control what gets returned.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">text</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"papercheck"</span>, </span>
 <span>                    section <span class="op">=</span> <span class="st">"intro"</span>, </span>
 <span>                    return <span class="op">=</span> <span class="st">"paragraph"</span><span class="op">)</span></span></code></pre></div>
@@ -587,7 +574,7 @@ usefulness of Papercheck to improve best practices.</td>
 <td align="right">1</td>
 <td align="right">1</td>
 <td align="left">NA</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr></tbody>
 </table>
 </div>
@@ -599,7 +586,7 @@ setting <code>return = "match"</code>. The extra <code>...</code>
 arguments in <code><a href="../reference/search_text.html">search_text()</a></code> are passed to
 <code><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep()</a></code>, so <code>perl = TRUE</code> allows you to use more
 complex regex, like below.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pattern</span> <span class="op">&lt;-</span> <span class="st">"[a-zA-Z]\\S*\\s*(=|&lt;)\\s*[0-9\\.,-]*\\d"</span></span>
 <span><span class="va">text</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">paper</span>, <span class="va">pattern</span>, return <span class="op">=</span> <span class="st">"match"</span>, perl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
@@ -620,7 +607,7 @@ complex regex, like below.</p>
 <td align="right">3</td>
 <td align="right">1</td>
 <td align="right">2</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="even">
 <td align="left">M = 10.9</td>
@@ -629,7 +616,7 @@ complex regex, like below.</p>
 <td align="right">3</td>
 <td align="right">1</td>
 <td align="right">2</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="odd">
 <td align="left">t(97.7) = 2.9</td>
@@ -638,7 +625,7 @@ complex regex, like below.</p>
 <td align="right">3</td>
 <td align="right">1</td>
 <td align="right">2</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="even">
 <td align="left">p = 0.005</td>
@@ -647,7 +634,7 @@ complex regex, like below.</p>
 <td align="right">3</td>
 <td align="right">1</td>
 <td align="right">2</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="odd">
 <td align="left">M = 5.06</td>
@@ -656,7 +643,7 @@ complex regex, like below.</p>
 <td align="right">3</td>
 <td align="right">2</td>
 <td align="right">1</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="even">
 <td align="left">M = 4.5</td>
@@ -665,7 +652,7 @@ complex regex, like below.</p>
 <td align="right">3</td>
 <td align="right">2</td>
 <td align="right">1</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="odd">
 <td align="left">t(97.2) = -1.96</td>
@@ -674,7 +661,7 @@ complex regex, like below.</p>
 <td align="right">3</td>
 <td align="right">2</td>
 <td align="right">1</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="even">
 <td align="left">p = 0.152</td>
@@ -683,7 +670,7 @@ complex regex, like below.</p>
 <td align="right">3</td>
 <td align="right">2</td>
 <td align="right">1</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 </tr>
 </tbody>
 </table>
@@ -693,7 +680,7 @@ complex regex, like below.</p>
 </h3>
 <p>You can expand the text returned by <code><a href="../reference/search_text.html">search_text()</a></code> or a
 module with <code><a href="../reference/expand_text.html">expand_text()</a></code>.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">marginal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"marginal"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/expand_text.html">expand_text</a></span><span class="op">(</span><span class="va">paper</span>, plus <span class="op">=</span> <span class="fl">1</span>, minus <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
@@ -718,8 +705,8 @@ module with <code><a href="../reference/expand_text.html">expand_text()</a></cod
 it out, add it to the .Renviron file in the following format (you can
 use <code><a href="https://usethis.r-lib.org/reference/edit.html" class="external-link">usethis::edit_r_environ()</a></code> to access the .Renviron
 file).</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="va">GROQ_GPT_KEY</span><span class="op">=</span><span class="st">"sk-proj-abcdefghijklmnopqrs0123456789ABCDEFGHIJKLMNOPQRS"</span></span></code></pre></div>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="va">GROQ_GPT_KEY</span><span class="op">=</span><span class="st">"sk-proj-abcdefghijklmnopqrs0123456789ABCDEFGHIJKLMNOPQRS"</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># useful if you aren't sure where this file is</span></span>
 <span><span class="fu">usethis</span><span class="fu">::</span><span class="fu"><a href="https://usethis.r-lib.org/reference/edit.html" class="external-link">edit_r_environ</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>You can get or set the default LLM model with
@@ -844,7 +831,7 @@ papers’ method sections, and returned sentences that contains the word
 “power” and at least one number. Then we asked an LLM to determine if
 this is an a priori power analysis, and if so, to return some relevant
 values in a JSON-structured format.</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">power</span> <span class="op">&lt;-</span> <span class="va">psychsci</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># sentences containing the word power</span></span>
 <span>  <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="st">"power"</span>, section <span class="op">=</span> <span class="st">"method"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -879,7 +866,7 @@ makes syntax mistakes. The function <code><a href="../reference/json_expand.html
 expand a column with a JSON-formatted response into columns and deals
 with it gracefully (sets an ‘error’ column to “parsing error”) if there
 are errors. It also fixes column data types, if possible.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">llm_response</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/json_expand.html">json_expand</a></span><span class="op">(</span><span class="va">llm_power</span>, <span class="st">"answer"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">text</span>, <span class="va">apriori</span><span class="op">:</span><span class="va">es_metric</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
@@ -1022,7 +1009,7 @@ alpha level of .05.</td>
 each row in a data frame from <code><a href="../reference/search_text.html">search_text()</a></code>. Free GROQ
 accounts are rate limited, so we set the default limits to 30 queries,
 but you can change this:</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/llm_max_calls.html">llm_max_calls</a></span><span class="op">(</span><span class="fl">30</span><span class="op">)</span></span></code></pre></div>
 <p>If you hit your rate limit, the <code><a href="../reference/llm.html">llm()</a></code> function will add
 a short delay between calls, so don’t worry if you notice the query
@@ -1039,16 +1026,11 @@ will share more modules.</p>
 <h3 id="module-list">Module List<a class="anchor" aria-label="anchor" href="#module-list"></a>
 </h3>
 <p>You can see the list of built-in modules with the function below.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/module_list.html">module_list</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;  * all_p_values: List all p-values in the text, returning the matched text (e.g., 'p = 0.04')</span></span>
-<span><span class="co">#&gt; and document location in a table.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Note that this will not catch p-values reported like "the p-value is 0.03" because that results in a ton of false positives when papers discuss p-value thresholds. If you need to detect text like that, use `search_text()` function and a custom pattern like "\\bp(-| )?values?\\s+.{1,20}\\s+[0-9\\.]+"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; This will catch most comparators like =&lt;&gt;~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.</span></span>
+<pre><code><span><span class="co">#&gt;  * all_p_values: List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.</span></span>
 <span><span class="co">#&gt;  * all_urls: List all the URLs in the main text.</span></span>
-<span><span class="co">#&gt;  * effect_size: Detect t-tests and F-tests  with missing effect sizes</span></span>
+<span><span class="co">#&gt;  * effect_size: Detect t-tests and F-tests with missing effect sizes</span></span>
 <span><span class="co">#&gt;  * exact_p: List any p-values reported with insufficient precision (e.g., p &lt; .05 or p = n.s.)</span></span>
 <span><span class="co">#&gt;  * marginal: List all sentences that describe an effect as 'marginally significant'.</span></span>
 <span><span class="co">#&gt;  * osf_check: List all OSF links and whether they are open, closed, or do not exist.</span></span>
@@ -1063,7 +1045,7 @@ will share more modules.</p>
 </h3>
 <p>To run a built-in module on a paper, you can reference it by
 name.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all_p_values"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
@@ -1073,8 +1055,8 @@ name.</p>
 <col width="5%">
 <col width="4%">
 <col width="4%">
-<col width="28%">
-<col width="9%">
+<col width="23%">
+<col width="10%">
 <col width="11%">
 </colgroup>
 <thead><tr class="header">
@@ -1096,7 +1078,7 @@ name.</p>
 <td align="right">3</td>
 <td align="right">1</td>
 <td align="right">2</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 <td align="left">=</td>
 <td align="right">0.005</td>
 </tr>
@@ -1107,7 +1089,7 @@ name.</p>
 <td align="right">3</td>
 <td align="right">2</td>
 <td align="right">1</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 <td align="left">=</td>
 <td align="right">0.152</td>
 </tr>
@@ -1118,7 +1100,7 @@ name.</p>
 <td align="right">3</td>
 <td align="right">2</td>
 <td align="right">2</td>
-<td align="left">to_err_is_human.xml</td>
+<td align="left">to_err_is_human</td>
 <td align="left">&gt;</td>
 <td align="right">0.050</td>
 </tr>
@@ -1140,7 +1122,7 @@ details.</p>
 </h2>
 <p>You can generate a report from any set of modules. The default set is
 <code>c("exact_p", "marginal", "effect_size", "osf_check", "retractionwatch", "ref_consistency")</code></p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/report.html">report</a></span><span class="op">(</span><span class="va">paper</span>, output_format <span class="op">=</span> <span class="st">"qmd"</span><span class="op">)</span></span></code></pre></div>
 <p>See the <a href="report-example.html">example report</a>.</p>
 </div>
@@ -1155,7 +1137,7 @@ details.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>

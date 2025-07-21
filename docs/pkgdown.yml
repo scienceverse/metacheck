@@ -1,5 +1,5 @@
 pandoc: '3.4'
-pkgdown: 2.1.1
+pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   articles/aspredicted: aspredicted.html
@@ -13,7 +13,7 @@ articles:
   papercheck: papercheck.html
   report-example: report-example.html
   validate: validate.html
-last_built: 2025-06-26T16:38Z
+last_built: 2025-07-21T18:42Z
 urls:
   reference: https://scienceverse.github.io/papercheck/reference
   article: https://scienceverse.github.io/papercheck/articles

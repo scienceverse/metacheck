@@ -6,16 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Modules • papercheck</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.9/font.css" rel="stylesheet">
-<link href="../deps/Fira_Code-0.4.9/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.10/font.css" rel="stylesheet">
+<link href="../deps/Fira_Code-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Modules">
@@ -35,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9049</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9050</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -90,24 +89,21 @@ will share more modules.</p>
 <ul>
 <li>all_p_values: List all p-values in the text, returning the matched
 text (e.g., ‘p = 0.04’) and document location in a table.</li>
+<li>all_urls: List all the URLs in the main text.</li>
+<li>effect_size: Detect t-tests and F-tests with missing effect
+sizes</li>
+<li>exact_p: List any p-values reported with insufficient precision
+(e.g., p &lt; .05 or p = n.s.)</li>
+<li>marginal: List all sentences that describe an effect as ‘marginally
+significant’.</li>
+<li>osf_check: List all OSF links and whether they are open, closed, or
+do not exist.</li>
+<li>ref_consistency: Check if all references are cited and all citations
+are referenced</li>
+<li>retractionwatch: Flag any cited papers in the RetractionWatch
+database</li>
+<li>statcheck: Check consistency of p-values and test statistics</li>
 </ul>
-<p>Note that this will not catch p-values reported like “the p-value is
-0.03” because that results in a ton of false positives when papers
-discuss p-value thresholds. If you need to detect text like that, use
-<code><a href="../reference/search_text.html">search_text()</a></code> function and a custom pattern like “\bp(-|
-)?values?\s+.{1,20}\s+[0-9\.]+”</p>
-<p>This will catch most comparators like =&lt;&gt;~≈≠≤≥≪≫ and most
-versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find
-any formats that are not correctly handled by this function, please
-contact the author. * all_urls: List all the URLs in the main text. *
-effect_size: Detect t-tests and F-tests with missing effect sizes *
-exact_p: List any p-values reported with insufficient precision (e.g., p
-&lt; .05 or p = n.s.) * marginal: List all sentences that describe an
-effect as ‘marginally significant’. * osf_check: List all OSF links and
-whether they are open, closed, or do not exist. * ref_consistency: Check
-if all references are cited and all citations are referenced *
-retractionwatch: Flag any cited papers in the RetractionWatch database *
-statcheck: Check consistency of p-values and test statistics</p>
 <p>Use <code>module_help("module_name")</code> for help with a specific
 module</p>
 </div>
@@ -1051,7 +1047,7 @@ if you chain modules.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>

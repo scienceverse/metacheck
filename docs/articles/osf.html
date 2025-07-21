@@ -6,16 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Checking OSF Data Repositories • papercheck</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.9/font.css" rel="stylesheet">
-<link href="../deps/Fira_Code-0.4.9/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.10/font.css" rel="stylesheet">
+<link href="../deps/Fira_Code-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Checking OSF Data Repositories">
@@ -35,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9049</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9050</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -1751,13 +1750,13 @@ computer that the analyses were performed on. In R, this can be achieved
 by:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; R version 4.4.3 (2025-02-28)</span></span>
+<span><span class="co">#&gt; R version 4.5.1 (2025-06-13)</span></span>
 <span><span class="co">#&gt; Platform: aarch64-apple-darwin20</span></span>
 <span><span class="co">#&gt; Running under: macOS Sequoia 15.5</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Matrix products: default</span></span>
-<span><span class="co">#&gt; BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib </span></span>
-<span><span class="co">#&gt; LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0</span></span>
+<span><span class="co">#&gt; BLAS:   /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRblas.0.dylib </span></span>
+<span><span class="co">#&gt; LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; locale:</span></span>
 <span><span class="co">#&gt; [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8</span></span>
@@ -1770,25 +1769,25 @@ by:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
 <span><span class="co">#&gt;  [1] lubridate_1.9.4       forcats_1.0.0         stringr_1.5.1        </span></span>
-<span><span class="co">#&gt;  [4] dplyr_1.1.4           purrr_1.0.4           readr_2.1.5          </span></span>
-<span><span class="co">#&gt;  [7] tidyr_1.3.1           tibble_3.2.1          ggplot2_3.5.1        </span></span>
-<span><span class="co">#&gt; [10] tidyverse_2.0.0       papercheck_0.0.0.9049</span></span>
+<span><span class="co">#&gt;  [4] dplyr_1.1.4           purrr_1.1.0           readr_2.1.5          </span></span>
+<span><span class="co">#&gt;  [7] tidyr_1.3.1           tibble_3.3.0          ggplot2_3.5.2        </span></span>
+<span><span class="co">#&gt; [10] tidyverse_2.0.0       papercheck_0.0.0.9050</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] sass_0.4.9        generics_0.1.3    stringi_1.8.4     httpcode_0.3.0   </span></span>
-<span><span class="co">#&gt;  [5] hms_1.1.3         digest_0.6.37     magrittr_2.0.3    evaluate_1.0.3   </span></span>
-<span><span class="co">#&gt;  [9] grid_4.4.3        timechange_0.3.0  fastmap_1.2.0     jsonlite_1.9.1   </span></span>
-<span><span class="co">#&gt; [13] crul_1.5.0        urltools_1.7.3    httr_1.4.7        scales_1.3.0     </span></span>
-<span><span class="co">#&gt; [17] textshaping_0.4.1 jquerylib_0.1.4   cli_3.6.4         rlang_1.1.5      </span></span>
-<span><span class="co">#&gt; [21] triebeard_0.4.1   munsell_0.5.1     withr_3.0.2       cachem_1.1.0     </span></span>
-<span><span class="co">#&gt; [25] yaml_2.3.10       tools_4.4.3       tzdb_0.5.0        memoise_2.0.1    </span></span>
-<span><span class="co">#&gt; [29] colorspace_2.1-1  curl_6.0.1        vctrs_0.6.5       R6_2.6.1         </span></span>
-<span><span class="co">#&gt; [33] lifecycle_1.0.4   fs_1.6.5          htmlwidgets_1.6.4 ragg_1.3.3       </span></span>
-<span><span class="co">#&gt; [37] osfr_0.2.9        pkgconfig_2.0.3   desc_1.4.3        pkgdown_2.1.1    </span></span>
-<span><span class="co">#&gt; [41] pillar_1.10.1     bslib_0.9.0       gtable_0.3.6      Rcpp_1.0.14      </span></span>
-<span><span class="co">#&gt; [45] glue_1.8.0        systemfonts_1.1.0 xfun_0.51         tidyselect_1.2.1 </span></span>
-<span><span class="co">#&gt; [49] rstudioapi_0.17.1 knitr_1.50        htmltools_0.5.8.1 rmarkdown_2.29   </span></span>
-<span><span class="co">#&gt; [53] compiler_4.4.3</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] sass_0.4.10        generics_0.1.4     stringi_1.8.7      httpcode_0.3.0    </span></span>
+<span><span class="co">#&gt;  [5] hms_1.1.3          digest_0.6.37      magrittr_2.0.3     evaluate_1.0.4    </span></span>
+<span><span class="co">#&gt;  [9] grid_4.5.1         timechange_0.3.0   RColorBrewer_1.1-3 fastmap_1.2.0     </span></span>
+<span><span class="co">#&gt; [13] jsonlite_2.0.0     crul_1.5.0         urltools_1.7.3.1   httr_1.4.7        </span></span>
+<span><span class="co">#&gt; [17] scales_1.4.0       textshaping_1.0.1  jquerylib_0.1.4    cli_3.6.5         </span></span>
+<span><span class="co">#&gt; [21] rlang_1.1.6        triebeard_0.4.1    withr_3.0.2        cachem_1.1.0      </span></span>
+<span><span class="co">#&gt; [25] yaml_2.3.10        tools_4.5.1        tzdb_0.5.0         memoise_2.0.1     </span></span>
+<span><span class="co">#&gt; [29] curl_6.4.0         vctrs_0.6.5        R6_2.6.1           lifecycle_1.0.4   </span></span>
+<span><span class="co">#&gt; [33] fs_1.6.6           htmlwidgets_1.6.4  ragg_1.4.0         osfr_0.2.9        </span></span>
+<span><span class="co">#&gt; [37] pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.1.3      pillar_1.11.0     </span></span>
+<span><span class="co">#&gt; [41] bslib_0.9.0        gtable_0.3.6       Rcpp_1.1.0         glue_1.8.0        </span></span>
+<span><span class="co">#&gt; [45] systemfonts_1.2.3  xfun_0.52          tidyselect_1.2.1   rstudioapi_0.17.1 </span></span>
+<span><span class="co">#&gt; [49] knitr_1.50         farver_2.1.2       htmltools_0.5.8.1  rmarkdown_2.29    </span></span>
+<span><span class="co">#&gt; [53] compiler_4.5.1</span></span></code></pre></div>
 <p>As most scientists have not been taught how to code explicitly, it is
 common to see scripts that do not adhere to best coding practices. We
 are no exception ourselves (e.g., you will not find a sessioninfo.txt
@@ -2072,7 +2071,7 @@ Attitudes in the Social Sciences.”</span> <em>Nature Communications</em>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>

@@ -6,16 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Exploring GitHub Repositories • papercheck</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.9/font.css" rel="stylesheet">
-<link href="../deps/Fira_Code-0.4.9/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.10/font.css" rel="stylesheet">
+<link href="../deps/Fira_Code-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Exploring GitHub Repositories">
@@ -35,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9049</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9050</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -153,7 +152,7 @@ languages, as detected and classified by GitHub.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/github_languages.html">github_languages</a></span><span class="op">(</span><span class="st">"scienceverse/papercheck"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     language   bytes</span></span>
 <span><span class="co">#&gt; 1       HTML 4228749</span></span>
-<span><span class="co">#&gt; 2          R  363020</span></span>
+<span><span class="co">#&gt; 2          R  369330</span></span>
 <span><span class="co">#&gt; 3        TeX   25601</span></span>
 <span><span class="co">#&gt; 4       AMPL    7578</span></span>
 <span><span class="co">#&gt; 5     Python    6986</span></span>
@@ -174,18 +173,18 @@ directory, non-recursively.</p>
 <span><span class="co">#&gt; 1      _report.html     _report.html 1401488         html    web</span></span>
 <span><span class="co">#&gt; 2            _stuff           _stuff       0                 dir</span></span>
 <span><span class="co">#&gt; 3           .github          .github       0       github    dir</span></span>
-<span><span class="co">#&gt; 4        .gitignore       .gitignore     267    gitignore config</span></span>
+<span><span class="co">#&gt; 4        .gitignore       .gitignore     301    gitignore config</span></span>
 <span><span class="co">#&gt; 5     .Rbuildignore    .Rbuildignore     198 rbuildignore   file</span></span>
 <span><span class="co">#&gt; 6              data             data       0                 dir</span></span>
 <span><span class="co">#&gt; 7          data-raw         data-raw       0                 dir</span></span>
-<span><span class="co">#&gt; 8       DESCRIPTION      DESCRIPTION    1632                file</span></span>
+<span><span class="co">#&gt; 8       DESCRIPTION      DESCRIPTION    1642                file</span></span>
 <span><span class="co">#&gt; 9              docs             docs       0                 dir</span></span>
 <span><span class="co">#&gt; 10             inst             inst       0                 dir</span></span>
 <span><span class="co">#&gt; 11          LICENSE          LICENSE      48                file</span></span>
 <span><span class="co">#&gt; 12       LICENSE.md       LICENSE.md   34303           md   text</span></span>
 <span><span class="co">#&gt; 13              man              man       0                 dir</span></span>
 <span><span class="co">#&gt; 14        NAMESPACE        NAMESPACE    1856                file</span></span>
-<span><span class="co">#&gt; 15          NEWS.md          NEWS.md    7393           md   text</span></span>
+<span><span class="co">#&gt; 15          NEWS.md          NEWS.md    7688           md   text</span></span>
 <span><span class="co">#&gt; 16 papercheck.Rproj papercheck.Rproj     462        rproj config</span></span>
 <span><span class="co">#&gt; 17          pkgdown          pkgdown       0                 dir</span></span>
 <span><span class="co">#&gt; 18          profile          profile       0                 dir</span></span>
@@ -208,7 +207,7 @@ recursively can take a few seconds.</p>
 <span><span class="co">#&gt; 1         .gitignore                   .github/.gitignore    7 gitignore config</span></span>
 <span><span class="co">#&gt; 2          workflows                    .github/workflows    0              dir</span></span>
 <span><span class="co">#&gt; 3       pkgdown.yaml       .github/workflows/pkgdown.yaml 1316      yaml config</span></span>
-<span><span class="co">#&gt; 4 test-coverage.yaml .github/workflows/test-coverage.yaml 1817      yaml config</span></span></code></pre></div>
+<span><span class="co">#&gt; 4 test-coverage.yaml .github/workflows/test-coverage.yaml 1811      yaml config</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="github_info">github_info<a class="anchor" aria-label="anchor" href="#github_info"></a>
@@ -222,7 +221,7 @@ with items named “repo”, “readme”, “languages”, and “files”.</p>
 <span><span class="va">info</span><span class="op">$</span><span class="va">files</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">type</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         type    n</span></span>
 <span><span class="co">#&gt; 1      audio    9</span></span>
-<span><span class="co">#&gt; 2       code 1510</span></span>
+<span><span class="co">#&gt; 2       code 1511</span></span>
 <span><span class="co">#&gt; 3  code;data    4</span></span>
 <span><span class="co">#&gt; 4     config   10</span></span>
 <span><span class="co">#&gt; 5       data   12</span></span>
@@ -244,7 +243,7 @@ with items named “repo”, “readme”, “languages”, and “files”.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>

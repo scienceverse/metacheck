@@ -85,6 +85,7 @@ reference:
   - '`osf_api_check`'
   - '`osf_check_id`'
   - '`osf_delay`'
+  - '`osf_file_download`'
   - '`osf_links`'
   - '`osf_retrieve`'
   - '`osf_api_calls`'

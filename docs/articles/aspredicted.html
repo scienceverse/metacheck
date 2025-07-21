@@ -6,16 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Retrieving Planned Sample Sizes from AsPredicted Preregistrations • papercheck</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.9/font.css" rel="stylesheet">
-<link href="../deps/Fira_Code-0.4.9/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Open_Sans-0.4.10/font.css" rel="stylesheet">
+<link href="../deps/Fira_Code-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Retrieving Planned Sample Sizes from AsPredicted Preregistrations">
@@ -35,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9049</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9050</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -353,7 +352,7 @@ Groq.</p>
 <span></span>
 <span><span class="co"># run query</span></span>
 <span><span class="va">llm_response</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/llm.html">llm</a></span><span class="op">(</span><span class="va">text</span>, <span class="va">query</span>, model <span class="op">=</span> <span class="st">"llama-3.3-70b-versatile"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; You have 995 of 1000 requests left (reset in 6m53.696999999s) and 6593 of 12000 tokens left (reset in 27.035s).</span></span>
+<span><span class="co">#&gt; You have 993 of 1000 requests left (reset in 9m41.801999999s) and 6592 of 12000 tokens left (reset in 27.04s).</span></span>
 <span></span>
 <span><span class="va">llm_response</span><span class="op">$</span><span class="va">answer</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"&gt; "</span>, x <span class="op">=</span> <span class="va">_</span><span class="op">)</span></span></code></pre></div>
 <blockquote>
@@ -426,20 +425,20 @@ and must be fluent in English (to ensure instruction comprehension).</p>
 <span><span class="va">text</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">methres</span><span class="op">$</span><span class="va">text</span>, collapse <span class="op">=</span> <span class="st">"\n\n"</span><span class="op">)</span></span>
 <span><span class="va">query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="va">query_template</span>, <span class="va">prereg_sample_size</span><span class="op">)</span></span>
 <span><span class="va">llm_response</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/llm.html">llm</a></span><span class="op">(</span><span class="va">text</span>, <span class="va">query</span>, model <span class="op">=</span> <span class="st">"llama-3.3-70b-versatile"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; You have 994 of 1000 requests left (reset in 8m36.116999999s) and 3667 of 12000 tokens left (reset in 41.663s).</span></span>
+<span><span class="co">#&gt; You have 992 of 1000 requests left (reset in 11m29.392s) and 3632 of 12000 tokens left (reset in 41.84s).</span></span>
 <span></span>
 <span><span class="va">llm_response</span><span class="op">$</span><span class="va">answer</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"&gt; "</span>, x <span class="op">=</span> <span class="va">_</span><span class="op">)</span></span></code></pre></div>
 <blockquote>
-<p>The sentence that corresponds to the plan is: “Here, we sought to
-collect data from 60 participants in each cohort.”</p>
-</blockquote>
 <p>The authors deviated from their preregistration with respect to the
-sample size in cohort B, as they initially intended to collect data from
-60 participants but were only able to collect data from 56 participants
-due to the interruption of data collection caused by the COVID-19
-pandemic. However, in cohort A, they were able to collect data from 60
-participants as planned, although 3 participants were excluded from the
-analysis, resulting in a final sample size of 57 for cohort A.</p>
+sample size for cohort B. They had planned to collect data from 60
+participants in each cohort, but due to the COVID-19 pandemic, data
+collection was interrupted, and they were only able to collect data from
+56 participants in cohort B. However, for cohort A, they were able to
+collect data from 60 participants as planned, but after excluding some
+participants, the final sample size for analysis was 56 for cohort A and
+54 for cohort B (after excluding participants with poor
+performance).</p>
+</blockquote>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># manual check - no LLM</span></span>
 <span><span class="va">regex_sample</span> <span class="op">&lt;-</span> <span class="st">"\\bsample\\b|\\d+\\s+particip\\w+"</span></span>
@@ -601,7 +600,7 @@ down all laboratory testing on March 13, 2020.</p>
 <span><span class="co">#&gt; Starting AsPredicted retrieval for 1 file...</span></span>
 <span><span class="co">#&gt; * Retrieving info from https://aspredicted.org/p4ci6.pdf...</span></span>
 <span><span class="co">#&gt; ...AsPredicted retrieval complete!</span></span>
-<span><span class="co">#&gt; You have 993 of 1000 requests left (reset in 10m2.611999999s) and 791 of 12000 tokens left (reset in 56.041s).</span></span></code></pre></div>
+<span><span class="co">#&gt; You have 991 of 1000 requests left (reset in 12m55.489s) and 750 of 12000 tokens left (reset in 56.248999999s).</span></span></code></pre></div>
 <p>Sample Size Preregistration:</p>
 <p>N = 60. Participants will be recruited from the undergraduate student
 population of the University of British Columbia, and will be
@@ -638,16 +637,13 @@ B was originally intended to be another 60 participants, but data
 collection was interrupted because of the COVID-19 pandemic; we shut
 down all laboratory testing on March 13, 2020.</p>
 <p>LLM Assessment:</p>
-<p>The authors deviated from their preregistration with respect to the
-sample size for cohort B. They initially planned to collect data from 60
-participants in each cohort but were only able to collect data from 56
-participants in cohort B due to the interruption of data collection
-caused by the COVID-19 pandemic. However, for cohort A, they were able
-to meet their target sample size of 60 participants, but after excluding
-some participants, the final sample size for analysis was 56 for cohort
-A and 54 for cohort B (after excluding participants with poor
-performance). The sentence that corresponds to the plan is: “Here, we
+<p>The sentence that corresponds to the researchers’ plan is: “Here, we
 sought to collect data from 60 participants in each cohort.”</p>
+<p>The authors deviated from their preregistration in that they did not
+collect data from 60 participants in cohort B, as initially planned. Due
+to the COVID-19 pandemic, data collection was interrupted, and they were
+only able to collect data from 56 participants in cohort B. However,
+they did collect data from 60 participants in cohort A, as planned.</p>
 <p>It fails gracefully if there are no links.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="va">psychsci</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
@@ -701,7 +697,7 @@ Psychological Research.”</span> <em>PLOS ONE</em> 18 (3): e0281086. <a href="h
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
