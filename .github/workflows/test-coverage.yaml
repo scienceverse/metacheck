@@ -1,9 +1,9 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
-  # push:
-  #   branches: [main, master]
-  # pull_request:
+  push:
+    branches: [main, master]
+  pull_request:
 
 name: test-coverage.yaml
 
@@ -21,13 +21,17 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
+          r-version: '4.5.1'
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::covr, any::xml2
           needs: coverage
+          cache-version: 1
 
-      - name: Test coverage
+        # this step should be revisited to still publish a report when a test fails
+        # , which is not the case now
+      - name: Test coverage 
         run: |
           cov <- covr::package_coverage(
             quiet = FALSE,
@@ -37,14 +41,11 @@ jobs:
           print(cov)
           covr::to_cobertura(cov)
         shell: Rscript {0}
-
+        
       - uses: codecov/codecov-action@v5
         with:
-          # Fail if error if not on PR, or if on PR and token is given
-          fail_ci_if_error: ${{ github.event_name != 'pull_request' || secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
           files: ./cobertura.xml
-          plugins: noop
-          disable_search: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Show testthat output
