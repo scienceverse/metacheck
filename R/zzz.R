@@ -1,4 +1,11 @@
-## set default options
+#' Set default options
+#'
+#' @param libname libname
+#' @param pkgname pkgname
+#'
+#' @returns NULL
+#' @export
+#' @keywords internal
 .onLoad <- function(libname, pkgname) {
   op <- options()
   op.pkg <- list(
@@ -16,6 +23,14 @@
   invisible()
 }
 
+#' On Attach
+#'
+#' @param libname libname
+#' @param pkgname pkgname
+#'
+#' @returns startup message
+#' @export
+#' @keywords internal
 .onAttach <- function(libname, pkgname) {
   stripe <- paste0(
     "\033[31m*****", # red

@@ -15,6 +15,33 @@ test_that("site_down", {
   expect_false(site_down("localhost/otherstuff"))
 })
 
+test_that(".onLoad", {
+  op.defaults <- c(
+    papercheck.verbose = TRUE,
+    papercheck.llm_max_calls = 30L,
+    papercheck.llm.model = "llama-3.3-70b-versatile",
+    papercheck.osf.delay = 0,
+    papercheck.osf.api = "https://api.osf.io/v2",
+    papercheck.osf.api.calls = 0
+  )
+
+  # op.current <- names(op.defaults) |> sapply(getOption)
+  names(op.defaults) |> sapply(\(o) options(setNames(list(NULL), o)))
+  op.null <- names(op.defaults) |> sapply(getOption)
+  expect_true(sapply(op.null, is.null) |> all())
+
+  papercheck:::.onLoad()
+  op.reset <- names(op.defaults) |> sapply(getOption)
+  expect_false(sapply(op.reset, is.null) |> any())
+  expect_equal(op.reset, op.defaults)
+})
+
+test_that(".onAttach", {
+  op <- capture_message(papercheck:::.onAttach())
+  expect_true(grepl("Welcome to PaperCheck", op))
+  expect_true(grepl("This is alpha software", op))
+})
+
 test_that("demo functions", {
 
   d <- demodir()
@@ -92,3 +119,5 @@ test_that("verbose", {
   expect_invisible(verbose(TRUE))
   expect_visible(verbose())
 })
+
+

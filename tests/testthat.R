@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(papercheck)
+suppressPackageStartupMessages(library(papercheck))
 
 test_check("papercheck")
