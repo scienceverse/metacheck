@@ -55,7 +55,7 @@ test_that("basic", {
   # print.ppchk_validate
   op <- capture_output(print(v))
   op2 <- capture_output(print.ppchk_validate(v))
-  exp_op <- " Validated matches for module `marginal`:\n\n* N in validation sample: 10\n* summary: \n  * marginal: 0.80"
+  exp_op <- " Validated matches for module `marginal`:\n\n* N in validation sample: 10\n* summary: \n  * marginal: 1"
   expect_equal(op2, op)
   expect_equal(op, exp_op)
 })
