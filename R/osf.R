@@ -787,7 +787,7 @@ osf_file_download <- function(osf_id,
                               max_folder_length = Inf,
                               ignore_folder_structure = FALSE) {
   ## error checking ----
-  osf_id <- osf_check_id(osf_id) |> na.omit()
+  osf_id <- osf_check_id(osf_id) |> na.omit() |> unique()
   if (length(osf_id) == 0) return(NULL)
 
   ## iterate ----
@@ -804,13 +804,16 @@ osf_file_download <- function(osf_id,
   }
 
   ## get files and folders ----
-  contents <- osf_retrieve(osf_id, recursive = TRUE)
+  message("Starting retrieval for ", osf_id)
+  contents <- suppressMessages(
+    osf_retrieve(osf_id, recursive = TRUE)
+  )
   cols <- c("osf_id", "name", "parent", "kind", "size", "download_url") |>
     intersect(names(contents))
-  files <- contents[contents$osf_type == "files", cols]
+  files <- contents[contents$osf_type == "files", cols, drop = FALSE]
 
   if (nrow(files) == 0) {
-    message(osf_id, " contained no files")
+    message("- ", osf_id, " contained no files")
     return(NULL)
   }
 
