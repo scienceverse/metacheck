@@ -477,6 +477,16 @@ test_that("osf_file_download", {
   f <- file.path(getwd(), osf_id)
   expect_false(dir.exists(f))
   #expect_true(grepl("All files were omitted for exceeding the limits", op) |> any())
+
+  ## multiple osf_ids
+  osf_id <- c("6nt4v", "j3gcx")
+  dl <- osf_file_download(osf_id)
+  expect_equal(names(dl), osf_id)
+  f <- file.path(getwd(), osf_id)
+  expect_true(dir.exists(f) |> all())
+  expect_true(file.path(f[[1]], "processed-data.csv") |> file.exists())
+  expect_true(file.path(f[[2]], "nest-1/README") |> file.exists())
+  unlink(f, recursive = TRUE)
 })
 
 test_that("osf_file_download long", {

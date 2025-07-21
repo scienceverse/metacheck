@@ -787,8 +787,21 @@ osf_file_download <- function(osf_id,
                               max_folder_length = Inf,
                               ignore_folder_structure = FALSE) {
   ## error checking ----
-  osf_id <- osf_check_id(osf_id)
-  if (is.na(osf_id)) return(NULL)
+  osf_id <- osf_check_id(osf_id) |> na.omit()
+  if (length(osf_id) == 0) return(NULL)
+
+  ## iterate ----
+  if (length(osf_id) > 1) {
+    dl <- lapply(osf_id,
+                osf_file_download,
+                download_to,
+                max_file_size,
+                max_download_size,
+                max_folder_length,
+                ignore_folder_structure)
+    names(dl) <- osf_id
+    return(dl)
+  }
 
   ## get files and folders ----
   contents <- osf_retrieve(osf_id, recursive = TRUE)
