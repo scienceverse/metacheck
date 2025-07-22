@@ -25,6 +25,12 @@ pdf2grobid <- function(filename, save_path = ".",
                        consolidateFunders = 0) {
   # "http://localhost:8070"
   # "https://grobid.work.abed.cloud"
+
+  # check if grobid_url is a valid url, before connecting to it
+  if (!grepl("^https?://", grobid_url)) {
+    stop("grobid_url must be a valid URL, starting with http or https!")
+  }
+
   site_down(grobid_url, "The grobid server %s is not available")
 
   # handle list of files or a directory----
@@ -85,7 +91,7 @@ pdf2grobid <- function(filename, save_path = ".",
   }
 
   file <- httr::upload_file(filename)
-  post_url <- paste0(grobid_url, "/api/processFulltextDocument")
+  post_url <- httr::modify_url(grobid_url, path = "/api/processFulltextDocument")
   args <- list(input = file,
                start = start,
                end = end,

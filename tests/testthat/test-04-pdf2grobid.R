@@ -5,7 +5,7 @@ test_that("works", {
 
   filename <- demoxml()
   expect_error(pdf2grobid(filename, grobid_url = "notawebsite"),
-               "The grobid server notawebsite is not available")
+               "grobid_url must be a valid URL, starting with http or https!")
 
   # invalid file type
   skip_if_offline("localhost")
