@@ -457,14 +457,30 @@ test_that("osf_file_download", {
   f <- file.path(getwd(), osf_id)
   expect_true(dir.exists(f))
   expect_true(file.path(f, "processed-data.csv") |> file.exists())
-  #expect_true(grepl("Retrieving info from 6nt4v", op) |> any())
+  expect_equal(dl$folder, osf_id)
+  expect_equal(dl$downloaded, TRUE)
+  expect_equal(dl$osf_id, "6846ed6a29684b023953943e")
+
+  ## second download with existing file
+  op <- capture_messages(
+    dl <- osf_file_download(osf_id)
+  )
+  folder <- paste0(osf_id, "_1")
+  expect_equal(dl$folder, folder)
+  f2 <- file.path(getwd(), folder)
+  expect_true(dir.exists(f2))
+
   unlink(f, recursive = TRUE)
+  unlink(f2, recursive = TRUE)
 
   # too small max_file_size
   op <- capture_messages(
     dl <- osf_file_download(osf_id, max_file_size = .0001)
   )
-  expect_null(dl)
+  expect_equal(nrow(dl), 1)
+  expect_equal(dl$folder, osf_id)
+  expect_equal(dl$osf_id, "6846ed6a29684b023953943e")
+  expect_equal(dl$downloaded, FALSE)
   f <- file.path(getwd(), osf_id)
   expect_false(dir.exists(f))
   #expect_true(grepl("omitting processed-data.csv (0MB)", op, fixed = TRUE) |> any())
@@ -473,15 +489,36 @@ test_that("osf_file_download", {
   op <- capture_messages(
     dl <- osf_file_download(osf_id, max_download_size = .0001)
   )
-  expect_null(dl)
+  expect_equal(nrow(dl), 1)
+  expect_equal(dl$folder, osf_id)
+  expect_equal(dl$osf_id, "6846ed6a29684b023953943e")
+  expect_equal(dl$downloaded, FALSE)
   f <- file.path(getwd(), osf_id)
   expect_false(dir.exists(f))
-  #expect_true(grepl("All files were omitted for exceeding the limits", op) |> any())
+
+  ## truncate
+  osf_id <- "j3gcx"
+  op <- capture_messages(
+    dl <- osf_file_download(osf_id, max_folder_length = 3)
+  )
+  f <- file.path(getwd(), osf_id, "nes")
+  expect_true(dir.exists(f))
+  f <- file.path(getwd(), osf_id, "data.xlsx")
+  expect_true(file.exists(f))
+  exp_paths <- c("README", "data.xlsx",
+                 "nes/README",
+                 "nes/test-1.txt",
+                 "nes/nes/test-2.txt",
+                 "nes/nes/nes/test-3.txt",
+                 "nes/nes/nes/nes/test-4.txt")
+  expect_equal(dl$path, exp_paths)
+  f <- file.path(getwd(), osf_id)
+  unlink(f, recursive = TRUE)
 
   ## multiple osf_ids
   osf_id <- c("6nt4v", "j3gcx")
   dl <- osf_file_download(osf_id)
-  expect_equal(names(dl), osf_id)
+  expect_equal(dl$folder, rep(osf_id, c(1, 7)))
   f <- file.path(getwd(), osf_id)
   expect_true(dir.exists(f) |> all())
   expect_true(file.path(f[[1]], "processed-data.csv") |> file.exists())
@@ -530,10 +567,17 @@ test_that("osf_file_download retry", {
   expect_false(dir.exists(f))
 
   # lots of links
-  osf_id <- osf_links(psychsci[1:10])$text
+  osf_id <- osf_links(psychsci[50:60])$text
+  dl <- osf_file_download(osf_id, max_file_size = 0.01)
+  file.path(getwd(), names(dl)) |> unlink(recursive = TRUE)
+
+  # only folder left after omissions ----
+  osf_id <- "3uqx6"
   dl <- osf_file_download(osf_id, max_file_size = 0.01)
 
-  file.path(getwd(), names(dl)) |> unlink(recursive = TRUE)
+  # downloaded == NA
+  osf_id <- "rkb96"
+  dl <- osf_file_download(osf_id, max_file_size = 0.01)
 })
 
 

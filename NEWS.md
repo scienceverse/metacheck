@@ -1,3 +1,8 @@
+# papercheck 0.0.0.9051
+
+* Small bug fixes to `osf_file_download()`
+* `osf_file_download()` now returns a table of file info, including info for files not downloaded because of file size limits
+
 # papercheck 0.0.0.9050
 
 * Added `read()` function, which superceeds `read_grobid()`, `read_cermine()` and `read_text()` (they are still available, but are now just aliases to `read()`). This should work with XML files in TEI (grobid), JATS APA-DTD, NLM-DTD and cermine formats, plus full text-only parsing of .docx and plain text files.

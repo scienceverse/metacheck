@@ -20,17 +20,22 @@ osf_file_download(
 
 \item{max_file_size}{maximum file size to download (in MB) - set to NULL for no restrictions}
 
-\item{max_download_size}{maximum total size to download (largest files will be omitted until total size is under the limit)}
+\item{max_download_size}{maximum total size to download}
 
 \item{max_folder_length}{maximum folder name length (set to make sure paths are <260 character on some Windows OS)}
 
 \item{ignore_folder_structure}{if TRUE, download all files into a single folder}
 }
 \value{
-folder structure
+data frame of file info
 }
 \description{
-Download all OSF Project Files
+Creates a directory for the OSF ID and downloads all of the files using a folder structure from the OSF project nodes and file storage structure. Returns (invisibly) a data frame with file info.
+}
+\details{
+Some differences may exist because the OSF allows longer file names with characters that may not be allowed on a file system, so these are cleaned up when downloading.
+
+You can limit downloads to only files under a specific size (defaults to 10MB) and only a maximum download size (largest files will be omitted until total size is under the limit). Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
 }
 \examples{
 \donttest{
