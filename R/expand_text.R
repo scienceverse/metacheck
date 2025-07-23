@@ -13,12 +13,12 @@
 #'
 #' @examples
 #' # single paper search
-#' paper <- demoxml() |> read_grobid()
+#' paper <- demoxml() |> read()
 #' res_tbl <- search_text(paper, "p =", return = "match")
 #' expanded <- expand_text(res_tbl, paper)
 #'
 #' # multiple paper search
-#' papers <- demodir() |> read_grobid()
+#' papers <- demodir() |> read()
 #' res_tbl <- search_text(papers, "replicate", return = "sentence")
 #' expanded <- expand_text(res_tbl, papers, plus = 1, minus = 1)
 expand_text <- function(results_table,
@@ -78,12 +78,13 @@ expand_text <- function(results_table,
       # cut down to relevant sentences
 
       full_text <- lapply(-minus:plus, function(offset) {
-        coords <- results_table[c("id", "div", "p", "s")]
+        coords <- results_table[c("id", "section", "div", "p", "s")]
         coords$expanded_s <- coords$s + offset
         coords
       }) |>
         do.call(rbind, args = _) |>
-        dplyr::left_join(full_text, by = c("id", "div", "p", "expanded_s" = "s")) |>
+        unique() |>
+        dplyr::left_join(full_text, by = c("id", "section", "div", "p", "expanded_s" = "s")) |>
         dplyr::filter(!is.na(expanded)) |>
         dplyr::summarise(expanded = paste(expanded, collapse = " "),
                          .by = dplyr::all_of(c("id", "section", "div", "p", "s")))

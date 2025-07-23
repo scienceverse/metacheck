@@ -38,8 +38,10 @@ test_that("llm_max_calls", {
   expect_true(is.function(llm_max_calls))
 
   n <- getOption("papercheck.llm_max_calls")
+  n2 <- llm_max_calls()
   expect_true(is.integer(n))
   expect_true(n > 0)
+  expect_equal(n, n2)
 
   expect_error(llm_max_calls("a"), "n must be a number")
   expect_equal(getOption("papercheck.llm_max_calls"), n)
@@ -104,7 +106,7 @@ test_that("sample size", {
   skip_if_offline("api.groq.com")
   skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
-  papers <- read_grobid(demodir())
+  papers <- read(demodir())
   text <- search_text(papers, section = "method", return = "section")
   query <- "What is the sample size of this study (e.g., the number of participants tested?
 
@@ -195,6 +197,11 @@ test_that("json_expand", {
   )
 
   expanded <- json_expand(table)
+  expanded2 <- json_expand(table$answer)
+  expect_equal(expanded[, 3:6], expanded2[2:5])
+  expect_equal(names(expanded)[[2]], "answer")
+  expect_equal(names(expanded2)[[1]], "json")
+
   expect_equal(names(expanded), c("id", "answer", "number", "letter", "bool", "error"))
   expect_equal(typeof(expanded$number), "integer")
   expect_equal(typeof(expanded$letter), "character")

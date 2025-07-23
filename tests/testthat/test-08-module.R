@@ -16,7 +16,7 @@ test_that("exists", {
 })
 
 test_that("errors", {
-  paper <- read_grobid(demoxml())
+  paper <- read(demoxml())
   expect_error( module_run() )
   expect_error( module_run(paper) )
 
@@ -39,6 +39,12 @@ test_that("errors", {
 
   expect_error(module_run(paper, "modules/code-error.R"),
                "Running the module produced errors")
+
+  expect_error(module_run(paper, "modules/missing-pkg.R"),
+               "notarealpkg")
+
+  expect_error(module_run(paper, "modules/missing-importFrom.R"),
+               "dplyr::notarealfunction")
 })
 
 test_that("module_list", {
@@ -107,11 +113,11 @@ test_that("module_help", {
 })
 
 test_that("test", {
-  paper <- demoxml() |> read_grobid()
+  paper <- demoxml() |> read()
 
   module <- "modules/no_error.R"
   mod_output <- module_run(paper, module)
-  expected_summary <- data.frame(id = "to_err_is_human", p_values = 0)
+  expected_summary <- data.frame(id = "to_err_is_human", p_values = 3)
 
   expect_equal(mod_output$module, module)
   expect_equal(mod_output$title, "List All P-Values (Test version)")
@@ -128,7 +134,7 @@ test_that("test", {
 #   skip_on_cran()
 #   skip_if_offline("api.groq.com")
 #
-#   paper <- read_grobid(demoxml())
+#   paper <- read(demoxml())
 #   sec <- search_text(paper,
 #                       section = "method",
 #                       return = "section")
@@ -152,7 +158,7 @@ test_that("test", {
 # })
 
 test_that("all_p_values", {
-  paper <- read_grobid(demoxml())
+  paper <- read(demoxml())
   module <- "all_p_values"
   p <- module_run(paper, module)
   expect_equal(p$traffic_light, "info")
@@ -224,7 +230,7 @@ test_that("all_p_values", {
 })
 
 test_that("all_urls", {
-  paper <- read_grobid(demoxml())
+  paper <- read(demoxml())
   module <- "all_urls"
   urls <- module_run(paper, module)
   expect_equal(urls$traffic_light, "info")
@@ -271,7 +277,7 @@ test_that("osf_check", {
 })
 
 test_that("retractionwatch", {
-  paper <- demoxml() |> read_grobid()
+  paper <- demoxml() |> read()
   module <- "retractionwatch"
 
   mod_output <- module_run(paper, module)
@@ -289,7 +295,7 @@ test_that("retractionwatch", {
 })
 
 test_that("exact_p", {
-  paper <- demodir() |> read_grobid()
+  paper <- demodir() |> read()
   paper <- paper[[1]]
 
   module <- "exact_p"
@@ -326,7 +332,7 @@ test_that("exact_p", {
 })
 
 test_that("marginal", {
-  paper <- demodir() |> read_grobid()
+  paper <- demodir() |> read()
   paper <- paper[[1]]
   module <- "marginal"
 
@@ -359,7 +365,7 @@ test_that("marginal", {
 #     skip("needs big classifier: sample-size")
 #   }
 #
-#   paper <- demoxml() |> read_grobid() |>
+#   paper <- demoxml() |> read() |>
 #     search_text(".{30, }", section = "method", return = "sentence")
 #   module <- "sample-size-ml"
 #
@@ -370,7 +376,7 @@ test_that("marginal", {
 # })
 
 test_that("ref_consistency", {
-  paper <- demoxml() |> read_grobid()
+  paper <- demoxml() |> read()
   module <- "ref_consistency"
 
   mod_output <- module_run(paper, module)
@@ -392,7 +398,7 @@ test_that("ref_consistency", {
 })
 
 test_that("statcheck", {
-  paper <- demoxml() |> read_grobid()
+  paper <- demoxml() |> read()
   module <- "statcheck"
 
   mod_output <- module_run(paper, module)

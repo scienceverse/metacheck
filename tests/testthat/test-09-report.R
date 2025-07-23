@@ -4,16 +4,14 @@ test_that("error", {
 
   expect_error(report(1), "The paper argument must be a paper object")
 
-  paper <- demoxml() |> read_grobid()
-  expect_error(paper_report <- report(paper, modules = c("notamodule")),
-    "Some modules are not available: notamodule",
-    fixed = TRUEF
-  )
+  paper <- demoxml() |> read()
+  expect_error( paper_report <- report(paper, modules = c("notamodule")),
+                "Some modules are not available: notamodule",
+                fixed = TRUE)
 })
 
 test_that("defaults", {
-  skip_on_ci()
-  paper <- demoxml() |> read_grobid()
+  paper <- demoxml() |> read()
   # skip modules that require osf.api
   modules <- c(
     "exact_p", "marginal", "effect_size", "statcheck",
@@ -63,7 +61,7 @@ test_that("detected", {
   skip_if_not_installed("quarto")
   skip_on_cran()
 
-  paper <- demoxml() |> read_grobid()
+  paper <- demoxml() |> read()
   # skip modules that require osf.api
   modules <- c(
     "exact_p", "marginal", "effect_size", "statcheck",

@@ -1,3 +1,21 @@
+# papercheck 0.0.0.9052
+
+* Fixed a bug in `expand_text()` where expanded sentences were duplicated if there are multiple matches from the same sentence in the data frame.
+* Updated the `retractionwatch` table
+* Fixed a bug in `read()` that omitted paper DOIs from paper$info
+* Updated `read()` to add correctly parsed "accepted" and "received" dates to paper\$info (replaces paper\$submission string) (ISO 8601 is the only correct date format!)
+* Updated `psychsci` for new info structure
+
+# papercheck 0.0.0.9051
+
+* Small bug fixes to `osf_file_download()`
+* `osf_file_download()` now returns a table of file info, including info for files not downloaded because of file size limits
+
+# papercheck 0.0.0.9050
+
+* Added `read()` function, which superceeds `read_grobid()`, `read_cermine()` and `read_text()` (they are still available, but are now just aliases to `read()`). This should work with XML files in TEI (grobid), JATS APA-DTD, NLM-DTD and cermine formats, plus full text-only parsing of .docx and plain text files.
+* Added `osf_file_download()` function, which downloads all files under a project or node and structures them the same as the project.
+
 # papercheck 0.0.0.9049
 
 * Updated `read_grobid()` to classify headers as intro, method, results, discussion with better accuracy (to handle garbled headers)

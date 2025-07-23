@@ -584,16 +584,25 @@
       "en": "div"
     },
     {
+      "en": "effect_size"
+    },
+    {
+      "en": "Exact P-Values"
+    },
+    {
+      "en": "exact_p"
+    },
+    {
       "en": "GROQ API Key"
     },
     {
       "en": "id"
     },
     {
-      "en": "imprecise_p"
+      "en": "marginal"
     },
     {
-      "en": "marginal"
+      "en": "Missing Effect Sizes"
     },
     {
       "en": "osf_check"

@@ -395,6 +395,7 @@ osf_file_data <- function(data) {
     category = att$category %||% NA_character_,
     size = att$size %||% NA_integer_,
     downloads = att$extra$downloads %||% NA_integer_,
+    download_url = data$links$download %||% NA_character_,
     parent = data$relationships$parent_folder$data$id %||%
       data$relationships$target$data$id %||% NA_character_
   )
@@ -763,4 +764,212 @@ osf_api_calls <- function(calls = NULL) {
 }
 
 
+#' Download all OSF Project Files
+#'
+#' Creates a directory for the OSF ID and downloads all of the files using a folder structure from the OSF project nodes and file storage structure. Returns (invisibly) a data frame with file info.
+#'
+#' Some differences may exist because the OSF allows longer file names with characters that may not be allowed on a file system, so these are cleaned up when downloading.
+#'
+#' You can limit downloads to only files under a specific size (defaults to 10MB) and only a maximum download size (largest files will be omitted until total size is under the limit). Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
+#'
+#' @param osf_id an OSF ID or URL
+#' @param download_to path to download to
+#' @param max_file_size maximum file size to download (in MB) - set to NULL for no restrictions
+#' @param max_download_size maximum total size to download
+#' @param max_folder_length maximum folder name length (set to make sure paths are <260 character on some Windows OS)
+#' @param ignore_folder_structure if TRUE, download all files into a single folder
+#'
+#' @returns data frame of file info
+#' @export
+#'
+#' @examples
+#' \donttest{
+#'   osf_file_download("6nt4v")
+#' }
+osf_file_download <- function(osf_id,
+                              download_to = ".",
+                              max_file_size = 10,
+                              max_download_size = 100,
+                              max_folder_length = Inf,
+                              ignore_folder_structure = FALSE) {
+  ## error checking ----
+  osf_id <- osf_check_id(osf_id) |> na.omit() |> unique()
+  if (length(osf_id) == 0) return(NULL)
 
+  ## iterate ----
+  if (length(osf_id) > 1) {
+    message("Starting downloads for ", length(osf_id),
+            " OSF projects...\n")
+    dl <- lapply(osf_id,
+                osf_file_download,
+                download_to,
+                max_file_size,
+                max_download_size,
+                max_folder_length,
+                ignore_folder_structure) |>
+      do.call(dplyr::bind_rows, args = _)
+    message("...Completed downloads for ", length(osf_id),
+            " OSF projects")
+    #names(dl) <- osf_id
+    return(dl)
+  }
+
+  ## get files and folders ----
+  message("Starting retrieval for ", osf_id)
+  contents <- suppressMessages(
+    osf_retrieve(osf_id, recursive = TRUE)
+  )
+  cols <- c("osf_id", "name", "parent", "kind", "size", "download_url") |>
+    intersect(names(contents))
+  files <- contents[contents$osf_type == "files", cols, drop = FALSE]
+
+  if (nrow(files) == 0) {
+    message("- ", osf_id, " contained no files")
+    return(NULL)
+  }
+
+  ## restrict file size ----
+  if (!is.null(max_file_size) && max_file_size > 0) {
+    too_big_files <- which(files$size > max_file_size*1024*1024)
+    if (length(too_big_files) > 0) {
+      for (i in too_big_files) {
+        message("- omitting ", files$name[[i]],
+                " (", round(files$size[[i]]/1024/1024, 1), "MB)")
+      }
+
+      files <- files[-too_big_files, ]
+    }
+  }
+
+  ## restrict total download size ----
+  while (sum(files$size, na.rm = TRUE) > max_download_size*1024*1024) {
+    max_file <- which(files$size == max(files$size, na.rm = TRUE))
+
+    message("- omitting ", files$name[[max_file]],
+            " (", round(files$size[[max_file]]/1024/1024, 1), "MB)")
+
+    files <- files[-max_file, ]
+  }
+
+  ## set up download directory (make sure it doesn't overwrite anything)
+  # On the OSF you can nest folders and give long folder names, but windows has a 260 character folder name limit.
+  download_to <- fs::path_abs(download_to)
+  if (dir.exists(download_to)) {
+    download_to <- file.path(download_to, osf_id)
+  }
+  i = 0
+  while (dir.exists(download_to)) {
+    i = i + 1
+    download_to <- download_to |>
+      sub("_\\d+$", "", x = _) |>
+      paste0("_", i)
+  }
+  dir.create(download_to, showWarnings = FALSE, recursive = FALSE)
+
+  if (sum(files$kind == "file") > 0) {
+    ## download all to temp folder ----
+    temppath <- fs::file_temp()
+    dir.create(temppath)
+
+    files_to_download <- which(files$kind == "file")
+    if (verbose()) {
+      pb <- progress::progress_bar$new(
+        total = length(files_to_download), clear = FALSE,
+        format = "Downloading files [:bar] :current/:total :elapsedfull"
+      )
+      pb$tick(0)
+      Sys.sleep(0.2)
+      pb$tick(0)
+    }
+    for (i in files_to_download) {
+      tryCatch({
+        write_loc <- file.path(temppath, files$osf_id[[i]]) |>
+          httr::write_disk(overwrite = TRUE)
+        response <- httr::GET(files$download_url[[i]], write_loc)
+
+        # TODO: deal with errors
+      }, error = \(e) {})
+      if (verbose()) pb$tick()
+    }
+
+    trunc_warning <- FALSE
+
+    if (isTRUE(ignore_folder_structure)) {
+      files$path <- fs::path_sanitize(files$name)
+      while(duplicated(files$path) |> any()) {
+        dupes <- files$path[duplicated(files$path)]
+        ext <-  fs::path_ext(dupes)
+        if (ext != "") ext <- paste0(".", ext)
+        base <- fs::path_ext_remove(dupes)
+        files$path[duplicated(files$path)] <- paste0(base, "_copy", ext)
+      }
+    } else {
+      ## structure files into download_to ----
+      files$path <- ""
+
+      for (i in seq_along(files$osf_id)) {
+        item <- files[i, ]
+        if (is.na(item$parent) || item$parent == osf_id) {
+          files$path[[i]] <- item$name
+        } else {
+          parents <- data.frame()
+          last_parent <- item$parent
+          while (last_parent != osf_id) {
+            next_parent <- contents[contents$osf_id == last_parent, ]
+            if (nrow(next_parent) == 0) {
+              last_parent <- osf_id
+            } else {
+              parents <- dplyr::bind_rows(parents, next_parent)
+              last_parent <- parents[nrow(parents), "parent"]
+            }
+          }
+
+          # make sure file components <= max_folder_length
+          # TODO: handle windows limitations more gracefully
+          maxlen <- sapply(nchar(parents$name), min, max_folder_length)
+          newnames <- substr(parents$name, 1, maxlen)
+          if (!all(newnames == parents$name)) {
+            trunc_warning <- TRUE
+            parents$name <- newnames
+          }
+
+          files$path[[i]] <- rev(parents$name) |>
+            fs::path_sanitize() |>
+            paste(collapse = "/") |>
+            paste0("/", item$name)
+        }
+      }
+    }
+
+    if (trunc_warning) {
+      warning("Some folder names were truncated to max_folder_length = ", max_folder_length, " characters")
+    }
+
+    files_to_copy <- which(files$kind == "file")
+    for (i in files_to_copy) {
+      from <- file.path(temppath, files$osf_id[[i]])
+      to <- file.path(download_to, files$path[[i]])
+      dir.create(dirname(to), showWarnings = FALSE, recursive = TRUE)
+      file.copy(from, to)
+    }
+
+    ## clean up temp dir
+    unlink(temppath, recursive = TRUE)
+  }
+
+  ## set up return table ----
+  contents$folder <- basename(download_to)
+  ret <- contents[contents$kind %in% "file",
+                  c("folder", "osf_id", "name", "filetype", "size", "downloads")]
+
+  if (exists("files_to_copy")) {
+    copied <- files[files_to_copy, c("osf_id", "path")]
+    copied$downloaded <- TRUE
+    ret <- dplyr::left_join(ret, copied, by = "osf_id")
+    ret$downloaded <- ifelse(ret$downloaded %in% TRUE, TRUE, FALSE)
+  } else {
+    ret$downloaded <- FALSE
+  }
+
+  invisible(ret)
+}

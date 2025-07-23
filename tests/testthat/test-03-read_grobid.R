@@ -1,41 +1,44 @@
 # setwd("tests/testthat/")
 
 test_that("error", {
-  expect_true(is.function(read_grobid))
+  expect_true(is.function(read))
 
   # invalid file type
-  expect_error(read_grobid("no.exist"))
+  expect_warning(r <- read("no.exist"))
+  expect_null(r)
 
   # non-grobid XML
   filename <- tempfile(fileext = ".xml")
   xml2::read_html("<p>Hello</p>") |>
     xml2::write_xml(filename, options = "as_xml")
-  expect_warning(g1 <- read_grobid(filename))
-  expect_null(g1)
+  expect_no_warning(g1 <- read(filename))
+  expect_equal(g1$full_text |> nrow(), 0)
 
   # valid grobid with no text
-  expect_no_error(notext <- read_grobid("examples/notext.xml"))
+  filename <- "examples/notext.xml"
+  expect_no_error(notext <- read(filename))
   expect_equal( nrow( search_text(notext) ), 0)
 
   # bad file
-  expect_warning(g2 <- read_grobid("examples/badxml.xml"),
+  filename <- "examples/badxml.xml"
+  expect_warning(g2 <- read(filename),
                  "The file examples/badxml.xml was not valid XML",
                  fixed = TRUE)
   expect_null(g2)
 
   # bib problems
-  expect_no_error(g3 <- read_grobid("examples/bib_problem.xml"))
+  expect_no_error(g3 <- read("examples/bib_problem.xml"))
 
   # warning on batch import
-  expect_warning(all <- read_grobid("examples"),
+  expect_warning(all <- read("examples"),
                  "The file examples/badxml.xml was not valid XML",
                  fixed = TRUE)
-  expect_equal(length(all), 6)
+  expect_equal(length(all), 8)
 })
 
 test_that("basics", {
   filename <- demoxml()
-  s <- read_grobid(filename)
+  s <- read(filename)
   expect_equal(class(s), c("scivrs_paper", "list"))
 
   title <- "To Err is Human: An Empirical Investigation"
@@ -45,11 +48,15 @@ test_that("basics", {
   expect_equal(substr(s$info$description, 1, 10), "This paper")
 
   expect_equal(nrow(s$full_text), 24)
+
+  # check grobid alias
+  s2 <- read_grobid(filename)
+  expect_equal(s, s2)
 })
 
 test_that("urls", {
   filename <- demoxml()
-  s <- read_grobid(filename)
+  s <- read(filename)
   # check for markdown [text](url) style
   # osf <- search_text(s, "\\[.+\\]\\(.+\\)", return = "match")
 
@@ -60,18 +67,18 @@ test_that("urls", {
 })
 
 
-test_that("read_grobid_xml", {
-  expect_true(is.function(read_grobid_xml))
+test_that("read_xml", {
+  expect_true(is.function(read_xml))
 
   # non-grobid XML
-  filename <- tempfile(fileext = "xml")
+  filename <- tempfile(fileext = ".xml")
   xml2::read_html("<p>Hello</p>") |>
     xml2::write_xml(filename, options = "as_xml")
-  expect_error( read_grobid_xml(filename),
-                "does not parse as a valid Grobid TEI")
+  xml <- read_xml(filename)
+  expect_equal(xml2::xml_text(xml), "Hello")
 
   filename <- demoxml()
-  xml <- read_grobid_xml(filename)
+  xml <- read_xml(filename)
   expect_s3_class(xml, "xml_document")
 
   title <- xml2::xml_find_first(xml, "//title") |> xml2::xml_text()
@@ -79,26 +86,57 @@ test_that("read_grobid_xml", {
   expect_equal(title, exp)
 })
 
+test_that("tei_info", {
+  filename <- "examples/0956797613520608.xml"
+  xml <- read_xml(filename)
+  info <- tei_info(xml)
 
-test_that("get_full_text", {
-  xml <- read_grobid_xml("examples/0956797613520608.xml")
-  body <- get_full_text(xml, "test")
+  # expected
+  title <- "Continuous Theta-Burst Stimulation Demonstrates a Causal Role of Premotor Homunculus in Action Understanding"
+  description <- "agent performing the same or a similar action (di"
+  keywords <- c("mirror-neuron system",
+                "action understanding",
+                "theta-burst stimulation",
+                "social cognition",
+                "theory of mind",
+                "social interaction",
+                "social perception")
+  doi <- "10.1177/0956797613520608"
+  received <- "2013-08-16"
+  accepted <- "2013-12-22"
+
+  expect_equal(info$title, title)
+  expect_equal(info$description, description)
+  expect_equal(info$keywords, keywords)
+  expect_equal(info$doi, doi)
+  expect_equal(info$received, received)
+  expect_equal(info$accepted, accepted)
+})
+
+
+test_that("tei_full_text", {
+  xml <- read_xml("examples/0956797613520608.xml")
+  body <- tei_full_text(xml) |> process_full_text()
   sections <- c("abstract", "intro", "method", "results",
                 "discussion", "acknowledgement","funding",
                 "annex", "fig", "tab")
   expect_equal(unique(body$section), sections)
+
+  # no repeat section/div numbers
+  divs <- dplyr::count(body, section, header, div)
+  expect_equal(nrow(divs), length(unique(paste(divs$section, divs$div))))
 })
 
 test_that("sections", {
   # sections read in correctly
-  xml <- read_grobid_xml("examples/10.1002_ece3.11050.xml")
-  body <- get_full_text(xml, id = "test")
+  xml <- read_xml("examples/10.1002_ece3.11050.xml")
+  body <- tei_full_text(xml) |> process_full_text()
   expect_equal(body$section[35:37], rep("method", 3))
 })
 
 test_that("get figures ", {
-  xml <- read_grobid_xml("examples/0956797613520608.xml")
-  text <- get_full_text(xml)
+  xml <- read_xml("examples/0956797613520608.xml")
+  text <- tei_full_text(xml) |> process_full_text()
   figs <- sum(text$section == "fig")
   tabs <- sum(text$section == "tab")
   fig_ids <- text$div[text$section == "fig"] |> unique()
@@ -112,30 +150,30 @@ test_that("get figures ", {
 #   expect_true(is.function(get_tables))
 #
 #   filename <- "examples/0956797613520608.xml"
-#   xml <- read_grobid_xml(filename)
+#   xml <- read_xml(filename)
 #   tbls <- get_tables(xml)
 # }
 
 test_that("get notes ", {
-  xml <- read_grobid_xml("footnotes/3544548.3580942.xml")
-  text <- get_full_text(xml)
+  xml <- read_xml("footnotes/3544548.3580942.xml")
+  text <- tei_full_text(xml) |> process_full_text()
   notes <- sum(text$section == "foot")
   note_ids <- text$div[text$section == "foot"] |> unique()
 
   expect_equal(notes, 8)
   expect_equal(note_ids, 0:7)
 
-  xml <- read_grobid_xml("examples/0956797613520608.xml")
-  text <- get_full_text(xml)
+  xml <- read_xml("examples/0956797613520608.xml")
+  text <- tei_full_text(xml) |> process_full_text()
   notes <- sum(text$section == "foot")
 
   expect_equal(notes, 0)
 })
 
-test_that("get_authors", {
-  xml <- "examples/0956797613520608.xml" |> read_grobid_xml()
+test_that("tei_authors", {
+  xml <- "examples/0956797613520608.xml" |> read_xml()
 
-  authors <- get_authors(xml)
+  authors <- tei_authors(xml)
   expect_equal(length(authors), 7)
   expect_equal(authors[[1]]$name,
                list(surname = "Michael", given = "John"))
@@ -146,7 +184,7 @@ test_that("get_authors", {
 })
 
 test_that("xml2bib", {
-  xml <- "examples/0956797613520608.xml" |> read_grobid_xml()
+  xml <- "examples/0956797613520608.xml" |> read_xml()
   refs <- xml2::xml_find_all(xml, "//listBibl //biblStruct")
 
   # journal article
@@ -184,13 +222,13 @@ test_that("xml2bib", {
   expect_no_error( bib_all <- lapply(refs[2], xml2bib) )
 })
 
-test_that("get_refs", {
-  expect_true(is.function(get_refs))
+test_that("tei_bib", {
+  expect_true(is.function(tei_bib))
 
   filename <- demoxml()
-  xml <- read_grobid_xml(filename)
+  xml <- read_xml(filename)
 
-  refs <- get_refs(xml)
+  refs <- tei_bib(xml)
   expect_equal(names(refs), c("references", "citations"))
 
   exp <- c("bib_id", "ref", "doi", "bibtype",
@@ -201,25 +239,25 @@ test_that("get_refs", {
   expect_equal(names(refs$citations), c("bib_id", "text"))
 
   # no raw_references
-  expect_no_error(g <- read_grobid("examples/bib2.xml"))
+  expect_no_error(g <- read("examples/bib2.xml"))
   expect_true( all(!is.na(g$references$ref)) )
 
 
   # exclude <bibr> with no type
   filename <- "psychsci/light/0956797613520608.xml"
-  xml <- read_grobid_xml(filename)
-  refs <- get_refs(xml)
+  xml <- read_xml(filename)
+  refs <- tei_bib(xml)
 
   start_b <- refs$citations$bib_id |> grepl("^b", x = _)
   expect_true(all(start_b))
 })
 
 test_that("iteration", {
-  expect_error(read_grobid("noxml"),
-               "^There are no xml files in the directory")
+  expect_error(read("noxml"),
+               "^There are no xml, docx or txt files in the directory noxml")
 
   grobid_dir <- demodir()
-  s <- read_grobid(grobid_dir)
+  s <- read(grobid_dir)
 
   file_list <- list.files(grobid_dir, ".xml")
 
@@ -240,19 +278,19 @@ test_that("iteration", {
 
   # separate xmls
   filenames <- demodir() |> list.files(".xml", full.names = TRUE)
-  s <- read_grobid(filenames)
+  s <- read(filenames)
   expect_s3_class(s, "scivrs_paperlist")
   expect_equal(names(s) |> paste0(".xml"), file_list)
 
-  s <- read_grobid(filenames[3:1])
+  s <- read(filenames[3:1])
   expect_s3_class(s, "scivrs_paperlist")
   expect_equal(names(s) |> paste0(".xml"), file_list[3:1])
 
   # recursive file search
-  s <- read_grobid("nested")
+  s <- read("nested")
   expect_s3_class(s, "scivrs_paperlist")
   nested_files <- c("3544548.3580942",
-                    "3613904.3642568")
+                    "nest/3613904.3642568")
   expect_equal(s[[1]]$info$filename, "nested/3544548.3580942.xml")
   expect_equal(s[[2]]$info$filename, "nested/nest/3613904.3642568.xml")
   s[[2]]$info$filename
@@ -263,17 +301,17 @@ test_that("iteration", {
 test_that("grobid-versions", {
   filename <- list.files("grobid-test/full", full.names = TRUE)
 
-  # read_grobid_xml
-  xml <- read_grobid_xml(filename[[1]])
+  # read_xml
+  xml <- read_xml(filename[[1]])
   expect_s3_class(xml, "xml_document")
 
-  # read_grobid
-  paper <- read_grobid(filename)
+  # read
+  paper <- read(filename)
 
   # small
   sfilename <- list.files("grobid-test/small", full.names = TRUE)
-  sxml <- read_grobid_xml(sfilename[[1]])
-  spaper <- read_grobid(sfilename)
+  sxml <- read_xml(sfilename[[1]])
+  spaper <- read(sfilename)
 
   skip("Grobid version testing: failures expected")
 
@@ -378,18 +416,18 @@ test_that("grobid-versions", {
 
 test_that("get_app_info", {
   filename <- "examples/to_err_is_human.xml"
-  xml <- read_grobid_xml(filename)
+  xml <- read_xml(filename)
   info <- get_app_info(xml)
 
   expect_equal(info$version, "0.8.1")
   expect_equal(info$when, "2025-02-25T18:30+0000")
   expect_equal(info$url, "https://github.com/kermitt2/grobid")
 
-  filename <- "grobid-test/full/0956797613520608.xml"
-  paper <- read_grobid(filename)
-  expect_equal(paper$app$version, "0.8.2")
-  expect_equal(paper$app$when, "2025-05-18T17:52+0000")
-  expect_equal(paper$app$url, "https://github.com/kermitt2/grobid")
+  # filename <- "grobid-test/full/0956797613520608.xml"
+  # paper <- read(filename)
+  # expect_equal(paper$app$version, "0.8.2")
+  # expect_equal(paper$app$when, "2025-05-18T17:52+0000")
+  # expect_equal(paper$app$url, "https://github.com/kermitt2/grobid")
 })
 
 test_that("paper_validate", {

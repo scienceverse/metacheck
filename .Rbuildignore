@@ -11,5 +11,5 @@
 inst/modules/sample-size*
 ^doc$
 ^Meta$
-^_stuff*
+^_stuff/*
 ^vignettes/articles$

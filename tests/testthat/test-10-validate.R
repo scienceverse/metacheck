@@ -51,4 +51,27 @@ test_that("basic", {
   exp_summary$marginal <- as.integer(expected$summary$marginal)
   v <- validate(paper, module, summary = exp_summary)
   expect_equal(v$stats$summary$marginal, 1)
+
+  # print.ppchk_validate
+  op <- capture_output(print(v))
+  op2 <- capture_output(print.ppchk_validate(v))
+  exp_op <- " Validated matches for module `marginal`:\n\n* N in validation sample: 10\n* summary: \n  * marginal: 1"
+  expect_equal(op2, op)
+  expect_equal(op, exp_op)
+})
+
+test_that("accuracy", {
+  exp <- rep(c(T, F), 50)
+  obs <- exp
+  obs[1:20] <- !obs[1:20]
+  a <- accuracy(exp, obs)
+  expect_equal(a$hits, 40)
+  expect_equal(a$misses, 10)
+  expect_equal(a$false_alarms, 10)
+  expect_equal(a$correct_rejections, 40)
+  expect_equal(a$accuracy, 0.8)
+  expect_equal(a$sensitivity, 0.8)
+  expect_equal(a$specificity, 0.2)
+  expect_equal(round(a$d_prime, 2), 1.68)
+  expect_equal(a$beta, 1)
 })
