@@ -37,7 +37,26 @@ test_that("read_xml", {
   expect_equal(title, exp)
 })
 
-test_that("get_full_text", {
+test_that("nlm_info", {
+  filename <- "cermine_example.xml"
+  xml <- read_xml(filename)
+  info <- nlm_info(xml)
+
+  # expected
+  title <- "Ambivalent Sexism and Tolerance of Violence Against Women in India"
+  description <- "We examined associations between sexist beliefs and tolerance of violence against women in India using a nationally representative probability sample of adults (n = 133,398). Research consistently indicates that hostile sexism fosters tolerance of violence against women. However, benevolent sexism is sometimes associated with higher tolerance and sometimes with lower tolerance of violence. We proposed that this inconsistency could be resolved by considering the source of violence: Is violence perpetrated by outsiders or intimate partners? Results of a multigroup structural equation model showed that endorsement of hostile sexism was related to greater tolerance of violence regardless of the source. In contrast, endorsement of benevolent sexism was associated with lower tolerance of violence from outsiders but was simultaneously associated with higher tolerance of spousal violence. These opposing processes indicate that although benevolent sexism promises women protection from violence, the very same ideology legitimizes spousal violence, thereby reinforcing men's power within intimate relationships."
+  keywords <- c("sexism", "violence", "India",
+                "gender", "open data", "open materials")
+  #doi <- "10.1177/0956797613520608"
+  doi <- ""
+
+  expect_equal(info$title, title)
+  expect_equal(info$description, description)
+  expect_equal(info$keywords, keywords)
+  expect_equal(info$doi, doi)
+})
+
+test_that("nlm_full_text", {
   filename <- system.file("psychsci/0956797620955209.cermine.xml",
                           package = "papercheck")
   xml <- read_xml(filename)
@@ -57,7 +76,7 @@ test_that("get_authors", {
   # these are pretty messed up, but it's cermine's fault
 })
 
-test_that("get_cermine_refs", {
+test_that("jats_bib", {
   filename <- system.file("psychsci/0956797620955209.cermine.xml",
                           package = "papercheck")
   xml <- read_xml(filename)

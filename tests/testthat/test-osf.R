@@ -449,6 +449,9 @@ test_that("osf_file_download", {
   expect_warning(x <- osf_file_download("notanid"))
   expect_null(x)
 
+  skip_on_cran()
+  skip_on_covr()
+
   osf_id <- "6nt4v" # processed data - 1 file
 
   op <- capture_messages(
@@ -482,8 +485,9 @@ test_that("osf_file_download", {
   expect_equal(dl$osf_id, "6846ed6a29684b023953943e")
   expect_equal(dl$downloaded, FALSE)
   f <- file.path(getwd(), osf_id)
-  expect_false(dir.exists(f))
-  #expect_true(grepl("omitting processed-data.csv (0MB)", op, fixed = TRUE) |> any())
+  expect_true(dir.exists(f))
+  expect_equal(list.files(f), character(0))
+  unlink(f, recursive = TRUE)
 
   # too small max_download_size
   op <- capture_messages(
@@ -494,7 +498,9 @@ test_that("osf_file_download", {
   expect_equal(dl$osf_id, "6846ed6a29684b023953943e")
   expect_equal(dl$downloaded, FALSE)
   f <- file.path(getwd(), osf_id)
-  expect_false(dir.exists(f))
+  expect_true(dir.exists(f))
+  expect_equal(list.files(f), character(0))
+  unlink(f, recursive = TRUE)
 
   ## truncate
   osf_id <- "j3gcx"

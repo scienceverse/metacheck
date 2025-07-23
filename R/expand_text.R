@@ -78,12 +78,13 @@ expand_text <- function(results_table,
       # cut down to relevant sentences
 
       full_text <- lapply(-minus:plus, function(offset) {
-        coords <- results_table[c("id", "div", "p", "s")]
+        coords <- results_table[c("id", "section", "div", "p", "s")]
         coords$expanded_s <- coords$s + offset
         coords
       }) |>
         do.call(rbind, args = _) |>
-        dplyr::left_join(full_text, by = c("id", "div", "p", "expanded_s" = "s")) |>
+        unique() |>
+        dplyr::left_join(full_text, by = c("id", "section", "div", "p", "expanded_s" = "s")) |>
         dplyr::filter(!is.na(expanded)) |>
         dplyr::summarise(expanded = paste(expanded, collapse = " "),
                          .by = dplyr::all_of(c("id", "section", "div", "p", "s")))

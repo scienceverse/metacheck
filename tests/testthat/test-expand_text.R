@@ -84,3 +84,33 @@ test_that("module output", {
   expanded <- expand_text(module_res, paper)
   expect_equal(expanded$expanded, expected, ignore_attr = TRUE)
 })
+
+
+test_that("issue 47", {
+  # some expand text had duplicated sentences
+  paper <- psychsci$`0956797614522816`
+  all_p <- module_run(paper, "all_p_values")
+
+  # Keep only nonsignificant p  value statements
+  results_table <- all_p$table |>
+    dplyr::filter(section == "results", div == 12, p == 3, s == 5)
+  expand_to <- "sentence"
+  plus <- 1
+  minus <- 1
+
+  # Also add sentence before and after
+  res <- expand_text(results_table, paper, expand_to, plus, minus)
+
+  # get location info for problem duplication
+  obs <- res$expanded[[1]]
+  obs_s <- res$s[[1]]
+  obs_p <- res$p[[1]]
+  obs_div <- res$div[[1]]
+
+  # get sentences plus and minus
+  text <- paper$full_text |>
+    dplyr::filter(s %in% (obs_s-minus):(obs_s+plus), p == obs_p, div == obs_div)
+  exp <- paste(text$text, collapse = " ")
+
+  expect_equal(obs, exp)
+})

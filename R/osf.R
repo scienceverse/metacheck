@@ -851,6 +851,21 @@ osf_file_download <- function(osf_id,
     files <- files[-max_file, ]
   }
 
+  ## set up download directory (make sure it doesn't overwrite anything)
+  # On the OSF you can nest folders and give long folder names, but windows has a 260 character folder name limit.
+  download_to <- fs::path_abs(download_to)
+  if (dir.exists(download_to)) {
+    download_to <- file.path(download_to, osf_id)
+  }
+  i = 0
+  while (dir.exists(download_to)) {
+    i = i + 1
+    download_to <- download_to |>
+      sub("_\\d+$", "", x = _) |>
+      paste0("_", i)
+  }
+  dir.create(download_to, showWarnings = FALSE, recursive = FALSE)
+
   if (sum(files$kind == "file") > 0) {
     ## download all to temp folder ----
     temppath <- fs::file_temp()
@@ -875,20 +890,6 @@ osf_file_download <- function(osf_id,
         # TODO: deal with errors
       }, error = \(e) {})
       if (verbose()) pb$tick()
-    }
-
-    ## set up download directory (make sure it doesn't overwrite anything)
-    # On the OSF you can nest folders and give long folder names, but windows has a 260 character folder name limit.
-    download_to <- fs::path_abs(download_to)
-    if (dir.exists(download_to)) {
-      download_to <- file.path(download_to, osf_id)
-    }
-    i = 0
-    while (dir.exists(download_to)) {
-      i = i + 1
-      download_to <- download_to |>
-        sub("_\\d+$", "", x = _) |>
-        paste0("_", i)
     }
 
     trunc_warning <- FALSE

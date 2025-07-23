@@ -59,6 +59,34 @@ test_that("APA", {
   expect_equal(obs_bibtypes, exp_bibtypes)
 })
 
+test_that("apa-info", {
+  filename <- "formats/apa.xml"
+  xml <- read_xml(filename)
+  info <- apa_info(xml)
+
+  exp <- list(
+    title = "“You’re Just Envious”: Inferring Benign and Malicious Envy From Facial Expressions and Contextual Information",
+    description = "Envy shapes social hierarchies. To protect their rank, envied persons react to the threat posed by enviers. Doing so requires that envied persons initially perceive who envies them. However, a common perspective is that envy lacks a unique expression and that enviers disguise their experience, preventing the social perception of envy. In contrast to this perspective, recent evidence indicates that observers perceive benign and malicious forms of envy accurately when they can integrate information about targets. These findings suggest that observers infer envy based on multiple, contextual cues. We hypothesized that observers infer envy from facial and bodily expressions in comparison situations. Specifically, observers should infer benign envy when a target, who encounters an advantaged person, turns with disappointment toward the advantage. Conversely, observers should infer malicious envy when the target turns with anger toward the advantaged person. Three preregistered studies tested these hypotheses (total N = 693). In Studies 1 and 2, targets turned with an emotional or neutral expression either toward a person silhouette or a valuable object, and participants rated targets’ envy. In Study 3, participants performed the same task with more realistic stimuli. Across studies, emotional display and head turning had independent effects on inferences of benign and malicious envy. Furthermore, observers inferred envy more when the target expressed an emotion instead of remaining neutral. We discuss how the results inform research on the social perception of envy.",
+  keywords = c("benign and malicious envy", "bodily expression",
+               "facial expression", "social context", "social perception"),
+  doi = "10.1037/emo0001047",
+  pub_print = "2022-02-NA",
+  pub_online = "2022-01-06",
+  received = "2021-01-08",
+  revised = "2021-06-30",
+  accepted = "2021-09-08"
+)
+  expect_equal(info$title, exp$title)
+  expect_equal(info$description, exp$description)
+  expect_equal(info$keywords, exp$keywords)
+  expect_equal(info$doi, exp$doi)
+  expect_equal(info$pub_print, exp$pub_print)
+  expect_equal(info$pub_online, exp$pub_online)
+  expect_equal(info$received, exp$received)
+  expect_equal(info$revised, exp$revised)
+  expect_equal(info$accepted, exp$accepted)
+})
+
 test_that("TEI", {
   filename <- "formats/published.pdf.tei.xml"
   paper <- read(filename)
@@ -143,3 +171,4 @@ test_that("Cermine", {
   exp_bibtypes <- c("Article", "Misc", "InCollection")
   expect_equal(obs_bibtypes, exp_bibtypes)
 })
+

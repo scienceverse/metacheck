@@ -262,6 +262,25 @@ xml_find1 <- function(xml, xpath, join = NULL) {
   xml_find(xml, xpath, join)[[1]]
 }
 
+#' Find and return date info from XML
+#'
+#' @param xml the xml node
+#' @param xpath a string containing an xpath expression
+#'
+#' @returns text
+#' @keywords internal
+xml_date <- function(xml, xpath = ".//string-date") {
+  date <- xml2::xml_find_first(xml, xpath)
+
+  m <- date |> xml2::xml_find_first(".//month") |>
+    xml2::xml_attr("number") |> as.numeric()
+  d <- xml_find1(date, ".//day") |> as.numeric()
+  y <- xml_find1(date, ".//year") |> as.numeric()
+
+  if (is.na(m) & is.na(d) & is.na(y)) return(NULL)
+  sprintf("%d-%02d-%02d", y, m, d)
+}
+
 #' Process full text table
 #'
 #' @param full_text a table of the full text
@@ -367,6 +386,15 @@ apa_info <- function(xml) {
   info$title <- xml_find1(xml, "//article-title")
   info$description <-  xml_find(xml, "//abstract //p", join = "\n\n")
   info$keywords <- xml_find(xml, "//kwd-group //kwd")
+  info$doi <- xml_find(xml, "//article-id[@pub-id-type='doi']")
+
+  # print_pub_date
+  info$pub_print <- xml_date(xml, "//pub-date[@pub-type='print']")
+  info$pub_online <- xml_date(xml, "//pub-date[@pub-type='online']")
+  info$received <- xml_date(xml, "//history //string-date[@content-type='received']")
+  info$revised <- xml_date(xml, "//history //string-date[@content-type='revised']")
+  info$accepted <- xml_date(xml, "//history //string-date[@content-type='accepted']")
+
 
   return(info)
 }
@@ -610,6 +638,7 @@ nlm_info <- function(xml, filename = "") {
   info$description <-  xml_find(xml, "//abstract //p", join = "\n\n")
   info$keywords <- xml_find(xml, "//kwd-group //kwd") |>
     gsub("^eol>", "", x = _)
+  info$doi <- xml_find(xml, "//front //pub-id[@pub-id-type='doi']")
 
   return(info)
 }
@@ -708,6 +737,42 @@ tei_info <- function(xml, filename = "") {
   info$title <- xml_find1(xml, "//titleStmt //title")
   info$description <- xml_find(xml, "//abstract //p", join = "\n\n")
   info$keywords <- xml_find(xml, "//keywords //term")
+  info$doi <- xml_find(xml, "//sourceDesc //idno[@type='DOI']")
+
+  try({
+    sub <- xml_find(xml, "//sourceDesc //note[@type='submission']") |>
+      strsplit(";\\s*")
+    if (length(sub[[1]]) > 0) {
+      received <- grep("^Received", sub[[1]],
+                       ignore.case = TRUE, value = TRUE)
+      if (length(received)) {
+        m <- gregexpr("\\d+/\\d+/\\d+", received)
+        date <- regmatches(received, m)[[1]] |> strsplit("/")
+        y <- date[[1]][[3]] |> as.integer()
+        if (y < 100) {
+          thisyear <- format(Sys.Date(), "%Y") |> as.numeric()
+          y <- ifelse(y < thisyear + 2, y + 2000, y + 1900)
+        }
+        m <- date[[1]][[1]] |> as.integer()
+        d <- date[[1]][[2]] |> as.integer()
+        info$received <- sprintf("%d-%02d-%02d", y, m, d)
+      }
+      accepted <- grep("accepted", sub[[1]],
+                       ignore.case = TRUE, value = TRUE)
+      if (length(accepted)) {
+        m <- gregexpr("\\d+/\\d+/\\d+", accepted)
+        date <- regmatches(accepted, m)[[1]] |> strsplit("/")
+        y <- date[[1]][[3]] |> as.integer()
+        if (y < 100) {
+          thisyear <- format(Sys.Date(), "%Y") |> as.numeric()
+          y <- ifelse(y < thisyear + 2, y + 2000, y + 1900)
+        }
+        m <- date[[1]][[1]] |> as.integer()
+        d <- date[[1]][[2]] |> as.integer()
+        info$accepted <- sprintf("%d-%02d-%02d", y, m, d)
+      }
+    }
+  })
 
   return(info)
 }

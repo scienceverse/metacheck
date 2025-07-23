@@ -86,6 +86,33 @@ test_that("read_xml", {
   expect_equal(title, exp)
 })
 
+test_that("tei_info", {
+  filename <- "examples/0956797613520608.xml"
+  xml <- read_xml(filename)
+  info <- tei_info(xml)
+
+  # expected
+  title <- "Continuous Theta-Burst Stimulation Demonstrates a Causal Role of Premotor Homunculus in Action Understanding"
+  description <- "agent performing the same or a similar action (di"
+  keywords <- c("mirror-neuron system",
+                "action understanding",
+                "theta-burst stimulation",
+                "social cognition",
+                "theory of mind",
+                "social interaction",
+                "social perception")
+  doi <- "10.1177/0956797613520608"
+  received <- "2013-08-16"
+  accepted <- "2013-12-22"
+
+  expect_equal(info$title, title)
+  expect_equal(info$description, description)
+  expect_equal(info$keywords, keywords)
+  expect_equal(info$doi, doi)
+  expect_equal(info$received, received)
+  expect_equal(info$accepted, accepted)
+})
+
 
 test_that("tei_full_text", {
   xml <- read_xml("examples/0956797613520608.xml")
@@ -94,6 +121,10 @@ test_that("tei_full_text", {
                 "discussion", "acknowledgement","funding",
                 "annex", "fig", "tab")
   expect_equal(unique(body$section), sections)
+
+  # no repeat section/div numbers
+  divs <- dplyr::count(body, section, header, div)
+  expect_equal(nrow(divs), length(unique(paste(divs$section, divs$div))))
 })
 
 test_that("sections", {

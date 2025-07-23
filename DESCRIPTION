@@ -1,7 +1,7 @@
 Package: papercheck
 Title: Check Scientific Papers for Best Practices
-Version: 0.0.0.9051
-Date: 2025-07-22
+Version: 0.0.0.9052
+Date: 2025-07-23
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",

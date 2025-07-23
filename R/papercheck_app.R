@@ -16,12 +16,12 @@
 papercheck_app <- function(study = NULL, quiet = FALSE, ...) {
   # check study
   if (!is.null(study) && !"scivrs_paper" %in% class(study)) {
-    stop("The argument study must be a study object created by scienceverse, or NULL to create it entirely in the app.")
+    stop("The argument study must be a paper object created by papercheck, or NULL to create it entirely in the app.")
   }
 
   # check required packages
   pckgs <- c("shiny", "shinydashboard", "shinyjs",
-             "scienceverse", "shiny.i18n", "DT", "waiter")
+             "shiny.i18n", "DT", "waiter")
   names(pckgs) <- pckgs
   req_pckgs <- sapply(pckgs, requireNamespace, quietly = TRUE)
 
