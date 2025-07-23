@@ -1,3 +1,11 @@
+# papercheck 0.0.0.9052
+
+* Fixed a bug in `expand_text()` where expanded sentences were duplicated if there are multiple matches from the same sentence in the data frame.
+* Updated the `retractionwatch` table
+* Fixed a bug in `read()` that omitted paper DOIs from paper$info
+* Updated `read()` to add correctly parsed "accepted" and "received" dates to paper\$info (replaces paper\$submission string) (ISO 8601 is the only correct date format!)
+* Updated `psychsci` for new info structure
+
 # papercheck 0.0.0.9051
 
 * Small bug fixes to `osf_file_download()`
