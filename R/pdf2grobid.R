@@ -25,7 +25,30 @@ pdf2grobid <- function(filename, save_path = ".",
                        consolidateFunders = 0) {
   # "http://localhost:8070"
   # "https://grobid.work.abed.cloud"
-  site_down(grobid_url, "The grobid server %s is not available")
+
+  # check if grobid_url is a valid url, before connecting to it
+  if (!grepl("^https?://", grobid_url)) {
+    stop("grobid_url must be a valid URL, starting with http or https!")
+  }
+
+  # test if the server is up using the isalive endpoint, instead of sitedown
+  service_status_url <- httr::modify_url(grobid_url, path = "/api/isalive")
+  resp <- tryCatch({
+    httr::GET(service_status_url)
+  },
+  error = function(e) {
+    stop("Connection to the GROBID server failed! 
+    Please check your connection or the URL: ", grobid_url)
+  }
+  )
+
+  status <- httr::status_code(resp)
+  if (status != 200) {
+    stop("GROBID server does not appear up and running
+     on the provided URL. Status: ", status)
+  } else {
+    if (verbose()) message("GROBID server is up and running")
+  }
 
   # handle list of files or a directory----
   if (length(filename) > 1) {
@@ -85,7 +108,7 @@ pdf2grobid <- function(filename, save_path = ".",
   }
 
   file <- httr::upload_file(filename)
-  post_url <- paste0(grobid_url, "/api/processFulltextDocument")
+  post_url <- httr::modify_url(grobid_url, path = "/api/processFulltextDocument")
   args <- list(input = file,
                start = start,
                end = end,
