@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9052</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9053</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,22 @@
       <small>Source: <a href="https://github.com/scienceverse/papercheck/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.0.9053" id="papercheck-0009053">papercheck 0.0.0.9053<a class="anchor" aria-label="anchor" href="#papercheck-0009053"></a></h2>
+<ul><li>Updated <code><a href="../reference/read.html">read()</a></code> to parse more stupid date formats that turn up in the submission string (and added the unparsed submission string back just in case)</li>
+<li>Completely overhauled how paper objects handle references.
+<ul><li>the <code>paper$reference</code> table is now <code>paper$bib</code>
+</li>
+<li>the <code>paper$citations</code> table is now <code>paper$xrefs</code> and also contains information for internal cross-references to figures, tables, footnotes, and formulae</li>
+<li>the <code>ref_id</code> and <code>bib_id</code> in both tables is now <code>xref_id</code>
+</li>
+<li>the <code>xrefs</code> table also contains location information (section, div, p, s) for the sentence containing the cross-ref, so you can use <code><a href="../reference/expand_text.html">expand_text()</a></code>
+</li>
+<li>The <code><a href="../reference/read.html">read()</a></code> function now returns paper objects with these new tables, so you will need to re-read any XML files (if you have stored the papercheck list as Rdata)</li>
+<li>The <code>psychsci</code> object has been updated for this new format</li>
+<li>Modules and vignettes have been updated as well</li>
+</ul></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9052" id="papercheck-0009052">papercheck 0.0.0.9052<a class="anchor" aria-label="anchor" href="#papercheck-0009052"></a></h2>
 <ul><li>Fixed a bug in <code><a href="../reference/expand_text.html">expand_text()</a></code> where expanded sentences were duplicated if there are multiple matches from the same sentence in the data frame.</li>

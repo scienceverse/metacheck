@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9050</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9053</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -192,10 +192,7 @@ papers.</p>
 mistakes with the DOI, so be cautious about using this.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">info</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; $filename</span></span>
-<span><span class="co">#&gt; [1] "./0956797615588467.xml"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $title</span></span>
+<pre><code><span><span class="co">#&gt; $title</span></span>
 <span><span class="co">#&gt; [1] "Neural Affective Mechanisms Predict Market-Level Microlending"</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $description</span></span>
@@ -209,7 +206,16 @@ mistakes with the DOI, so be cautious about using this.</p>
 <span><span class="co">#&gt; [1] "10.1177/0956797615588467"</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $submission</span></span>
-<span><span class="co">#&gt; [1] "Received 2/2/15; Revision accepted 5/4/15"</span></span></code></pre>
+<span><span class="co">#&gt; [1] "Received 2/2/15; Revision accepted 5/4/15"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $received</span></span>
+<span><span class="co">#&gt; [1] "2015-02-02"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $accepted</span></span>
+<span><span class="co">#&gt; [1] "2015-05-04"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $filename</span></span>
+<span><span class="co">#&gt; [1] "./0956797615588467.xml"</span></span></code></pre>
 <p>You can get this as a table for a batch of papers using
 <code><a href="../reference/info_table.html">info_table()</a></code>.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
@@ -226,42 +232,41 @@ mistakes with the DOI, so be cautious about using this.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0956797614566469 10.1177/0956797614566469 Conspiracist Ideation as a Predicto…</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+<h3 id="bibliography">Bibliography<a class="anchor" aria-label="anchor" href="#bibliography"></a>
 </h3>
-<p>The <code>references</code> contains the items in the reference list,
-including an id to link them to citations (bib_id), the DOI if available
-(doi), and the full reference text (ref).</p>
+<p>The <code>bib</code> contains the items in the reference list,
+including an id to link them to cross references (xref_id), the DOI if
+available (doi), the full reference text (ref), and the reference parsed
+by title, author, year, etc.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ref</span> <span class="op">&lt;-</span> <span class="va">paper</span><span class="op">$</span><span class="va">references</span></span>
+<code class="sourceCode R"><span><span class="va">bib</span> <span class="op">&lt;-</span> <span class="va">paper</span><span class="op">$</span><span class="va">bib</span></span>
 <span></span>
-<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">ref</span>, <span class="va">bib_id</span> <span class="op">==</span> <span class="st">"b5"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;   bib_id</span></span>
-<span><span class="co">#&gt; 1     b5</span></span>
+<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">bib</span>, <span class="va">xref_id</span> <span class="op">==</span> <span class="st">"b5"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;   xref_id</span></span>
+<span><span class="co">#&gt; 1      b5</span></span>
 <span><span class="co">#&gt;                                                                                                                                                                                                     ref</span></span>
 <span><span class="co">#&gt; 1 Berns GS, Moore SE (2012). “A neural predictor of cultural popularity.” _Journal of Consumer Psychology_, *22*, 154-160. doi:10.1016/j.jcps.2011.05.001 &lt;https://doi.org/10.1016/j.jcps.2011.05.001&gt;.</span></span>
 <span><span class="co">#&gt;                          doi bibtype                                     title</span></span>
 <span><span class="co">#&gt; 1 10.1016/j.jcps.2011.05.001 Article A neural predictor of cultural popularity</span></span>
-<span><span class="co">#&gt;                          journal year              authors</span></span>
-<span><span class="co">#&gt; 1 Journal of Consumer Psychology 2012 G S Berns, S E Moore</span></span></code></pre>
+<span><span class="co">#&gt;                          journal year              authors               id</span></span>
+<span><span class="co">#&gt; 1 Journal of Consumer Psychology 2012 G S Berns, S E Moore 0956797615588467</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="citations">Citations<a class="anchor" aria-label="anchor" href="#citations"></a>
+<h3 id="cross-references">Cross References<a class="anchor" aria-label="anchor" href="#cross-references"></a>
 </h3>
-<p>The <code>citations</code> contains each citation, including an id to
-link them to references (bib_id) and the sentence that they are cited in
-(text).</p>
+<p>The <code>xrefs</code> contains each reference, including an id to
+link them to the bibliography (xref_id), the sentence that they are
+cited in (text), and location data.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cite</span> <span class="op">&lt;-</span> <span class="va">paper</span><span class="op">$</span><span class="va">citations</span></span>
+<code class="sourceCode R"><span><span class="va">xrefs</span> <span class="op">&lt;-</span> <span class="va">paper</span><span class="op">$</span><span class="va">xrefs</span></span>
 <span></span>
-<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cite</span>, <span class="va">bib_id</span> <span class="op">==</span> <span class="st">"b5"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;   bib_id</span></span>
-<span><span class="co">#&gt; 1     b5</span></span>
-<span><span class="co">#&gt; 2     b5</span></span>
-<span><span class="co">#&gt; 3     b5</span></span>
-<span><span class="co">#&gt;                                                                                                                                                                                                                                                                                                                  text</span></span>
-<span><span class="co">#&gt; 1                                                                                                                                 Stimulus sample size was determined via power analysis of the sole existing similar study, which used neural activity to predict Internet downloads of music (Berns &amp; Moore, 2012).</span></span>
-<span><span class="co">#&gt; 2                                                       Following the approach of Berns and Moore (2012), we calculated correlations between Internet loan-request success and anticipatory activity in regions drawn from targeted volumes of interest (i.e., NAcc, AIns, and MPFC) as well as whole-brain analyses.</span></span>
-<span><span class="co">#&gt; 3 For instance, investigators have used group NAcc activity in response to music to predict the aggregate number of song downloads 2 years later (Berns &amp; Moore, 2012) and have used group MPFC activity to predict call volume in response to antismoking advertisements (Falk, Berkman, Whalen, &amp; Lieberman, 2011).</span></span></code></pre>
+<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">xrefs</span>, <span class="va">xref_id</span> <span class="op">==</span> <span class="st">"b5"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 9</span></span></span>
+<span><span class="co">#&gt;   xref_id type  contents               text      id    section   div     p     s</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> b5      bibr  (Berns &amp; Moore, 2012)  Stimulus… 0956… method      4     5     7</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> b5      bibr  Berns and Moore (2012) Followin… 0956… results     7     4     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> b5      bibr  (Berns &amp; Moore, 2012)  For inst… 0956… discus…     8     2     2</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="full-text">Full Text<a class="anchor" aria-label="anchor" href="#full-text"></a>

@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9050</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9053</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -764,16 +764,16 @@ significant.</p>
 <pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 99 × 7</span></span></span>
 <span><span class="co">#&gt;    text                                   section header   div     p     s id   </span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Although the PTSD group showed a sign… results Detai…    11     1     4 0956…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> A marginally significant negative cor… results Postt…    13     1     4 0956…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> When we more closely matched depressi… results The e…    14     3     1 0956…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> In that analysis, the group differenc… results Condi…    15     1     2 0956…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> The Congruency × Alignment interactio… results Resul…     7     2     3 0956…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> The twoway interactions between knowl… results Resul…     6     2     3 0956…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> An omnibus 3 (sex ratio) × 2 (partici… results Resul…    15     2     1 0956…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> Further, we observed a marginally sig… fig     <span style="color: #BB0000;">NA</span>         3    <span style="color: #BB0000;">NA</span>     2 0956…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> The dagger and asterisks indicate mar… fig     Fig. …     5    <span style="color: #BB0000;">NA</span>     7 0956…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Given the unexpected nature of the fi… annex   Open …    20     1    21 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Although the PTSD group showed a sign… results <span style="color: #949494;">"</span>Deta…    11     1     4 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> A marginally significant negative cor… results <span style="color: #949494;">"</span>Post…    13     1     4 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> When we more closely matched depressi… results <span style="color: #949494;">"</span>The …    14     3     1 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> In that analysis, the group differenc… results <span style="color: #949494;">"</span>Cond…    15     1     2 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> The Congruency × Alignment interactio… results <span style="color: #949494;">"</span>Resu…     7     2     3 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> The twoway interactions between knowl… results <span style="color: #949494;">"</span>Resu…     6     2     3 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> An omnibus 3 (sex ratio) × 2 (partici… results <span style="color: #949494;">"</span>Resu…    15     2     1 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> Further, we observed a marginally sig… fig     <span style="color: #949494;">""</span>         3     1     7 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> The dagger and asterisks indicate mar… fig     <span style="color: #949494;">"</span>Fig.…     5     1    13 0956…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Given the unexpected nature of the fi… annex   <span style="color: #949494;">"</span>Open…    20     1    21 0956…</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 89 more rows</span></span></span></code></pre>
 </div>
 <div class="section level3">
@@ -836,41 +836,110 @@ referenced.</p>
 <code class="sourceCode R"><span><span class="va">ref_consistency</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"ref_consistency"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ref_consistency</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;   bib_id</span></span>
-<span><span class="co">#&gt; 1    b16</span></span>
-<span><span class="co">#&gt; 2    b17</span></span>
-<span><span class="co">#&gt; 3     b3</span></span>
-<span><span class="co">#&gt; 4    b31</span></span>
-<span><span class="co">#&gt;                                                                                                                                                                                                                                                                               ref</span></span>
-<span><span class="co">#&gt; 1                                                       Jones BC, Hahn AC, Fisher CI, Wang H, Kandrik M, Tybur JM, Debruine LM (2018). “Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis.” _Evolution and Human Behavior_, *39*, 166-169.</span></span>
-<span><span class="co">#&gt; 2 Jones BC, Hahn AC, Fisher CI, Wang H, Kandrik M, Tybur JM, Debruine LM (2018b). “Reply to Fleischman and Fessler's (2018) comment on "Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis.” _Evolution and Human Behavior_, *39*, 470-471.</span></span>
-<span><span class="co">#&gt; 3                                                                                                                                                           Curtis VA (2014). “Infection-avoidance behaviour in humans and other animals.” _Trends in Immunology_, *35*, 457-464.</span></span>
-<span><span class="co">#&gt; 4       Tybur JM, Inbar Y, Aarøe L, Barclay P, Barlow FK, De Barra M, Žeželj .., I (2016). “Parasite stress and pathogen avoidance relate to distinct dimensions of political ideology across 30 nations.” _Proceedings of the National Academy of Sciences_, *113*, 12408-12413.</span></span>
-<span><span class="co">#&gt;    doi bibtype</span></span>
-<span><span class="co">#&gt; 1 &lt;NA&gt; Article</span></span>
-<span><span class="co">#&gt; 2 &lt;NA&gt; Article</span></span>
-<span><span class="co">#&gt; 3 &lt;NA&gt; Article</span></span>
-<span><span class="co">#&gt; 4 &lt;NA&gt; Article</span></span>
-<span><span class="co">#&gt;                                                                                                                                           title</span></span>
-<span><span class="co">#&gt; 1                                                      Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis</span></span>
-<span><span class="co">#&gt; 2 Reply to Fleischman and Fessler's (2018) comment on "Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis</span></span>
-<span><span class="co">#&gt; 3                                                                                     Infection-avoidance behaviour in humans and other animals</span></span>
-<span><span class="co">#&gt; 4                                  Parasite stress and pathogen avoidance relate to distinct dimensions of political ideology across 30 nations</span></span>
-<span><span class="co">#&gt;                                           journal  year</span></span>
-<span><span class="co">#&gt; 1                    Evolution and Human Behavior  2018</span></span>
-<span><span class="co">#&gt; 2                    Evolution and Human Behavior 2018b</span></span>
-<span><span class="co">#&gt; 3                            Trends in Immunology  2014</span></span>
-<span><span class="co">#&gt; 4 Proceedings of the National Academy of Sciences  2016</span></span>
-<span><span class="co">#&gt;                                                                         authors</span></span>
-<span><span class="co">#&gt; 1   B C Jones, A C Hahn, C I Fisher, H Wang, M Kandrik, J M Tybur, L M Debruine</span></span>
-<span><span class="co">#&gt; 2   B C Jones, A C Hahn, C I Fisher, H Wang, M Kandrik, J M Tybur, L M Debruine</span></span>
-<span><span class="co">#&gt; 3                                                                    V A Curtis</span></span>
-<span><span class="co">#&gt; 4 J M Tybur, Y Inbar, L Aarøe, P Barclay, F K Barlow, M De Barra, . . Žeželj, I</span></span>
-<span><span class="co">#&gt;                 id  missing</span></span>
-<span><span class="co">#&gt; 1 0956797620955209 citation</span></span>
-<span><span class="co">#&gt; 2 0956797620955209 citation</span></span>
-<span><span class="co">#&gt; 3 0956797620955209 citation</span></span>
-<span><span class="co">#&gt; 4 0956797620955209 citation</span></span></code></pre>
+<pre><code><span><span class="co">#&gt;    xref_id</span></span>
+<span><span class="co">#&gt; 1      b16</span></span>
+<span><span class="co">#&gt; 2      b17</span></span>
+<span><span class="co">#&gt; 3       b3</span></span>
+<span><span class="co">#&gt; 4      b31</span></span>
+<span><span class="co">#&gt; 5    fig_1</span></span>
+<span><span class="co">#&gt; 6    tab_0</span></span>
+<span><span class="co">#&gt; 7     &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8     &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9     &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10    &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 11    &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 12    &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;                                                                                                                                                                                                                                                                                                                                                                              ref</span></span>
+<span><span class="co">#&gt; 1                                                                                                                                                      Jones BC, Hahn AC, Fisher CI, Wang H, Kandrik M, Tybur JM, Debruine LM (2018). “Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis.” _Evolution and Human Behavior_, *39*, 166-169.</span></span>
+<span><span class="co">#&gt; 2                                                                                                Jones BC, Hahn AC, Fisher CI, Wang H, Kandrik M, Tybur JM, Debruine LM (2018b). “Reply to Fleischman and Fessler's (2018) comment on "Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis.” _Evolution and Human Behavior_, *39*, 470-471.</span></span>
+<span><span class="co">#&gt; 3                                                                                                                                                                                                                                                          Curtis VA (2014). “Infection-avoidance behaviour in humans and other animals.” _Trends in Immunology_, *35*, 457-464.</span></span>
+<span><span class="co">#&gt; 4                                                                                                      Tybur JM, Inbar Y, Aarøe L, Barclay P, Barlow FK, De Barra M, Žeželj .., I (2016). “Parasite stress and pathogen avoidance relate to distinct dimensions of political ideology across 30 nations.” _Proceedings of the National Academy of Sciences_, *113*, 12408-12413.</span></span>
+<span><span class="co">#&gt; 5                                                                                                                                          We observed a main effect of face type: Responses were slower following disfigured faces (M = 644 ms, SD = 180) than typical faces (M = 634 ms, SD = 163), F(1, 400) = 14.96, η p 2 = .036, 90% CI = [.009, .078], p &lt; .001 (Fig. 1).</span></span>
+<span><span class="co">#&gt; 6                                                                                                                                                                                           Average within-person response latencies following disfigured faces were highly correlated with average within-person response latencies following typical faces, r = .95 (Table 1).</span></span>
+<span><span class="co">#&gt; 7                                                                                                                                                                                                                                                                                                                             K. Maner, personal communication, April 25, 2018).</span></span>
+<span><span class="co">#&gt; 8  Although the studies summarized above have pointed to a relation between immunological resistance and avoidance, others have found no relation between progesterone and disgust sensitivity ( Jones et al., 2018a), infection history and disgust sensitivity (de Barra, Islam, &amp; Curtis, 2014), and ecological pathogen stress and disgust sensitivity (Tybur et al., 2016).</span></span>
+<span><span class="co">#&gt; 9  Although the studies summarized above have pointed to a relation between immunological resistance and avoidance, others have found no relation between progesterone and disgust sensitivity ( Jones et al., 2018a), infection history and disgust sensitivity (de Barra, Islam, &amp; Curtis, 2014), and ecological pathogen stress and disgust sensitivity (Tybur et al., 2016).</span></span>
+<span><span class="co">#&gt; 10                                                                                                                                                                                              Except where noted, all methodological details-including all stimuli and dot-probe procedures-and all analyses were identical to those used by Miller and Maner (2011, Study 1).</span></span>
+<span><span class="co">#&gt; 11                                                                                                                                                                                                                                                                                                                            K. Maner, personal communication, April 25, 2018).</span></span>
+<span><span class="co">#&gt; 12                                                                                                                                   According to an analysis in G*Power (Version 3.9.1.7;Faul, Erdfelder, Buchner, &amp; Lang, 2009), this sample size affords more than 99% power to detect an interaction effect (d) of 0.65 (equivalent to that reported in the original study).</span></span>
+<span><span class="co">#&gt;     doi bibtype</span></span>
+<span><span class="co">#&gt; 1  &lt;NA&gt; Article</span></span>
+<span><span class="co">#&gt; 2  &lt;NA&gt; Article</span></span>
+<span><span class="co">#&gt; 3  &lt;NA&gt; Article</span></span>
+<span><span class="co">#&gt; 4  &lt;NA&gt; Article</span></span>
+<span><span class="co">#&gt; 5  &lt;NA&gt;    &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6  &lt;NA&gt;    &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7  &lt;NA&gt;    &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8  &lt;NA&gt;    &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9  &lt;NA&gt;    &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10 &lt;NA&gt;    &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 11 &lt;NA&gt;    &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 12 &lt;NA&gt;    &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;                                                                                                                                            title</span></span>
+<span><span class="co">#&gt; 1                                                       Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis</span></span>
+<span><span class="co">#&gt; 2  Reply to Fleischman and Fessler's (2018) comment on "Hormonal correlates of pathogen disgust: Testing the compensatory prophylaxis hypothesis</span></span>
+<span><span class="co">#&gt; 3                                                                                      Infection-avoidance behaviour in humans and other animals</span></span>
+<span><span class="co">#&gt; 4                                   Parasite stress and pathogen avoidance relate to distinct dimensions of political ideology across 30 nations</span></span>
+<span><span class="co">#&gt; 5                                                                                                                                           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6                                                                                                                                           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7                                                                                                                                           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8                                                                                                                                           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9                                                                                                                                           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10                                                                                                                                          &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 11                                                                                                                                          &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 12                                                                                                                                          &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;                                            journal  year</span></span>
+<span><span class="co">#&gt; 1                     Evolution and Human Behavior  2018</span></span>
+<span><span class="co">#&gt; 2                     Evolution and Human Behavior 2018b</span></span>
+<span><span class="co">#&gt; 3                             Trends in Immunology  2014</span></span>
+<span><span class="co">#&gt; 4  Proceedings of the National Academy of Sciences  2016</span></span>
+<span><span class="co">#&gt; 5                                             &lt;NA&gt;  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6                                             &lt;NA&gt;  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7                                             &lt;NA&gt;  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8                                             &lt;NA&gt;  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9                                             &lt;NA&gt;  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10                                            &lt;NA&gt;  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 11                                            &lt;NA&gt;  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 12                                            &lt;NA&gt;  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;                                                                          authors</span></span>
+<span><span class="co">#&gt; 1    B C Jones, A C Hahn, C I Fisher, H Wang, M Kandrik, J M Tybur, L M Debruine</span></span>
+<span><span class="co">#&gt; 2    B C Jones, A C Hahn, C I Fisher, H Wang, M Kandrik, J M Tybur, L M Debruine</span></span>
+<span><span class="co">#&gt; 3                                                                     V A Curtis</span></span>
+<span><span class="co">#&gt; 4  J M Tybur, Y Inbar, L Aarøe, P Barclay, F K Barlow, M De Barra, . . Žeželj, I</span></span>
+<span><span class="co">#&gt; 5                                                                           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6                                                                           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7                                                                           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8                                                                           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9                                                                           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10                                                                          &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 11                                                                          &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 12                                                                          &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;                  id missing   type</span></span>
+<span><span class="co">#&gt; 1  0956797620955209   xrefs   &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2  0956797620955209   xrefs   &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3  0956797620955209   xrefs   &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4  0956797620955209   xrefs   &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5  0956797620955209     bib figure</span></span>
+<span><span class="co">#&gt; 6  0956797620955209     bib  table</span></span>
+<span><span class="co">#&gt; 7  0956797620955209     bib   bibr</span></span>
+<span><span class="co">#&gt; 8  0956797620955209     bib   bibr</span></span>
+<span><span class="co">#&gt; 9  0956797620955209     bib   bibr</span></span>
+<span><span class="co">#&gt; 10 0956797620955209     bib   bibr</span></span>
+<span><span class="co">#&gt; 11 0956797620955209     bib   bibr</span></span>
+<span><span class="co">#&gt; 12 0956797620955209     bib   bibr</span></span>
+<span><span class="co">#&gt;                                          contents section div  p  s</span></span>
+<span><span class="co">#&gt; 1                                            &lt;NA&gt;    &lt;NA&gt;  NA NA NA</span></span>
+<span><span class="co">#&gt; 2                                            &lt;NA&gt;    &lt;NA&gt;  NA NA NA</span></span>
+<span><span class="co">#&gt; 3                                            &lt;NA&gt;    &lt;NA&gt;  NA NA NA</span></span>
+<span><span class="co">#&gt; 4                                            &lt;NA&gt;    &lt;NA&gt;  NA NA NA</span></span>
+<span><span class="co">#&gt; 5                                               1    &lt;NA&gt;  NA NA NA</span></span>
+<span><span class="co">#&gt; 6                                               1 results   9  1  3</span></span>
+<span><span class="co">#&gt; 7  Maner, personal communication, April 25, 2018)    &lt;NA&gt;  NA NA NA</span></span>
+<span><span class="co">#&gt; 8                          ( Jones et al., 2018a)   intro   1  5  2</span></span>
+<span><span class="co">#&gt; 9                            (Tybur et al., 2016)   intro   1  5  2</span></span>
+<span><span class="co">#&gt; 10               Miller and Maner (2011, Study 1)  method   2  1  1</span></span>
+<span><span class="co">#&gt; 11 Maner, personal communication, April 25, 2018)    &lt;NA&gt;  NA NA NA</span></span>
+<span><span class="co">#&gt; 12                              (Version 3.9.1.7;  method   3  1  5</span></span></code></pre>
 <p>It looks like there are some references with missing citations. The
 first one doesn’t look like a reference, and grobid often parses tables
 oddly. You’d need to look at the original PDF to see if the others are
@@ -889,7 +958,7 @@ regularly (last 2025-02-28).</p>
 <code class="sourceCode R"><span><span class="va">rw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"retractionwatch"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">rw</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;  [1] bib_id          ref             doi             bibtype        </span></span>
+<pre><code><span><span class="co">#&gt;  [1] xref_id         ref             doi             bibtype        </span></span>
 <span><span class="co">#&gt;  [5] title           journal         year            authors        </span></span>
 <span><span class="co">#&gt;  [9] id              retractionwatch</span></span>
 <span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span></code></pre>
@@ -899,13 +968,13 @@ database cited, one with a retraction and two with corrections.</p>
 <code class="sourceCode R"><span><span class="va">rw_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"retractionwatch"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">rw_ps</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;   bib_id</span></span>
-<span><span class="co">#&gt; 1    b15</span></span>
-<span><span class="co">#&gt; 2    b25</span></span>
-<span><span class="co">#&gt; 3    b36</span></span>
-<span><span class="co">#&gt; 4    b25</span></span>
-<span><span class="co">#&gt; 5    b25</span></span>
-<span><span class="co">#&gt; 6    b25</span></span>
+<pre><code><span><span class="co">#&gt;   xref_id</span></span>
+<span><span class="co">#&gt; 1     b15</span></span>
+<span><span class="co">#&gt; 2     b25</span></span>
+<span><span class="co">#&gt; 3     b36</span></span>
+<span><span class="co">#&gt; 4     b25</span></span>
+<span><span class="co">#&gt; 5     b25</span></span>
+<span><span class="co">#&gt; 6     b25</span></span>
 <span><span class="co">#&gt;                                                                                                                                                                                                                                                                                                                                                                                            ref</span></span>
 <span><span class="co">#&gt; 1 Kok BE, Coffey KA, Cohn MA, Catalino LI, Vacharkulksemsuk T, Algoe SB, Brantley M, Fredrickson BL (2013). “How positive emotions build physical health: Perceived positive social connections account for the upward spiral between positive emotions and vagal tone.” _Psychological Science_, *24*(7), 1123-1132. doi:10.1177/0956797612470827 &lt;https://doi.org/10.1177/0956797612470827&gt;.</span></span>
 <span><span class="co">#&gt; 2                                                                                                                                                                                                      Horvath S (2013). “DNA methylation age of human tissues and cell types.” _Genome Biology_, *14*(10), R115. doi:10.1186/gb-2013-14-10-r115 &lt;https://doi.org/10.1186/gb-2013-14-10-r115&gt;.</span></span>
@@ -941,20 +1010,27 @@ database cited, one with a retraction and two with corrections.</p>
 <span><span class="co">#&gt; 4                                                                                               S Horvath</span></span>
 <span><span class="co">#&gt; 5                                                                                               S Horvath</span></span>
 <span><span class="co">#&gt; 6                                                                                               S Horvath</span></span>
-<span><span class="co">#&gt;                  id retractionwatch</span></span>
-<span><span class="co">#&gt; 1 09567976221150616      Correction</span></span>
-<span><span class="co">#&gt; 2 09567976231194221      Correction</span></span>
-<span><span class="co">#&gt; 3 09567976241249183      Retraction</span></span>
-<span><span class="co">#&gt; 4 09567976241260247      Correction</span></span>
-<span><span class="co">#&gt; 5 09567976241260247      Correction</span></span>
-<span><span class="co">#&gt; 6 09567976241260247      Correction</span></span>
+<span><span class="co">#&gt;                  id retractionwatch type          contents</span></span>
+<span><span class="co">#&gt; 1 09567976221150616      Correction bibr Kok et al., 2013)</span></span>
+<span><span class="co">#&gt; 2 09567976231194221      Correction bibr   (Horvath, 2013)</span></span>
+<span><span class="co">#&gt; 3 09567976241249183      Retraction &lt;NA&gt;              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4 09567976241260247      Correction bibr   (Horvath, 2013)</span></span>
+<span><span class="co">#&gt; 5 09567976241260247      Correction bibr   (Horvath, 2013)</span></span>
+<span><span class="co">#&gt; 6 09567976241260247      Correction bibr   (Horvath, 2013;</span></span>
 <span><span class="co">#&gt;                                                                                                                                                                                                                                                   text</span></span>
 <span><span class="co">#&gt; 1 The vagus nerve controls respiratory sinus arrhythmia (RSA), the covariation of heart rate and respiration, known to be an index of cardiac health and predictor of enhanced capacity for emotion regulation (Butler et al., 2006;Kok et al., 2013).</span></span>
 <span><span class="co">#&gt; 2                                                                                                                                                              Epigenetic aging is one such indicator of accelerated biological aging (Horvath, 2013).</span></span>
 <span><span class="co">#&gt; 3                                                                                                                                                                                                                                                 &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; 4                                         Discrepancies between someone's biological and chronological age translate into "age acceleration," with older biological age relative to chronological age indicating greater acceleration (Horvath, 2013).</span></span>
 <span><span class="co">#&gt; 5                                                                                                                        EAA from the Horvath PanTissue clock (Horvath, 2013) was calculated using the methylclock package (Pelegí-Sisó et al., 2021).</span></span>
-<span><span class="co">#&gt; 6                                                            The replication of results across the PedBE and Horvath PanTissue clocks increases our confidence in study findings because these tools share no overlapping DNAm sites (Horvath, 2013;L.</span></span></code></pre>
+<span><span class="co">#&gt; 6                                                            The replication of results across the PedBE and Horvath PanTissue clocks increases our confidence in study findings because these tools share no overlapping DNAm sites (Horvath, 2013;L.</span></span>
+<span><span class="co">#&gt;   section div  p  s</span></span>
+<span><span class="co">#&gt; 1   intro   1  2  4</span></span>
+<span><span class="co">#&gt; 2   intro   1  2  2</span></span>
+<span><span class="co">#&gt; 3    &lt;NA&gt;  NA NA NA</span></span>
+<span><span class="co">#&gt; 4   intro   1  3  4</span></span>
+<span><span class="co">#&gt; 5  method   6  4  4</span></span>
+<span><span class="co">#&gt; 6    &lt;NA&gt;  NA NA NA</span></span></code></pre>
 <p>Check the context of the citations in the text column:</p>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rw_ps</span><span class="op">$</span><span class="va">table</span><span class="op">$</span><span class="va">text</span></span></code></pre></div>
