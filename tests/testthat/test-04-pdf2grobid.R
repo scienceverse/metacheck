@@ -1,18 +1,46 @@
-test_that("works", {
+test_that("invalid URL detected", {
   skip_on_ci()
 
   expect_true(is.function(pdf2grobid))
 
   filename <- demoxml()
   expect_error(pdf2grobid(filename, grobid_url = "notawebsite"),
-               "The grobid server notawebsite is not available")
+               "grobid_url must be a valid URL, starting with http or https!")
 
-  # invalid file type
-  skip_if_offline("localhost")
-  expect_error(pdf2grobid("no.exist", grobid_url = "localhost"), "does not exist")
+
 })
 
-grobid_server <- "kermitt2-grobid.hf.space"
+
+test_that("URL without http/https detected", {
+  skip_on_ci()
+
+  expect_true(is.function(pdf2grobid))
+
+  filename <- demoxml()
+  expect_error(pdf2grobid(filename, grobid_url = "kermitt2-grobid.hf.space"),
+               "grobid_url must be a valid URL, starting with http or https!")
+
+})
+
+
+test_that("non-Grobid URL is rejected", {
+  skip_if_not(curl::has_internet())
+  expect_true(is.function(pdf2grobid))
+
+  filename <- demoxml()
+  expect_error(pdf2grobid(filename, grobid_url = "https://google.com"),
+               "GROBID server does not appear up and running
+     on the provided URL. Status: 404")
+})
+
+# test_that("invalid file type", { needs more thought
+#   skip_on_ci()
+#   # invalid file type
+#   skip_if_offline("localhost")
+#   expect_error(pdf2grobid("no.exist", grobid_url = "localhost"), "does not exist")
+
+
+grobid_server <- "https://kermitt2-grobid.hf.space"
 
 test_that("defaults", {
   skip_on_ci()
