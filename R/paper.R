@@ -24,8 +24,8 @@ paper <- function(name = "Demo Paper", ...) {
       info = list(),
       authors = list(),
       full_text = data.frame(),
-      references = data.frame(),
-      citations = data.frame()
+      bib = data.frame(),
+      xrefs = data.frame()
     )
 
     class(paper) <- c("scivrs_paper", "list")

@@ -17,41 +17,41 @@
 #' module_run(psychsci, "ref_consistency")
 ref_consistency <- function(paper) {
   # detailed table of results ----
-  refs <- concat_tables(paper, "references")
-  cites <- concat_tables(paper, "citations")
+  bibs <- concat_tables(paper, "bib")
+  xrefs <- concat_tables(paper, "xrefs")
 
-  missing_cites <- dplyr::anti_join(refs, cites, by = c("id", "bib_id"))
-  if (nrow(missing_cites)) missing_cites$missing <- "citation"
-  missing_refs <- dplyr::anti_join(cites, refs,  by = c("id", "bib_id"))
-  if (nrow(missing_refs)) missing_refs$missing <- "reference"
-  names(missing_refs) <- names(missing_refs) |> sub("text", "ref", x = _)
+  missing_refs <- dplyr::anti_join(bibs, xrefs, by = c("id", "xref_id"))
+  if (nrow(missing_refs)) missing_refs$missing <- "xrefs"
+  missing_bib <- dplyr::anti_join(xrefs, bibs,  by = c("id", "xref_id"))
+  if (nrow(missing_bib)) missing_bib$missing <- "bib"
+  names(missing_bib) <- names(missing_bib) |> sub("text", "ref", x = _)
 
-  table <- dplyr::bind_rows(missing_cites, missing_refs) |>
-    dplyr::arrange(id, bib_id)
+  table <- dplyr::bind_rows(missing_refs, missing_bib) |>
+    dplyr::arrange(id, xref_id)
 
   # summary output for paperlists ----
-  nrefs <- dplyr::count(refs, id, name = "n_refs")
-  ncites <- dplyr::count(cites, id, name = "n_cites")
+  nbibs <- dplyr::count(bibs, id, name = "n_bib")
+  nxrefs <- dplyr::count(xrefs, id, name = "n_xrefs")
   nmiss <- dplyr::count(table, id, missing) |>
     tidyr::pivot_wider(names_from = missing, names_prefix = "missing_",
                        values_from = n, values_fill = 0)
   summary_table <- info_table(paper, c()) |>
-    dplyr::left_join(nrefs, by = "id") |>
-    dplyr::left_join(ncites, by = "id") |>
+    dplyr::left_join(nbibs, by = "id") |>
+    dplyr::left_join(nxrefs, by = "id") |>
     dplyr::left_join(nmiss, by = "id")
 
   # determine the traffic light ----
   tl <- dplyr::case_when(
-    nrow(refs) == 0 & nrow(cites) == 0 ~ "na",
-    nrow(missing_cites) || nrow(missing_refs) ~ "red",
+    nrow(bibs) == 0 ~ "na",
+    nrow(missing_bib) || nrow(missing_xrefs) ~ "red",
     .default = "green"
   )
 
   # report text for each possible traffic light ----
   report <- c(
-    red = "There are references that are not cited or citations that are not referenced",
-    green = "All references were cited and citations were referenced",
-    na = "No citations/references were detected"
+    red = "There are cross-references that are not in the bibliography or bibliography entries not cross-referenced in the text",
+    green = "All cross-references were in the bibliography and bibliography entries were cross-referenced in the text",
+    na = "No bibliography entries were detected"
   )
 
   report_text <- "This module relies on Grobid correctly parsing the references. There may be some false positives."

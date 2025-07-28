@@ -70,16 +70,17 @@ test_that("detected", {
 
   # add a retracted paper
   retracted <- data.frame(
-    bib_id = "x",
+    xref_id = "x",
     ref = "Test retracted paper",
     doi = retractionwatch$doi[[1]],
     bibtype = "Article",
     title = "Fake",
     journal = "Fake Journal",
     year = 2025,
-    authors = "Hmmm"
+    authors = "Hmmm",
+    id = paper$id
   )
-  paper$references <- rbind(paper$references, retracted)
+  paper$bib <- rbind(paper$bib, retracted)
 
   # add imprecise p-values
   paper$full_text[1, "text"] <- "Bad p-value example (p < .05)"

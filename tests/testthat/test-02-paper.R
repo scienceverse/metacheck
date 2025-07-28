@@ -6,21 +6,21 @@ test_that("exists", {
 test_that("paper", {
   p <- paper()
   expect_s3_class(p, "scivrs_paper")
-  exp_names <- c("id", "info", "authors", "full_text", "references", "citations")
+  exp_names <- c("id", "info", "authors", "full_text", "bib", "xrefs")
   expect_equal(names(p), exp_names)
   expect_equal(p$id, "Demo Paper")
   expect_equal(p$info, list())
   expect_equal(length(p$authors), 0)
   expect_s3_class(p$authors, "scivrs_authors")
   expect_equal(p$full_text, data.frame())
-  expect_equal(p$references, data.frame())
-  expect_equal(p$citations, data.frame())
+  expect_equal(p$bib, data.frame())
+  expect_equal(p$xrefs, data.frame())
 
   xml <- demoxml()
   p <- paper(xml)
   expect_equal(nrow(p$full_text), 24)
-  expect_equal(nrow(p$references), 2)
-  expect_equal(nrow(p$citations), 2)
+  expect_equal(nrow(p$bib), 2)
+  expect_equal(nrow(p$xrefs), 2)
 })
 
 test_that("paperlist", {

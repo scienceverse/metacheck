@@ -504,9 +504,9 @@ test_that("osf_file_download", {
 
   ## truncate
   osf_id <- "j3gcx"
-  op <- capture_messages(
+  expect_warning(op <- capture_messages(
     dl <- osf_file_download(osf_id, max_folder_length = 3)
-  )
+  ), "truncated")
   f <- file.path(getwd(), osf_id, "nes")
   expect_true(dir.exists(f))
   f <- file.path(getwd(), osf_id, "data.xlsx")

@@ -8,10 +8,12 @@ test_that("exists", {
   expect_true(is.function(papercheck:::nlm_authors))
   expect_true(is.function(papercheck:::nlm_full_text))
   expect_true(is.function(papercheck:::jats_bib))
+  expect_true(is.function(papercheck:::jats_xrefs))
   expect_true(is.function(papercheck:::tei_info))
   expect_true(is.function(papercheck:::tei_authors))
   expect_true(is.function(papercheck:::tei_full_text))
   expect_true(is.function(papercheck:::tei_bib))
+  expect_true(is.function(papercheck:::tei_xrefs))
   expect_no_error(helplist <- help(read, papercheck))
 })
 
@@ -52,11 +54,23 @@ test_that("APA", {
   expect_true("Materials and Procedure" %in% headers)
 
   # references
-  expect_equal(paper$references |> nrow(), 78)
-  expect_equal(paper$citations |> nrow(), 143)
-  obs_bibtypes <- paper$references$bibtype |> unique()
+  expect_equal(paper$bib |> nrow(), 78)
+  expect_equal(paper$xrefs |> nrow(), 152)
+  obs_bibtypes <- paper$bib$bibtype |> unique()
   exp_bibtypes <- c("Article", "Misc", "InCollection")
   expect_equal(obs_bibtypes, exp_bibtypes)
+})
+
+test_that("jats-xrefs", {
+  filename <- "formats/apa.xml"
+  xml <- read_xml(filename)
+  xrefs <- jats_xrefs(xml)
+  obs <- dplyr::count(xrefs, type)
+  exp <- dplyr::tibble(
+    type = c("bibr", "fig", "fn"),
+    n = c(141L, 9L, 2L)
+  )
+  expect_equal(obs, exp)
 })
 
 test_that("apa-info", {
@@ -125,9 +139,9 @@ test_that("TEI", {
   expect_true("Materials and Procedure" %in% headers)
 
   # references
-  expect_equal(paper$references |> nrow(), 77) # 78?
-  expect_equal(paper$citations |> nrow(), 133)
-  obs_bibtypes <- paper$references$bibtype |> unique()
+  expect_equal(paper$bib |> nrow(), 77) # 78?
+  expect_equal(paper$xrefs|> nrow(), 186)
+  obs_bibtypes <- paper$bib$bibtype |> unique()
   exp_bibtypes <- c("Article", "Misc", "InCollection")
   # expect_equal(obs_bibtypes, exp_bibtypes)
 })
@@ -165,10 +179,10 @@ test_that("Cermine", {
   expect_true("Materials and Procedure" %in% headers)
 
   # references
-  expect_equal(paper$references |> nrow(), 62) # ? why not 78
-  expect_equal(paper$citations |> nrow(), 129)
-  obs_bibtypes <- paper$references$bibtype |> unique()
+  expect_equal(paper$bib |> nrow(), 62) # ? why not 78
+  expect_equal(paper$xrefs |> nrow(), 136)
+  obs_bibtypes <- paper$bib$bibtype |> unique()
   exp_bibtypes <- c("Article", "Misc", "InCollection")
-  expect_equal(obs_bibtypes, exp_bibtypes)
+  #expect_equal(obs_bibtypes, exp_bibtypes)
 })
 

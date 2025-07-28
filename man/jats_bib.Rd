@@ -2,7 +2,7 @@
 % Please edit documentation in R/read.R
 \name{jats_bib}
 \alias{jats_bib}
-\title{Get references/citations from JATS APA-DTD or NLM DTD type XML}
+\title{Get bibliography from JATS APA-DTD or NLM DTD type XML}
 \usage{
 jats_bib(xml)
 }
@@ -13,6 +13,6 @@ jats_bib(xml)
 an list of two tables: references and citations
 }
 \description{
-Get references/citations from JATS APA-DTD or NLM DTD type XML
+Get bibliography from JATS APA-DTD or NLM DTD type XML
 }
 \keyword{internal}

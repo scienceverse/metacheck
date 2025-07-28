@@ -160,13 +160,13 @@ is_paper_list <- function(paper) {
 #'
 print.scivrs_paper <- function(x, ...) {
   underline <- rep("-", nchar(x$id)) |> paste(collapse="")
-  txt <- sprintf("%s\n%s\n%s\n\n%s\n\n* Sections: %d\n* Sentences: %d\n* References: %d\n* Citations: %d\n\n",
+  txt <- sprintf("%s\n%s\n%s\n\n%s\n\n* Sections: %d\n* Sentences: %d\n* Bibliography: %d\n* X-Refs: %d\n\n",
                  underline, x$id, underline,
                  x$info$title %||% "{No title}",
                  max(c(0, x$full_text$div)),
                  nrow(x$full_text),
-                 nrow(x$references),
-                 nrow(x$citations))
+                 nrow(x$bib),
+                 nrow(x$xrefs))
 
   cat(txt)
 }

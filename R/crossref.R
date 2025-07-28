@@ -155,7 +155,7 @@ openalex <- function(doi, select = NULL) {
 }
 
 ref_info <- function(paper) {
-  info <- sapply(paper$references$doi, \(doi) {
+  info <- sapply(paper$bib$doi, \(doi) {
     if (doi != "") {
       openalex(doi)
     } else {

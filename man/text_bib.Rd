@@ -2,7 +2,7 @@
 % Please edit documentation in R/read.R
 \name{text_bib}
 \alias{text_bib}
-\title{Get references/citations from plain text}
+\title{Get bibliography from text file}
 \usage{
 text_bib(xml)
 }
@@ -10,9 +10,9 @@ text_bib(xml)
 \item{xml}{The XML}
 }
 \value{
-an list of two tables: references and citations
+bib table
 }
 \description{
-Get references/citations from plain text
+Get bibliography from text file
 }
 \keyword{internal}
