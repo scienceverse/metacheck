@@ -17,8 +17,8 @@ test_that("defaults", {
   expect_equal(paper$info$keywords, keywords)
   expect_equal(paper$full_text |> nrow(), 252)
   expect_equal(colnames(paper$full_text), cols)
-  expect_equal(paper$references |> nrow(), 42)
-  expect_equal(paper$citations |> nrow(), 71)
+  expect_equal(paper$bib |> nrow(), 42)
+  expect_equal(paper$xrefs |> nrow(), 78)
 
   # check cermine alias
   paper2 <- read_cermine(filename)
@@ -81,15 +81,12 @@ test_that("jats_bib", {
                           package = "papercheck")
   xml <- read_xml(filename)
 
-  refs <- jats_bib(xml)
-  expect_equal(names(refs), c("references", "citations"))
+  bib <- jats_bib(xml)
 
-  bibnames <- c("bib_id", "ref", "doi", "bibtype", "title", "journal", "authors",
+  bibnames <- c("xref_id", "ref", "doi", "bibtype", "title", "journal", "authors",
                 "year", "volume", "issue", "fpage", "lpage")
-  expect_equal(names(refs$references), bibnames)
-  expect_equal(nrow(refs$references), 42)
-
-  expect_equal(names(refs$citations), c("bib_id", "text"))
+  expect_equal(names(bib), bibnames)
+  expect_equal(nrow(bib), 42)
 })
 
 test_that("iteration", {

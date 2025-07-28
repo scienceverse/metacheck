@@ -13,7 +13,7 @@ paper_validate(paper)
 a list or data frame of checks
 }
 \description{
-A quick function to help diagnose problems with imported papers. It checks if there is a title, doi, abstract, and references.
+A quick function to help diagnose problems with imported papers. It checks if there is a title, doi, abstract, and a bibliography
 }
 \examples{
 paper_validate(psychsci[[1]])

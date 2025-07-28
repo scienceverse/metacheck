@@ -1,0 +1,893 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Trustworthy but not lust-worthy: context-specific effects of facial resemblance</title>
+				<funder>
+					<orgName type="full">Social Science and Humanities Research Council of Canada</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Natural Sciences and Engineering Research Council of Canada</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability  status="unknown">
+					<licence/>
+				</availability>
+				<date type="published" when="2025-07-24">24 July 2025</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Lisa</forename><forename type="middle">M</forename><surname>Debruine</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Psychology</orgName>
+								<orgName type="laboratory">The Perception Lab</orgName>
+								<orgName type="institution">McMaster University</orgName>
+								<address>
+									<postCode>L8S 4K1</postCode>
+									<settlement>Hamilton</settlement>
+									<region>Ontario</region>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">School of Psychology</orgName>
+								<orgName type="institution">University of St Andrews</orgName>
+								<address>
+									<addrLine>St Andrews</addrLine>
+									<postCode>KY16 9AJ</postCode>
+									<settlement>Fife</settlement>
+									<country>Scotland UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Trustworthy but not lust-worthy: context-specific effects of facial resemblance</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2025-07-24">24 July 2025</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">E7C8D51FD6440FC790EBE01DEC2D834E</idno>
+					<idno type="DOI">10.1098/rspb.2004.3003</idno>
+					<note type="submission">Received 13 August 2004 Accepted 3 November 2004 919</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2025-07-24T14:31+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Kin recognition</term>
+					<term>facial self-resemblance</term>
+					<term>trustworthiness</term>
+					<term>attractiveness</term>
+					<term>inbreeding avoidance</term>
+					<term>inclusive fitness</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>If humans are sensitive to the costs and benefits of favouring kin in different circumstances, a strong prediction is that cues of relatedness will have a positive effect on prosocial feelings, but a negative effect on sexual attraction. Indeed, positive effects of facial resemblance (a potential cue of kinship) have been demonstrated in prosocial contexts. Alternatively, such effects may be owing to a general preference for familiar stimuli. Here, I show that subtly manipulated images of other-sex faces were judged as more trustworthy by the participants they were made to resemble than by control participants. In contrast, the effects of resemblance on attractiveness were significantly lower. In the context of a long-term relationship, where both prosocial regard and sexual appeal are important criteria, facial resemblance had no effect. In the context of a short-term relationship, where sexual appeal is the dominant criterion, facial resemblance decreased attractiveness. The results provide evidence against explanations implicating a general preference for familiar-looking stimuli and suggest instead that facial resemblance is a kinship cue to which humans modulate responses in a context-sensitive manner.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Cues of kinship are predicted to increase non-sexual prosocial regard owing to the benefits to inclusive fitness <ref type="bibr" target="#b13">(Hamilton 1964)</ref> while decreasing sexual desirability owing to the costs of inbreeding <ref type="bibr" target="#b3">(Bittles &amp; Neel 1994)</ref>. Consistent with this hypothesis, experimentally produced facial resemblance, a potential cue of kinship, has been shown to increase trusting behaviour (DeBruine 2002), self-reported preference for children <ref type="bibr" target="#b23">(Platek et al. 2002</ref><ref type="bibr" target="#b24">(Platek et al. , 2003;;</ref><ref type="bibr">DeBruine 2004a)</ref> and the attractiveness of same-sex faces <ref type="bibr">(DeBruine 2004b)</ref>. Contrary to numerous findings that romantic partners tend to resemble one another <ref type="bibr" target="#b11">(Griffths &amp; Kunz 1973;</ref><ref type="bibr" target="#b31">Zajonc et al. 1987;</ref><ref type="bibr" target="#b14">Hinsz 1989;</ref><ref type="bibr" target="#b0">Bereczkei et al. 2002;</ref><ref type="bibr" target="#b1">Bereczkei et al. 2004</ref>), experimentally produced facial resemblance does not significantly increase the attractiveness of other-sex faces <ref type="bibr" target="#b20">(Penton-Voak et al. 1999;</ref><ref type="bibr">DeBruine 2004a,b)</ref>.</p><p>Preferences for facial resemblance may be by-products of a more general preference for familiar or average stimuli. Faces, as well as other objects, are judged as more attractive if they have been previously seen <ref type="bibr" target="#b30">(Zajonc 1968;</ref><ref type="bibr" target="#b6">Bornstein 1989</ref>). This finding extends to composites of previously seen faces <ref type="bibr" target="#b25">(Rhodes et al. 2001</ref>) and may explain the attractiveness of average faces <ref type="bibr" target="#b12">(Halberstadt &amp; Rhodes 2000;</ref><ref type="bibr" target="#b26">Rhodes et al. 2003</ref>). The perceptual system is influenced by individual faces that are experienced <ref type="bibr" target="#b5">(Blanz et al. 2000;</ref><ref type="bibr" target="#b16">Leopold et al. 2001;</ref><ref type="bibr" target="#b29">Webster et al. 2004</ref>) and evidence suggests this includes one's own face. Both male and female faces were judged as more average when they were transformed to resemble a participant's own face than when they were transformed to resemble other participants' faces (DeBruine 2004b), supporting the existence of a perceptual prototype that is biased towards one's own face relative to unfamiliar faces.</p><p>The current study tests the nature of preferences for self-resemblance by assessing responses to computer manipulated facial resemblance in explicitly prosocial and sexual contexts. If humans use facial resemblance as a cue of kinship and are sensitive to the costs and benefits of favouring kin in different circumstances, facial resemblance should have a positive effect on prosocial attributions but a negative effect on sexual attraction. Sexual attractiveness can be further assessed in the contexts of short-term and long-term relationships <ref type="bibr" target="#b17">(Little et al. 2002;</ref><ref type="bibr" target="#b21">Penton-Voak et al. 2003)</ref>. Heritable benefits are, in theory, more important in short-term mates <ref type="bibr" target="#b10">(Gangestad &amp; Simson 2000)</ref> and preferences for putative cues to genetic quality (i.e. facial masculinity) have been found to be stronger in short-term than longterm contexts <ref type="bibr" target="#b15">(Johnston et al. 2001;</ref><ref type="bibr" target="#b17">Little et al. 2002;</ref><ref type="bibr" target="#b21">Penton-Voak et al. 2003)</ref>. In addition, direct benefits associated with long-term partnerships between kin have been found to offset the genetic costs of inbreeding <ref type="bibr" target="#b4">(Bittles et al. 2002)</ref>. This leads to the prediction that cues of relatedness such as facial resemblance will be more aversive in a short-term context than a long-term context. However, if responses to facial resemblance are nonadaptive by-products of prototype formation, then facial resemblance, like averageness, should increase preferences in all prosocial and sexual contexts.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">METHODS (a) Participants</head><p>Participants were 66 male and 78 female undergraduate students enrolled in an introductory psychology course (mean ageZ19.1 years, s.d.Z2.3). Participants were of varying ethnic backgrounds, but were divided for the purposes of transforming faces into the broad phenotypic categories of African/Afro-Carribean (6 male, 0 female), East Asian (13 male, 17 female), European (31 male, 52 female) and West Asian (16 male, 9 female).</p><p>Participants were grouped into 18 testing units of four to nine persons of the same sex and same phenotypic category who acted as controls for each other. All participants in a testing unit viewed the same set of nine images, which included one self-resembling face for each participant in the testing unit. For the nine testing units with fewer than nine participants (6 with 8 participants and 1 each with 6, 5 and 4 participants), images of unknown persons of the same sex and same phenotypic category as the participants were added to equate the number of images seen by each participant.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>(b) Stimuli</head><p>Stimuli were constructed in a manner identical to DeBruine 2004b using computer graphic methods described in detail in <ref type="bibr" target="#b28">Tiddeman et al. (2001)</ref>. In brief, composite faces were created by averaging the shape and colour of 20 individual images (of participants in a previous experiment) for each combination of sex and phenotypic category. Each participant's image was used to transform the other-sex composite face of the same phenotypic category. The shape of each face was delineated using 179 facial landmarks. Transforms were made by calculating the shape differences between the participant's face and the same-sex composite face and applying 50% of this difference to the other-sex composite face (figure <ref type="figure" target="#fig_0">1</ref>). Resemblance was subtle and at debriefing no participants reported correctly detecting the nature of the manipulation.</p><p>(c) Procedure Participants made two-alternative forced-choice decisions between all 36 possible pairs of the nine faces in each testing unit for each question block. Each participant thus made eight decisions for each of the nine faces, including one self-resembling face. The order of faces was randomized and then presented in an optimal manner for two-alternative forced choice tasks <ref type="bibr" target="#b27">(Ross 1934)</ref>, whereby each image was shown equally often in each position and the presentation of identical stimuli was maximally spaced.</p><p>The same faces were presented for each of the three question blocks, which were presented in randomized order. Specifically, the three instructions presented were: (i) 'click on the face you find more trustworthy', (ii) 'click on the face you find more attractive for a long-term relationship' and (iii) 'click on the face you find more attractive for a short-term relationship'. Long-term and short-term relationships were defined as in <ref type="bibr" target="#b22">Perrett et al. (2002)</ref>. A long-term relationship was defined as, 'Examples of this type of relationship would include someone you may want to move in with, someone you may consider leaving a current partner to be with, and someone you may, at some point, wish to marry (or enter into a relationship on similar grounds as marriage).' A short-term relationship was defined as, 'This implies that the relationship may not last a long time. Examples of this type of relationship would include a single date accepted on the spur of the moment, an affair within a long-term relationship, and the possibility of a one-night stand.' (d) Statistical analyses For each context, the number of times participants chose their own transformed image as the more trustworthy or attractive of a pair out of a possible eight choices (self-score) was compared with the average number of times that the other participants in that testing unit chose the same image (control score). The distribution of these scores deviated from normality, so Wilcoxon signed-ranks tests were used to compare self-scores with control scores for each participant's image. One-tailed p-values are reported because selfresemblance was predicted to increase trustworthiness and decrease attractiveness, particularly in the context of a shortterm relationship.</p><p>Preference scores, calculated for each context by subtracting control scores from self-scores, were normally distributed (Kolmogorov-Smirnov tests; all Z!1.2, pO0.14), so a factorial repeated measures ANOVA was used to examine the within-subject effect of context (trustworthiness, long-term attractiveness and short-term attractiveness), and the betweensubjects effect of participant sex. Because self-resemblance was predicted to increase trustworthiness more than attractiveness and decrease attractiveness for short-term more than long-term relationships, one-tailed p-values are reported.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">RESULTS</head><p>Compared with controls, participants judged their own transformed image as more trustworthy (Z 143 Z2.42, pZ0.008), equally attractive for a long-term relationship (Z 143 Z0.05, pZ0.481) and less attractive for a short-term relationship (Z 143 ZK2.04, pZ0.021).</p><p>Preferences for self-resemblance were contextdependent (F 2,284 Z6.94, pZ0.001; figure <ref type="figure">2</ref>). Sex of participant had neither a main effect (FZ1.55, pZ0.215) nor an interaction with context (FZ0.11, pZ0.897). As predicted, attributions of trustworthiness increased more than attractiveness for long-term (t 143 Z2.10, pZ0.019) or short-term relationships (t 143 Z3.49, p!0.001) and preferences for self-resemblance were lower in the context of short-term than long-term relationships (t 143 Z1.69, pZ0.047).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">DISCUSSION</head><p>Preferences for self-resembling faces are sensitive to context in ways that were predicted from considerations of inclusive fitness theory <ref type="bibr" target="#b13">(Hamilton 1964</ref>) and the costs of inbreeding <ref type="bibr" target="#b19">(May 1979;</ref><ref type="bibr" target="#b3">Bittles &amp; Neel 1994;</ref><ref type="bibr" target="#b2">Bittles 2001</ref>). In the present study, facial resemblance, a putative cue of relatedness, increased judgments of trustworthiness but had no effect on attractiveness in the context of a long-term relationship and decreased attractiveness in the context of a short-term relationship. Perceptions of trustworthiness were increased significantly more than perceptions of attractiveness for long-term or short-term relationships. Attractiveness of self-resembling faces was decreased more in the context of short-term than long-term relationships.</p><p>The results of this study conflict with those reporting facial resemblance between romantic partners <ref type="bibr" target="#b11">(Griffths &amp; Kunz 1973;</ref><ref type="bibr" target="#b31">Zajonc et al. 1987;</ref><ref type="bibr" target="#b14">Hinsz 1989)</ref>. Possibly these differences reflect a discord between preferences, which are unconstrained, and behaviour, which is inevitably a compromise between desire and the availability of potential mates who reciprocate that desire. Additionally, these studies rely on third-party observers to match couples and do not attempt a more objective assessment of facial similarity. It may be that observers are matching couples on compatible, rather than similar, attributes, or are matching on similarities that are not indicative of kinship. However, evidence of parental imprinting in both preference and partner choice <ref type="bibr" target="#b22">(Perrett et al. 2002;</ref><ref type="bibr" target="#b18">Little et al. 2003;</ref><ref type="bibr" target="#b0">Bereczkei et al. 2002</ref><ref type="bibr" target="#b1">Bereczkei et al. , 2004</ref>) suggests that at least some aspects of similarity to self or family are attractive. Perhaps more interesting is the question of whether short-term partners resemble self or family less than long-term partners do. The results of the current study predict that this would be so.</p><p>The context-dependent effects observed in the current study would not be expected if 'mere exposure' to one's own face solely accounts for behaviour and attributions toward similar faces. Instead, these results provide evidence that similar faces are not generally preferred because they look familiar, but are evaluated differently in contexts where the historically adaptive response to kin would have been different. This strengthens the argument that humans use facial resemblance as a cue of kinship to which they respond in a specialized, potentially adaptive manner.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. Other-sex transforms were made by applying 50% of the shape difference between a participant's face and the same-sex composite face to an other-sex composite face. Transforms retained 100% of the colour information from the other-sex composite face. See Electronic Appendix A for a high resolution colour version of this image.</figDesc><graphic coords="2,47.17,58.73,232.79,241.34" type="bitmap" /></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_0"><p>Proc. R. Soc. B (2005) Downloaded from https://royalsocietypublishing.org/ on 24 July 2025</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_1"><p>The supplementary Electronic Appendix is available at http://dx.doi. org/10.1098/rspb.2004.3003 or via http://www.journals.royalsoc. ac.uk.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>I wish to thank <rs type="person">M. Wilson</rs>, <rs type="person">M. Daly</rs>, <rs type="person">B.C. Jones</rs>, <rs type="person">S. Balshine</rs>, <rs type="person">M. MacKenzie</rs> and <rs type="person">D. Feinberg</rs> for comments and support. I am especially grateful to <rs type="person">D. Perrett</rs> and <rs type="person">B. Tiddeman</rs> for the use of their image manipulation software. Financial support for this research was provided by grants from the <rs type="funder">Social Science and Humanities Research Council of Canada</rs> to <rs type="person">M. Wilson</rs> and from the <rs type="funder">Natural Sciences and Engineering Research Council of Canada</rs> to <rs type="person">M. Daly</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Homogamy, genetic similarity, and imprinting; parental influence on mate choice preferences</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Bereczkei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gyuris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Koves</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Bernath</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pers. Individ. Dif</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="677" to="690" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bereczkei, T., Gyuris, P., Koves, P. &amp; Bernath, L. 2002 Homogamy, genetic similarity, and imprinting; parental influence on mate choice preferences. Pers. Individ. Dif. 33, 677-690.</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Sexual imprinting in human mate choice</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Bereczkei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gyuris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">E</forename><surname>Weisfeld</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. R. Soc. B</title>
+		<imprint>
+			<biblScope unit="volume">271</biblScope>
+			<biblScope unit="page" from="1129" to="1134" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bereczkei, T., Gyuris, P. &amp; Weisfeld, G. E. 2004 Sexual imprinting in human mate choice. Proc. R. Soc. B 271, 1129-1134.</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Consanguinity and its relevance to clinical genetics</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Bittles</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Clin. Genet</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="page" from="89" to="98" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bittles, A. H. 2001 Consanguinity and its relevance to clinical genetics. Clin. Genet. 60, 89-98.</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">The costs of human inbreeding and their implications for variations at the DNA level</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Bittles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">V</forename><surname>Neel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Genet</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="117" to="121" />
+			<date type="published" when="1994">1994</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bittles, A. H. &amp; Neel, J. V. 1994 The costs of human inbreeding and their implications for variations at the DNA level. Nat. Genet. 8, 117-121.</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Does inbreeding lead to decreased human fertility?</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Bittles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Grant</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">G</forename><surname>Sullivan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hussain</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Hum. Biol</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="page" from="111" to="130" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bittles, A. H., Grant, J. C., Sullivan, S. G. &amp; Hussain, R. 2002 Does inbreeding lead to decreased human fertility? Ann. Hum. Biol. 29, 111-130.</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">On the other side of the mean: the perception of dissimilarity in faces</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Blanz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>O'toole</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vetter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wild</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Perception</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="page" from="885" to="891" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Blanz, V., O&apos;Toole, A., Vetter, T. &amp; Wild, H. 2000 On the other side of the mean: the perception of dissimilarity in faces. Perception 29, 885-891.</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Exposure and affect: overview and meta-analysis of research, 1968-1987</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">F</forename><surname>Bornstein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychol. Bull</title>
+		<imprint>
+			<biblScope unit="volume">106</biblScope>
+			<biblScope unit="page" from="265" to="289" />
+			<date type="published" when="1989">1989</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bornstein, R. F. 1989 Exposure and affect: overview and meta-analysis of research, 1968-1987. Psychol. Bull. 106, 265-289.</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Facial resemblance enhances trust</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Debruine</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. R. Soc. B</title>
+		<imprint>
+			<biblScope unit="volume">269</biblScope>
+			<biblScope unit="page" from="1307" to="1312" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">DeBruine, L. M. 2002 Facial resemblance enhances trust. Proc. R. Soc. B 269, 1307-1312.</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">a Facial resemblance increases the attractiveness of same-sex faces more than other-sex faces</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Debruine</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. R. Soc. B</title>
+		<imprint>
+			<biblScope unit="volume">271</biblScope>
+			<biblScope unit="page" from="2085" to="2090" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">DeBruine, L. M. 2004a Facial resemblance increases the attractiveness of same-sex faces more than other-sex faces. Proc. R. Soc. B 271, 2085-2090.</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">b Resemblance to self increases the appeal of child faces to both men and women</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Debruine</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evol. Hum. Behav</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="142" to="154" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">DeBruine, L. M. 2004b Resemblance to self increases the appeal of child faces to both men and women. Evol. Hum. Behav. 25, 142-154.</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">The evolution of human mating: trade-offs and strategic pluralism</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">W</forename><surname>Gangestad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Simson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Behav. Brain Sci</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="page" from="573" to="644" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gangestad, S. W. &amp; Simson, J. A. 2000 The evolution of human mating: trade-offs and strategic pluralism. Behav. Brain Sci. 23, 573-644.</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Assortative mating: a study of physiognomic homogamy</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Griffths</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Kunz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Soc. Biol</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page" from="448" to="453" />
+			<date type="published" when="1973">1973</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Griffths, R. &amp; Kunz, P. 1973 Assortative mating: a study of physiognomic homogamy. Soc. Biol. 20, 448-453.</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">The attractiveness of nonface averages: implications for an evolutionary explanation of the attractiveness of average faces</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Halberstadt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Rhodes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychol. Sci</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="285" to="289" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Halberstadt, J. &amp; Rhodes, G. 2000 The attractiveness of nonface averages: implications for an evolutionary explanation of the attractiveness of average faces. Psychol. Sci. 11, 285-289.</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">The genetical evolution of social behaviour</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">D</forename><surname>Hamilton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">I. J. Theor. Biol</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="1" to="16" />
+			<date type="published" when="1964">1964</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hamilton, W. D. 1964 The genetical evolution of social behaviour, I. J. Theor. Biol. 7, 1-16.</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Facial resemblance in engaged and married couples</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">B</forename><surname>Hinsz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Soc. Pers. Relat</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="223" to="229" />
+			<date type="published" when="1989">1989</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hinsz, V. B. 1989 Facial resemblance in engaged and married couples. J. Soc. Pers. Relat. 6, 223-229.</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Male facial attractiveness: evidence for a hormone-mediated adaptive design</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">S</forename><surname>Johnston</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hagel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Franklin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fink</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Grammer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evol. Hum. Behav</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="page" from="251" to="267" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Johnston, V. S., Hagel, R., Franklin, M., Fink, B. &amp; Grammer, K. 2001 Male facial attractiveness: evidence for a hormone-mediated adaptive design. Evol. Hum. Behav. 22, 251-267.</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Prototype-referenced shape encoding revealed by highlevel aftereffects</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Leopold</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>O'toole</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vetter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Blanz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Neurosci</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="89" to="94" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Leopold, D., O&apos;Toole, A., Vetter, T. &amp; Blanz, V. 2001 Prototype-referenced shape encoding revealed by high- level aftereffects. Nat. Neurosci. 4, 89-94.</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Partnership status and the temporal context of relationships influence human female preferences Figure 2. The average preference for self-resemblance in response to the trustworthiness, long-term and short-term relationship questions for 66 men and 78 women. Context-specific effects of facial resemblance L. M. DeBruine 921 for sexual dimorphism in male face shape</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Little</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">C</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Penton-Voak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Burt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. R. Soc. B</title>
+		<imprint>
+			<biblScope unit="volume">269</biblScope>
+			<biblScope unit="page" from="1095" to="1103" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Little, A. C., Jones, B. C., Penton-Voak, I. S., Burt, D. M. &amp; Perrett, D. I. 2002 Partnership status and the temporal context of relationships influence human female preferences Figure 2. The average preference for self-resemblance in response to the trustworthiness, long-term and short-term relationship questions for 66 men and 78 women. Context-specific effects of facial resemblance L. M. DeBruine 921 for sexual dimorphism in male face shape. Proc. R. Soc. B 269, 1095-1103.</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Investigating an imprinting-like phenomenon in humans: partners and opposite-sex parents have similar hair and eye colour</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Little</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Penton-Voak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Burt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evol. Hum. Behav</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="43" to="51" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Little, A. C., Penton-Voak, I. S., Burt, D. M. &amp; Perrett, D. I. 2003 Investigating an imprinting-like phenomenon in humans: partners and opposite-sex parents have similar hair and eye colour. Evol. Hum. Behav. 24, 43-51.</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">When to be incestuous</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>May</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">279</biblScope>
+			<biblScope unit="page" from="192" to="194" />
+			<date type="published" when="1979">1979</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">May, R. M. 1979 When to be incestuous. Nature 279, 192-194.</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Computer graphic studies of the role of facial similarity in judgments of attractiveness</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Penton-Voak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Peirce</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Curr. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="104" to="117" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Penton-Voak, I. S., Perrett, D. I. &amp; Peirce, J. W. 1999 Computer graphic studies of the role of facial similarity in judgments of attractiveness. Curr. Psychol. 18, 104-117.</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Female condition influences preferences for sexual dimorphism in faces of male humans (Homo sapiens)</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Penton-Voak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Little</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">C</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Burt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">P</forename><surname>Tiddeman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Comp. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">117</biblScope>
+			<biblScope unit="page" from="264" to="271" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Penton-Voak, I. S., Little, A. C., Jones, B. C., Burt, D. M., Tiddeman, B. P. &amp; Perrett, D. I. 2003 Female condition influences preferences for sexual dimorphism in faces of male humans (Homo sapiens). J. Comp. Psychol. 117, 264-271.</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Facial attractiveness judgments reflect learning of parental age characteristics</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Penton-Voak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Little</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">P</forename><surname>Tiddeman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Burt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Schmidt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Oxley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Kinloch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Barrett</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. R. Soc. B</title>
+		<imprint>
+			<biblScope unit="volume">269</biblScope>
+			<biblScope unit="page" from="873" to="880" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Perrett, D. I., Penton-Voak, I. S., Little, A. C., Tiddeman, B. P., Burt, D. M., Schmidt, N., Oxley, R., Kinloch, N. &amp; Barrett, L. 2002 Facial attractiveness judgments reflect learning of parental age characteristics. Proc. R. Soc. B 269, 873-880.</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Reactions to children&apos;s faces: resemblance affects males more than females</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Platek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Burch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Panyavin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">H</forename><surname>Wasserman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">G</forename><surname>Gallup</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Jr</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evol. Hum. Behav</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="page" from="159" to="166" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Platek, S. M., Burch, R. L., Panyavin, I. S., Wasserman, B. H. &amp; Gallup, G. G., Jr 2002 Reactions to children&apos;s faces: resemblance affects males more than females. Evol. Hum. Behav. 23, 159-166.</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">How much paternal resemblance is enough? Sex differences in hypothetical investment decisions but not in the detection of resemblance</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Platek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">R</forename><surname>Critton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Burch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Frederick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">E</forename><surname>Meyers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">G</forename><surname>Gallup</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Jr</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evol. Hum. Behav</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="81" to="87" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Platek, S. M., Critton, S. R., Burch, R. L., Frederick, D. A., Meyers, T. E. &amp; Gallup, G. G., Jr 2003 How much paternal resemblance is enough? Sex differences in hypothetical investment decisions but not in the detection of resemblance. Evol. Hum. Behav. 24, 81-87.</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Generalization of mere exposure effects to averaged composite faces</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Rhodes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Halberstadt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Brajkovich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Soc. Cogn</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page" from="57" to="70" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rhodes, G., Halberstadt, J. &amp; Brajkovich, G. 2001 General- ization of mere exposure effects to averaged composite faces. Soc. Cogn. 19, 57-70.</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Fitting the mind to the world: face adaptation and attractiveness aftereffects</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Rhodes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jeffery</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Watson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Nakayama</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychol. Sci</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="558" to="566" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rhodes, G., Jeffery, L., Watson, T. &amp; Nakayama, C. 2003 Fitting the mind to the world: face adaptation and attractiveness aftereffects. Psychol. Sci. 14, 558-566.</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Optimum orders for the presentation of pairs in the method of paired comparisons</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Ross</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Educ. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="375" to="382" />
+			<date type="published" when="1934">1934</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ross, R. T. 1934 Optimum orders for the presentation of pairs in the method of paired comparisons. J. Educ. Psychol. 25, 375-382.</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Prototyping and transforming facial textures for perception research</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">P</forename><surname>Tiddeman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Burt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Comput. Graph. Appl. Res</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="42" to="50" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Tiddeman, B. P., Perrett, D. I. &amp; Burt, D. M. 2001 Prototyping and transforming facial textures for percep- tion research. IEEE Comput. Graph. Appl. Res. 21, 42-50.</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Adaptation to natural facial categories</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Webster</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kaping</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Mizokami</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Duhamel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">428</biblScope>
+			<biblScope unit="page" from="557" to="561" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Webster, M. A., Kaping, D., Mizokami, Y. &amp; Duhamel, P. 2004 Adaptation to natural facial categories. Nature 428, 557-561.</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Attitudinal effects of mere exposure</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">B</forename><surname>Zajonc</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Pers. Soc. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="1S" to="27S" />
+			<date type="published" when="1968">1968</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Zajonc, R. B. 1968 Attitudinal effects of mere exposure. J. Pers. Soc. Psychol. 9, 1S-27S.</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Convergence in the physical appearance of spouses</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">B</forename><surname>Zajonc</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">K</forename><surname>Adelmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">T</forename><surname>Murphy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Niendenthal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Motiv. Emotion</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="335" to="346" />
+			<date type="published" when="1987">1987</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Zajonc, R. B., Adelmann, P. K., Murphy, S. T. &amp; Niendenthal, P. M. 1987 Convergence in the physical appearance of spouses. Motiv. Emotion 11, 335-346.</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

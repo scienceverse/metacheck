@@ -109,8 +109,20 @@ test_that("tei_info", {
   expect_equal(info$description, description)
   expect_equal(info$keywords, keywords)
   expect_equal(info$doi, doi)
-  expect_equal(info$received, received)
-  expect_equal(info$accepted, accepted)
+  expect_equal(info$received |> as.character(), received)
+  expect_equal(info$accepted |> as.character(), accepted)
+
+  # dates
+  xml <- read_xml("debruine/debruine-child.xml")
+  info <- tei_info(xml)
+  expect_equal(info$submission, "Received 2 February 2004; accepted 30 March 2004")
+  expect_equal(info$received |> as.character(), "2004-02-02")
+  expect_equal(info$accepted |> as.character(), "2004-03-30")
+
+  d <- read("debruine")
+  s <- info_table(d, c("submission", "received", "accepted"))
+  exp <- structure(c(12450, 11758, 12474, 12643), class = "Date")
+  expect_equal(s$received, exp)
 })
 
 
@@ -168,6 +180,32 @@ test_that("get notes ", {
   notes <- sum(text$section == "foot")
 
   expect_equal(notes, 0)
+})
+
+test_that("tei_refs", {
+  # PsychSci
+  filename <- "psychsci/light/0956797618755322.xml"
+  xml<- read_xml(filename)
+  xrefs <- tei_xrefs(xml)
+  obs <- dplyr::count(xrefs, type)
+  exp <- dplyr::tibble(
+    type = c("bibr", "figure", "table"),
+    n = c(45L, 12L, 11L)
+  )
+  expect_equal(obs, exp)
+
+  paper <- read(filename)
+  expect_equal(paper$xrefs[1:4], xrefs)
+
+  # CHI
+  xml <- read_xml("footnotes/3544548.3580942.xml")
+  refs <- tei_xrefs(xml)
+  obs <- dplyr::count(refs, type)
+  exp <- dplyr::tibble(
+    type = c("bibr", "figure", "foot", "table"),
+    n = c(191L, 11L, 7L, 1L)
+  )
+  expect_equal(obs, exp)
 })
 
 test_that("tei_authors", {
@@ -228,27 +266,22 @@ test_that("tei_bib", {
   filename <- demoxml()
   xml <- read_xml(filename)
 
-  refs <- tei_bib(xml)
-  expect_equal(names(refs), c("references", "citations"))
-
-  exp <- c("bib_id", "ref", "doi", "bibtype",
+  bib <- tei_bib(xml)
+  exp <- c("xref_id", "ref", "doi", "bibtype",
            "title", "journal", "year", "authors")
-  expect_equal(names(refs$references), exp)
-  expect_equal(nrow(refs$references), 2)
-
-  expect_equal(names(refs$citations), c("bib_id", "text"))
+  expect_equal(names(bib), exp)
+  expect_equal(nrow(bib), 2)
 
   # no raw_references
   expect_no_error(g <- read("examples/bib2.xml"))
-  expect_true( all(!is.na(g$references$ref)) )
-
+  expect_equal(g$bib$xref_id, paste0("b", 0:6))
 
   # exclude <bibr> with no type
   filename <- "psychsci/light/0956797613520608.xml"
   xml <- read_xml(filename)
-  refs <- tei_bib(xml)
+  bib <- tei_bib(xml)
 
-  start_b <- refs$citations$bib_id |> grepl("^b", x = _)
+  start_b <- bib$xref_id |> grepl("^b", x = _)
   expect_true(all(start_b))
 })
 
@@ -322,8 +355,8 @@ test_that("grobid-versions", {
   sinfo <- spaper$info[[p]]
   sinfo$filename <- NULL
   expect_equal(pinfo, sinfo)
-  expect_equal(paper[[p]]$references, spaper[[p]]$references)
-  expect_equal(paper[[p]]$citations, spaper[[p]]$citations)
+  expect_equal(paper[[p]]$bib, spaper[[p]]$bib)
+  expect_equal(paper[[p]]$xrefs, spaper[[p]]$xrefs)
 
   mismatch <- sapply(1:nrow(paper[[p]]$full_text), \(i) {
     !all(paper[[p]]$full_text[i, "text"] == spaper[[p]]$full_text[i, "text"]) |> isTRUE()
@@ -342,8 +375,8 @@ test_that("grobid-versions", {
   sinfo <- spaper$info[[p]]
   sinfo$filename <- NULL
   expect_equal(pinfo, sinfo)
-  expect_equal(paper[[p]]$references, spaper[[p]]$references)
-  expect_equal(paper[[p]]$citations, spaper[[p]]$citations)
+  expect_equal(paper[[p]]$bib, spaper[[p]]$bib)
+  expect_equal(paper[[p]]$xrefs, spaper[[p]]$xrefs)
 
   mismatch <- sapply(1:nrow(paper[[p]]$full_text), \(i) {
     !all(paper[[p]]$full_text[i, "text"] == spaper[[p]]$full_text[i, "text"]) |> isTRUE()
@@ -362,8 +395,8 @@ test_that("grobid-versions", {
   sinfo <- spaper$info[[p]]
   sinfo$filename <- NULL
   expect_equal(pinfo, sinfo)
-  expect_equal(paper[[p]]$references, spaper[[p]]$references)
-  expect_equal(paper[[p]]$citations, spaper[[p]]$citations)
+  expect_equal(paper[[p]]$bib, spaper[[p]]$bib)
+  expect_equal(paper[[p]]$xrefs, spaper[[p]]$xrefs)
 
   mismatch <- sapply(1:nrow(paper[[p]]$full_text), \(i) {
     !all(paper[[p]]$full_text[i, "text"] == spaper[[p]]$full_text[i, "text"]) |> isTRUE()
@@ -382,8 +415,8 @@ test_that("grobid-versions", {
   sinfo <- spaper$info[[p]]
   sinfo$filename <- NULL
   expect_equal(pinfo, sinfo)
-  expect_equal(paper[[p]]$references, spaper[[p]]$references)
-  expect_equal(paper[[p]]$citations, spaper[[p]]$citations)
+  expect_equal(paper[[p]]$bib, spaper[[p]]$bib)
+  expect_equal(paper[[p]]$xrefs, spaper[[p]]$xrefs)
 
   mismatch <- sapply(1:nrow(paper[[p]]$full_text), \(i) {
     !all(paper[[p]]$full_text[i, "text"] == spaper[[p]]$full_text[i, "text"]) |> isTRUE()
@@ -404,8 +437,8 @@ test_that("grobid-versions", {
   sinfo <- spaper$info[[p]]
   sinfo$filename <- NULL
   expect_equal(pinfo, sinfo)
-  expect_equal(paper[[p]]$references, spaper[[p]]$references)
-  expect_equal(paper[[p]]$citations, spaper[[p]]$citations)
+  expect_equal(paper[[p]]$bib, spaper[[p]]$bib)
+  expect_equal(paper[[p]]$xrefs, spaper[[p]]$xrefs)
 
   mismatch <- sapply(1:nrow(paper[[p]]$full_text), \(i) {
     !all(paper[[p]]$full_text[i, "text"] == spaper[[p]]$full_text[i, "text"]) |> isTRUE()
@@ -446,7 +479,7 @@ test_that("paper_validate", {
   expect_equal(pc$doi, "")
   expect_equal(pc$title, "")
   expect_equal(pc$abstract, "")
-  expect_equal(pc$refs, 41)
+  expect_equal(pc$bib, 41)
 
   # batch
   paper <- psychsci
