@@ -116,28 +116,28 @@ Paper objects contain a lot of structured information, including info, reference
 paper$info
 ```
 
-### References
+### Bibliography
 
-References are provided in a tabular format.
+The bibliography is provided in a tabular format.
 
 ```{r, eval = FALSE}
-paper$references
+paper$bib
 ```
 
 ```{r, echo = FALSE}
-knitr::kable(paper$references)
+knitr::kable(paper$bib)
 ```
 
-### Citations
+### Cross-References
 
-Citations are also provided in a tabular format, with a bib_id to match the references.
+Cross-references are also provided in a tabular format, with `xref_id` to match the bibliography table.
 
 ```{r, eval = FALSE}
-paper$citations
+paper$xrefs
 ```
 
 ```{r, echo = FALSE}
-knitr::kable(paper$citations)
+knitr::kable(paper$xrefs)
 ```
 
 ### Batch
@@ -150,12 +150,12 @@ info_table(psychsci[1:5], c("title", "doi"))
 
 
 ```{r}
-concat_tables(psychsci[1:5], "references") |>
+concat_tables(psychsci[1:5], "bib") |>
   dplyr::filter(!is.na(doi))
 ```
 
 ```{r}
-concat_tables(psychsci[1:40], "citations") |>
+concat_tables(psychsci[1:40], "xrefs") |>
   dplyr::filter(grepl("replicat", text)) |>
   dplyr::count(id, text)
 ```

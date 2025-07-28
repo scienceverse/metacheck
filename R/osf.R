@@ -793,7 +793,7 @@ osf_file_download <- function(osf_id,
                               max_folder_length = Inf,
                               ignore_folder_structure = FALSE) {
   ## error checking ----
-  osf_id <- osf_check_id(osf_id) |> na.omit() |> unique()
+  osf_id <- osf_check_id(osf_id) |> stats::na.omit() |> unique()
   if (length(osf_id) == 0) return(NULL)
 
   ## iterate ----

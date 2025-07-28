@@ -365,7 +365,7 @@ get_cermine_refs <- function(xml) {
 
   if (length(refs) > 0) {
     ref_table <- data.frame(
-      bib_id = xml2::xml_attr(refs, "id")
+      ref_id = xml2::xml_attr(refs, "id")
     )
 
     # TODO: DOIs are very badly parsed in cermine
@@ -383,7 +383,7 @@ get_cermine_refs <- function(xml) {
 
   } else {
     ref_table <- data.frame(
-      bib_id = character(0),
+      ref_id = character(0),
       doi = character(0),
       ref = character(0)
     )
@@ -405,24 +405,24 @@ get_cermine_refs <- function(xml) {
     matches <- gregexpr("(?<=xref ref-type=\"bibr\" rid=\")[ref0-9]+(?=\")",
                         textrefp$text, perl = TRUE) |>
       regmatches(textrefp$text, m = _)
-    textrefp$bib_id <- sapply(matches, paste, collapse = ";")
+    textrefp$ref_id <- sapply(matches, paste, collapse = ";")
 
-    citation_table <- textrefp[textrefp$bib_id != "", ]
+    citation_table <- textrefp[textrefp$ref_id != "", ]
     citation_table$text <- lapply(citation_table$text, xml2::read_html) |>
       sapply(xml2::xml_text) |>
       gsub("\\s+", " ", x = _) |>
       gsub("\\) (?=[,.;])", "\\)", x = _, perl = TRUE)
 
     citation_table <- citation_table |>
-      tidyr::separate_longer_delim("bib_id", delim = ";")
+      tidyr::separate_longer_delim("ref_id", delim = ";")
   } else {
-    citation_table = data.frame(bib_id = character(0),
+    citation_table = data.frame(ref_id = character(0),
                                 text = character(0))
   }
 
   return(list(
     references = ref_table,
-    citations = citation_table[, c("bib_id", "text")]
+    citations = citation_table[, c("ref_id", "text")]
   ))
 }
 

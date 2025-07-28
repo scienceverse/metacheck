@@ -20,11 +20,11 @@
 #' module_run(psychsci, "retractionwatch")
 retractionwatch <- function(paper) {
   # detailed table of results ----
-  refs <- papercheck::concat_tables(paper, c('references'))
-  table <- dplyr::inner_join(refs, papercheck::retractionwatch, by = 'doi')
+  bibs <- papercheck::concat_tables(paper, c('bib'))
+  table <- dplyr::inner_join(bibs, papercheck::retractionwatch, by = 'doi')
   if (nrow(table) > 0) {
-    cites <- papercheck::concat_tables(paper, c('citations'))
-    table <- dplyr::left_join(table, cites, by = c('id', 'bib_id'))
+    xrefs <- papercheck::concat_tables(paper, c('xrefs'))
+    table <- dplyr::left_join(table, xrefs, by = c('xref_id', "id"))
   }
 
   # summary output for paperlists ----
@@ -50,3 +50,4 @@ retractionwatch <- function(paper) {
     report = report[[tl]]
   )
 }
+

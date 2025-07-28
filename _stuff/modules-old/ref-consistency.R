@@ -1,14 +1,14 @@
-refs <- concat_tables(paper, "references")
-cites <- concat_tables(paper, "citations")
+refs <- concat_tables(paper, "bib")
+cites <- concat_tables(paper, "xrefs")
 
-missing_cites <- dplyr::anti_join(refs, cites, by = c("id", "bib_id"))
+missing_cites <- dplyr::anti_join(refs, cites, by = c("id", "ref_id"))
 if (nrow(missing_cites)) missing_cites$missing <- "citation"
-missing_refs <- dplyr::anti_join(cites, refs,  by = c("id", "bib_id"))
+missing_refs <- dplyr::anti_join(cites, refs,  by = c("id", "ref_id"))
 if (nrow(missing_refs)) missing_refs$missing <- "reference"
 names(missing_refs) <- names(missing_refs) |> sub("text", "ref", x = _)
 
 table <- dplyr::bind_rows(missing_cites, missing_refs) |>
-  dplyr::arrange(id, bib_id)
+  dplyr::arrange(id, ref_id)
 
 tl_table <- info_table(paper, c()) |>
   dplyr::left_join(dplyr::count(refs, id, name = "nrefs"), by = "id") |>

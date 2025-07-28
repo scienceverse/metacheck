@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9050</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9053</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -182,28 +182,35 @@ info, references, and citations.</p>
 <span><span class="co">#&gt; $keywords</span></span>
 <span><span class="co">#&gt; [1] ""</span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $doi</span></span>
+<span><span class="co">#&gt; [1] ""</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $submission</span></span>
+<span><span class="co">#&gt; [1] ""</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $filename</span></span>
-<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/RtmphFUVLH/temp_libpath10c277b84744/papercheck/extdata/to_err_is_human.xml"</span></span></code></pre>
+<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/Rtmp4hJX7T/temp_libpath137c2715ec1dd/papercheck/extdata/to_err_is_human.xml"</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+<h3 id="bibliography">Bibliography<a class="anchor" aria-label="anchor" href="#bibliography"></a>
 </h3>
-<p>References are provided in a tabular format.</p>
+<p>The bibliography is provided in a tabular format.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">references</span></span></code></pre></div>
-<table style="width:100%;" class="table">
+<code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">bib</span></span></code></pre></div>
+<table class="table">
 <colgroup>
-<col width="1%">
-<col width="57%">
+<col width="2%">
+<col width="55%">
 <col width="6%">
 <col width="2%">
-<col width="18%">
+<col width="17%">
 <col width="5%">
 <col width="1%">
-<col width="6%">
+<col width="5%">
+<col width="4%">
 </colgroup>
 <thead><tr class="header">
-<th align="left">bib_id</th>
+<th align="left">xref_id</th>
 <th align="left">ref</th>
 <th align="left">doi</th>
 <th align="left">bibtype</th>
@@ -211,6 +218,7 @@ info, references, and citations.</p>
 <th align="left">journal</th>
 <th align="left">year</th>
 <th align="left">authors</th>
+<th align="left">id</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
@@ -225,6 +233,7 @@ Greater Creativity</td>
 <td align="left">Psychological Science</td>
 <td align="left">2014</td>
 <td align="left">F Gino, S S Wiltermuth</td>
+<td align="left">to_err_is_human</td>
 </tr>
 <tr class="even">
 <td align="left">b1</td>
@@ -236,37 +245,66 @@ design.” <em>Journal of Journals</em>, <em>0</em>(0), 0. <a href="doi:10.0000/
 <td align="left">Journal of Journals</td>
 <td align="left">2021</td>
 <td align="left">F Smith</td>
+<td align="left">to_err_is_human</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="section level3">
-<h3 id="citations">Citations<a class="anchor" aria-label="anchor" href="#citations"></a>
+<h3 id="cross-references">Cross-References<a class="anchor" aria-label="anchor" href="#cross-references"></a>
 </h3>
-<p>Citations are also provided in a tabular format, with a bib_id to
-match the references.</p>
+<p>Cross-references are also provided in a tabular format, with
+<code>xref_id</code> to match the bibliography table.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">citations</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">paper</span><span class="op">$</span><span class="va">xrefs</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="7%">
-<col width="92%">
+<col width="3%">
+<col width="2%">
+<col width="10%">
+<col width="70%">
+<col width="6%">
+<col width="3%">
+<col width="1%">
+<col width="1%">
+<col width="1%">
 </colgroup>
 <thead><tr class="header">
-<th align="left">bib_id</th>
+<th align="left">xref_id</th>
+<th align="left">type</th>
+<th align="left">contents</th>
 <th align="left">text</th>
+<th align="left">id</th>
+<th align="left">section</th>
+<th align="right">div</th>
+<th align="right">p</th>
+<th align="right">s</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td align="left">b0</td>
+<td align="left">bibr</td>
+<td align="left">(Gino &amp; Wiltermuth, 2014)</td>
 <td align="left">Although intentional dishonestly might be a successful
 way to boost creativity (Gino &amp; Wiltermuth, 2014), it is safe to say
 most mistakes researchers make are unintentional.</td>
+<td align="left">to_err_is_human</td>
+<td align="left">intro</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">1</td>
 </tr>
 <tr class="even">
+<td align="left">NA</td>
+<td align="left">bibr</td>
 <td align="left">(Smithy, 2020)</td>
 <td align="left">From a human factors perspective, human error is a
 symptom of a poor design (Smithy, 2020).</td>
+<td align="left">to_err_is_human</td>
+<td align="left">intro</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">2</td>
 </tr>
 </tbody>
 </table>
@@ -288,15 +326,15 @@ papers from Psychological Science.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0956797614557697 Action-Specific Disruption of Perceptual Confidence     10.1…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0956797614560771 Emotional Vocalizations Are Recognized Across Cultures… 10.1…</span></span></code></pre>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/concat_tables.html">concat_tables</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>, <span class="st">"references"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/concat_tables.html">concat_tables</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>, <span class="st">"bib"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">doi</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;   bib_id</span></span>
-<span><span class="co">#&gt; 1    b40</span></span>
-<span><span class="co">#&gt; 2     b0</span></span>
-<span><span class="co">#&gt; 3     b1</span></span>
-<span><span class="co">#&gt; 4     b2</span></span>
-<span><span class="co">#&gt; 5     b3</span></span>
-<span><span class="co">#&gt; 6     b4</span></span>
+<pre><code><span><span class="co">#&gt;   xref_id</span></span>
+<span><span class="co">#&gt; 1     b40</span></span>
+<span><span class="co">#&gt; 2      b0</span></span>
+<span><span class="co">#&gt; 3      b1</span></span>
+<span><span class="co">#&gt; 4      b2</span></span>
+<span><span class="co">#&gt; 5      b3</span></span>
+<span><span class="co">#&gt; 6      b4</span></span>
 <span><span class="co">#&gt;                                                                                                                                                                                                                                                                                   ref</span></span>
 <span><span class="co">#&gt; 1                                             Zylberberg A, Barttfeld P, Sigman M (2012). “The construction of confidence in a perceptual decision.” _Frontiers in Integrative Neuroscience_, *6*. doi:10.3389/fnint.2012.00079/full &lt;https://doi.org/10.3389/fnint.2012.00079/full&gt;.</span></span>
 <span><span class="co">#&gt; 2                                                        Ekman P (1994). “Strong evidence for universals in facial expressions: A reply to Russell's mistaken critique.” _Psychological Bulletin_, *115*, 268-287. doi:10.1037/0033-2909.115 &lt;https://doi.org/10.1037/0033-2909.115&gt;.</span></span>
@@ -333,27 +371,23 @@ papers from Psychological Science.</p>
 <span><span class="co">#&gt; 5           D A Sauter, F Eisner, A J Calder, S K Scott 0956797614560771</span></span>
 <span><span class="co">#&gt; 6              D A Sauter, F Eisner, P Ekman, S K Scott 0956797614560771</span></span></code></pre>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/concat_tables.html">concat_tables</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">40</span><span class="op">]</span>, <span class="st">"citations"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/concat_tables.html">concat_tables</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">40</span><span class="op">]</span>, <span class="st">"xrefs"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"replicat"</span>, <span class="va">text</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">text</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;                 id</span></span>
-<span><span class="co">#&gt; 1 0956797614560771</span></span>
-<span><span class="co">#&gt; 2 0956797616665351</span></span>
-<span><span class="co">#&gt; 3 0956797617702699</span></span>
-<span><span class="co">#&gt; 4 0956797617705667</span></span>
-<span><span class="co">#&gt; 5 0956797617716922</span></span>
-<span><span class="co">#&gt;                                                                                                                                                                                                                                              text</span></span>
-<span><span class="co">#&gt; 1                                                                 1 We reanalyzed the data from the 29 Himba participants in our original study who had heard British vocalizations, the part of our study that Gendron et al. (2014) replicated.</span></span>
-<span><span class="co">#&gt; 2                                                At a group level, therefore, the perceptual data replicated previous findings (Freeman et al., 2010;Hürlimann et al., 2002;Sotiropoulos et al., 2014;Stocker &amp; Simoncelli, 2006;Thompson, 1982).</span></span>
-<span><span class="co">#&gt; 3                                                                       A study by Papesh (2015) is particularly relevant: She failed to replicate the findings of Glenberg and Kaschak (2002)-a key study that we have highlighted here as well.</span></span>
-<span><span class="co">#&gt; 4                                                                                                                               This replicates the main finding of Beck et al. (2012), who also used displays with both relevant colors present.</span></span>
-<span><span class="co">#&gt; 5 Though we await replication of our findings, we see the current data as promising initial evidence for the coevolved proximal mechanisms through which oxytocin facilitates potentially life-enhancing connections (Holt-Lunstad et al., 2010).</span></span>
-<span><span class="co">#&gt;   n</span></span>
-<span><span class="co">#&gt; 1 1</span></span>
-<span><span class="co">#&gt; 2 5</span></span>
-<span><span class="co">#&gt; 3 2</span></span>
-<span><span class="co">#&gt; 4 1</span></span>
-<span><span class="co">#&gt; 5 1</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 11 × 3</span></span></span>
+<span><span class="co">#&gt;    id               text                                                       n</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 0956797614560771 1 We reanalyzed the data from the 29 Himba participan…     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 0956797615617779 Experiment 1b replicated the results of Experiment 1a…     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 0956797616647519 Note that the average expected ES found in Study 1 is…     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 0956797616647519 This is worrisome, as the results of our first study …     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 0956797616665351 At a group level, therefore, the perceptual data repl…     5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 0956797617693326 Experiment 2 replicated Experiment 1 under conditions…     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 0956797617693326 Experiment 2 replicated these findings on a separate …     4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 0956797617702699 A study by Papesh (2015) is particularly relevant: Sh…     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 0956797617705667 Experiment 3 therefore replicated the effects in a mi…     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 0956797617705667 This replicates the main finding of Beck et al. (2012…     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> 0956797617716922 Though we await replication of our findings, we see t…     1</span></span></code></pre>
 </div>
 </div>
 <div class="section level2">

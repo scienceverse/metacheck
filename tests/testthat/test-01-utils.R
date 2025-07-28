@@ -58,10 +58,10 @@ test_that("demo functions", {
 test_that("concat_tables", {
   papers <- read(demodir())
 
-  refs <- concat_tables(papers, c("references"))
-  expect_equal(nrow(refs), 48)
+  bibs <- concat_tables(papers, c("bib"))
+  expect_equal(nrow(bibs), 48)
 
-  ids <- unique(refs$id)
+  ids <- unique(bibs$id)
   expect_equal(length(ids), length(papers))
 })
 
@@ -82,7 +82,7 @@ test_that("print.scivrs_paper", {
   paper <- demoxml() |> read()
   op <- capture_output(print(paper))
   op.sv <- capture_output(print.scivrs_paper(paper))
-  expected <- "---------------\nto_err_is_human\n---------------\n\nTo Err is Human: An Empirical Investigation\n\n* Sections: 4\n* Sentences: 24\n* References: 2\n* Citations: 2\n"
+  expected <- "---------------\nto_err_is_human\n---------------\n\nTo Err is Human: An Empirical Investigation\n\n* Sections: 4\n* Sentences: 24\n* Bibliography: 2\n* X-Refs: 2\n"
 
   expect_equal(op, expected)
   expect_equal(op, op.sv)

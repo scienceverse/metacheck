@@ -2,7 +2,7 @@
 % Please edit documentation in R/read.R
 \name{word_bib}
 \alias{word_bib}
-\title{Get references/citations from Word .docx}
+\title{Get bibliography from Word .docx}
 \usage{
 word_bib(xml)
 }
@@ -10,9 +10,9 @@ word_bib(xml)
 \item{xml}{The XML}
 }
 \value{
-an list of two tables: references and citations
+bib table
 }
 \description{
-Get references/citations from Word .docx
+Get bibliography from Word .docx
 }
 \keyword{internal}

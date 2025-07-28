@@ -117,35 +117,48 @@ read <- function(filename) {
     p$info <- apa_info(xml)
     p$authors <- apa_authors(xml)
     full_text <- apa_full_text(xml)
-    bib <- jats_bib(xml)
+    p$bib <- jats_bib(xml)
+    p$xrefs <- jats_xrefs(xml)
   } else if (xml_type == "nlm") {
     p$info <- nlm_info(xml)
     p$authors <- nlm_authors(xml)
     full_text <- nlm_full_text(xml)
-    bib <- jats_bib(xml)
+    p$bib <- jats_bib(xml)
+    p$xrefs <- jats_xrefs(xml)
   } else if (xml_type == "tei") {
     p$info <- tei_info(xml)
     p$authors <- tei_authors(xml)
     full_text <- tei_full_text(xml)
-    bib <- tei_bib(xml)
+    p$bib <- tei_bib(xml)
+    p$xrefs <- tei_xrefs(xml)
   } else if (xml_type == "text") {
     p$info <- text_info(xml)
     p$authors <- text_authors(xml)
     full_text <- text_full_text(xml)
-    bib <- text_bib(xml)
+    p$bib <- text_bib(xml)
+    p$xrefs <- text_xrefs(xml)
   } else if (xml_type == "word") {
     p$info <- word_info(xml)
     p$authors <- word_authors(xml)
     full_text <- word_full_text(filename)
-    bib <- word_bib(xml)
+    p$bib <- word_bib(xml)
+    p$xrefs <- word_xrefs(xml)
   }
 
-  p$id <- id
   p$info$filename <- filename
   p$full_text <- process_full_text(full_text)
+
+  # add paper ID to tables
+  p$id <- id
   p$full_text$id <- rep(id, nrow(p$full_text))
-  p$references <- bib$references
-  p$citations <- bib$citations
+  p$xrefs$id <- rep(id, nrow(p$xrefs))
+  p$bib$id <- rep(id, nrow(p$bib))
+
+  # join sentence location to xrefs
+  pos_cols <- c("text", "section", "div", "p", "s")
+  first_text <- p$full_text[pos_cols] |>
+    dplyr::slice(1, .by = text)
+  p$xrefs <- dplyr::left_join(p$xrefs, first_text, by = "text")
 
   return(p)
 }
@@ -521,7 +534,56 @@ apa_full_text <- function(xml) {
   return(full_text)
 }
 
-#' Get references/citations from JATS APA-DTD or NLM DTD type XML
+#' Get cross references from JATS APA-DTD or NLM DTD type XML
+#'
+#' @param xml The XML
+#'
+#' @return xrefs table
+#' @keywords internal
+jats_xrefs <- function(xml) {
+  xrefs <- xml2::xml_find_all(xml, "//xref")
+  if (length(xrefs) == 0) {
+    return(data.frame(
+      xref_id = character(0),
+      type = character(0),
+      contents = character(0),
+      text = character(0)
+    ))
+  }
+
+  types <- sapply(xrefs, xml2::xml_attr, "ref-type")
+  targets <- sapply(xrefs, xml2::xml_attr, "rid")
+  id <- sapply(xrefs, xml2::xml_attr, "id")
+  if (all(is.na(id))) id <- targets
+  contents <- sapply(xrefs, xml2::xml_text)
+  p <- lapply(xrefs, xml2::xml_parent) |>
+    sapply(as.character) |>
+    gsub("</?p>", "", x = _)
+
+  xref_data <- data.frame(
+    i = id,
+    xref_id = sub("#", "", targets),
+    type = types,
+    contents = contents,
+    p = p
+  ) |>
+    tidytext::unnest_sentences(output = "text", input = "p", to_lower = FALSE) |>
+    dplyr::filter(grepl("<xref", text, fixed = TRUE)) |>
+    dplyr::rowwise() |>
+    dplyr::filter(grepl(i, text, fixed = TRUE)) |>
+    dplyr::mutate(text = xml2::read_html(text) |> xml2::xml_text()) |>
+    dplyr::ungroup() |>
+    # Cermine lumps refs together, so split :(
+    # should split contents too,
+    # but splitting on ; doesn't always match n of refs split
+    tidyr::separate_longer_delim(xref_id, delim = " ") |>
+    dplyr::arrange(type,
+                   gsub("\\D", "", x = xref_id) |> as.integer())
+
+  return(xref_data[c("xref_id", "type", "contents", "text")])
+}
+
+#' Get bibliography from JATS APA-DTD or NLM DTD type XML
 #'
 #' @param xml The XML
 #'
@@ -530,7 +592,7 @@ apa_full_text <- function(xml) {
 jats_bib <- function(xml) {
   refs <- xml2::xml_find_all(xml, "//back //ref-list //ref")
 
-  ref_table <- lapply(refs, \(ref) {
+  bib_table <- lapply(refs, \(ref) {
     cite <- xml2::xml_find_first(ref, ".//mixed-citation")
 
     # authors
@@ -569,7 +631,7 @@ jats_bib <- function(xml) {
     if (is.na(id)) id <- xml2::xml_attr(ref, "id")
 
     data.frame(
-      bib_id = id,
+      xref_id = id,
       ref = xml2::xml_text(ref) |> gsub("\\s+", " ", x = _),
       doi = xml_find1(ref, ".//pub-id[@pub-id-type='doi']"),
       bibtype = bibtype,
@@ -584,42 +646,7 @@ jats_bib <- function(xml) {
     )
   }) |> do.call(dplyr::bind_rows, args = _)
 
-  # get in-text citation ----
-  textrefs <- xml2::xml_find_all(xml, "//xref[@ref-type='bibr']")
-
-  if (length(textrefs) > 0) {
-    # get parent paragraphs of all in-text references and parse into sentences
-    textrefp <- data.frame(
-      p = xml2::xml_parent(textrefs) |> as.character() |>
-        gsub("</?p>", "", x = _)
-    ) |>
-      tidytext::unnest_sentences(output = "text", input = "p", to_lower = FALSE)
-
-    # find refs
-    matches <- gregexpr("(?<=\" rid=\")[^\"]+(?=\")",
-                        textrefp$text, perl = TRUE) |>
-      regmatches(textrefp$text, m = _)
-    textrefp$bib_id <- matches |>
-      sapply(paste, collapse = ";") |>
-      gsub(" ", ";", x = _)
-
-    citation_table <- textrefp[textrefp$bib_id != "", ]
-    citation_table$text <- lapply(citation_table$text, xml2::read_html) |>
-      sapply(xml2::xml_text) |>
-      gsub("\\s+", " ", x = _) |>
-      gsub("\\) (?=[,.;])", "\\)", x = _, perl = TRUE)
-
-    citation_table <- citation_table |>
-      tidyr::separate_longer_delim("bib_id", delim = ";")
-  } else {
-    citation_table = data.frame(bib_id = character(0),
-                                text = character(0))
-  }
-
-  return(list(
-    references = ref_table,
-    citations = citation_table[, c("bib_id", "text")]
-  ))
+  return(bib_table)
 }
 
 # NLM JATS ----
@@ -739,40 +766,55 @@ tei_info <- function(xml, filename = "") {
   info$keywords <- xml_find(xml, "//keywords //term")
   info$doi <- xml_find(xml, "//sourceDesc //idno[@type='DOI']")
 
-  try({
-    sub <- xml_find(xml, "//sourceDesc //note[@type='submission']") |>
-      strsplit(";\\s*")
-    if (length(sub[[1]]) > 0) {
-      received <- grep("^Received", sub[[1]],
-                       ignore.case = TRUE, value = TRUE)
-      if (length(received)) {
-        m <- gregexpr("\\d+/\\d+/\\d+", received)
-        date <- regmatches(received, m)[[1]] |> strsplit("/")
-        y <- date[[1]][[3]] |> as.integer()
-        if (y < 100) {
-          thisyear <- format(Sys.Date(), "%Y") |> as.numeric()
-          y <- ifelse(y < thisyear + 2, y + 2000, y + 1900)
+  # parse submission dates, which suck
+  tryCatch({
+    info$submission <- xml_find(xml, "//sourceDesc //note[@type='submission']")
+
+    # set up date regex
+    # TODO: move this to utilities
+    months <- "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|June|July|August|September|October|November|December"
+    pattern <- paste0(
+      "(", months, "|\\d{1,4})",
+      "[- /\\.](", months, "|\\d{1,2}),?",
+      "[- /\\.]\\d{2,4}"
+    )
+
+    m <- gregexpr(pattern, info$submission, ignore.case = TRUE)
+    dates <- regmatches(info$submission, m)
+    if (length(dates[[1]] > 0)) {
+      parsed_dates <- suppressWarnings(anytime::anydate(dates[[1]]))
+      parsed_dates_na <- is.na(parsed_dates) |> which()
+
+      for (i in parsed_dates_na) {
+        d <- dates[[1]][i]
+        if (grepl("\\d{1,2}/\\d{1,2}/\\d{2}", d)) {
+          # stupid psychsci format :(
+          parts <- strsplit(d, "/")[[1]] |> as.integer()
+          thisyear <- Sys.Date() |> format("%Y") |> as.integer()
+          parts[3] <- ifelse(parts[3] < thisyear + 1,
+                             parts[3] + 2000, parts[3] + 1900)
+          d <- sprintf("%d-%02d-%02d", parts[3], parts[1], parts[2])
         }
-        m <- date[[1]][[1]] |> as.integer()
-        d <- date[[1]][[2]] |> as.integer()
-        info$received <- sprintf("%d-%02d-%02d", y, m, d)
+
+        parsed_dates[i] <- d
       }
-      accepted <- grep("accepted", sub[[1]],
-                       ignore.case = TRUE, value = TRUE)
-      if (length(accepted)) {
-        m <- gregexpr("\\d+/\\d+/\\d+", accepted)
-        date <- regmatches(accepted, m)[[1]] |> strsplit("/")
-        y <- date[[1]][[3]] |> as.integer()
-        if (y < 100) {
-          thisyear <- format(Sys.Date(), "%Y") |> as.numeric()
-          y <- ifelse(y < thisyear + 2, y + 2000, y + 1900)
-        }
-        m <- date[[1]][[1]] |> as.integer()
-        d <- date[[1]][[2]] |> as.integer()
-        info$accepted <- sprintf("%d-%02d-%02d", y, m, d)
+
+      received <- gregexpr("received", info$submission, ignore.case = TRUE)[[1]][[1]]
+      accepted <- gregexpr("accepted", info$submission, ignore.case = TRUE)[[1]][[1]]
+    }
+
+    for (i in seq_along(parsed_dates)) {
+      if (is.null(info$received) &&
+          received != -1 && received < m[[1]][[i]]) {
+        info$received <- parsed_dates[[i]]
+      }
+      if (is.null(info$accepted) &&
+          accepted != -1 && accepted < m[[1]][[i]]) {
+        info$accepted <- parsed_dates[[i]]
       }
     }
-  })
+
+  }, error = \(e) {})
 
   return(info)
 }
@@ -890,7 +932,6 @@ tei_full_text <- function(xml) {
   figtbl <- figtbl %||% data.frame()
 
   ## add footnotes ----
-  # TODO: find and example to finish and test this
   notes <- xml2::xml_find_all(xml, "//note[@place='foot']")
   notetbl <- lapply(notes, \(note) {
     noteid <- xml2::xml_attr(note, "id")
@@ -913,84 +954,94 @@ tei_full_text <- function(xml) {
   return(full_text)
 }
 
-#' Get references/citations from TEI type XML
+#' Get cross references from TEI type XML
 #'
 #' @param xml The XML
 #'
-#' @return an list of two tables: references and citations
+#' @return xrefs table
+#' @keywords internal
+tei_xrefs <- function(xml) {
+  xrefs <- xml2::xml_find_all(xml, "//ref")
+  if (length(xrefs) == 0) {
+    return(data.frame(
+      xref_id = character(0),
+      type = character(0),
+      contents = character(0),
+      text = character(0)
+    ))
+  }
+
+  types <- sapply(xrefs, xml2::xml_attr, "type")
+  targets <- sapply(xrefs, xml2::xml_attr, "target")
+  contents <- sapply(xrefs, xml2::xml_text)
+  p <- lapply(xrefs, xml2::xml_parent) |>
+    sapply(as.character) |>
+    gsub("</?p>", "", x = _)
+
+  # get in-text citation
+  xref_data <- data.frame(
+    i = seq_along(xrefs),
+    xref_id = sub("#", "", targets),
+    type = types,
+    contents = contents,
+    p = p
+  ) |>
+    tidytext::unnest_sentences(output = "text", input = "p", to_lower = FALSE) |>
+    dplyr::filter(grepl("<ref", text, fixed = TRUE)) |>
+    dplyr::rowwise() |>
+    dplyr::filter(
+      (is.na(xref_id) & grepl(contents, xml2::read_html(text) |> xml2::xml_text(), fixed = TRUE)) |
+      grepl(paste0("#", xref_id), text, fixed = TRUE)
+    )
+
+  if (nrow(xref_data) > 0) {
+    xref_data <- xref_data |>
+      dplyr::mutate(text = xml2::read_html(text) |> xml2::xml_text()) |>
+      dplyr::ungroup() |>
+      dplyr::arrange(type, gsub("\\D", "", x = xref_id) |> as.integer())
+  }
+
+  return(xref_data[c("xref_id", "type", "contents", "text")])
+}
+
+#' Get bibliography from TEI type XML
+#'
+#' @param xml The XML
+#'
+#' @return bib table
 #' @keywords internal
 tei_bib <- function(xml) {
   refs <- xml2::xml_find_all(xml, "//listBibl //biblStruct")
 
   if (length(refs) > 0) {
-    ref_table <- data.frame(
-      bib_id = xml2::xml_attr(refs, "id")
+    bib_table <- data.frame(
+      xref_id = xml2::xml_attr(refs, "id")
     )
     # ref_table$doi <- xml2::xml_find_first(refs, ".//analytic //idno[@type='DOI']") |>
     #   xml2::xml_text()
 
     bibs <- lapply(refs, xml2bib)
 
-    ref_table$ref <- bibs |>
+    bib_table$ref <- bibs |>
       sapply(format) |>
       gsub("\\n", " ", x = _)
 
-    ref_table$doi <- sapply(bibs, \(x) x$doi %||% NA_character_)
-    ref_table$bibtype <- sapply(bibs, \(x) x$bibtype %||% NA_character_)
-    ref_table$title <- sapply(bibs, \(x) x$title %||% NA_character_)
-    ref_table$journal <- sapply(bibs, \(x) x$journal %||% NA_character_)
-    ref_table$year <- sapply(bibs, \(x) x$year %||% NA_integer_)
-    ref_table$authors <- lapply(bibs, \(x) x$author %||% NA_character_) |>
+    bib_table$doi <- sapply(bibs, \(x) x$doi %||% NA_character_)
+    bib_table$bibtype <- sapply(bibs, \(x) x$bibtype %||% NA_character_)
+    bib_table$title <- sapply(bibs, \(x) x$title %||% NA_character_)
+    bib_table$journal <- sapply(bibs, \(x) x$journal %||% NA_character_)
+    bib_table$year <- sapply(bibs, \(x) x$year %||% NA_integer_)
+    bib_table$authors <- lapply(bibs, \(x) x$author %||% NA_character_) |>
       sapply(paste, collapse = ", ")
   } else {
-    ref_table <- data.frame(
-      bib_id = character(0),
+    bib_table <- data.frame(
+      xref_id = character(0),
       doi = character(0),
       ref = character(0)
     )
   }
 
-  # get in-text citation ----
-  #textrefs <- xml2::xml_find_all(xml, "//body //ref[@type='bibr']")
-  textrefs <- xml2::xml_find_all(xml, "//ref[@type='bibr'][@target]")
-
-  if (length(textrefs) > 0) {
-    # get parent paragraphs of all in-text references and parse into sentences
-    textrefp <- data.frame(
-      p = xml2::xml_parent(textrefs) |> as.character() |>
-        gsub("</?p>", "", x = _)
-    ) |>
-      tidytext::unnest_sentences(output = "text", input = "p", to_lower = FALSE)
-
-    # find refs
-    matches <- gregexpr("(?<=ref type=\"bibr\" target=\"#)b\\d+",
-                        textrefp$text, perl = TRUE) |>
-      regmatches(textrefp$text, m = _)
-    # textrefp$bib_id <- sapply(matches, paste, collapse = ";")
-    no_targets <- gregexpr("(?<=ref type=\"bibr\">)[^</ref>]*(?=</ref>)",
-                           textrefp$text, perl = TRUE) |>
-      regmatches(textrefp$text, m = _) |>
-      # only keep non-target refs that might be author names
-      lapply(\(x) x[grepl("[a-zA-Z]{2,}", x)])
-
-    textrefp$bib_id <- mapply(c, matches, no_targets, SIMPLIFY = FALSE) |>
-      sapply(paste, collapse = ";")
-
-    citation_table <- textrefp[textrefp$bib_id != "", ]
-    citation_table$text <- lapply(citation_table$text, xml2::read_html) |>
-      sapply(xml2::xml_text)
-
-    citation_table <- citation_table |>
-      tidyr::separate_longer_delim("bib_id", delim = ";")
-  } else {
-    citation_table = data.frame(bib_id = character(0),
-                                text = character(0))
-  }
-
-  return(list(
-    references = ref_table,
-    citations = citation_table[, c("bib_id", "text")]
-  ))
+  return(bib_table)
 }
 
 
@@ -1045,14 +1096,33 @@ text_full_text <- function(xml) {
   return(full_text)
 }
 
-#' Get references/citations from plain text
+#' Get cross references from text file
 #'
 #' @param xml The XML
 #'
-#' @return an list of two tables: references and citations
+#' @return refs table
+#' @keywords internal
+text_xrefs <- function(xml) {
+  xrefs <- data.frame(
+    xref_id = character(0),
+    type = character(0),
+    contents = character(0),
+    text = character(0)
+  )
+
+  return(xrefs)
+}
+
+#' Get bibliography from text file
+#'
+#' @param xml The XML
+#'
+#' @return bib table
 #' @keywords internal
 text_bib <- function(xml) {
+  bib <- data.frame()
 
+  return(bib)
 }
 
 # Word ----
@@ -1108,14 +1178,33 @@ word_full_text <- function(filename) {
   return(full_text)
 }
 
-#' Get references/citations from Word .docx
+#' Get cross references from Word .docx
 #'
 #' @param xml The XML
 #'
-#' @return an list of two tables: references and citations
+#' @return xrefs table
+#' @keywords internal
+word_xrefs <- function(xml) {
+  xrefs <- data.frame(
+    xref_id = character(0),
+    type = character(0),
+    contents = character(0),
+    text = character(0)
+  )
+
+  return(xrefs)
+}
+
+#' Get bibliography from Word .docx
+#'
+#' @param xml The XML
+#'
+#' @return bib table
 #' @keywords internal
 word_bib <- function(xml) {
+  bib <- data.frame()
 
+  return(bib)
 }
 
 
@@ -1230,7 +1319,7 @@ get_app_info <- function(xml) {
 
 #' Validate Papers
 #'
-#' A quick function to help diagnose problems with imported papers. It checks if there is a title, doi, abstract, and references.
+#' A quick function to help diagnose problems with imported papers. It checks if there is a title, doi, abstract, and a bibliography
 #'
 #' @param paper a paper object or a list of paper objects
 #'
@@ -1280,7 +1369,7 @@ paper_validate <- function(paper) {
   valid <- doi == "" &
     title != "missing" &
     abstract == "" &
-    nrow(paper$references) > 0
+    nrow(paper$bib) > 0
 
   list(
     id = paper$id,
@@ -1288,6 +1377,6 @@ paper_validate <- function(paper) {
     doi = doi,
     title = title,
     abstract = abstract,
-    refs = nrow(paper$references)
+    bib = nrow(paper$bib)
   )
 }

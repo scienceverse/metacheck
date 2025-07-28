@@ -114,24 +114,24 @@ info_table(papers, info = c("doi", "title")) |>
 ```
 
 
-### References
+### Bibliography
 
-The `references` contains the items in the reference list, including an id to link them to citations (bib_id), the DOI if available (doi), and the full reference text (ref).
+The `bib` contains the items in the reference list, including an id to link them to cross references (xref_id), the DOI if available (doi), the full reference text (ref), and the reference parsed by title, author, year, etc.
 
 ```{r}
-ref <- paper$references
+bib <- paper$bib
 
-dplyr::filter(ref, bib_id == "b5")
+dplyr::filter(bib, xref_id == "b5")
 ```
 
-### Citations
+### Cross References
 
-The `citations` contains each citation, including an id to link them to references (bib_id) and the sentence that they are cited in (text).
+The `xrefs` contains each reference, including an id to link them to the bibliography (xref_id), the sentence that they are cited in (text), and location data.
 
 ```{r}
-cite <- paper$citations
+xrefs <- paper$xrefs
 
-dplyr::filter(cite, bib_id == "b5")
+dplyr::filter(xrefs, xref_id == "b5")
 ```
 
 ### Full Text

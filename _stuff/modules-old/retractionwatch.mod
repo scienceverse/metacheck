@@ -17,7 +17,7 @@
       "rw <- dplyr::inner_join(refs, papercheck::retractionwatch, by = 'doi')",
       "if (nrow(rw) > 0) {",
       "  cites <- papercheck::concat_tables(paper, c('citations'))",
-      "  rw <- dplyr::left_join(rw, cites, by = c('id', 'bib_id'))",
+      "  rw <- dplyr::left_join(rw, cites, by = c('id', 'ref_id'))",
       "}",
       "rw"
     ]

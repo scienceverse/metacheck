@@ -24,8 +24,8 @@ read_text <- function(txt, id = "") {
       parsed_text <- readLines(filename)
     } else {
       # TODO: better version of this?
-      doc <- readtext::readtext(filename)
-      parsed_text <- strsplit(doc$text, "\\n+")[[1]]
+      # doc <- readtext::readtext(filename)
+      # parsed_text <- strsplit(doc$text, "\\n+")[[1]]
     }
   } else {
     parsed_text <- strsplit(txt, "\\n+")[[1]]

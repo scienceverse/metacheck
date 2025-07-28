@@ -1,0 +1,653 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Resemblance to self increases the appeal of child faces to both men and women</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Lisa</forename><forename type="middle">M</forename><surname>Debruine</surname></persName>
+							<email>debruilm@mcmaster.ca</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Psychology</orgName>
+								<orgName type="institution">McMaster University</orgName>
+								<address>
+									<addrLine>1280 Main Street West</addrLine>
+									<postCode>L8S 4K1</postCode>
+									<settlement>Hamilton</settlement>
+									<region>ON</region>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Resemblance to self increases the appeal of child faces to both men and women</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">44DD95F97F30E3CFE338C7BAFD007FC4</idno>
+					<idno type="DOI">10.1016/j.evolhumbehav.2004.03.003</idno>
+					<note type="submission">Received 2 February 2004; accepted 30 March 2004</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2025-07-24T14:36+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Facial resemblance</term>
+					<term>Paternal uncertainty</term>
+					<term>Sex differences</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>81] reported that facial resemblance between self and a child increases professed willingness to invest in that child, and does so much more for men than for women. Because facial resemblance is a possible cue of kinship, and men, unlike women, can be mistaken about parenthood, Platek et al. predicted and interpreted this sex difference as an adaptation whereby men allocate parental investment in proportion to cues of the likelihood of paternity. Extending their approach using a more realistic technique for manipulating facial resemblance and eliminating some of the confounds in their methodology, In the current study, I found that facial resemblance increased attractiveness judgments and hypothetical investment decisions, although the published sex difference was not found. This could not be explained by differences in resemblance between the participants and the morphed images because a separate group of participants could match the original adult images to the new morphs with slightly (but not significantly) greater accuracy than to morphs made using Platek et al.'s method. In addition, composite scores indicating positive regard toward an image were correlated with resemblance as judged by independent observers.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>1.1. Resemblance to self increases the appeal of child faces to both men and women Men are predicted to be more sensitive or responsive than women to the resemblance of offspring to self because of the asymmetry in certainty of parenthood. While women, throughout most of human history, could be absolutely certain which children were their own and which were not, men faced greater uncertainty. Situational cues of paternity, such as the appropriate timing of sexual contact, a strong emotional bond with the mother, and sequestration of the mother during the time of conception, as well as assessment of relatedness through the matching of physical cues may affect paternal investment decisions <ref type="bibr" target="#b13">(Neff &amp; Sherman, 2002)</ref>.</p><p>It might seem adaptive for infants to unequivocally resemble their fathers (sensu <ref type="bibr" target="#b5">Christenfeld &amp; Hill, 1995)</ref>, but little evidence exists for such an adaptation, although infants and children are consistently found to resemble both their mothers and fathers to a small degree <ref type="bibr" target="#b1">(Bre ´dart &amp; French, 1999;</ref><ref type="bibr">Bressan &amp; Grassi, in press;</ref><ref type="bibr" target="#b12">McLain, Setters, Moulton, &amp; Pratt, 2000;</ref><ref type="bibr" target="#b14">Nesse, Silverman, &amp; Bortz, 1990)</ref>. However, even a small amount of paternity uncertainty can favor a strategy on the part of infants to camouflage any paternal resemblance <ref type="bibr" target="#b15">(Pagel, 1997)</ref> and it is theoretically adaptive under some conditions for men to ignore physical resemblance when making investment decisions <ref type="bibr" target="#b2">(Bressan, 2002)</ref>. Although men and women do favor adult self-resembling faces with regard to trusting behavior <ref type="bibr" target="#b7">(DeBruine, 2002)</ref> and attributions of attractiveness (DeBruine, submitted), no sex differences have been found.</p><p>Evidence from self-report studies supports the hypothesis that men favor children who are perceived as facially resembling them <ref type="bibr" target="#b4">(Burch &amp; Gallup, 2000;</ref><ref type="bibr" target="#b22">Volk &amp; Quinsey, 2002)</ref>. <ref type="bibr" target="#b18">Platek, Burch, Panyavin, Wasserman, and Gallup (2002)</ref> and <ref type="bibr" target="#b19">Platek et al. (2003)</ref> provided some of the first experimental evidence consistent with the hypothesis that men are more sensitive than women are to children's resemblance to self, reporting a series of results based on reactions to images of child faces that were digitally manipulated to resemble the experimental participants. They found in two separate studies that men favored children who resembled themselves in response to hypothetical investment questions such as ''Which child would you be most likely to adopt?'' and did so to a significantly greater extent than women did.</p><p>The first study <ref type="bibr" target="#b18">(Platek et al., 2002)</ref> established a sex difference in professed willingness to invest in children who resemble self; men were much more likely than women to choose the self-morphs in response to positive investment questions. The second study <ref type="bibr" target="#b19">(Platek et al., 2003)</ref> replicated and extended these findings, showing that the sex difference held for a lower level of resemblance (child faces made using 25% as opposed to 50% of the participant's image) and that men, but not women, preferred children with a greater degree of resemblance to self than expected by chance. Despite consistent significant sex differences in the two separate experiments, several methodological issues raise questions about the main result that facial resemblance influences men more than women when making investment decisions about children. <ref type="bibr" target="#b18">Platek et al. (2002</ref><ref type="bibr" target="#b19">Platek et al. ( , 2003) )</ref> Both studies followed a similar method. Each participant was photographed directly facing the camera with a neutral expression. After the researchers morphed the participant's image with that of a male or female child, the participant viewed a display with five morphed child faces and was asked a number of questions in response to which he or she was requested to choose one child. In the first experiment <ref type="bibr" target="#b18">(Platek et al., 2002)</ref>, two sets of arrays were presented, one set that included the image of the participant morphed with the child plus four images of unfamiliar male and female adults morphed with the same child, and one set that included five images of five unfamiliar adults morphed with the same child and did not include the participant's morph. In the second experiment <ref type="bibr" target="#b19">(Platek et al., 2003)</ref>, five additional sets were shown: four sets with varying degrees of morphing that included one image made from the participant and four images made from unfamiliar faces, and one set with five images made from the participant, each of which varied in the percentage of the participant's image included in the morph (3.125% to 50%). Ten hypothetical investment questions were asked of each set. The order of presentations of the questions, the array sets, the position of images within the arrays, and the identity of the unfamiliar faces were all randomized. Unfamiliar faces were chosen from a pool consisting of morphs made from 15 to 30 men and 15 to 30 women. In the second experiment, the sex of the child image used in the morphs was also randomized across sets and questions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.2.">Methodology of</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.2.1.">Methodological critique</head><p>My methodological concerns are the following: (a) The unfamiliar morphs included faces made from both male and female adults. (b) In the second study, the self-morph was shown with greater frequency than any other morph. (c) Each participant was asked 10 questions about the same set of child faces, allowing preferences for equitable treatment of each child to mask preferences for any particular child. (d) The morphing procedure used by Platek et al. produced images that did not resemble real children. These concerns are described in detail in the following paragraphs.</p><p>Unfamiliar morphs were randomly chosen from a pool of approximately 30-60 images made from 15 to 30 male and 15 to 30 female adults (faces were added to this pool throughout the experiment), and the same group of unfamiliar morphs was shown for each question. Although the morphing procedure ''tended to limit greatly the determination of gender'' <ref type="bibr">(Platek, personal communication)</ref>, it is still possible that the inclusion of child morphs made from both male and female adult faces affected the results. For example, if both male and female participants preferred child morphs made from adult males, this would bias men toward choosing their own face and bias women away from their own face. Although this possibility could be addressed through the analysis of the control condition, that analysis was not reported.</p><p>In the second study, the self-morph was shown in an extra array in which each face in the set included a different percentage of self, making it more familiar than any other individual morph. Even familiarity gained over a short duration can increase liking for a face <ref type="bibr" target="#b20">(Rhodes, Halberstadt, &amp; Brajkovich, 2001)</ref>, so care should be taken to provide equal exposure to all faces.</p><p>The sex difference found by <ref type="bibr" target="#b18">Platek et al. (2002</ref><ref type="bibr" target="#b19">Platek et al. ( , 2003) )</ref> could simply be a result of a sex difference in willingness to favor one child over others. Since participants were asked 10 different questions about the same set of five child faces, some participants may have been reluctant to choose the same child too many times. If this is more true of women than men, it could account for the sex difference. Research indicates that women tend to conform to an ideal of equality, giving the same reward to all members of a group, while men tend to conform to an ideal of equity, distributing rewards in proportion to merit <ref type="bibr" target="#b0">(Austin &amp; McGinn, 1977;</ref><ref type="bibr" target="#b11">Kahn, O'Leary, Krulewitz, &amp; Lamm, 1980)</ref>. In fact, Platek (personal communication) conceded that ''females tended to select different faces from trial to trial; at least that was what they reported.'' Although analyses of the control conditions in Platek et al.'s studies show that in arrays that did not include the participant's morph men did not choose one particular unfamiliar face more often than others, this type of analysis does not address the issue. It could be that each man tended to choose one face for most of the 10 questions but this face was different for each man, resulting in no face being chosen more often than the others overall.</p><p>Lastly, the procedure used by <ref type="bibr" target="#b18">Platek et al. (2002</ref><ref type="bibr" target="#b19">Platek et al. ( , 2003) )</ref> to produce their morphs may have resulted in images that did not accurately represent children's faces. Directly morphing a child and adult face produces a very unnatural shape, so they instead uniformly compressed the adult faces by cropping the images at the chin, ears, and hairline and resizing the resulting image to 200 pixels wide by 150 pixels tall (see Fig. <ref type="figure" target="#fig_0">1b</ref>). This changes the face proportions to be somewhat closer to those of a child, but the resulting child morph (Fig. <ref type="figure" target="#fig_0">1d</ref>) may not satisfactorily resemble a real child.  <ref type="bibr" target="#b18">Platek et al. (2002</ref><ref type="bibr" target="#b19">Platek et al. ( , 2003) )</ref> to that used in this study. <ref type="bibr">Platek et al. resized</ref> an experimental participant's face (a, b) to the same aspect ratio as a child's face (c) and blended the two faces together in a 50/50 ratio to produce a child morph (d). In this study, I transformed a participant's face (a) to have neotenous proportions (e) and blended it in a 50/50 ratio with a child's face (f ) to produce a more childlike morph (g). See <ref type="url" target="http://www.debruine.info/childfaces.html">http://www.debruine.info/childfaces.html</ref> for this image in color.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.3.">The present study</head><p>The current study addresses the above four methodological issues by (a) only presenting morphs made from adults of the same sex as the participant, (b) presenting individual unfamiliar morphs as many times as self-morphs, (c) using a different set of child faces for each question, and (d) using a different morphing procedure that produced more realisticlooking children (see Fig. <ref type="figure" target="#fig_0">1</ref>).</p><p>Other methodological differences were the use of younger children in the morphs (3.5-to 6-month-olds as compared to 2-year-olds in Platek et al.'s studies) and asking fewer questions (see Table <ref type="table" target="#tab_0">1</ref>). My choice of age category was based on both the availability of images and a theoretical argument that men should be most sensitive to the resemblance of infants to self. Because it is better to terminate investment early if it is going to be terminated at all, infancy is the most likely age at which the decision whether to invest would be made <ref type="bibr" target="#b6">(Daly &amp; Wilson, 1984)</ref>. Five questions were asked instead of the original 10 because several of those (1) produced no effect of resemblance in Platek et al.'s studies or (2) were negative questions (the experimental hypothesis was that self-morphs would be chosen less often than chance) that require a large number of participants to show any statistical effect. Four of the five questions were those with positive responses (the experimental hypothesis was that self-morphs would be chosen more often than chance) that produced reliable sex differences in Platek et al.'s two studies. The fifth question (''Which one of these children would you rather baby-sit?'') was designed to be a more relevant question for first-year university students to answer.</p><p>In order to assess whether the new morphing technique produced child faces of comparable resemblance to the participants, I obtained a measure of resemblance by assessing the accuracy with which a separate group of judges matched the original participants' image to the correct child morph. The matching task was repeated for all five sets of child morphs used in the present study and two sets of child morphs made using the method and child images from the two previous studies <ref type="bibr" target="#b18">(Platek et al., 2002</ref><ref type="bibr" target="#b19">(Platek et al., , 2003))</ref>. 2. Methods</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Participants</head><p>Participants in the experiment were 53 (23 male, 30 female, mean age = 19) undergraduates taking an introductory psychology course at McMaster University who participated for course credit. All participants were Caucasian, as only pictures of Caucasian infants were available. The infants were three boys and two girls between the ages of 15 and 27 weeks.</p><p>Participants in the matching task were 20 (9 male, 11 female, mean age = 19) Caucasian introductory psychology undergraduates from McMaster University who also participated for course credit. Data from two of the women were excluded from the analyses due to decision times averaging less than 1 s, indicating meaningless responses. The remaining 18 participants had average decision times ranging from 2.4 to 10.0 s (M = 5.6, S.D. = 2.3).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">Stimuli</head><p>Face stimuli were created by transforming the adult participants' faces to look more neotenous or infantlike, using techniques previously described to modify faces in masculinity, apparent age, and resemblance to a particular person (Penton-Voak, <ref type="bibr" target="#b16">Perrett, &amp; Peirce, 1999;</ref><ref type="bibr" target="#b17">Perrett et al., 1998;</ref><ref type="bibr" target="#b21">Tiddeman, Perrett, &amp; Burt, 2001)</ref>. This transformation was necessary because the combination of unmanipulated adult and infant faces resulted in a much older and unnatural-looking child and is analogous to the vertical compression of adult faces used by Platek et al.</p><p>The transformation involved calculating the differences in shape between an averaged infant face (made from 18 male and female infants between the ages of 3 and 6 months) and an averaged male or female adult face (made from 20 same-sex Caucasian individuals with a mean age of 19 years). The participants' faces were transformed to the same extent that the averaged infant face differed in shape and color from the averaged same-sex adult face. The transformation did not warp the participant's face into the shape of an average child's face. Rather, it resulted in a face that was different from the average infant's face in the same way that the participant's face was different from the average same-sex adult's face.</p><p>This transformed version was separately blended with five different infants' faces using 50% of the shape and color information from each face (Fig. <ref type="figure" target="#fig_0">1</ref>). Finally, the hair and background were masked (as in Fig. <ref type="figure" target="#fig_0">1e-g</ref>) to hide some artifacts of the morphing procedure that occurred at the hairline in order to facilitate the belief that these were real infant faces.</p><p>Face stimuli for the assessment of resemblance were also made from the images of the 53 participants using a method identical to that used by Platek et al. The adult images were made gray scale; cropped at the chin, hairline, and ears; resized to be 200 pixels wide by 150 pixels tall; and masked with a white oval (Fig. <ref type="figure" target="#fig_0">1b</ref>). The resulting images were separately blended in shape and color with the male and female child images used by <ref type="bibr">Platek et al. (Fig. 1c</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.">Procedure</head><p>Three photographs of participants were taken during an unrelated experiment for the purpose of calculating facial fluctuating asymmetry. Participants were asked to return 1 week later for the second part of the study. In a debriefing questionnaire, all participants were asked to write what they thought the study was about. No participants mentioned resemblance to self as a possible hypothesis.</p><p>The image with the most neutral expression was chosen to make the child morphs. Each participant was grouped with four other same-sex participants in a ''testing unit.'' One of the participants failed to return for the second part of the experiment in two of the male testing units, resulting in two groups of four participants who still viewed the missing participant's morphs. Sets of child faces were the five morphs made from the same real child's image and the image of each participant in the testing unit. Since each participant was morphed with five different children, each testing unit viewed five sets of five faces.</p><p>Participants were asked five questions (Table <ref type="table" target="#tab_0">1</ref>) in the same order. A different set of five child faces was displayed with each question and the participant was instructed to choose one face in response to the question.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4.">Resemblance assessment by independent judges</head><p>The resemblance assessment task involved matching an image of each participant in the hypothetical decisions experiment to one of the five child images (one of which was a morph of the participant) from that participant's testing unit (Fig. <ref type="figure">2</ref>). The adult participant image was not the same image that was used to construct the child morph, but another, randomly chosen image from the three photographs taken of each participant. This was done in order to reduce the ability of judges to match images based on subtle differences in head orientation rather than global resemblance.</p><p>The matching task was repeated for all five sets of child faces used in the hypothetical decisions experiment and for two sets of faces made by a procedure identical to that of <ref type="bibr" target="#b18">Platek et al. (2002</ref><ref type="bibr" target="#b19">Platek et al. ( , 2003))</ref>. Judges matched all 53 participants to one set of morphs before moving on to the next set of morphs. Sets were presented in random order.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.5.">Statistical analyses</head><p>Individual questions from the hypothetical investment decisions task were analyzed using binomial tests, as in <ref type="bibr" target="#b18">Platek et al. (2002</ref><ref type="bibr" target="#b19">Platek et al. ( , 2003))</ref>.</p><p>Composite scores were calculated for each participant by totaling number of times (out of five) that participant's morphs were chosen by each participant in a testing unit. The composite score for a particular morph given by the participant from whom that morph was made was termed the self-composite score and the average of the composite scores for that morph given by other (unfamiliar) participants in the testing unit was termed the control composite score. Composite scores were normally distributed (all Kolmogorov-Smirnov Z &lt; 1.1, P &gt; .19), so a factorial repeated measures ANOVA was used to determine the within-subjects effect of ''resemblance'' (self vs. control composite scores) and the between-subjects effect of participant sex.</p><p>Resemblance assessments by independent judges were also normally distributed (all Z &lt; 1.0, P &gt; .28), so these data were analyzed using a factorial repeated measures ANOVA with ''morphing technique'' (using Platek et al.'s method or the new method) and ''judge sex'' (the sex of the participant in the matching task) as within-subjects variables and ''morph sex'' (the sex of the adult image used to make the morph) as a between-subjects variable.</p><p>The difference between the composite scores described above (self minus control composite score, termed the composite difference score) gives a measure of the effect of resemblance on hypothetical investment decisions and is predicted to be correlated with the resemblance assessment. Pearson's correlations were used to assess this, and one-tailed P values are reported. Fig. <ref type="figure">2</ref>. The stimulus presentation interface for the matching experiment. Each of the five child morphs was made from the same child face and one of five adult faces who were in the same testing unit and who had viewed the same stimuli. In seven randomized blocks, judges matched all 53 participant adults to one image from an array of the five. The seven blocks were the five image sets that the adult participant had viewed in the hypothetical investment decisions experiment and two image sets made from male and female child morphs using Platek et al.'s method. (The correct answer for this array is d.) See <ref type="url" target="http://www.debruine.info/childfaces.html">http://www.debruine.info/childfaces.html</ref> for this image in color.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Hypothetical investment decisions</head><p>Looking at individual questions, the proportion of self-morphs chosen was better than chance for each question, but this was only significant for the questions about attractiveness and willingness to baby-sit. If the appropriate correction for the number of statistical tests is applied ( P &lt; .01), only the question about attractiveness remained significant and only for both sexes combined (Table <ref type="table" target="#tab_0">1</ref>).</p><p>Analysis of the composite scores revealed that participants chose their own self-morphs more often than other participants did [ F(1,51) = 7.24, P = .01] and there was no statistically significant interaction with sex [ F(1,51) = 0.52, P = .48], although men chose slightly fewer self-morphs (M = 1.26, S.D. = 1.25) than women did (M = 1.37, S.D. = 1.25).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Resemblance assessment</head><p>Fig. <ref type="figure">3</ref> presents independent judges' accuracy at matching images of male and female adult participants with their child morph for morphs made using both my morphing method and Fig. <ref type="figure">3</ref>. Matching task results. The average proportion of trials (FS.E.M.) in which male (n = 9) and female (n = 9) judges correctly matched images of male and female participants with the child morph made from that participant. Morphs were made using either the method used by Platek et al. or the method used in the current study. <ref type="bibr">Platek et al.'s method.</ref> Participants matched faces within each group at levels greater than chance (all t(17) &gt; 5.2, P &lt; .001).</p><p>Judges matched images of female participants to their self-morphs somewhat more accurately than they matched male participants to their self-morphs [ F(1,16) = 4.16, P &lt; .06], and female judges were no better than male judges at matching participants with their self-morphs [ F(1,16) = 2.60, P = .13]. Judges were slightly, but not significantly, better at matching participants to self-morphs made using my morphing method than those made using Platek et al.'s method [ F(1,16) = 3.12, P &lt; .10]. No interactions were significant (all F(1,16) &lt; 2.9, all P &gt; .10).</p><p>The correlation between independent judges' accuracy of matching and the composite difference score (self minus control composite score) was significant (r = .27, n = 53, P = .023) and this correlation was not significantly different between men and women (Z = 0.62, P = .54, men: r = .35, women: r = .18). This suggests that the effect of resemblance on hypothetical investment decisions increases with increasing resemblance, as judged by independent observers.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Discussion</head><p>Consistent with the results of the two previous studies investigating the impact of computer-generated facial resemblance on hypothetical parental investment decisions <ref type="bibr" target="#b18">(Platek et al., 2002</ref><ref type="bibr" target="#b19">(Platek et al., , 2003))</ref>, I also demonstrated that facial resemblance generates positive regard for images of children. Unlike these earlier studies, no evidence for a sex difference in this effect was found. The lack of a sex difference in preference for self-resembling child faces is consistent with the lack of sex differences in responses to similarly produced adult selfmorphs with regard to trusting behavior <ref type="bibr" target="#b7">(DeBruine, 2002)</ref> and attributions of attractiveness (DeBruine, submitted).</p><p>There are several possible reasons for the different results obtained by this and the previous studies. It seems unlikely that Platek et al.'s original results were due to chance, given the level of significance and repeatability. This leaves a number of methodological differences between the two studies, the most important being my inclusion of images made only from same-sex adults as unfamiliar morphs and my use of different child faces for each question. More speculatively, differences in participant selection or morphing procedure could have produced a false sex difference in the previous studies or obscured a real sex difference in the current study.</p><p>There is no theoretical reason to believe that child morphs made from images of adult males would be preferred by both men and women to child morphs made from images of adult females. Nevertheless, such a bias could account for the consistent sex difference found by Platek et al., whose participants viewed child morphs made from images of both adult men and women, as well as the lack of a sex difference found in the current study, whose participants viewed only child morphs made using adult images of the same sex as the participant.</p><p>There is a reason to believe that women distribute rewards differently than men. Especially when future interaction is unlikely, men tend to distribute rewards in proportion to merit, while women tend to divide rewards equally <ref type="bibr" target="#b0">(Austin &amp; McGinn, 1977)</ref>. This sex difference in preference for equity versus equality could explain the sex difference found by Platek et al., whose participants were given the chance to make 10 different hypothetical investment decisions about the same set of five child images. This bias could not affect the results of the current study because a unique set of five child morphs was presented with each of the hypothetical investment questions.</p><p>The images in this study differed from Platek et al.'s in several other ways. Platek et al.'s photographs were gray scale, the child images were of 2-year-olds, and the participants' faces were cropped and stretched to a standard size before morphing. My photographs were in color, the child images were of 3.5-to 6-month-olds, and the participants' faces were transformed to neotenous proportions instead of being uniformly compressed. I argue that color images are more realistic than gray scale images, that investment decisions are more likely to be made when children are very young than when they are older, and that the morphing procedure used in the current study produces independent observer resemblance judgments equal to or greater than Platek et al.'s procedure. Nevertheless, it would be useful to replicate this experiment using different combinations of methods and morphing procedures from this study and Platek et al.'s in order to determine exactly which changes eliminated the sex difference and resulted in a lower overall effect of resemblance to self on willingness to invest in hypothetical children.</p><p>Theoretically, natural selection is not expected to favor sexually dimorphic responses to resemblance unless the costs to one sex of such an adaptation outweigh the costs of maintaining dimorphism <ref type="bibr" target="#b14">(Nesse et al., 1990)</ref>. Although only men face direct paternity uncertainty, women may also respond to resemblance in infants who are putatively related through a male. Following the same logic, <ref type="bibr" target="#b9">Euler and Weitzel (1999)</ref> predicted and found that maternal grandmothers who have no uncertainty of relatedness to their daughters' children provided more care and solicitude than paternal grandmothers who have some uncertainty about their sons' paternity. As well, matrilateral aunts invest more in children than patrilateral aunts <ref type="bibr" target="#b10">(Gaulin, McBurney, &amp; Wartell, 1997)</ref>, lending further support to the idea that it would be adaptive for women to evaluate phenotypic cues of relatedness such as facial resemblance when making investment decisions about children not their own.</p><p>The results of the current extension of <ref type="bibr" target="#b18">Platek et al. (2002</ref><ref type="bibr" target="#b19">Platek et al. ( , 2003) )</ref> put in question the strength of previous experimental findings that resemblance to self affects men more than it does women in the domain of investment decisions about children.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig.1. Comparison of the method used in<ref type="bibr" target="#b18">Platek et al. (2002</ref><ref type="bibr" target="#b19">Platek et al. ( , 2003) )</ref> to that used in this study.Platek et al. resized   an experimental participant's face (a, b) to the same aspect ratio as a child's face (c) and blended the two faces together in a 50/50 ratio to produce a child morph (d). In this study, I transformed a participant's face (a) to have neotenous proportions (e) and blended it in a 50/50 ratio with a child's face (f ) to produce a more childlike morph (g). See http://www.debruine.info/childfaces.html for this image in color.</figDesc><graphic coords="4,76.99,448.95,336.33,137.82" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="8,76.99,94.73,336.33,287.21" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="9,77.10,357.73,336.19,250.98" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1</head><label>1</label><figDesc>Percentage of men and women who chose the self-morph from a choice of five child faces in response to the following questions</figDesc><table><row><cell></cell><cell>Men</cell><cell>Women</cell><cell>Total</cell></row><row><cell>Question</cell><cell>n = 23 ( P)</cell><cell>n = 30 ( P)</cell><cell>n = 53 ( P)</cell></row><row><cell>Which one of these children would you</cell><cell>26% (.31)</cell><cell>23% (.39)</cell><cell>25% (.25)</cell></row><row><cell>be most likely to adopt?</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Which one of these children do you</cell><cell>30% (.16)</cell><cell>37% (.03)</cell><cell>34% (.01)</cell></row><row><cell>find to be the most attractive?</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Which one of these children would you</cell><cell>22% (.50)</cell><cell>20% (.57)</cell><cell>21% (.50)</cell></row><row><cell>be comfortable spending the MOST time with?</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Which one of these children would you spend</cell><cell>22% (.50)</cell><cell>33% (.06)</cell><cell>28% (.09)</cell></row><row><cell>$50 on if you could only spend it on one child?</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Which one of these children would you rather baby-sit?</cell><cell>26% (.31)</cell><cell>33% (.06)</cell><cell>30% (.05)</cell></row></table><note><p>P values were calculated using an exact binomial test with a chance value of 20%. L.M. DeBruine / Evolution and Human Behavior 25 (2004) 142-154</p></note></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgments I thank <rs type="person">M. Wilson</rs>, <rs type="person">M. Daly</rs>, <rs type="person">S. Balshine</rs>, <rs type="person">B. C. Jones</rs>, <rs type="person">S. Gaulin</rs>, <rs type="person">G. G. Gallup, Jr.</rs>, and one anonymous reviewer for helpful comments; <rs type="person">D. Maurer</rs> and <rs type="person">P. Cooper</rs> for providing the infant photographs; and <rs type="person">D. Perrett</rs> and <rs type="person">B. Tiddeman</rs> for providing the morphing software. I also thank <rs type="person">S. M. Platek</rs> for his very helpful correspondence and for providing the child</p></div>
+			</div>			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0" />			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Sex differences in choice of distribution rules</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Austin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">C</forename><surname>Mcginn</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Personality</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="page" from="379" to="394" />
+			<date type="published" when="1977">1977</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Austin, W., &amp; McGinn, N. C. (1977). Sex differences in choice of distribution rules. Journal of Personality, 45, 379 -394.</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Do babies resemble their fathers more than their mothers? A failure to replicate Christenfeld and Hill</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bre ´dart</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>French</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evolution and Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page" from="129" to="135" />
+			<date type="published" when="1995">1999. 1995</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bre ´dart, S., &amp; French, R. M. (1999). Do babies resemble their fathers more than their mothers? A failure to replicate Christenfeld and Hill (1995). Evolution and Human Behavior, 20, 129 -135.</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Why babies look like their daddies: paternity uncertainty and the evolution of self-deception in evaluating family resemblance</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bressan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Acta Ethologica</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="113" to="118" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bressan, P. (2002). Why babies look like their daddies: paternity uncertainty and the evolution of self-deception in evaluating family resemblance. Acta Ethologica, 4, 113 -118.</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">resemblance in one-year-olds and the Gaussian curve</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bressan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Grassi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evolution and Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="133" to="141" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bressan, P., &amp; Grassi, M. Parental. resemblance in one-year-olds and the Gaussian curve. Evolution and Human Behavior, 25, 133 -141.</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Perceptions of paternal resemblance predict family violence</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Burch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">G</forename><surname>Gallup</surname><genName>Jr</genName></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evolution and Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="429" to="435" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Burch, R. L., &amp; Gallup Jr., G. G. (2000). Perceptions of paternal resemblance predict family violence. Evolution and Human Behavior, 21, 429 -435.</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Whose baby are you?</title>
+		<author>
+			<persName><forename type="first">&amp;</forename><surname>Christenfeld</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Hill</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">378</biblScope>
+			<biblScope unit="page">669</biblScope>
+			<date type="published" when="1995">1995</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Christenfeld, &amp; Hill. (1995). Whose baby are you? Nature, 378, 669.</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">A sociobiological analysis of human infanticide</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Daly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wilson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Infanticide: comparative and evolutionary perspectives</title>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Hausfater</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">&amp;</forename><forename type="middle">S</forename><surname>Hrdy</surname></persName>
+		</editor>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Aldine Press</publisher>
+			<date type="published" when="1984">1984</date>
+			<biblScope unit="page" from="487" to="502" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Daly, M., &amp; Wilson, M. (1984). A sociobiological analysis of human infanticide. In G. Hausfater, &amp; S. Hrdy (Eds.), Infanticide: comparative and evolutionary perspectives ( pp. 487 -502). New York: Aldine Press.</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Facial resemblance enhances trust</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Debruine</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the Royal Society of London B</title>
+		<imprint>
+			<biblScope unit="volume">269</biblScope>
+			<biblScope unit="page" from="1307" to="1312" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">DeBruine, L. M. (2002). Facial resemblance enhances trust. Proceedings of the Royal Society of London B, 269, 1307 -1312.</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Context-specific responses to a cue of kinship: Facial resemblance increases the attractiveness of same-sex faces more than other-sex faces</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Debruine</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the Royal Society of London B</title>
+		<imprint/>
+	</monogr>
+	<note>Submitted for publication</note>
+	<note type="raw_reference">DeBruine, L. M. Context-specific responses to a cue of kinship: Facial resemblance increases the attractiveness of same-sex faces more than other-sex faces. Proceedings of the Royal Society of London B. Submitted for publication.</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Grandparental caregiving and intergenerational relations reflect reproductive strategies</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">A</forename><surname>Euler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Weitzel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">The Darwinian heritage and sociobiology. Human evolution, behavior, and intelligence</title>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Van Der Dennen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Smillie</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">D</forename><forename type="middle">R</forename><surname>Wilson</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Westport, CT</addrLine></address></meeting>
+		<imprint>
+			<publisher>Praeger Publishers</publisher>
+			<date type="published" when="1999">1999</date>
+			<biblScope unit="page" from="243" to="252" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Euler, H. A., &amp; Weitzel, B. (1999). Grandparental caregiving and intergenerational relations reflect reproductive strategies. In J. M. van der Dennen, D. Smillie, &amp; D. R. Wilson (Eds.), The Darwinian heritage and socio- biology. Human evolution, behavior, and intelligence ( pp. 243 -252). Westport, CT: Praeger Publishers.</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Matrilateral biases in the investment of aunts and uncles: a consequence and measure of paternity uncertainty</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J C</forename><surname>Gaulin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Mcburney</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">L B</forename><surname>Wartell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Human Nature</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="139" to="151" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gaulin, S. J. C., McBurney, D. H., &amp; Wartell, S. L. B. (1997). Matrilateral biases in the investment of aunts and uncles: a consequence and measure of paternity uncertainty. Human Nature, 8, 139 -151.</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Equity and equality: male and female means to a just end</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kahn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">E</forename><surname>O'leary</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Krulewitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lamm</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Basic and Applied Social Psychology</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="173" to="197" />
+			<date type="published" when="1980">1980</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kahn, A., O&apos;Leary, V. E., Krulewitz, J. E., &amp; Lamm, H. (1980). Equity and equality: male and female means to a just end. Basic and Applied Social Psychology, 1, 173 -197.</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Ascription of resemblance of newborns by parents and nonrelatives</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">K</forename><surname>Mclain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Setters</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Moulton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Pratt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evolution and Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="11" to="23" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">McLain, D. K., Setters, D., Moulton, M. P., &amp; Pratt, A. E. (2000). Ascription of resemblance of newborns by parents and nonrelatives. Evolution and Human Behavior, 21, 11 -23.</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Decision making and recognition mechanisms</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">D</forename><surname>Neff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">W</forename><surname>Sherman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the Royal Society of London B</title>
+		<imprint>
+			<biblScope unit="volume">269</biblScope>
+			<biblScope unit="page" from="1435" to="1441" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Neff, B. D., &amp; Sherman, P. W. (2002). Decision making and recognition mechanisms. Proceedings of the Royal Society of London B, 269, 1435 -1441.</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Sex differences in ability to recognize family resemblance</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Nesse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Silverman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bortz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ethology and Sociobiology</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="11" to="21" />
+			<date type="published" when="1990">1990</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Nesse, R. M., Silverman, A., &amp; Bortz, A. (1990). Sex differences in ability to recognize family resemblance. Ethology and Sociobiology, 11, 11 -21.</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Desperately concealing father: a theory of parent -infant resemblance</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Pagel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Animal Behaviour</title>
+		<imprint>
+			<biblScope unit="volume">53</biblScope>
+			<biblScope unit="page" from="973" to="981" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Pagel, M. (1997). Desperately concealing father: a theory of parent -infant resemblance. Animal Behaviour, 53, 973 -981.</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Computer graphic studies of the role of facial similarity in judgments of attractiveness</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Penton-Voak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Peirce</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Current Psychology</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="104" to="117" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Penton-Voak, I. S., Perrett, D. I., &amp; Peirce, J. W. (1999). Computer graphic studies of the role of facial similarity in judgments of attractiveness. Current Psychology, 18, 104 -117.</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Effects of sexual dimorphism on facial attractiveness</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">J</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Penton-Voak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rowland</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yoshikawa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Burt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">P</forename><surname>Henzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Castles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Akamatsu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">394</biblScope>
+			<biblScope unit="page" from="884" to="887" />
+			<date type="published" when="1998">1998</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Perrett, D. I., Lee, K. J., Penton-Voak, I., Rowland, D., Yoshikawa, S., Burt, D. M., Henzi, S. P., Castles, D. L., &amp; Akamatsu, S. (1998). Effects of sexual dimorphism on facial attractiveness. Nature, 394, 884 -887.</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Reactions to children&apos;s faces: resemblance affects males more than females</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Platek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Burch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Panyavin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">H</forename><surname>Wasserman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">G</forename><surname>Gallup</surname><genName>Jr</genName></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evolution and Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="page" from="159" to="166" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Platek, S. M., Burch, R. L., Panyavin, I. S., Wasserman, B. H., &amp; Gallup Jr., G. G. (2002). Reactions to children&apos;s faces: resemblance affects males more than females. Evolution and Human Behavior, 23, 159 -166.</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">How much paternal resemblance is enough? Sex differences in hypothetical investment decisions but not in the detection of resemblance</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Platek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">R</forename><surname>Critton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Burch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Frederick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">E</forename><surname>Meyers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">G</forename><surname>Gallup</surname><genName>Jr</genName></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evolution and Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="81" to="87" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Platek, S. M., Critton, S. R., Burch, R. L., Frederick, D. A., Meyers, T. E., &amp; Gallup Jr., G. G. (2003). How much paternal resemblance is enough? Sex differences in hypothetical investment decisions but not in the detection of resemblance. Evolution and Human Behavior, 24, 81 -87.</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Generalization of mere exposure effects to averaged composite faces</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Rhodes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Halberstadt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Brajkovich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Social Cognition</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page" from="57" to="70" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rhodes, G., Halberstadt, J., &amp; Brajkovich, G. (2001). Generalization of mere exposure effects to averaged composite faces. Social Cognition, 19, 57 -70.</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Prototyping and transforming facial textures for perception research</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Tiddeman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Perrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Burt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Computer Graphics and Applications, Research</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="42" to="50" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Tiddeman, B., Perrett, D., &amp; Burt, D. (2001). Prototyping and transforming facial textures for perception research. IEEE Computer Graphics and Applications, Research, 21, 42 -50.</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">The influence of infant facial cues on adoption preferences</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Volk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">L</forename><surname>Quinsey</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Human Nature</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page" from="437" to="455" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Volk, A., &amp; Quinsey, V. L. (2002). The influence of infant facial cues on adoption preferences. Human Nature, 13, 437 -455.</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

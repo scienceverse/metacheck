@@ -1,3 +1,15 @@
+# papercheck 0.0.0.9053
+
+* Updated `read()` to parse more stupid date formats that turn up in the submission string (and added the unparsed submission string back just in case)
+* Completely overhauled how paper objects handle references. 
+    - the `paper$reference` table is now `paper$bib`
+    - the `paper$citations` table is now `paper$xrefs` and also contains  information for internal cross-references to figures, tables, footnotes, and formulae
+    - the `ref_id` and `bib_id` in both tables is now `xref_id`
+    - the `xrefs` table also contains location information (section, div, p, s) for the sentence containing the cross-ref, so you can use `expand_text()` 
+    - The `read()` function now returns paper objects with these new tables, so you will need to re-read any XML files (if you have stored the papercheck list as Rdata)
+    - The `psychsci` object has been updated for this new format
+    - Modules and vignettes have been updated as well
+
 # papercheck 0.0.0.9052
 
 * Fixed a bug in `expand_text()` where expanded sentences were duplicated if there are multiple matches from the same sentence in the data frame.
