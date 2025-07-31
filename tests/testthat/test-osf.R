@@ -109,6 +109,26 @@ test_that("osf_check_id", {
   osf_id <- "https://osf.io/pngda/?view_only=5acf039f24ac4ea28afec473548dd7f4"
   checked_id <- osf_check_id(osf_id)
   expect_equal(checked_id, "pngda")
+
+  # vector
+  osf_id <- c(
+    "6846ed88e49694cd45ab8375",
+    "PNGDA",
+    "pngda",
+    "https://osf.io/pngda",
+    "http://osf.io/pngda",
+    "osf.io/pngda",
+    "osf .io/pngda",
+    "https://osf.io/pngda/?view_only=5acf039f24ac4ea28afec473548dd7f4",
+    "xx",
+    "6846ed88e49694cd45a"
+  )
+
+  expect_warning(
+    expect_warning(
+      obs <- osf_check_id(osf_id)))
+  exp <- rep(c("6846ed88e49694cd45ab8375", "pngda", NA_character_), c(1, 7, 2))
+  expect_equal(obs, exp)
 })
 
 test_that("osf_get_all_pages", {

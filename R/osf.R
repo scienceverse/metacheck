@@ -529,10 +529,21 @@ osf_check_id <- function(osf_id) {
   # so use sapply
   sapply(osf_id, \(id) {
     tryCatch({
-      id |>
+      parsed_url <- id |>
         gsub("\\s", "", x = _) |>
-        osfr::as_id() |>
-        as.character()
+        tolower() |>
+        httr::parse_url()
+
+      path <- parsed_url$path |>
+        fs::path_split() |>
+        sapply(utils::tail, 1)
+
+      # All OSF IDs are 5 or 24 characters
+      if (!nchar(path) %in% c(5, 24)) {
+        stop()
+      }
+
+      path
     },
     error = \(e) {
       warning(id, " is not a valid OSF ID",
