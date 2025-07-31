@@ -37,7 +37,7 @@ pdf2grobid <- function(filename, save_path = ".",
     httr::GET(service_status_url)
   },
   error = function(e) {
-    stop("Connection to the GROBID server failed! 
+    stop("Connection to the GROBID server failed!
     Please check your connection or the URL: ", grobid_url)
   }
   )
@@ -46,8 +46,6 @@ pdf2grobid <- function(filename, save_path = ".",
   if (status != 200) {
     stop("GROBID server does not appear up and running
      on the provided URL. Status: ", status)
-  } else {
-    if (verbose()) message("GROBID server is up and running")
   }
 
   # handle list of files or a directory----

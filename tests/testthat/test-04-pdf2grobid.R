@@ -45,7 +45,7 @@ grobid_server <- "https://kermitt2-grobid.hf.space"
 test_that("defaults", {
   skip_on_ci()
   skip_on_cran()
-  skip_if_offline(grobid_server)
+  skip_if_offline(gsub("https://", "", grobid_server, fixed = TRUE))
 
   filename <- demopdf()
   first_sentence <- "Although intentional dishonestly might be a successful way to boost creativity"
@@ -131,7 +131,7 @@ test_that("defaults", {
 
 test_that("batch", {
   skip_on_ci()
-  skip_if_offline(grobid_server)
+  skip_if_offline(gsub("https://", "", grobid_server, fixed = TRUE))
 
   grobid_dir <- demodir()
 
