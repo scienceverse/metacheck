@@ -77,7 +77,12 @@ osf_links <- function(paper) {
 #' @returns the OSF status
 #' @export
 #'
+#' @examples
+#' osf_api_check()
 osf_api_check <- function(osf_api = getOption("papercheck.osf.api")) {
+  if (!curl::has_internet()) {
+    return("no internet")
+  }
   h <- httr::GET(osf_api, osf_headers())
   osf_api_calls_inc()
   status <- dplyr::case_match(
@@ -132,7 +137,8 @@ osf_retrieve <- function(osf_url, id_col = 1,
     raw_osf_urls <- table[[id_col]]
   } else {
     id_col_name <- "osf_url"
-    raw_osf_urls <- unique(osf_url) |> stats::na.omit()
+    raw_osf_urls <- unique(osf_url) |>
+      stats::na.omit() |> as.character()
     table <- data.frame(osf_url = raw_osf_urls)
   }
 
@@ -521,7 +527,6 @@ osf_user_data <- function(data) {
 #' osf_check_id("pngda")
 #' osf_check_id("osf.io/pngda")
 #' osf_check_id("https://osf.io/pngda")
-#' osf_check_id("https://osf.io/pngda/View")
 #' osf_check_id("https://osf .io/png da") # rogue whitespace
 #' osf_check_id("pnda") # invalid
 osf_check_id <- function(osf_id) {
@@ -546,8 +551,8 @@ osf_check_id <- function(osf_id) {
       path
     },
     error = \(e) {
-      warning(id, " is not a valid OSF ID",
-             call. = FALSE, immediate. = FALSE)
+        warning(id, " is not a valid OSF ID",
+               call. = FALSE, immediate. = FALSE)
       return(NA_character_)
     })
   }, USE.NAMES = FALSE)

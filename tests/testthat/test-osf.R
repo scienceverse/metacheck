@@ -606,4 +606,4 @@ test_that("osf_file_download retry", {
   dl <- osf_file_download(osf_id, max_file_size = 0.01)
 })
 
-
+verbose(TRUE)
