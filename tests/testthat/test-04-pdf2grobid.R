@@ -1,25 +1,18 @@
 test_that("invalid URL detected", {
-  skip_on_ci()
-
   expect_true(is.function(pdf2grobid))
 
   filename <- demoxml()
   expect_error(pdf2grobid(filename, grobid_url = "notawebsite"),
                "grobid_url must be a valid URL, starting with http or https!")
-
-
 })
 
 
 test_that("URL without http/https detected", {
-  skip_on_ci()
-
   expect_true(is.function(pdf2grobid))
 
   filename <- demoxml()
   expect_error(pdf2grobid(filename, grobid_url = "kermitt2-grobid.hf.space"),
                "grobid_url must be a valid URL, starting with http or https!")
-
 })
 
 
