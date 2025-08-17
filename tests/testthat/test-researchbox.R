@@ -13,8 +13,11 @@ test_that("rbox_links", {
   expect_equal(links$text[[1]], "https://researchbox.org/801")
 })
 
+httptest::with_mock_api({
+  verbose(FALSE)
+  # httptest::start_capturing()
+
 test_that("rbox_info", {
-  skip_on_covr()
   skip_if_offline("researchbox.org")
 
   url <- "https://researchbox.org/801"
@@ -40,9 +43,13 @@ test_that("rbox_info", {
   ## peer review version
   rb_url <- "https://researchbox.org/1150&PEER_REVIEW_passcode=MJUAAS"
   info <- rbox_info(rb_url)
+  expect_equal(info$rb_url, rb_url)
+  expect_equal(info$RB_public, "October 07, 2024")
 })
 
 test_that("rbox_retrieve", {
+  skip_if_offline("researchbox.org")
+
   links <- rbox_links(psychsci)
   info <- rbox_retrieve(links)
 
@@ -52,3 +59,8 @@ test_that("rbox_retrieve", {
   expect_equal(info$text, links$text)
   expect_equal(info$RB_public, public)
 })
+
+#httptest::stop_capturing()
+verbose(TRUE)
+
+}) # end httptest::with_mock_api

@@ -19,7 +19,6 @@ Check if strings are valid OSF IDs, URLs, or waterbutler IDs. Basically an impro
 osf_check_id("pngda")
 osf_check_id("osf.io/pngda")
 osf_check_id("https://osf.io/pngda")
-osf_check_id("https://osf.io/pngda/View")
 osf_check_id("https://osf .io/png da") # rogue whitespace
 osf_check_id("pnda") # invalid
 }

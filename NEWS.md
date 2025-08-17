@@ -1,3 +1,11 @@
+# papercheck 0.0.0.9054
+
+* `osf_file_download()` now also retrieves files from linked storage
+* Removed the last dependency to {osfr} and updated `osf_check_id()` to return expected IDs from various URLs
+* OSF functions added to getting started vignette
+* Functions that require and API are now tested using httptest
+* module_list() doesn't fail if there are any errors in the modules
+
 # papercheck 0.0.0.9053
 
 * Updated `read()` to parse more stupid date formats that turn up in the submission string (and added the unparsed submission string back just in case)
