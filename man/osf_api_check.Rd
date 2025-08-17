@@ -22,3 +22,6 @@ You can only make 100 API requests per hour, unless you authorise your requests,
 
 OSF_PAT="replace-with-your-token-string"
 }
+\examples{
+osf_api_check()
+}

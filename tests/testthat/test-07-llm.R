@@ -1,10 +1,8 @@
-# TODO replace this module with a mock instead of using the real API
+httptest::with_mock_api({
+# httptest::start_capturing()
+
 test_that("exists", {
   expect_true(is.function(llm))
-  skip_on_ci()
-
-  skip_on_cran()
-  skip_if_offline("api.groq.com")
 
   expect_error(llm())
   expect_error(llm("hi"))
@@ -52,10 +50,6 @@ test_that("llm_max_calls", {
   expect_no_error(llm_max_calls(8))
   expect_equal(getOption("papercheck.llm_max_calls"), 8)
 
-  skip_on_cran()
-  skip_on_covr()
-  skip_if_offline("api.groq.com")
-
   text <- data.frame(
     text = 1:20,
     id = 1:20
@@ -70,8 +64,6 @@ test_that("llm_max_calls", {
 })
 
 test_that("basic", {
-  skip_on_cran()
-  skip_if_offline("api.groq.com")
   skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
   text <- c("hello", "number", "ten", 12)
@@ -102,18 +94,16 @@ test_that("basic", {
 })
 
 test_that("sample size", {
-  skip_on_cran()
-  skip_if_offline("api.groq.com")
   skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
   papers <- read(demodir())
   text <- search_text(papers, section = "method", return = "section")
   query <- "What is the sample size of this study (e.g., the number of participants tested?
 
-  Please give your answer exactly like this: 'XXX (XX men, XX women)', with the total number first, then any subsets in parentheses. If there is not enough infomation to answer, answer 'NA'"
+  Please give your answer exactly like this: 'XXX (XX men, XX women)', with the total number first, then any subsets in parentheses. If there is not enough information to answer, answer 'NA'"
 
-
-  expect_message( res <- llm(text, query) )
+  # needs seed to work with httptest
+  expect_message( res <- llm(text, query, seed = 8675309) )
 
   expect_equal(res$text, text$text)
   expect_equal(res$id, c("eyecolor", "incest"))
@@ -122,14 +112,12 @@ test_that("sample size", {
 
   ## text vector
   text_vector <- text$text[text$id == text$id[[1]]]
-  expect_message( res2 <- llm(text_vector, query) )
+  expect_message( res2 <- llm(text_vector, query, seed = 8675309) )
   expect_equal(names(res2), c("text", "answer", "time", "tokens"))
   expect_equal(res2$answer[[1]], res$answer[[1]])
 })
 
 test_that("exceeds tokens", {
-  skip_on_cran()
-  skip_if_offline("api.groq.com")
   skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
   ## big text (new model has a much bigger limit)
@@ -144,9 +132,7 @@ test_that("exceeds tokens", {
 })
 
 test_that("rate limiting", {
-  skip("Very long test")
-  skip_on_cran()
-  skip_if_offline("api.groq.com")
+  skip("Rate limiting test")
   skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
   text <- c(LETTERS, 0:7)
@@ -175,8 +161,6 @@ test_that("llm_model", {
 })
 
 test_that("llm_model_list", {
-  skip_on_cran()
-  skip_if_offline("api.groq.com")
   skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
   models <- llm_model_list()
@@ -209,3 +193,7 @@ test_that("json_expand", {
   expect_equal(expanded$letter, c("A", "B", "", NA, "E; F"))
   expect_equal(expanded$bool, c(TRUE, FALSE, NA, NA, FALSE))
 })
+
+# httptest::stop_capturing()
+
+}) # end with_mock_api

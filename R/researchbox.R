@@ -109,14 +109,16 @@ rbox_info <- function(rb_url) {
   # get website
   res <- httr::GET(rb_url)
 
-  # check if redirect
-  pattern <- "(?<=window\\.location\\.replace\\(')https://researchbox.org/\\d+(?='\\))"
-  if (grepl(pattern, res, perl = TRUE)) {
-    matches <- gregexpr(pattern, res, perl = TRUE)
-    redirect_url <- regmatches(as.character(res), matches)
+  # check if redirect (suppress encodings warning)
+  suppressMessages({
+    pattern <- "(?<=window\\.location\\.replace\\(')https://researchbox.org/\\d+(?='\\))"
+    if (grepl(pattern, res, perl = TRUE)) {
+      matches <- gregexpr(pattern, res, perl = TRUE)
+      redirect_url <- regmatches(as.character(res), matches)
 
-    res <- httr::GET(redirect_url[[1]])
-  }
+      res <- httr::GET(redirect_url[[1]])
+    }
+  })
 
   # handle missing file
   if (res$status_code != 200) {
@@ -127,7 +129,7 @@ rbox_info <- function(rb_url) {
 
   # Read the content with specified encoding
   html <- httr::content(res, "text", encoding = "UTF-8") |>
-    xml2::read_html()
+    xml2::read_html(encoding = "UTF-8")
 
   # get file list
   file_names <- xml2::xml_find_all(html, "//p [@class='file_name']") |>

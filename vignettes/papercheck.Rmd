@@ -385,6 +385,82 @@ llm_max_calls(30)
 
 If you hit your rate limit, the `llm()` function will add a short delay between calls, so don't worry if you notice the query speed slowing down after the first 30 calls. 
 
+## OSF Functions
+
+Papercheck provides several function to help you assess resources archived on the Open Science Framework.
+
+### OSF Links and IDs
+
+Get any OSF links from a paper or list of papers.
+
+```{r}
+links <- osf_links(psychsci)
+
+links$text |> unique() |> head()
+```
+
+You can see that some of them have rogue spaces or view-only links. The function `osf_check_id()` takes most formats of OSF links (with or without https:// and osf.io/, as well as the 25-character waterbutler IDs) and converts them to short IDs. 
+
+```{r}
+osf_ids <- osf_check_id(links$text) |> unique()
+
+head(osf_ids)
+```
+
+However, all of the `osf_***()` functions fix IDs for you and handle duplicate IDs without making extra API calls, so you don't need to add this step to most workflows.
+
+### OSF Info
+
+Get basic information about OSF links, such as the name, description, osf_type (nodes, files, preprints, registrations, users, set to "private" if you don't have authorisation to view it, and "invalid" if the ), whether it is public
+
+```{r}
+info <- osf_retrieve(links[1:6, ])
+
+info[, c("text","osf_id", "osf_type", "public", "category")]
+```
+
+For now, the OSF API does not let us retrieve any information about view-only links. They may be viewable by you in the web browser if the link is still active, but will be listed in the table as public = FALSE and osf_type = "private". 
+
+You can set the argument `recursive = TRUE` to also retrieve information about all nodes and files that are contained by the OSF link.
+
+```{r}
+osf_api_calls(0)
+all_contents <- osf_retrieve(links$text[1], recursive = TRUE)
+n_calls <- osf_api_calls()
+```
+
+The function `osf_api_calls()` lets you reset and retrieve the number of API calls made since the last reset. You can see that the project `r links$text[[1]]` had `r sum(all_contents$osf_type == "nodes")` nodes and `r sum(all_contents$osf_type == "files")` files, which required `r n_calls` API calls. 
+
+```{r}
+sum(all_contents$osf_type == "nodes")
+```
+
+::: {.callout-note}
+The OSF API does not (yet) have a way to find out what type of thing a URL represents, so we may have to make a few API calls to figure out if a URL represents a node, a file, a preprint, a preregistration, a user, or is an invalid URL (e.g., a typo or an object that has been deleted). 
+:::
+
+### Download OSF Files
+
+OSF projects let you organise information into nested components, and files within those components. Therefore, to retrieve all of the files associate with a project, you may need to navigate to several components and download zip files for the files from each components, then reorganise and rename the downloaded folders. 
+
+The function `osf_file_download()` does all of this for you, recreating a folder structure based on the component names and downloading all files smaller than `max_file_size` (defaults to 10 MB) up to a total size of `max_download_size` (defaults to 100 MB).
+
+```{r, eval = FALSE}
+osf_file_download(osf_id = "pngda",
+                  download_to = ".", 
+                  max_file_size = 1, 
+                  max_download_size = 10)
+```
+```
+Starting retrieval for pngda
+- omitting papercheck.png (1.5MB)
+Downloading files [=====================] 24/24 00:00:35
+```
+
+```{r}
+list.files("pngda", recursive = TRUE)
+```
+
 
 ## Modules
 

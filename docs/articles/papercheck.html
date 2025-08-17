@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9053</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9054</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -189,7 +189,7 @@ info, references, and citations.</p>
 <span><span class="co">#&gt; [1] ""</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $filename</span></span>
-<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/Rtmp4hJX7T/temp_libpath137c2715ec1dd/papercheck/extdata/to_err_is_human.xml"</span></span></code></pre>
+<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/Rtmph31b8m/temp_libpathcff33ae99904/papercheck/extdata/to_err_is_human.xml"</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="bibliography">Bibliography<a class="anchor" aria-label="anchor" href="#bibliography"></a>
@@ -1051,6 +1051,152 @@ speed slowing down after the first 30 calls.</p>
 </div>
 </div>
 <div class="section level2">
+<h2 id="osf-functions">OSF Functions<a class="anchor" aria-label="anchor" href="#osf-functions"></a>
+</h2>
+<p>Papercheck provides several function to help you assess resources
+archived on the Open Science Framework.</p>
+<div class="section level3">
+<h3 id="osf-links-and-ids">OSF Links and IDs<a class="anchor" aria-label="anchor" href="#osf-links-and-ids"></a>
+</h3>
+<p>Get any OSF links from a paper or list of papers.</p>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">links</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_links.html">osf_links</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">links</span><span class="op">$</span><span class="va">text</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] "osf.io/e2aks"                                             </span></span>
+<span><span class="co">#&gt; [2] "osf.io/tvyxz/"                                            </span></span>
+<span><span class="co">#&gt; [3] "osf.io/t9j8e/? view_only=f171281f212f4435917b16a9e581a73b"</span></span>
+<span><span class="co">#&gt; [4] "osf .io/ideta"                                            </span></span>
+<span><span class="co">#&gt; [5] "osf.io/eky4s"                                             </span></span>
+<span><span class="co">#&gt; [6] "osf.io/xgwhk"</span></span></code></pre>
+<p>You can see that some of them have rogue spaces or view-only links.
+The function <code><a href="../reference/osf_check_id.html">osf_check_id()</a></code> takes most formats of OSF links
+(with or without <a href="https://" class="external-link uri">https://</a> and
+osf.io/, as well as the 25-character waterbutler IDs) and converts them
+to short IDs.</p>
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">osf_ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_check_id.html">osf_check_id</a></span><span class="op">(</span><span class="va">links</span><span class="op">$</span><span class="va">text</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">osf_ids</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] "e2aks" "tvyxz" "t9j8e" "ideta" "eky4s" "xgwhk"</span></span></code></pre>
+<p>However, all of the <code>osf_***()</code> functions fix IDs for you
+and handle duplicate IDs without making extra API calls, so you don’t
+need to add this step to most workflows.</p>
+</div>
+<div class="section level3">
+<h3 id="osf-info">OSF Info<a class="anchor" aria-label="anchor" href="#osf-info"></a>
+</h3>
+<p>Get basic information about OSF links, such as the name, description,
+osf_type (nodes, files, preprints, registrations, users, set to
+“private” if you don’t have authorisation to view it, and “invalid” if
+the ), whether it is public</p>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_retrieve.html">osf_retrieve</a></span><span class="op">(</span><span class="va">links</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; Starting OSF retrieval for 4 files...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; * Retrieving info from e2aks...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; * Retrieving info from tvyxz...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; * Retrieving info from t9j8e...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; * Retrieving info from ideta...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; ...OSF retrieval complete!</span></span></code></pre>
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">info</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"text"</span>,<span class="st">"osf_id"</span>, <span class="st">"osf_type"</span>, <span class="st">"public"</span>, <span class="st">"category"</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
+<span><span class="co">#&gt;   text                                           osf_id osf_type public category</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> osf.io/e2aks                                   e2aks  nodes    TRUE   project </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> osf.io/tvyxz/                                  tvyxz  nodes    TRUE   project </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> osf.io/tvyxz/                                  tvyxz  nodes    TRUE   project </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> osf.io/t9j8e/? view_only=f171281f212f4435917b… t9j8e  private  FALSE  <span style="color: #BB0000;">NA</span>      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> osf .io/ideta                                  ideta  nodes    TRUE   project </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> osf.io/tvyxz/                                  tvyxz  nodes    TRUE   project</span></span></code></pre>
+<p>For now, the OSF API does not let us retrieve any information about
+view-only links. They may be viewable by you in the web browser if the
+link is still active, but will be listed in the table as public = FALSE
+and osf_type = “private”.</p>
+<p>You can set the argument <code>recursive = TRUE</code> to also
+retrieve information about all nodes and files that are contained by the
+OSF link.</p>
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/osf_api_calls.html">osf_api_calls</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">all_contents</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_retrieve.html">osf_retrieve</a></span><span class="op">(</span><span class="va">links</span><span class="op">$</span><span class="va">text</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; Starting OSF retrieval for 1 file...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; * Retrieving info from e2aks...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; ...Main retrieval complete</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Starting retrieval of children...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; * Retrieving children for e2aks...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; * Retrieving children for 7jh5v...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; * Retrieving children for pj4e8...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; * Retrieving files for e2aks...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; * Retrieving files for 7jh5v...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; * Retrieving files for pj4e8...</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; ...OSF retrieval complete!</span></span></code></pre>
+<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">n_calls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/osf_api_calls.html">osf_api_calls</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>The function <code><a href="../reference/osf_api_calls.html">osf_api_calls()</a></code> lets you reset and retrieve
+the number of API calls made since the last reset. You can see that the
+project osf.io/e2aks had 3 nodes and 6 files, which required 11 API
+calls.</p>
+<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">all_contents</span><span class="op">$</span><span class="va">osf_type</span> <span class="op">==</span> <span class="st">"nodes"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] 3</span></span></code></pre>
+<div class="callout-note">
+<p>The OSF API does not (yet) have a way to find out what type of thing
+a URL represents, so we may have to make a few API calls to figure out
+if a URL represents a node, a file, a preprint, a preregistration, a
+user, or is an invalid URL (e.g., a typo or an object that has been
+deleted).</p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="download-osf-files">Download OSF Files<a class="anchor" aria-label="anchor" href="#download-osf-files"></a>
+</h3>
+<p>OSF projects let you organise information into nested components, and
+files within those components. Therefore, to retrieve all of the files
+associate with a project, you may need to navigate to several components
+and download zip files for the files from each components, then
+reorganise and rename the downloaded folders.</p>
+<p>The function <code><a href="../reference/osf_file_download.html">osf_file_download()</a></code> does all of this for
+you, recreating a folder structure based on the component names and
+downloading all files smaller than <code>max_file_size</code> (defaults
+to 10 MB) up to a total size of <code>max_download_size</code> (defaults
+to 100 MB).</p>
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/osf_file_download.html">osf_file_download</a></span><span class="op">(</span>osf_id <span class="op">=</span> <span class="st">"pngda"</span>,</span>
+<span>                  download_to <span class="op">=</span> <span class="st">"."</span>, </span>
+<span>                  max_file_size <span class="op">=</span> <span class="fl">1</span>, </span>
+<span>                  max_download_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<pre><code>Starting retrieval for pngda
+- omitting papercheck.png (1.5MB)
+Downloading files [=====================] 24/24 00:00:35</code></pre>
+<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="st">"pngda"</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt;  [1] "Data/Individual/data-01.csv"                         </span></span>
+<span><span class="co">#&gt;  [2] "Data/Individual/data-02.csv"                         </span></span>
+<span><span class="co">#&gt;  [3] "Data/Individual/data-03.csv"                         </span></span>
+<span><span class="co">#&gt;  [4] "Data/Individual/data-04.csv"                         </span></span>
+<span><span class="co">#&gt;  [5] "Data/Individual/data-05.csv"                         </span></span>
+<span><span class="co">#&gt;  [6] "Data/Individual/data-06.csv"                         </span></span>
+<span><span class="co">#&gt;  [7] "Data/Individual/data-07.csv"                         </span></span>
+<span><span class="co">#&gt;  [8] "Data/Individual/data-08.csv"                         </span></span>
+<span><span class="co">#&gt;  [9] "Data/Individual/data-09.csv"                         </span></span>
+<span><span class="co">#&gt; [10] "Data/Individual/data-10.csv"                         </span></span>
+<span><span class="co">#&gt; [11] "Data/Individual/data-11.csv"                         </span></span>
+<span><span class="co">#&gt; [12] "Data/Individual/data-12.csv"                         </span></span>
+<span><span class="co">#&gt; [13] "Data/Individual/data-13.csv"                         </span></span>
+<span><span class="co">#&gt; [14] "Data/Individual/data-14.csv"                         </span></span>
+<span><span class="co">#&gt; [15] "Data/Processed Data/processed-data.csv"              </span></span>
+<span><span class="co">#&gt; [16] "Data/Raw Data/data.xlsx"                             </span></span>
+<span><span class="co">#&gt; [17] "Data/Raw Data/nest-1/nest-2/nest-3/nest-4/test-4.txt"</span></span>
+<span><span class="co">#&gt; [18] "Data/Raw Data/nest-1/nest-2/nest-3/test-3.txt"       </span></span>
+<span><span class="co">#&gt; [19] "Data/Raw Data/nest-1/nest-2/test-2.txt"              </span></span>
+<span><span class="co">#&gt; [20] "Data/Raw Data/nest-1/README"                         </span></span>
+<span><span class="co">#&gt; [21] "Data/Raw Data/nest-1/test-1.txt"                     </span></span>
+<span><span class="co">#&gt; [22] "Data/Raw Data/README"                                </span></span>
+<span><span class="co">#&gt; [23] "README"                                              </span></span>
+<span><span class="co">#&gt; [24] "test-folder/test_script.R"</span></span></code></pre>
+</div>
+</div>
+<div class="section level2">
 <h2 id="modules">Modules<a class="anchor" aria-label="anchor" href="#modules"></a>
 </h2>
 <p>Papercheck is designed modularly, so you can add modules to check for
@@ -1060,7 +1206,7 @@ will share more modules.</p>
 <h3 id="module-list">Module List<a class="anchor" aria-label="anchor" href="#module-list"></a>
 </h3>
 <p>You can see the list of built-in modules with the function below.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/module_list.html">module_list</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt;  * all_p_values: List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.</span></span>
 <span><span class="co">#&gt;  * all_urls: List all the URLs in the main text.</span></span>
@@ -1079,7 +1225,7 @@ will share more modules.</p>
 </h3>
 <p>To run a built-in module on a paper, you can reference it by
 name.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"all_p_values"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
@@ -1156,7 +1302,7 @@ details.</p>
 </h2>
 <p>You can generate a report from any set of modules. The default set is
 <code>c("exact_p", "marginal", "effect_size", "osf_check", "retractionwatch", "ref_consistency")</code></p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/report.html">report</a></span><span class="op">(</span><span class="va">paper</span>, output_format <span class="op">=</span> <span class="st">"qmd"</span><span class="op">)</span></span></code></pre></div>
 <p>See the <a href="report-example.html">example report</a>.</p>
 </div>

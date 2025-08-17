@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9053</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9054</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -352,19 +352,20 @@ Groq.</p>
 <span></span>
 <span><span class="co"># run query</span></span>
 <span><span class="va">llm_response</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/llm.html">llm</a></span><span class="op">(</span><span class="va">text</span>, <span class="va">query</span>, model <span class="op">=</span> <span class="st">"llama-3.3-70b-versatile"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; You have 986 of 1000 requests left (reset in 19m45.811s) and 6592 of 12000 tokens left (reset in 27.04s).</span></span>
+<span><span class="co">#&gt; You have 995 of 1000 requests left (reset in 6m48.560999999s) and 6592 of 12000 tokens left (reset in 27.04s).</span></span>
 <span></span>
 <span><span class="va">llm_response</span><span class="op">$</span><span class="va">answer</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"&gt; "</span>, x <span class="op">=</span> <span class="va">_</span><span class="op">)</span></span></code></pre></div>
 <blockquote>
-<p>The sentence that corresponds to the plan is: “We assessed four
-taxonomic groups: ruffed lemurs (Varecia species, n = 10), Coquerel’s
-sifakas (Propithecus coquereli, n = 10), ringtailed lemurs (Lemur catta,
-n = 10), and mongoose lemurs (Eulemur mongoz, n = 9).”</p>
+<p>The sentence that corresponds to the plan is: “We will test a minimum
+of 10 and a maximum of 15 individuals for each species based on
+availability and individual’s willingness to participate at the time of
+testing.”</p>
 </blockquote>
 <p>The authors deviated from their preregistration in the sense that
-they tested 9 mongoose lemurs instead of the planned minimum of 10 and
-maximum of 15 individuals. For the other three species, the number of
-individuals tested (n = 10) was within the planned range.</p>
+they tested 9 mongoose lemurs, which is below the minimum of 10
+individuals planned for each species. However, they did meet or exceed
+the minimum for the other three species: ruffed lemurs (n = 10),
+Coquerel’s sifakas (n = 10), and ring-tailed lemurs (n = 10).</p>
 <p>As we see, the LLM does a very good job evaluating whether the
 authors adhered to their preregistration in terms of the sample size.
 The long-run performance of this automated evaluation needs to be
@@ -420,17 +421,20 @@ and must be fluent in English (to ensure instruction comprehension).</p>
 <span><span class="va">text</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">methres</span><span class="op">$</span><span class="va">text</span>, collapse <span class="op">=</span> <span class="st">"\n\n"</span><span class="op">)</span></span>
 <span><span class="va">query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="va">query_template</span>, <span class="va">prereg_sample_size</span><span class="op">)</span></span>
 <span><span class="va">llm_response</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/llm.html">llm</a></span><span class="op">(</span><span class="va">text</span>, <span class="va">query</span>, model <span class="op">=</span> <span class="st">"llama-3.3-70b-versatile"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; You have 985 of 1000 requests left (reset in 21m33.994s) and 3760 of 12000 tokens left (reset in 41.196999999s).</span></span>
+<span><span class="co">#&gt; You have 994 of 1000 requests left (reset in 8m36.712s) and 3753 of 12000 tokens left (reset in 41.235s).</span></span>
 <span></span>
 <span><span class="va">llm_response</span><span class="op">$</span><span class="va">answer</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"&gt; "</span>, x <span class="op">=</span> <span class="va">_</span><span class="op">)</span></span></code></pre></div>
 <blockquote>
 <p>The sentence that corresponds to the plan is: “Here, we sought to
 collect data from 60 participants in each cohort.”</p>
 </blockquote>
-<p>The authors deviated from their preregistration in that they did not
-collect data from 60 participants in cohort B, as initially planned. Due
-to the COVID-19 pandemic, data collection was interrupted, and they were
-only able to collect data from 56 participants in cohort B.</p>
+<p>The authors deviated from their preregistration with respect to the
+sample size in cohort B, as they initially intended to collect data from
+60 participants but were only able to collect data from 56 participants
+due to the interruption of data collection caused by the COVID-19
+pandemic. However, in cohort A, they were able to collect data from 60
+participants as planned, although 3 participants were excluded from the
+reported results due to poor performance.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># manual check - no LLM</span></span>
 <span><span class="va">regex_sample</span> <span class="op">&lt;-</span> <span class="st">"\\bsample\\b|\\d+\\s+particip\\w+"</span></span>
@@ -592,7 +596,7 @@ down all laboratory testing on March 13, 2020.</p>
 <span><span class="co">#&gt; Starting AsPredicted retrieval for 1 file...</span></span>
 <span><span class="co">#&gt; * Retrieving info from https://aspredicted.org/p4ci6.pdf...</span></span>
 <span><span class="co">#&gt; ...AsPredicted retrieval complete!</span></span>
-<span><span class="co">#&gt; You have 984 of 1000 requests left (reset in 23m0.464s) and 874 of 12000 tokens left (reset in 55.629s).</span></span></code></pre></div>
+<span><span class="co">#&gt; You have 993 of 1000 requests left (reset in 10m2.841999999s) and 838 of 12000 tokens left (reset in 55.806s).</span></span></code></pre></div>
 <p>Sample Size Preregistration:</p>
 <p>N = 60. Participants will be recruited from the undergraduate student
 population of the University of British Columbia, and will be
@@ -629,14 +633,15 @@ B was originally intended to be another 60 participants, but data
 collection was interrupted because of the COVID-19 pandemic; we shut
 down all laboratory testing on March 13, 2020.</p>
 <p>LLM Assessment:</p>
-<p>The authors deviated from their preregistration in terms of sample
-size for cohort B. They initially planned to collect data from 60
-participants in each cohort, but due to the COVID-19 pandemic, data
-collection was interrupted, and they were only able to collect data from
-56 participants in cohort B. However, for cohort A, they were able to
-collect data from 60 participants as planned, although 3 participants
-were excluded from the analysis due to poor performance or experimental
-error, resulting in a final sample size of 57 for cohort A.</p>
+<p>The sentence that corresponds to the plan is: “Here, we sought to
+collect data from 60 participants in each cohort.”</p>
+<p>The authors did follow their plan with respect to the sample size for
+cohort A, as they collected data from 60 participants (n = 60). However,
+they did not follow their plan for cohort B, as they originally intended
+to collect data from 60 participants but were only able to collect data
+from 56 participants (n = 56) due to the COVID-19 pandemic.</p>
+<p>So, the correct answer is: The authors deviated from their
+preregistration with respect to the sample size for cohort B.</p>
 <p>It fails gracefully if there are no links.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="va">psychsci</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>

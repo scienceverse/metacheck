@@ -152,14 +152,21 @@ module_list <- function(module_dir = system.file("modules", package = "paperchec
   files <- list.files(module_dir, "\\.R$",
                       full.names = TRUE,
                       recursive = TRUE)
-  txt <- lapply(files, module_info)
+  txt <- lapply(files, \(mod) tryCatch(
+    module_info(mod),
+    error = \(e) {}
+  ))
+
+  # remove errored files
+  valid <- !sapply(txt, is.null)
+  txt <- txt[valid]
 
   display <- data.frame(
-    name = basename(files) |> sub("\\.R$", "", x = _),
+    name = basename(files[valid]) |> sub("\\.R$", "", x = _),
     title = sapply(txt, \(x) x[["title"]][[1]]),
     description = sapply(txt, `[[`, "description") |>
       sapply(\(x) x[[1]] %||% ""),
-    path = files
+    path = files[valid]
   )
   class(display) <- c("ppchk_module_list", "data.frame")
   rownames(display) <- NULL

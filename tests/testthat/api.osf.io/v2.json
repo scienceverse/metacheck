@@ -1,0 +1,219 @@
+{
+    "meta": {
+        "message": "Welcome to the OSF API.",
+        "version": "2.20",
+        "current_user": {
+            "data": {
+                "id": "4i578",
+                "type": "users",
+                "attributes": {
+                    "full_name": "Lisa DeBruine",
+                    "given_name": "Lisa",
+                    "middle_names": "Marie",
+                    "family_name": "DeBruine",
+                    "suffix": "",
+                    "date_registered": "2015-03-17T12:04:37.857000Z",
+                    "active": true,
+                    "timezone": "Europe/London",
+                    "locale": "en_US",
+                    "social": {
+                        "ssrn": "",
+                        "orcid": "0000-0002-7523-5539",
+                        "github": [
+                            "debruine"
+                        ],
+                        "scholar": "oLHcVYUAAAAJ",
+                        "twitter": [
+                            "lisadebruine"
+                        ],
+                        "linkedIn": [],
+                        "impactStory": "",
+                        "baiduScholar": "",
+                        "researchGate": "",
+                        "researcherId": "A-6990-2008",
+                        "profileWebsites": [
+                            "https://debruine.github.io/"
+                        ],
+                        "academiaProfileID": "",
+                        "academiaInstitution": ""
+                    },
+                    "employment": [
+                        {
+                            "title": "Reader",
+                            "endYear": "2018",
+                            "ongoing": false,
+                            "endMonth": 7,
+                            "startYear": "2012",
+                            "department": "Institute of Neuroscience and Psychology",
+                            "startMonth": 7,
+                            "institution": "University of Glasgow"
+                        },
+                        {
+                            "title": "Professor",
+                            "endYear": "",
+                            "ongoing": true,
+                            "endMonth": 0,
+                            "startYear": "2018",
+                            "department": "Institute of Neuroscience and Psychology",
+                            "startMonth": 8,
+                            "institution": "University of Glasgow"
+                        }
+                    ],
+                    "education": [
+                        {
+                            "degree": "PhD",
+                            "endYear": "2004",
+                            "ongoing": false,
+                            "endMonth": 7,
+                            "startYear": "2000",
+                            "department": "Department of Psychology",
+                            "startMonth": 8,
+                            "institution": "McMaster University"
+                        }
+                    ],
+                    "allow_indexing": null,
+                    "can_view_reviews": [],
+                    "accepted_terms_of_service": true
+                },
+                "relationships": {
+                    "nodes": {
+                        "links": {
+                            "related": {
+                                "href": "https://api.osf.io/v2/users/4i578/nodes/",
+                                "meta": {}
+                            }
+                        }
+                    },
+                    "groups": {
+                        "links": {
+                            "related": {
+                                "href": "https://api.osf.io/v2/users/4i578/groups/",
+                                "meta": {}
+                            }
+                        }
+                    },
+                    "registrations": {
+                        "links": {
+                            "related": {
+                                "href": "https://api.osf.io/v2/users/4i578/registrations/",
+                                "meta": {}
+                            }
+                        }
+                    },
+                    "institutions": {
+                        "links": {
+                            "related": {
+                                "href": "https://api.osf.io/v2/users/4i578/institutions/",
+                                "meta": {}
+                            },
+                            "self": {
+                                "href": "https://api.osf.io/v2/users/4i578/relationships/institutions/",
+                                "meta": {}
+                            }
+                        }
+                    },
+                    "preprints": {
+                        "links": {
+                            "related": {
+                                "href": "https://api.osf.io/v2/users/4i578/preprints/",
+                                "meta": {}
+                            }
+                        }
+                    },
+                    "draft_preprints": {
+                        "links": {
+                            "related": {
+                                "href": "https://api.osf.io/v2/users/4i578/draft_preprints/",
+                                "meta": {}
+                            }
+                        }
+                    },
+                    "emails": {
+                        "links": {
+                            "related": {
+                                "href": "https://api.osf.io/v2/users/4i578/settings/emails/",
+                                "meta": {}
+                            }
+                        }
+                    },
+                    "default_region": {
+                        "links": {
+                            "related": {
+                                "href": "https://api.osf.io/v2/regions/us/",
+                                "meta": {}
+                            }
+                        },
+                        "data": {
+                            "id": "us",
+                            "type": "regions"
+                        }
+                    },
+                    "settings": {
+                        "links": {
+                            "related": {
+                                "href": "https://api.osf.io/v2/users/4i578/settings/",
+                                "meta": {}
+                            }
+                        },
+                        "data": {
+                            "id": "4i578",
+                            "type": "user-settings"
+                        }
+                    }
+                },
+                "links": {
+                    "html": "https://osf.io/4i578/",
+                    "profile_image": "https://secure.gravatar.com/avatar/cb4576d0ca3bb41503ce339a9562afc9?d=identicon",
+                    "self": "https://api.osf.io/v2/users/4i578/",
+                    "iri": "https://osf.io/4i578"
+                }
+            }
+        },
+        "active_flags": [
+            "branded_registries",
+            "ember_verify_email_modals",
+            "share_download",
+            "collections_moderation",
+            "gravy_waffle",
+            "ember_file_project_detail_page",
+            "ember_project_files_page",
+            "storage_usage",
+            "institutions_nav_bar",
+            "storage_i18n",
+            "osf_groups",
+            "egap_admins",
+            "ember_auth_register",
+            "ember_meeting_detail_page",
+            "ember_meetings_page",
+            "ember_edit_draft_registration_page",
+            "ember_file_registration_detail_page",
+            "ember_registration_files_page",
+            "ember_registries_detail_page",
+            "ember_user_settings_account_page",
+            "ember_user_settings_apps_page",
+            "ember_user_settings_tokens_page",
+            "ab_testing_home_page_hero_text_version_b",
+            "enable_chronos",
+            "institutional_dashboard_2024",
+            "ember_search_page",
+            "sloan_coi_input",
+            "ezid",
+            "sloan_data_input",
+            "sloan_prereg_input",
+            "elasticsearch_metrics",
+            "osf_preregistration",
+            "enable_inactive_schemas"
+        ],
+        "admin": true
+    },
+    "links": {
+        "nodes": "https://api.osf.io/v2/nodes/",
+        "users": "https://api.osf.io/v2/users/",
+        "collections": "https://api.osf.io/v2/collections/",
+        "registrations": "https://api.osf.io/v2/registrations/",
+        "institutions": "https://api.osf.io/v2/institutions/",
+        "licenses": "https://api.osf.io/v2/licenses/",
+        "schemas": "https://api.osf.io/v2/schemas/registrations/",
+        "addons": "https://api.osf.io/v2/addons/"
+    }
+}

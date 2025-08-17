@@ -1,0 +1,32 @@
+{
+    "id": "chatcmpl-7cb136b1-b457-4fca-ad31-3b3549e72927",
+    "object": "chat.completion",
+    "created": 1755451588,
+    "model": "llama-3.3-70b-versatile",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "666 (57 men, 609 women)"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "queue_time": 0.086124894,
+        "prompt_tokens": 718,
+        "prompt_time": 0.060112893,
+        "completion_tokens": 10,
+        "completion_time": 0.032049713,
+        "total_tokens": 728,
+        "total_time": 0.092162606
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_2ddfbb0da0",
+    "x_groq": {
+        "id": "req_01k2wh2zcnfkftw0trgqez7c3y"
+    },
+    "service_tier": "on_demand"
+}

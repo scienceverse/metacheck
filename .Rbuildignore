@@ -13,3 +13,4 @@ inst/modules/sample-size*
 ^Meta$
 ^_stuff/*
 ^vignettes/articles$
+codecov.yml

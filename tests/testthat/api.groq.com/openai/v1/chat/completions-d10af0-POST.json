@@ -1,0 +1,32 @@
+{
+    "id": "chatcmpl-d54164fa-f0d8-4f12-8068-4a37dd87896b",
+    "object": "chat.completion",
+    "created": 1755451586,
+    "model": "llama-3.3-70b-versatile",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "FALSE"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "queue_time": 0.088845633,
+        "prompt_tokens": 50,
+        "prompt_time": 0.011592817,
+        "completion_tokens": 2,
+        "completion_time": 4.4e-7,
+        "total_tokens": 52,
+        "total_time": 0.011593257
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_2ddfbb0da0",
+    "x_groq": {
+        "id": "req_01k2wh2xfwfket4h9vw2z9t9wz"
+    },
+    "service_tier": "on_demand"
+}

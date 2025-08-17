@@ -1,0 +1,16 @@
+structure(list(url = "https://api.osf.io/v2/files/68472f93b21328dc7f539482/", 
+    status_code = 429L, headers = structure(list(`content-length` = "142", 
+        `content-type` = "text/html; charset=UTF-8", date = "Sun, 17 Aug 2025 16:31:47 GMT", 
+        `alt-svc` = "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"), class = c("insensitive", 
+    "list")), all_headers = list(list(status = 429L, version = "HTTP/2", 
+        headers = structure(list(`content-length` = "142", `content-type` = "text/html; charset=UTF-8", 
+            date = "Sun, 17 Aug 2025 16:31:47 GMT", `alt-svc` = "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"), class = c("insensitive", 
+        "list")))), cookies = structure(list(domain = logical(0), 
+        flag = logical(0), path = logical(0), secure = logical(0), 
+        expiration = structure(numeric(0), class = c("POSIXct", 
+        "POSIXt")), name = logical(0), value = logical(0)), row.names = integer(0), class = "data.frame"), 
+    content = charToRaw("<!doctype html><meta charset=\"utf-8\"><meta name=viewport content=\"width=device-width, initial-scale=1\"><title>429</title>429 Too Many Requests"), 
+    date = structure(1755448307, class = c("POSIXct", "POSIXt"
+    ), tzone = "GMT"), times = c(redirect = 0, namelookup = 0, 
+    connect = 0, pretransfer = 8.2e-05, starttransfer = 0.193769, 
+    total = 0.193862)), class = "response")

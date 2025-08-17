@@ -77,7 +77,12 @@ osf_links <- function(paper) {
 #' @returns the OSF status
 #' @export
 #'
+#' @examples
+#' osf_api_check()
 osf_api_check <- function(osf_api = getOption("papercheck.osf.api")) {
+  if (!curl::has_internet()) {
+    return("no internet")
+  }
   h <- httr::GET(osf_api, osf_headers())
   osf_api_calls_inc()
   status <- dplyr::case_match(
@@ -132,7 +137,8 @@ osf_retrieve <- function(osf_url, id_col = 1,
     raw_osf_urls <- table[[id_col]]
   } else {
     id_col_name <- "osf_url"
-    raw_osf_urls <- unique(osf_url) |> stats::na.omit()
+    raw_osf_urls <- unique(osf_url) |>
+      stats::na.omit() |> as.character()
     table <- data.frame(osf_url = raw_osf_urls)
   }
 
@@ -151,7 +157,8 @@ osf_retrieve <- function(osf_url, id_col = 1,
   }
 
   # iterate over valid IDs
-  message("Starting OSF retrieval for ", length(valid_ids), " files...")
+  message("Starting OSF retrieval for ", length(valid_ids),
+          " file", ifelse(length(valid_ids) == 1, "", "s"), "...")
 
   id_info <- vector("list", length(valid_ids))
   too_many <- FALSE
@@ -266,8 +273,8 @@ osf_info <- function(osf_id) {
   osf_types <- c("nodes",
                  "files",
                  "preprints",
-                 "registrations")
-                 #"users")
+                 "registrations",
+                 "users")
   for (osf_type in osf_types) {
     warning <- NULL
     content <- tryCatch({
@@ -521,22 +528,36 @@ osf_user_data <- function(data) {
 #' osf_check_id("pngda")
 #' osf_check_id("osf.io/pngda")
 #' osf_check_id("https://osf.io/pngda")
-#' osf_check_id("https://osf.io/pngda/View")
 #' osf_check_id("https://osf .io/png da") # rogue whitespace
 #' osf_check_id("pnda") # invalid
 osf_check_id <- function(osf_id) {
-  # osfr::as_id fails completely if one id is invalid
-  # so use sapply
-  sapply(osf_id, \(id) {
+  clean_id <- osf_id |>
+    gsub("\\s", "", x = _) |>
+    tolower()
+
+  sapply(clean_id, \(id) {
     tryCatch({
-      id |>
-        gsub("\\s", "", x = _) |>
-        osfr::as_id() |>
-        as.character()
+      path <- httr::parse_url(id)$path |>
+        fs::path_split() |>
+        sapply(utils::tail, 1)
+
+      # All OSF IDs are 5 or 24 characters
+      if (!nchar(path) %in% c(5, 24)) {
+        stop()
+      }
+
+      path
     },
     error = \(e) {
+      # try to extract 5-char ID
+      m <- gregexpr("(?<=osf\\.io/)[a-z0-9]{5}[?/]?",
+                    id, perl = TRUE)
+      id5 <- regmatches(id, m) |> sub("[?/]$", "", x = _)
+      if (nchar(id5) == 5) return(id5)
+
+      # else...
       warning(id, " is not a valid OSF ID",
-             call. = FALSE, immediate. = FALSE)
+              call. = FALSE, immediate. = FALSE)
       return(NA_character_)
     })
   }, USE.NAMES = FALSE)
@@ -591,16 +612,22 @@ osf_files <- function(osf_id) {
   message("* Retrieving files for ", node_id, "...")
 
   if (nchar(node_id) == 5) {
-    url <- sprintf("%s/nodes/%s/files/osfstorage/", osf_api, node_id)
+    url <- sprintf("%s/nodes/%s/files/", osf_api, node_id)
   } else {
     url <- sprintf("%s/files/%s/", osf_api, node_id)
-    filedata <- osf_get_all_pages(url)
-    url <- filedata$relationships$files$links$related$href
   }
 
-  data <- osf_get_all_pages(url)
-  obj <- osf_file_data(data)
-  obj$parent <- rep(osf_id, nrow(obj))
+  storage <- osf_get_all_pages(url)
+  file_links <- storage$relationships$files$links$related$href
+
+  obj <- lapply(file_links, \(url) {
+    data <- osf_get_all_pages(url)
+    obj <- osf_file_data(data)
+    obj$parent <- rep(osf_id, nrow(obj))
+
+    return(obj)
+  }) |>
+    do.call(dplyr::bind_rows, args = _)
 
   return(obj)
 }
@@ -865,6 +892,7 @@ osf_file_download <- function(osf_id,
       paste0("_", i)
   }
   dir.create(download_to, showWarnings = FALSE, recursive = FALSE)
+  message("- Created directory ", download_to)
 
   if (sum(files$kind == "file") > 0) {
     ## download all to temp folder ----
@@ -896,6 +924,7 @@ osf_file_download <- function(osf_id,
 
     if (isTRUE(ignore_folder_structure)) {
       files$path <- fs::path_sanitize(files$name)
+
       while(duplicated(files$path) |> any()) {
         dupes <- files$path[duplicated(files$path)]
         ext <-  fs::path_ext(dupes)
@@ -939,6 +968,10 @@ osf_file_download <- function(osf_id,
             paste0("/", item$name)
         }
       }
+
+      # add base folder name
+      basename <- contents$name[[1]] |> fs::path_sanitize()
+      files$path <- file.path(basename, files$path)
     }
 
     if (trunc_warning) {
@@ -955,6 +988,8 @@ osf_file_download <- function(osf_id,
 
     ## clean up temp dir
     unlink(temppath, recursive = TRUE)
+  } else {
+    files_to_copy <- c()
   }
 
   ## set up return table ----
@@ -962,7 +997,7 @@ osf_file_download <- function(osf_id,
   ret <- contents[contents$kind %in% "file",
                   c("folder", "osf_id", "name", "filetype", "size", "downloads")]
 
-  if (exists("files_to_copy")) {
+  if (length(files_to_copy) > 0) {
     copied <- files[files_to_copy, c("osf_id", "path")]
     copied$downloaded <- TRUE
     ret <- dplyr::left_join(ret, copied, by = "osf_id")

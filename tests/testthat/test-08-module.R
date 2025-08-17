@@ -244,36 +244,39 @@ test_that("all_urls", {
   expect_true(all(ids %in% names(paper)))
 })
 
-test_that("osf_check", {
-  skip_on_ci()
-  skip_if_not(osf_api_check() == "ok")
-  module <- "osf_check"
+httptest::with_mock_api({
+  wd <- getwd()
+  httptest::.mockPaths(wd)
 
-  verbose(FALSE)
+  test_that("osf_check", {
+    module <- "osf_check"
 
-  text <- data.frame(
-    text = c("https://osf.io/5tbm9/",
-             "https://osf.io/629bx/",
-             "osf.io/ abcd5"),
-    id = c("private", "public", "unfound")
-  )
-  expect_warning( mo <- module_run(text, module), "abcd5" )
+    verbose(FALSE)
 
-  if (all(mo$table$status == "unknown")) {
-    skip("OSF is down")
-  }
-  exp <- c("closed", "open", "unfound")
-  expect_equal(mo$table$status, exp)
+    text <- data.frame(
+      text = c("https://osf.io/5tbm9/",
+               "https://osf.io/629bx/",
+               "osf.io/ abcd5"),
+      id = c("private", "public", "unfound")
+    )
+    expect_warning( mo <- module_run(text, module), "abcd5" )
 
-  # iteration
-  paper <- psychsci[5:10]
-  mod_output <- module_run(paper, module)
-  ids <- mod_output$table$id |> unique()
-  expect_equal(ids, c("0956797615569001",
-                      "0956797615569889",
-                      "0956797615583071"))
+    if (all(mo$table$status == "unknown")) {
+      skip("OSF is down")
+    }
+    exp <- c("closed", "open", "unfound")
+    expect_equal(mo$table$status, exp)
 
-  verbose(TRUE)
+    # iteration
+    paper <- psychsci[5:10]
+    mod_output <- module_run(paper, module)
+    ids <- mod_output$table$id |> unique()
+    expect_equal(ids, c("0956797615569001",
+                        "0956797615569889",
+                        "0956797615583071"))
+
+    verbose(TRUE)
+  })
 })
 
 test_that("retractionwatch", {
