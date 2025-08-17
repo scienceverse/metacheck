@@ -1,0 +1,30 @@
+Package: papercheck
+Title: Check Scientific Papaers for Best Practices
+Version: 0.0.0.9000
+Authors@R: c(
+  person(  given = "Lisa",
+           family = "DeBruine",
+           role = c("aut", "cre"),
+           email = "debruine@gmail.com",
+           comment = c(ORCID = "0000-0002-7523-5539")),
+  person(  given = "Daniel",
+           family = "Lakens",
+           role = c("aut"),
+           email = "lakens@gmail.com",
+           comment = c(ORCID = "0000-0002-0247-239X")))
+Description: What the package does (one paragraph).
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Imports: 
+    dplyr,
+    xml2
+VignetteBuilder: knitr
+URL: https://github.com/debruine/papercheck
+BugReports: https://github.com/debruine/papercheck/issues

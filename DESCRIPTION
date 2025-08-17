@@ -1,7 +1,7 @@
 Package: papercheck
 Title: Check Scientific Papers for Best Practices
-Version: 0.0.0.9053
-Date: 2025-07-28
+Version: 0.0.0.9054
+Date: 2025-08-17
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -24,16 +24,17 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Suggests: 
+    DT,
+    ggplot2,
+    httptest,
+    readr,
     rmarkdown,
-    testthat (>= 3.0.0),
     shiny,
+    shiny.i18n,
     shinydashboard,
     shinyjs,
-    shiny.i18n,
-    DT,
-    waiter,
-    ggplot2,
-    readr
+    testthat (>= 3.0.0),
+    waiter
 Config/testthat/edition: 3
 Imports: 
     dplyr,

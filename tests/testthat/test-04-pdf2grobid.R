@@ -18,7 +18,6 @@ test_that("URL without http/https detected", {
 
 test_that("non-Grobid URL is rejected", {
   skip_if_not(curl::has_internet())
-  expect_true(is.function(pdf2grobid))
 
   filename <- demoxml()
   expect_error(pdf2grobid(filename, grobid_url = "https://google.com"),
@@ -32,14 +31,11 @@ test_that("non-Grobid URL is rejected", {
 #   skip_if_offline("localhost")
 #   expect_error(pdf2grobid("no.exist", grobid_url = "localhost"), "does not exist")
 
+httptest::with_mock_api({
 
 grobid_server <- "https://kermitt2-grobid.hf.space"
 
 test_that("defaults", {
-  skip_on_ci()
-  skip_on_cran()
-  skip_if_offline(gsub("https://", "", grobid_server, fixed = TRUE))
-
   filename <- demopdf()
   first_sentence <- "Although intentional dishonestly might be a successful way to boost creativity"
   last_sentence <- "We conclude the use of automated checks has potential to reduce the number of mistakes in scientific manuscripts"
@@ -123,9 +119,6 @@ test_that("defaults", {
 })
 
 test_that("batch", {
-  skip_on_ci()
-  skip_if_offline(gsub("https://", "", grobid_server, fixed = TRUE))
-
   grobid_dir <- demodir()
 
   file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
@@ -145,9 +138,7 @@ test_that("batch", {
 
 
 test_that("local", {
-  skip_on_ci()
-  skip_on_cran()
-  skip_if_offline("localhost:8070")
+  #skip_if_offline("localhost:8070")
   local_url <- "http://localhost:8070"
 
   filename <- demopdf()
@@ -160,7 +151,7 @@ test_that("local", {
   exp <- file.path(tempdir(), "to_err_is_human.xml")
   expect_equal(xml_file, exp)
 
-  xml2 <- read_grobid_xml(xml_file)
+  xml2 <- read_xml(xml_file)
   expect_equal(xml, xml2)
   file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
 })
@@ -204,3 +195,5 @@ test_that("local", {
 #   })
 #
 #   })
+
+}) # end with_mock_api

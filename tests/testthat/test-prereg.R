@@ -7,6 +7,11 @@ test_that("errors", {
   expect_error(aspredicted_links(bad_arg))
 })
 
+httptest::with_mock_api({
+
+verbose(FALSE)
+# httptest::start_capturing()
+
 test_that("aspredicted_links", {
   links <- aspredicted_links(psychsci)
   expect_equal(names(links)[[1]], "text")
@@ -99,3 +104,8 @@ test_that("aspredicted_info", {
   expect_equal(info$AP_anything_else, "")
   expect_equal(info$AP_version, "2.00")
 })
+
+#httptest::stop_capturing()
+verbose(TRUE)
+
+}) # end httptest::with_mock_api
