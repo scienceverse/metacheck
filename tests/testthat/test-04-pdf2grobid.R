@@ -34,6 +34,9 @@ test_that("non-Grobid URL is rejected", {
 httptest::with_mock_api({
 
 grobid_server <- "https://kermitt2-grobid.hf.space"
+old_groq <- Sys.getenv("GROQ_API_KEY")
+Sys.setenv(GROQ_API_KEY = "test") # doesn't need to be set with_mock_api
+on.exit(Sys.setenv(GROQ_API_KEY = old_groq))
 
 test_that("defaults", {
   filename <- demopdf()
