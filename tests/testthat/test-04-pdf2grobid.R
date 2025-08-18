@@ -144,7 +144,10 @@ test_that("batch", {
 
 
 test_that("local", {
-  #skip_if_offline("localhost:8070")
+  skip_on_covr()
+  skip_on_cran()
+  skip_if_offline("localhost:8070")
+
   local_url <- "http://localhost:8070"
 
   filename <- demopdf()
