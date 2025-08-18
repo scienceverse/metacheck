@@ -119,6 +119,9 @@ test_that("defaults", {
 })
 
 test_that("batch", {
+  skip_on_covr()
+  skip_on_cran()
+
   grobid_dir <- demodir()
 
   file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
