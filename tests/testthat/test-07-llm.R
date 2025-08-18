@@ -1,33 +1,37 @@
 httptest::with_mock_api({
+  old_groq <- Sys.getenv("GROQ_API_KEY")
+  Sys.setenv(GROQ_API_KEY = "test") # doesn't need to be set with_mock_api
+  on.exit(Sys.setenv(GROQ_API_KEY = old_groq))
+
 # httptest::start_capturing()
 
 test_that("exists", {
   expect_true(is.function(llm))
 
-  expect_error(llm())
-  expect_error(llm("hi"))
+  expect_error(llm(seed = 8675309))
+  expect_error(llm("hi", seed = 8675309))
 
-  expect_error(llm("hi", "repeat this", model = "not a model"), "not available")
+  expect_error(llm("hi", "repeat this", model = "not a model", seed = 8675309), "not available")
 
   # temperature
-  expect_error(llm("hi", "repeat this", temperature = "a"),
+  expect_error(llm("hi", "repeat this", temperature = "a",seed = 8675309),
                "The argument `temperature` must be a positive number",
                fixed = TRUE)
-  expect_error(llm("hi", "repeat this", temperature = -3),
+  expect_error(llm("hi", "repeat this", temperature = -3, seed = 8675309),
                "The argument `temperature` must be between 0.0 and 2.0",
                fixed = TRUE)
-  expect_error(llm("hi", "repeat this", temperature = 2.1),
+  expect_error(llm("hi", "repeat this", temperature = 2.1, seed = 8675309),
                "The argument `temperature` must be between 0.0 and 2.0",
                fixed = TRUE)
 
   # top_p
-  expect_error(llm("hi", "repeat this", top_p = "a"),
+  expect_error(llm("hi", "repeat this", top_p = "a", seed = 8675309),
                "The argument `top_p` must be a positive number",
                fixed = TRUE)
-  expect_error(llm("hi", "repeat this", top_p = -3),
+  expect_error(llm("hi", "repeat this", top_p = -3, seed = 8675309),
                "The argument `top_p` must be between 0.0 and 1.0",
                fixed = TRUE)
-  expect_error(llm("hi", "repeat this", top_p = 2.1),
+  expect_error(llm("hi", "repeat this", top_p = 2.1, seed = 8675309),
                "The argument `top_p` must be between 0.0 and 1.0",
                fixed = TRUE)
 })
@@ -54,7 +58,7 @@ test_that("llm_max_calls", {
     text = 1:20,
     id = 1:20
   )
-  expect_error(llm(text, "summarise"),
+  expect_error(llm(text, "summarise", seed = 8675309),
                "This would make 20 calls to the LLM")
 
   # return to original value
@@ -94,8 +98,6 @@ test_that("basic", {
 })
 
 test_that("sample size", {
-  skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
-
   papers <- read(demodir())
   text <- search_text(papers, section = "method", return = "section")
   query <- "What is the sample size of this study (e.g., the number of participants tested?
@@ -118,8 +120,6 @@ test_that("sample size", {
 })
 
 test_that("exceeds tokens", {
-  skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
-
   ## big text (new model has a much bigger limit)
   # text <- psychsci[7] |> search_text(return = "id")
   # # nchar(text$text)
@@ -133,7 +133,6 @@ test_that("exceeds tokens", {
 
 test_that("rate limiting", {
   skip("Rate limiting test")
-  skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
   text <- c(LETTERS, 0:7)
   query <- "Respond with the exact text"
@@ -161,8 +160,6 @@ test_that("llm_model", {
 })
 
 test_that("llm_model_list", {
-  skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
-
   models <- llm_model_list()
   expect_equal(names(models), c("id", "owned_by", "created", "context_window"))
   expect_true(llm_model() %in% models$id)
