@@ -36,6 +36,9 @@ httptest::with_mock_api({
 grobid_server <- "https://kermitt2-grobid.hf.space"
 
 test_that("defaults", {
+  skip_on_covr()
+  skip_on_cran()
+
   filename <- demopdf()
   first_sentence <- "Although intentional dishonestly might be a successful way to boost creativity"
   last_sentence <- "We conclude the use of automated checks has potential to reduce the number of mistakes in scientific manuscripts"
@@ -119,6 +122,9 @@ test_that("defaults", {
 })
 
 test_that("batch", {
+  skip_on_covr()
+  skip_on_cran()
+
   grobid_dir <- demodir()
 
   file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
