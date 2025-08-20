@@ -568,12 +568,17 @@ osf_check_id <- function(osf_id) {
 #' OSF API queries only return up to 10 items per page, so this helper functions checks for extra pages and returns all of them
 #'
 #' @param url the OSF API URL
+#' @param page_start the first page to get
+#' @param page_end the last page to get (if Inf, then the final page)
 #'
 #' @returns a table of the returned data
 #' @export
 #' @keywords internal
-osf_get_all_pages <- function(url) {
+osf_get_all_pages <- function(url, page_start = 1, page_end = Inf) {
   Sys.sleep(osf_delay())
+
+  url <- gsub("&?page=\\d+", "", url) |>
+    paste0("&page=", page_start)
 
   content <- tryCatch({
     node_get <- httr::GET(url, osf_headers())
@@ -582,9 +587,10 @@ osf_get_all_pages <- function(url) {
   }, error = function(e) return(NULL))
 
   next_url <- content$links$`next`
+  page_start <- page_start + 1
 
-  if (!is.null(next_url)) {
-    subdata <- osf_get_all_pages(next_url)
+  if (!is.null(next_url) && page_start <= page_end) {
+    subdata <- osf_get_all_pages(next_url, page_start, page_end)
   } else {
     subdata <- NULL
   }
