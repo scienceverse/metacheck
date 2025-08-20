@@ -80,6 +80,6 @@ title_mismatch <- data.frame(
 ) |>
   dplyr::filter(tolower(light) != tolower(cons))
 
-consref <- concat_tables(consolidated, "references")
-lightref <- concat_tables(light, "references")
-fullref <- concat_tables(full, "references")
+consref <- concat_tables(consolidated, "bib")
+lightref <- concat_tables(light, "bib")
+fullref <- concat_tables(full, "bib")
