@@ -26,8 +26,8 @@ lineprof( papers <- read(files[1:50]) )
 ### concat_tables
 
 ```{r}
-lineprof( refs <- concat_tables(papers, "references") )
-lineprof( cite <- concat_tables(papers, "citations") )
+lineprof( refs <- concat_tables(papers, "bib") )
+lineprof( cite <- concat_tables(papers, "xrefs") )
 ```
 
 ### search_text
