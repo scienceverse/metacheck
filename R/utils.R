@@ -96,7 +96,8 @@ site_down <- function(url, msg = "The website %s is not available", error = TRUE
 #' @export
 #'
 #' @examples
-#' references <- concat_tables(psychsci[1:10], "references")
+#' biblio <- concat_tables(psychsci[1:10], "bib")
+#' xrefs <- concat_tables(psychsci[1:10], "xrefs")
 concat_tables <- function(papers, name_path) {
   if (!is_paper_list(papers)) papers <- list(papers)
 

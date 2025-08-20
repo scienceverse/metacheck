@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +32,7 @@ jobs:
 
         # this step should be revisited to still publish a report when a test fails
         # , which is not the case now
-      - name: Test coverage 
+      - name: Test coverage
         run: |
           cov <- covr::package_coverage(
             quiet = FALSE,
@@ -41,7 +42,7 @@ jobs:
           print(cov)
           covr::to_cobertura(cov)
         shell: Rscript {0}
-        
+
       - uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true

@@ -4,10 +4,14 @@
 \alias{osf_get_all_pages}
 \title{Get All OSF API Query Pages}
 \usage{
-osf_get_all_pages(url)
+osf_get_all_pages(url, page_start = 1, page_end = Inf)
 }
 \arguments{
 \item{url}{the OSF API URL}
+
+\item{page_start}{the first page to get}
+
+\item{page_end}{the last page to get (if Inf, then the final page)}
 }
 \value{
 a table of the returned data

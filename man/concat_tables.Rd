@@ -18,5 +18,6 @@ a merged table
 Concatenate tables across a list of paper objects
 }
 \examples{
-references <- concat_tables(psychsci[1:10], "references")
+biblio <- concat_tables(psychsci[1:10], "bib")
+xrefs <- concat_tables(psychsci[1:10], "xrefs")
 }
