@@ -17,7 +17,7 @@ read <- function(filename) {
     if (verbose()) {
       pb <- progress::progress_bar$new(
         total = length(filename), clear = FALSE,
-        format = "Processing files [:bar] :current/:total :elapsedfull"
+        format = "Processing file [:bar] :current/:total :elapsedfull"
       )
       pb$tick(0)
       Sys.sleep(0.2)
