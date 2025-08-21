@@ -568,20 +568,19 @@ osf_check_id <- function(osf_id) {
 #' OSF API queries only return up to 10 items per page, so this helper functions checks for extra pages and returns all of them
 #'
 #' @param url the OSF API URL
+#' @param page_end The last page to get
 #'
 #' @returns a table of the returned data
 #' @export
-#' @keywords internal
-osf_get_all_pages <- function(url) {
-#, page_start = 1, page_end = Inf) {
+#' @examples
+#' # get the 20 newest preprints
+#' \donttest{
+#' osf_api <- getOption("papercheck.osf.api")
+#' url <- sprintf("%s/preprints/?search=date_created-desc", osf_api)
+#' preprints <- osf_get_all_pages(url, 2)
+#' }
+osf_get_all_pages <- function(url, page_end = Inf) {
   Sys.sleep(osf_delay())
-
-  # url <- gsub("&?page=\\d+", "", url)
-  # if (grepl("\\?", url)) {
-  #   paste0("&page=", page_start)
-  # } else {
-  #   paste0("?page=", page_start)
-  # }
 
   content <- tryCatch({
     node_get <- httr::GET(url, osf_headers())
@@ -590,12 +589,28 @@ osf_get_all_pages <- function(url) {
   }, error = function(e) return(NULL))
 
   next_url <- content$links$`next`
-  # page_start <- page_start + 1
+  last_url <- content$links$last
 
-  if (!is.null(next_url)) { # && page_start <= page_end) {
-    subdata <- osf_get_all_pages(next_url) #, page_start, page_end)
-  } else {
-    subdata <- NULL
+  # m <- gregexpr("(?<=page=)\\d+", url, perl = TRUE)
+  # this_page <- regmatches(url, m)[[1]] |> as.numeric()
+  # if (length(this_page) == 0) this_page <- 1
+
+  # if (!is.null(last_url)) {
+  #   m <- gregexpr("(?<=page=)\\d+", last_url, perl = TRUE)
+  #   end <- regmatches(last_url, m)[[1]] |> as.numeric()
+  #
+  #   if (end < page_end) { page_end <- end }
+  #   message("Retrieving ", this_page, "/", page_end,
+  #           " of ", end, " pages")
+  # }
+
+  subdata <- NULL
+  if (!is.null(next_url)) {
+    m <- gregexpr("(?<=page=)\\d+", next_url, perl = TRUE)
+    page <- regmatches(next_url, m)[[1]] |> as.numeric()
+    if (length(page) && page <= page_end) {
+      subdata <- osf_get_all_pages(next_url, page_end)
+    }
   }
 
   if (!is.null(subdata)) {

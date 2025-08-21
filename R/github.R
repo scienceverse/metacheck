@@ -16,7 +16,6 @@ github_info <- function(repo, recursive = FALSE) {
   languages <- github_languages(repo)
   files <- github_files(repo, recursive = recursive)
 
-
   list(
     repo = repo,
     readme = readme,
@@ -105,7 +104,7 @@ github_files <- function(repo, dir = "",
     "https://api.github.com/repos/%s/contents/%s",
     repo,
     dir
-  )
+  ) |> utils::URLencode()
 
   response <- httr::GET(url, github_config())
   headers <- httr::headers(response)
@@ -154,6 +153,7 @@ github_files <- function(repo, dir = "",
     subdirs <- files$path[files$type == "dir"]
     if (length(subdirs)) {
       dir_contents <- lapply(subdirs, \(subdir) {
+        # message(subdir)
         github_files(repo, subdir, recursive = TRUE)
       }) |> do.call(rbind, args = _)
 

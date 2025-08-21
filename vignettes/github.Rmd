@@ -74,7 +74,7 @@ github_files("scienceverse/papercheck")
 github_files("scienceverse/papercheck", dir = ".github")
 ```
 
-You can also retrieve files recursively. Searching a large repository recursively can take a few seconds. 
+You can also retrieve files recursively. Searching a large repository recursively can take a while. 
 
 ```{r}
 github_files("scienceverse/papercheck",
@@ -87,9 +87,6 @@ github_files("scienceverse/papercheck",
 Get all of the information about a repository in one list object, with items named "repo", "readme", "languages", and "files".
 
 ```{r}
-info <- github_info("scienceverse/papercheck", 
-                    recursive = TRUE)
-
-info$files |> dplyr::count(type)
+github_info("scienceverse/demo")
 ```
 

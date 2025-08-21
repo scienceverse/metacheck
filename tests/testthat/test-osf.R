@@ -183,6 +183,18 @@ test_that("osf_get_all_pages", {
   url <- sprintf("%s/nodes/y6a34/files/osfstorage/", osf_api)
   data <- osf_get_all_pages(url)
   expect_equal(data, list())
+
+  # limit pages
+  url <- sprintf("%s/preprints/", osf_api)
+  data <- osf_get_all_pages(url, 1)
+  expect_equal(nrow(data), 10)
+
+  data <- osf_get_all_pages(url, 2)
+  expect_equal(nrow(data), 20)
+
+  url <- sprintf("%s/preprints/?page=5", osf_api)
+  data <- osf_get_all_pages(url, 5)
+  expect_equal(nrow(data), 10)
 })
 
 test_that("osf_files", {
