@@ -50,9 +50,13 @@ pdf2grobid <- function(filename, save_path = ".",
 
   # handle list of files or a directory----
   if (length(filename) > 1) {
-    if (is.null(save_path) || !dir.exists(save_path)) {
-      warning(save_path, " is not a directory, so the PDFs will be saved in the working directory: ", getwd())
-      save_path = "."
+    if (is.null(save_path)) save_path = "."
+    if (length(save_path) == 1) {
+      dir.create(save_path, FALSE)
+      save_path <- rep_len(save_path, length(filename))
+    }
+    if (length(save_path) != length(filename)) {
+      stop("The argument save_path must be a single directory name or a vector of file names with the same length as the number of files to convert.")
     }
 
     # set up progress bar ----
@@ -66,10 +70,10 @@ pdf2grobid <- function(filename, save_path = ".",
       pb$tick(0)
     }
 
-    xmls <- lapply(filename, \(pdf) {
+    xmls <- mapply(\(pdf, sp) {
       args <- list(
         filename = pdf,
-        save_path = save_path,
+        save_path = sp,
         grobid_url = grobid_url,
         start = start,
         end = end,
@@ -81,7 +85,7 @@ pdf2grobid <- function(filename, save_path = ".",
                       error = function(e) { return(FALSE) })
       if (verbose()) pb$tick()
       xml
-    })
+    }, pdf = filename, sp = save_path)
 
     errors <- sapply(xmls, isFALSE)
     if (any(errors)) {
@@ -93,7 +97,8 @@ pdf2grobid <- function(filename, save_path = ".",
   } else if (dir.exists(filename)) {
     pdfs <- list.files(filename, "\\.pdf",
                        full.names = TRUE,
-                       recursive = TRUE)
+                       recursive = TRUE,
+                       ignore.case = TRUE)
     if (length(pdfs) == 0) {
       warning("There are no PDF files in the directory ", filename)
     }
@@ -125,12 +130,17 @@ pdf2grobid <- function(filename, save_path = ".",
   # save to save_path
   if (is.null(save_path)) {
     save_file <- tempfile(fileext = ".xml")
-  } else if (dir.exists(save_path)) {
+  } else if (dir.exists(save_path)) { # save_path is an existing dir
     base <- basename(filename) |>
       sub("\\.pdf", "", x = _, TRUE) |>
       paste0(".xml")
     save_file <- file.path(save_path, base)
-  } else {
+  } else { # save_path is a file name
+    # make subdirs if necessary
+    dir.create(dirname(save_path),
+               showWarnings = FALSE,
+               recursive = TRUE)
+
     save_file <- save_path |>
       sub("\\.xml", "", x = _, TRUE) |>
       paste0(".xml")

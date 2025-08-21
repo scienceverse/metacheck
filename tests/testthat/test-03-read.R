@@ -21,6 +21,13 @@ test_that("errors", {
   expect_error(read(bad_arg))
 })
 
+test_that("warnings", {
+  files <- c("examples/0956797613520608.xml",
+             "examples/badxml.xml")
+
+  expect_warning(read(files), "badxml\\.xml")
+})
+
 test_that("APA", {
   filename <- "formats/apa.xml"
   paper <- read(filename)
