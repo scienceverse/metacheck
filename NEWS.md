@@ -1,3 +1,7 @@
+# papercheck 0.0.0.9055
+
+* `pdf2grobid()` handles `save_path` batter if any path components don't exist yet. The argument `save_path` also now can take a vector of the same length as the number of PDFs to convert, so you can specify the name of each output XML.  
+
 # papercheck 0.0.0.9054
 
 * `osf_file_download()` now also retrieves files from linked storage

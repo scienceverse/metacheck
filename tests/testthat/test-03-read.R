@@ -144,6 +144,20 @@ test_that("TEI", {
   obs_bibtypes <- paper$bib$bibtype |> unique()
   exp_bibtypes <- c("Article", "Misc", "InCollection")
   # expect_equal(obs_bibtypes, exp_bibtypes)
+
+  # bib problem
+  # Error: <connection>:4: '\@' is an unrecognized escape in character string (<text>:1:67)
+  # handled by checking format for error s and replacing the formatted bib with the raw text
+  xml <- read_xml("problem_xml/paper_912.xml")
+  bib <- tei_bib(xml)
+  exp <- "Climate change impacts on global food security TWheeler VonBraun J 10.1126/science.1239402\\aftergroup\\futurelet\\@let@token\\egroup Science 341 2013 Wheeler, T., and Von Braun, J. (2013). Climate change impacts on global food security. Science. 341, 508-513. doi: 10.1126/science.1239402"
+  expect_equal(bib$ref[[70]], exp)
+
+  # is a problem with the DOI when trying to format a bib
+  refs <- xml2::xml_find_all(xml, "//listBibl //biblStruct")
+  ref <- refs[[70]]
+  bib <- xml2bib(ref)
+  expect_error( format(bib) )
 })
 
 test_that("Cermine", {

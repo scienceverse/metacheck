@@ -19,7 +19,7 @@ test_that("URL without http/https detected", {
 test_that("non-Grobid URL is rejected", {
   skip_if_not(curl::has_internet())
 
-  filename <- demoxml()
+  filename <- demopdf()
   expect_error(pdf2grobid(filename, grobid_url = "https://google.com"),
                "GROBID server does not appear up and running
      on the provided URL. Status: 404")
@@ -31,16 +31,72 @@ test_that("non-Grobid URL is rejected", {
 #   skip_if_offline("localhost")
 #   expect_error(pdf2grobid("no.exist", grobid_url = "localhost"), "does not exist")
 
-httptest::with_mock_api({
+skip_grobid <- function() {
+  skip("pdf2grobid") # comment out to run local tests
+  skip_on_covr()
+  skip_on_cran()
+}
+
+#httptest::with_mock_api({
 
 grobid_server <- "https://kermitt2-grobid.hf.space"
 old_groq <- Sys.getenv("GROQ_API_KEY")
 Sys.setenv(GROQ_API_KEY = "test") # doesn't need to be set with_mock_api
 on.exit(Sys.setenv(GROQ_API_KEY = old_groq))
 
+test_that("makes missing save directory", {
+  skip_grobid()
+  skip_if_offline("kermitt2-grobid.hf.space")
+
+  newdir <- file.path(tempdir(), "testnewdir")
+  if (dir.exists(newdir)) unlink(newdir, recursive = TRUE)
+
+  # single file, path with uncreated dir
+  save_path <- file.path(newdir, "file.xml")
+  filename <- demopdf()
+  obs_path <- pdf2grobid(filename, save_path = save_path)
+  expect_true(dir.exists(newdir))
+  expect_equal(obs_path, save_path)
+
+  # clean up
+  unlink(obs_path)
+  if (dir.exists(newdir)) unlink(newdir, recursive = TRUE)
+
+  # multiple files with uncreated dir
+  save_path <- newdir
+  filename <- list.files("debruine", "pdf", full.names = TRUE)[1:2]
+  obs_path <- pdf2grobid(filename, save_path = save_path)
+  exp_path <- sub("^debruine/", "", filename) |>
+    sub("\\.pdf", "\\.xml", x = _) |>
+    file.path(newdir, x = _) |>
+    setNames(filename)
+  expect_true(dir.exists(newdir))
+  expect_equal(obs_path, exp_path)
+  expect_true(file.exists(exp_path[[1]]))
+  expect_true(file.exists(exp_path[[2]]))
+
+  # clean up
+  unlink(obs_path)
+  if (dir.exists(newdir)) unlink(newdir, recursive = TRUE)
+
+  # multiple files with uncreated dir and specific file names (no .xml)
+  save_path <- file.path(newdir, c("A", "B"))
+  filename <- list.files("debruine", "pdf", full.names = TRUE)[1:2]
+  obs_path <- pdf2grobid(filename, save_path = save_path)
+  exp_path <- paste0(save_path, ".xml") |> setNames(filename)
+  expect_true(dir.exists(newdir))
+  expect_equal(obs_path, exp_path)
+  expect_true(file.exists(exp_path[[1]]))
+  expect_true(file.exists(exp_path[[2]]))
+
+  # clean up
+  unlink(obs_path)
+  if (dir.exists(newdir)) unlink(newdir, recursive = TRUE)
+})
+
 test_that("defaults", {
-  skip_on_covr()
-  skip_on_cran()
+  skip_grobid()
+  skip_if_offline("kermitt2-grobid.hf.space")
 
   filename <- demopdf()
   first_sentence <- "Although intentional dishonestly might be a successful way to boost creativity"
@@ -125,8 +181,7 @@ test_that("defaults", {
 })
 
 test_that("batch", {
-  skip_on_covr()
-  skip_on_cran()
+  skip_grobid()
 
   grobid_dir <- demodir()
 
@@ -147,8 +202,7 @@ test_that("batch", {
 
 
 test_that("local", {
-  skip_on_covr()
-  skip_on_cran()
+  skip_grobid()
   skip_if_offline("localhost:8070")
 
   local_url <- "http://localhost:8070"
@@ -208,4 +262,4 @@ test_that("local", {
 #
 #   })
 
-}) # end with_mock_api
+#}) # end with_mock_api

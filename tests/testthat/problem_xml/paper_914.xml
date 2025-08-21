@@ -1,0 +1,1401 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Sample Size Planning for Complex Study Designs: A Tutorial for the mlpwr Package</title>
+				<funder ref="#_eneAkfW">
+					<orgName type="full">Swiss National Science Foundation</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Felix</forename><surname>Zimmer</surname></persName>
+							<email>felix.zimmer@uzh.ch</email>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Evalua- tion and Statistics</orgName>
+								<orgName type="department" key="dep2">Department of Psychology</orgName>
+								<orgName type="laboratory">Psychological Methods</orgName>
+								<orgName type="institution" key="instit1">University of Zurich</orgName>
+								<orgName type="institution" key="instit2">University of Zurich</orgName>
+								<address>
+									<addrLine>Binzmuehlestrasse 14</addrLine>
+									<postBox>Box 27</postBox>
+									<postCode>8050</postCode>
+									<settlement>Zurich</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Evalua- tion and Statistics</orgName>
+								<orgName type="department" key="dep2">Department of Psychology</orgName>
+								<orgName type="laboratory">Psychological Methods</orgName>
+								<orgName type="institution" key="instit1">University of Zurich</orgName>
+								<orgName type="institution" key="instit2">University of Zurich</orgName>
+								<address>
+									<addrLine>Binzmuehlestrasse 14</addrLine>
+									<postBox>Box 27</postBox>
+									<postCode>8050</postCode>
+									<settlement>Zurich</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Evalua- tion and Statistics</orgName>
+								<orgName type="department" key="dep2">Department of Psychology</orgName>
+								<orgName type="laboratory">Psychological Methods</orgName>
+								<orgName type="institution" key="instit1">University of Zurich</orgName>
+								<orgName type="institution" key="instit2">University of Zurich</orgName>
+								<address>
+									<addrLine>Binzmuehlestrasse 14</addrLine>
+									<postBox>Box 27</postBox>
+									<postCode>8050</postCode>
+									<settlement>Zurich</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mirka</forename><surname>Henninger</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Evalua- tion and Statistics</orgName>
+								<orgName type="department" key="dep2">Department of Psychology</orgName>
+								<orgName type="laboratory">Psychological Methods</orgName>
+								<orgName type="institution" key="instit1">University of Zurich</orgName>
+								<orgName type="institution" key="instit2">University of Zurich</orgName>
+								<address>
+									<addrLine>Binzmuehlestrasse 14</addrLine>
+									<postBox>Box 27</postBox>
+									<postCode>8050</postCode>
+									<settlement>Zurich</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Evalua- tion and Statistics</orgName>
+								<orgName type="department" key="dep2">Department of Psychology</orgName>
+								<orgName type="laboratory">Psychological Methods</orgName>
+								<orgName type="institution" key="instit1">University of Zurich</orgName>
+								<orgName type="institution" key="instit2">University of Zurich</orgName>
+								<address>
+									<addrLine>Binzmuehlestrasse 14</addrLine>
+									<postBox>Box 27</postBox>
+									<postCode>8050</postCode>
+									<settlement>Zurich</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Rudolf</forename><surname>Debelak</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Evalua- tion and Statistics</orgName>
+								<orgName type="department" key="dep2">Department of Psychology</orgName>
+								<orgName type="laboratory">Psychological Methods</orgName>
+								<orgName type="institution" key="instit1">University of Zurich</orgName>
+								<orgName type="institution" key="instit2">University of Zurich</orgName>
+								<address>
+									<addrLine>Binzmuehlestrasse 14</addrLine>
+									<postBox>Box 27</postBox>
+									<postCode>8050</postCode>
+									<settlement>Zurich</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Evalua- tion and Statistics</orgName>
+								<orgName type="department" key="dep2">Department of Psychology</orgName>
+								<orgName type="laboratory">Psychological Methods</orgName>
+								<orgName type="institution" key="instit1">University of Zurich</orgName>
+								<orgName type="institution" key="instit2">University of Zurich</orgName>
+								<address>
+									<addrLine>Binzmuehlestrasse 14</addrLine>
+									<postBox>Box 27</postBox>
+									<postCode>8050</postCode>
+									<settlement>Zurich</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Sample Size Planning for Complex Study Designs: A Tutorial for the mlpwr Package</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">1EAE03C02717619DFB43B4A4C488843E</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2025-08-21T10:38+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>simulation</term>
+					<term>sample size</term>
+					<term>power analysis</term>
+					<term>machine learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>A common challenge in designing empirical studies is determining an appropriate sample size. When more complex models are used, estimates of power can only be obtained using Monte Carlo simulations. In this tutorial, we introduce the R package mlpwr to perform simulation-based power analysis based on surrogate modeling. Surrogate modeling is a powerful tool to guide the search for study design parameters that imply a desired power or meet a cost threshold (e.g., in terms of monetary cost). mlpwr can be used to search for the optimal allocation when there are multiple design parameters, e.g., when balancing the number of participants and the number of groups in multilevel modeling. At the same time, the approach can take into account the cost of each design parameter, and aims to find a cost-efficient design. We introduce the basic functionality of the package, which can be applied to a wide range of statistical models and study designs. Additionally, we provide two examples based on empirical studies for illustration: one for sample size planning when using an item response theory model, and one for assigning the number of participants and the number of countries for a study using multilevel modeling.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Reliable testing of scientific hypotheses requires a sufficiently large sample size. A ubiquitous challenge in empirical research is that recruiting large samples is difficult due to resource constraints (e.g., time, money, labor) or ethical constraints (e.g., inconvenience or participation risks). However, if the sample sizes are small, random noise can mask the true effects, e.g. with regard to observed behaviour or cognitive processes. In a formal hypothesis testing framework, this trade-off between resource constraints and statistical significance is best described by the measure of statistical power. Statistical power describes the probability of finding an effect that is actually present in the population of interest. In general, we want our sample size to be large enough to achieve high statistical power while using as few resources as necessary.</p><p>To address the challenges in finding a cost-efficient sample size while maintaining high statistical power, researchers can utilize power analysis tools to optimize their study designs. The mlpwr package provides a means to perform simulation-based power analysis for a broad class of applications <ref type="bibr">(Zimmer &amp; Debelak, in press)</ref>. It fills two previously existing gaps in the literature by allowing for user-defined scenarios with multiple design parameters and explicitly accounting for the cost of study designs during the search algorithm. As <ref type="bibr" target="#b22">Lakens (2022)</ref> recently pointed out, there are many power analysis tools available, but learning to use them effectively takes time. In response to this issue, we provide an introduction to the background and the applica-tion of the mlpwr package.</p><p>This paper is aimed at researchers who want to perform power analysis for complex statistical models, specifically those requiring Monte Carlo simulations. To effectively use the approach outlined in the paper, readers should possess a fundamental understanding of R and be proficient in setting up simulated hypothesis tests, which includes artificial data generation and model fitting.</p><p>The remainder of this introduction provides an overview of power analysis for complex study designs, including the motivation behind it, different approaches to conducting power analysis, a brief review of previous research, and an overview of our framework. In Section 2, we introduce the mlpwr package with a basic example and gradually progress towards more complex usage scenarios. Finally, in Section 3, we demonstrate the practical application of the package by presenting two examples based on empirical studies utilizing item response theory and multilevel modeling models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.1">Motivation</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.1.1">Justifying Sample Sizes</head><p>The recent replication crisis has put low statistical power and replicability of scientific research into focus <ref type="bibr" target="#b6">(Button et al., 2013;</ref><ref type="bibr">Open Science Collaboration, 2015)</ref>. Starting from the observation that most published research results might be wrong <ref type="bibr" target="#b18">(Ioannidis, 2005;</ref><ref type="bibr" target="#b38">Simmons et al., 2011)</ref>, there have been several developments to improve the replicability of scientific studies <ref type="bibr" target="#b37">(Shrout &amp; Rodgers, 2018)</ref>. One of these are registered reports, in which research projects are reviewed and conditionally accepted based on sound methodology rather than on the statistical significance of the result. In registered reports, justification of sample size based on power analysis is usually mandatory. For example, in the journal Nature Human Behavior, the sample size should be large enough to achieve at least 95% statistical power <ref type="bibr">(Nature Human Behaviour, 2022)</ref>. Looking at recent developments, registered reports are indeed accompanied by more frequent justification of sample size <ref type="bibr" target="#b39">(Soderberg et al., 2021)</ref>. Another means to ensure replicability is through pre-registrations, where key properties of the planned research are fixed before data collection and statistical analyses. A study by <ref type="bibr" target="#b1">Bakker et al. (2020)</ref> found that pre-registered stud-ies had larger sample sizes than earlier psychological studies. However, the study did not find that explicit recommendations for performing power analysis led to larger sample sizes. Although the sample size is still often only stated but not justified <ref type="bibr" target="#b22">(Lakens, 2022)</ref>, stating and justifying a sample size before conducting a study is arguably becoming common practice.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.1.2">Multiple Design Parameters</head><p>In addition to sample size, a study can be characterised by other adjustable design parameters that influence statistical power. Instead of only one study design parameter (e.g., sample size) a study design can then be characterized by a set of two or more study design parameters. For example, the design parameters may consist of the sample size plus • the number of measured time points in a longitudinal design,</p><p>• the number of questionnaire items,</p><p>• the number of trials per participant in an experimental design (see also <ref type="bibr" target="#b0">Baker et al., 2021)</ref>, or</p><p>• the number of groups in a multilevel design.</p><p>In these examples, calculating the power and finding a good study design can be much more difficult than if there is only one design parameter.</p><p>As an illustrative example, we consider testing the effect of a novel reading exercise on the reading competency of elementary pupils. To ensure the reliability of our results, we want to collect pupils from multiple schools. We set up two conditions that differ in whether an older reading exercise or the novel exercise is used. Within each school, half of the pupils get administered the old exercise and half the new one. We use a multilevel/mixed-effects model to analyse the data and specify a random intercept and slope for the different schools. This is done to control for different baseline reading skills as well as potential differences in the effectiveness of the exercise in the different schools. As a predictor, we include the type of reading exercise (old versus new). The design parameters are a set of the number of schools and the number of pupils per school. We want to find out how many pupils from how many schools are sufficient for our research design to have a power of .95.</p><p>Figure <ref type="figure">1</ref> shows the power as a function of the number of schools and the number of pupils per school on the x-and y-axis. The surface shows the power for all sets Figure <ref type="figure">1</ref> Power for Multiple Design Parameters Note. The surface displays the power levels for all design parameter sets. The brighter colors indicate higher power values, whereas darker colors correspond to lower values. Design sets marked with a line correspond to a power of .95. The optimal design parameter set when also accounting for costs is marked with a dot. of design parameters (including designs that are not realistic because they use fractions of pupils or schools). The brighter colors indicate higher power values, while the darker colors indicate lower ones. As we will go into detail below, obtaining this relationship between the design parameters and power can be complicated and computationally intensive, depending on the specific study design and hypothesis test we consider.</p><p>As can be seen in Figure <ref type="figure">1</ref>, we have multiple options to pick from if we want to choose a set of design parameters that corresponds to a specific power. To help in our example, we have highlighted all sets with a power of .95 with a line. For example, 22 pupils each from 17 schools and 11 pupils each from 21 schools would both correspond to a power of approximately .95. Such design sets are termed power-equivalent in the literature <ref type="bibr" target="#b41">(von Oertzen et al., 2010)</ref>. They underline the fact that a power analysis in multiple dimensions is more com- .949 6000 plex, as there is no simple answer to our question of which design to choose.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.1.3">Costs of Study Designs</head><p>When we need to choose one design, we can usually distinguish between designs that are power-equivalent using the required resources, such as the financial costs to recruit more participants or increase the number of groups.</p><p>For our example above, we want to assume that the elementary school students participate without compensation. However, producing one set of exercise material costs $100. We assume that the study is conducted by the same investigators in each school, therefore this exercise material can be reused in all schools. Also, performing the evaluation with another group of pupils in an additional school produces costs of $200. We can express the total costs of our study as follows:</p><formula xml:id="formula_0">Cost = 100 • Pupils per School + 200 • Schools</formula><p>We can use this function to calculate the costs for three promising design parameter sets, see Table <ref type="table" target="#tab_0">1</ref>. If we continue evaluating the costs for all promising candidate sets, we find that only one of the power-equivalent designs on the line in Figure <ref type="figure">1</ref> is optimal with respect to the overall study cost. This design (11 pupils per school and 21 schools) is marked with a dot.</p><p>Finding such cost-optimal designs in the presence of multiple design parameters can be very computationally intensive with currently available implementations. The mlpwr package we introduce in this paper is aimed to provide an efficient approach that is easily accessible.</p><p>Another challenge that can arise in the context of multiple design parameters is that there is a strict limit on resources, such as a maximum budget for a study. In this case, one wants to find a design with maximum power among designs that are similar in terms of cost.</p><p>For example, if two experimental designs are associated with a cost of $1,000, we would prefer a set of parameters with a power of .9 over a set with a power of .8. The design with a power of .9 might then be the best compromise given the cost constraint. Also for this scenario, the mlpwr package aims to provide an efficient solution.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.2">Approaches to Power Analysis</head><p>Before we present our implementation to find optimal designs in these scenarios, we want to give an overview over power analysis methodology and implementations. Methodologically, two approaches can be distinguished for determining the power of a study. One is the analytical or formula-based approach. It is generally fast but sometimes unavailable, in particular for more complex or uncommon statistical hypothesis tests <ref type="bibr" target="#b22">(Lakens, 2022</ref>). An alternative approach with higher availability but higher computational effort is the simulation-based approach. Both analytical and simulation-based approaches can be used in the presence of multiple design parameters.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.2.1">Analytical Approach</head><p>In analytical approaches, the known mathematical relationship between design parameters and statistical power is the basis for power analysis. This is illustrated in the left panel in Figure <ref type="figure" target="#fig_0">2</ref>. It shows the power for using a dependent t-test to detect a mean difference between two measurement time points. With such a graph describing the relationship between sample size and power, we can determine the power for a given sets of study design parameters or sets of design parameters with a desired power.</p><p>There are well-known implementations of analytical power analysis. Examples include the standalone G*Power software <ref type="bibr" target="#b13">(Faul et al., 2009)</ref> or the pwr package <ref type="bibr" target="#b9">(Champely, 2020)</ref> implemented in R (R Core <ref type="bibr" target="#b30">Team, 2022)</ref>.</p><p>The speed of analytical approaches makes them the first choice for simpler models. However, a slight change in the study design and the hypothesis test in question may require a different analytical treatment. This is because it can be difficult or even impossible to derive analytical formulas for more complex models (such as determining the power to test a random effect in a multilevel model, <ref type="bibr" target="#b11">Cools et al., 2008)</ref>. For this reason, a common challenge is that analytical solutions are unavailable <ref type="bibr" target="#b22">(Lakens, 2022)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.2.2">Simulation-Based Approach</head><p>The simulation-based approach is based on repeated simulation of the desired study. Each simulation run involves generating artificial data, fitting a statistical model, and performing a statistical test. The resulting rate of significant test results across simulation runs serves as an estimate of statistical power. When we perform a simulation-based power analysis, we want to repeat this process several times for different sample sizes or, put more generally, for different sets of study design parameters.</p><p>The result of this approach is shown in the right panel of Figure <ref type="figure" target="#fig_0">2</ref> for our illustrative example. As indicated by the error bars, we receive estimates together with their uncertainty for the power at the different sample sizes. For each sample size, the error bars indicate the standard error of the estimated power. The estimated power for a given sample size may differ from the true power and becomes more accurate if we increase the number of simulation runs. Moreover, compared to an analytical approach, we can only get an approximation of the overall relationship between sample size and power. Determining the optimal sample size, e.g., to achieve a power of .95, can therefore be computationally intensive.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.3">Guiding Simulation-Based Power Analysis</head><p>Without using systematic methodology to guide a simulation-based methodology, one can perform a manual search for a suitable set of design parameters. Manual search involves estimating power for a particular set of design parameters and then repeating the procedure for a different set of design parameters based on the result and subjective evaluation. It should be noted that this procedure is much easier if there is one design parameter compared to multiple parameters. For example, if there is only sample size, and the estimated power is too low for a specific sample size, we can continue searching among higher sample sizes. If we consider a set of multiple design parameters, it is much more difficult to decide which design parameter set to try next. As we have seen in Table <ref type="table" target="#tab_0">1</ref>, promising sets can be far apart from each other. In such situations, it can be difficult to find all good candidate sets, even if we have already stumbled across some. Therefore, depending on the computational complexity of individual simulations, a manual search may not be computationally feasible, especially for multiple design parameters. In addition, manual search is not guaranteed to find optimal parameter sets in terms of power or cost. This is because in scenarios with multiple design parameters, we may completely miss the region where the optimal set of design parameters is located during a manual search.</p><p>To compensate for these drawbacks, especially when individual simulation runs take a long time, we need additional tools to guide simulation-based power analyses. The goal of these tools is to increase computational efficiency in approximating a set of design parameters with desired power and cost.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.3.1">Basic Methods</head><p>One basic method to guide a simulation-based power analysis is to systematically search a grid of plausible parameter values. It is commonly applied for study designs with one design parameter and often sufficient in this case. There are many available implementations of grid search for simulation-based power analysis that provide additional support for specific applications. Examples include simr for multilevel models <ref type="bibr" target="#b16">(Green &amp; MacLeod, 2016)</ref>, mc_power_med for mediation models <ref type="bibr" target="#b36">(Schoemann et al., 2017)</ref>, or PowerLAPIM for inten-sive longitudinal designs <ref type="bibr" target="#b21">(Lafit et al., 2022)</ref>. To facilitate the decision for a specific study design, one can repeat the grid search with iteratively smaller grids. As a more standardized alternative, a bisection search algorithm to systematically narrow down on a suitable sample size was suggested by <ref type="bibr" target="#b44">Williams et al. (2007)</ref> and Jung <ref type="bibr">(2008)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.3.2">Surrogate Modeling</head><p>When we consider study designs with multiple design parameters, guiding a simulation based power analysis becomes more difficult. This is because the power associated with a single design parameter set can take a long time to estimate and the possible number of design parameter sets becomes much larger when there are multiple design parameters. Surrogate modeling represents a straightforward solution to this problem. The idea of surrogate modeling is to approximate a relationship that is very costly to investigate with a function that is cheaper to evaluate <ref type="bibr" target="#b3">(Bhosekar &amp; Ierapetritou, 2018;</ref><ref type="bibr" target="#b14">Forrester &amp; Keane, 2009)</ref>. One early example application is the relationship between geographic location and groundwater quality <ref type="bibr" target="#b33">(Razavi et al., 2012)</ref>. To study this relationship optimally, for example, to find optimal sites for groundwater remediation, we would need to study groundwater quality at countless sites. A more economical option is to test fewer sites and use a surrogate model for the relationship between site and groundwater quality. Using the fitted surrogate model, one can then make predictions about water quality at untested sites based on water quality at neighboring sites. Once a site of interest is identified, one can test the groundwater there to measure quality. Then one can expose the surrogate to this newly collected data and adjust it accordingly. At the end of this iterative process, an optimal site for groundwater remediation can be found, requiring only a small number of actual tests.</p><p>Another example of surrogate modeling can be found in psychophysics, where a psychometric function such as a logistic or Weibull function is used to model the relationship between stimulus intensity and perception intensity <ref type="bibr" target="#b23">(Leek, 2001)</ref>. The function describes the probability of perceiving a stimulus at a certain intensity, and, once fitted, can be used to predict the stimulus intensity at which the perception threshold (i.e., 50% perceived) is reached <ref type="bibr" target="#b43">(Watson &amp; Pelli, 1983)</ref>.</p><p>We can also adopt the idea of surrogate modeling to the functional relationship between study design parameters and power. For the right panel of Figure <ref type="figure" target="#fig_0">2</ref>, we had estimated power for a range of sample sizes. For the purpose of an example, we want to find a sample size that corresponds to a power of .95. We can use logistic regression as a surrogate model to fit this relationship, see Figure <ref type="figure" target="#fig_1">3</ref>. Through this fitted model, we obtain a good idea of the relationship between sample size and power, similar to the known functional relationship in an analytical power analysis. We can use this functional relationship to predict the power for a sample size that we did not perform a simulation at beforehand. For example, for a sample size of N = 100, the power can be predicted to be .680. We can also obtain a guess for which sample size will imply our desired power of .95. Accordingly, we would next perform further simulations using a sample size of N = 204. Afterwards, we can fit our surrogate model again to refine our idea of the relationship between sample size and power. In this way, we can iteratively approach a suitable sample size.</p><p>Surrogate modeling is computationally more efficient than manual search or grid search. With surrogate modeling, a small number of simulations can be sufficient to obtain an idea of the overall relationship and appropriate design parameter sets. This is particularly pronounced with multiple dimensions of design parameters. Since there are many possible options, it can be very difficult to select the next set of design parameters to estimate performance in a manual search. Also, in a grid search, the computational cost can be very high if we want to estimate the performance for a larger number of design parameter sets. Surrogate modeling can be more efficient than grid search even when there is only one design parameter: In a simple example comparing it to a grid search reported in <ref type="bibr" target="#b16">Green and MacLeod (2016)</ref>, our approach required only a fifth of the computational effort <ref type="bibr">(Zimmer &amp; Debelak, in press</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.4">Previous Research and Implementations</head><p>Surrogate modeling in the context of optimizing the power of a study design has already been applied in multiple studies, including clinical trials and network models. In this section, which is aimed more at the technically interested reader, we provide an overview of these. <ref type="bibr" target="#b28">Mulay et al. (2021)</ref> applied surrogate modeling of power in three scenarios: A linear regression, logistic regression, and a repeated measures ANOVA. As design parameters, they varied not only the sample sizes, but also the model parameter weights, e.g., the regression weights. To predict the power as a function of the study design parameters and the model parameter weights, their most successful surrogate model was an approach using a neural network. Presumably because they focused on describing the overall power function, they did not apply an iterative algorithm to find an optimal constellation of study design parameters. To find an optimal design parameter set, the use of an iterative algorithm is usually a better strategy in terms of computational cost. We also use one in the package mlpwr to focus computational resources on finding promising design parameter sets. <ref type="bibr" target="#b45">Wilson et al. (2020)</ref> use surrogate modeling in the context of a clinical trial. They apply a multilevel model and consider multiple study design dimensions. Since their statistical approach has an unknown alpha error, they optimize for a desired alpha error alongside a desired statistical power. They use R to implement their surrogate model algorithm, and find a selection of suitable sets of design parameters. One drawback of the approach is that cost of the parameter sets is not taken into consideration during the search. This can be computationally suboptimal if many simulations are performed for design parameter sets that are relatively cost-intensive. An approach that takes the cost of design parameter sets into account during the search would be more desirable for computational efficiency. By considering cost, we can discard design parameter sets that have promising power but high cost (such as the third set in Table <ref type="table" target="#tab_0">1</ref>) early during the search.</p><p>Another application for clinical trial designs was recently published by <ref type="bibr" target="#b34">Richter et al. (2022)</ref>. They performed optimization of multiple study design parameters for an adaptive seamless design <ref type="bibr" target="#b15">(Friede et al., 2020)</ref>. They considered multiple design parameters, such as a proportion of participants allocated to different stages of the research design, but the total sample was held fixed. For their surrogate model implementation, they used the mlrMBO package <ref type="bibr" target="#b4">(Bischl et al., 2017)</ref>. mlrMBO is a flexible and comprehensive implementation of surrogate modeling written in R. In their study, <ref type="bibr" target="#b34">Richter et al. (2022)</ref> found that surrogate modelling allows suitable designs to be found in a fraction of the time required by an exhaustive grid search. Because the total sample size was held constant in their example, the cost of the design parameter sets did not need to be considered in the search algorithm. However, this may be desirable in other scenarios where costs vary more between design parameter sets. <ref type="bibr" target="#b10">Constantin et al. (2021)</ref> applied a surrogate modeling approach to find adequate sample sizes for network models. For network models, power usually refers to achieving a desired performance measure, such as a desired sensitivity, rather than significant p-values. They provide the powerly R package which is also available on CRAN. It supports optimization in one design parameter dimension and applies monotone splines as a surrogate model. While the package is designed for network models, it can also accommodate a wide range of other statistical models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.5">Our Framework</head><p>In a recent manuscript, we proposed a novel surrogate modeling framework for finding optimal designs <ref type="bibr">(Zimmer &amp; Debelak, in press</ref>). Our framework is based on the core ideas of iterative data collection and predictions, as described in Section 1.3.2, and can be located in the literature alongside existing approaches for modeling statistical power in multiple design parameter dimensions, such as those presented by <ref type="bibr" target="#b45">Wilson et al. (2020)</ref> and <ref type="bibr" target="#b34">Richter et al. (2022)</ref>.</p><p>As an implementation of our framework, we developed the mlpwr R package, which can be applied to a wide range of study designs and statistical hypotheses. The package closes two gaps in the literature by providing an implementation for multiple study design parameters and allowing for the consideration of costs during optimization. By taking cost into account, our framework enables a more efficient search for optimal designs compared to other approaches, such as the one presented by <ref type="bibr" target="#b45">Wilson et al. (2020)</ref>, where a selection by cost can only be performed after identifying suitable design parameter sets.</p><p>Our algorithm involves repeated phases of simulated hypothesis tests and the prediction of suitable study designs. In the Appendix, we provide a detailed description of the algorithm and its phases.</p><p>In an extensive simulation study, we demonstrated the accuracy of our framework for a range of different scenarios, including t-tests, ANOVA, item response theory (IRT) models, multilevel models, and multiple imputation <ref type="bibr">(Zimmer &amp; Debelak, in press)</ref>.</p><p>It is important to note that our framework is designed to address a broad class of study design scenarios, which may result in less-than-optimal performance in specific situations. For example, as we take a general function approximation approach to model the relationship between study design and statistical power, there will be less flexible approaches that offer better solu-tions for specific scenarios. However, by prioritizing good results across different scenarios, we believe that our framework can be a valuable tool for power analysis in practice.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">The mlpwr Package</head><p>This section introduces how to find optimal study designs using the mlpwr package. To begin, we present an illustrative example to showcase the basic functionality of the package. Next, we delve into more complex usage scenarios and introduce them alongside specific topics, such as setting up simulation functions, terminating and continuing a search, selecting a surrogate model, and managing multiple design dimensions.</p><p>The mlpwr package is intended as an easy-to-use interface to performing the surrogate modeling approach to study design finding. Since optimization of power is a very specific use case of surrogate modeling, the mlpwr package provides a specifically tailored interface on top of its own implementation of surrogate modeling. This serves the purpose of simplifying the use of surrogate modeling compared to directly using more general implementations, e.g. mlrMBO.</p><p>This tutorial uses version 1.1.0 of the mlpwr package. It is available on CRAN 1 . All code used in this tutorial paper is also available in the supplementary material at <ref type="url" target="https://osf.io/xebsj/">https://osf.io/xebsj/</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">An Illustrative Example</head><p>First, we will go through a simple example to show the basic functionality of the package for determining a sample size. We will cover additional functionality and options in Sections 2.2 to 2.6. We therefore consider the evaluation of a medical intervention to reduce the symptoms of a cold. Our goal is to determine a suitable sample size for a study that examines the utility of the intervention. Specifically, we want to test whether the within-person difference in symptoms of a cold between two time points (before and after an intervention) differs from 0. For the sake of simplicity, we assume that the cold symptomatic is measured using real values. We furthermore assume that the intervention has a small effect size of Cohen's d = 0.3 and apply a student's t-test within subjects using an alpha level of .01.</p><p>As a prerequisite to the surrogate modeling procedure, we express a single simulation run in a simulation function simfun_cold. It takes the study design as input and outputs an indication of significance: simfun_cold &lt;-function (N) { # Generate a data set dat &lt;-rnorm (n = N, mean = 0.3 , sd = 1) # Test the hypothesis res &lt;-t.test (dat) res$p.value &lt; 0.01 }</p><p>In the simulation function, the object dat, which corresponds to artificial data, is first generated based on the sample size N. This data set contains the reduction of cold symptoms between the two time points for each person in the study. We then perform the planned ttest to test whether the reduction of cold symptoms differ from 0, and obtain a p-value. Finally, the output of simfun_cold is either TRUE if the p-value is less than .01 and FALSE otherwise. To obtain an estimate of the statistical power for a sample size N = 120, we can repeatedly execute simfun_cold(N = 120) and obtain the rate of successful tests. For further guidance on setting up a simulation function in more advanced settings, see Section 2.2.</p><p>We can now use the simulation function simfun_cold as an input to the find.design function in mlpwr to perform the search using surrogate modeling. As boundaries to search within, we want to specify 100 participants as a lower bound and 300 participants as an upper bound. We can do this by specifying the vector c(100, 300) in the boundaries argument. We could also put this vector inside a list, specifying that the boundaries refer to the sample size n: list(n = c(100, 300)). This will be more useful later when we consider multiple design parameters. Furthermore, we indicate that we search for the sample size that corresponds to a power of .95. res &lt;-find.design ( simfun = simfun_cold , boundaries = c(100 , 300) , power = 0.95)</p><p>We can display a summary of the results with summary(res):</p><p>Call:</p><p>1 install.packages("mlpwr") can be used to install the package. It can be loaded using library(mlpwr). In the console output, we can read off the sample size predicted by the algorithm, as well as the estimated power and estimated uncertainty (standard error, SE) for this design. In this example, the final predicted sample size was N = 203 and the power was estimated to be .95096 for this sample size (S E = 0.0041). The summary also provides further information about the search. Accordingly, the simulation function was evaluated 4000 times, the calculation took 1.16 seconds in total, and the updating phase was performed 16 times. During each updating phase, the simulation function is evaluated at promising locations. Technical details such as the number of evaluations during each update and more information about the different algorithm phases are described in the Appendix. A logistic regression was used here as the surrogate model. We will go over the surrogate models and the available options in more detail in Section 2.4.</p><p>We can obtain a graphical representation of the result by using plot(res), see Figure <ref type="figure">4</ref>. The black dots in this plot indicate the estimated power for all simulated sample sizes. The gray ribbon shows the estimated standard error for all sample sizes within the boundaries (see Section 2.4 for more details on its calculation). The graph illustrates the efficiency of the surrogate modeling method, namely that the algorithm leads to a concentration of search effort in the promising region. This can be seen from the fact that many of the simulated data points are close to the optimal value around N = 200. This speeds up the search considerably, especially for more complicated designs, as we will see below.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Simulation Function</head><p>The simulation function requires the study design parameters as input and returns an indication of signifi- 1. Generating a data set. This can be done using an object that contains a fitted model or via specifying the model parameters directly.</p><p>2. Testing the hypothesis. This usually first involves fitting a statistical model to the generated data.</p><p>Using the model, we can perform a statistical test and output the significance.</p><p>In most cases, the test of the hypothesis is more straightforward for applied researchers, as it is a standard use case of R packages and taught in many statistics courses. Generation of artificial data is however less often practiced and may be unfamiliar to applied researchers. An important prerequisite for generating data and planning a study design in general is the determination of the expected size of the effect to be studied <ref type="bibr" target="#b22">(Lakens, 2022)</ref>. There are many definitions of effect size that depend heavily on the statistical model used (e.g., <ref type="bibr" target="#b5">Brysbaert &amp; Stevens, 2018;</ref><ref type="bibr" target="#b8">Chalmers, 2022;</ref><ref type="bibr" target="#b24">Lorah, 2018)</ref>. Options to determine an effect size include using the results of a meta-analysis, consulting with experts, or conducting a pilot study. To assist with data generation, many R packages offer special functions that can greatly help with this step. Examples are the simulate function in the lme4 package <ref type="bibr" target="#b2">(Bates et al., 2015)</ref> and the simdata function in the mirt package <ref type="bibr" target="#b7">(Chalmers, 2012)</ref>. These functions can be used as a part of simulation functions to generate a data set with the desired study design parameters, such as a desired sample size. Because of this possibility, the mlpwr package is highly compatible with any existing artificial data generation functions in other packages and can be used in combination with them.</p><p>To give some examples of how to set up simulation functions, including using data generation functions from other packages, we provide the vignette simulation_functions.Rmd 2 . Here, we collect different example simulation functions. These are fully functional simulation functions that can serve as a blueprint and starting point for adaptation to your own use case. The amount of customization required may vary depending on your planned scenario of data generation and hypothesis testing. The included templates are from the following areas and use the respective R packages:</p><p>• t-Test, ANOVA, and generalized linear models using the stats package (R Core Team, 2022)</p><p>• Item response theory models using the mirt package <ref type="bibr" target="#b7">(Chalmers, 2012)</ref> • Multilevel models using the lme4 package <ref type="bibr" target="#b2">(Bates et al., 2015)</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Terminate and Continue</head><p>In the course of the surrogate modeling algorithm, many evaluations of the simulation function are performed to obtain power estimates. By default, find.design terminates after 4000 evaluations of the simfun. To change this according to your needs, you can set the evaluations argument of the function to a custom value. Another option for termination is reaching a specified certainty about the estimated power for the predicted study design. Using ci = .03, for example, we can indicate that we want to reach a 95% confidence interval with a width of .03 or smaller for the power estimate. Finally, we can specify a number of seconds after which the function should terminate via the time argument. We can set multiple criteria for ter-mination, in which case the algorithm ends if at least one of them is met. For example: res &lt;-find.design ( simfun = simfun_cold , boundaries = c(100 , 300) , power = 0.95 , evaluations = 2000 , ci = 0.03 , time = 2)</p><p>In this case, the algorithm would terminate when either at least 2000 evaluations of the simulation function have been performed, the estimated confidence interval width is less than .03, or more than two seconds have elapsed.</p><p>In case the result found by find.design should still be improved further, you can continue a terminated search at any time, e.g., if more evaluations should be performed or the confidence interval width should be even smaller. The simplest way to do so is via:</p><formula xml:id="formula_1">res_continued &lt;- find.design ( continue = res)</formula><p>This way, the algorithm is continued using all previously performed simulation function evaluations. You do have the option to specify different termination criteria than before at this point. If not, all previously specified options are retained (e.g., time, ci, evaluations). One use case would be to first run the algorithm for one minute with time = 60 and then continue the search for five minutes with time = 300.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Surrogate Models</head><p>During the search, the surrogate models are used to fit the relationship of design parameters and power to determine the next search location, see Figures <ref type="figure" target="#fig_1">3</ref> and<ref type="figure">4</ref>. By default, find.design uses a logistic regression when one design dimension is used (e.g., when only sample size is searched for) and Gaussian process regression (GPR) when multiple design dimensions are used (e.g. in multilevel models when sample size and the number of clusters are searched for). Technically spoken, in GPR, the design parameter space is modelled as a collection of random variables <ref type="bibr" target="#b32">(Rasmussen &amp; Williams, 2006)</ref>. The relationship of the estimates of neighbouring points is described through a specific 2 Vignettes contain additional guidance for packages. This vignette can be retrieved at <ref type="url" target="https://cran.r-project.org/package=mlpwr">https://cran.r-project.org/ package=mlpwr</ref> or using browseVignettes("mlpwr") after installing the mlpwr package. covariance function, which functions as a prior. This is one of the major advantages of GPR: One can estimate not only the power but also the error variance of sets of design parameters that have not been simulated yet. We make use of this property to create the gray ribbon in Figure <ref type="figure">4</ref> of the illustrative example. The variance estimated using GPR is used to gain more insight into the collected data by showing which ranges of sample sizes have been closely investigated and which remain unexplored. It is important to note that this gray ribbon is always calculated using GPR, even if the line in the plot represents a different fitted surrogate model (e.g., logistic regression). As an alternative to GPR, one may use support vector regression (SVR). Based on more general work on surrogate modeling, SVR can be expected to perform better than GPR for higher numbers of design parameter dimensions <ref type="bibr" target="#b19">(Jia et al., 2020)</ref>. However, as SVR generally takes longer than GPR and offers similar performance in the simulation studies in Zimmer and Debelak (in press), we recommend leaving the surrogate model settings at their default. Nevertheless, based on future research, specific surrogate models may emerge as beneficial for specific scenarios, and the default surrogate models could be modified.</p><p>The surrogate models can be chosen via the surrogate argument, for example by: res &lt;-find.design ( simfun = simfun_cold , boundaries = c(100 , 300) , power = 0.95 , surrogate = "svr ")</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.5">Multiple Design Dimensions</head><p>We turn again to our example in the Introduction (Section 1.1.2), where we wanted to evaluate a reading exercise and tried to find adequate numbers of pupils per school n.per.school and number of schools n.schools. We apply a multilevel model and test the new versus an old reading exercise as a fixed effect. To account for a potentially different effectiveness of the reading exercise among the schools, we include the schools via a random intercept and slope. In the interest of brevity, we include the simulation function simfun_multilevel in the file papercode.Rmd in the online supplement. It has the two arguments n.per.school and n.schools and outputs either TRUE or FALSE depending on the significance of the hypothesis test.</p><p>As we observed in Figure <ref type="figure">1</ref> and Table <ref type="table" target="#tab_0">1</ref>, there are multiple design parameter sets that correspond to a power near .95. To differentiate among those, we assumed that each exercise material costs $100 and every additional school implies additional costs of $200. We can express the overall cost of the study with a cost function in R: The result shows that the optimal design is to test 12 pupils in each of a total of 20 schools. This design will produce a total cost of $5,200. All further output is identical to the one-dimensional use case.</p><p>To visualize the result, plot(res) produces a two dimensional plot, see Figure <ref type="figure">5</ref>. Here, we can see all design parameter sets for which simulations have been performed as black dots. A purple 'X' highlights the optimal design and a red line indicates all parameter sets that have the same cost as the optimal design. Additionally, a heat map illustrates the power as estimated by the surrogate model: Design parameter sets with a power closer to the desired power are shown in a darker blue.</p><p>As mentioned above, another usage scenario than reaching a desired power is to reach a maximum power given a cost threshold. This can be relevant when there is a limit to the available resources, e.g., a maximum grant budget. The search for a design can then be performed by replacing the power argument with a cost argument. For example, to search the set with the highest power among all sets that involve a cost of $4,500 or less, we can use: res &lt;-find.design ( simfun = simfun_multilevel , costfun = costfun_multilevel , boundaries = list( n.per.school = c(5, 25) , n.schools = c(10 , 30)), cost = 4500)</p><p>Knowing that the optimum for a power of .95 went along with a cost of $5,300, we can expect that the power of the optimal value is lower for this scenario.</p><p>The output of the find.design function can be viewed using summary(res):</p><p>Call: find.design ( simfun = simfun_multilevel , boundaries = list( n.per.school = c(5, 25) , n.schools = c(10 , 30)), costfun = costfun_multilevel , cost = 4500) Design : n.per.school = 13, n.schools = 16</p><p>Power: 0.87623 , SE: 0.00566 , Cost: 4500 Evaluations : 4000 , Time: 348 .96 , Updates : 32 Surrogate : Gaussian process regression</p><p>The resulting plot is shown in Figure <ref type="figure">6</ref>. From this plot, we can confirm that the optimal design has a power of about .88. Please note it is also possible to find optimal designs with more than two design dimensions, see the vignette extensions.Rmd.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.6">Additional options</head><p>One set of additional options concerns the specifics of the surrogate modeling algorithm. The initialization phase of the algorithm, to which the following arguments refer, and the other phases of the algorithm are explained in more detail in the Appendix. Additional options include the number of sets of design parameters (n.startsets, default is 4), or the percentage of total evaluations used during initialization (init.perc, default is 20%). These are available for experimentation or for when the default settings should not lead to satisfying results.</p><p>For example, increasing the percentage of evaluations or the number of points during initialization can be useful if the surrogate model initially fails to capture the shape of the power function. To know if this was the case, one can find the number of failed surrogate model fits using res$n.bad.fits, given that res was created by the find.design function.</p><p>In case the evaluations of the simulation function take longer, it might be advisable to backup intermediate results to prevent the loss of data. This can be done by indicating a directory to save the generated files at using the autosave_dir argument.</p><p>To investigate the simulated data during the algorithm in more detail, you can use the simulations_data function.</p><p>It outputs a data frame that, for each set of design parameters, includes the cost, the estimated power and SE, the surrogate model estimated power and SE, and the number of performed evaluations. Here, the power is estimated using the proportion of significant hypothesis tests among the performed evaluations. The SE is estimated using p(1p)/n, where p is the estimated power and n is the number of performed evaluations. It should Power be noted that, for the estimation of SE using a surrogate model, GPR is employed because it is capable of variance estimation, unlike the other surrogate models.</p><p>To allow more experimentation, we have included the possibility to change the options of the surrogate models. This can be done via the control argument of the find.design function. All arguments specified here are passed on to the respective model function. One example for GPR is to specify the above mentioned covariance function by setting control = list(covtype = "gauss").</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Practical Examples</head><p>We further demonstrate the package with two practical examples inspired by recent studies. The first study set out to investigate fairness in a test for scientific reasoning and applied IRT models <ref type="bibr" target="#b29">(Opitz et al., 2021)</ref>. Based on the original data set, we determine a suitable sample size to achieve a power of .95. The second study evaluated an intervention to increase psycholog-ical resilience in an international sample and applied a multilevel modeling approach <ref type="bibr" target="#b42">(Wang &amp; Rhemtulla, 2021)</ref>. Again based on the original data, we determine the number of countries and participants that would be needed for a replication study.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Example 1: Item Response Theory</head><p>A common challenge in developing educational tests such as PISA (OECD, 2017) is ensuring fairness. One factor that can lead to unfairness in a test is when certain groups have advantages they should not have. An example for PISA would be if an item is less difficult in one language version than in another. For example, English-speaking participants may have an unfair advantage in this case. When the same item can be easier or more difficult in different language versions, this is referred to as differential item functioning (DIF) in the IRT literature. <ref type="bibr" target="#b29">Opitz et al. (2021)</ref> investigated DIF for a test of scientific reasoning. They hypothesized that some specific items might be easier for individuals with a physics degree than for individuals with a biology degree or vice versa. One possible explanation is that some items do not exclusively measure scientific thinking but also benefit from domain-specific knowledge.</p><p>We want to determine the sample size for a scenario based on the original study by <ref type="bibr" target="#b29">Opitz et al. (2021)</ref>. The data used in this example are included in their published article. We first divide the participants into two groups, depending on whether they study "physics" or "other" subjects. Then, using the Rasch model <ref type="bibr" target="#b31">(Rasch, 1960)</ref>, we estimate item parameters separately for both groups, using the original, publicly available data set. Using these item parameters, we set up a simulation function simfun_irt to generate artificial data in the form of responses to the scientific reasoning test. The simulation function then performs a test for DIF and returns the result. It is included in the file papercode.Rmd in the online supplement for the interest of brevity. In this particular case, we use a score-based test by <ref type="bibr" target="#b40">Strobl (2015)</ref> that detects whether DIF is present in any items. Alternative approaches could also be used, including those that measure DIF only for specific items.</p><p>These prerequisites allow us to use the find.design function to determine a suitable sample size as introduced in Section 2. The approach leads to a sample size of N = 331 with a high confidence of the implied power, as S E = 0.00414. We can obtain a plot using plot(res), see Figure <ref type="figure">7</ref>. To put these results in context, a total sample size of 331 would be required to reliably detect differential item functioning for physics students in comparison with students in other disciplines.</p><p>Following this example, the mlpwr package can be used in combination with many other IRT models. To assist in setting up simulation functions, artificial data generation functions are available, e.g. in the R packages eRm <ref type="bibr" target="#b25">(Mair &amp; Hatzinger, 2007)</ref> or mirt <ref type="bibr" target="#b7">(Chalmers, 2012)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Example 2: Multilevel Model</head><p>To showcase an application to multiple design parameter dimensions, we look at a recent study by <ref type="bibr" target="#b42">Wang and Rhemtulla (2021)</ref> that applies multilevel modeling. The data used in this example are included in their published article. In light of the COVID-19 pandemic, the authors investigate brief reappraisal as an intervention to increase psychological resilience. Cognitive reappraisal is a strategy of changing one's thoughts about a situation in order to influence an emotional response <ref type="bibr" target="#b26">(McRae &amp; Gross, 2020)</ref>. One exploratory analysis in the work of Wang and Rhemtulla ( <ref type="formula">2021</ref>) is directed at the potential mitigating effect of reappraisal on negative feelings. They employed a between-subjects design with participants from 87 different countries. For the statistical analysis, they tested for the fixed effect of the reappraisal intervention against a control condition. In their multilevel model, they included the participant's country via a random intercept. Furthermore, they controlled for the negative emotion at baseline by including it as another fixed effect. Since this analysis was exploratory in nature, one question for a confirmatory analysis would be: How many participants from how many countries are sufficient to replicate the effect? We assume here that the effect size is actually at least as large as the one found in the original study.</p><p>The two design parameters we consider are the number of participants per country n and the number of countries n.countries. As a first step in the simulation function simfun_multi we generate artificial data using all parameter values as estimated from the original data. Then, we apply the same hypothesis test as in the original study. Full code for the simfun_multi is included in the file papercode.Rmd in the online appendix. To again differentiate between power-equivalent sets, we assume in this case that each participant produces a cost of $5 while adding another country costs $1,000. Since n denotes the number of participants per country, the total number of participants is calculated as n * n.countries. We specify a cost function accordingly: As far as the search area, we choose values for n between 20 and 300 and values of n.countries between 4 and 30. Since there is a large total number of possible sets of design parameters in this case, we set the evaluations to a higher number of 6000. Using these prerequisites, we can perform the search using find.design: res &lt;-find.design ( simfun = simfun_multi , costfun = costfun_multi , boundaries = list(n = c(20 , 300) , n.countries = c(4, 30)), power = 0.95 , evaluations = 6000)</p><p>The results can be accessed using plot(res), see Accordingly, the optimal design for a replication effort with a power of .95 would be to collect data from 14 countries and 92 participants each. The total cost of the study can be estimated at $20,440. It is also apparent from the plot that there are suitable alternative designs (with a similar cost and power) in which data are to be collected from a smaller number of countries (e.g., 13) with a larger number of participants per country (greater than 100).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Discussion</head><p>In this paper, we provided a tutorial for performing sample size planning and power analysis using the mlpwr package. It uses a surrogate model framework that can efficiently organize the simulation-based approach to power analysis. Incremental to already available approaches, the mlpwr package implements the Power surrogate model approach for when there are multiple study design parameters. Also, it contributes a consideration of costs during the search via a cost function.</p><p>While other tools for simulation-based power analysis are tailored more towards specific models, such as simr for multilevel models <ref type="bibr" target="#b16">(Green &amp; MacLeod, 2016)</ref> and powerly for network models <ref type="bibr" target="#b10">(Constantin et al., 2021)</ref>, the mlpwr package is designed as a general tool. One advantage of this approach is that it is compatible with a large number of study designs, namely those for which simulations can be expressed via a simulation function. The requirements for this simulation function are only that it takes the design parameters as input and returns an indication of significance. As a disadvantage, depending on the context, it can take more knowledge and effort to correctly set up this function. Depending on the desired model, there are many parameters that must be specified for generating artificial data or fitting a model. However, there is already ample work aimed at supporting the preparation of data simulation, such as that of DeBruine and Barr (2021) for multilevel models, as this can also facilitate the understanding of the model. As our own contribution to assist in the definition of simulation functions, we provide the vignette simulation_functions.Rmd. It includes templates for several models, including t-test, generalized linear models, multilevel models, and item response theory models. We plan to update it regularly in the future, for example to include structural equation models estimated using the lavaan package <ref type="bibr" target="#b35">(Rosseel, 2012)</ref>.</p><p>One possible future extension of the package is the inclusion of additional surrogate models. For example, we could use functions that describe the relationship between design size and power in analytical power analysis as a surrogate model. While these functions may provide more accurate results when applied to corresponding simulation functions, their performance may not be as good as a general function approximation approach, such as Gaussian process regression, across a wide range of scenarios. Our main goal is to offer an approach that works well in many different applications. However, we plan to allow users to input custom surrogate models in the future as our package is currently under development, so they can use specific surrogate functions that may work better for their desired scenarios.</p><p>As study designs and statistical methods become more complex, analytical solutions for power analysis are not always available. In addition, the requirements for justifying a choice of design parameters have ar-guably increased since the replication crisis. With the mlpwr package, we aim to assist in meeting these increased quality requirements for study design planning. designs. This data provides the algorithm with a preliminary understanding of where to direct its focus. In particular, certain regions within the design parameter space may exhibit power values that are significantly different from the desired power, while others may be comparatively closer to it. With this information, the algorithm can then proceed to explore the parameter space in a more focused and efficient manner, ultimately identifying the study design that best meets the desired power or cost criteria. We use the quasi-random Halton sequence <ref type="bibr" target="#b17">(Halton, 1960)</ref> to select these initial designs. The Halton sequence generates evenly distributed points in a deterministic way, which helps to efficiently cover the design parameter space. In contrast, using random sampling as an alternative could result in points that are clustered together and do not effectively cover the design parameter space. The number of sets used in this phase is determined by the n.startsets argument. It is set to 4 per design parameter dimension as a default. For estimating the power at these design sets, 20% of the total number of evaluations are used. This can be changed via the init.perc argument.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Figure A1</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Surrogate Modeling Algorithm</head><p>Fit Surrogate Model. The function specified via the surrogate argument is fit to all data available up until this point. The defaults are logistic regression ("logreg") and Gaussian process regression ("gpr") for one and two dimensions, respectively. Currently available alternatives are linear regression ("reg") and support vector regression ("svr"). Further details on the available surrogate model options are provided in Section 2.4. In our paper, we also discuss these options and present a simulation study that informed our selection of default models <ref type="bibr">(Zimmer &amp; Debelak, in press</ref>).</p><p>Given the wide range of potential power functions resulting from the simulation functions, we assume that there is no single surrogate model that would outperform all others in all scenarios.</p><p>Predict. Using the fitted surrogate model, we aim to derive a prediction for a study design suitable for further search. Depending on the scenario (characterized by a desired power or a cost threshold), we search for suitable values. In the the case of a design that has a desired power, we do not want to penalize values that have a higher than desired power. Also, we do not want to overlook values that apparently have a suboptimal power, but have been estimated with a relatively high standard error. Simultaneously, we want to favor values with low cost. Analogously, in the cost threshold scenario, we do not want to penalize values with lower than desired cost and we simultaneously want to prefer values with higher power. The functions that are mini-mized to realize these purposes are in detail:</p><formula xml:id="formula_2">Desired power: f 1 (x) = W 1 • relu p g -p(x) -W 2 • S E p (x) + c(x) c m , Cost threshold: f 2 (x) = W 1 • relu c(x) -c g c g -p(x)</formula><p>The relu (rectified linear unit) function maps all negative values to 0 and is otherwise the identity function. Furthermore, p(x) denotes the power and S E p (x) denotes the S E for the design parameter set x, as given by the fitted surrogate model. c(x) is the cost of the design parameter set x. p g and c g respectively denote the desired power and the cost threshold. c m is the cost of a parameter set in the center of the specified boundaries for the purpose of setting c(x) in relation. W 1 and W 2 are weighting constants that balance the two summands in the formulas.</p><p>The relu function plays a key role in both functions to achieve our search goals. As long as the argument to the relu function is negative, we don't apply a penalty for a design parameter set. For example, for the desired power scenario, this may be the case if the power p(x) is higher than the desired power p g , or if it is slightly lower but the uncertainty S E p (x) is high. To find the design parameter set that is a minimum to these functions in both cases, we use an evolutionary search algorithm implemented in the rgenoud package <ref type="bibr" target="#b27">(Mebane &amp; Sekhon, 2011)</ref>. It is inspired by natural selection and seeks to find the global optimum of a function by iteratively generating and selecting candidate solutions based on their fitness.</p><p>Termination Criterion Met? We check whether any of the termination criteria is met. This can be the number of evaluations (evaluations), the time passed (time), or the 95% confidence interval of the power for the predicted design parameter set (ci), see also Section 2.3. Independent of the specified surrogate model, the latter is calculated using the standard error estimated with Gaussian process regression. Gaussian process regression is used at this point because it can estimate the standard error also for points for which the power has not yet been estimated.</p><p>Updating. The simfun is evaluated at the predicted study design. The number of evaluations used is the same as is used for a single design parameter set during the initialization phase. For example, if the design has one parameter and all settings are set to the default values, this is 200 evaluations.</p><p>Terminate. Before saving the result, the standard error at the final prediction is estimated again, using Gaussian process regression if necessary. After termination, the algorithm can be continued, see also Section 2.3. In this case, the algorithm starts in the 'Fit Surrogate Model' phase, using all previously generated data as the initialization data.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 2</head><label>2</label><figDesc>Figure 2</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 3 A</head><label>3</label><figDesc>Figure 3</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>Figure 4</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>We use both the simulation function and the cost function as arguments in the find.design function to start the search. Again, we need to specify the boundaries for the design parameters. For multiple dimensions, we need to specify the boundaries as a list, with one element for each design parameter dimension: res &lt;-find.design ( simfun = simfun_multilevel , costfun = costfun_multilevel , boundaries = list( n.per.school = c(5, 25) , n.schools = c(10 , 30)), power = 0.95)The output of summary(res) now shows: , Time: 298 .91 , Updates : 32 Surrogate : Gaussian process regression</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>Figure 5</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head></head><label></label><figDesc>Figure 7</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head></head><label></label><figDesc>costfun_multi &lt;-function (n, n.countries ) { n * n.countries * 5 + n.countries * 1000 }</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head></head><label></label><figDesc>Figure 8, and summary(res): Call: find.design ( simfun = simfun_multi , boundaries = list(n = c(20 , 300) , n.countries = c(4, 30))</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head></head><label></label><figDesc>Figure 8</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="3,54.00,172.77,249.41,218.18" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1</head><label>1</label><figDesc>Sets of Design Parameters and Associated Power and</figDesc><table><row><cell>Cost</cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="4">Pupils per School Schools Power Cost</cell></row><row><cell>22</cell><cell>17</cell><cell>.951</cell><cell>5600</cell></row><row><cell>11</cell><cell>21</cell><cell>.952</cell><cell>5300</cell></row><row><cell>6</cell><cell>27</cell><cell></cell><cell></cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="funding">
+<div><p>This material is based upon work supported by the <rs type="funder">Swiss National Science Foundation</rs> under Grant No. <rs type="grantNumber">188929</rs> awarded to <rs type="person">Rudolf Debelak</rs>.</p><p>The R syntax for this study is available at the Open Science Framework at <ref type="url" target="https://osf.io/xebsj/">https://osf.io/xebsj/</ref>. All R packages used in this study are available on CRAN.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_eneAkfW">
+					<idno type="grant-number">188929</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix</head><p>We describe the surrogate modeling algorithm used in the mlpwr package in more detail. The algorithm is started using the find.design function. The goal of the algorithm is to find a suitable study design, this can be either:</p><p>• A design that implies a desired statistical power while going along with minimal costs. Here, the power argument must be specified to indicate the desired power.</p><p>• A design that meets a specified cost threshold while maximizing statistical power. In this case, the argument cost must be provided to define the cost threshold.</p><p>In addition to the desired power or the cost threshold, the inputs required are the simulation function simfun and the upper and lower bounds for each design parameter. Using these inputs, the algorithm shown in Figure <ref type="figure">A1</ref> organizes the search procedure. The algorithm proceeds through several phases, each of which involves a distinct set of operations. These phases are designed to iteratively explore the design space and identify promising regions for further investigation. In this section, we will describe each of the phases in detail, including the specific operations involved and their role in the overall search process. Initialization. To enable the algorithm to capture the overall relationship between study designs and power, we begin by estimating power for a select few</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Power contours: Optimising sample size and precision in experimental psychology and human neuroscience</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Baker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Vilidaite</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">A</forename><surname>Lygo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">R</forename><surname>Flack</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">D</forename><surname>Gouws</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">J</forename><surname>Andrews</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/met0000337</idno>
+		<ptr target="https://doi.org/10.1037/met0000337" />
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Methods</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="295" to="314" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Baker, D. H., Vilidaite, G., Lygo, F. A., Smith, A. K., Flack, T. R., Gouws, A. D., &amp; Andrews, T. J. (2021). Power contours: Optimising sample size and precision in experimental psychology and human neuroscience. Psychological Meth- ods, 26(3), 295-314. https://doi.org/10.1037/ met0000337</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Recommendations in pre-registrations and internal review board proposals promote formal power analyses but do not increase sample size</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bakker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">L S</forename><surname>Veldkamp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">R</forename><surname>Van Den Akker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A L M</forename><surname>Van Assen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Crompvoets</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">H</forename><surname>Ong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Wicherts</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pone.0236079</idno>
+		<ptr target="https://doi.org/10.1371/journal.pone.0236079" />
+	</analytic>
+	<monogr>
+		<title level="j">PloS One</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page">236079</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bakker, M., Veldkamp, C. L. S., van den Akker, O. R., van Assen, M. A. L. M., Crompvoets, E., Ong, H. H., &amp; Wicherts, J. M. (2020). Recommen- dations in pre-registrations and internal review board proposals promote formal power analy- ses but do not increase sample size. PloS One, 15(7), e0236079. https : / / doi . org / 10 . 1371 / journal.pone.0236079</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Fitting Linear Mixed-Effects Models Using lme4</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bates</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mächler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Bolker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Walker</surname></persName>
+		</author>
+		<idno type="DOI">10.18637/jss.v067.i01</idno>
+		<ptr target="https://doi.org/10.18637/jss.v067.i01" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Statistical Software</title>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bates, D., Mächler, M., Bolker, B., &amp; Walker, S. (2015). Fitting Linear Mixed-Effects Models Using lme4. Journal of Statistical Software, 67(1). https://doi.org/10.18637/jss.v067.i01</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Advances in surrogate based modeling, feasibility analysis, and optimization: A review</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bhosekar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ierapetritou</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.compchemeng.2017.09.017</idno>
+		<ptr target="https://doi.org/10.1016/j.compchemeng.2017.09.017" />
+	</analytic>
+	<monogr>
+		<title level="j">Computers &amp; Chemical Engineering</title>
+		<imprint>
+			<biblScope unit="volume">108</biblScope>
+			<biblScope unit="page" from="250" to="267" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bhosekar, A., &amp; Ierapetritou, M. (2018). Advances in surrogate based modeling, feasibility anal- ysis, and optimization: A review. Computers &amp; Chemical Engineering, 108, 250-267. https:// doi.org/10.1016/j.compchemeng.2017.09.017</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">mlrMBO: A Modular Framework for Model-Based Optimization of Expensive Black-Box Functions</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Bischl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Richter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bossek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Horn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Thomas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lang</surname></persName>
+		</author>
+		<ptr target="http://arxiv.org/pdf/1703.03373v3" />
+		<imprint>
+			<date type="published" when="2009">2017, March 9</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bischl, B., Richter, J., Bossek, J., Horn, D., Thomas, J., &amp; Lang, M. (2017, March 9). mlrMBO: A Modular Framework for Model-Based Op- timization of Expensive Black-Box Functions. http://arxiv.org/pdf/1703.03373v3</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Power Analysis and Effect Size in Mixed Effects Models: A Tutorial</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Brysbaert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Stevens</surname></persName>
+		</author>
+		<idno type="DOI">10.5334/joc.10</idno>
+		<ptr target="https://doi.org/10.5334/joc.10" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Cognition</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">9</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Brysbaert, M., &amp; Stevens, M. (2018). Power Analysis and Effect Size in Mixed Effects Models: A Tutorial. Journal of Cognition, 1(1), 9. https : //doi.org/10.5334/joc.10</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Power failure: why small sample size undermines the reliability of neuroscience</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">S</forename><surname>Button</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P A</forename><surname>Ioannidis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Mokrysz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Nosek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Flint</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">S J</forename><surname>Robinson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Munafò</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/nrn3475</idno>
+		<ptr target="https://doi.org/10.1038/nrn3475" />
+	</analytic>
+	<monogr>
+		<title level="j">Nature Reviews Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="365" to="376" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Button, K. S., Ioannidis, J. P. A., Mokrysz, C., Nosek, B. A., Flint, J., Robinson, E. S. J., &amp; Munafò, M. R. (2013). Power failure: why small sample size undermines the reliability of neuroscience. Nature Reviews Neuroscience, 14(5), 365-376. https://doi.org/10.1038/nrn3475</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">mirt: A Multidimensional Item Response Theory Package for the R Environ-ment</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">P</forename><surname>Chalmers</surname></persName>
+		</author>
+		<idno type="DOI">10.18637/jss.v048.i06</idno>
+		<ptr target="https://doi.org/10.18637/jss.v048.i06" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Statistical Software</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Chalmers, R. P. (2012). mirt: A Multidimensional Item Response Theory Package for the R Environ- ment. Journal of Statistical Software, 48(6). https://doi.org/10.18637/jss.v048.i06</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">A Unified Comparison of IRTbased Effect Sizes for DIF Investigations</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">P</forename><surname>Chalmers</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/jedm.12347</idno>
+		<ptr target="https://doi.org/10.1111/jedm.12347" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Educational Measurement</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Chalmers, R. P. (2022). A Unified Comparison of IRT- based Effect Sizes for DIF Investigations. Jour- nal of Educational Measurement. https : / / doi . org/10.1111/jedm.12347</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<author>
+			<persName><forename type="first">S</forename><surname>Champely</surname></persName>
+		</author>
+		<ptr target="https://CRAN.R-project.org/package=pwr" />
+		<title level="m">pwr: Basic Functions for Power Analysis</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Champely, S. (2020). pwr: Basic Functions for Power Analysis. https : / / CRAN . R -project . org / package=pwr</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">A General Monte Carlo Method for Sample Size Analysis in the Context of Network Models</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Constantin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">K</forename><surname>Schuurman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Vermunt</surname></persName>
+		</author>
+		<idno type="DOI">10.31234/osf.io/j5v7u</idno>
+		<ptr target="https://doi.org/10.31234/osf.io/j5v7u" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Constantin, M. A., Schuurman, N. K., &amp; Vermunt, J. (2021). A General Monte Carlo Method for Sample Size Analysis in the Context of Network Models. https://doi.org/10.31234/osf.io/j5v7u</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">ML-DEs: a program for designing efficient multilevel studies</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Cools</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Van Den Noortgate</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Onghena</surname></persName>
+		</author>
+		<idno type="DOI">10.3758/BRM.40.1.236</idno>
+		<ptr target="https://doi.org/10.3758/BRM.40.1.236" />
+	</analytic>
+	<monogr>
+		<title level="j">Behavior Research Methods</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="236" to="249" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Cools, W., van den Noortgate, W., &amp; Onghena, P. (2008). ML-DEs: a program for designing ef- ficient multilevel studies. Behavior Research Methods, 40(1), 236-249. https://doi.org/10. 3758/BRM.40.1.236</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Understanding Mixed-Effects Models Through Data Simulation</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Debruine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Barr</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/2515245920965119</idno>
+		<ptr target="https://doi.org/10.1177/2515245920965119" />
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Methods and Practices in Psychological Science</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="15" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">DeBruine, L. M., &amp; Barr, D. J. (2021). Understand- ing Mixed-Effects Models Through Data Sim- ulation. Advances in Methods and Practices in Psychological Science, 4(1), 1-15. https://doi. org/10.1177/2515245920965119</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Statistical power analyses using G*Power 3.1: Tests for correlation and regression analyses</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Faul</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Erdfelder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Buchner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A.-G</forename><surname>Lang</surname></persName>
+		</author>
+		<idno type="DOI">10.3758/BRM.41.4.1149</idno>
+		<ptr target="https://doi.org/10.3758/BRM.41.4.1149" />
+	</analytic>
+	<monogr>
+		<title level="j">Behavior Research Methods</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1149" to="1160" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Faul, F., Erdfelder, E., Buchner, A., &amp; Lang, A.-G. (2009). Statistical power analyses us- ing G*Power 3.1: Tests for correlation and re- gression analyses. Behavior Research Methods, 41(4), 1149-1160. https : / / doi . org / 10 . 3758 / BRM.41.4.1149</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Recent advances in surrogate-based optimization</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">I</forename><surname>Forrester</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Keane</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.paerosci.2008.11.001</idno>
+		<ptr target="https://doi.org/10.1016/j.paerosci.2008.11.001" />
+	</analytic>
+	<monogr>
+		<title level="j">Progress in Aerospace Sciences</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">1-3</biblScope>
+			<biblScope unit="page" from="50" to="79" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Forrester, A. I., &amp; Keane, A. J. (2009). Recent advances in surrogate-based optimization. Progress in Aerospace Sciences, 45(1-3), 50-79. https : / / doi.org/10.1016/j.paerosci.2008.11.001</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Adaptive seamless clinical trials using early outcomes for treatment or subgroup selection: Methods, simulation model and their implementation in R</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Friede</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Stallard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Parsons</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/bimj.201900020</idno>
+		<ptr target="https://doi.org/10.1002/bimj.201900020" />
+	</analytic>
+	<monogr>
+		<title level="j">Biometrical Journal</title>
+		<imprint>
+			<biblScope unit="volume">62</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1264" to="1283" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Friede, T., Stallard, N., &amp; Parsons, N. (2020). Adaptive seamless clinical trials using early outcomes for treatment or subgroup selection: Meth- ods, simulation model and their implementa- tion in R. Biometrical Journal, 62(5), 1264- 1283. https://doi.org/10.1002/bimj.201900020</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">SIMR : an R package for power analysis of generalized linear mixed models by simulation</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Green</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Macleod</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/2041-210X.12504</idno>
+		<ptr target="https://doi.org/10.1111/2041-210X.12504" />
+	</analytic>
+	<monogr>
+		<title level="j">Methods in Ecology and Evolution</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="493" to="498" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Green, P., &amp; MacLeod, C. J. (2016). SIMR : an R pack- age for power analysis of generalized linear mixed models by simulation. Methods in Ecol- ogy and Evolution, 7(4), 493-498. https://doi. org/10.1111/2041-210X.12504</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">On the efficiency of certain quasi-random sequences of points in evaluating multi-dimensional integrals</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Halton</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/BF01386213</idno>
+		<ptr target="https://doi.org/10.1007/BF01386213" />
+	</analytic>
+	<monogr>
+		<title level="j">Numerische Mathematik</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="84" to="90" />
+			<date type="published" when="1960">1960</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Halton, J. H. (1960). On the efficiency of certain quasi-random sequences of points in evalu- ating multi-dimensional integrals. Numerische Mathematik, 2(1), 84-90. https : / / doi . org / 10 . 1007/BF01386213</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Why most published research findings are false</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P A</forename><surname>Ioannidis</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pmed.0020124</idno>
+		<ptr target="https://doi.org/10.1371/journal.pmed.0020124" />
+	</analytic>
+	<monogr>
+		<title level="j">PLoS Medicine</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page">124</biblScope>
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ioannidis, J. P. A. (2005). Why most published research findings are false. PLoS Medicine, 2(8), e124. https://doi.org/10.1371/journal.pmed.0020124</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A rule-based method for automated surrogate model selection</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Alizadeh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">K</forename><surname>Allen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Mistree</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.aei.2020.101123</idno>
+		<ptr target="https://doi.org/10.1016/j.aei.2020.101123" />
+	</analytic>
+	<monogr>
+		<title level="j">Advanced Engineering Informatics</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="page">101123</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Jia, L., Alizadeh, R., Hao, J., Wang, G., Allen, J. K., &amp; Mistree, F. (2020). A rule-based method for au- tomated surrogate model selection. Advanced Engineering Informatics, 45, 101123. https : / / doi.org/10.1016/j.aei.2020.101123</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Sample size calculation for paired survival data: a simulation method</title>
+		<author>
+			<persName><forename type="first">S.-H</forename><surname>Jung</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/10629360600864951</idno>
+		<ptr target="https://doi.org/10.1080/10629360600864951" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Statistical Computation and Simulation</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="85" to="92" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Jung, S.-H. (2008). Sample size calculation for paired survival data: a simulation method. Journal of Statistical Computation and Simulation, 78(1), 85-92. https : / / doi . org / 10 . 1080 / 10629360600864951</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">PowerLAPIM: An application to conduct power analysis for linear and quadratic longitudinal actor-partner interdependence models in intensive longitudinal dyadic designs</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Lafit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Sels</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">K</forename><surname>Adolf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Loeys</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Ceulemans</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/02654075221080128</idno>
+		<ptr target="https://doi.org/10.1177/02654075221080128" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Social and Personal Relationships</title>
+		<imprint>
+			<biblScope unit="page">026540752210801</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lafit, G., Sels, L., Adolf, J. K., Loeys, T., &amp; Ceule- mans, E. (2022). PowerLAPIM: An appli- cation to conduct power analysis for linear and quadratic longitudinal actor-partner inter- dependence models in intensive longitudinal dyadic designs. Journal of Social and Personal Relationships, 026540752210801. https://doi. org/10.1177/02654075221080128</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Sample Size Justification</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lakens</surname></persName>
+		</author>
+		<idno type="DOI">10.1525/collabra.33267</idno>
+		<ptr target="https://doi.org/10.1525/collabra.33267" />
+	</analytic>
+	<monogr>
+		<title level="j">Collabra: Psychology</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="28" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lakens, D. (2022). Sample Size Justification. Collabra: Psychology, 8(1), 1-28. https : / / doi . org / 10 . 1525/collabra.33267</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Adaptive procedures in psychophysical research</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Leek</surname></persName>
+		</author>
+		<idno type="DOI">10.3758/BF03194543</idno>
+		<ptr target="https://doi.org/10.3758/BF03194543" />
+	</analytic>
+	<monogr>
+		<title level="j">Perception &amp; psychophysics</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1279" to="1292" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Leek, M. R. (2001). Adaptive procedures in psy- chophysical research. Perception &amp; psy- chophysics, 63(8), 1279-1292. https://doi.org/ 10.3758/BF03194543</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Effect size measures for multilevel models: definition, interpretation, and TIMSS example</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lorah</surname></persName>
+		</author>
+		<idno type="DOI">10.1186/s40536-018-0061-2</idno>
+		<ptr target="https://doi.org/10.1186/s40536-018-0061-2" />
+	</analytic>
+	<monogr>
+		<title level="j">Large-scale Assessments in Education</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="11" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lorah, J. (2018). Effect size measures for multilevel models: definition, interpretation, and TIMSS example. Large-scale Assessments in Educa- tion, 6(1), 1-11. https : / / doi . org / 10 . 1186 / s40536-018-0061-2</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Extended Rasch Modeling: The eRm Package for the Application of IRT Models in R</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Mair</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hatzinger</surname></persName>
+		</author>
+		<idno type="DOI">10.18637/jss.v020.i09</idno>
+		<ptr target="https://doi.org/10.18637/jss.v020.i09" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Statistical Software</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Mair, P., &amp; Hatzinger, R. (2007). Extended Rasch Mod- eling: The eRm Package for the Application of IRT Models in R. Journal of Statistical Soft- ware, 20(9). https://doi.org/10.18637/jss.v020. i09</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Emotion regulation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mcrae</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Gross</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/emo0000703</idno>
+		<ptr target="https://doi.org/10.1037/emo0000703" />
+	</analytic>
+	<monogr>
+		<title level="j">Emotion</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">McRae, K., &amp; Gross, J. J. (2020). Emotion regulation. Emotion, 20(1), 1-9. https://doi.org/10.1037/ emo0000703</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Genetic Optimization Using Derivatives: The rgenoud Package for R</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">R</forename><surname>Mebane</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Sekhon</surname></persName>
+		</author>
+		<idno type="DOI">10.18637/jss.v042.i11</idno>
+		<ptr target="https://doi.org/10.18637/jss.v042.i11" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Statistical Software</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Mebane, W. R., &amp; Sekhon, J. S. (2011). Genetic Optimization Using Derivatives: The rgenoud Package for R. Journal of Statistical Software, 42(11). https://doi.org/10.18637/jss.v042.i11</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Estimating the reproducibility of psychological science</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Mulay</surname></persName>
+			<affiliation>
+				<orgName type="collaboration">Open Science Collaboration</orgName>
+			</affiliation>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lane</surname></persName>
+			<affiliation>
+				<orgName type="collaboration">Open Science Collaboration</orgName>
+			</affiliation>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Hennes</surname></persName>
+			<affiliation>
+				<orgName type="collaboration">Open Science Collaboration</orgName>
+			</affiliation>
+		</author>
+		<idno type="DOI">10.1126/science.aac4716</idno>
+		<ptr target="https://doi.org/10.1126/science.aac4716" />
+	</analytic>
+	<monogr>
+		<title level="m">Pow-erGraph: Using neural networks and principal components to determine multivariate statistical power trade-offs</title>
+		<imprint>
+			<publisher>OECD Publishing</publisher>
+			<date type="published" when="2015">2021. 2022. July 5, 2022. 2017. 2015. 6251</date>
+			<biblScope unit="volume">349</biblScope>
+		</imprint>
+	</monogr>
+	<note>PISA 2015 Technical Report</note>
+	<note type="raw_reference">Mulay, A. K., Lane, S., &amp; Hennes, E. (2021). Pow- erGraph: Using neural networks and principal components to determine multivariate statisti- cal power trade-offs. http://arxiv.org/pdf/2201. 00719v2 Nature Human Behaviour. (2022). Submission Guide- lines: Registered Reports. Retrieved July 5, 2022, from https : / / www . nature . com / nathumbehav / submission -guidelines / registeredreports OECD. (2017). PISA 2015 Technical Report. OECD Publishing. Open Science Collaboration. (2015). Estimating the reproducibility of psychological science. Sci- ence, 349(6251). https : / / doi . org / 10 . 1126 / science.aac4716</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Using Differential Item Functioning to Analyze the Domain Generality of a Common Scientific Reasoning Test</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Opitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Heene</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Fischer</surname></persName>
+		</author>
+		<idno type="DOI">10.1027/1015-5759/a000662</idno>
+		<ptr target="https://doi.org/10.1027/1015-5759/a000662" />
+	</analytic>
+	<monogr>
+		<title level="j">European Journal of Psychological Assessment</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Opitz, A., Heene, M., &amp; Fischer, F. (2021). Using Dif- ferential Item Functioning to Analyze the Do- main Generality of a Common Scientific Rea- soning Test. European Journal of Psychologi- cal Assessment. https://doi.org/10.1027/1015- 5759/a000662</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<author>
+			<persName><forename type="first">Team</forename><surname>Core</surname></persName>
+		</author>
+		<ptr target="https://www.R-project.org/" />
+		<title level="m">R: A Language and Environment for Statistical Computing</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">R Core Team. (2022). R: A Language and Environment for Statistical Computing. https : / / www . R - project.org/</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">Probabilistic models for some intelligence and attainment tests</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Rasch</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1960">1960</date>
+		</imprint>
+		<respStmt>
+			<orgName>Danish Institute for Educational Research</orgName>
+		</respStmt>
+	</monogr>
+	<note type="raw_reference">Rasch, G. (1960). Probabilistic models for some intelli- gence and attainment tests. Danish Institute for Educational Research.</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">Gaussian processes for machine learning</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">E</forename><surname>Rasmussen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">K I</forename><surname>Williams</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2006">2006</date>
+			<publisher>MIT Press</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rasmussen, C. E., &amp; Williams, C. K. I. (2006). Gaus- sian processes for machine learning. MIT Press.</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Review of surrogate modeling in water resources</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Razavi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Tolson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Burn</surname></persName>
+		</author>
+		<idno type="DOI">10.1029/2011WR011527</idno>
+		<ptr target="https://doi.org/10.1029/2011WR011527" />
+	</analytic>
+	<monogr>
+		<title level="j">Water Resources Research</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Razavi, S., Tolson, B. A., &amp; Burn, D. H. (2012). Re- view of surrogate modeling in water resources. Water Resources Research, 48(7). https://doi. org/10.1029/2011WR011527</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Improving adaptive seamless designs through Bayesian optimization</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Richter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Friede</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Rahnenführer</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/bimj.202000389</idno>
+		<ptr target="https://doi.org/10.1002/bimj.202000389" />
+	</analytic>
+	<monogr>
+		<title level="j">Biometrical Journal</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="948" to="963" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Richter, J., Friede, T., &amp; Rahnenführer, J. (2022). Improving adaptive seamless designs through Bayesian optimization. Biometrical Journal, 64(5), 948-963. https://doi.org/10.1002/bimj. 202000389</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">lavaan : An R Package for Structural Equation Modeling</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Rosseel</surname></persName>
+		</author>
+		<idno type="DOI">10.18637/jss.v048.i02</idno>
+		<ptr target="https://doi.org/10.18637/jss.v048.i02" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Statistical Software</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rosseel, Y. (2012). lavaan : An R Package for Struc- tural Equation Modeling. Journal of Statistical Software, 48(2). https://doi.org/10.18637/jss. v048.i02</note>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Determining Power and Sample Size for Simple and Complex Mediation Models</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Schoemann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Boulton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">D</forename><surname>Short</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1948550617715068</idno>
+		<ptr target="https://doi.org/10.1177/1948550617715068" />
+	</analytic>
+	<monogr>
+		<title level="j">Social Psychological and Personality Science</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="379" to="386" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Schoemann, A. M., Boulton, A. J., &amp; Short, S. D. (2017). Determining Power and Sample Size for Simple and Complex Mediation Models. Social Psychological and Personality Science, 8(4), 379-386. https : / / doi . org / 10 . 1177 / 1948550617715068</note>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Psychology, Science, and Knowledge Construction: Broadening Perspectives from the Replication Crisis</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Shrout</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Rodgers</surname></persName>
+		</author>
+		<idno type="DOI">10.1146/annurev-psych-122216-011845</idno>
+		<ptr target="https://doi.org/10.1146/annurev-psych-122216-011845" />
+	</analytic>
+	<monogr>
+		<title level="j">Annual Review of Psychology</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="page" from="487" to="510" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Shrout, P. E., &amp; Rodgers, J. L. (2018). Psychology, Sci- ence, and Knowledge Construction: Broaden- ing Perspectives from the Replication Crisis. Annual Review of Psychology, 69, 487-510. https : / / doi . org / 10 . 1146 / annurev -psych - 122216-011845</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">False-positive psychology: undisclosed flexibility in data collection and analysis allows presenting anything as significant</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Simmons</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">D</forename><surname>Nelson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Simonsohn</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0956797611417632</idno>
+		<ptr target="https://doi.org/10.1177/0956797611417632" />
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Science</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="1359" to="1366" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Simmons, J. P., Nelson, L. D., &amp; Simonsohn, U. (2011). False-positive psychology: undisclosed flexi- bility in data collection and analysis allows pre- senting anything as significant. Psychological Science, 22(11), 1359-1366. https : / / doi . org / 10.1177/0956797611417632</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Initial evidence of research quality of registered reports compared with the standard publishing model</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">K</forename><surname>Soderberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Errington</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">R</forename><surname>Schiavone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bottesini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">S</forename><surname>Thorn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Vazire</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Esterling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Nosek</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41562-021-01142-4</idno>
+		<ptr target="https://doi.org/10.1038/s41562-021-01142-4" />
+	</analytic>
+	<monogr>
+		<title level="j">Nature Human Behaviour</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="990" to="997" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Soderberg, C. K., Errington, T. M., Schiavone, S. R., Bottesini, J., Thorn, F. S., Vazire, S., Esterling, K. M., &amp; Nosek, B. A. (2021). Initial evidence of research quality of registered reports com- pared with the standard publishing model. Na- ture Human Behaviour, 5(8), 990-997. https : //doi.org/10.1038/s41562-021-01142-4</note>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<monogr>
+		<title level="m" type="main">Das Rasch-Modell: Eine verständliche Einführung für Studium und Praxis</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Strobl</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<publisher>Rainer Hampp Verlag</publisher>
+		</imprint>
+	</monogr>
+	<note>3rd ed.</note>
+	<note type="raw_reference">Strobl, C. (2015). Das Rasch-Modell: Eine ver- ständliche Einführung für Studium und Praxis (3rd ed.). Rainer Hampp Verlag.</note>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">The effect of multiple indicators on the power to detect inter-individual differences in change</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Von Oertzen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Hertzog</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Lindenberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Ghisletta</surname></persName>
+		</author>
+		<idno type="DOI">10.1348/000711010X486633</idno>
+		<ptr target="https://doi.org/10.1348/000711010X486633" />
+	</analytic>
+	<monogr>
+		<title level="j">The British Journal of Mathematical and Statistical Psychology</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="627" to="646" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">von Oertzen, T., Hertzog, C., Lindenberger, U., &amp; Ghisletta, P. (2010). The effect of multiple in- dicators on the power to detect inter-individual differences in change. The British Journal of Mathematical and Statistical Psychology, 63(3), 627-646. https : / / doi . org / 10 . 1348 / 000711010X486633</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Power Analysis for Parameter Estimation in Structural Equation Modeling: A Discussion and Tutorial</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">A</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rhemtulla</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/2515245920918253</idno>
+		<ptr target="https://doi.org/10.1177/2515245920918253" />
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Methods and Practices in Psychological Science</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">251524592091825</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wang, Y. A., &amp; Rhemtulla, M. (2021). Power Analysis for Parameter Estimation in Structural Equa- tion Modeling: A Discussion and Tutorial. Ad- vances in Methods and Practices in Psycholog- ical Science, 4(1), 251524592091825. https:// doi.org/10.1177/2515245920918253</note>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">QUEST: a Bayesian adaptive psychometric method</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Watson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Pelli</surname></persName>
+		</author>
+		<idno type="DOI">10.3758/BF03202828</idno>
+		<ptr target="https://doi.org/10.3758/BF03202828" />
+	</analytic>
+	<monogr>
+		<title level="j">Perception &amp; psychophysics</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="113" to="120" />
+			<date type="published" when="1983">1983</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Watson, A. B., &amp; Pelli, D. G. (1983). QUEST: a Bayesian adaptive psychometric method. Perception &amp; psychophysics, 33(2), 113-120. https://doi.org/10.3758/BF03202828</note>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Monte Carlo approaches for determining power and sample size in low-prevalence applications</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Williams</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">D</forename><surname>Ebel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Wagner</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.prevetmed.2007.05.015</idno>
+		<ptr target="https://doi.org/10.1016/j.prevetmed.2007.05.015" />
+	</analytic>
+	<monogr>
+		<title level="j">Preventive Veterinary Medicine</title>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="151" to="158" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Williams, M. S., Ebel, E. D., &amp; Wagner, B. A. (2007). Monte Carlo approaches for determining power and sample size in low-prevalence applications. Preventive Veterinary Medicine, 82(1-2), 151- 158. https://doi.org/10.1016/j.prevetmed.2007. 05.015</note>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Efficient and flexible simulation-based sample size determination for clinical trials with multiple design parameters</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">T</forename><surname>Wilson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hooper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Farrin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Walwyn</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0962280220975790</idno>
+		<ptr target="https://doi.org/10.1177/0962280220975790" />
+	</analytic>
+	<monogr>
+		<title level="j">Statistical Methods in Medical Research</title>
+		<imprint>
+			<date type="published" when="2020">2020. 962280220975790</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wilson, D. T., Hooper, R., Brown, J., Farrin, A. J., &amp; Walwyn, R. E. (2020). Efficient and flexi- ble simulation-based sample size determination for clinical trials with multiple design parame- ters. Statistical Methods in Medical Research, 962280220975790. https : / / doi . org / 10 . 1177 / 0962280220975790</note>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<monogr>
+		<title level="m" type="main">Simulation-based Design Optimization for Statistical Power: Utilizing Machine Learning</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Zimmer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Debelak</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/met0000611</idno>
+		<ptr target="https://doi.org/10.1037/met0000611" />
+		<imprint/>
+	</monogr>
+	<note type="report_type">Psychological Methods</note>
+	<note>in press</note>
+	<note type="raw_reference">Zimmer, F., &amp; Debelak, R. (in press). Simulation-based Design Optimization for Statistical Power: Uti- lizing Machine Learning. Psychological Meth- ods. https://doi.org/10.1037/met0000611</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -17,7 +17,7 @@ read <- function(filename) {
     if (verbose()) {
       pb <- progress::progress_bar$new(
         total = length(filename), clear = FALSE,
-        format = "Processing files [:bar] :current/:total :elapsedfull"
+        format = "Processing file [:bar] :current/:total :elapsedfull"
       )
       pb$tick(0)
       Sys.sleep(0.2)
@@ -41,7 +41,12 @@ read <- function(filename) {
       gsub("\\.(xml|txt|docx)$", "", x = _, ignore.case = TRUE)
 
     p <- lapply(filename, \(x) {
-      p1 <- read(x)
+      p1 <- tryCatch(read(x),
+                     error = \(e) {
+                       warning(x, " did not read correctly",
+                               call. = FALSE)
+                       return(NULL)
+                     })
       if (verbose()) pb$tick()
       p1
     })
@@ -1023,8 +1028,19 @@ tei_bib <- function(xml) {
     bibs <- lapply(refs, xml2bib)
 
     bib_table$ref <- bibs |>
-      sapply(format) |>
+      sapply(\(bib) {
+        tryCatch(format(bib), error = \(e) { return("")})
+      }) |>
       gsub("\\n", " ", x = _)
+
+    # pull visible text on error
+    bib_errors <- which(bib_table$ref == "")
+    if (length(bib_errors) > 0) {
+      bib_table$ref[[bib_errors]] <- refs[[bib_errors]] |>
+        xml2::xml_text() |>
+        gsub("\\s+", " ", x = _) |>
+        trimws()
+    }
 
     bib_table$doi <- sapply(bibs, \(x) x$doi %||% NA_character_)
     bib_table$bibtype <- sapply(bibs, \(x) x$bibtype %||% NA_character_)
@@ -1294,11 +1310,6 @@ xml2bib <- function(ref) {
                     b$bibtype <- "misc"
                     bib <- do.call(utils::bibentry, b)
                     return(bib)
-
-                    # pull visible text on error
-                    # txt <- xml2::xml_text(ref) |>
-                    #   gsub("\\s+", " ", x = _) |>
-                    #   trimws()
 
                     # TODO: fix more types
                     #warning(e$message, "\\n")
