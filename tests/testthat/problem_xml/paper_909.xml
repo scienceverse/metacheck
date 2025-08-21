@@ -1,0 +1,1274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">How Job Characteristics Influence Healthcare Workers&apos; Happiness: A Serial Mediation Path Based on Autonomous Motivation and Adaptive Performance</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability  status="unknown">
+					<licence/>
+				</availability>
+				<date type="published" when="2022-11-01">1 November 2022</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Hye</forename><forename type="middle">Kyung</forename><surname>Woo</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Jung-Hwa</forename><surname>Shin</surname></persName>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Ana</forename><surname>Junça-Silva</surname></persName>
+							<email>ana_luisa_silva@iscte-iul.pt</email>
+							<idno type="ORCID">0000-0001-6341-9771</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Business Research Unit-IUL</orgName>
+								<orgName type="institution">ISCTE-Instituto Universitário de Lisboa</orgName>
+								<address>
+									<postCode>1649-026</postCode>
+									<settlement>Lisboa</settlement>
+									<country key="PT">Portugal</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Management Superior School</orgName>
+								<orgName type="institution">IPT-Instituto Politécnico de Tomar</orgName>
+								<address>
+									<postCode>2300-313</postCode>
+									<settlement>Tomar</settlement>
+									<country key="PT">Portugal</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Catarina</forename><surname>Menino</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Management Superior School</orgName>
+								<orgName type="institution">IPT-Instituto Politécnico de Tomar</orgName>
+								<address>
+									<postCode>2300-313</postCode>
+									<settlement>Tomar</settlement>
+									<country key="PT">Portugal</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">How Job Characteristics Influence Healthcare Workers&apos; Happiness: A Serial Mediation Path Based on Autonomous Motivation and Adaptive Performance</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2022-11-01">1 November 2022</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">70C895403BA7774E7E63190303DD2437</idno>
+					<idno type="DOI">10.3390/su142114251</idno>
+					<note type="submission">Received: 7 September 2022 Accepted: 30 October 2022</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2025-08-21T10:37+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>intrinsic motivation</term>
+					<term>extrinsic motivation</term>
+					<term>job-characteristics model</term>
+					<term>performance</term>
+					<term>happiness</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Self-determination theory suggests that motivation is multidimensional; as such, there are various dimensions ranging from autonomous (i.e., intrinsic) to more controlled forms (extrinsic) of motivation. While intrinsic motivation appears to be positively related to an individual's optimal functioning (e.g., happiness and performance), extrinsic motivation appears to be less beneficial. Furthermore, motivation is strongly determined by the context (e.g., job characteristics, such as autonomy). Although the relationship between job characteristics and workers' motivation has been demonstrated, how it impacts performance and happiness is still to be unpacked. Moreover, it is relevant to analyze such models within healthcare workers; their work is emotionally and psychologically demanding, hence, understanding what drives their intrinsic motivation is of crucial importance. Thereby, the aim of the study was to analyze the mediating role of intrinsic motivation and adaptive performance on the relationship between job characteristics and happiness. Based on the job characteristics model, we proposed a serial path from motivating job characteristics (autonomy, feedback, variety, meaning, and task identity) to healthcare workers' happiness via intrinsic motivation and adaptive performance, which was justified using the self-determination theory. We also argue that this path would not be significant for extrinsic motivation. We gathered data from 290 healthcare workers from a nursing home. The data were collected at three time points. The results support our hypotheses by demonstrating that all job motivating characteristics (autonomy, feedback, variety, meaning, and task identity) predicted healthcare workers' happiness by enhancing their intrinsic motivation and leading to better adaptive performances. The results are not significant for extrinsic motivation; that is, the serial mediating path was not significant when extrinsic motivation was analyzed. The findings highlight the need for managers to focus on work design, in a way to promote certain job motivating characteristics (e.g., autonomy), to improve healthcare workers' motivation, which leads them to achieve greater performances and, consequently, be happier. The study highlights that when healthcare workers have a job that provides them autonomy and regular feedback, with meaningful and varied tasks to which they feel a sense of identification, they tend to feel intrinsically motivated in their work, promoting higher adaptability to daily challenges, and, as a result, leaves them happier. The role of motivation and performance in the happiness of employees in a healthcare setting.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Researchers have acknowledged the importance of understanding organizational characteristics that satisfy and motivate employees, because when they feel motivated, they are more productive and tend to be happier <ref type="bibr" target="#b0">[1]</ref>. Motivation is the energy, direction, and persistence of behavior <ref type="bibr" target="#b1">[2]</ref>; it is an essential component for organizations, as it influences individuals' work-related behavior <ref type="bibr" target="#b2">[3]</ref>. Indeed, for workers to perform their 2 of 14 tasks effectively, they must feel motivated, because, with more will, they put more effort into their tasks, are more productive, and, thereby, achieve personal satisfaction <ref type="bibr" target="#b3">[4]</ref>. The self-determination theory <ref type="bibr" target="#b4">[5]</ref> suggests that motivation is determined by different types of goal-directed behavioral regulations that reflect psychological states. This theory further proposes that behavioral regulations, while being specific, are organized along a single continuum of self-determination <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b5">6]</ref>. That is, motivation is multidimensional and includes different dimensions, ranging from autonomous or intrinsic motivation to more controlled forms of motivation (e.g., external regulation). While autonomous motivation appears to be positively related to an individual's optimal functioning (e.g., well-being and performance), controlled motivation appears to be less beneficial <ref type="bibr" target="#b5">[6]</ref>.</p><p>Job characteristics are a key factor in understanding the relationship between motivation, performance, and happiness indicators <ref type="bibr" target="#b6">[7]</ref>. The job characteristics model <ref type="bibr" target="#b7">[8]</ref> proposes that certain job characteristics (task variety, significance, meaning, autonomy, and task feedback) are motivating in their nature and, as a result, lead to increased performance. Despite the several empirical demonstrations of the relationship between job characteristics, motivation, performance, and happiness, these have explored the isolated the impact of each job characteristic, associated with a single type of motivation, typically the autonomous one-intrinsic motivation <ref type="bibr" target="#b8">[9]</ref>. However, given that motivation is multidimensional <ref type="bibr" target="#b9">[10]</ref>, and that different dimensions of motivation may have different situational predictors (e.g., job characteristics), it is important to analyze whether certain job motivating characteristics influence motivation (autonomous versus controlled) and lead to better performance and happiness <ref type="bibr" target="#b9">[10]</ref>. This is important for the healthcare working context; healthcare employees deliver care and services to the sick and ailing. They include doctors and nurses or assistants, technicians, aides, or medical waste handlers <ref type="bibr" target="#b10">[11]</ref>. Healthcare services are labor-intensive. Typically, they have to work in highly challenging and demanding working conditions <ref type="bibr" target="#b11">[12]</ref> that, in the long run, not only leave them exhausted but also demotivated. Moreover, if one considers the COVID-19 pandemic crisis, which has been a period characterized by increased uncertainty, it highlights the need to understand what might improve these employees' motivation, performance, and happiness.</p><p>The main contribution of this study is to address each of these issues by <ref type="bibr" target="#b0">(1)</ref> extending the job characteristics model to the healthcare context and <ref type="bibr" target="#b1">(2)</ref> supposing that these professionals' happiness may be affected by a serial path that starts in their job characteristics (autonomy, feedback, variety, meaning, and task identity), which influence their intrinsic motivation and in turn promote higher adaptability. Since their working day is full of daily challenges and demands, we argue that this serial mediating path is not significant when extrinsic motivation is considered.</p><p>Hence, relying on the job characteristics model, we propose a model consisting of a motivational and behavioral path, based on a serial mediation-motivation and performance. The main research question was: what job characteristics would influence healthcare employees' intrinsic motivation that, in turn, make them more adaptable and result in increased happiness? Therefore, we aimed to analyze the path from job characteristics (autonomy, feedback, variety, meaning, and task identity) to happiness, via autonomous versus controlled motivation, and performance among healthcare workers.</p><p>This paper is divided into five sections. First, we describe the main theoretical assumptions that support the hypotheses and the serial mediation model. Next, we describe the methods section, followed by the hypotheses testing and its results. We finish with the discussion of results in light of the theoretical and former empirical evidence.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Theoretical Framework</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">The Relationship between Motivation and Happiness</head><p>The study of happiness appears associated with two major theoretical perspectives: hedonism and eudaimonism <ref type="bibr" target="#b12">[13]</ref>.</p><p>The hedonic approach emphasizes the subjective nature of happiness, considering individuals as the final "judges" of their life experiences <ref type="bibr" target="#b13">[14]</ref>. The prevailing view of hedonism operates on the premise that well-being is the experience of pleasure versus pain and adopts the concept of subjective well-being <ref type="bibr" target="#b14">[15]</ref>. Subjective well-being is characterized by two components: (1) affective (higher frequency of positive emotions over negative ones) and ( <ref type="formula">2</ref>) cognitive (evaluation that the individual makes about his/her life) <ref type="bibr" target="#b15">[16]</ref>. Accordingly, a happy individual makes a positive evaluation of life and experiences positive emotions more often than negative ones <ref type="bibr" target="#b16">[17]</ref>. In addition, according to Diener <ref type="bibr" target="#b17">[18]</ref>, individuals are happy when: (1) they often experience more positive than negative emotions; (2) are involved in interesting activities; (3) experience more pleasure than pain; and (4) are overall satisfied with their lives.</p><p>On the other hand, eudaimonism is considered by several authors <ref type="bibr" target="#b18">[19]</ref> as a form of happiness that goes beyond obtaining pleasure alone and implies the development of the self to obtain happiness. For Ryan and Deci <ref type="bibr" target="#b14">[15]</ref>, the eudaimonic perspective focuses on meaning and self-fulfillment, defining well-being through the degree to which a person is fully functioning-psychological well-being. This perspective has been closely related to the concept of individuals' motivation, as proposed by the self-determination theory (SDT) <ref type="bibr" target="#b14">[15]</ref>. Accordingly, individuals are motivated to satisfy three basic psychological needs: autonomy (having the independence to take decisions and control), competence (feeling competent regarding the environment surrounding), and relatedness (having positive relations with others) <ref type="bibr" target="#b14">[15]</ref>.</p><p>Motivation was defined as the energy, direction, and persistence of behavior <ref type="bibr" target="#b1">[2]</ref>. It is a multidimensional concept <ref type="bibr" target="#b2">[3]</ref> that regulates and sustains the individual's actions. Bergamini <ref type="bibr" target="#b19">[20]</ref> argued that motivation is stimulated by two factors: internal and external. Internal factors are the intrinsic reasons, such as needs, aptitudes, interests, values, and abilities, through which the worker performs the tasks. External factors are environmental stimuli, that is, personal goals associated with rewards for a given effort, result, or behavior. The self-determination theory (SDT) <ref type="bibr" target="#b14">[15]</ref> also proposed that motivation may be intrinsic or extrinsic. Indeed, the SDT offers a well-justified and empirically demonstrated theoretical framework <ref type="bibr" target="#b20">[21]</ref>. It proposes that motivation is multidimensional because different dimensions of motivation have different underlying behavioral regulations, and as a consequence, different behaviors. Accordingly, motivation follows a continuum, ranging from more controlled forms of motivation (extrinsic motivation) to more autonomous forms (intrinsic motivation) <ref type="bibr" target="#b14">[15]</ref>. This continuum ranges from motivation, external regulation, introjected regulation, identified regulation, integrated regulation, and intrinsic motivation.</p><p>Extrinsic motivation occurs when an individual performs a task for an instrumental reason, such as an external reward <ref type="bibr" target="#b21">[22]</ref>, and includes external (social and material), introjected, and identified regulation. On the other hand, intrinsic motivation occurs when an individual performs a task for the pleasure inherent in the activity itself. Thus, it is defined as an action for the simple satisfaction of performing it, and not for a consequence that arises from it <ref type="bibr" target="#b22">[23]</ref>. When intrinsically motivated, the person is moved to act for fun or challenge, and not for external stimuli, such as pressures or rewards <ref type="bibr" target="#b14">[15]</ref>.</p><p>Most activities that people perform are not intrinsically motivated; that is, people need external stimuli to be motivated for certain tasks, i.e., they need extrinsic motivation <ref type="bibr" target="#b23">[24]</ref>. Ryan and Deci <ref type="bibr" target="#b14">[15]</ref> indeed suggested that behaviors arising from extrinsic motivation are not intrinsically interesting and, therefore, need external stimuli. This is more emphasized in the healthcare working setting. These contexts are psychologically demanding <ref type="bibr" target="#b11">[12]</ref>, which makes healthcare workers more vulnerable to psychological issues. Healthcare workers deliver care and services to the sick and ailing either directly as doctors and nurses or indirectly as assistants, technicians, aides, or medical waste handlers <ref type="bibr" target="#b10">[11]</ref>. Most of these workers, regardless of their specialty, tend to experience decreases in motivation due to their psychologically demanding work, which undoubtedly changes the way they work, being unable to deliver the quality of care they normally would. Hence, for these workers, additional external stimuli are needed to keep them motivated and happy. For instance, if they feel respected and valued by the manager and by their patients, they tend to accept their tasks more easily, resulting in improved well-being at work. Diverse studies showed that intrinsic motivation and identified regulation led to positive results for the organization, such as productivity and satisfaction, than introjected and external regulation <ref type="bibr" target="#b24">[25]</ref>. However, this is not consensual, as other studies showed that only intrinsic motivation was significantly related to performance and well-being <ref type="bibr" target="#b25">[26]</ref>.</p><p>Motivation has been studied in light of the job characteristics model (JCM) <ref type="bibr" target="#b7">[8]</ref> because one of the factors that most affects motivation is the characteristics of a job <ref type="bibr" target="#b26">[27]</ref>. The JCM proposes that motivation is related to the characteristics of the tasks, namely identity, variety, meaning, autonomy, and feedback, which in turn are associated with three critical psychological states (perceived relevance, responsibility, knowledge of the results achieved at work) that lead to certain results, such as performance.</p><p>Task identity refers to a worker's ability to complete tasks and with which s/he identifies. Hackman and Oldham <ref type="bibr" target="#b7">[8]</ref> stated that jobs that involve an intact task, such as providing a complete unit of service or putting together an entire product, are invariably more interesting to perform than jobs that involve only small parts of the task. Plus, task meaning refers to the impact of work on workers' daily life, both in and outside the organization. Hence, it is related to the degree of importance attributed to the tasks by the individuals and, as a consequence, influences their well-being <ref type="bibr" target="#b7">[8]</ref>. Task variety refers to the need of using the abilities, knowledge, and skills to carry out the tasks. According to Sims, et al. <ref type="bibr" target="#b27">[28]</ref>, work becomes more interesting and enjoyable when it involves a set of different tasks. Autonomy has been the most studied <ref type="bibr" target="#b28">[29]</ref>; it is the degree of freedom and the level of independence that a worker has to perform the tasks. Hence, it allows workers to become independent and able to self-manage their work, with the ability to make decisions and choose which methodologies to use to carry out the tasks <ref type="bibr" target="#b0">[1]</ref>. That is, autonomy focuses on the individual's freedom to design work, make decisions, and define their working methods <ref type="bibr" target="#b6">[7]</ref>. Lastly, feedback is the degree of direct and concise information about a worker's effectiveness on a task <ref type="bibr" target="#b7">[8]</ref>.</p><p>These characteristics, also known as work design <ref type="bibr" target="#b6">[7]</ref>, give rise to critical psychological states: perceived relevance, that is, the importance that the individual attributes to work according to their values, needs, and expectations, which is determined by the variety, identity, and meaning of tasks; responsibility, which is the commitment to the work results, where autonomy plays a key role; and the knowledge of the results achieved at work, that is, the awareness of self-efficiency while performing the tasks <ref type="bibr" target="#b0">[1]</ref>. The interaction between job characteristics and critical psychological states leads to outcomes or impacts, such as intrinsic motivation, job satisfaction, individual development, decreased job turnover, and job performance <ref type="bibr" target="#b7">[8]</ref>. These characteristics are motivating once they lead to greater performance and well-being. Therefore, based on the empirical literature, we hypothesized the following: Hypothesis 1 (H1). The relationship between job characteristics and happiness is mediated by intrinsic motivation (but not by extrinsic motivation).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">The Mediating Role of Adaptive Performance</head><p>Some studies have shown that low levels of autonomy and feedback decrease motivation <ref type="bibr" target="#b29">[30]</ref>. However, this is not consensual, as some authors have argued that greater responsibility, freedom, and recognition seem to increase motivation <ref type="bibr" target="#b30">[31]</ref>.</p><p>Other authors have studied the role of job characteristics for different outputs, such as adaptive performance-the ability to adapt to certain job conditions, situations, or events <ref type="bibr" target="#b28">[29]</ref>. This relationship occurs since there is a positive effect on the workers' psychological state, such as the intrinsic motivation to perform tasks, the responsibility for the results, and the knowledge of the achieved goals <ref type="bibr" target="#b31">[32]</ref>. The adaptability and identity of the task and the common goals of the organization develop collaboration between workers and encourage mutual support <ref type="bibr" target="#b26">[27]</ref>. Thus, the greater the identity of the tasks, the greater the balance between individual and organizational interests, increasing adaptive performance <ref type="bibr" target="#b32">[33]</ref>. Thus, based on the JCS, we defined the following hypothesis: Hypothesis 2 (H2). The relationship between job characteristics and happiness is mediated by adaptive performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.">The Serial Mediating Role of Intrinsic Motivation and Adaptive Performance</head><p>Nevertheless, some barriers may appear during task performance, such as lack of materials, scarce information, or workload-characteristics from healthcare working settings-which may negatively influence performance <ref type="bibr" target="#b33">[34]</ref>. Some constraints that result from the performance of tasks, at certain times, such as stress from dealing with patients, the pressure exerted on individuals, the long working hours, and the complexity of the tasks, restrict the performance of the task; however, these constraints may encourage adaptive performance behaviors when individuals are intrinsically motivated. Hence, they are motivated to manage the constraints that limit their performance <ref type="bibr" target="#b33">[34]</ref>.</p><p>We argue that intrinsic motivation is positively related to performance adaptive behaviors and individuals' happiness-the individual's judgment about the quality of life; however, we expect that extrinsic motivation, in the form of integrated regulation, does not serve as a process that explains how certain job motivating characteristics improve happiness and performance. Integrated regulation is a form of extrinsic motivation that needs external elements to drive individuals' actions. Job characteristics such as autonomy or task meaning are intrinsically motivating due to their subjective nature. That is, the need for autonomy varies from individual to individual. Moreover, perceived autonomy is also a process of cognitive judgment of autonomy per se. Thus, combining cognitive judgment with the need for such characteristics depends on the individual. Therefore, we may not judge these job characteristics as extrinsically motivated. Based on the JCM and the SDT, we defined the following: Hypothesis 3 (H3). The relationship between job characteristics and happiness is serially mediated by intrinsic motivation and adaptive performance (but not by extrinsic motivation) (Figure <ref type="figure">1</ref>).</p><p>the results, and the knowledge of the achieved goals <ref type="bibr" target="#b31">[32]</ref>. The adaptability and identity of the task and the common goals of the organization develop collaboration between workers and encourage mutual support <ref type="bibr" target="#b26">[27]</ref>. Thus, the greater the identity of the tasks, the greater the balance between individual and organizational interests, increasing adaptive performance <ref type="bibr" target="#b32">[33]</ref>. Thus, based on the JCS, we defined the following hypothesis: Hypothesis 2 (H2). The relationship between job characteristics and happiness is mediated by adaptive performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.">The Serial Mediating Role of Intrinsic Motivation and Adaptive Performance</head><p>Nevertheless, some barriers may appear during task performance, such as lack of materials, scarce information, or workload-characteristics from healthcare working settings-which may negatively influence performance <ref type="bibr" target="#b33">[34]</ref>. Some constraints that result from the performance of tasks, at certain times, such as stress from dealing with patients, the pressure exerted on individuals, the long working hours, and the complexity of the tasks, restrict the performance of the task; however, these constraints may encourage adaptive performance behaviors when individuals are intrinsically motivated. Hence, they are motivated to manage the constraints that limit their performance <ref type="bibr" target="#b33">[34]</ref>.</p><p>We argue that intrinsic motivation is positively related to performance adaptive behaviors and individuals' happiness-the individual's judgment about the quality of life; however, we expect that extrinsic motivation, in the form of integrated regulation, does not serve as a process that explains how certain job motivating characteristics improve happiness and performance. Integrated regulation is a form of extrinsic motivation that needs external elements to drive individuals' actions. Job characteristics such as autonomy or task meaning are intrinsically motivating due to their subjective nature. That is, the need for autonomy varies from individual to individual. Moreover, perceived autonomy is also a process of cognitive judgment of autonomy per se. Thus, combining cognitive judgment with the need for such characteristics depends on the individual. Therefore, we may not judge these job characteristics as extrinsically motivated. Based on the JCM and the SDT, we defined the following: Hypothesis 3 (H3). The relationship between job characteristics and happiness is serially mediated by intrinsic motivation and adaptive performance (but not by extrinsic motivation) (Figure <ref type="figure">1</ref>). </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Participants and Procedure</head><p>We collected data with a convenience sample that included 290 healthcare workers from a nursing home. Their mean age was 40 years (SD = 12.35), and the majority were aged between 46 and 64 years old (40.2%), of which 89.6% were female and had a graduate degree (48.1%). The mean organizational tenure was 4 years (SD = 8.49), and the mean function tenure was 5.2 years (SD = 8.25). The sample comprised nurses (43%), assistants (31%), doctors (16%), and technicians (10%). On average, they worked 40 h per week (SD = 16.95).</p><p>We contacted the Board Director from the nursing home, in November 2020, to conduct the study there. We explained our main goals and assured the confidentiality and anonymity of the data. Then, we contacted the workers from that nursing home via email. In the email, we assured that the participation would be voluntary, and we clarified this study's goals and the data collection procedure. After they signed an informed consent, we sent them three emails. The first email included a link to the first survey that aimed to measure job characteristics and the sample's socio-characterization. Two days later, we sent the second email, containing another link for another survey. This measured motivation. At last, two days later, we sent the last email for the survey. This assessed adaptive performance and happiness. Data collection took place in January 2021. From the first to the third day of data collection, 10 participants quit. Moreover, from the 300 workers contacted, we obtained 290 valid answers (response rate: 97%). The sample size is suitable to test our hypotheses because we collected data from (almost) the entire population of this nursing home (97% response rate) <ref type="bibr" target="#b34">[35]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Measures</head><p>Motivation. We used the Multidimensional Work Motivation Scale <ref type="bibr" target="#b24">[25]</ref>. This included 18 items divided into six dimensions: amotivation (e.g., "I do not exert myself at work because I think it is a waste of time"), social external regulation (e.g., "I exert myself at work because I will get more respect from others"), material external regulation (e.g., "I exert myself at work because I will only be rewarded financially by others if I try"), introjected regulation (e.g., "I exert myself at work because in exerting myself, I feel proud of myself"), identified regulation (e.g., "I think it is important to exert myself in my work"), and intrinsic motivation (e.g., "I think it's important to put effort into my work") The items were answered using a 7-point Likert scale (1 "Not at all"; 7 "Completely"). The internal consistency of the scale, measured through Cronbach's alpha, ranged between 0.77 and 0.95 (see Appendix A).</p><p>Job characteristics. We used 15 items from the Work Design Questionnaire <ref type="bibr" target="#b6">[7]</ref>. The scale measured: autonomy (e.g., "My job allows me to plan how I do my work"), variety (e.g., "My job involves a wide variety of tasks"), task meaning (e.g., "The results of my work are likely to significantly affect the lives of other people"), task identity (e.g., "My job gives me the possibility to finish the parts of the work that I have started"), feedback (e.g., "My job itself provides feedback on my performance"). The individuals responded on a 5-point Likert scale (1-Strongly Disagree; 5-Strongly Agree). Cronbach's alphas ranged from 0.88 to 0.95.</p><p>Adaptive performance. We used three items from the scale of performance developed by Griffin., et al. <ref type="bibr" target="#b35">[36]</ref>. A sample item is "Adapted well to changes in core tasks"). They had to respond based on a 5-point Likert-type scale (1-Very Little; 5-To a great extent). Cronbach's alpha was 0.96.</p><p>Happiness. We used the 5-item Satisfaction with Life Scale <ref type="bibr" target="#b36">[37]</ref>. A sample item is (I am satisfied with my life). Participants answered the items on a 5-point Likert scale (1-strongly disagree, 5-completely agree). Cronbach's alpha was 0.86.</p><p>Control variables. We used sex, age, habilitations, and years of service as control variables, because these variables have been shown to account for differences in motivation, performance, and happiness indicators <ref type="bibr" target="#b37">[38]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.">Data Analyses</head><p>We used SPSS to analyze the data and the macro-PROCESS to test our hypotheses (model 6-serial mediation analyses) <ref type="bibr" target="#b38">[39]</ref>. PROCESS is an observed-variable modeling tool that relies on ordinary least squares (OLS). This macro is suitable as it enables the isolation of each mediator's indirect effect (intrinsic motivation (H1) and adaptive performance (H2)), as well as testing of the serial indirect effect (H3) <ref type="bibr" target="#b38">[39]</ref>. Moreover, an added value of this macro is that it tests the indirect effect between the predictor and the criterion variables through the mediator via the bootstrapping approach, thereby addressing some flaws associated with the Sobel test <ref type="bibr" target="#b38">[39]</ref>. This approach allows us to calculate not only the coefficients (β) and the SE (Standardized Estimates), but also the 95% CI (confidence intervals) for the path estimates. Hayes and Scharkow <ref type="bibr" target="#b39">[40]</ref> suggested that bootstrap confidence intervals are a good approach for detecting path coefficients. Moreover, whereas other statistical programs (e.g., AMOS) provide bootstrap confidence intervals for overall indirect effects, it is not possible to obtain it for specific indirect effects <ref type="bibr" target="#b40">[41]</ref> as PROCESS macro does, in serial mediations. Moreover, this macro has been recognized as an added value because it allows testing even with smaller samples <ref type="bibr" target="#b41">[42]</ref>. Hence, the PROCESS macro is suitable to test the hypotheses in this study.</p><p>To test for common method bias, we performed confirmatory factor analyses. The results show that the nine-factor model (autonomy, variety, feedback, meaning, identity, intrinsic and extrinsic motivation, adaptive performance, and happiness) fitted the data well (RMSEA = 0.07, CFI = 0.93 TLI = 0.92, SRMR = 0.05). The single-factor model evidenced an unacceptable fit (RMSEA = 0.13, CFI = 0.72 TLI = 0.69, SRMR = 0.15).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Results</head><p>Table <ref type="table" target="#tab_0">1</ref> shows the means, standard deviations, and correlations for all the variables. Table <ref type="table" target="#tab_1">2</ref> shows the indirect effects and the 95% bias-corrected bootstrapped confidence intervals (CI) for the path estimates. Since neither sex nor age statistically influenced the variables of the study, we opted to remove them from the analyses.</p><p>Hypothesis 1 stated that intrinsic motivation would mediate the relationship between job characteristics and happiness. The findings show that all the job characteristics led to happiness via intrinsic motivation (but not via extrinsic) (autonomy: β = 0.09, SE = 0.02, 95% CI [0.05, 0.14], feedback: β = 0.11, SE = 0.03, CI 95% [0.06, 0.18], variety: β = 0.13, SE = 0.03, 95% CI [0.08, 0.19], meaning: β = 0.10, SE = 0.02, CI 95% [0.06, 0.15], and identity: β = 0.09, SE = 0.03, 95% CI [0.05, 0.14]), lending support to H1.</p><p>Hypothesis 2 expected that adaptive performance would mediate the link between job characteristics and happiness. The indirect effect of adaptive performance was significant for all the job characteristics as predictors of happiness (autonomy: β = 0.04, SE = 0.02, 95% CI [0.01, 0.09], feedback: β = 0.08, SE = 0.03, 95% CI [0.03, 0.12], variety: β = 0.11, SE = 0.03, 95% CI [0.05, 0.17], meaning: β = 0.02, SE = 0.02, 95% CI [0.00, 0.06], and identity: β = 0.04, SE = 0.02, 95% CI [0.01, 0.09]). Thus, H2 was supported.</p><p>Hypothesis 3 expected that intrinsic motivation and adaptive performance serially mediated the relationship between job characteristics and happiness. The indirect effect of both intrinsic motivation and adaptive performance was significant (autonomy: β = 0.02, SE = 0.01, 95% CI [0.01, 0.04], feedback: β = 0.02, SE = 0.01, 95% CI [0.01, 0.04], variety: β = 0.02, SE = 0.01, 95% CI [0.00, 0.04], meaning: β = 0.02, SE = 0.01, 95% CI [0.01, 0.04], and identity: β = 0.02, SE = 0.01, 95% CI [0.01, 0.04]). The serial mediation was not significant for extrinsic motivation (autonomy: β = 0.01, SE = 0.00, CI 95% [-0.00, 0.03], feedback: β = 0.01, SE = 0.00, 95% CI [-0.01, 0.03], variety: β = 0.01, SE = 0.01, 95% CI [-0.00, 0.05], meaning: β = 0.01, SE = 0.01, 95% CI [-0.00, 0.03], and identity: β = 0.01, SE = 0.00, 95% CI [-0.00, 0.03]). Thus, H3 received support (see, Figure <ref type="figure" target="#fig_1">2</ref>).  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Discussion</head><p>The present study analyzes the relationship between five job characteristics (autonomy, feedback, variety, meaning, and task identity) and happiness via two types of motivation (extrinsic and intrinsic) and adaptive performance, in a sample of nursing home professionals that included doctors, nurses, technicians, and assistants. The findings are of particular importance given the COVID-19 crisis, which was a trigger of uncertainty <ref type="bibr" target="#b36">[37]</ref>.</p><p>The findings show that job characteristics influence healthcare workers' happiness via two processes: affective (motivation) and behavioral (adaptive performance). That is, in line with the JCS of Hakman and Oldham <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b7">8]</ref>, we show that autonomy, feedback, task variety, identity, and meaning are indeed motivating job characteristics that positively influence intrinsic motivation, that leads to more adaptive performance behaviors, making the individual feel better and happier. When the levels of these job characteristics are higher, workers' intrinsic motivation increases, making them more committed and engaged with work, leading to higher adaptive performance, and, as a result, happiness increases. These results are consistent with the theoretical <ref type="bibr" target="#b7">[8]</ref> and empirical <ref type="bibr" target="#b33">[34]</ref> literature. For example, Sonnentag et al. <ref type="bibr" target="#b33">[34]</ref> showed that the same job characteristics were positively related to performance and satisfaction through intrinsic motivation. The JCM argues that these job characteristics are motivating and lead to positive outcomes because there is a positive effect of job characteristics on individuals' psychological states, such as the responsibility for the results to be achieved, or the relevance attributed by the individuals to their work and results. Accordingly, these characteristics are motivating once they lead to greater performance and well-being. Similarly, Millette and Gagné <ref type="bibr" target="#b42">[43]</ref> showed that job characteristics were positively associated with intrinsic motivation, satisfaction, and performance. More recently, Zaman et al. <ref type="bibr" target="#b43">[44]</ref> showed that job characteristics influenced motivation and, therefore, joy while working and performance. Therefore, we may conclude that autonomy, feedback, task variety, identity, and meaning influence healthcare workers' intrinsic motivation, which leads to more adaptive behaviors and in turn to increased Our findings also evidence that this serial mediation does not occur for extrinsic motivation. While some authors argued that some forms of extrinsic motivation would lead to positive outcomes, such as performance <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b24">25]</ref>, others are in line with this result <ref type="bibr" target="#b0">[1]</ref>. Hence, we may conclude that extrinsic motivation may be relevant to some outcomes (e.g., task performance) due to its inherent external rewards (e.g., salary, compensation) <ref type="bibr" target="#b44">[45]</ref>; however, it is not sufficient to commit the individual to go further on his/her formal responsibilities and engage in adaptive behaviors that, in turn, result in happiness. Contrary to extrinsic motivation, some job characteristics make the individual take pleasure from </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Discussion</head><p>The present study analyzes the relationship between five job characteristics (autonomy, feedback, variety, meaning, and task identity) and happiness via two types of motivation (extrinsic and intrinsic) and adaptive performance, in a sample of nursing home professionals that included doctors, nurses, technicians, and assistants. The findings are of particular importance given the COVID-19 crisis, which was a trigger of uncertainty <ref type="bibr" target="#b36">[37]</ref>.</p><p>The findings show that job characteristics influence healthcare workers' happiness via two processes: affective (motivation) and behavioral (adaptive performance). That is, in line with the JCS of Hakman and Oldham <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b7">8]</ref>, we show that autonomy, feedback, task variety, identity, and meaning are indeed motivating job characteristics that positively influence intrinsic motivation, that leads to more adaptive performance behaviors, making the individual feel better and happier. When the levels of these job characteristics are higher, workers' intrinsic motivation increases, making them more committed and engaged with work, leading to higher adaptive performance, and, as a result, happiness increases. These results are consistent with the theoretical <ref type="bibr" target="#b7">[8]</ref> and empirical <ref type="bibr" target="#b33">[34]</ref> literature. For example, Sonnentag et al. <ref type="bibr" target="#b33">[34]</ref> showed that the same job characteristics were positively related to performance and satisfaction through intrinsic motivation. The JCM argues that these job characteristics are motivating and lead to positive outcomes because there is a positive effect of job characteristics on individuals' psychological states, such as the responsibility for the results to be achieved, or the relevance attributed by the individuals to their work and results. Accordingly, these characteristics are motivating once they lead to greater performance and well-being. Similarly, Millette and Gagné <ref type="bibr" target="#b42">[43]</ref> showed that job characteristics were positively associated with intrinsic motivation, satisfaction, and performance. More recently, Zaman et al. <ref type="bibr" target="#b43">[44]</ref> showed that job characteristics influenced motivation and, therefore, joy while working and performance. Therefore, we may conclude that autonomy, feedback, task variety, identity, and meaning influence healthcare workers' intrinsic motivation, which leads to more adaptive behaviors and in turn to increased happiness.</p><p>Our findings also evidence that this serial mediation does not occur for extrinsic motivation. While some authors argued that some forms of extrinsic motivation would lead to positive outcomes, such as performance <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b24">25]</ref>, others are in line with this result <ref type="bibr" target="#b0">[1]</ref>. Hence, we may conclude that extrinsic motivation may be relevant to some outcomes (e.g., task performance) due to its inherent external rewards (e.g., salary, compensation) <ref type="bibr" target="#b44">[45]</ref>; however, it is not sufficient to commit the individual to go further on his/her formal responsibilities and engage in adaptive behaviors that, in turn, result in happiness. Contrary to extrinsic motivation, some job characteristics make the individual take pleasure from work, involving him/her, and improving adaptive work behaviors. In turn, these make individuals feel satisfied with themselves and with life.</p><p>We may not forget the period in which data were collected, amid the pandemic. Hence, these results highlight the role that intrinsic motivating characteristics appear to have for healthcare workers. Therefore, this study extends the job characteristics model by demonstrating that (1) healthcare employees' happiness is affected by job characteristics (autonomy, feedback, variety, meaning, and task identity) that influence their intrinsic motivation, because these professionals, due to their demanding working day, need to feel energized by their work, to be more adaptable to such demands. Healthcare workers often have complex and demanding working days, which were particularly difficult during the pandemic <ref type="bibr" target="#b36">[37]</ref>, as they were faced with a significantly higher quantitative overload and negative affective situations such as the death of their patients. Indeed, job motivating characteristics, such as autonomy, can be a suitable strategy to energize and motivate these employees, making them more adaptable to uncertain and complex situations, which at the same time may lead them to flourish and be happier.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">Limitations and Future Directions</head><p>The present study has some limitations that are essentially related to the sample. Although the number of participants is considered acceptable for the study, the sample size (N = 290) is small and, as such, limits the generalizability of the results. Moreover, we gathered data in only one institution and with a specific class of professionals (healthcare workers), which again may limit the generalizability of the data for other professional groups and institutions. Another limitation is related to the self-report of the data; that is, participants may have given "socially desirable" answers, which limits the reliability of the conclusions obtained. Moreover, even though we have collected data at three time points, we still have a cross-sectional study that may have resulted in the common method bias. However, the confirmatory factor analyses performed minimize such bias, as it indicates that the one-factor model does not fit the data well.</p><p>Future studies should use other types of designs (e.g., diaries) to test the proposed conceptual model, because motivation, performance, and happiness are dynamic constructs influenced by the context and individual <ref type="bibr" target="#b16">[17]</ref>. Thus, a daily design would capture such dynamics among daily motivation, daily performance, and daily happiness <ref type="bibr" target="#b45">[46]</ref>. Additionally, it would be interesting to test this model applied to telework, given that telework has a different work design than the face-to-face model of work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.">Practical Implications</head><p>Currently, organizations face a period of instability and volatility, which is emphasized specifically for healthcare workers. As Greenberg <ref type="bibr" target="#b11">[12]</ref> noted, healthcare workers have been required to work in highly challenging conditions during the COVID-19 pandemic and may therefore be at increased risk of experiencing mental health problems and decreased motivation. These factors are also related to changes in daily routines at work that, in turn, influence the way healthcare workers work and may impair the quality of care they would normally provide <ref type="bibr" target="#b11">[12]</ref>.</p><p>Thereby, the results focus on the need to look after these professionals, as they look after their patients. Indeed, some job characteristics influence individuals' motivation, performance, and, as a result, their happiness. The results show that intrinsic motivation is positively related to performance; that is, employees' performance is higher when they feel intrinsically motivated. This motivation seems to improve the level of commitment and encourage individuals to achieve better results for organizations <ref type="bibr" target="#b26">[27]</ref>. Thus, from a practical point of view, healthcare institutions must apply strategies so that employees feel connected to them, that is, feel intrinsically motivated, leading to greater performance. For example, healthcare workers should be actively monitored. This type of monitoring may be of interest for managers, as there is evidence suggesting that proactively asking these kinds of workers about their motivation, internal states, and well-being can increase the take-up of care, as was found after terrorist incidents in the UK <ref type="bibr" target="#b46">[47]</ref>. This intervention focused on monitoring professionals who could rely on the regular application of an anonymous, online self-check tool comprising a range of motivational and well-being measures giving tailored advice, such as self-help information.</p><p>Moreover, these institutions can think of incentive plans, rewards, or attractive conditions for employees (such as flexible hours, telework, a day off on the employee's birthday or children's birthday, and cash vouchers at Christmas, among others). It is also important to promote a good working environment, create conditions for a good relationship between workers, and create moments for team building. These strategies may promote commitment and motivation for the effective performance of tasks and for healthcare workers to feel happy at work.</p><p>Overall, healthcare institutions must have open communication with an effective design of functions to foster intrinsic motivation and, consequently, achieve productivity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">Conclusions</head><p>The results of this study extend previous works on job characteristics and their predictive effect on happiness. The findings show that autonomy, feedback, task variety, identity, and meaning influence healthcare workers' intrinsic motivation, which leads to more adaptive behaviors and in turn to increased happiness. In contrast, extrinsic motivation appears to be insufficient to influence healthcare workers to improve their adaptive performance, and as a result, lead them to be happier.</p><p>Because I personally consider it important to put efforts in this job. Because putting efforts in this job aligns with my personal values. Because putting efforts in this job has personal significance to me.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Intrinsic motivation</head><p>Because I have fun doing my job. Because what I do in my work is exciting. Because the work I do is interesting. scale: 1 = "not at all", 2 = "very little", 3 = "a little", 4 = "moderately", 5 = "strongly", 6 = "very strongly", 7 = "completely" Job characteristics: Work Design Questionnaire Think about your job and indicate whether you agree or disagree with the following affirmations. Autonomy</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .Figure 1 .</head><label>11</label><figDesc>Figure 1. The serial mediation model.Job characteristics Autonomy Feedback Variety Identity Meaning</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. The analyzed serial mediation model (** p &lt; 0.01; *** p &lt; 0.001).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. The analyzed serial mediation model (** p &lt; 0.01; *** p &lt; 0.001).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Descriptive statistics, correlations, and Cronbach's alphas.</figDesc><table><row><cell>Variable</cell><cell>M</cell><cell>SD</cell><cell>1</cell><cell>2</cell><cell>3</cell><cell>4</cell><cell>5</cell><cell>6</cell><cell>7</cell><cell>8</cell><cell>9</cell></row><row><cell>1. Autonomy</cell><cell>3.76 1</cell><cell>1.16</cell><cell>(0.88)</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>2. Feedback</cell><cell>4.13 1</cell><cell>0.81</cell><cell>0.30 **</cell><cell>(0.89)</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>3. Variety</cell><cell>4.21 1</cell><cell>0.91</cell><cell>0.46 **</cell><cell>0.37 **</cell><cell>(0.90)</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>4. Identity</cell><cell>3.93 1</cell><cell>0.94</cell><cell>0.35 **</cell><cell>0.57 **</cell><cell>0.26 **</cell><cell>(0.88)</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>5. Meaning</cell><cell>3.92 1</cell><cell>1.11</cell><cell>0.33 **</cell><cell>0.27 **</cell><cell>0.42 **</cell><cell>0.31 **</cell><cell>(0.90)</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>6. Extrinsic motivation</cell><cell>6.28 2</cell><cell>1.14</cell><cell>0. 21 **</cell><cell>0.11</cell><cell>0.29 **</cell><cell>0.13 *</cell><cell>0.15 *</cell><cell>(0.95)</cell><cell></cell><cell></cell><cell></cell></row><row><cell>7. Intrinsic motivation</cell><cell>5.35 2</cell><cell>1.50</cell><cell>0.41 **</cell><cell>0.30 **</cell><cell>0.37 **</cell><cell>0.29 **</cell><cell>0.32 **</cell><cell>0.54 **</cell><cell>(0.95)</cell><cell></cell><cell></cell></row><row><cell>8. Performance</cell><cell>4.38 1</cell><cell>0.67</cell><cell>0.28 **</cell><cell>0.31 *</cell><cell>0.40 **</cell><cell>0.22 **</cell><cell>0.16 **</cell><cell>0.26 **</cell><cell>0.28 **</cell><cell>(0.96)</cell><cell></cell></row><row><cell>9. Happiness</cell><cell>3.66 1</cell><cell>0.83</cell><cell>0.45 **</cell><cell>0.36 **</cell><cell>0.29 **</cell><cell>0.33 **</cell><cell>0.19 **</cell><cell>0.20 **</cell><cell>0.49 **</cell><cell>0.44 **</cell><cell>(0.86)</cell></row><row><cell>Age</cell><cell>40</cell><cell>12.35</cell><cell>0.09</cell><cell>0.06</cell><cell>0.05</cell><cell>0.07</cell><cell>0.14 *</cell><cell>-0.10</cell><cell>0.06</cell><cell>0.03</cell><cell>0.04</cell></row><row><cell>Sex</cell><cell>-</cell><cell>-</cell><cell>-0.16 *</cell><cell>0.10</cell><cell>-0.14 *</cell><cell>0.12 *</cell><cell>-0.13 *</cell><cell>-0.35 **</cell><cell>-0.19 **</cell><cell>-0.06</cell><cell>0.03</cell></row><row><cell>Habilitations</cell><cell>-</cell><cell>-</cell><cell>-0.00</cell><cell>-0.01</cell><cell>-0.02</cell><cell>0.00</cell><cell>-0.04</cell><cell>-0.20 **</cell><cell>-0.18 **</cell><cell>0.03</cell><cell>0.04</cell></row><row><cell>Tenure</cell><cell>4</cell><cell>8.49</cell><cell>-0.00</cell><cell>-0.01</cell><cell>-0.02</cell><cell>-0.05</cell><cell>0.09</cell><cell>0.00</cell><cell>0.07</cell><cell>0.08</cell><cell>0.02</cell></row></table><note><p><p><p><p><p>Note. N = 290.</p>1 </p>Scale from 1 to 5.</p>2 </p>Scale from 1 to 7. * p &lt; 0.05, ** p &lt; 0.01.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Serial mediation model results.</figDesc><table><row><cell></cell><cell cols="2">Intrisic Motivation</cell><cell cols="2">Adaptive Performance</cell><cell>Happiness</cell><cell></cell></row><row><cell>Predictor</cell><cell>Coeff</cell><cell>t</cell><cell>Coeff</cell><cell>t</cell><cell>Coeff</cell><cell>t</cell></row><row><cell>Autonomy</cell><cell>0.53 **</cell><cell>7.51</cell><cell>0.11 **</cell><cell>3.13</cell><cell>0.17 **</cell><cell>4.44</cell></row><row><cell>Intrisic Motivation</cell><cell>-</cell><cell>-</cell><cell>0.09 **</cell><cell>3.22</cell><cell>0.17 **</cell><cell>5.78</cell></row><row><cell>Performance</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>0.36 **</cell><cell>5.76</cell></row><row><cell>Age</cell><cell>0.00</cell><cell>1.10</cell><cell>-0.00</cell><cell>-0.25</cell><cell>-0.00</cell><cell>-0.26</cell></row><row><cell>Sex</cell><cell>-0.47 *</cell><cell>-2.53</cell><cell>-0.03</cell><cell>-0.15</cell><cell>0.50 *</cell><cell>2.33</cell></row><row><cell>Habilitations</cell><cell>-0.23</cell><cell>-1.39</cell><cell>0.06</cell><cell>0.94</cell><cell>0.02</cell><cell>0.21</cell></row><row><cell>Tenure</cell><cell>0.03</cell><cell>0.85</cell><cell>0.02</cell><cell>1.26</cell><cell>0.00</cell><cell>0.17</cell></row><row><cell>Indirect effect</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Aut → Mot → Hap</cell><cell></cell><cell></cell><cell cols="2">0.09 ** CI 95% [0.05, 0.14]</cell><cell></cell><cell></cell></row><row><cell>Aut → Perf → Hap</cell><cell></cell><cell></cell><cell cols="2">0.04 ** CI 95% [0.01, 0.09]</cell><cell></cell><cell></cell></row><row><cell>Aut → Mot → Perf → Hap</cell><cell></cell><cell></cell><cell cols="2">0.02 ** CI 95% [0.01, 0.04]</cell><cell></cell><cell></cell></row><row><cell>R 2</cell><cell>17.02</cell><cell></cell><cell>11.14</cell><cell></cell><cell></cell><cell>38.32</cell></row><row><cell>F</cell><cell>56.38 **</cell><cell></cell><cell>17.17 **</cell><cell></cell><cell cols="2">56.52 **</cell></row><row><cell>Feedback</cell><cell>0.57 **</cell><cell>5.35</cell><cell>0.21 **</cell><cell>4.26</cell><cell>0.18 **</cell><cell>3.26</cell></row><row><cell>Intrisic Motivation</cell><cell>-</cell><cell>-</cell><cell>0.09 **</cell><cell>3.47</cell><cell>0.20 **</cell><cell>6.80</cell></row><row><cell>Performance</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>0.36 **</cell><cell>5.57</cell></row><row><cell>Age</cell><cell>-0.00</cell><cell>-0.08</cell><cell>-0.00</cell><cell>-0.37</cell><cell>-0.00</cell><cell>-0.35</cell></row><row><cell>Sex</cell><cell>-0.90 *</cell><cell>-2.04</cell><cell>-0.12</cell><cell>-0.62</cell><cell>0.38</cell><cell>1.68</cell></row><row><cell>Habilitations</cell><cell>-0.13</cell><cell>-0.81</cell><cell>0.10</cell><cell>1.52</cell><cell>0.06</cell><cell>0.69</cell></row><row><cell>Tenure</cell><cell>0.00</cell><cell>0.10</cell><cell>0.01</cell><cell>0.69</cell><cell>-0.01</cell><cell>-0.44</cell></row><row><cell>Indirect effect</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Fee → Mot → Hap</cell><cell></cell><cell></cell><cell cols="2">0.11 CI 95% [0.06, 0.18]</cell><cell></cell><cell></cell></row><row><cell>Fee → Perf → Hap</cell><cell></cell><cell></cell><cell cols="2">0.08 CI 95% [0.03, 0.12]</cell><cell></cell><cell></cell></row><row><cell>Fee → Mot → Perf → Hap</cell><cell></cell><cell></cell><cell cols="2">0.02 CI 95% [0.01, 0.04]</cell><cell></cell><cell></cell></row><row><cell>R 2</cell><cell>9.43</cell><cell></cell><cell>13.67</cell><cell></cell><cell>36.35</cell><cell></cell></row><row><cell>F</cell><cell>28.64 **</cell><cell></cell><cell>21.70 **</cell><cell></cell><cell>51.97 **</cell><cell></cell></row><row><cell>Variety</cell><cell>0.60 **</cell><cell>6.56</cell><cell>0.26 **</cell><cell>6.01</cell><cell>0.02</cell><cell>0.33</cell></row><row><cell>Intrisic Motivation</cell><cell>-</cell><cell>-</cell><cell>0.07 **</cell><cell>2.60</cell><cell>0.22 **</cell><cell>7.24</cell></row><row><cell>Performance</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>0.40 **</cell><cell>5.97</cell></row><row><cell>Age</cell><cell>-0.00</cell><cell>-0.02</cell><cell>-0.00</cell><cell>-0.28</cell><cell>-0.00</cell><cell>-0.32</cell></row><row><cell>Sex</cell><cell>-0.56</cell><cell>-1.24</cell><cell>-0.00</cell><cell>-0.02</cell><cell>0.50 *</cell><cell>2.20</cell></row><row><cell>Habilitations</cell><cell>-0.22</cell><cell>-1.29</cell><cell>0.06</cell><cell>0.07</cell><cell>0.04</cell><cell>0.49</cell></row><row><cell>Tenure</cell><cell>0.00</cell><cell>0.09</cell><cell>0.00</cell><cell>0.38</cell><cell>-0.00</cell><cell>-0.36</cell></row><row><cell>Indirect effect</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Var → Mot → Hap</cell><cell></cell><cell></cell><cell cols="2">0.13 95% CI [0.08, 0.19]</cell><cell></cell><cell></cell></row><row><cell>Var → Perf → Hap</cell><cell></cell><cell></cell><cell cols="2">0.11 95% CI [0.05, 0.17]</cell><cell></cell><cell></cell></row><row><cell>Var → Mot → Perf → Hap</cell><cell></cell><cell></cell><cell cols="2">0.02 95% CI [0.00, 0.04]</cell><cell></cell><cell></cell></row><row><cell>R 2</cell><cell>13.53</cell><cell></cell><cell>18.69</cell><cell></cell><cell></cell><cell>33.89</cell></row><row><cell>F</cell><cell>43.03 **</cell><cell></cell><cell>31.48 **</cell><cell></cell><cell cols="2">46.64 **</cell></row><row><cell>Identity</cell><cell>0.45 **</cell><cell>4.97</cell><cell>0.11 **</cell><cell>2.50</cell><cell>0.15 **</cell><cell>3.29</cell></row><row><cell>Intrisic Motivation</cell><cell>-</cell><cell>-</cell><cell>0.11 **</cell><cell>3.99</cell><cell>0.20 **</cell><cell>6.79</cell></row><row><cell>Performance</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>0.38 **</cell><cell>6.03</cell></row><row><cell>Age</cell><cell>-0.00</cell><cell>-0.29</cell><cell>-0.00</cell><cell>-0.38</cell><cell>-0.00</cell><cell>-0.44</cell></row><row><cell>Sex</cell><cell>-0.95 *</cell><cell>-2.15</cell><cell>-0.05</cell><cell>-0.25</cell><cell>0.38</cell><cell>1.67</cell></row><row><cell>Habilitations</cell><cell>-0.12</cell><cell>-0.73</cell><cell>0.10</cell><cell>1.45</cell><cell>0.06</cell><cell>0.66</cell></row><row><cell>Tenure</cell><cell>0.03</cell><cell>0.85</cell><cell>0.01</cell><cell>0.90</cell><cell>-0.00</cell><cell>-0.05</cell></row><row><cell>Indirect effect</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Id → Mot → Hap</cell><cell></cell><cell></cell><cell cols="2">0.09 95% CI [0.05, 0.14]</cell><cell></cell><cell></cell></row><row><cell>Id → Perf → Hap</cell><cell></cell><cell></cell><cell cols="2">0.04 95% CI [0.01, 0.09]</cell><cell></cell><cell></cell></row><row><cell>Id → Mot → Perf → Hap</cell><cell></cell><cell></cell><cell cols="2">0.02 95% CI [0.01, 0.04]</cell><cell></cell><cell></cell></row><row><cell>R 2</cell><cell>8.26</cell><cell></cell><cell>10.01</cell><cell></cell><cell></cell><cell></cell></row><row><cell>F</cell><cell>24.75 **</cell><cell></cell><cell>15.24 **</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Meaning</cell><cell>0.44 **</cell><cell>5.72</cell><cell>0.05</cell><cell>1.44</cell><cell>0.00</cell><cell>0.10</cell></row><row><cell>Intrisic Motivation</cell><cell>-</cell><cell>-</cell><cell>0.12 **</cell><cell>4.14</cell><cell>0.22 **</cell><cell>7.35</cell></row><row><cell>Performance</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>0.41 **</cell><cell>6.45</cell></row><row><cell>Age</cell><cell>-0.00</cell><cell>-0.32</cell><cell>-0.00</cell><cell>-0.38</cell><cell>-0.00</cell><cell>-0.14</cell></row><row><cell>Sex</cell><cell>-0.58</cell><cell>-1.23</cell><cell>-0.03</cell><cell>-0.14</cell><cell>0.48 *</cell><cell>2.09</cell></row><row><cell>Habilitations</cell><cell>-0.15</cell><cell>-0.89</cell><cell>0.11</cell><cell>1.47</cell><cell>0.05</cell><cell>0.58</cell></row><row><cell>Tenure</cell><cell>0.01</cell><cell>0.35</cell><cell>0.01</cell><cell>0.84</cell><cell>-0.00</cell><cell>-0.25</cell></row><row><cell>Indirect effect</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Mean → Mot → Hap</cell><cell></cell><cell></cell><cell cols="2">0.10 95% CI [0.06, 0.15]</cell><cell></cell><cell></cell></row><row><cell>Mean → Perf → Hap</cell><cell></cell><cell></cell><cell cols="2">0.02 95% CI [0.00, 0.06]</cell><cell></cell><cell></cell></row><row><cell>Mean → Mot → Perf → Hap</cell><cell></cell><cell></cell><cell cols="2">0.02 95% CI [0.01, 0.04]</cell><cell></cell><cell></cell></row><row><cell>R 2</cell><cell>10.66</cell><cell></cell><cell>8.65</cell><cell></cell><cell>33.86</cell><cell></cell></row><row><cell>F</cell><cell>32.80 **</cell><cell></cell><cell>12.98 **</cell><cell></cell><cell>46.59 **</cell><cell></cell></row></table><note><p>Note. N = 290; * p &lt; 0.05 ** p &lt; 0.001.</p></note></figure>
+		</body>
+		<back>
+
+			<div type="availability">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Data Availability Statement: Data will be made available upon reasonable request.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conflicts of Interest:</head><p>The authors declare no conflict of interest.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Author Contributions: Conceptualization, methodology, software, validation, formal analysis, writing-original draft preparation, writing-review, and editing: A.J.-S.; investigation, resources, data curation, visualization: C.M. All authors have read and agreed to the published version of the manuscript.</p><p>Funding: This research received no external funding.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Institutional Review Board Statement:</head><p>The study was conducted by the Declaration of Helsinki and approved by the Institutional Review Board of Instituto Politécnico de Tomar (ESGT06102020 and 10/10/2020).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Informed Consent Statement:</head><p>Informed consent was obtained from all subjects involved in the study.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix A. Survey Motivation: Multidimensional Work Motivation Scale</head><p>Why do you or would you put effort into your current job? Amotivation I don't, because I really feel that I'm wasting my time at work. I do little because I don't think this work is worth putting efforts into. I don't know why I'm doing this job, it's pointless work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Extrinsic regulation-social</head><p>To get others' approval (e.g., supervisor, colleagues, family, clients . . . ). Because others will respect me more (e.g., supervisor, colleagues, family, clients . . . ). To avoid being criticized by others (e.g., supervisor, colleagues, family, clients . . . ).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Extrinsic regulation-material</head><p>Because others will reward me financially only if I put enough effort in my job (e.g., employer, supervisor . . . ). Because others offer me greater job security if I put enough effort in my job (e.g., employer, supervisor . . . ). Because I risk losing my job if I don't put enough effort in it.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introjected regulation</head><p>Because I have to prove to myself that I can. Because it makes me feel proud of myself. Because otherwise I will feel ashamed of myself. Because otherwise I will feel bad about myself.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Identified regulation</head></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Not what it was and not what it will be: The future of job design research</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">R</forename><surname>Oldham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hackman</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/job.678</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Organ. Behav</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="page" from="463" to="479" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Oldham, G.R.; Hackman, J.R. Not what it was and not what it will be: The future of job design research. J. Organ. Behav. 2010, 31, 463-479. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">C</forename><surname>Pinder</surname></persName>
+		</author>
+		<idno type="DOI">10.4324/9781315734606</idno>
+		<title level="m">Work Motivation in Organizational Behavior</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Psychology Press</publisher>
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note>2nd ed</note>
+	<note type="raw_reference">Pinder, C.C. Work Motivation in Organizational Behavior, 2nd ed.; Psychology Press: New York, NY, USA, 2008. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Motivation profiles at work: A self-determination theory approach</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Howard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gagné</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Morin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V D</forename><surname>Broeck</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jvb.2016.07.004</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Vocat. Behav</title>
+		<imprint>
+			<biblScope unit="page" from="74" to="89" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Howard, J.; Gagné, M.; Morin, A.J.; Broeck, A.V.D. Motivation profiles at work: A self-determination theory approach. J. Vocat. Behav. 2016, 95-96, 74-89. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Job Performance Model Based on Employees&apos; Dynamic Capabilities (EDC)</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bie Ńkowska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Tworek</surname></persName>
+		</author>
+		<idno type="DOI">10.3390/su12062250</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Sustainability</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<date type="published" when="2020">2020. 2250</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bie ńkowska, A.; Tworek, K. Job Performance Model Based on Employees&apos; Dynamic Capabilities (EDC). Sustainability 2020, 12, 2250. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Intrinsic Motivation and Self-Determination in Human Behavior</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">L</forename><surname>Deci</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Ryan</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-1-4899-2271-7</idno>
+		<imprint>
+			<date type="published" when="1985">1985</date>
+			<publisher>Plenum Press</publisher>
+			<biblScope unit="volume">3</biblScope>
+			<pubPlace>New York, NY, USA</pubPlace>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Deci, E.L.; Ryan, R.M. Intrinsic Motivation and Self-Determination in Human Behavior; Plenum Press: New York, NY, USA, 1985; Volume 3. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Student Motivation and Associated Outcomes: A Meta-Analysis from Self-Determination Theory</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Howard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bureau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Guay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">X Y</forename><surname>Chong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Ryan</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1745691620966789</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Perspect. Psychol. Sci</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="1300" to="1323" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Howard, J.L.; Bureau, J.; Guay, F.; Chong, J.X.Y.; Ryan, R.M. Student Motivation and Associated Outcomes: A Meta-Analysis from Self-Determination Theory. Perspect. Psychol. Sci. 2021, 16, 1300-1323. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">The Work Design Questionnaire (WDQ): Developing and validating a comprehensive measure for assessing job design and the nature of work</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">P</forename><surname>Morgeson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Humphrey</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0021-9010.91.6.1321</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Appl. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">91</biblScope>
+			<biblScope unit="page" from="1321" to="1339" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Morgeson, F.P.; Humphrey, S.E. The Work Design Questionnaire (WDQ): Developing and validating a comprehensive measure for assessing job design and the nature of work. J. Appl. Psychol. 2006, 91, 1321-1339. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Development of the Job Diagnostic Survey</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hackman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">R</forename><surname>Oldham</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/h0076546</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Appl. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="page" from="159" to="170" />
+			<date type="published" when="1975">1975</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hackman, J.R.; Oldham, G.R. Development of the Job Diagnostic Survey. J. Appl. Psychol. 1975, 60, 159-170. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Designing motivating jobs: An expanded framework for linking work characteristics and motivation</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">K</forename><surname>Parker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ohly</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Work Motivation</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Routledge</publisher>
+			<date type="published" when="2008">2008</date>
+			<biblScope unit="page" from="260" to="311" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Parker, S.K.; Ohly, S. Designing motivating jobs: An expanded framework for linking work characteristics and motivation. In Work Motivation; Routledge: New York, NY, USA, 2008; pp. 260-311.</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">A longitudinal analysis of motivation profiles at work</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Howard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J S</forename><surname>Morin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gagné</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11031-020-09852-4</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Motiv. Emot</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="page" from="39" to="59" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Howard, J.L.; Morin, A.J.S.; Gagné, M. A longitudinal analysis of motivation profiles at work. Motiv. Emot. 2020, 45, 39-59. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">The mediating role of organizational commitment between organizational justice and organiza-tional citizenship behavior: Power distance as moderator</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jehanzeb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mohanty</surname></persName>
+		</author>
+		<idno type="DOI">10.1108/PR-09-2018-0327</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Pers. Rev</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="page" from="445" to="468" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Jehanzeb, K.; Mohanty, J. The mediating role of organizational commitment between organizational justice and organiza-tional citizenship behavior: Power distance as moderator. Pers. Rev. 2019, 49, 445-468. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Mental health of health-care workers in the COVID-19 era</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Greenberg</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41581-020-0314-5</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Rev. Nephrol</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="425" to="426" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Greenberg, N. Mental health of health-care workers in the COVID-19 era. Nat. Rev. Nephrol. 2020, 16, 425-426. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Who Is Happy?</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Myers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Diener</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.1467-9280.1995.tb00298.x</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Psychol. Sci</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="10" to="19" />
+			<date type="published" when="1995">1995</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Myers, D.G.; Diener, E. Who Is Happy? Psychol. Sci. 1995, 6, 10-19. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Intrinsic and extrinsic motivations: Classic definitions and new directions</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Ryan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">L</forename><surname>Deci</surname></persName>
+		</author>
+		<idno type="DOI">10.1006/ceps.1999.1020</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Contemp. Educ. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="54" to="67" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ryan, R.M.; Deci, E.L. Intrinsic and extrinsic motivations: Classic definitions and new directions. Contemp. Educ. Psychol. 2000, 25, 54-67. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Subjective Well-Being</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Diener</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-90-481-2350-6_2</idno>
+	</analytic>
+	<monogr>
+		<title level="m">The Science of Well-Being; Social Indicators Research Series</title>
+		<meeting><address><addrLine>Dordrecht, The Neatherlands</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="12" to="26" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Diener, E. (Ed.) Subjective Well-Being. In The Science of Well-Being; Social Indicators Research Series; Springer: Dordrecht, The Neatherlands, 2009; Volume 37, pp. 12-26. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Testing the affective events theory: The mediating role of affect and the moderating role of mindfulness</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Junça-Silva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Pombeira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Caetano</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/acp.3843</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Appl. Cogn. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="1075" to="1081" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Junça-Silva, A.; Pombeira, C.; Caetano, A. Testing the affective events theory: The mediating role of affect and the moderating role of mindfulness. Appl. Cogn. Psychol. 2021, 35, 1075-1081. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Subjective well-being: The science of happiness and a proposal for a national index</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Diener</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0003-066X.55.1.34</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Am. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="page" from="34" to="43" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Diener, E. Subjective well-being: The science of happiness and a proposal for a national index. Am. Psychol. 2000, 55, 34-43. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Happiness is everything, or is it? Explorations on the meaning of psychological well-being</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Ryff</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0022-3514.57.6.1069</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Personal. Soc. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page" from="1069" to="1081" />
+			<date type="published" when="1989">1989</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ryff, C.D. Happiness is everything, or is it? Explorations on the meaning of psychological well-being. J. Personal. Soc. Psychol. 1989, 57, 1069-1081. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">From top to bottom: How positions on different types of leaderboard may affect fully online student learning performance, intrinsic motivation, and course engagement</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">F</forename><surname>Hew</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sailer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Jia</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.compedu.2021.104297</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Educ</title>
+		<imprint>
+			<biblScope unit="volume">173</biblScope>
+			<biblScope unit="page">104297</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bai, S.; Hew, K.F.; Sailer, M.; Jia, C. From top to bottom: How positions on different types of leaderboard may affect fully online student learning performance, intrinsic motivation, and course engagement. Comput. Educ. 2021, 173, 104297. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Using Bifactor Exploratory Structural Equation Modeling to Test for a Continuum Structure of Motivation</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Howard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gagné</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J S</forename><surname>Morin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Forest</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0149206316645653</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Manag</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="page" from="2638" to="2664" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Howard, J.L.; Gagné, M.; Morin, A.J.S.; Forest, J. Using Bifactor Exploratory Structural Equation Modeling to Test for a Continuum Structure of Motivation. J. Manag. 2016, 44, 2638-2664. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">A motivational model of employee attachment to an organization</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gagné</surname></persName>
+		</author>
+		<idno type="DOI">10.4337/9781784711740.00015</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Handbook of Employee Commitment</title>
+		<meeting><address><addrLine>Northampton, MA, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Edward Elgar Publishing</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="59" to="69" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gagné, M. A motivational model of employee attachment to an organization. In Handbook of Employee Commitment; Edward Elgar Publishing: Northampton, MA, USA, 2016; pp. 59-69. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">How Does Work Motivation Impact Employees&apos; Investment at Work and Their Job Engagement? A Moderated-Moderation Perspective through an International Lens</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Shkoler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kimura</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fpsyg.2020.00038</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Front. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page">38</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Shkoler, O.; Kimura, T. How Does Work Motivation Impact Employees&apos; Investment at Work and Their Job Engagement? A Moderated-Moderation Perspective through an International Lens. Front. Psychol. 2020, 11, 38. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Gamification and the impact of extrinsic motivation on needs satisfaction: Making work fun?</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Mitchell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Schuster</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">S</forename><surname>Jin</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jbusres.2018.11.022</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Bus. Res</title>
+		<imprint>
+			<biblScope unit="volume">106</biblScope>
+			<biblScope unit="page" from="323" to="330" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Mitchell, R.; Schuster, L.; Jin, H.S. Gamification and the impact of extrinsic motivation on needs satisfaction: Making work fun? J. Bus. Res. 2018, 106, 323-330. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">The power of competence support: The impact of coaches and athlete leaders on intrinsic motivation and performance</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Fransen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Boen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Vansteenkiste</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Mertens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">V</forename><surname>Broek</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/sms.12950</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Scand. J. Med. Sci. Sports</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="725" to="745" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fransen, K.; Boen, F.; Vansteenkiste, M.; Mertens, N.; Broek, G.V. The power of competence support: The impact of coaches and athlete leaders on intrinsic motivation and performance. Scand. J. Med. Sci. Sports 2017, 28, 725-745. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">The Detrimental Effects of Extrinsic Reinforcement on &quot;Intrinsic Motivation</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Dickinson</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/BF03392473</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Behav. Anal</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="1" to="15" />
+			<date type="published" when="1989">1989</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Dickinson, A.M. The Detrimental Effects of Extrinsic Reinforcement on &quot;Intrinsic Motivation&quot;. Behav. Anal. 1989, 12, 1-15. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Importance of work characteristics affects job performance: The mediating role of individual dispositions on the work design-performance relationships</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Peiró</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Bayona</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Caballer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Di Fabio</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.paid.2019.109808</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Pers. Individ. Differ</title>
+		<imprint>
+			<biblScope unit="volume">157</biblScope>
+			<biblScope unit="page">109808</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note>CrossRef</note>
+	<note type="raw_reference">Peiró, J.M.; Bayona, J.A.; Caballer, A.; Di Fabio, A. Importance of work characteristics affects job performance: The mediating role of individual dispositions on the work design-performance relationships. Pers. Individ. Differ. 2020, 157, 109808. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">The measurement of job characteristics</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">P</forename><surname>Sims</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">D</forename><surname>Szilagyi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Keller</surname></persName>
+		</author>
+		<idno type="DOI">10.2307/255772</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Acad. Manag. J</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page" from="195" to="212" />
+			<date type="published" when="1976">1976</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sims, H.P.; Szilagyi, A.D.; Keller, R.T. The measurement of job characteristics. Acad. Manag. J. 1976, 19, 195-212. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Autonomy at work in the gig economy: Analysing work status, work content and working conditions of independent professionals</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Pichault</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mckeown</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/ntwe.12132</idno>
+	</analytic>
+	<monogr>
+		<title level="j">New Technol. Work Employ</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="59" to="72" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Pichault, F.; McKeown, T. Autonomy at work in the gig economy: Analysing work status, work content and working conditions of independent professionals. New Technol. Work Employ. 2019, 34, 59-72. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Measurement of job characteristics: Comparison of the original and the re-vised Job Diagnostic Survey</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">T</forename><surname>Kulik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">R</forename><surname>Oldham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H</forename><surname>Langner</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0021-9010.73.3.462</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Appl. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="page">462</biblScope>
+			<date type="published" when="1988">1988</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kulik, C.T.; Oldham, G.R.; Langner, P.H. Measurement of job characteristics: Comparison of the original and the re-vised Job Diagnostic Survey. J. Appl. Psychol. 1988, 73, 462. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">The moderating role of organizational culture on the relationship between workers&apos; attitudes towards telework and happiness</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Silva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Coelho</surname></persName>
+		</author>
+		<idno type="DOI">10.1108/k-02-2022-0231</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Kybernetes 2022</title>
+		<imprint/>
+	</monogr>
+	<note>ahead-of-print</note>
+	<note type="raw_reference">Silva, A.J.; Coelho, N. The moderating role of organizational culture on the relationship between workers&apos; attitudes towards telework and happiness. Kybernetes 2022, ahead-of-print. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Training Routine and Motivation among Cross-Fit ® Participants in Brazil and Portugal during the COVID-19 Pandemic: An Observational Study. RBPFEX</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Zecchin-Oliveira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Domiciano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">B</forename><surname>Ribeiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">F</forename><surname>Pugina</surname></persName>
+		</author>
+		<ptr target="http://www.rbpfex.com.br/index.php/rbpfex/article/view/2283" />
+	</analytic>
+	<monogr>
+		<title level="j">Revista Brasileira de Prescrição e Fisiologia do Exercício</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="907" to="916" />
+			<date type="published" when="2020-09-06">2020. 6 September 2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Zecchin-Oliveira, A.M.; Domiciano, R.A.; Ribeiro, V.B.; Pugina, E.F. Training Routine and Motivation among Cross-Fit ® Partici- pants in Brazil and Portugal during the COVID-19 Pandemic: An Observational Study. RBPFEX. Revista Brasileira de Prescrição e Fisiologia do Exercício 2020, 14, 907-916. Available online: http://www.rbpfex.com.br/index.php/rbpfex/article/view/2283 (accessed on 6 September 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Managing Contextual Performance</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">R</forename><surname>Reilly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><forename type="middle">H</forename><surname>Aronson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Performance Management: Putting Research into Action</title>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Smither</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>London</surname></persName>
+		</editor>
+		<meeting><address><addrLine>San Francisco, CA, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Jossey-Bass</publisher>
+			<date type="published" when="2012">2012</date>
+			<biblScope unit="page" from="297" to="328" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Reilly, R.R.; Aronson, Z.H. Managing Contextual Performance. In Performance Management: Putting Research into Action; Smither, J.W., London, M., Eds.; Jossey-Bass: San Francisco, CA, USA, 2012; pp. 297-328.</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Work-related flow and energy at work and at home: A study on the role of daily recovery</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Demerouti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Bakker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sonnentag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Fullagar</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/job.760</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Organ. Behav</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="276" to="295" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Demerouti, E.; Bakker, A.B.; Sonnentag, S.; Fullagar, C.J. Work-related flow and energy at work and at home: A study on the role of daily recovery. J. Organ. Behav. 2011, 33, 276-295. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Sample Size Justification</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lakens</surname></persName>
+		</author>
+		<idno type="DOI">10.1525/collabra.33267</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Collabra Psychol</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page">33267</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lakens, D. Sample Size Justification. Collabra Psychol. 2022, 8, 33267. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">A New Model of Work Role Performance: Positive Behavior in Uncertain and Interdependent Contexts</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Griffin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Neal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">K</forename><surname>Parker</surname></persName>
+		</author>
+		<idno type="DOI">10.5465/amj.2007.24634438</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Acad. Manag. J</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="page" from="327" to="347" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Griffin, M.A.; Neal, A.; Parker, S.K. A New Model of Work Role Performance: Positive Behavior in Uncertain and Interdependent Contexts. Acad. Manag. J. 2007, 50, 327-347. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">The Satisfaction with Life Scale</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Diener</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Emmons</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Larsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Griffin</surname></persName>
+		</author>
+		<idno type="DOI">10.1207/s15327752jpa4901_13</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Pers. Assess</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="page" from="71" to="75" />
+			<date type="published" when="1985">1985</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Diener, E.; Emmons, R.A.; Larsen, R.J.; Griffin, S. The Satisfaction with Life Scale. J. Pers. Assess. 1985, 49, 71-75. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">How is the life without unicorns? A within-individual study on the relationship between uncertainty and mental health indicators: The moderating role of neuroticism</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Junça-Silva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Silva</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.paid.2021.111462</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Pers. Individ. Differ</title>
+		<imprint>
+			<biblScope unit="volume">188</biblScope>
+			<biblScope unit="page">111462</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note>CrossRef</note>
+	<note type="raw_reference">Junça-Silva, A.; Silva, D. How is the life without unicorns? A within-individual study on the relationship between uncertainty and mental health indicators: The moderating role of neuroticism. Pers. Individ. Differ. 2021, 188, 111462. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Partial, conditional, and moderated moderated mediation: Quantification, inference, and interpretation</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Hayes</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/03637751.2017.1352100</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Commun. Monogr</title>
+		<imprint>
+			<biblScope unit="volume">85</biblScope>
+			<biblScope unit="page" from="4" to="40" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hayes, A.F. Partial, conditional, and moderated moderated mediation: Quantification, inference, and interpretation. Commun. Monogr. 2018, 85, 4-40. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">The Relative Trustworthiness of Inferential Tests of the Indirect Effect in Statistical Mediation Analysis: Does method really matter?</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Hayes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Scharkow</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0956797613480187</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Psychol. Sci</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="1918" to="1927" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hayes, A.F.; Scharkow, M. The Relative Trustworthiness of Inferential Tests of the Indirect Effect in Statistical Mediation Analysis: Does method really matter? Psychol. Sci. 2013, 24, 1918-1927. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Testing Mediation in Structural Equation Modeling</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Leth-Steensen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Gallitto</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0013164415593777</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Educ. Psychol. Meas</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="page" from="339" to="351" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Leth-Steensen, C.; Gallitto, E. Testing Mediation in Structural Equation Modeling. Educ. Psychol. Meas. 2015, 76, 339-351. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">The impact of motivation, empowerment, and skill-enhancing practices on aggregate voluntary turnover: The mediating effect of collective affective commitment</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Gardner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Wright</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Moynihan</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.1744-6570.2011.01212.x</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Pers. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="page" from="315" to="350" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gardner, T.M.; Wright, P.M.; Moynihan, L.M. The impact of motivation, empowerment, and skill-enhancing practices on aggregate voluntary turnover: The mediating effect of collective affective commitment. Pers. Psychol. 2011, 64, 315-350. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Designing volunteers&apos; tasks to maximize motivation, satisfaction and performance: The impact of job characteristics on volunteer engagement</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Millette</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gagné</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11031-007-9079-4</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Motiv. Emot</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="11" to="22" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Millette, V.; Gagné, M. Designing volunteers&apos; tasks to maximize motivation, satisfaction and performance: The impact of job characteristics on volunteer engagement. Motiv. Emot. 2008, 32, 11-22. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Having a whale of a time: Linking self-determination theory, job characteris-tics model and motivation to the joy of gig work</title>
+		<author>
+			<persName><forename type="first">U</forename><surname>Zaman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Nawaz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Javed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Rasul</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/23311975.2020.1807707</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Cogent Bus. Manag</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page">1807707</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Zaman, U.; Nawaz, S.; Javed, A.; Rasul, T. Having a whale of a time: Linking self-determination theory, job characteris-tics model and motivation to the joy of gig work. Cogent Bus. Manag. 2020, 7, 1807707. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Influence of Intrinsic and Extrinsic Motivation on Employee&apos;s Task Performance</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Makki</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Abid</surname></persName>
+		</author>
+		<idno type="DOI">10.5430/sass.v4n1p38</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Stud. Asian Soc. Sci</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page">38</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Makki, A.; Abid, M. Influence of Intrinsic and Extrinsic Motivation on Employee&apos;s Task Performance. Stud. Asian Soc. Sci. 2016, 4, 38. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Beyond depletion: Daily self-control motivation as an explanation of self-control failure at work</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wehrt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Casper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sonnentag</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/job.2484</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Organ. Behav</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="page" from="931" to="947" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wehrt, W.; Casper, A.; Sonnentag, S. Beyond depletion: Daily self-control motivation as an explanation of self-control failure at work. J. Organ. Behav. 2020, 41, 931-947. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Outreach and screening following the 2005 London bombings: Usage and outcomes</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Brewin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Fuchkan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Huntley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Robertson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Thompson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Scragg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>D'ardenne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ehlers</surname></persName>
+		</author>
+		<idno type="DOI">10.1017/S0033291710000206</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Psychol. Med</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="page" from="2049" to="2057" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Brewin, C.R.; Fuchkan, N.; Huntley, Z.; Robertson, M.; Thompson, M.; Scragg, P.; D&apos;Ardenne, P.; Ehlers, A. Outreach and screening following the 2005 London bombings: Usage and outcomes. Psychol. Med. 2010, 40, 2049-2057. [CrossRef]</note>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Recognition and treatment of psychological disorders during military service in the UK armed forces: A study of war pensioners</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Brewin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Andrews</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hejdenberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Soc. Psychiatry Psychiatr. Epidemiol</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="page" from="1891" to="1897" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Brewin, C.R.; Andrews, B.; Hejdenberg, J. Recognition and treatment of psychological disorders during military service in the UK armed forces: A study of war pensioners. Soc. Psychiatry Psychiatr. Epidemiol. 2012, 47, 1891-1897.</note>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<monogr>
+		<title/>
+		<idno type="DOI">10.1007/s00127-012-0505-x</idno>
+		<imprint/>
+	</monogr>
+	<note type="raw_reference">CrossRef</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
