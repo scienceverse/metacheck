@@ -1,0 +1,2243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Attractive and healthy-looking male faces do not show higher immunoreactivity</title>
+				<funder ref="#_hvQChGp #_wV8PbJ3">
+					<orgName type="full">Charles University Grant Agency</orgName>
+				</funder>
+				<funder ref="#_cKyhTF9">
+					<orgName type="full">Czech Science Foundation</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Owen F Aldis Scholarship</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Žaneta</forename><surname>Pátková</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Faculty of Science</orgName>
+								<orgName type="institution">Charles University</orgName>
+								<address>
+									<addrLine>Viničná 7</addrLine>
+									<postCode>128 44</postCode>
+									<settlement>Prague</settlement>
+									<country key="CZ">Czech Republic</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Dagmar</forename><surname>Schwambergová</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Faculty of Science</orgName>
+								<orgName type="institution">Charles University</orgName>
+								<address>
+									<addrLine>Viničná 7</addrLine>
+									<postCode>128 44</postCode>
+									<settlement>Prague</settlement>
+									<country key="CZ">Czech Republic</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jitka</forename><forename type="middle">Třebická</forename><surname>Fialová</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Faculty of Science</orgName>
+								<orgName type="institution">Charles University</orgName>
+								<address>
+									<addrLine>Viničná 7</addrLine>
+									<postCode>128 44</postCode>
+									<settlement>Prague</settlement>
+									<country key="CZ">Czech Republic</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Vít</forename><surname>Třebický</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Faculty of Physical Education and Sport</orgName>
+								<orgName type="institution">Charles University</orgName>
+								<address>
+									<addrLine>José Martího 269</addrLine>
+									<postCode>162 52</postCode>
+									<settlement>Prague</settlement>
+									<country key="CZ">Czech Republic</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">David</forename><surname>Stella</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Faculty of Science</orgName>
+								<orgName type="institution">Charles University</orgName>
+								<address>
+									<addrLine>Viničná 7</addrLine>
+									<postCode>128 44</postCode>
+									<settlement>Prague</settlement>
+									<country key="CZ">Czech Republic</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department">Global Change Research Institute</orgName>
+								<orgName type="institution">Czech Academy of Sciences</orgName>
+								<address>
+									<addrLine>Bělidla 986/4a</addrLine>
+									<postCode>603 00</postCode>
+									<settlement>Brno</settlement>
+									<country key="CZ">Czech Republic</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Karel</forename><surname>Kleisner</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Faculty of Science</orgName>
+								<orgName type="institution">Charles University</orgName>
+								<address>
+									<addrLine>Viničná 7</addrLine>
+									<postCode>128 44</postCode>
+									<settlement>Prague</settlement>
+									<country key="CZ">Czech Republic</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jan</forename><surname>Havlíček</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Faculty of Science</orgName>
+								<orgName type="institution">Charles University</orgName>
+								<address>
+									<addrLine>Viničná 7</addrLine>
+									<postCode>128 44</postCode>
+									<settlement>Prague</settlement>
+									<country key="CZ">Czech Republic</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Attractive and healthy-looking male faces do not show higher immunoreactivity</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">881DC047034C27B4F8ADF9987166B130</idno>
+					<idno type="DOI">10.1038/s41598-022-22866-x</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2025-08-21T10:37+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Previous research has indicated that facial attractiveness may provide cues to the functioning of the immune system. Mating with individuals who have a more effective immune system could lead to a higher reproductive success. Our main aim was to test a possible association between immunoreactivity (stimulated by vaccination) and perceived facial attractiveness and healthiness. We experimentally activated the immune system of healthy men using vaccination against hepatitis A/B and meningococcus and measured levels of specific antibodies (markers of immune system reactivity) before and 30 days after the vaccination. Further, 1 day before the vaccination, we collected their facial photographs that were judged by females for attractiveness, healthiness, and facial skin patches for healthiness. In view of its proposed connection with the functioning of the immune system, we also measured skin colouration (both from the facial photographs and in vivo using a spectrophotometer) and we assessed its role in attractiveness and healthiness judgements. Moreover, we measured the levels of steroid hormones (testosterone and cortisol) and the percentage of adipose tissue, because both are known to have immunomodulatory properties and are related to perceived facial attractiveness and healthiness. We found no significant associations between antibody levels induced by vaccination and perceived facial attractiveness, facial healthiness, or skin healthiness. We also found no significant connections between steroid hormone levels, the amount of adipose tissue, rated characteristics, and antibody levels, except for a small negative effect of cortisol levels on perceived facial healthiness. Higher forehead redness was perceived as less attractive and less healthy and higher cheek patch redness was perceived as less healthy, but no significant association was found between antibody levels and facial colouration. Overall, our results suggest that perceived facial attractiveness, healthiness, and skin patch healthiness provide limited cues to immunoreactivity, and perceived characteristics seem to be related only to cortisol levels and facial colouration.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Mate preferences are often based on physical appearance, whereby facial attractiveness seems to play an especially significant role <ref type="bibr" target="#b1">1</ref> . It is often claimed that facial attractiveness provides cues to various aspects of individuals' quality, such as immunocompetence <ref type="bibr" target="#b1">[1]</ref><ref type="bibr" target="#b2">[2]</ref><ref type="bibr" target="#b3">[3]</ref> . Selection of partners with a more effective immune system is expected to lead to a higher reproductive success by passing increased pathogen resistance onto the offspring (indirect benefits). Moreover, healthier individuals can provide better parental care and are less likely to transmit any infections to their partners (direct benefits) <ref type="bibr" target="#b1">1,</ref><ref type="bibr" target="#b4">4</ref> .</p><p>Previous research into the putative relationship between facial attractiveness and individual's quality that was conducted using self-reported past and current health and attractiveness ratings of facial photographs delivered mixed results <ref type="bibr" target="#b5">5,</ref><ref type="bibr" target="#b6">6</ref> . Several recent studies employed direct immunity function measures, such as inflammation markers or levels of cytokines or antibodies. In a sample of South African men, Phalane et al. <ref type="bibr" target="#b7">7</ref> tested the relationship between facial attractiveness ratings and responsiveness of the immune system upon activation by an injection of bacterial lipopolysaccharide (LPS). Immune system response was assessed by levels of C-reactive protein, which is an inflammation marker, and by the levels of cytokines, which are peptides that stimulate the immune response. This study found a positive correlation between facial attractiveness ratings and the levels of cytokines, specifically interleukins (IL)-2, 4, 6, 8, and 10, granulocyte-macrophage colony-stimulating factor (GM-CSF), interferon γ (IFN-γ), and tumour necrosis factor α (TFN-α) <ref type="bibr" target="#b7">7</ref> . Other studies employed vaccinations to elicit and measure immune system reactivity. A stronger response to the vaccine (assessed via higher antibody levels) indicates a better protection against infection <ref type="bibr" target="#b8">8</ref> . Overall, though, the results of these studies are inconclusive. Faces of men with higher levels of hepatitis B antibodies were rated as more attractive <ref type="bibr" target="#b9">9</ref> but this did not hold of women <ref type="bibr" target="#b10">10</ref> . In contrast, other study reported a negative, though nonsignificant, association between facial attractiveness and immune system reactivity in men <ref type="bibr" target="#b11">11</ref> .</p><p>It has been suggested that facial skin colouration plays an important role in perceived facial attractiveness and health <ref type="bibr" target="#b12">[12]</ref><ref type="bibr" target="#b13">[13]</ref><ref type="bibr" target="#b14">[14]</ref><ref type="bibr" target="#b15">[15]</ref> . Studies tend to focus on facial skin colouration in the CIE L*a*b* colour space <ref type="bibr" target="#b16">16,</ref><ref type="bibr" target="#b17">17</ref> . Higher skin redness (a*) is linked to increased skin blood perfusion and oxygenation <ref type="bibr" target="#b16">16</ref> , which are in turn positively associated with physical fitness <ref type="bibr" target="#b18">18,</ref><ref type="bibr" target="#b19">19</ref> as well as good cardiovascular <ref type="bibr" target="#b20">20</ref> and pulmonary health <ref type="bibr" target="#b16">16,</ref><ref type="bibr" target="#b18">18</ref> . Skin yellowness (b*) is influenced by carotenoids, which are pigments acquired from food, mainly fruits and vegetables. Owing to their antioxidant properties <ref type="bibr" target="#b21">21</ref> , carotenoids can contribute to disease resistance as they can destroy free radicals and reduce oxidative stress, both of which are harmful to the immune system <ref type="bibr" target="#b22">22,</ref><ref type="bibr" target="#b23">23</ref> . It has been shown that facial skin with higher redness and yellowness is perceived as more attractive and healthier <ref type="bibr" target="#b17">17,</ref><ref type="bibr" target="#b24">24</ref> . Moreover, Phalane et al. <ref type="bibr" target="#b7">7</ref> reported an association between skin yellowness and a marginally higher immune system response (higher levels of inspected cytokines) after LPS stimulation. On the other hand, Foo et al. <ref type="bibr" target="#b25">25</ref> found that higher skin yellowness is positively associated only with perceived health (and only in men) and not with direct immune function measures <ref type="bibr" target="#b25">25</ref> . Skin lightness (L*) is determined by the distribution pattern of melanosomes in keratinocytes and the amount of melanin it contains <ref type="bibr" target="#b26">26</ref> . Higher melanin levels (resulting in a darker skin hue) can provide a better protection against sunlight <ref type="bibr" target="#b27">27</ref> but can also contribute to vitamin D deficiency <ref type="bibr" target="#b28">28</ref> . It has been found that melatonin can have an effect on the synthesis of melanin <ref type="bibr" target="#b29">29</ref> , which is in turn believed to affect the periodicity of immune response as well as cytokine production <ref type="bibr" target="#b30">30,</ref><ref type="bibr" target="#b31">31</ref> . In women, lighter skin is associated with higher perceived attractiveness and youth <ref type="bibr" target="#b32">[32]</ref><ref type="bibr" target="#b33">[33]</ref><ref type="bibr" target="#b34">[34]</ref> (but see Fiala et al. <ref type="bibr" target="#b35">35</ref> ), because with increasing age skin tends to become darker <ref type="bibr" target="#b36">36</ref> . In men, some research shows that darker complexion may be preferred <ref type="bibr" target="#b37">37</ref> .</p><p>The association between functioning of the immune system and perceived facial attractiveness might be also modulated by testosterone and cortisol. It has been suggested that testosterone has an immunosuppressive effect <ref type="bibr" target="#b38">[38]</ref><ref type="bibr" target="#b39">[39]</ref><ref type="bibr" target="#b40">[40]</ref> but evidence to that effect is rather mixed <ref type="bibr" target="#b41">41</ref> . It has thus been proposed that glucocorticoids, such as cortisol, mediate the association between testosterone and the immune system functioning <ref type="bibr" target="#b42">42,</ref><ref type="bibr" target="#b43">43</ref> . Although a shortterm elevation of cortisol levels can boost an acute immune system response, prolonged exposure may weaken the response, thereby increasing susceptibility to diseases <ref type="bibr" target="#b44">44</ref> . Some support for the mediating effect of cortisol comes from Rantala et al. <ref type="bibr" target="#b9">9</ref> who found that immunoreactivity was stronger in men with higher testosterone and simultaneously lower cortisol levels, while immunoreactivity was also positively linked to facial attractiveness. Similarly, women with lower cortisol levels were perceived as more attractive <ref type="bibr" target="#b10">10,</ref><ref type="bibr" target="#b45">45</ref> (for null results see Han et al. <ref type="bibr" target="#b46">46</ref> ).</p><p>Another key factor affecting both attractiveness and immunity is adiposity. Obesity contributes to an altered immune function and reduced immunocompetence because it is associated with changes in leucocyte counts, reduced antibody production, impaired wound healing, a higher risk of infections, and even a higher mortality rate <ref type="bibr" target="#b47">[47]</ref><ref type="bibr" target="#b48">[48]</ref><ref type="bibr" target="#b49">[49]</ref><ref type="bibr" target="#b50">[50]</ref> . In perception studies, body fat levels affect attractiveness ratings, whereby both overweight and excessively thin individuals are perceived as less attractive <ref type="bibr" target="#b5">5,</ref><ref type="bibr" target="#b10">10,</ref><ref type="bibr" target="#b51">51</ref> . Moreover, portrait photographs of individuals with elevated levels of leptin-a hormone produced by the adipose tissue that has a negative effect on health-were also perceived as less attractive <ref type="bibr" target="#b52">52</ref> .</p><p>Overall, evidence pertaining to links between the quality of the immune system and facial attractiveness is ambiguous. Many previous studies investigated only a limited number of relationships between variables and relied on indirect measures of immune system functioning. In Study 1, we therefore focused on the relationship between immune system reactivity and perceived facial attractiveness. To measure the reactivity of the immune system, we experimentally activated the immune system by vaccination against both viral (hepatitis A, B) and bacterial (meningococcus) infections, because the two in conjunction should stimulate a wider range of components of the immune system than either would. We used differences in antibody levels before and after vaccination as a proxy for reactivity of the immune system. In Study 2, we investigated associations between immune system reactivity and perceived skin patch healthiness to examine human ability to judge characteristics from limited amount of information. Finally, in Study 3 we focused on the relationship between immune system reactivity and perceived healthiness of the face. Moreover, we measured testosterone and cortisol levels and recorded body composition, because all these factors have immunomodulatory properties and are linked to both perceived facial attractiveness and healthiness. We also measured facial skin colouration (both from the facial photographs and in vivo using a spectrophotometer) to assess its role in attractiveness and healthiness judgements and its connection to the immunoreactivity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Materials and methods</head><p>Data used for this study are part of a larger project which investigates possible associations between reactivity of the immune system and attractiveness of human body odour <ref type="bibr" target="#b53">53</ref> , face, and voice as perceived by opposite-sex individuals. The present article focuses on associations between immune system reactivity and perceived facial attractiveness, healthiness, and skin healthiness. All procedures were conducted in accordance with the Helsinki Declaration and the study was approved by the Institutional Review Board of Charles University (approval no. 20/2016). Due to the nature of this study, we have collaborated with medical personnel. The study was preregistered prior to data analyses (<ref type="url" target="https://osf">https:// osf</ref>. io/ 69zgc). Before entering the study, all participants were informed about its goals and expressed their consent with participation by signing an informed consent form.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Targets.</head><p>We have collected data from 21 men (mean age = 26.2 ys, SD = 4.62, age range = 20-35 ys). Requirements for participating in the study were the following: age 18-40 years, good general health, no current use of any medication, non-smokers, and not being vaccinated against hepatitis A, B, or the meningococcus in the past 10 years (e.g., Shepard et al. <ref type="bibr" target="#b54">54</ref> ).</p><p>Participants were recruited via social media advertisements (Facebook) and leaflets at university halls of the Faculty of Science, Faculty of Humanities, and Faculty of Physical Education and Sports (all of the Charles University, Prague, Czechia). Participants were vaccinated free of charge and received a reimbursement of 400 CZK (approx. €15) for participation in the whole project as a compensation for their time and potential inconvenience. Targets were the same for all studies described in the present article (Studies 1-3).</p><p>Procedure. One day before vaccination, we acquired standardised portrait photographs of the participants.</p><p>On the day of the vaccination, each participant completed a questionnaire on their medical history and their general health status was examined by a physician to ensure they were eligible for application of the vaccines and not suffering from any current illness or infection. This was followed by the first blood collection (5 ml of venous blood) to assess the basal levels of antibodies (specific immunoglobulins G-IgG and immunoglobulins M-IgM) and C-reactive protein (CRP), which is a marker of inflammation. In none of the participants did the pre-vaccination CRP levels exceed 5.5 mg/l; values below this threshold are considered clinically normal <ref type="bibr" target="#b55">55</ref> , that is, such values do not indicate currently ongoing infection. After the blood collection, the vaccines against hepatitis A/B (Twinrix) and meningococcus (Menveo) were administered. We selected vaccines against both viral and bacterial infections to stimulate different components of the immune system (nonspecific, specific, cellular, and humoral). The second blood collection and second photograph acquisition took place 14 days after vaccination, at a time point when one should expect the highest antibody response <ref type="bibr" target="#b56">56</ref> . For the current investigation, only photographs taken before the vaccination were used. The last blood collection took place 30 days after vaccination, at a point when a second dose of vaccine against hepatitis (Twinrix) is recommended <ref type="bibr" target="#b57">57</ref> . Vaccination and first blood collection were performed by a physician, while the remaining two blood samples were collected by phlebotomists at the Prevedig laboratory (<ref type="url" target="https://www">https:// www</ref>. preve dig. cz/) where all samples were subsequently analysed. The procedure and time of blood collections were standardised across participants. To avoid diurnal fluctuations <ref type="bibr" target="#b58">58</ref> sampling was conducted at 7-8 a.m. We measured and recorded body composition of the participants. Participants also completed questionnaires about their health status during the study and about possible factors that may have influenced their skin colour (e.g., traveling abroad to a sunny destination, use of tanning beds, self-tanning creams, or the consumptions of vegetables and fruits with high levels of carotenoids) <ref type="bibr" target="#b59">59,</ref><ref type="bibr" target="#b60">60</ref> . This procedure took place on Q4 2017 to minimise possible effects of a suntan.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Vaccine characteristics.</head><p>To induce an immune system response, we used the Twinrix Adult vaccine against hepatitis A/B and a Menveo vaccine against meningococcus (which prevents meningococcal diseases caused by Neisseria meningitis serogroups A, C, Y, and W-135). They can be administered together and are widely used in the Czech Republic. Both were applied intramuscularly, each in one arm.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Laboratory assays.</head><p>All laboratory analyses worked with the serum or plasma and were performed in a certified Prevedig laboratory. Total level of antibodies against hepatitis A (Anti-HAV) were measured by the Diasorin® Liaison-chemiluminescence immunoassay (CLIA), where a fully automated immunological analyser performs the full processing of samples. We used the corresponding Human S100 CLIA kits. This analysis is based on a radioimmunoassay, where the antigen and paramagnetic microparticle solid phase binds with fluorescent-labelled antibodies and after oxidation-reduction reaction, excessive energy is released in the form of photons <ref type="bibr" target="#b61">61</ref> . The final photometric measurement and evaluation were done by the analyser.</p><p>Antibodies against hepatitis B (Anti-Hbs) were measured based on the same principle as Anti-HAV. It turned out, however, that large percentage of targets either had high levels of Anti-Hbs at the baseline (N = 7) or did not respond to vaccination (N = 5). For this reason, the Anti-Hbs were excluded from further analyses.</p><p>Antibodies against the meningococcus (Anti-Mnk) were measured by the fully automated Diasorin® ETI-Max 3000-enzyme immunoassay (ELISA), one of the basic methods of determination of serum antibodies. The method is based on a reaction between an antigen on a special board and antibodies in the patient's serum. Then secondary antibodies are added, which are specially labelled and bind to the primary antibodies with the antigen. A chromogenic substrate, which is added last, causes a colour response that is measured by spectrophotometer <ref type="bibr" target="#b62">62</ref> . Sufficient response is at least 1:4 titres (the dilution of the serum where antibodies still react with the antigens) and ideally even higher <ref type="bibr" target="#b63">63</ref> . As above, the final photometric measurement and evaluation were conducted by the analyser.</p><p>Total testosterone levels were measured by chemiluminescence (CLIA) in a fully automatised analyser Beckman Coulter DxI 800 Immunoassay System. The CLIA principle is described above. In this case, the energy is released by a reaction between testosterone, polyclonal anti-testosterone antibodies, and a tracer <ref type="bibr" target="#b64">64</ref> . The final photometric measurement and evaluation were done by the automatised analyser.</p><p>Cortisol levels were measured by an electrochemiluminescence immunoassay method in a fully automatised analyser Beckman Coulter DxI 800 Immunoassay System. First, one incubates a sample in which specific anticortisol antibodies labelled with ruthenium chelate bind to cortisol. This complex is captured on the surface of an electrode where the electric charge causes a chemiluminescent emission of photons. The emitted light is measured by a spectrophotometer, but the measurement and evaluation are likewise done by the analyser.</p><p>The acquisition of photographs. Acquisition of photographs took place at the Human Ethology perception lab in a purpose-built photographic booth in order to prevent potential changes in ambient illumination and colour reflections <ref type="bibr" target="#b65">65</ref> .</p><p>Portrait photographs were taken with a 24-megapixel full-frame (35.9 × 24 mm CMOS sensor, a 35 mm film equivalent) digital SLR camera Nikon D610 equipped with a 85 mm fixed focal length lens <ref type="bibr" target="#b66">66</ref> (Nikon AF-S NIKKOR 85 mm f/1.8G) into 14-bit uncompressed raw files (.NEF) and Adobe RGB colour space. The camera was mounted in a portrait orientation directly on a light stand that also carried a strobe light. A single 400Ws studio strobe (Menik MD-400Ws) was used and equipped with a white reflective umbrella light diffuser (Photon Europe, 109 cm diameter) mounted onto a 175 cm high light stand tilted 10° downwards toward the booth. Correct and uniform exposure across the entire scene was checked before each session with a digital light meter (Sekonic L-308S). Colour calibration was performed using X-Rite Color Checker Passport colour targets and a white balance patch photographed at the beginning of each session. For further details of the photo acquisition procedure, see Třebický et al. <ref type="bibr" target="#b65">65</ref> .</p><p>Participants were photographed wearing provided white T-shirts and without any adornments or glasses. They had varying amount of facial hair ranging from clean-shaven to a full beard (in two participants), but most targets had a comparable style of short stubble. Participants were seated on a barstool 0.5 m from a plain white background. They were asked to sit straight with hands hanging freely alongside their bodies, look directly into the camera, and adopt a neutral expression. The camera (a sensor plane, marked φ) was positioned 125 cm from the participant and its height adjusted individually for each target to centre his head in the middle of the frame [distance between the camera and the participant was checked with a digital laser rangefinder (Bosch PLR 15)]. This setting of camera distance, focal length, and sensor size yielded a 35 × 53 cm field of view (23.85° angle of view).</p><p>Post-processing of photographs. Image processing was carried out in Adobe Lightroom Classic CC (version 2017) and Adobe Photoshop CC 2015. We converted the images into DNG raw files and created DNG colour calibration profiles (using the X-Rite Color Checker Passport Lightroom plugin). Then we applied the profiles to all photographs. The calibrated images were exported into 16-bit Adobe RGB TIFF files in their actual size (35 × 53 cm) with a 168 PPI resolution. We manually checked the exposure (using the eye-drop tool on the background above the participants' heads) and corrected the exposition on 85% value of every channel in the RGB colour space if necessary. Horizontal and vertical position of each participant in the image was adjusted using the Lightroom Transform tool (target's head was positioned into the centre of the frame with pupils on a horizontal line). Then we batch-cropped to fit the heads on 27″ monitors in 1:1 size.</p><p>In the next step, we removed any possible disturbing creases or shadows in the background. Finally, we converted the photographs into an sRGB colour space and exported them into an 8-bit JPEG format (2101 × 3031 resolution, 168 PPI, sRGB) for the rating.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Measurements of facial skin colour.</head><p>In vivo measurements with a spectrophotometer. Facial skin colour was measured in vivo with a spectrophotometer Ocean Optics Flame-S with optical resolution of 2 nm using a standard D65 illuminant. Integrating Sphere ISP-R was used to spatially integrate the radiant flux in scatter transmission and diffuse reflectance sample measurements. The spectrophotometer was calibrated using the WS-1 Diffuse Reflectance Standard. All measurements were taken on three patches of targets' faces (forehead, left and right cheek) and expressed also in CIE L*a*b* colour space <ref type="bibr" target="#b67">67</ref> .</p><p>Facial photographs. We have also measured facial skin colour from the calibrated pre-vaccination facial photographs using ImageJ software (v 1.51) and Color Transformer 2 MatLab package. We measured the skin colour in CIE L*a*b* colour space and recorded the values for facial redness (a*), yellowness (b*), and lightness (L*) in three places of the face (forehead, right and left cheek) <ref type="bibr" target="#b68">68</ref> . We measured the largest available area per stimulus while avoiding freckles, blemishes, and hair whenever possible. Facial skin colour values obtained from the spectrophotometer and from the facial photographs in our sample correlated positively (right cheek L* ρ = 0.314, left cheek L* ρ = 0.271, forehead L* ρ = 0.458; right cheek a* ρ = 0.271, left cheek a* ρ = 0.187, forehead a* ρ = 0.442; right cheek b* ρ = 0.685, left cheek b* ρ = 0.496, forehead b* ρ = 0.250). To facilitate a comparison with previous studies, we decided to use in further analyses in the main text facial skin colour measurements from the photographs. The results of analyses using spectrophotometer can be found in the Supplementary Materials-Tables S1, S2, S3, S4, S5, S6, S7, S8 and S9.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Skin patches.</head><p>We cropped skin patches from the obtained facial photographs in Adobe Photoshop CC 2015. The area of skin patches (89 × 89px) and location from which they were acquired (left cheek and forehead) were standardised while making sure that the resulting patch did not include any facial features (eyes, nose), hair, or birthmarks. The resulting skin patches (left cheek N = 21; forehead N = 18, in three instances the hair was covering the foreheads and we were unable to find any suitable patch) were enlarged by 300% for subsequent presentation (as per Jones et al. <ref type="bibr" target="#b69">69</ref> ).</p><p>A sample of portrait with outlined skin patch can be found in Fig. <ref type="figure" target="#fig_0">1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Raters.</head><p>Raters were recruited via social media sites (Facebook), oral invitations, and posters in university halls of the Faculty of Science, Faculty of Humanities, and the Faculty of Physical Education and Sport (all Charles University, Prague, Czechia). In Study 1, facial photographs were rated by 88 females aged 18-40 (mean = 22.87 ys; SD = 2.85) during Q1 2018. The raters received a reimbursement of 200 CZK (app. €8) as a compensation for their participation in the whole project (which also included ratings of voice recordings and body odour).</p><p>In Study 2, the obtained photographs and skin patches were rated by 62 females aged 18-40 (mean = 22.6 ys; SD = 3.42) during Q1 2019. The raters received a reimbursement of 50 CZK (app. €2) as a compensation for their time.</p><p>In Study 3, the photographs were rated by 66 females aged 18-40 (mean = 23 ys; SD = 4.71) during Q4 2019. They received a reimbursement of 150 CZK (app. €6) as a compensation for their participation in a larger rating session unrelated to the current investigation.</p><p>None of the raters in the three studies used hormonal contraception.</p><p>The rating procedure. Study 1 was part of a larger project that also included the rating of voice recordings and body odour samples <ref type="bibr" target="#b53">53</ref> . Exposure to a higher number of odour samples increases the risk of olfactory adaptation and can therefore affect rating, which is why the rating sessions were conducted on two separate days to accommodate a larger number of raters. From the total of 88 raters, 43 took part on the first day and 45 on the second day, which corresponds to the number of raters per photograph (depending on which day the photograph was presented). Randomly selected half of pre-vaccination samples was presented on the first rating day and half of post-vaccination photographs was presented on day two and vice versa. All raters were assessing photographs only once within a single day. Study 2 was carried out using same rating procedure to eliminate any possible effects of a different data collection design. Of the 62 raters, 32 rated the first half of the randomly selected stimuli and 30 the second half of the stimuli. For Study 3, the procedure was identical and of the 66 raters, 31 took part on the first data collection day, 35 on the second day.</p><p>All rating (Study 1-3) took place in the Human Ethology perception lab under standardised conditions across all raters and rating days (closed window blinds, with artificial lighting to eliminate any changes in ambient lighting). The rating was conducted using Qualtrics survey suite (Qualtrics, Provo, UT) on two desktop computers of identical configuration with colour and brightness calibrated (by X-Rite i1Display Pro probe) LCD monitors (27″ Dell U2718Q UltraSharp IPS; 3840 × 2160 @ 168 DPI, 99% sRGB colour space coverage) turned to a vertical position to accommodate life-sized facial images.</p><p>The raters were seated 115 cm from the screen with eyes at a height of 125 cm (measured from the floor to the outer corner of the eye). This is a height and distance comparable to that from which the portrait photographs were taken, whereby raters were positioned into the same centre of projection and eye level. This setup approximates the common interpersonal distance <ref type="bibr" target="#b65">65,</ref><ref type="bibr" target="#b70">70</ref> . Photographs were presented in randomised order.</p><p>In Study 1, all facial photographs (N = 21) were rated for attractiveness on a 7-point verbally anchored scale. In Study 2, participants rated portrait photographs (N = 21) on a 7-point verbally anchored scale for attractiveness again to check the robustness of acquired ratings. They also rated skin patches from left cheek (N = 21) and forehead (N = 18) on a 7-point verbally anchored scale regarding their healthiness. Due to a low number of forehead patches (hair in the images), we use only cheek patches in analysis below. In Study 3, portrait photographs (N = 21) were rated on a 7-point verbally anchored scale regarding healthiness.</p><p>After rendering their rating assessments (Study 1-3), raters completed a questionnaire about their basic demographics (age, education, occupation, etc.).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data analyses.</head><p>To determine the consistency of raters' assessments, we performed an intra-class correlation (ICC) analysis for each group rating the same set of samples using IBM SPPSS Statistics (v 23). All remaining statistical analyses were performed in jamovi (v 1.6.15).</p><p>To explore relationships between variables, ratings of facial attractiveness from Study 1 and 2, and facial healthiness from Study 3, we used Spearman's rank correlation coefficient because the data deviated from normal distribution. We set ρ ≥ 0.8 as a value at which we would consider the two variables highly correlated. In such case, only one of the variables would be used for subsequent analyses <ref type="bibr" target="#b71">71</ref> . Further, we used the Spearman's rank correlation to test the association between levels of antibodies and targets' age.</p><p>We used a one-way analysis of variance (ANOVA) with Tukey post-hoc test to test for differences and Spearman's rank correlation coefficient for strength of associations between separate colour measurements from the right and left cheek and the forehead.</p><p>To examine the relationship between perceived facial attractiveness (Study 1), perceived skin patch healthiness (Study 2), perceived facial healthiness (Study 3), and differences in antibody levels (pre-vaccination subtracted from 30 days post-vaccination), we specified three separate linear mixed-effects models (LMMs) using the GAMLj module in jamovi. The rated characteristics (facial attractiveness, healthiness, and skin patch healthiness) were entered as dependent variables, while differences in antibodies against hepatitis A (Anti-Hav) and meningococcus (Anti-Mnk) were entered as predictors. To control for variability in targets and raters, we entered the targets' and raters' IDs as random effects (example of the model entry: Facial Attractiveness ~ 1 + State/antibody levels/ + (1|ID_rater) + (1|ID_donor)). We employed analogous models to assess the relationships between the rated characteristics (facial attractiveness and healthiness), steroid hormones levels, and the percentage of adipose tissue, and to assess the relationship between the rated characteristics (facial attractiveness, healthiness, and skin patch healthiness) and forehead and cheek lightness, redness, and yellowness. To explore a possible relationship between targets' age and perceived facial attractiveness and healthiness, we ran analogous separate linear mixed-effects models, with the rated characteristic entered as a dependent variable and age as the predictor.</p><p>To test the association between differences in antibody levels (pre-vaccination and 30 days post-vaccination), basal levels of steroid hormones (testosterone and cortisol), and the percentage of adipose tissue, we employed general linear models (GLM) using the GAMLj jamovi module. In both models, we entered specific antibodies (Anti-HAV or Anti-Mnk) as dependent variables and steroid hormones and percentage of adipose tissue as predictors (e.g., Anti-HAV ~ 1 + basal cortisol + basal testosterone + adipose tissue (%)). Analogous tests were carried out to investigate the relationship between antibody levels (pre-and 30 days post-vaccination) and forehead and cheek lightness, redness, and yellowness. For information about model residuals, see Supplementary Materials S1.</p><p>We performed a simulation-based power analysis for each fixed-effect predictor in our LMMs <ref type="bibr" target="#b72">72</ref> to estimate observed power using the SimR package <ref type="bibr" target="#b73">73</ref> in R (for a discussion of limits of observed power, see Lakens <ref type="bibr" target="#b74">74</ref> ). Further, based on simulated data (gradually increasing the sample size to 100), we plotted Power curves showing the sensitivity to detect observed effects with α = 0.05. The results of observed power, Power curve plots, and the R script are available in the Supplementary Materials S2, S3.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>Descriptive statistics for targets' basic demographic data, rated characteristics, differences between pre-and 30 days post-vaccination antibody levels, steroid hormone levels, the percentage of adipose tissue, and colour measurements are presented in Table <ref type="table">1</ref>. For detailed information, see Table <ref type="table">S10</ref> in Supplementary Materials.</p><p>We found high level of agreement between raters in all rated characteristics (ICC above 0.864). For further details, see Table <ref type="table">S11</ref> in Supplementary Materials.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Relationships between variables.</head><p>Ratings of facial attractiveness collected in Study 1 and 2 were strongly positively and statistically significantly correlated (ρ = 0.937, p &lt; 0.001). In all subsequent analyses, we therefore use attractiveness ratings from Study 1.</p><p>Ratings of perceived facial attractiveness (Study 1) and perceived healthiness (Study 3) were also positively and statistically significantly correlated (ρ = 0.706, p &lt; 0.001). The value of ρ did not, however, reach the pre-set level of 0.8, and we therefore analyse perceived facial attractiveness and healthiness separately.</p><p>Linear mixed-effects model testing the relationship between targets' age and perceived facial attractiveness (R 2 C = 0.523, R 2 M = 0.030) did not show a statistically significant association (β = -0.063 [-0.154, 0.028], p = 0.193). The relationship between perceived facial healthiness and targets' age (R 2 C = 0.474, R 2 M = 0.035) was likewise not statistically significant (β = -0.069 [-0.155, 0.016], p = 0.130). Further, we found no statistically significant relationship between antibody levels and targets' age (ρ Anti-HAV = -0.130, p = 0.573; ρ Anti-Mnk = -0.078, p = 0.738). In subsequent analyses, we therefore did not control for age.</p><p>Left and right cheek measures of skin lightness (ρ = 0.801, p &lt; 0.001), redness (ρ = 0.861, &lt; 0.001), and yellowness (ρ = 0.925, p &lt; 0.001) were strongly positively and statistically significantly associated. We thus continue to use only L* a* b* measures from the left cheek in further analyses because we presented the left cheek patches to participants in Study 2 for patch healthiness ratings.</p><p>Skin lightness (ρ = 0.444, p = 0.044), redness (ρ = 0.544, p = 0.011), and yellowness (ρ = 0.689, p &lt; 0.001) from the left cheek and forehead were also positively and statistically significantly correlated. The ρs did not, however, reach the predefined level (0.8) and we therefore use the left cheek and forehead measures in further analyses separately. For further details, see Table <ref type="table">S12</ref> in Supplementary Materials.</p><p>In our targets, skin on the forehead was statistically significantly lighter (L*) and statistically significantly less red (a*) and less yellow (b*) than skin on either cheek (for skin yellowness (b*), there was a statistically significant result for forehead and left cheek only). The two cheeks did not differ significantly in either L*, a*, or b* measures (see Fig. <ref type="figure">2</ref> and Tables S13-S15 in Supplemental Materials).</p><p>Study 1: association between perceived facial attractiveness, antibody levels, colouration, and immunomodulatory factors. Linear mixed-effects models show that perceived facial attractiveness (R 2 C = 0.532, R 2 M = 0.024) was not predicted by levels of specific antibodies. For details, see Table <ref type="table">2</ref>.</p><p>Neither redness, yellowness, nor lightness of the forehead or left cheek predicted elevations in any of the specific antibodies (Anti-HAV: R 2 = 0.447, R 2 adj = -0.210; Anti-Mnk: R 2 = 0.350, R 2 adj = 0.071). For detailed results, see Table <ref type="table" target="#tab_1">3</ref>.</p><p>Running a linear mixed-effects model, we found that neither the levels of cortisol or testosterone, nor the percentage of adipose tissue predicted perceived facial attractiveness (R 2 C = 0.534, R 2 M = 0.099). For details, see Table <ref type="table" target="#tab_2">4</ref>.</p><p>In a GLM analysis, neither the levels of testosterone or cortisol, nor the percentage of adipose tissue predicted elevations in any of the specific antibodies Anti-HAV (R 2 = 0.084, R 2 adj = -0.078) and Anti-Mnk (R 2 = 0.186, R 2 adj = 0.042). For detailed results, see Table <ref type="table">5</ref>.</p><p>In a linear mixed-effects model testing the influence of skin colour on perceived facial attractiveness (R 2 C = 0.540, R 2 M = 0.190), forehead redness was the only statistically significant predictor with a negative slope (β = -0.490 [-0.780, -0.201]); see Table <ref type="table" target="#tab_3">6</ref>.</p><p>Table <ref type="table">1</ref>. Descriptive statistics for target's age, height and weight, ratings of facial photographs and skin patches before vaccination, specific antibodies (difference between states 30 days after and before vaccination), testosterone and cortisol basal levels, the amount of adipose tissue, and facial skin colour (L*a*b* for cheeks and forehead) (N = 21). Mean (SD) rating for facial photographs and skin patches was calculated as the mean from aggregated ratings for each target. Values denoted by * show the mean minimum and mean maximum ratings of photographs.   <ref type="table">2</ref>). In a linear mixed-effects model testing the influence of skin colour on perceived cheek patch healthiness (R 2 C = 0.471, R 2 M = 0.164), cheek redness negatively predicted perceived cheek patch healthiness. For detailed information, see Table <ref type="table" target="#tab_3">6</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Table 2.</head><p>Relationship between reactivity of the immune system and perceived facial characteristics. Attractiveness ratings: for target ID, VRC = 0.960, SD = 0.980, ICC = 0.429; for rater ID, VRC = 0.429, SD = 0.655, ICC = 0.251. Relationship between perceived healthiness and reactivity of the immune system. Facial healthiness ratings: for target ID, VRC = 0.876, SD = 0.936, ICC = 0.374; for rater ID, VRC = 0.458, SD = 0.677, ICC = 0.238. Relationship between perceived cheek patch healthiness and reactivity of the immune system. Cheek patch healthiness ratings: for target ID, VRC = 0.608, SD = 0.780, ICC = 0.324; for rater ID, VRC = 0.487, SD = 0.698, ICC = 0.278. Anti-HAV antibodies against hepatitis A, Anti-Mnk antibodies against meningococcus, VRC variance of random components. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Study 3: association between perceived facial healthiness, antibody levels, colouration, and immunomodulatory factors.</head><p>A linear mixed-effects model shows that perceived facial healthiness (R 2 C = 0.484, R 2 M = 0.015) was not predicted by levels of specific antibodies (for details, see Table <ref type="table">2</ref>). In a separate linear mixed-effects model testing the influence of skin colour on perceived facial healthiness (R 2 C = 0.491, R 2 M = 0.182), forehead redness negatively predicted (β = -0.357 [-0.620, -0.093]) perceived facial healthiness (see Table <ref type="table" target="#tab_3">6</ref>), though we stress out the effect's 95% CIs span from substantially negative (LL = -0.620) to negligible ones (UL = -0.093).</p><p>A linear mixed-effects model (R 2 C = 0.487, R 2 M = 0.086) testing the association between cortisol, testosterone, adipose tissue percentage, and facial healthiness shows that only cortisol levels marginally negatively predicted (β = -0.005 [-0.010, -0.001]) perceived facial healthiness. For details, see Table <ref type="table" target="#tab_2">4</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>The main aim of all three studies was to test for possible associations between immune system reactivity (an organism's ability to effectively respond to an antigen) and perceived attractiveness and healthiness. We found no statistically significant associations between experimentally elicited levels of antibodies against hepatitis A (Anti-HAV) or meningococcus (Anti-Mnk) and perceived facial attractiveness, healthiness, or healthiness of skin patches. Moreover, we observed no statistically significant associations between the levels of antibodies and testosterone, cortisol, or adipose tissue, which are all variables often associated with immune function. Adipose tissue and testosterone and cortisol levels also showed no connection with perceived facial attractiveness. Notably, we found a small negative effect of cortisol levels on perceived facial healthiness. Further, we found that higher forehead redness was perceived as less attractive and healthy when individuals assessed portrait photographs, and for cheek patches, higher cheek redness was perceived as less healthy. No systematic relationship was found between measures of facial skin colouration and Anti-HAV and Anti-Mnk antibodies.</p><p>We examined possible relationships between immunoreactivity and facial attractiveness and healthiness because it has often been claimed that attractive traits are related to underlying qualities of individuals. Previous studies indeed reported a positive link between male facial attractiveness and either cytokine levels after Table <ref type="table">5</ref>. Relationship between reactivity of the immune system, steroid hormones levels, and adipose tissue. Anti-HAV antibodies against hepatitis A, Anti-Mnk antibodies against meningococcus. β represents a standardized β estimate.   stimulation with LPS (r = 0.291, N = 41) 7 or elevated immune system response to vaccination against hepatitis B (β = 0.5, N = 74) <ref type="bibr" target="#b9">9</ref> . Although the 95% confidence intervals of our results regarding the association between Anti-HAV, Anti-Mnk, and perceived facial attractiveness (β anti-HAV = 0.217, [-0.218, 0.651]; β anti-MNK = 0.01, [0.016, 0.035]; N = 21) do partially overlap with results of some studies that found significant relation between perceived facial attractiveness and hepatitis B antibodies levels after vaccination <ref type="bibr" target="#b9">9</ref> , our results are more in line with the studies by Skrinda et al. <ref type="bibr" target="#b11">11</ref> and Rantala et al. <ref type="bibr" target="#b10">10</ref> who found no support for significant associations between hepatitis B antibody levels after vaccination and perceived attractiveness in men (β = -0.21, N = 60) and women (r = -0.006, N = 52), respectively. Overall, as noted at the outset, empirical evidence regarding an association between immunocompetence and facial attractiveness remains equivocal <ref type="bibr" target="#b75">75</ref> .</p><p>The strength of our study lies in using vaccines against both viral (hepatitis A and B) and bacterial (meningococcus) diseases. This way, we aimed to stimulate a wider array of immune system components because, for example, the advantage of heterozygotic individuals is the greatest when they fight against multiple pathogens at once <ref type="bibr" target="#b76">76</ref> . Moreover, we inspected both immunoreactivity and facial colouration. Unlike some previous studies 9, <ref type="bibr" target="#b50">50</ref> , we excluded hepatitis B antibodies from our analyses because several participants showed high levels of the relevant antibodies already in the baseline measurement, while others did not react to the vaccine.</p><p>In general, the use of vaccination to stimulate immunoreactivity has some limitations. For the purpose of this study, we treated a higher level of antibodies as a proxy to higher disease resistance. This is, however, something of a simplification because higher immunoreactivity is not always adaptive <ref type="bibr" target="#b77">77</ref> . Excessively strong (hypersensitivity) or inappropriate (e.g., autoimmune) immunity response is not beneficial and can ultimately negatively affect individual fitness. Moreover, by focusing solely on antibody levels, one can only arrive at generalised and limited information about the function of the immune system. Investigation of differences of the immune response in its humoral and cellular components and of the trade-offs between them might provide a more nuanced insight.</p><p>Recent studies employed several methods of measuring the functioning of the immune system and arrived at rather diverse results, making our null results no exception. Foo et al. <ref type="bibr" target="#b78">78</ref> focused on innate immunity and measured salivary immune function (antibacterial capacity against Escherichia coli and lysosome activity against Micrococcus lysodekticus) alongside oxidative stress and semen quality. Using principal component analyses, they obtained two factors: PC1-bacterial-killing capacity and overall bacterial immunity and PC2-bacterial suppression capacity and lysozyme activity. Contrary to expectations, no connection was found between the selected physiological measures of immune function, attractiveness (r PC1 = -0.16, r PC2 = 0.04, N = 98) and number of sexual partners (r PC1 = -0.07, r PC2 = -0.10, N = 97) <ref type="bibr" target="#b78">78</ref> . Phalane et al. <ref type="bibr" target="#b7">7</ref> , on the other hand, found a positive relationship between cytokine levels (after stimulation of the immune system with LPS) (r = 0.291, N = 41) and male facial attractiveness but not the CRP (r = -0.085, N = 41) <ref type="bibr" target="#b7">7</ref> . Cai et al. <ref type="bibr" target="#b79">79</ref> employed as a marker of immune function salivary immunoglobulin A (IgA), which acts as a defence against microbial invasion. They found no connection between IgA and female facial attractiveness (ρ = -0.051, N = 221) <ref type="bibr" target="#b79">79</ref> .</p><p>It has been proposed that facial skin provides information about the functioning of the immune system and about health <ref type="bibr" target="#b16">16,</ref><ref type="bibr" target="#b69">69,</ref><ref type="bibr" target="#b80">80</ref> . It has been demonstrated that people can assess health and attractiveness even from limited information such as skin patch and their ratings correspond to their ratings of the whole face <ref type="bibr" target="#b15">15,</ref><ref type="bibr" target="#b69">69</ref> . In our study, we therefore used cheek skin patches to limit possible effects of confounding factors (e.g., face shape). We also investigated relationships between perceived healthiness of the skin patch and direct measures of immune system function. And yet, we found no associations between perceived skin healthiness and levels of specific antibodies.</p><p>Previous studies reported that testosterone and cortisol have an effect on both the functioning of the immune system and perceived facial attractiveness and healthiness, and might thus work as mediators between the functioning of the immune system and perceived facial characteristics. According to the hypothesis of immunocompetence handicap, androgens exert immunosuppressive effects and only high-quality individuals (including their immunity) can produce and maintain a high level of testosterone and afford the physiological costs of lowered immunosuppression <ref type="bibr" target="#b40">40</ref> . Although the results of some studies do support the hypothesis of immunosuppressive effects of sex hormones <ref type="bibr" target="#b38">38,</ref><ref type="bibr" target="#b81">81</ref> , the overall pattern in literature is rather mixed (see, e.g., a metanalysis <ref type="bibr" target="#b41">41</ref> ). It has been suggested that glucocorticoids contribute to this complex picture because they modulate immune system response as well as the expression of secondary sexual characteristics, and they may interact with testosterone <ref type="bibr" target="#b42">42,</ref><ref type="bibr" target="#b43">43,</ref><ref type="bibr" target="#b45">45</ref> . In our study, we found no significant effects of either testosterone or cortisol on antibody levels. This finding is consistent with the results of Nowak et al. <ref type="bibr" target="#b82">82</ref> , who found no influence of testosterone on the effectiveness of immune system using the influenza vaccine. In contrast, though, in vitro studies did find an immunosuppressive effect of testosterone on a spontaneous production of IgG in mononuclear cells of human peripheral blood <ref type="bibr" target="#b83">83,</ref><ref type="bibr" target="#b84">84</ref> . Rantala et al. <ref type="bibr" target="#b9">9</ref> , however, showed that the immune system's reactivity was higher in males with higher testosterone levels who simultaneously exhibited lower cortisol levels and, moreover, these males were perceived as more attractive by women. In our study, we found none of the expected associations between testosterone and the rated characteristics. We found only a weak negative association between cortisol and perceived healthiness, but not attractiveness. Interestingly, another study showed a negative association between attractiveness (but not healthiness) and cortisol levels <ref type="bibr" target="#b45">45</ref> .</p><p>Additionally, we found that the two scales of facial attractiveness and healthiness are positively correlated but the magnitude of this association is not strong enough to treat the two as interchangeable. It is thus possible that facial attractiveness and healthiness stand for two separate perceptual qualities. This idea finds further support both in the negative association between cortisol levels and perceived facial healthiness reported in our study and in the negative association between cortisol levels and perceived attractiveness in a study by Moore et al. <ref type="bibr" target="#b45">45</ref> . This suggests that one should exercise caution when selecting specific characteristics to be rated for individual studies.</p><p>It has been reported that higher adiposity contributes to reduced immunocompetence, and possibly impaired immune function accompanied by changes in leukocyte counts, lower antibody production, as well as worse wound healing and higher risk of infections <ref type="bibr" target="#b47">47,</ref><ref type="bibr" target="#b48">48</ref> Moreover, the faces of obese and overweight individuals are perceived as less attractive <ref type="bibr" target="#b5">5,</ref><ref type="bibr" target="#b51">51</ref> . Adiposity thus seems to underlie the relationship between immune response and attractiveness <ref type="bibr" target="#b50">50</ref> . In our study, we did not find any significant relationship between perceived facial attractiveness or healthiness and antibody levels or body fat percentage. One possible explanation might be that participants in our sample had a generally lower body fat percentage (mean = 17.5%): only two participants fell in the obese category with body fat percentage over 25% (threshold recommended by the American Council on Exercise). Our sample, where variability of body fat percentage was relatively low, may have been thus ill-suited to detecting the negative effect of increased adiposity. On the other hand, other studies detected a negative effect of higher weight (expressed by BMI) on immune function even within the range of average body weight variation <ref type="bibr" target="#b85">85</ref> .</p><p>A number of previous studies reported associations between skin colour, facial appearance, and immune response. South African men with a higher cytokine response to stimulation (induced by LPS) had yellower, more 'carotenoid' skin colour <ref type="bibr" target="#b7">7</ref> . Furthermore, yellower skin was preferred alongside lighter skin, but it is well possible that this preference for lighter skin is due to the yellow carotenoid colouration being more visible in lighter skin hues <ref type="bibr" target="#b7">7</ref> . In our study, however, we found no statistically significant associations between skin yellowness and perceived characteristics. A number of other studies (e.g., Stephen et al. <ref type="bibr" target="#b17">17,</ref><ref type="bibr" target="#b24">24</ref> ) employed manipulation of skin colour in photographs, while we used natural portrait images. This may have resulted in a lower variability in our sample, thus potentially reducing the likelihood of observing the effect. Still, we found that both perceived facial attractiveness and healthiness were negatively predicted by higher forehead redness and cheek skin healthiness was negatively predicted by higher cheek redness. Although higher redness has been previously linked to higher perceived attractiveness and health <ref type="bibr" target="#b16">16,</ref><ref type="bibr" target="#b17">17</ref> , the relationship need not be linear: it is possible that some level of redness may affect perceived attractiveness positively, but above a certain threshold it has a negative effect on perceived attractiveness <ref type="bibr" target="#b16">16</ref> . We propose that higher (forehead) redness levels might be perceptually linked to dermatoses, such as rosacea <ref type="bibr" target="#b86">86</ref> , acne, or other imperfections which are generally perceived as less attractive <ref type="bibr" target="#b80">80</ref> .</p><p>Unlike various studies which measured skin colour from both cheeks and the forehead and averaged them into one value for facial skin lightness, redness, or yellowness <ref type="bibr" target="#b7">7,</ref><ref type="bibr" target="#b25">25,</ref><ref type="bibr" target="#b87">87</ref> , we used facial skin colour measurements from the cheek and the forehead separately, as majority of colour measurements between those areas differed and were only moderately associated. Cheeks and forehead differ in the amount of subcutaneous fat and therefore also in blood perfusion, which might account for slight differences in colouration. Accordingly, it has been found that the variation of colour in different parts of the face matters, whereby for instance periorbital luminance, cheek redness, and overall yellowness of the face predict perceived health <ref type="bibr" target="#b88">88</ref> . To some extent, though, the differences in the skin colour of various parts of the face in our sample might be also due to the methods we used for acquisition of facial photographs from which we measured the values of facial colours. Our aim was to simulate naturally occurring daylight conditions with a diffuse strobe light positioned above the participant's head pointing downwards. In this setup, though, the light source was positioned relatively close. Due to inverse-square law of loss of light over distance, it may have reflected on the forehead, causing it to appear brighter than the cheeks, and it may have produced highlights responsible for the observed colour differences between forehead and cheeks. Further, we tried to limit any potential effects of bright spots and light reflections by patting participants' foreheads with napkins and we waited for some time before taking the photographs to avoid any skin redness caused by this process. Still, some brighter areas may have appeared and caused specular highlights, thus affecting the measurements.</p><p>Limitations. Aside from the limitations discussed above, the main limitation of the present study is the small sample size of targets (although comparable to some previous studies <ref type="bibr" target="#b89">89</ref> ), which resulted in wide confidence intervals of the effect sizes and a low power to observe the reported effects (in most cases below 50%). Based on our Power curve analysis, even a sample size of 100 targets would not yield a higher power (e.g., ≥ 80% for most effects).</p><p>We experienced significant obstacles in participant recruitment due to the relatively strict conditions for participation (we required not being vaccinated against either of the diseases of our interest in the past 10 years) as well as anti-vaccination biases which may have discouraged some individuals from participation <ref type="bibr" target="#b90">90</ref> . Moreover, some participants showed high levels of antibodies against hepatitis B despite our entry requirement of not being recently vaccinated. Some participants may thus have been unaware of a relatively recent vaccination. Moreover, some participants did not respond to the hepatitis B vaccine, a phenomenon observed in app. 10% of population <ref type="bibr" target="#b91">91</ref> . Therefore, we had to exclude antibodies against hepatitis B from our analyses. Note, that although hepatitis B vaccine is commonly used in other studies, vaccination against hepatitis B was in 2001 included in the compulsory vaccination protocol in Czechia. Consequently, when selecting a vaccine, the context of its use ought to be investigated more closely and a choice of vaccines against some less common diseases may be a better option.</p><p>Previous research has also suggested that immunoreactivity and cues to various aspects of immune system functioning may differ between the sexes 9,10 and our results are based only on a male sample. Future investigations should thus include both men and women as targets and raters to better understand the complex relations between attractiveness and immunity and its role in intersexual selection.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusion</head><p>We investigated the relationship between functioning of the immune system and perceived facial attractiveness, healthiness, skin patch healthiness, and potential influence of skin colour. We employed measurements of antibodies after application of two different vaccines as markers of reactivity of the immune system and recorded the levels of steroid hormones (cortisol and testosterone) as well as the percentage of adipose tissue due to their immunomodulatory properties and connection to facial attractiveness. We found no significant relationships between reactivity of the immune system and perceived facial attractiveness, healthiness, and skin patch healthiness. We did, however, observe a small negative effect of cortisol on perceived facial healthiness. Moreover, steroid hormones and adipose tissue showed no relationship to either the immune response after vaccination or skin colouration. Finally, higher forehead redness from portrait photographs was perceived as both less attractive and healthy and higher cheek redness from skin patches was perceived as less healthy. Our results thus suggest that facial attractiveness and healthiness provide a limited amount of cues to immune system functioning and perceived characteristics seem to be related only to certain hormone levels and facial colour.</p><p>Despite some limitations, we believe that our study is a valuable contribution to research on the role of visual cues in assessments of functioning of the immune systems of individuals, and that it can serve as an entry for future meta-analysis aimed at disentangling the conflicting results of various existing studies. Future studies might also investigate the activation of different components of the immune system, such as humoral and cellular immunity, and focus on acquiring larger samples.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. An example of acquired facial photograph with an outlined skin patch on the left and the resulting skin patch on the right (informed consent was obtained to publish the image in an online open-access publication).</figDesc><graphic coords="5,155.91,50.50,232.56,190.32" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 .Study 2 :</head><label>22</label><figDesc>Figure 2. Differences in skin colour (CIE L*a*b*) measured from right and left cheek and the forehead. Black dots represent mean values, error bars show their 95% confidence intervals. Coloured points represent individual data points, while density plots show their distribution. Statistically significant differences are marked by asterisk.</figDesc><graphic coords="7,72.25,413.21,481.92,106.80" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>Facial attractiveness ratings: for target ID, VRC = 0.545, SD = 0.739, ICC = 0.299; for rater ID, VRC = 0.429, SD = 0.655, ICC = 0.251. Facial healthiness ratings: for target ID, VRC = 0.433, SD = 0.658, ICC = 0.228; for rater ID, VRC = 0.458, SD = 0.677, ICC = 0.238. Cheek patch healthiness ratings: for target ID, VRC = 0.244, SD = 0.493, ICC = 0.161; for rater ID, VRC = 0.490, SD = 0.7, ICC = 0.279. VRC variance of random components.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 3 .</head><label>3</label><figDesc>Relationship between reactivity of the immune system and forehead and cheek lightness, redness, and yellowness. Anti-HAV antibodies against hepatitis A, Anti-Mnk antibodies against meningococcus. β represents a standardized β estimate.</figDesc><table><row><cell>Characteristic</cell><cell></cell><cell cols="2">Predictors F</cell><cell>β</cell><cell cols="2">95% CI (LL, UL) df</cell><cell>t</cell><cell>SE</cell><cell>p</cell></row><row><cell cols="2">Facial attractiveness</cell><cell cols="2">Anti-HAV 0.955 Anti-Mnk 0.568</cell><cell cols="2">0.217 -0.218, 0.651 0.010 -0.016, 0.035</cell><cell>18 18.2</cell><cell>0.977 0.222 0.341 0.753 0.013 0.461</cell></row><row><cell>Facial healthiness</cell><cell></cell><cell cols="4">Anti-HAV 0.140 -0.080 -0.501, 0.340 Anti-Mnk 0.755 0.011 -0.014, 0.035</cell><cell cols="2">18.2 -0.375 0.215 0.712 18.5 0.869 0.013 0.396</cell></row><row><cell cols="2">Cheek patch healthiness</cell><cell cols="4">Anti-HAV 0.244 -0.089 -0.443, 0.265 Anti-Mnk 1.593 0.013 -0.007, 0.034</cell><cell cols="2">18.4 -0.494 0.181 0.627 18.8 1.262 0.011 0.222</cell></row><row><cell>Characteristic</cell><cell cols="2">Predictors</cell><cell>F</cell><cell>β</cell><cell cols="3">95% CI (LL, UL) df t</cell><cell>SE</cell><cell>p</cell></row><row><cell></cell><cell cols="2">Left cheek lightness</cell><cell>1.157</cell><cell></cell><cell>0.372 -0.132, 0.396</cell><cell>14</cell><cell>1.075 0.123 0.300</cell></row><row><cell></cell><cell cols="2">Forehead lightness</cell><cell>0.022</cell><cell></cell><cell>0.063 -0.296, 0.340</cell><cell>14</cell><cell>0.147 0.148 0.885</cell></row><row><cell>Anti-HAV</cell><cell cols="2">Left cheek redness Forehead redness</cell><cell cols="3">3.197 1.060 -0.314 -0.552, 0.194 0.542 -0.062, 0.686</cell><cell cols="2">14 14 -1.029 0.174 0.321 1.788 0.175 0.095</cell></row><row><cell></cell><cell cols="3">Left cheek yellowness 3.439</cell><cell></cell><cell>0.936 -0.058, 0.800</cell><cell>14</cell><cell>1.854 0.200 0.085</cell></row><row><cell></cell><cell cols="2">Forehead yellowness</cell><cell cols="3">0.040 -0.116 -0.556, 0.462</cell><cell cols="2">14 -0.200 0.237 0.845</cell></row><row><cell></cell><cell cols="2">Left cheek lightness</cell><cell cols="3">0.334 -0.216 -6.26, 3.60</cell><cell cols="2">14 -0.578 2.30</cell><cell>0.573</cell></row><row><cell></cell><cell cols="2">Forehead lightness</cell><cell>0.555</cell><cell></cell><cell>0.345 -3.88, 8.01</cell><cell>14</cell><cell>0.745 2.77</cell><cell>0.468</cell></row><row><cell>Anti-Mnk</cell><cell cols="2">Left cheek redness Forehead redness</cell><cell cols="3">0.376 2.283 -0.500 -11.89, 2.06 0.202 -5, 9</cell><cell cols="2">14 14 -1.511 3.25 0.613 3.26</cell><cell>0.550 0.153</cell></row><row><cell></cell><cell cols="5">Left cheek yellowness 0.284 -0.292 -10.02, 6.03</cell><cell cols="2">14 -0.533 3.74</cell><cell>0.602</cell></row><row><cell></cell><cell cols="2">Forehead yellowness</cell><cell>0.115</cell><cell></cell><cell>0.214 -8.01, 11.02</cell><cell>14</cell><cell>0.339 4.44</cell><cell>0.740</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 4 .</head><label>4</label><figDesc>Relationship between perceived facial attractiveness and healthiness, cortisol, testosterone levels,</figDesc><table><row><cell>Characteristic</cell><cell>Predictors</cell><cell>F</cell><cell>β</cell><cell cols="2">95% CI (LL, UL) df</cell><cell>t</cell><cell>SE</cell><cell>p</cell></row><row><cell></cell><cell>Cortisol</cell><cell cols="3">1.445 -0.003 -0.008, 0.002</cell><cell cols="4">17.1 -1.202 0.002 0.246</cell></row><row><cell>Facial attractiveness</cell><cell>Testosterone</cell><cell>0.136</cell><cell></cell><cell>0.085 -0.366, 0.536</cell><cell>17</cell><cell></cell><cell cols="2">0.368 0.230 0.717</cell></row><row><cell></cell><cell cols="4">Adipose tissue 3.023 -0.075 -0.160, 0.010</cell><cell>17</cell><cell cols="3">-1.739 0.043 0.100</cell></row><row><cell></cell><cell>Cortisol</cell><cell cols="3">5.265 -0.005 -0.010, -0.001</cell><cell cols="4">17.3 -2.295 0.002 0.035</cell></row><row><cell>Facial healthiness</cell><cell>Testosterone</cell><cell>1.019</cell><cell></cell><cell>0.223 -0.210, 0.657</cell><cell>17</cell><cell></cell><cell cols="2">1.010 0.221 0.327</cell></row><row><cell></cell><cell cols="4">Adipose tissue 0.348 -0.025 -0.106, 0.057</cell><cell cols="4">17.1 -0.590 0.042 0.563</cell></row><row><cell cols="9">and adipose tissue. Attractiveness ratings: for target ID, VRC = 0.763, SD = 0.873, ICC = 0.374; for rater ID,</cell></row><row><cell cols="9">VRC = 0.429, SD = 0.655, ICC = 0.251. Relationship between facial healthiness and cortisol, testosterone levels,</cell></row><row><cell cols="9">and percentage of adipose tissue. Facial healthiness ratings: for target ID, VRC = 0.690, SD = 0.831, ICC = 0.320;</cell></row><row><cell cols="9">for rater ID, VRC = 0.458, SD = 0.676, ICC = 0.238. VRC variance of random components.</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 6 .</head><label>6</label><figDesc>Relationship between perceived characteristics and facial colouration.</figDesc><table><row><cell>Characteristic</cell><cell>Predictors</cell><cell>F</cell><cell>β</cell><cell cols="2">95% CI (LL, UL) df t</cell><cell>SE</cell><cell>p</cell></row><row><cell></cell><cell>Cortisol</cell><cell>1.101</cell><cell></cell><cell>0.270 -0.003, 0.009</cell><cell>17</cell><cell cols="2">1.049 0.003 0.309</cell></row><row><cell>Anti-HAV</cell><cell>Testosterone</cell><cell cols="3">0.170 -0.136 -0.682, 0.458</cell><cell cols="3">17 -0.413 0.270 0.685</cell></row><row><cell></cell><cell cols="4">Adipose tissue 0.100 -0.109 -0.123, 0.091</cell><cell cols="3">17 -0.317 0.051 0.755</cell></row><row><cell></cell><cell>Cortisol</cell><cell cols="3">0.433 -0.160 -0.128, 0.067</cell><cell cols="3">17 -0.658 0.046 0.520</cell></row><row><cell>Anti-Mnk</cell><cell>Testosterone</cell><cell>3.158</cell><cell></cell><cell>0.551 -1.461, 17.07</cell><cell>17</cell><cell cols="2">1.777 4.392 0.093</cell></row><row><cell></cell><cell cols="2">Adipose tissue 1.928</cell><cell></cell><cell>0.452 -0.594, 2.883</cell><cell>17</cell><cell cols="2">1.389 0.824 0.183</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_0"><p>Scientific Reports | (2022) 12:18432 | https://doi.org/10.1038/s41598-022-22866-x</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgements</head><p>This research was supported by the <rs type="funder">Charles University Grant Agency</rs>, project <rs type="projectName">GAUK</rs> No. <rs type="grantNumber">1398218</rs> and GAUK No. <rs type="grantNumber">1374319</rs>; <rs type="funder">Czech Science Foundation</rs> (<rs type="grantNumber">GAČR 19-11822S</rs>) and <rs type="funder">Owen F Aldis Scholarship</rs>. We would like to thank <rs type="person">Naděje Kočnarová, MD</rs>, for medical examination, <rs type="person">Anna Pilátová</rs> for proof-reading and <rs type="person">Petr Tureček</rs> for help with data processing. We also thank our participants who made this study possible.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funded-project" xml:id="_hvQChGp">
+					<idno type="grant-number">1398218</idno>
+					<orgName type="project" subtype="full">GAUK</orgName>
+				</org>
+				<org type="funding" xml:id="_wV8PbJ3">
+					<idno type="grant-number">1374319</idno>
+				</org>
+				<org type="funding" xml:id="_cKyhTF9">
+					<idno type="grant-number">GAČR 19-11822S</idno>
+				</org>
+			</listOrg>
+
+			<div type="availability">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data availability</head><p>The data associated with this research are available at <ref type="url" target="https://osf">https:// osf</ref>. io/ 4k3ud/. Received: 19 May 2022; Accepted: 20 October 2022</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Author contributions</head><p>Conceptualization: Ž.P., D.S., J.T.F., V.T., J.H.; Data Curation: Ž.P., D.S.; Formal Analysis: Ž.P.; Funding Acquisition: Ž.P., D.S., V.T.; Investigation: Ž.P., D.S., D.St.; Methodology: Ž.P., D.S., J.T.F., V.T., D.St., K.K., J.H.; Project Administration: Ž.P., D.S.; Supervision: V.T., J.T.F., J.H.; Validation: Ž.P., D.S., J.T.F., V.T., D.St., K.K., J.H.; Visualization: Ž.P., V.T.; Writing-Original draft preparation: Ž.P., J.T.F.; Writing-Review and Editing: Ž.P., D.S., J.T.F., V.T,. J.H., D.St., K.K.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Competing interests</head><p>The authors declare no competing interests.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title/>
+		<idno type="DOI">10.1038/s41598-022-22866-xVol:.(1234567890</idno>
+		<idno>12:18432</idno>
+		<ptr target="https://doi.org/10.1038/s41598-022-22866-xReferences" />
+	</analytic>
+	<monogr>
+		<title level="j">Scientific Reports</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">1234567890</biblScope>
+			<biblScope unit="page">18432</biblScope>
+			<date type="published" when="2022">2022. 2022</date>
+		</imprint>
+	</monogr>
+	<note>Scientific Reports</note>
+	<note type="raw_reference">Vol:.(1234567890) Scientific Reports | (2022) 12:18432 | https://doi.org/10.1038/s41598-022-22866-x Vol:.(1234567890) Scientific Reports | (2022) 12:18432 | https://doi.org/10.1038/s41598-022-22866-x References</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Facial attractiveness</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Little</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">WIREs. Cogn. Sci</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="621" to="634" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Little, A. C. Facial attractiveness. WIREs. Cogn. Sci. 5, 621-634 (2014).</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Facial attractiveness</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Thornhill</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">W</forename><surname>Gangestad</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Trends Cogn. Sci</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="452" to="460" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Thornhill, R. &amp; Gangestad, S. W. Facial attractiveness. Trends Cogn. Sci. 3, 452-460 (1999).</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">The Oxford Handbook of Evolutionary Psychology and Romantic Relationships</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">D</forename><surname>Stephen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Luoto</surname></persName>
+		</author>
+		<editor>Mogilski, J. K. &amp; Shackelford, T. K.</editor>
+		<imprint>
+			<publisher>Oxford University Press</publisher>
+		</imprint>
+	</monogr>
+	<note>Physical cues of partner quality. in press</note>
+	<note type="raw_reference">Stephen, I. D. &amp; Luoto, S. Physical cues of partner quality. in The Oxford Handbook of Evolutionary Psychology and Romantic Relationships. (eds. Mogilski, J. K. &amp; Shackelford, T. K.) (Oxford University Press, in press)</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">The evolution of mating preferences and the paradox of the lek</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kirkpatrick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Ryan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">350</biblScope>
+			<biblScope unit="page" from="33" to="38" />
+			<date type="published" when="1991">1991</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kirkpatrick, M. &amp; Ryan, M. J. The evolution of mating preferences and the paradox of the lek. Nature 350, 33-38 (1991).</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Facial attractiveness signals different aspects of &apos;quality&apos; in women and men</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">K</forename><surname>Hume</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Montgomerie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evol. Hum. Behav</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="page" from="93" to="112" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hume, D. K. &amp; Montgomerie, R. Facial attractiveness signals different aspects of &apos;quality&apos; in women and men. Evol. Hum. Behav. 22, 93-112 (2001).</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Sensitivity to &apos;bad genes&apos; and the anomalous face overgeneralization effect: Cue validity, cue utilization, and accuracy in judging intelligence and health</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Zebrowitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Rhodes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Nonverbal Behav</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="167" to="185" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Zebrowitz, L. A. &amp; Rhodes, G. Sensitivity to &apos;bad genes&apos; and the anomalous face overgeneralization effect: Cue validity, cue utiliza- tion, and accuracy in judging intelligence and health. J. Nonverbal Behav. 28, 167-185 (2004).</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Facial appearance reveals immunity in African men</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">G</forename><surname>Phalane</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tribe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">C</forename><surname>Steel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Cholo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Coetzee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page">7443</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Phalane, K. G., Tribe, C., Steel, H. C., Cholo, M. C. &amp; Coetzee, V. Facial appearance reveals immunity in African men. Sci. Rep. 7, 7443 (2017).</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Antibody response to vaccination as a marker of in vivo immune function in psychophysiological research</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">E</forename><surname>Burns</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gallagher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurosci. Biobehav. Rev</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="122" to="126" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Burns, V. E. &amp; Gallagher, S. Antibody response to vaccination as a marker of in vivo immune function in psychophysiological research. Neurosci. Biobehav. Rev. 35, 122-126 (2010).</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Evidence for the stress-linked immunocompetence handicap hypothesis in humans</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Rantala</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Commun</title>
+		<imprint>
+			<biblScope unit="volume">278</biblScope>
+			<biblScope unit="page" from="774" to="780" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rantala, M. J. et al. Evidence for the stress-linked immunocompetence handicap hypothesis in humans. Nat. Commun. 278, 774-780 (2012).</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Facial attractiveness is related to women&apos;s cortisol and body fat, but not with immune responsiveness</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Rantala</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biol. Lett</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page">20130255</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rantala, M. J. et al. Facial attractiveness is related to women&apos;s cortisol and body fat, but not with immune responsiveness. Biol. Lett. 9, 20130255 (2013).</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Body height, immunity, facial and vocal attractiveness in young men</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Skrinda</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Naturwissenschaften</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="page" from="1017" to="1025" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Skrinda, I. et al. Body height, immunity, facial and vocal attractiveness in young men. Naturwissenschaften 101, 1017-1025 (2014).</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Cross-cultural agreement in facial attractiveness preferences: The role of ethnicity and gender</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Coetzee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Greeff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">D</forename><surname>Stephen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page">99629</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Coetzee, V., Greeff, J. M., Stephen, I. D. &amp; Perrett, D. I. Cross-cultural agreement in facial attractiveness preferences: The role of ethnicity and gender. PLoS ONE 9, e99629 (2014).</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Color homogeneity and visual perception of age, health, and attractiveness of female facial skin</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Matts</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fink</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Grammer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Burquest</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Kingdom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Am. Acad. Dermatol</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page" from="977" to="984" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Matts, P. J., Fink, B., Grammer, K., Burquest, M. &amp; Kingdom, U. Color homogeneity and visual perception of age, health, and attractiveness of female facial skin. J. Am. Acad. Dermatol. 57, 977-984 (2007).</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Oxygenated-blood colour change thresholds for perceived facial redness, health, and attractiveness</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">E</forename><surname>Re</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">D</forename><surname>Whitehead</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page">17859</biblScope>
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Re, D. E., Whitehead, R. D., Xiao, D. &amp; Perrett, D. I. Oxygenated-blood colour change thresholds for perceived facial redness, health, and attractiveness. PLoS ONE 6, e17859 (2011).</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Skin texture and colour predict perceived health in Asian faces</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">W</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Tiddeman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">D</forename><surname>Stephen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evol. Hum. Behav</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="page" from="320" to="335" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Tan, K. W., Tiddeman, B. &amp; Stephen, I. D. Skin texture and colour predict perceived health in Asian faces. Evol. Hum. Behav. 39, 320-335 (2018).</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Skin blood perfusion and oxygenation colour affect perceived human health</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">D</forename><surname>Stephen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Coetzee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page">5083</biblScope>
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Stephen, I. D., Coetzee, V., Smith, M. L. &amp; Perrett, D. I. Skin blood perfusion and oxygenation colour affect perceived human health. PLoS ONE 4, e5083 (2009).</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Facial skin coloration affects perceived health of human faces</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">D</forename><surname>Stephen</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Law</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Stirrat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Primatol</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="845" to="857" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Stephen, I. D., Law Smith, M. J., Stirrat, M. R. &amp; Perrett, D. I. Facial skin coloration affects perceived health of human faces. Int. J. Primatol. 30, 845-857 (2009).</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Physical training and the control of skin blood flow</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Johnson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Sci. Sport. Exerc</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="382" to="386" />
+			<date type="published" when="1998">1998</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Johnson, J. M. Physical training and the control of skin blood flow. Med. Sci. Sport. Exerc. 30, 382-386 (1998).</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Exercise and cardiovascular health</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Myers</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Circulation</title>
+		<imprint>
+			<biblScope unit="volume">107</biblScope>
+			<biblScope unit="page" from="2" to="e5" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Myers, J. Exercise and cardiovascular health. Circulation 107, e2-e5 (2003).</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Post-ischemic skin peak oxygen saturation is associated with cardiovascular risk factors: A Swedish cohort study</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Jonasson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Microvasc. Res</title>
+		<imprint>
+			<biblScope unit="volume">140</biblScope>
+			<biblScope unit="page">104284</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Jonasson, H. et al. Post-ischemic skin peak oxygen saturation is associated with cardiovascular risk factors: A Swedish cohort study. Microvasc. Res. 140, 104284 (2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Effects of carotenoids on human immune function</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Hughes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Nutr. Soc</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="page" from="713" to="718" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hughes, D. A. Effects of carotenoids on human immune function. Proc. Nutr. Soc. 58, 713-718 (1999).</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Carotenoids action on the immune reponse</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">B</forename><surname>Chew</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Park</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Nutr</title>
+		<imprint>
+			<biblScope unit="volume">134</biblScope>
+			<biblScope unit="page" from="257" to="261" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Chew, P. B. &amp; Park, J. S. Carotenoids action on the immune reponse. J. Nutr. 134, 257-261 (2004).</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Testosterone and carotenoids: An integrated view of trade-offs between immunity and sexual signalling</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Peters</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BioEssays</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="page" from="427" to="430" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Peters, A. Testosterone and carotenoids: An integrated view of trade-offs between immunity and sexual signalling. BioEssays 29, 427-430 (2007).</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Carotenoid and melanin pigment coloration affect perceived human health</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">D</forename><surname>Stephen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Coetzee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evol. Hum. Behav</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="216" to="227" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Stephen, I. D., Coetzee, V. &amp; Perrett, D. I. Carotenoid and melanin pigment coloration affect perceived human health. Evol. Hum. Behav. 32, 216-227 (2011).</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">The carotenoid beta-carotene enhances facial color, attractiveness and perceived health, but not actual health, in humans</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">Z</forename><surname>Foo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Rhodes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">W</forename><surname>Simmons</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Behav. Ecol</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="570" to="578" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Foo, Y. Z., Rhodes, G. &amp; Simmons, L. W. The carotenoid beta-carotene enhances facial color, attractiveness and perceived health, but not actual health, in humans. Behav. Ecol. 28, 570-578 (2017).</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">The patterns of melanosome distribution in keratinocytes of human skin as one determining factor of skin colour</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">Y</forename><surname>Thong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Jee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">C</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Boissy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Br. J. Dermatol</title>
+		<imprint>
+			<biblScope unit="volume">149</biblScope>
+			<biblScope unit="page" from="498" to="505" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Thong, H. Y., Jee, S. H., Sun, C. C. &amp; Boissy, R. E. The patterns of melanosome distribution in keratinocytes of human skin as one determining factor of skin colour. Br. J. Dermatol. 149, 498-505 (2003).</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">The protective role of melanin against UV damage in human skin</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Brenner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">J</forename><surname>Hearing</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Photochem. Photobiol</title>
+		<imprint>
+			<biblScope unit="volume">84</biblScope>
+			<biblScope unit="page" from="539" to="549" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Brenner, M. &amp; Hearing, V. J. The protective role of melanin against UV damage in human skin. Photochem. Photobiol. 84, 539-549 (2008).</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Melanin has a small inhibitory effect on cutaneous vitamin D synthesis: A comparison of extreme phenotypes</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">R</forename><surname>Young</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Invest. Dermatol</title>
+		<imprint>
+			<biblScope unit="volume">140</biblScope>
+			<biblScope unit="page">1</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Young, A. R. et al. Melanin has a small inhibitory effect on cutaneous vitamin D synthesis: A comparison of extreme phenotypes. J. Invest. Dermatol. 140, 1418-1426.e1 (2020).</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Melatonin in the skin: synthesis, metabolism and functions</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Slominski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Tobin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Zmijewski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wortsman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Paus</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Trends Endocrinol. Metab</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page" from="17" to="24" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Slominski, A., Tobin, D. J., Zmijewski, M. A., Wortsman, J. &amp; Paus, R. Melatonin in the skin: synthesis, metabolism and functions. Trends Endocrinol. Metab. 19, 17-24 (2008).</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">melatonin, melanocyte-stimulating hormone, and the susceptibility to autoimmune demyelination: A rationale for light therapy in multiple sclerosis</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">S</forename><surname>Constantinescu</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Melanin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Hypotheses</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="page" from="455" to="458" />
+			<date type="published" when="1995">1995</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Constantinescu, C. S. Melanin, melatonin, melanocyte-stimulating hormone, and the susceptibility to autoimmune demyelination: A rationale for light therapy in multiple sclerosis. Med. Hypotheses 45, 455-458 (1995).</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Melatonin-immune system relationships</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Guerrero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Reiter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Curr. Top. Med. Chem</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="167" to="179" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Guerrero, J. M. &amp; Reiter, R. J. Melatonin-immune system relationships. Curr. Top. Med. Chem. 2, 167-179 (2002).</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Sexual selection as a cause of human skin colour variation: Darwin&apos;s hypothesis revisited</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Aoki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Hum. Biol</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="page" from="589" to="608" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Aoki, K. Sexual selection as a cause of human skin colour variation: Darwin&apos;s hypothesis revisited. Ann. Hum. Biol. 29, 589-608 (2002).</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">A paradox of human mate preferences and natural selection</title>
+		<author>
+			<persName><surname>Badarudozza</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Hum. Ecol</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="195" to="197" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Badarudozza. A paradox of human mate preferences and natural selection. J. Hum. Ecol. 21, 195-197 (2007).</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">African and European perception of African female attractiveness</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kleisner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evol. Hum. Behav</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="page" from="744" to="755" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kleisner, K. et al. African and European perception of African female attractiveness. Evol. Hum. Behav. 38, 744-755 (2017).</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Facial attractiveness and preference of sexual dimorphism: A comparison across five populations</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Fiala</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evol. Hum. Sci</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page">38</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fiala, V. et al. Facial attractiveness and preference of sexual dimorphism: A comparison across five populations. Evol. Hum. Sci. 3, e38 (2021).</note>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Skin color preference, sexual dimorphism and sexual selection: A case of gene culture co-evolution?</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">L</forename><surname>Van Den Berghe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Frost</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ethn. Racial Stud</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="87" to="113" />
+			<date type="published" when="1986">1986</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">van den Berghe, P. L. &amp; Frost, P. Skin color preference, sexual dimorphism and sexual selection: A case of gene culture co-evolution?. Ethn. Racial Stud. 9, 87-113 (1986).</note>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">The role of sexually dimorphic skin colour and shape in attractiveness of male faces</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Carrito</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evol. Hum. Behav</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="125" to="133" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Carrito, M. L. et al. The role of sexually dimorphic skin colour and shape in attractiveness of male faces. Evol. Hum. Behav. 37, 125-133 (2016).</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Suppressive effects of androgens on the immune system</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Trigunaite</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dimo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">N</forename><surname>Jørgensen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cell. Immunol</title>
+		<imprint>
+			<biblScope unit="volume">294</biblScope>
+			<biblScope unit="page" from="87" to="94" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Trigunaite, A., Dimo, J. &amp; Jørgensen, T. N. Suppressive effects of androgens on the immune system. Cell. Immunol. 294, 87-94 (2015).</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Sex-hormones and the course of parasitic infection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Alexander</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Stimson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Parasitol. Today</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="189" to="193" />
+			<date type="published" when="1988">1988</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Alexander, J. &amp; Stimson, W. Sex-hormones and the course of parasitic infection. Parasitol. Today 4, 189-193 (1988).</note>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Parasites, bright males, and the immunocompetence handicap</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Folstad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Karter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Am. Nat</title>
+		<imprint>
+			<biblScope unit="volume">139</biblScope>
+			<biblScope unit="page" from="603" to="622" />
+			<date type="published" when="1992">1992</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Folstad, I. &amp; Karter, A. J. Parasites, bright males, and the immunocompetence handicap. Am. Nat. 139, 603-622 (1992).</note>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Testing the immunocompetence handicap hypothesis: A review of the evidence</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Roberts</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">L</forename><surname>Buchanan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Evans</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Anim. Behav</title>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="page" from="227" to="239" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Roberts, M. L., Buchanan, K. L. &amp; Evans, M. R. Testing the immunocompetence handicap hypothesis: A review of the evidence. Anim. Behav. 68, 227-239 (2004).</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">The effects of testosterone on antibody production and plumage coloration in male house sparrows (Passer domesticus)</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Evans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">R</forename><surname>Goldsmith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">R A</forename><surname>Norris</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Behav. Ecol. Sociobiol</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="page" from="156" to="163" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Evans, M. R., Goldsmith, A. R. &amp; Norris, S. R. A. The effects of testosterone on antibody production and plumage coloration in male house sparrows (Passer domesticus). Behav. Ecol. Sociobiol. 47, 156-163 (2000).</note>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Hormones, handicaps and bright birds</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>Møller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Trends Ecol. Evol</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page">121</biblScope>
+			<date type="published" when="1995">1995</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Møller, A. P. Hormones, handicaps and bright birds. Trends Ecol. Evol. 10, 121 (1995).</note>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Stress hormones, Th1/Th2 patterns, pro/anti-inflammatory cytokines and susceptibility to disease</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">J</forename><surname>Elenkov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">P</forename><surname>Chrousos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Trends Endocrinol. Metab</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="359" to="368" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Elenkov, I. J. &amp; Chrousos, G. P. Stress hormones, Th1/Th2 patterns, pro/anti-inflammatory cytokines and susceptibility to disease. Trends Endocrinol. Metab. 10, 359-368 (1999).</note>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Evidence for the stress-linked immunocompetence handicap hypothesis in human male faces</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">R</forename><surname>Moore</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. R. Soc. B Biol. Sci</title>
+		<imprint>
+			<biblScope unit="volume">278</biblScope>
+			<biblScope unit="page" from="774" to="780" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Moore, F. R. et al. Evidence for the stress-linked immunocompetence handicap hypothesis in human male faces. Proc. R. Soc. B Biol. Sci. 278, 774-780 (2011).</note>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Women&apos;s facial attractiveness is related to their body mass index but not their salivary cortisol</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Hahn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">I</forename><surname>Fisher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Debruine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">C</forename><surname>Jones</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Am. J. Hum. Biol</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="352" to="355" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Han, C., Hahn, A. C., Fisher, C. I., Debruine, L. M. &amp; Jones, B. C. Women&apos;s facial attractiveness is related to their body mass index but not their salivary cortisol. Am. J. Hum. Biol. 28, 352-355 (2016).</note>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Chronic and degenerative diseases: Obesity, inflammation and the immune system</title>
+		<author>
+			<persName><forename type="first">De</forename><surname>Heredia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">P</forename><surname>Gómez-Martínez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Marcos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Nutr. Soc</title>
+		<imprint>
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="page" from="332" to="338" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">De Heredia, F. P., Gómez-Martínez, S. &amp; Marcos, A. Chronic and degenerative diseases: Obesity, inflammation and the immune system. Proc. Nutr. Soc. 71, 332-338 (2012).</note>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Obesity statistics</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">B</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Prim. Care Clin. Off. Pract</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="121" to="135" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Smith, K. B. &amp; Smith, M. S. Obesity statistics. Prim. Care Clin. Off. Pract. 43, 121-135 (2016).</note>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Obesity and immune function relationships</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Martí</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Marcos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Martínez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Obes. Rev</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="131" to="140" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Martí, A., Marcos, A. &amp; Martínez, J. A. Obesity and immune function relationships. Obes. Rev. 2, 131-140 (2001).</note>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Adiposity, compared with masculinity, serves as a more valid cue to immunocompetence in human mate choice</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Rantala</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. R. Soc. B Biol. Sci</title>
+		<imprint>
+			<biblScope unit="volume">280</biblScope>
+			<biblScope unit="page">20122495</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rantala, M. J. et al. Adiposity, compared with masculinity, serves as a more valid cue to immunocompetence in human mate choice. Proc. R. Soc. B Biol. Sci. 280, 20122495 (2013).</note>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Facial adiposity: A cue to health?</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Coetzee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">D</forename><surname>Stephen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Perception</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="page" from="1700" to="1711" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Coetzee, V., Perrett, D. I. &amp; Stephen, I. D. Facial adiposity: A cue to health?. Perception 38, 1700-1711 (2009).</note>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">Do adipokines levels influence facial attractiveness of young women?</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Żelaźniewicz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Nowak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Studzińska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Pawłowski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Am. J. Phys. Anthropol</title>
+		<imprint>
+			<biblScope unit="volume">173</biblScope>
+			<biblScope unit="page" from="250" to="257" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Żelaźniewicz, A., Nowak, J., Studzińska, I. &amp; Pawłowski, B. Do adipokines levels influence facial attractiveness of young women?. Am. J. Phys. Anthropol. 173, 250-257 (2020).</note>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">No evidence for association between human body odor quality and immune system functioning</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Schwambergová</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychoneuroendocrino</title>
+		<imprint>
+			<biblScope unit="volume">132</biblScope>
+			<biblScope unit="page">105363</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Schwambergová, D. et al. No evidence for association between human body odor quality and immune system functioning. Psy- choneuroendocrino. 132, 105363 (2021).</note>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">Hepatitis B virus infection: Epidemiology and vaccination</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">W</forename><surname>Shepard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">P</forename><surname>Simard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Finelli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Fiore</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">P</forename><surname>Bell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Epidemiol. Rev</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="112" to="125" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Shepard, C. W., Simard, E. P., Finelli, L., Fiore, A. E. &amp; Bell, B. P. Hepatitis B virus infection: Epidemiology and vaccination. Epi- demiol. Rev. 28, 112-125 (2006).</note>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<analytic>
+		<title level="a" type="main">Markers of inflammation and cardiovascular disease: Application to clinical and public health practice: A statement for healthcare professionals from the centers for disease control and prevention and the American Heart Association</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">A</forename><surname>Pearson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Circulation</title>
+		<imprint>
+			<biblScope unit="volume">107</biblScope>
+			<biblScope unit="page" from="499" to="511" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Pearson, T. A. et al. Markers of inflammation and cardiovascular disease: Application to clinical and public health practice: A statement for healthcare professionals from the centers for disease control and prevention and the American Heart Association. Circulation 107, 499-511 (2003).</note>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">Laboratory diagnosis of hepatitis A</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">S</forename><surname>De Paula</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Future Virol</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="461" to="472" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">De Paula, V. S. Laboratory diagnosis of hepatitis A. Future Virol. 7, 461-472 (2012).</note>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">A review of the long-term protection after hepatitis A and B vaccination</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Van Damme</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Van Herck</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Travel Med. Infect. Dis</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="79" to="84" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Van Damme, P. &amp; Van Herck, K. A review of the long-term protection after hepatitis A and B vaccination. Travel Med. Infect. Dis. 5, 79-84 (2007).</note>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Diurnal variation of steroid hormones and their reference intervals using mass spectrometric analysis</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">P</forename><surname>Parikh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Endocr. Connect</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="1354" to="1361" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Parikh, T. P. et al. Diurnal variation of steroid hormones and their reference intervals using mass spectrometric analysis. Endocr. Connect. 7, 1354-1361 (2018).</note>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">The value of facial attractiveness for encouraging fruit and vegetable consumption: Analyses from a randomized controlled trial</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Appleton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Public Health</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Appleton, K. M. et al. The value of facial attractiveness for encouraging fruit and vegetable consumption: Analyses from a rand- omized controlled trial. BMC Public Health 18, 1-12 (2018).</note>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Effects of aging and chronic sun exposure on melanocytes in human skin</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Gilchrest</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">B</forename><surname>Blog</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Szabo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Investig. Dermatol</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="page" from="141" to="143" />
+			<date type="published" when="1979">1979</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gilchrest, B. A., Blog, F. B. &amp; Szabo, G. Effects of aging and chronic sun exposure on melanocytes in human skin. J. Investig. Der- matol. 73, 141-143 (1979).</note>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">Chemiluminescence immunoassay</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">TrAC Trends Anal. Chem</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="404" to="415" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Zhao, L., Sun, L. &amp; Chu, X. Chemiluminescence immunoassay. TrAC Trends Anal. Chem. 28, 404-415 (2009).</note>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Comparison of dot-ELISA and standard ELISA for detection of Neisseria meningitidis outer membrane complex-specific antibodies</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">F</forename><surname>Belo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">K</forename><surname>Farhat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">N</forename><surname>De Gaspari</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brazilian J. Infect. Dis</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="35" to="40" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Belo, E. F., Farhat, C. K. &amp; De Gaspari, E. N. Comparison of dot-ELISA and standard ELISA for detection of Neisseria meningitidis outer membrane complex-specific antibodies. Brazilian J. Infect. Dis. 14, 35-40 (2010).</note>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<analytic>
+		<title level="a" type="main">Serological basis for use of meningococcal serogroup C conjugate vaccines in the United Kingdom: Reevaluation of correlates of protection</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Borrow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Andrews</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Goldblatt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Miller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Infect. Immun</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="page" from="1568" to="1573" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Borrow, R., Andrews, N., Goldblatt, D. &amp; Miller, E. Serological basis for use of meningococcal serogroup C conjugate vaccines in the United Kingdom: Reevaluation of correlates of protection. Infect. Immun. 69, 1568-1573 (2001).</note>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<analytic>
+		<title level="a" type="main">7α-biotinylated testosterone derivatives as tracers for a competitive chemiluminescence immunoassay of testosterone in serum</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Luppa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Clin. Chem</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="2345" to="2352" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Luppa, P. et al. 7α-biotinylated testosterone derivatives as tracers for a competitive chemiluminescence immunoassay of testosterone in serum. Clin. Chem. 43, 2345-2352 (1997).</note>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<analytic>
+		<title level="a" type="main">Degrees of facial perception: Congruence in perception of frontal portrait, profile, and rotation photographs</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Třebický</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Front. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page">2405</biblScope>
+			<date type="published" when="2018">360. 2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Třebický, V. et al. 360 Degrees of facial perception: Congruence in perception of frontal portrait, profile, and rotation photographs. Front. Psychol. 9, 2405 (2018).</note>
+</biblStruct>
+
+<biblStruct xml:id="b66">
+	<analytic>
+		<title level="a" type="main">Focal length affects depicted shape and perception of facial images</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Třebický</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Fialová</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kleisner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Havlíček</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page">149313</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Třebický, V., Fialová, J., Kleisner, K. &amp; Havlíček, J. Focal length affects depicted shape and perception of facial images. PLoS ONE 11, e0149313 (2016).</note>
+</biblStruct>
+
+<biblStruct xml:id="b67">
+	<analytic>
+		<title level="a" type="main">Photoelectric Color Difference Meter*</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Hunter</surname></persName>
+		</author>
+		<idno type="DOI">10.1364/JOSA.48.000985</idno>
+		<ptr target="https://doi.org/10.1364/JOSA.48.000985" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Opt. Soc. Am</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="985" to="995" />
+			<date type="published" when="1958">1958</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hunter, R. S. Photoelectric Color Difference Meter*. J. Opt. Soc. Am. 48(12), 985-995. https:// doi. org/ 10. 1364/ JOSA. 48. 000985 (1958).</note>
+</biblStruct>
+
+<biblStruct xml:id="b68">
+	<analytic>
+		<title level="a" type="main">Skin colour changes during experimentally-induced sickness</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Henderson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brain. Behav. Immun</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="page" from="312" to="318" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Henderson, A. J. et al. Skin colour changes during experimentally-induced sickness. Brain. Behav. Immun. 60, 312-318 (2017).</note>
+</biblStruct>
+
+<biblStruct xml:id="b69">
+	<analytic>
+		<title level="a" type="main">When facial attractiveness is only skin deep</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">C</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Little</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Burt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Perrett</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Perception</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="569" to="576" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Jones, B. C., Little, A. C., Burt, M. D. &amp; Perrett, D. I. When facial attractiveness is only skin deep. Perception 33, 569-576 (2004).</note>
+</biblStruct>
+
+<biblStruct xml:id="b70">
+	<analytic>
+		<title level="a" type="main">Preferred interpersonal distances: A global comparison</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sorokowska</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Cross. Cult. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="page" from="577" to="592" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sorokowska, A. et al. Preferred interpersonal distances: A global comparison. J. Cross. Cult. Psychol. 48, 577-592 (2017).</note>
+</biblStruct>
+
+<biblStruct xml:id="b71">
+	<monogr>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">A</forename><surname>Brown</surname></persName>
+		</author>
+		<title level="m">Confirmatory factor analysis for applied research</title>
+		<meeting><address><addrLine>Berlin</addrLine></address></meeting>
+		<imprint>
+			<publisher>The Guilford Press</publisher>
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Brown, T. A. Confirmatory factor analysis for applied research (The Guilford Press, Berlin, 2006).</note>
+</biblStruct>
+
+<biblStruct xml:id="b72">
+	<analytic>
+		<title level="a" type="main">Estimating power in (generalized) linear mixed models: An open introduction and tutorial in R</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kumle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L H</forename><surname>Võ</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Draschkow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Behav. Res. Methods</title>
+		<imprint>
+			<biblScope unit="volume">53</biblScope>
+			<biblScope unit="page" from="2528" to="2543" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kumle, L., Võ, M. L. H. &amp; Draschkow, D. Estimating power in (generalized) linear mixed models: An open introduction and tuto- rial in R. Behav. Res. Methods 53, 2528-2543 (2021).</note>
+</biblStruct>
+
+<biblStruct xml:id="b73">
+	<analytic>
+		<title level="a" type="main">An R package for power analysis of generalized linear mixed models by simulation</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Green</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Macleod</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Simr</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Methods Ecol. Evol</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="493" to="498" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Green, P. &amp; MacLeod, C. J. SIMR: An R package for power analysis of generalized linear mixed models by simulation. Methods Ecol. Evol. 7, 493-498 (2016).</note>
+</biblStruct>
+
+<biblStruct xml:id="b74">
+	<analytic>
+		<title level="a" type="main">Sample size justification</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lakens</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Collabra Psychol</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page">33267</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lakens, D. Sample size justification. Collabra Psychol. 8, 33267 (2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b75">
+	<analytic>
+		<title level="a" type="main">Does facial attractiveness really signal immunocompetence?</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">C</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">J</forename><surname>Holzleitner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Shiramizu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Trends Cogn. Sci</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="1018" to="1020" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Jones, B. C., Holzleitner, I. J. &amp; Shiramizu, V. Does facial attractiveness really signal immunocompetence?. Trends Cogn. Sci. 25, 1018-1020 (2021).</note>
+</biblStruct>
+
+<biblStruct xml:id="b76">
+	<analytic>
+		<title level="a" type="main">A theory of mate choice based on heterozygosity</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Brown</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Behav. Ecol</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="60" to="65" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Brown, J. L. A theory of mate choice based on heterozygosity. Behav. Ecol. 8, 60-65 (1997).</note>
+</biblStruct>
+
+<biblStruct xml:id="b77">
+	<analytic>
+		<title level="a" type="main">From innate to adaptive immune responses in contact hypersensitivity</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">F</forename><surname>Martin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Jakob</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Curr. Opin. Allergy Clin. Immunol</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="289" to="293" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Martin, S. F. &amp; Jakob, T. From innate to adaptive immune responses in contact hypersensitivity. Curr. Opin. Allergy Clin. Immunol. 8, 289-293 (2008).</note>
+</biblStruct>
+
+<biblStruct xml:id="b78">
+	<analytic>
+		<title level="a" type="main">The relationship between health and mating success in humans</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">Z</forename><surname>Foo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">W</forename><surname>Simmons</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Rhodes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">R. Soc. Open Sci</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page">160603</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Foo, Y. Z., Simmons, L. W. &amp; Rhodes, G. The relationship between health and mating success in humans. R. Soc. Open Sci. 4, 160603 (2017).</note>
+</biblStruct>
+
+<biblStruct xml:id="b79">
+	<analytic>
+		<title level="a" type="main">No evidence that facial attractiveness, femininity, averageness, or coloration are cues to susceptibility to infectious illnesses in a university sample of young adult women</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Cai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evol. Hum. Behav</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="page" from="156" to="159" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Cai, Z. et al. No evidence that facial attractiveness, femininity, averageness, or coloration are cues to susceptibility to infectious illnesses in a university sample of young adult women. Evol. Hum. Behav. 40, 156-159 (2019).</note>
+</biblStruct>
+
+<biblStruct xml:id="b80">
+	<analytic>
+		<title level="a" type="main">Human (Homo sapiens) facial attractiveness in relation to skin texture and color</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fink</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Grammer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Thornhill</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Comp. Psychol</title>
+		<imprint>
+			<biblScope unit="volume">115</biblScope>
+			<biblScope unit="page" from="92" to="99" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fink, B., Grammer, K. &amp; Thornhill, R. Human (Homo sapiens) facial attractiveness in relation to skin texture and color. J. Comp. Psychol. 115, 92-99 (2001).</note>
+</biblStruct>
+
+<biblStruct xml:id="b81">
+	<analytic>
+		<title level="a" type="main">Sex hormones and immune dimorphism</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bhatia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">K</forename><surname>Sekhon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kaur</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. World J</title>
+		<imprint>
+			<biblScope unit="page">159150</biblScope>
+			<date type="published" when="2014">2014. 2014</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bhatia, A., Sekhon, H. K. &amp; Kaur, G. Sex hormones and immune dimorphism. Sci. World J. 2014, 159150 (2014).</note>
+</biblStruct>
+
+<biblStruct xml:id="b82">
+	<analytic>
+		<title level="a" type="main">No evidence for the immunocompetence handicap hypothesis in male humans</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Nowak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Pawłowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Borkowska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Augustyniak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Drulis-Kawa</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41598-022-22866-xwww.nature.com/scientificreports/</idno>
+		<idno>12:18432</idno>
+		<ptr target="https://doi.org/10.1038/s41598-022-22866-xwww.nature.com/scientificreports/" />
+	</analytic>
+	<monogr>
+		<title level="j">Scientific Reports</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">1234567890</biblScope>
+			<biblScope unit="page">7392</biblScope>
+			<date type="published" when="2018">2018. 2022</date>
+		</imprint>
+	</monogr>
+	<note>Sci. Rep.</note>
+	<note type="raw_reference">Nowak, J., Pawłowski, B., Borkowska, B., Augustyniak, D. &amp; Drulis-Kawa, Z. No evidence for the immunocompetence handicap hypothesis in male humans. Sci. Rep. 8, 7392 (2018). Vol:.(1234567890) Scientific Reports | (2022) 12:18432 | https://doi.org/10.1038/s41598-022-22866-x www.nature.com/scientificreports/</note>
+</biblStruct>
+
+<biblStruct xml:id="b83">
+	<analytic>
+		<title level="a" type="main">Testosterone inhibits immunoglobulin production by human peripheral blood mononuclear cells</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Kanda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tsuchida</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Tamaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Clin. Exp. Immunol</title>
+		<imprint>
+			<biblScope unit="volume">106</biblScope>
+			<biblScope unit="page" from="410" to="415" />
+			<date type="published" when="1996">1996</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kanda, N., Tsuchida, T. &amp; Tamaki, K. Testosterone inhibits immunoglobulin production by human peripheral blood mononuclear cells. Clin. Exp. Immunol. 106, 410-415 (1996).</note>
+</biblStruct>
+
+<biblStruct xml:id="b84">
+	<analytic>
+		<title level="a" type="main">Testosterone suppresses anti-DNA antibody production in peripheral blood mononuclear cells from patients with systemic lupus erythematosus</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Kanda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tsuchida</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Tamaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Arthritis Rheum</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="page" from="1703" to="1711" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kanda, N., Tsuchida, T. &amp; Tamaki, K. Testosterone suppresses anti-DNA antibody production in peripheral blood mononuclear cells from patients with systemic lupus erythematosus. Arthritis Rheum. 40, 1703-1711 (1997).</note>
+</biblStruct>
+
+<biblStruct xml:id="b85">
+	<analytic>
+		<title level="a" type="main">Body height and immune efficacy: Testing body stature as a signal of biological quality</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Pawłowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Nowak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Borkowska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Augustyniak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Drulis-Kawa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. R. Soc. B Biol. Sci</title>
+		<imprint>
+			<biblScope unit="volume">284</biblScope>
+			<biblScope unit="page">20171372</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Pawłowski, B., Nowak, J., Borkowska, B., Augustyniak, D. &amp; Drulis-Kawa, Z. Body height and immune efficacy: Testing body stature as a signal of biological quality. Proc. R. Soc. B Biol. Sci. 284, 20171372 (2017).</note>
+</biblStruct>
+
+<biblStruct xml:id="b86">
+	<analytic>
+		<title level="a" type="main">Rosacea: A study of clinical patterns, blood flow, and the role of Demodex folliculorum</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sibenge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Gawkrodger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Am. Acad. Dermatol</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="page" from="590" to="593" />
+			<date type="published" when="1992">1992</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sibenge, S. &amp; Gawkrodger, D. J. Rosacea: A study of clinical patterns, blood flow, and the role of Demodex folliculorum. J. Am. Acad. Dermatol. 26, 590-593 (1992).</note>
+</biblStruct>
+
+<biblStruct xml:id="b87">
+	<analytic>
+		<title level="a" type="main">Predictors of facial attractiveness and health in humans</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">Z</forename><surname>Foo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">W</forename><surname>Simmons</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Rhodes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page">39731</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Foo, Y. Z., Simmons, L. W. &amp; Rhodes, G. Predictors of facial attractiveness and health in humans. Sci. Rep. 7, 39731 (2017).</note>
+</biblStruct>
+
+<biblStruct xml:id="b88">
+	<analytic>
+		<title level="a" type="main">Coloration in different areas of facial skin is a cue to health: The role of cheek redness and periorbital luminance in health perception</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Porcheron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Sweda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Morizot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Russell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Body Image</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="57" to="66" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Jones, A. L., Porcheron, A., Sweda, J. R., Morizot, F. &amp; Russell, R. Coloration in different areas of facial skin is a cue to health: The role of cheek redness and periorbital luminance in health perception. Body Image 17, 57-66 (2016).</note>
+</biblStruct>
+
+<biblStruct xml:id="b89">
+	<analytic>
+		<title level="a" type="main">Behavioral and neural correlates to multisensory detection of sick humans</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Regenbogen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Natl. Acad. Sci</title>
+		<meeting>Natl. Acad. Sci</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">114</biblScope>
+			<biblScope unit="page" from="6400" to="6405" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Regenbogen, C. et al. Behavioral and neural correlates to multisensory detection of sick humans. Proc. Natl. Acad. Sci. 114, 6400-6405 (2017).</note>
+</biblStruct>
+
+<biblStruct xml:id="b90">
+	<analytic>
+		<title level="a" type="main">Understanding those who do not understand: a brief review of the anti-vaccine movement</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Poland</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Jacobson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Poland</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Jacobson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Vaccine</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page" from="2440" to="2445" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Poland, G. A., Jacobson, R. M., Poland, G. A. &amp; Jacobson, R. M. Understanding those who do not understand: a brief review of the anti-vaccine movement. Vaccine 19, 2440-2445 (2001).</note>
+</biblStruct>
+
+<biblStruct xml:id="b91">
+	<analytic>
+		<title level="a" type="main">Prevention of hepatitis B in nonresponders to initial hepatitis B virus vaccination</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Sjogren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Am. J. Med</title>
+		<imprint>
+			<biblScope unit="volume">118</biblScope>
+			<biblScope unit="page" from="34" to="39" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sjogren, M. H. Prevention of hepatitis B in nonresponders to initial hepatitis B virus vaccination. Am. J. Med. 118, 34-39 (2005).</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

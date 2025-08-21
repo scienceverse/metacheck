@@ -1,0 +1,1842 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Sustainability potential of app-based food loss measurement: Farmers&apos; perspectives in southwestern British Columbia, Canada</title>
+				<funder ref="#_aUrmcvu">
+					<orgName type="full">Social Sciences and Humanities Research Council Insight</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability  status="unknown">
+					<licence/>
+				</availability>
+				<date>October</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Antonino</forename><surname>Marvuglia</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Thomas</forename><surname>Schaubroeck</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Stephanie</forename><surname>Zimmer</surname></persName>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Tammara</forename><surname>Soma</surname></persName>
+							<email>tammara_soma@sfu.ca</email>
+						</author>
+						<author>
+							<persName><forename type="first">Alexander</forename><surname>Hook</surname></persName>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="institution">Luxembourg Institute of Science and Technology (LIST)</orgName>
+								<address>
+									<country key="LU">Luxembourg</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff1">
+								<orgName type="department">Institut fir Biologësch Landwirtschaft</orgName>
+								<orgName type="institution">Luxembourg Institute of Science and Technology (LIST)</orgName>
+								<address>
+									<country key="LU">Luxembourg</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff2">
+								<orgName type="department">School of Resource and Environmental Management</orgName>
+								<orgName type="institution">an Agrarkultur Luxemburg (IBLA)</orgName>
+								<address>
+									<country key="LU">Luxembourg</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff3">
+								<orgName type="institution">Simon Fraser University</orgName>
+								<address>
+									<settlement>Burnaby</settlement>
+									<region>BC</region>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Sustainability potential of app-based food loss measurement: Farmers&apos; perspectives in southwestern British Columbia, Canada</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published">October</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">BF4A9587590B89CC1CEEE48CDBF3E885</idno>
+					<note type="submission">This article was submitted to Quantitative Sustainability Assessment, a section of the journal Frontiers in Sustainability RECEIVED August ACCEPTED October PUBLISHED October</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2025-08-21T10:37+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>digital agriculture</term>
+					<term>food loss</term>
+					<term>technology</term>
+					<term>app-based management</term>
+					<term>quantification</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Food loss is a systemic problem contributing to negative environmental, social, and economic impacts. However, despite food loss quantification being identified as critical for food loss prevention and reduction, there is a dearth of studies exploring opportunities to digitize or simplify food loss measurement. Moreover, post-harvest food loss estimates can be di cult to obtain as farmers grow di erent types of crops and have diverse technical skills as well as resources. Digital agriculture technologies such as farm management apps that can help farmers accurately record their yield and sales may provide a useful method for quantifying food loss. Accurate food loss quantification may also help provide better baseline measurement for policymakers. To assess the potential role of digital agricultural tools for food loss quantification, this exploratory study recruited seven farmers in southwest British Columbia to test an open access farm management app called LiteFarm for months and digitally recorded their harvest logs. Drawing upon semi-structured key informant interviews, this study found that time scarcity and crop diversity were barriers to using the app. An unexpected benefit to the app is that it can better inform land use decisions when utilized for pre-harvest planning and therefore may help with loss prevention. Findings from this study highlight farmers' struggles to focus on sustainability and reducing food loss, especially when balancing their economic interests. Inclusive digital technologies and deeper engagement with farmers are needed to develop food loss quantification methods that fit diverse farming contexts.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introduction</head><p>Supply chain issues, economic hardships, the COVID-19 pandemic, and disruptive climate events have shocked our global food system and demonstrates its precarity and systemic injustices <ref type="bibr" target="#b69">(Wheeler and Von Braun, 2013;</ref><ref type="bibr" target="#b8">Béné, 2020;</ref><ref type="bibr" target="#b19">Clapp and Moseley, 2020)</ref>. While the pandemic has resulted in increasing food insecurity <ref type="bibr" target="#b23">(Devereux et al., 2020)</ref>, farmers globally were faced with disruptions that resulted in massive wastage <ref type="bibr" target="#b1">(Aldaco et al., 2020;</ref><ref type="bibr">FAO, 2020;</ref><ref type="bibr" target="#b27">Fei et al., 2020)</ref>. For example, in the midst of the pandemic, the dairy sector saw 3.7 million gallons of milk (5% of the USA's milk supply) dumped each day and roughly 750,000 unhatched eggs smashed every week <ref type="bibr" target="#b72">(Yaffe-Bellany and Corkery, 2020)</ref>. With the loss of restaurant, hotel and school food demands, farmers have lost half their customer base, resulting in food being tilled under due to canceled orders <ref type="bibr" target="#b35">(Hobbs, 2020;</ref><ref type="bibr" target="#b72">Yaffe-Bellany and Corkery, 2020)</ref>. In Canada, avoidable food loss amounts to 6.1 million tons, excluding food waste from the retail and consumer sectors <ref type="bibr" target="#b54">(Nikkel et al., 2019)</ref>. This equates to roughly 17 percent of Canada's total food loss and waste (FLW), and is valued at 26.3 billion dollars annually <ref type="bibr" target="#b54">(Nikkel et al., 2019)</ref>.</p><p>While definitions may differ, "food loss" generally describes food that is wasted throughout the production, post-harvest, and processing stages, up to but not including the retail level, meanwhile, "food waste" is food that is wasted from the retail stage to the consumer level <ref type="bibr">(FAO, 2019)</ref>. Many scholars have identified inconsistencies and potential confusion with FLW definitions <ref type="bibr" target="#b16">(Chaboud and Daviron, 2017)</ref>. However, for the purpose of this study, we will only focus on food loss occurring at the farm (post-harvest) that was intended for human consumption, and not food that is wasted at the processing stage, or food that has left the farm but is then rejected by the retailer. Measuring food loss and providing standardized estimations across the globe remains a glaring gap in food systems research. <ref type="bibr" target="#b57">Roe (2020)</ref> argues that there are still numerous challenges around food loss measurement methodology, with few quantitative studies measuring food loss on farms, in comparison to numerous studies quantifying consumer or household food waste. The studies that do attempt to measure food loss <ref type="bibr" target="#b22">(Delgado et al., 2017;</ref><ref type="bibr" target="#b61">Sheahan and Barrett, 2017;</ref><ref type="bibr" target="#b39">Johnson et al., 2018)</ref> utilize varying methods, thus limiting the ability for data comparison. Divergent methods for measuring food loss have produced conflicting results and scholars have called for more standardization in food loss quantification methodology. Furthermore, even when farmers are given the opportunity to measure food loss, encouraging participation is difficult <ref type="bibr" target="#b34">(Hartikainen et al., 2018)</ref>. For example, Hartikainen et al.'s study <ref type="bibr" target="#b34">(Hartikainen et al., 2018)</ref> did not report their quantitative food loss data as the sample sizes were too low to be conclusive. The potential causes for minimal food loss data reported in the study included lack of time for collection and extenuating circumstances such as weather events or shifts in retail demand <ref type="bibr" target="#b34">(Hartikainen et al., 2018)</ref>. Addressing inconsistent food loss measurement methodologies can provide the foundation for developing evidence-based interventions to increase economic, environmental, and social benefits to farmers and subsequent stakeholders in the food supply chain.</p><p>There are numerous causes for food loss. These includes human error, farm equipment malfunction and weather/climate-related factors <ref type="bibr" target="#b39">(Johnson et al., 2018)</ref>, as well as demand side reasons including food aesthetics, mismatched prices, and retail/consumer choice <ref type="bibr">(Soma et al., 2021)</ref>. Food loss remains a pressing issue globally although past studies have disproportionately framed this issue as predominant to the global South. However, FLW in Canada alone totals roughly 35.5 million metric tons of every year which equates to 56.5 million megatons of CO 2 and roughly 49.5 billion dollar's worth of food wasted annually <ref type="bibr" target="#b54">(Nikkel et al., 2019</ref>). Canada's FLW management policy lags behind many European Union nations such as Italy and France which have comprehensive reuse and recovery laws compared to Canada's sporadic landfill regulations and municipal bans <ref type="bibr" target="#b29">(Giordano et al., 2020)</ref>.</p><p>One potential solution proposed to facilitate the ease of quantifying food loss is digital agriculture. In the realm of FLW, <ref type="bibr" target="#b9">Benyam et al. (2021)</ref> explores the potential applications of Digital Agriculture Technology (DAT) on FLW prevention and reduction. DAT tools include GPS simulations for optimal distribution routes, digital marketing campaigns that improve consumer awareness, nanotechnology that supports precision agriculture and more. Therefore, digital agriculture can potentially support novel techniques for FLW prevention and reduction. DAT has been touted by proponents as potentially positioning the Canadian agricultural industry as a global leader in safe, nutritious and sustainable food in the 21 st century <ref type="bibr">(Advisory Council on Economic Growth, 2017)</ref>. DAT includes technology that can be used to track farm data efficiently <ref type="bibr" target="#b41">(Klerkx and Rose, 2020)</ref>. However, FLW data tracking and data management remains understudied in this digital revolution. Investing in technology that can accurately and efficiently track food waste may result in further advancement in DAT. However, as noted by critical social science research on this matter, it is important to ensure that concerns around the potential implication of DAT use and who has control of the data should also be addressed <ref type="bibr" target="#b13">(Bronson and Knezevic, 2016)</ref>.</p><p>Recognizing the growing investments by governments and financial institutions in digital or "smart" technologies, this study seeks to understand the perception, adoption, and engagement, of DATs by farmers in British Columbia (B.C) for the purpose of better recording of yield and sales data and therefore potentially better food loss quantification. This study analyzes farmers' use and their feedback of an open-source farm management app called LiteFarm (see litefarm.org). LiteFarm is a free, open source sustainable farm management software and designed by researchers at the University of British Columbia. The app was developed to measure the environmental impact (water use, energy use, inputs) of diverse types of farm management practices. LiteFarm can also be used to measure food loss by facilitating manual data entry in a harvest log feature. In this study, we train farmers to measure their postharvest food loss and farm yield with this app. The purpose of this study is to better understand if digital technologies such as apps can help facilitate ease in the measurement of postharvest waste. This is an exploratory study of (n = 7) farmers in two differing communities (conventional and organic) in southwestern British Columbia and their use of the LiteFarm app for a period of 2 months. The following are the primary research questions and sub questions for this study:</p><p>1. What is the potential role of digital agriculture tools (in this study: the use of LiteFarm app and software) for facilitating food loss measurement on farms? 2. What barriers and opportunities exist within the adoption of digital agriculture technologies that could better support food loss quantification, prevention, and reduction at the farm-level?</p><p>This study will contribute to the discussion around the growing use of DAT and its current role in our global food systems. In learning more from the farmers about their experience with using app-based DAT to measure food loss, this study can contribute to the literature addressing the potential social, environmental, and economic implications of DAT. There is currently a gap in the literature on empirical studies demonstrating the impact of DAT on FLW prevention and reduction, with most studies focusing only on estimated potential <ref type="bibr" target="#b62">(Shepherd et al., 2020;</ref><ref type="bibr" target="#b9">Benyam et al., 2021)</ref>. The following section (literature review) will briefly highlight the drivers of food loss at the farm level, challenges with quantification, and highlight the potential role of DAT. Following the literature review, the paper will identify the methodology applied to test the app with farmers and introduce new findings that may provide insights for academics, policymakers, and technology developers on the potential use of DAT in food loss quantification.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Literature review</head><p>Drivers of food loss at the farm level Definitions for "food loss" are generally associated with pre-harvest, post-harvest, and processing stages in the FSC <ref type="bibr" target="#b44">(Lipinski et al., 2013;</ref><ref type="bibr" target="#b16">Chaboud and Daviron, 2017)</ref>, as well as harvest, slaughter, catch, and unintentional equipment or infrastructure issues impacting edible food meant for human consumption <ref type="bibr">(FAO, 2019;</ref><ref type="bibr" target="#b26">Feedback, 2021)</ref>. Producers may be motivated to reduce their losses, yet there may be conditions and drivers that are out of a producer's control such as quality loss during distribution, environmental circumstances, or aesthetic standards at retail outlets, that can overburden the producers and result in ineffective interventions <ref type="bibr" target="#b16">(Chaboud and Daviron, 2017;</ref><ref type="bibr">Soma et al., 2021)</ref>.</p><p>Food loss at a farm level is also driven by misguided subsidies, market power imbalances, and a precarious labor system that relies on migrant workers <ref type="bibr">(Soma et al., 2021)</ref>. There is also power imbalance within the consumer and retail food market <ref type="bibr" target="#b26">(Feedback, 2021)</ref>. Canada has only five grocery stores commanding nearly 80% of the food retail market <ref type="bibr">(Soma et al., 2021)</ref> and within those retail markets, consumer choice dominates market value, highlighting strict aesthetic standards and social food norms in North America <ref type="bibr" target="#b37">(Janousek et al., 2018)</ref>. Food loss at the farm level is also associated with the instability in agricultural labor forces. Given the labor instability and market volatility, some farmers have acknowledged that they overproduce in an attempt to minimize their financial risks <ref type="bibr" target="#b32">(Gunders and Bloom, 2017)</ref>. However, other food loss studies refute this point as many farmers also rely on historical observations and tested experience to minimize financial hardship <ref type="bibr" target="#b38">(Johnson et al., 2019)</ref>.</p><p>Until recently, there has been a perception that developing countries have issues more commonly associated with food loss such as lack of infrastructure, while developed countries are associated with consumer food waste issues <ref type="bibr" target="#b55">(Parfitt et al., 2010;</ref><ref type="bibr" target="#b33">Gustavsson et al., 2011)</ref>. Only recently did the United Nations Environment Programme (2021) acknowledge the problem of putting the emphasis of food loss studies in developing countries. Not only does this overlook similar food loss problems occurring in developed nations, but it also results in solutions that are not aligned with farmer's true needs <ref type="bibr">(Soma et al., 2021)</ref>. Food loss reduction and prevention solutions should consider the complexities and the root causes of the losses to avoid exacerbating problems. Food loss management has two distinct paths, reduction, or prevention. There are significant challenges for food loss prevention and reduction including structural issues such as unfair trading practices <ref type="bibr" target="#b56">(Piras et al., 2018)</ref>. Unfair trading practices result from a power imbalance in a food supply chain between major retailers and producers which results in costs and risks shifted unfairly to one party <ref type="bibr" target="#b56">(Piras et al., 2018)</ref>. Examples include canceling orders without advanced notice for producers, and therefore putting farmers under significant financial pressure <ref type="bibr" target="#b56">(Piras et al., 2018)</ref>. <ref type="bibr" target="#b48">Messner et al. (2020)</ref> draws attention to the plethora of studies looking at food loss reduction measures <ref type="bibr" target="#b44">(Lipinski et al., 2013;</ref><ref type="bibr" target="#b60">Shafiee-Jood and Cai, 2016;</ref><ref type="bibr" target="#b67">Verma et al., 2019)</ref> that neglect the potential for a proactive approach to tackle the root causes of food loss (i.e., prevention).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Food loss quantification and challenges</head><p>Food loss has been calculated with inconsistent measurements for years <ref type="bibr" target="#b16">(Chaboud and Daviron, 2017)</ref>. Estimates made by the FAO (2019) place global food loss at roughly 14% before reaching the retail stages. Fruits/vegetables and tubers/root vegetables see the highest food loss numbers with the global average being roughly 22% of fruits and vegetables lost per year and 25% of tubers and root vegetables lost per year <ref type="bibr">(FAO, 2019)</ref>. It has been documented that current food loss statistics suffer from highly extrapolated data and outdated average values to generalize regional food loss situations <ref type="bibr" target="#b39">(Johnson et al., 2018)</ref>. <ref type="bibr" target="#b33">Gustavsson et al. (2011)</ref> reports a global average food loss of 20%, however, <ref type="bibr" target="#b39">Johnson et al. (2018)</ref> reported estimated food losses in North Carolina that are much larger. <ref type="bibr" target="#b39">Johnson et al. (2018)</ref> acknowledges that their estimates include both marketable and edible food which would require additional measures including consumer acceptance and food supply chain capacity. Food loss metrics from <ref type="bibr" target="#b39">Johnson et al. (2018)</ref> study include a 12% marketable yield loss for one of the squash fields, a 143% loss for one of the cucumber fields and an average marketable yield loss of 57% for all fruit and vegetable fields in the study. <ref type="bibr" target="#b52">Neff et al. (2018)</ref> studied food loss on farms in Vermont and found that 16% of food loss was considered salvageable and is comparable to <ref type="bibr" target="#b33">Gustavsson et al. (2011)</ref>. However, <ref type="bibr" target="#b52">Neff et al. (2018)</ref> combined unharvested metrics which follow <ref type="bibr" target="#b39">Johnson et al. (2018)</ref> method, found 30% loss on the field as their average marketable food loss metric. Food loss studies can report results under many different labels, including terms such as marketable, saleable, and edible which incorporate similar characteristics, but are not always interchangeable. Therefore, clear food loss definitions are important when interpreting results.</p><p>Quantifying food loss remains a complex challenge that involves time intensive measuring techniques with little incentive for busy farmers. <ref type="bibr" target="#b40">Kitinoja et al. (2018)</ref> explored postharvest loss assessments for plant-based crops and found the range of losses between different crop types was substantial. For example, loss of legumes and grains range from 0-40 percent while other non-perishable food losses range from 0-80 percent in some cases. This discrepancy is due to the lack of quantitative food loss data collected from farm sites as studies more frequently collect qualitative data to estimate food loss <ref type="bibr" target="#b40">(Kitinoja et al., 2018)</ref>. Lack of clarity around the definition of food loss <ref type="bibr" target="#b16">(Chaboud and Daviron, 2017)</ref>, data gaps for FLW in specific regions <ref type="bibr" target="#b33">(Gustavsson et al., 2011)</ref> and a lack of standardization of methodologies across studies <ref type="bibr" target="#b40">(Kitinoja et al., 2018)</ref> were identified as key challenges for collecting accurate food loss quantification data.</p><p>A standard for food loss quantification is a four-step process outlined by the FAO in a 2016 methodology document. The steps include screening, survey, sampling, and synthesis to collect both qualitative and quantitative food loss data at the farm level <ref type="bibr">(FAO, 2016)</ref>. The concerns with this method arise within the biases for sampling and surveying; since the document instructs researchers to use "highly knowledgeable actors in the FSC to create their specific method for surveying and sampling" <ref type="bibr">(FAO, 2016, pg. 4)</ref>. The FAO's methodology provides a comprehensive framework for identifying specific food loss events; however, it would be difficult to extrapolate with a broad scale approach. While a roadmap document such as what was published by the FAO ( <ref type="formula">2016</ref>) is important for starting the process of standardizing food loss quantification, it does not address the inconsistencies outlined by food loss literature. These inconsistencies include the lack of clarity in the definition of food loss <ref type="bibr" target="#b16">(Chaboud and Daviron, 2017)</ref>, issues with defining specific areas on the farm that will be subject to measurement <ref type="bibr" target="#b16">(Chaboud and Daviron, 2017)</ref>, and communication among several FSC actors that will be involved in a given food loss measurement <ref type="bibr" target="#b33">(Gustavsson et al., 2011)</ref>. A study by <ref type="bibr" target="#b39">Johnson et al. (2018)</ref> measured food loss at nine farms in North Carolina and presented their results in a kilogram per hectare measure of food loss <ref type="bibr" target="#b39">(Johnson et al., 2018)</ref>. Their study utilized a physical sampling method and looked at quantity, quality, and condition to categorize food into marketable, edible, or inedible standards <ref type="bibr" target="#b39">(Johnson et al., 2018)</ref>. The results displayed an average of 5,114 kilograms per hectare of food was available after the primary harvest, equating to an average harvest loss of 57 percent <ref type="bibr" target="#b39">(Johnson et al., 2018)</ref>. It was acknowledged that these results are high and given the current information gap regarding food loss measurement there is a need for reevaluation <ref type="bibr" target="#b39">(Johnson et al., 2018)</ref>. <ref type="bibr" target="#b39">Johnson et al. (2018)</ref> concluded that the information gap is not from the lack of ability by food researchers to measure losses, but rather a lack of human capital and financial resources to undertake accurate quantitative food loss measurements. The food loss measurement methods utilized by <ref type="bibr" target="#b39">Johnson et al. (2018)</ref> focused on mass recovery and detailed post-harvest sorting which is time intensive. Other scholars suggest alternative methods with pre-harvest organization or on field estimates to lower time commitments <ref type="bibr" target="#b40">(Kitinoja et al., 2018)</ref>.</p><p>To address the complexity and resource intensive nature of food loss quantification, <ref type="bibr" target="#b57">Roe (2020)</ref> suggests modeling as a solution to addressing the gap in food loss data. Modeling provides a method that can be applied with significantly less human capital than a traditional physical data collection study and allows for creative flexibility when it comes to including alternative variables such as quality and end use value <ref type="bibr" target="#b22">(Delgado et al., 2017)</ref>. <ref type="bibr" target="#b57">Roe (2020)</ref> envisions food loss modeling as a framework toward filling the literature gap given its lower time commitment and replicability. Furthermore, an additional benefit from modeling is testing specific food loss quantification in different sectors of the FSC. The end goal with modeling is to find accurate food loss quantification methods that can be replicated in physical data studies <ref type="bibr" target="#b57">(Roe, 2020)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Role of digital agriculture technology</head><p>Digital Agriculture Technology (DAT) has the potential to significantly influence methods for food loss quantification. However, its contribution to the field of FLW studies is currently understudied, and the potential benefits of DAT for food loss prevention, reduction, and quantification lack empirical evidence. DAT can be defined as any agricultural technology that assists in collecting, storing, analyzing, or sharing data, and can include sensors, data storage, telecommunications, and analytics <ref type="bibr" target="#b41">(Klerkx and Rose, 2020;</ref><ref type="bibr" target="#b62">Shepherd et al., 2020)</ref>. Measuring food loss quantification can benefit from several common DATs including food traceability technology <ref type="bibr" target="#b11">(Bosona and Gebresenbet, 2013;</ref><ref type="bibr" target="#b3">Astill et al., 2019)</ref>, predictive planning technology <ref type="bibr" target="#b59">(Sarker et al., 2020)</ref> and precise input applications <ref type="bibr" target="#b28">(Finger et al., 2019)</ref>. Two recent studies that have addressed the connection between DAT and food loss are <ref type="bibr" target="#b9">Benyam et al. (2021)</ref> and <ref type="bibr" target="#b18">Ciccullo et al. (2021)</ref>. <ref type="bibr" target="#b18">Ciccullo et al. (2021)</ref> quantitatively estimates the effectiveness of DAT in the agri-food sector and partnered technology sectors. <ref type="bibr" target="#b9">Benyam et al. (2021)</ref> explores the current literature related to food loss and waste quantification and DAT, drawing connections between current technologies and their potential application to prevent or reduce food loss globally. <ref type="bibr" target="#b18">Ciccullo et al. (2021)</ref> studies FLW prevention in the context of a circular economy and is the only study that has recently explored the use of DAT specifically for FLW prevention. This paper looked at technology providers and agri-food supply chain actors to assess the available technology and objectives for preventing FLW. The study found that there are many types of technologies that achieve different results in the food supply chain. These technologies can be broken down into two categories: 1) off the shelf or 2) customizable. <ref type="bibr" target="#b18">Ciccullo et al. (2021)</ref> emphasizes that technologies work better for FLW prevention if they are customized and suggests a stronger and more collaborative relationship between technology developers and agri-food actors. <ref type="bibr" target="#b9">Benyam et al. (2021)</ref> conducted a literature review summarizing several important considerations for future research around DAT and food loss quantification. The authors caution that the spillover effects, both positive and negative must be considered as farmers choosing to adopt DATs will not necessarily do so with the primary purpose of food loss prevention or reduction <ref type="bibr" target="#b9">(Benyam et al., 2021)</ref>. Thus, while food loss prevention or reduction may be beneficial, many farmers will not choose to adopt the technologies if it does not directly contribute to their economic output <ref type="bibr" target="#b9">(Benyam et al., 2021)</ref>. It is also important to note that adopting DAT for food loss prevention or reduction may provide potential benefits but will also include associated costs including upgraded infrastructure <ref type="bibr" target="#b28">(Finger et al., 2019)</ref> and training for the labor force <ref type="bibr" target="#b58">(Rotz et al., 2019)</ref>, which may create initial barriers to DAT adoption <ref type="bibr" target="#b41">(Klerkx and Rose, 2020;</ref><ref type="bibr" target="#b9">Benyam et al., 2021)</ref>. Other barriers for DAT adoption are related to poor infrastructure <ref type="bibr" target="#b28">(Finger et al., 2019)</ref>, and technology gaps for older traditional farmers among others. However, certain barriers could be avoided by switching the emphasis to pre-harvest planning and taking a proactive approach <ref type="bibr" target="#b16">(Chaboud and Daviron, 2017)</ref>. Many of the benefits seen from DAT related to food loss quantification have been identified as potentially occurring in the pre-harvest stages <ref type="bibr" target="#b18">(Ciccullo et al., 2021)</ref>.</p><p>However, the use of DAT is still contentious among experts, with concerns around digitization itself and who controls/owns the data <ref type="bibr" target="#b15">(Carolan, 2017)</ref>. Farmers may see benefits from DAT but are unwilling to surrender any decision-making power or have their private operations monitored by large influential corporations <ref type="bibr" target="#b15">(Carolan, 2017)</ref>. <ref type="bibr" target="#b45">Magruder (2018)</ref> and <ref type="bibr" target="#b62">Shepherd et al. (2020)</ref> both agree that filling the information gap and providing producers with adequate training will help adoption.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Methods and material</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Research context</head><p>This study is based in Metro Vancouver, a regional district located in southwestern British Columbia (BC), Canada. Metro Vancouver is on the unceded traditional territories of the Coast Salish People including the Squamish, Musqueam, Tsleil-Waututh, Stó:lo, Semiahmoo, Tsawwassen, Kwikwetlem, Kwantlen, Matsqui, Qayqayt, Hwlitsum, and Katzie nations. According to a 2016 Canada Census, Metro Vancouver has a population of 2.57 million people <ref type="bibr">(Metro Vancouver, 2011)</ref>. Metro Vancouver was chosen as the study location for its food production diversity, commitment to local food system resiliency and strong stance on supporting DAT <ref type="bibr">(BC Food Security Task Force, 2019)</ref>. This study focusses on fruit and vegetable crops which make up a small amount of growing opportunity in southwestern BC. There is roughly 2.8% of Canada's field vegetable crops produced in BC, however, 68% of those field vegetables are grown in southwestern BC, as well as almost 55% of fruits and berries (BC Ministry of Agriculture, Food and Fisheries, 2016). Given the relatively small land base in southwestern BC and disproportionate population density, it becomes increasingly important to study how food production can continue under this increased pressure. To avoid continued reliance on a globalized, imported food supply, the provincial government has put in place measures to support local producers with grocery store marketing programs such as Buy BC and land protections such as the Agricultural Land Reserve (BC Ministry of <ref type="bibr">Agriculture, Food and Fisheries, 2022)</ref>.</p><p>This study utilizes an app called LiteFarm <ref type="bibr" target="#b70">(Wittman et al., 2020;</ref><ref type="bibr" target="#b71">Wohlers et al., 2021)</ref> which was developed at the University of British Columbia (UBC). LiteFarm (see <ref type="url" target="https://www.litefarm.org">https:// www.litefarm.org</ref>) was developed to support farmers in their pursuit of environmentally friendly practices, however, the app is also a farm management tool and is useful for record keeping purposes. LiteFarm is not the only app-based farm management, COG Pro is an organic certified record keeping app that was developed in Oregon and allows for organized notes designed for smaller scale organic farmers. Similarly, Oregon State University has recently developed an app for Community Supported Agriculture (CSA) which connects consumers directly to farmers on a digital interface. CSA programs are popular in southwestern BC and this app has the potential to bridge communication gaps currently found in the local food system. App-based management may provide small scale farmers with a competitive advantage.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>FIGURE</head><p>This LiteFarm page depicts the planning page where farmers would add harvest logs or other actions from the fields in the farm map. This page is where the harvest logs were recorded and harvested vs. sold calculations would be manually recorded.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Methodology</head><p>This study secured research ethics approval from Simon Fraser University. There were two components to this study, the first part of the study consisted of training and providing participants with the opportunity to use LiteFarm for a period of approximately 2 months. There were seven farms included in this study represented by farmers and administrative farm operators of said farms. No quantitative data was collected by the researchers; however, food loss records could be utilized by farmers and support for collecting quantitative data was offered. The study's second component was semi-structured key informant interviews with each participant to assess their experience using LiteFarm. This study echoes another digital agriculture study which integrated the findings of seven dairy farms that trialed a new recording scheme, and then applied semi-structured interviews to assess the value of big data on farm decision making <ref type="bibr" target="#b53">(Newton et al., 2020)</ref>. The questions asked in the interview pertain to LiteFarm's effectiveness as a farm management app, namely when used to better track yield and sales, and as a food loss quantification estimation method. In terms of inclusion/exclusion criteria, this study contacted participants in the Metro Vancouver area that were accessible by motor vehicle and had fruit and vegetable crops that grew during the spring and summer seasons. Fruits and vegetables were chosen as LiteFarm was not capable of recording livestock records at the time of the study and food loss related to livestock has different causes and effects compared to fruits and vegetables.</p><p>The LiteFarm trial period started in April 2021 with online and in-person training sessions. The trial groups were divided into two timeframes to allow for adequate training and site visits. The first group started using the app in May 2021 and ended their trial in July 2021. The second group started in July 2021 and ended their trial in September 2021. Training sessions were led by the researcher utilizing a PowerPoint presentation and practicing with features on the app. Site visits were used to address problems related to the LiteFarm app or for general record keeping. This study looked at food loss quantification and utilized the harvest logs feature (see Figures <ref type="figure">1</ref><ref type="figure">2</ref><ref type="figure">3</ref>) in the LiteFarm app. Harvest logs allow for a farmer to input anything they harvest off the field as well as anything eaten, gifted, or sold.</p><p>Our method for estimating food loss saw farmers tracking their initial harvest and then inputting their sale records from that harvest. Once they had both numbers, they would take the difference between their harvest and their sales, and we quantified that number as the food loss. The harvest logs were the main feature used in the study; however, farmers were trained on other features in the app that may enhance the overall experience. Creating fields using the map feature (see Figure <ref type="figure">4</ref>) and understanding overall environmental conditions with nutrient logs (Figure <ref type="figure">5</ref>) were also used by farmers and could give the researchers insight into the overall effectiveness of LiteFarm as a management app. Creating mapped fields was required to input harvest logs, however, any other features were optional to the farmers.</p><p>Following the two trial periods of using LiteFarm, each participant was interviewed individually to collect in-depth qualitative data from their experience. The semistructured interview questions are included as an appendix. The interviews were either in-person or online according to public health restrictions and participant preference.  On average, participants took approximately 30-60 min to complete the post-trial interview. Interview participants were offered a $200 honorarium in exchange for their 2 months of testing the app. Each interview was transcribed using a software called Otter.ai and coded using the data analysis program NVivo.</p><p>The data analysis was done through NVivo using an inductive coding method. Inductive coding refers to qualitative data coding that first uses observations, in this case interviews, and developed themes from those observations <ref type="bibr" target="#b17">(Chandra and Shang, 2019)</ref>. Quotes associated with certain themes were counted and visuals created to emphasize aspects of food loss quantification and general app-based management on farms. For confidentiality, a pseudonym will be used for any direct quotes in the findings chapter. Figure <ref type="figure">6</ref>  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>FIGURE</head><p>This page is the insights page, and it depicts features such as soil composition, labor happiness and financial records. This was an optional feature for participants.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Limitations</head><p>The COVID-19 pandemic brought unprecedented changes to the agricultural industry in itself, even more so when it came to implementing this research. Pandemic restrictions were not conducive to in-depth learning and created barriers in recruiting and establishing relationships with the participants. The COVID-19 pandemic also forced many farmers into financial crisis and under undue stress. Four out of the seven farmers who participated had never used a digital agriculture app and had sporadic internet access. In the farm areas where the internet was sporadic, this made online training and general app usage difficult. Participants in north Surrey had better internet access and had more exposure to technology making their experience more streamlined. Under the COVID-19 pandemic conditions, the gaps in internet connectivity create inequitable results for using the app. Due to the resource constraints as noted above, the small sample size of this study (n = 7) was justified <ref type="bibr" target="#b42">(Lakens, 2022)</ref>. This small sample size was helpful as the study required the researchers to be on stand-by to address the specific concerns of each participant and troubleshoot for a period of 2 months. While the sample size can be considered relatively small. As noted by <ref type="bibr" target="#b21">Davies and Dodd (2002)</ref> applying "quantitative notions of rigor to qualitative research provides a poor instrument for evaluating qualitative research". In a study on appropriate sample size for qualitative research, according to <ref type="bibr" target="#b10">Boddy (2016)</ref>, small sample size can be justified when it helps show direction for a future research field and it can be justified if it focuses on in depth-qualitative research. Moreover, other acceptable reasons for small sample size include the nature of the topic <ref type="bibr" target="#b51">(Morse, 2000)</ref>, and the amount of time spent with the participant <ref type="bibr" target="#b47">(Marshall et al., 2013)</ref>, which in the case of this study involved a novel use of an app and 2 months of trial. Finally, qualitative studies investigating theme saturation found that data saturation became evident at six individuals in studies that conduct qualitative in-depth interviews <ref type="bibr" target="#b31">(Guest et al., 2006)</ref>. As such, while the sample may seem small, the purpose and scope of this study justifies a sample of seven. Most importantly, another study on digital agriculture and the trial of a novel recording scheme also engaged with seven farms <ref type="bibr" target="#b53">(Newton et al., 2020)</ref>.</p><p>It is important to note that LiteFarm was not designed by UBC as an app for food loss quantification and this study looked to experimentally use an app for this unintended purpose. LiteFarm was designed by UBC as an environmental focused farm management app. The idea to use this app for food loss quantification was not initially seen by the developers and several customized settings had to be used for this study. There is no explicit "loss" category in the app, the food loss was calculated through a difference in harvest log inputs which are not tracked in the app but had to be manually recorded. This unintended use of LiteFarm may provide feedback for future updates of LiteFarm or new app developments.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Findings</head><p>The interview results that were compiled and analyzed provide a producer level perspective on food loss management with a digital agriculture app. The findings for this study have been categorized into themes resulting from the farmer's feedback and the qualitative coding in NVivo. Information about the participants can be found in Table <ref type="table">1</ref>. The average farm size in Metro Vancouver is 50 acres, which is relatively small as the region is surrounded by mountain ranges and also includes numerous urban centers <ref type="bibr">(Metro Vancouver, 2014)</ref>. The average farm size for our study is 17.4 acres (with the highest being 100 acres and the smallest being 1) and as such is relatively on the smaller side of the regional average. In Canada, the average age of farmers in 2021 is 56 years old <ref type="bibr">(Statistics Canada, 2021)</ref>. Meanwhile the average age of farmers in this study is 41 years old, with the oldest being 59 and the youngest being 22 years old.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Overall potential for utilizing DAT as a food loss quantification tool</head><p>The main research question for this study sought to understand whether the app LiteFarm could be utilized to support better food loss quantification for farmers (see Table <ref type="table">2</ref> for Summary Findings). Most farmers perceive their unharvested yield as small, however <ref type="bibr" target="#b39">Johnson et al. (2018)</ref>   </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Theme Sub-themes Summarized findings</head><p>Barriers to food loss quantification</p><p>• Time and resource scarcity</p><p>• Not a "one size fits all" solution</p><p>• Educational and technological gap</p><p>• Competing with economic priorities</p><p>• Farmers face time scarcity and food loss quantification is not incentivized.</p><p>• DAT may require specific features related to a given farmer to be effective for food loss quantification</p><p>• Farming styles and successional techniques hinder digital agriculture adoption and usage. Age, Language, technological capabilities, and Demographic are barriers to DAT adoption and a more equitable design approach may improve usability</p><p>• Economic priorities will outcompete environmental or social benefits from DAT.</p><p>Opportunities for food loss quantification</p><p>• Pre-harvest planning for food loss prevention</p><p>• Increased awareness of environmental issues</p><p>• Food Loss quantification using DAT can enhance a farmer's understanding of environmental issues related to food loss • Improve language options and inclusivity</p><p>• Use of Qualitative data for food loss metrics to add information about how a given loss can be addressed. Collaboration between app developers and farmers for specific features</p><p>• Integrating communication tools for all actors working on a given order in the food supply chain</p><p>• Adding more emphasis on planning features and automated calculations rather than real-time tracking could increase LiteFarm's attractiveness to farmers</p><p>• Adding more language options and collaborative design elements to encourage inclusivity highlights that these could be underestimates of the true loss, as their study estimates 5.9 billion kilograms of food is left unharvested in the US each year. After seven farmers tested LiteFarm, the general consensus was that LiteFarm's method to log their yield and sales and therefore measured loss was not more accurate than previous measurement techniques (e.g., paper documentation). However, it is important to note that all of the farmers specified that they never formally and methodically measured food loss prior to this study. Although some farmers may find manual entry on digital interface challenging, other farmers were excited about using the app on their computer or phones and the potential of measuring loss:</p><p>The idea of an app that can allow you to just enter activities on your phone is a great idea for tracking food loss especially in the organic sector, I think in general any technology that can help people save time is good (Robert).</p><p>I think this technology on your phone can assist people with food loss measurement, it will be easy since we are on our phones a lot (Jack).</p><p>It was clear in hearing the initial feedback from farmers that they were open to measuring and tracking food loss with apps or digital tools if it is convenient and saves their time.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Barriers for food loss quantification using digital agriculture technology Challenges with the definition of food loss and informal approach</head><p>The farmers in this study identified food loss as produce that is unusable in their agricultural operation, which is very different from common definitions used in the FLW and agricultural literature <ref type="bibr" target="#b16">(Chaboud and Daviron, 2017)</ref>. The farmers in the study saw food loss as a rare occurrence, because if produce was not sold it could be stored in freezers, tilled back into the soil, processed into a different product, eaten by livestock, consumed by the farmer themselves or even gifted to alternative food programs. Their perspective echoed the findings by <ref type="bibr">Soma et al. (2021)</ref> which found that academic definitions of "food loss" did not always mesh with farmers' view. Because the outlets to absorb "food loss" (including tilling under the soil) are deemed to be numerous, many participants saw minimal utility in measuring "food loss." Identifying a clear definition for food loss and educating farmers on the added benefits of accurate food loss quantification could provide a better contrast between informal food loss quantification and a more organized approach via LiteFarm. During the interviews, several farmers noted their informal approach to estimating losses prior to using the app:</p><p>We [Farmers] know there are statistics out there and this [LiteFarm app] could be quite practical and provide a proactive approach, right now it just happens in our brains <ref type="bibr">(Jack)</ref>.</p><p>Right now, it's all chicken scratch on my notes, this [LiteFarm app] could help out with a lot of that record keeping (Robert).</p><p>Even though several farmers acknowledged the potential benefits to formalizing food loss quantification through a digital tool like LiteFarm, using the app for food loss quantification did not resonate for most of the farmers given this discrepancy around food loss definitions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Time and resource scarcity</head><p>All seven participating farmers in this study quoted time scarcity as a strong barrier to using LiteFarm for food loss quantification. While each farmer managed their operation with a different style or personal philosophy, the reality is that farming is a demanding career. Farmers must grow their produce while also managing their relationships with processors, distributors, and retailers. When asked about measuring losses at the initial stage, several farmers had the same response, "No time". There are barely enough hours in a day for farmers to accomplish their daily tasks and asking them to carve out additional time for record keeping that is "theoretically beneficial" is difficult. Farmer such as Robert mentioned the time required to input the data:</p><p>The manual entry was cumbersome, if the software had an automated feature or predictive features it might help incentivize farmers to use it (Robert).</p><p>Manual entry apps do not save time when quantifying food loss and can be a huge barrier for farmers thinking to adopt this type of farm management app. Whether LiteFarm was more accurate or not was not the issue as record keeping could not be prioritized over essential farming activities. Automation for data inputs becomes a very important incentive for farmers as it could solve this barrier for manual entry software. The idea around automation is that it only requires an initial set up and then it accomplishes tasks without continuous farmer input. There was a consensus among all seven farmers that an automated software would provide more value than LiteFarm in its current state, however, the specific features and what an automated software/app can measure would require further study. Farmers also highlighted the complex timeframes of when agricultural planning takes place. A farmer's busiest time is during the spring and summer when there are physical field work tasks, LiteFarm is an app that requires constant inputs to remain accurate and valuable. Jack explains:</p><p>Most planning happens in November, December, and January, this is when farmers would have time to sit down with a computer and plan or sift through records. If LiteFarm had an automated feature or a way to import sales records or harvest log notes it may become more valuable in those planning months (Jack).</p><p>If LiteFarm did not require constant action in the busy summer months, it may garner more interest from farmers that would like to study their stats in their quieter seasons. While our study anticipated the best results being in the summer months with real time data, Jack suggests that there would be more time to evaluate the data from LiteFarm during off-season time when farmers have the ability to reflect and plan.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Not a "one size fits all" solution</head><p>Farming in Metro Vancouver is diverse and requires specific operational conditions to maintain a successful agricultural operation. This study looked at seven fruit and vegetable farmers, however, each farmer grew, organized, and sold their products differently. Given this diverse farming context, a broad approach app for food loss can be challenging to successfully implement. Two farmers in this study, Robert, and Susan, are both organic farmers in Metro Vancouver. Robert grows fruits and vegetables on a four-acre property, some of these vegetables are exposed in open fields while others are protected in greenhouses. Susan grows her fruits and vegetables on a two-acre property with all of her fields being completely exposed. Even though both farmers are organic certified and mostly grow on open fields, their operational styles require different management techniques. Susan prefers to have her crops matched to purchase orders as soon as possible while Robert likes to assess his fields and make pre planting estimates. LiteFarm offers a generalized method for farm management, however, each farmer experienced the app differently, even when seemingly attempting to input similar information. Robert noted the issue with a one size fits all approach in digital agriculture:</p><p>The app is one size fits all. . . changing the app would make it helpful for me but probably only me (Robert).</p><p>John, a medium scale, conventional/mixed use winery farmer, provides a similar view on the need to be context specific:</p><p>The app is useful but it comes down to the individual grower, some growers are strictly focused on increasing yields [. . . ] others may see value in the protecting their land and the environment, it depends on what values and style they use and maybe LiteFarm needs to have customizable options (John).</p><p>One of the most frequent suggestions for the LiteFarm app was including customizable features like adding preferences or additional categories for record keeping. Those customizable features speak to the fact that farmers need specific help with their operations based on specific crops, activities, or the scale of the farm. This study found that the specific techniques used on a farm are not necessarily supported through generalized, broad scale software tools. Feedback from 3 out of the 7 participants expressed that they wanted an option to include qualitative reasons for food loss so they can follow up. Jack specifically asked:</p><p>A huge piece is the 'why', why does this food loss happen, it's easy enough to record it but farmers need more information to address it. There needs to be an increased incentive besides for our own personal curiosity (Jack).</p><p>Jack brings up that LiteFarm's food loss quantification method did not include both quantitative and qualitative data to allow for a full picture of the agricultural operation. Without the why, they felt it did not allow actions to prevent and reduce loss. If a farmer is not previously quantifying their food loss, it can be an added burden to measure and add a new daily activity. George is a blueberry farmer who sends all of their produce directly to a cannery following a harvest. The only method for food loss quantification would be picking up berries that have fallen off the bush and not retrieved for shipping to the cannery. The LiteFarm method for food loss quantification using manual inputs was not feasible as George estimates they ship roughly 5,000 pounds of blueberries to the cannery per day. The only feasible method for food loss quantification would be an automated system (e.g., remote sensing) as you cannot hire people to pick thousands of blueberries off the ground. In contrast to George's case, Robert can use the LiteFarm method for food loss quantification as he sells his product to grocery stores and restaurants. This means that if he over produces a crop and cannot sell the whole harvest, he can manually track the loss easier.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Educational and technological gaps</head><p>The use of digital apps generally benefits certain demographic, age ranges, and those with a certain level of technological experience. These gaps were identified by the participants and are seen as barriers to DAT adoption. Many farms may refuse to adopt DAT because they are family owned and have been operating for many generations without technological assistance. These farms may utilize specific growing techniques that hold unique value for the farmers:</p><p>The number one barrier to digital agriculture adoption is because of succession related reasons, farmers learned from their father and grandfathers and may not so easily change with electronics and technology. They want to keep the farm running successfully while sticking with the family techniques. It will be the younger generation that changes (Susan).</p><p>Farms with these values may not adopt new technology that supports different agricultural techniques. After DAT adoption, there were barriers that several participants including Robert, George, Jack, and Susan mentioned around "user friendliness". While customizing is key for some, others found too many options in the app to be overwhelming:</p><p>There were times that it had too many features, it just became overwhelming and not user friendly with lengthy drop-down menus (Jack).</p><p>While many of the participants were initially willing to attempt to use LiteFarm for food loss quantification, it became evident in their interviews that without in-depth training, more time and more human resources, app-based management to measure losses would not be a top priority for their agricultural operations. There were also additional barriers related to language. George explained that his farm hires migrant workers who are mostly Asian or east Asian. Since they generally communicate in their native language, this restricts the type of on-farm activities they can do. LiteFarm has only three language options English, Spanish or Portuguese. This could pose issues for internal farm communication if workers who do not speak the three languages were expected to help with app inputs. Furthermore, George explains that many farm workers are older, as younger generations are pursuing jobs in other fields, and no longer working at the farm. The older generations of workers have an additional technological gap even if they are English, Spanish, or Portuguese speakers.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Competing with economic priorities</head><p>Sustainability focused efforts to measure loss do not show tangible results within short time frames. The tension between economic and environmental priorities also relates to time and resource scarcity as farmers may elect to use their time differently for which tangible economic returns can be realized immediately. Although food loss costs Canadian farmers 2.88 billion dollars annually which means that there is an economic incentive for reduction <ref type="bibr" target="#b54">(Nikkel et al., 2019)</ref>, the participants in this study regularly pointed out that when losses occur, it was often due to factors beyond their control, such as competing with cheaper imports:</p><p>. . . food may be described as lost because it was not sold. The reason could be because it was priced out by imported food that can sell at half the price of local food. . . (John).</p><p>John's perspective also reflects the feeling of helplessness and the futility of measuring losses when there seems to be no alternative. This sentiment confirms the perspectives of other farmers around factors that they feel are beyond their control.</p><p>Opportunities for food loss quantification using digital agriculture technology Pre-harvest planning for food loss prevention One unexpected result that came from using LiteFarm was how some of the farmers used the app for pre-harvest planning which in theory could potentially help with preventing food loss. Although pre-harvest planning does not address the gap for quantifying food loss, farmers identified LiteFarm as a useful tool to better plan future harvests using their experience and the app's field mapping software.</p><p>I would not use LiteFarm to track my food loss however I would more so use LiteFarm to maximize and more efficiently utilize land use which could indirectly prevent future food loss (Jack).</p><p>An additional pre harvest planning aspect that was suggested by Susan pertains to facilitating communication between food supply chain actors. LiteFarm has the potential to host a type of communication network that would support pre harvest planning with transparent, streamlined food supply chain actions. Susan describes this example here: I spend a lot of time on managing orders, talking on the phone with grocery stores, distributors, restaurants, and they all have different contacts and different orders on different days. It becomes a lot of switching from different communication platforms, if you had something that put those together or at least reminded me who I need to talk to and why, that would be helpful. (Susan).</p><p>Susan identifies this opportunity for food supply chain actors to communicate in an organized manner.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Increasing awareness of environmental issues</head><p>Climate change will lead to increased land degradation and create significant economic losses, amplifying the need to protect arable land and reduce food loss (IPCC, 2022). However, conventional farming practices that anchor many of Metro Vancouver's large scale food producers may not easily shift toward more environmentally friendly practices. DAT that highlights these environmental concerns may provide a mechanism to raise environmental awareness even with conventional operations. For example, as one the larger-scale farmer in this study, George described his emerging awareness about the issue of food loss and its environmental impact through this app:</p><p>I never really considered climate change as a factor in our personal operation and knowing the connection [referring to food loss] to our harvest will be important moving forward (George).</p><p>While George had no intention of neglecting environmental considerations with his operation, it is apparent that the economic aspect weighs heavily on his mind. When George realized the connection between climate change and food loss, he noted how this information will impact how he moves forward.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>Our results on the use of the LiteFarm app for food loss quantification were mixed, with some farmers enjoying their experience and others feeling overwhelmed. It became clear that LiteFarm is a great tool for planning, but in this study, we found that it was challenging for farmers to use the app during the busy growing season. The barriers for using LiteFarm as a food loss quantification DAT and the opportunities are highlighted and compared to previously published studies.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Barriers to food loss quantification using digital agriculture technology</head><p>This study found several barriers for food loss quantification using DAT including time and resource scarcity, generalized technology designs, educational gaps, technological gaps and competing economic priorities. One initial barrier to participation in food loss quantification is that farmers' approach and perspectives around food loss differs from typical academic definitions. The FAO (2019) defines food loss as food that is lost in the production, post-harvest, and processing stages up to but not including retail. However, this study found that farmers were hesitant to define unsold foods as "food loss" since alternative options exist such as tilling food back into the soil, processing them into non-perishables or donating food to alternative markets. There is also an expectation by the farmers that there will always be losses, which added to the hesitancy of quantifying the inevitable. However, <ref type="bibr" target="#b39">Johnson et al. (2018)</ref> found that many food loss statistics were underestimated, potentially due to inconsistent definitions for food loss or confusion related to alternative uses. This study and other food loss quantification studies <ref type="bibr" target="#b22">(Delgado et al., 2017;</ref><ref type="bibr" target="#b61">Sheahan and Barrett, 2017;</ref><ref type="bibr" target="#b34">Hartikainen et al., 2018;</ref><ref type="bibr" target="#b39">Johnson et al., 2018)</ref> stress the importance of measuring food loss even though farmers may express concerns and not see immediate benefits.</p><p>Inconsistent food loss definitions also bring up concerns related to cognitive dissonance. <ref type="bibr" target="#b46">Markowitz et al. (2014)</ref> describes the challenges with climate change communication when certain mitigation measures may impact an individual's livelihood. In the case of food loss, most farmers understand the environmental impacts of postharvest loss <ref type="bibr">(Soma et al., 2021)</ref>. However their personal livelihoods and financial situations make addressing food loss difficult. As such, farmers may elect to ignore food loss quantification all together to avoid internal tension and guilt. Accurate food loss quantification will require consistency in its method and considerations for the complexity of behaviors and different contexts seen in the agricultural field.</p><p>DAT adoption also has different challenges as many farm technologies have been designed as a "one size fits all" solution not acknowledging the educational and technological gaps in diverse farming contexts. For example, rural farmers may face barriers such as gaps in internet infrastructure and financial constraints that are not present in larger-scale, urban farming operations <ref type="bibr" target="#b68">(Weersink et al., 2021)</ref>. In this study, farmers experienced internet connectivity issues in some of the rural areas of Metro Vancouver. This hindered both online training opportunities as well as daily inputs for LiteFarm. Farmers in these rural areas generally had a small living establishment or lived in housing away from their agricultural operation resulting in a lack of established internet infrastructure for themselves. <ref type="bibr" target="#b12">Bronson (2019)</ref> found that when rural, small-scale farmers were asked about benefits from DAT their responses expressed historic concerns that DAT would only benefit industrialized operations and already powerful food systems actors. Without guaranteed returns for individual returns, farmers would be less willing to support building new infrastructure for data-based DAT <ref type="bibr" target="#b12">(Bronson, 2019)</ref>. DAT is programmed to provide large data sets on individual crop which could be more influential for monoculture or commodity farmers that focus on a few desirable crops <ref type="bibr" target="#b14">(Bronson and Knezevic, 2019)</ref>. Polyculture farmers rely on several different crops for one order, maybe in the form of salad boxes or CSA type programs. As seen in this study, farmers were able to use LiteFarm's flexibility to their benefit, however, most DAT focusses on monoculture and commodity crops with large data sets which may not be useful for a general group of polyculture farmers <ref type="bibr" target="#b14">(Bronson and Knezevic, 2019)</ref>. Furthermore, if farmers become dependent on DAT it may expose them to financial volatility related to equipment maintenance <ref type="bibr" target="#b58">(Rotz et al., 2019)</ref>. Once farmers are accustomed to technology or have incurred debt to acquire the technology, it can financially lock in those farmers <ref type="bibr" target="#b58">(Rotz et al., 2019)</ref>. Fortunately, LiteFarm is open source and free which could pave the way for other open-source technology that allows for creativity and technological advancement without incurring debt for high end equipment. However, LiteFarm exposed language inclusivity issues that may arise with DAT adoption. Many farms may employ multicultural labor or operate under agricultural standards from around the world. As Soma and Nuckchady (2021) identified, equity for DAT is important for broad adoption and features such as different languages, universal visuals and flexible qualitative inputs are important in the agricultural field.</p><p>There are barriers to LiteFarm's adoption that were inherent to certain farms given their specific farming routines. For farmers with different types of crops, committing several hours of data input for every harvest is difficult. <ref type="bibr" target="#b2">Alexander et al. (2017)</ref> and <ref type="bibr" target="#b39">Johnson et al. (2018)</ref> both agree that time scarcity is a major barrier for measurement and adopting new DAT. Training, inputs and equipment maintenance all contribute to labor costs and time spent on daily operations which, without guaranteed returns, creates a tension against economic priorities <ref type="bibr" target="#b9">(Benyam et al., 2021)</ref>. These economic priorities will often take precedent over food loss quantification and associated environmental or social factors <ref type="bibr" target="#b9">(Benyam et al., 2021)</ref>. This study confirmed <ref type="bibr" target="#b9">Benyam et al. (2021)</ref> findings that economic concerns weigh heavily on a farmer's decisions and that without a guaranteed return from quantifying food loss, it would be difficult to justify the time commitment toward training and accomplishing this task. <ref type="bibr" target="#b9">Benyam et al. (2021)</ref> also describes how farmers may see benefits from DAT adoption for the purpose of FLW prevention or reduction, however, the risk of failure and the time needed to use new technology may disincentivize new adopters. Farmers may also struggle with "temporal discounting" <ref type="bibr" target="#b20">(Critchfield and Kollins, 2001)</ref> as time scales for individual economic priorities do not align with broad environmental priorities.</p><p>Another concern related to DAT adoption relates to the social aspects and concerns around data ownership and concerns around intergovernmental data sharing which <ref type="bibr" target="#b64">Soma and Nuckchady (2021)</ref> found to worry farmers because they would not know who might be utilizing their data and why. These concerns were echoed in this study's recruitment phase. Several prospective farmers were unsure about participating in this study, and a few were willing to share that they did not want their food loss data shared with the government, the technology company, or any farmers in their community. These concerns stemmed from social ridicule they might face if their food loss data was not considered appropriate and this relates to the previously identified cognitive dissonance barrier discussed in this paper <ref type="bibr" target="#b46">(Markowitz et al., 2014)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Opportunities to address food loss using digital agriculture technology</head><p>As noted by <ref type="bibr" target="#b48">Messner et al. (2020)</ref>, food loss prevention is more important in the food loss hierarchy, however, reduction is more commonly researched and practiced in our global food system. The literature on DAT identified how automated sensors can provide predictive land management tasks from current and past conditions <ref type="bibr" target="#b59">(Sarker et al., 2020)</ref> or utilizing farmer experience with technological support to maximize land use <ref type="bibr" target="#b28">(Finger et al., 2019)</ref>. LiteFarm has taken both predictive land management and input mapping to create a flexible crop planning experience for farmers. When LiteFarm was proposed to our participants as a way for food loss quantification, it was initially met with skepticism. However, when training for LiteFarm included mapping fields and tracking potential harvests, many farmers described this as a high value planning method. Mapping allowed farmers to dictate their own boundaries, use their knowledge to create a map of their farm, and draw practical conclusions from their experience.</p><p>While better land use may benefit society by slowing agricultural land expansion and mitigating land degradation (UNCCD, 2021), it may not support issues related to market volatility and weather risks that lead to overproduction. <ref type="bibr">Soma et al. (2021)</ref> highlights that farmers overproduce as a form of insurance related to market volatility, weather risks and contractual obligations. This overproduction may lead to increased land degradation and increased costs for the farm. <ref type="bibr" target="#b30">Golan et al. (2020)</ref> proposes an idea of optimal food loss where overproduced food is necessary to ease risks. LiteFarm and other DAT apps may allow farmers to utilize their current land base better and increase yields. However, without adequate markets or alternatives, increased food production may further exacerbate the situation. Social factors may push farmers toward DAT adoption following initial uncertainty. George, a large-scale blueberry farm in this study initially saw no benefit from the LiteFarm app for his operation. However, he agreed to test the app after a reference from one of his colleagues. Farmers can be persuaded to adopt new techniques or technologies if there is a social precedent or reference from the community. Le <ref type="bibr" target="#b43">Coent et al. (2021)</ref> supports the point that farmers are influenced by social norms especially if their peers are voluntarily protecting an environmental or economic public good such as air quality, ground water quality or farmer's market infrastructure. In the case of DAT, farmers may choose to support new technology testing if other farmers agree on broad scale benefits such as efficient land use planning or other environmental benefits. Other potential benefits that were raised was the facilitation of communications between sectors. For example, through the sharing of the app, certain sectors such as retailers and restaurants could better identify upcoming harvests from their producers and make changes to their consumer offerings. These options to facilitate communications and sales could indirectly support food loss prevention.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusions</head><p>The use of DAT has the potential to create positive contributions to food loss measurement, prevention, and reduction. This study highlighted some of the potential opportunities from the use of digital agriculture through the use of the farm management app LiteFarm. This study started with two main objectives, 1) to assess the DAT's potential as a tool for food loss quantification and 2) to identify the opportunities and barriers for farmers adopting and using DAT as a tool for food loss quantification. The findings demonstrate that although DAT has the potential as a tool for better preharvest farm planning, it did not resonate with most of the farmers as a tool for food loss quantification. This is primarily because farms operate differently and utilize diverse agricultural techniques which were not captured by a "one size fits all" technology such as LiteFarm. As food loss often occurs due to factors beyond the farmers' control <ref type="bibr">(Soma et al., 2021)</ref>, several farmers felt that measuring losses felt futile. This study found that economic priorities will outweigh environmental priorities, agreeing with <ref type="bibr" target="#b9">Benyam et al. (2021)</ref> who also found this as a barrier to DAT adoption because farmers were not guaranteed economic returns for the given time investment. DAT was also shown to affect farmers differently depending on agricultural worldview and crop type; this is echoed by <ref type="bibr" target="#b14">Bronson and Knezevic (2019)</ref> who discuss DAT bias toward large commodity farms vs. polyculture farms. Furthermore, Roe (2020) confirms that a successful measurement method or technology must recognize the complexity and nuances around the diversity of different farms. There will rarely be a standardized method or program for food loss quantification and DAT may just be a tool that is shaped with a given farmer's experience.</p><p>One unexpected aspect of the study is the potential for the app to improve land use management which may lead to decreasing land degradation. This is important considering the United Nations report that roughly 25 percent of the global land base is degraded by over usage and climate related impacts (UNCCD, 2021). While these outcomes do not directly address food loss quantification, it can potentially support efforts toward food loss prevention. Unintended findings about the potential for pre-harvest planning means that future follow up studies should consider exploring the food loss prevention and preharvest planning potential of DAT apps. To conclude, while this study found that the technology may offer opportunities for farmers, it is important to support deeper collaboration with farmers when designing new DAT to support food loss quantification. Initiatives such as co-creation and collaboration will help to improve user friendliness and prioritizing language inclusivity will better support the ability for diverse farmers/farm laborers to use the tools. Moreover, integrating communication tools to allow for streamlined collaboration with buyers may help with better planning and facilitating purchases with buyers. Digital agricultural tools like LiteFarm can help support the broader goals of food loss prevention and potentially reduction, but the tool itself will not address the root cause of the food loss problem such as deeper issues around time scarcity, lack of resources, and factors beyond the farmers control (international trade, market pricing). Solving food loss will require more equitable relationships between all actors in the global food system.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>FIGURE</head><label></label><figDesc>FIGUREThis page shows an overview for a given harvest log. Each log would be associated with a field and crop, allowing farmers to add a harvest use and quantity measurements.</figDesc><graphic coords="7,113.63,106.87,368.40,204.96" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>FIGURE</head><label></label><figDesc>FIGUREThis page is related to Figure as it is the bottom half of the harvest logs. This is where the use, quantity and other details are recorded.</figDesc><graphic coords="7,113.63,384.84,368.40,205.68" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>FIGUREThis LiteFarm page depicts the farm map, a feature where farmers add specific fields, draw property boundaries, and can judge spatial features.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>FIGURE</head><label></label><figDesc>FIGURE Scope of the study food loss and waste diagram [adapted from Nikkel et al. ( )].</figDesc><graphic coords="9,141.64,107.19,311.76,182.64" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="6,113.63,106.71,368.40,183.12" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="8,113.63,107.31,368.40,209.52" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="8,113.63,380.47,368.40,196.08" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>name Demographic Mode of farming Size of farm (estimate) Type of crops</head><label></label><figDesc>TABLE Participant information table(pseudonym). Mixed use refers to harvests that are used for multiple purposes for example apples that may be split and half of it is used for jam, the other half fermented for cider and the cores ground down and used in fertilizer.</figDesc><table><row><cell>Farmer Robert</cell><cell>White (34 years old)</cell><cell>Organic</cell><cell>Medium 4 acre</cell><cell>Fruit and Vegetables (Wide variety including herbs)</cell></row><row><cell>Susan</cell><cell>South Asian (59 years old)</cell><cell>Organic</cell><cell>Small-Medium 2 acre</cell><cell>Fruit and Vegetables (Main crop is strawberries)</cell></row><row><cell>George</cell><cell>East Indian (22 years old)</cell><cell>Conventional</cell><cell>Large 100 acre</cell><cell>Blueberries</cell></row><row><cell>John</cell><cell>White (55 years old)</cell><cell>Conventional/ Mixed Use*</cell><cell>Medium 5 acre</cell><cell>Fruits (Winery)</cell></row><row><cell>Jack</cell><cell>White (35 years old)</cell><cell>Conventional/ Mixed Use*</cell><cell>Small 1 acre</cell><cell>Fruits and Vegetables (Wide variety for salad boxes)</cell></row><row><cell>Karen</cell><cell>White (38 years old)</cell><cell>Conventional/ Mixed Use*</cell><cell>Medium 5 acre</cell><cell>Fruits (Winery)</cell></row><row><cell>Jennifer</cell><cell>White (45 years old)</cell><cell>Conventional</cell><cell>Medium 5 acre</cell><cell>Fruits and Vegetables (Main crop is pumpkin)</cell></row></table><note><p>*</p></note></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_0"><p>Frontiers in Sustainability frontiersin.org</p></note>
+		</body>
+		<back>
+
+			<div type="funding">
+<div><head>Funding</head><p>This study was funded by the <rs type="funder">Social Sciences and Humanities Research Council Insight</rs> Grant No. <rs type="grantNumber">435-2019-0155</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_aUrmcvu">
+					<idno type="grant-number">435-2019-0155</idno>
+				</org>
+			</listOrg>
+
+			<div type="availability">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data availability statement</head><p>The raw data supporting the conclusions of this article will be made available by the authors, without undue reservation.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Ethics statement</head><p>The studies involving human participants were reviewed and approved by Simon Fraser University. The patients/participants provided their written informed consent to participate in this study.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Author contributions</head><p>TS: study conception and design. AH: data collection. AH and TS: analysis and interpretation of results and draft manuscript preparation. Both authors reviewed the results and approved the final version of the manuscript.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conflict of interest</head><p>The authors declare that the research was conducted in the absence of any commercial or financial relationships that could be construed as a potential conflict of interest.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Publisher's note</head><p>All claims expressed in this article are solely those of the authors and do not necessarily represent those of their affiliated organizations, or those of the publisher, the editors and the reviewers. Any product that may be evaluated in this article, or claim that may be made by its manufacturer, is not guaranteed or endorsed by the publisher.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<ptr target="https://www.budget.gc.ca/aceg-ccce/pdf/key-sectors-secteurs-cles-eng.pdf" />
+		<title level="m">Unleashing the growth potential of key sectors</title>
+		<imprint>
+			<publisher>Advisory Council on Economic Growth</publisher>
+			<date type="published" when="2017-10-19">2017. October 19, 2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Advisory Council on Economic Growth. (2017). Unleashing the growth potential of key sectors. Available online at: https://www.budget.gc.ca/aceg-ccce/pdf/key- sectors-secteurs-cles-eng.pdf (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Food waste management during the COVID-19 outbreak: a holistic climate, economic and nutritional approach</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Aldaco</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hoehn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Laso</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Margallo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ruiz-Salmón</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cristobal</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.scitotenv.2020.140524</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Total Environ</title>
+		<imprint>
+			<biblScope unit="volume">742</biblScope>
+			<biblScope unit="page">140524</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Aldaco, R., Hoehn, D., Laso, J., Margallo, M., Ruiz-Salmón, J., Cristobal, J., et al. (2020). Food waste management during the COVID-19 outbreak: a holistic climate, economic and nutritional approach. Sci. Total Environ. 742, 140524. doi: 10.1016/j.scitotenv.2020.140524</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Losses, inefficiencies, and waste in the global food system</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Alexander</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Arneth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Finnigan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Moran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Rounsevell</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.agsy.2017.01.014</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Agric. Syst</title>
+		<imprint>
+			<biblScope unit="volume">153</biblScope>
+			<biblScope unit="page" from="190" to="200" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Alexander, P., Brown, C., Arneth, A., Finnigan, J., Moran, D., and Rounsevell, M. D. (2017). Losses, inefficiencies, and waste in the global food system. Agric. Syst. 153, 190-200. doi: 10.1016/j.agsy.2017.01.014</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Transparency in food supply chains: A review of enabling technology solutions</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Astill</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Dara</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Campbell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Farber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">D</forename><surname>Fraser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sharif</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.tifs.2019.07.024</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Trends Food Sci. Technol</title>
+		<imprint>
+			<biblScope unit="volume">91</biblScope>
+			<biblScope unit="page" from="240" to="247" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Astill, J., Dara, R. A., Campbell, M., Farber, J. M., Fraser, E. D., Sharif, S., et al. (2019). Transparency in food supply chains: A review of enabling technology solutions. Trends Food Sci. Technol. 91, 240-247. doi: 10.1016/j.tifs.2019.</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title/>
+		<idno type="DOI">10.1016/j.tifs.2019.07.024</idno>
+		<imprint>
+			<biblScope unit="page">24</biblScope>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">024</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">The Future of BC&apos;s Food System</title>
+		<ptr target="https://engage.gov.bc.ca/app/uploads/sites/121/2020/01/FSTF-Report-2020-The-Future-of-Food.pdf" />
+		<imprint>
+			<date type="published" when="2019-10-19">2019. October 19, 2022</date>
+		</imprint>
+		<respStmt>
+			<orgName>BC Food Security Task Force</orgName>
+		</respStmt>
+	</monogr>
+	<note type="raw_reference">BC Food Security Task Force (2019). The Future of BC&apos;s Food System. Available online at: https://engage.gov.bc.ca/app/uploads/sites/121/2020/01/FSTF-Report- 2020-The-Future-of-Food.pdf (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<ptr target="https://www2.gov.bc.ca/assets/gov/farming-natural-resources-and-industry/agriculture-and-seafood/statistics/census/census-2016/aginbrief_2016_all_province_region_regional_districts.pdf" />
+		<title level="m">Agriculture Census</title>
+		<imprint>
+			<publisher>BC Ministry of Agriculture, Food and Fisheries</publisher>
+			<date type="published" when="2016-10-19">2016. October 19, 2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">BC Ministry of Agriculture, Food and Fisheries. (2016). Agriculture Census. Available online at: https://www2.gov.bc.ca/assets/gov/farming-natural- resources-and-industry/agriculture-and-seafood/statistics/census/census-2016/ aginbrief_2016_all_province_region_regional_districts.pdf (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Featured Services</title>
+		<ptr target="https://www2.gov.bc.ca/gov/content/governments/organizational-structure/ministries-organizations/ministries/agriculture" />
+		<imprint>
+			<date type="published" when="2022-10-19">2022. October 19, 2022</date>
+			<publisher>BC Ministry of Agriculture, Food and Fisheries</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">BC Ministry of Agriculture, Food and Fisheries. (2022). Featured Services. Available online at: https://www2.gov.bc.ca/gov/content/governments/ organizational-structure/ministries-organizations/ministries/agriculture (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Resilience of local food systems and links to food security -A review of some important concepts in the context of COVID-19 and other shocks</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Béné</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s12571-020-01076-1</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Food Secur</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="805" to="822" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Béné, C. (2020). Resilience of local food systems and links to food security -A review of some important concepts in the context of COVID-19 and other shocks. Food Secur. 12, 805-822. doi: 10.1007/s12571-020- 01076-1</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Digital agricultural technologies for food loss and waste prevention and reduction: Global trends, adoption opportunities and barriers</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Benyam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Soma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Fraser</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jclepro.2021.129099</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Cleaner Product</title>
+		<imprint>
+			<biblScope unit="volume">323</biblScope>
+			<biblScope unit="page">129099</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Benyam, A., Soma, T., and Fraser, E. (2021). Digital agricultural technologies for food loss and waste prevention and reduction: Global trends, adoption opportunities and barriers. J. Cleaner Product. 323, 129099. doi: 10.1016/j.jclepro.2021.129099</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Sample size for qualitative research</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Boddy</surname></persName>
+		</author>
+		<idno type="DOI">10.1108/QMR-06-2016-0053</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Qualit. Market Res</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page" from="426" to="432" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Boddy, C. R. (2016). Sample size for qualitative research. Qualit. Market Res. 19, 426-432. doi: 10.1108/QMR-06-2016-0053</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Food traceability as an integral part of logistics management in food and agricultural supply chain</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Bosona</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gebresenbet</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.foodcont.2013.02.004</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Food Contr</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="32" to="48" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bosona, T., and Gebresenbet, G. (2013). Food traceability as an integral part of logistics management in food and agricultural supply chain. Food Contr. 33, 32-48. doi: 10.1016/j.foodcont.2013.02.004</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Looking through a responsible innovation lens at uneven engagements with digital farming</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Bronson</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.njas.2019.03.001</idno>
+	</analytic>
+	<monogr>
+		<title level="j">NJAS -Wageningen J. Life Sci</title>
+		<imprint>
+			<biblScope unit="volume">90</biblScope>
+			<biblScope unit="page">100294</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bronson, K. (2019). Looking through a responsible innovation lens at uneven engagements with digital farming. NJAS -Wageningen J. Life Sci. 90, 100294. doi: 10.1016/j.njas.2019.03.001</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Big Data in food and agriculture</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Bronson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Knezevic</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/2053951716648174</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Big Data Soc</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page">205395171664817</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bronson, K., and Knezevic, I. (2016). Big Data in food and agriculture. Big Data Soc. 3, 205395171664817. doi: 10.1177/2053951716648174</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">The digital divide and how it matters for Canadian food system equity</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Bronson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Knezevic</surname></persName>
+		</author>
+		<idno type="DOI">10.22230/cjc.2019v44n2a3489</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Canadian J. Commun</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="page" from="63" to="68" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bronson, K., and Knezevic, I. (2019). The digital divide and how it matters for Canadian food system equity. Canadian J. Commun. 44, 63-68. doi: 10.22230/cjc.2019v44n2a3489</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Agro-digital governance and life itself: food politics at the intersection of code and affect</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Carolan</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/soru.12153</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Sociol. Ruralis</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page" from="816" to="835" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Carolan, M. (2017). Agro-digital governance and life itself: food politics at the intersection of code and affect. Sociol. Ruralis 57, 816-835. doi: 10.1111/soru.12153</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Food losses and waste: Navigating the inconsistencies</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Chaboud</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Daviron</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.gfs.2016.11.004</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Global Food Secur</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="1" to="7" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Chaboud, G., and Daviron, B. (2017). Food losses and waste: Navigating the inconsistencies. Global Food Secur. 12, 1-7. doi: 10.1016/j.gfs.2016.11.004</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Qualitative Research Using R: A Systematic Approach</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chandra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-981-13-3170-1_8</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<publisher>Springer</publisher>
+			<biblScope unit="page" from="91" to="106" />
+			<pubPlace>Singapore</pubPlace>
+		</imprint>
+	</monogr>
+	<note>Inductive coding</note>
+	<note type="raw_reference">Chandra, Y., and Shang, L. (2019). &quot;Inductive coding, &quot; in Qualitative Research Using R: A Systematic Approach. (Springer, Singapore), 91-106. doi: 10.1007/978-981-13-3170-1_8</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Implementing the circular economy paradigm in the agri-food supply chain: The role of food waste prevention technologies</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Ciccullo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Cagliano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Bartezzaghi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Perego</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.resconrec.2020.105114</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Resour. Conserv. Recycl</title>
+		<imprint>
+			<biblScope unit="volume">164</biblScope>
+			<biblScope unit="page">105114</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ciccullo, F., Cagliano, R., Bartezzaghi, G., and Perego, A. (2021). Implementing the circular economy paradigm in the agri-food supply chain: The role of food waste prevention technologies. Resour. Conserv. Recycl. 164, 105114. doi: 10.1016/j.resconrec.2020.105114</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">This food crisis is different: COVID-19 and the fragility of the neoliberal food security order</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Clapp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">G</forename><surname>Moseley</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/03066150.2020.1823838</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Peasant Stud</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="page" from="1393" to="1417" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Clapp, J., and Moseley, W. G. (2020). This food crisis is different: COVID-19 and the fragility of the neoliberal food security order. J. Peasant Stud. 47, 1393-1417. doi: 10.1080/03066150.2020.1823838</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Temporal Discounting: Basic Research and the Analysis of Socially Important Behaviour</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">S</forename><surname>Critchfield</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Kollins</surname></persName>
+		</author>
+		<idno type="DOI">10.1901/jaba.2001.34-101</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Appl. Behav. Analy</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="101" to="122" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Critchfield, T. S., and Kollins, S. H. (2001). Temporal Discounting: Basic Research and the Analysis of Socially Important Behaviour. J. Appl. Behav. Analy. 34, 101-122. doi: 10.1901/jaba.2001.34-101</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Qualitative research and the question of rigor</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Davies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dodd</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/104973230201200211</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Qualit. Health Res</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="279" to="289" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Davies, D., and Dodd, J. (2002). Qualitative research and the question of rigor. Qualit. Health Res. 12, 279-289. doi: 10.1177/104973230201200211</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Reality of food losses: a new measurement methodology</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Delgado</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Schuster</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Torero</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Munich Personal RePEc Archive</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Delgado, L., Schuster, M., and Torero, M. (2017). Reality of food losses: a new measurement methodology. Munich Personal RePEc Archive</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Conceptualising COVID-19&apos;s impacts on household food security</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Devereux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Béné</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hoddinott</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s12571-020-01085-0</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Food Secur</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="769" to="772" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Devereux, S., Béné, C., and Hoddinott, J. (2020). Conceptualising COVID-19&apos;s impacts on household food security. Food Secur. 12, 769-772. doi: 10.1007/s12571-020-01085-0</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Food Loss Analysis: Causes and Solutions Case studies in the Smallscale Agriculture and Fisheries Subsectors</title>
+		<ptr target="https://www.fao.org/3/az568e/az568e.pdf" />
+		<imprint>
+			<date type="published" when="2016-10-19">2016. October 19, 2022</date>
+			<publisher>FAO</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">FAO (2016). Food Loss Analysis: Causes and Solutions Case studies in the Small- scale Agriculture and Fisheries Subsectors. Available online at: https://www.fao. org/3/az568e/az568e.pdf (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<ptr target="http://www.fao.org/2019-ncov/q-and-a/impact-on-food-and-agriculture/en/" />
+	</analytic>
+	<monogr>
+		<title level="m">QandA: COVID-19 pandemic -impact on food and agriculture | FAO | Food and Agriculture Organization of the United Nations</title>
+		<imprint>
+			<publisher>FAO</publisher>
+			<date type="published" when="2019-10-19">2019. October 19, 2022. 2020. October 19, 2022</date>
+			<biblScope unit="volume">20</biblScope>
+		</imprint>
+	</monogr>
+	<note>The State of Food and Agriculture 2019: Moving forward on Food Loss and Waste Reduction</note>
+	<note type="raw_reference">FAO (2019). The State of Food and Agriculture 2019: Moving forward on Food Loss and Waste Reduction. RomeQ20. Available online at: https://www.fao.org/3/ ca6030en/ca6030en.pdf (accessed October 19, 2022). FAO (2020). QandA: COVID-19 pandemic -impact on food and agriculture | FAO | Food and Agriculture Organization of the United Nations. Available online at: http://www.fao.org/2019-ncov/q-and-a/impact-on-food-and-agriculture/en/ (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<author>
+			<persName><surname>Feedback</surname></persName>
+		</author>
+		<ptr target="https://feedbackglobal.org/wp-content/uploads/2017/02/Causes-of-food-waste-in-international-supply-chains.pdf" />
+		<title level="m">Causes of Food Waste in International Supply Chains</title>
+		<imprint>
+			<date type="published" when="2021-10-19">2021. October 19, 2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Feedback. (2021). Causes of Food Waste in International Supply Chains. Available online at: https://feedbackglobal.org/wp-content/uploads/2017/02/ Causes-of-food-waste-in-international-supply-chains.pdf (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Local food systems and COVID-19: an insight from China</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Fei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Santini</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.resconrec.2020.105022</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Resour. Conserv. Recycl</title>
+		<imprint>
+			<biblScope unit="volume">162</biblScope>
+			<biblScope unit="page">105022</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fei, S., Ni, J., and Santini, G. (2020). Local food systems and COVID- 19: an insight from China. Resour. Conserv. Recycl. 162, 105022. doi: 10.1016/j.resconrec.2020.105022</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Precision farming at the nexus of agricultural production and the environment</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Finger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Swinton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>El Benni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Walter</surname></persName>
+		</author>
+		<idno type="DOI">10.1146/annurev-resource-100518-093929</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Rev. Resour. Econ</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="313" to="335" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Finger, R., Swinton, S. M., El Benni, N., and Walter, A. (2019). Precision farming at the nexus of agricultural production and the environment. Ann. Rev. Resour. Econ. 11, 313-335. doi: 10.1146/annurev-resource-100518- 093929</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">The role of food waste hierarchy in addressing policy and research: A comparative analysis</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Giordano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Falasconi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Cicatiello</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Pancino</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jclepro.2019.119617</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Cleaner Prod</title>
+		<imprint>
+			<biblScope unit="volume">252</biblScope>
+			<biblScope unit="page">119617</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Giordano, C., Falasconi, L., Cicatiello, C., and Pancino, B. (2020). The role of food waste hierarchy in addressing policy and research: A comparative analysis. J. Cleaner Prod. 252, 119617. doi: 10.1016/j.jclepro.2019.119617</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Existing efforts in modelling early value chain food losses</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Golan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Minor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Thornsbury</surname></persName>
+		</author>
+		<idno type="DOI">10.4324/9780429264139-2</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Econ. Food Loss Prod. Ind</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="14" to="24" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Golan, E., Minor, T., and Thornsbury, S. (2020). Existing efforts in modelling early value chain food losses. Econ. Food Loss Prod. Ind. 2, 14-24. doi: 10.4324/9780429264139-2</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">How many interviews are enough? An experiment with data saturation and variability</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Guest</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bunce</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Johnson</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/1525822X05279903</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Field Method</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="59" to="82" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Guest, G., Bunce, A., and Johnson, L. (2006). How many interviews are enough? An experiment with data saturation and variability. Field Method. 18, 59-82. doi: 10.1177/1525822X05279903</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Gunders</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bloom</surname></persName>
+		</author>
+		<ptr target="https://www.nrdc.org/resources/wasted-how-america-losing-40-percent-its-food-farm-fork-landfill" />
+		<title level="m">Wasted: How America is Losing up to 40% of its Food from Farm to Fork to Landfill 2 nd Edition. Natural Resources Defense Council</title>
+		<imprint>
+			<date type="published" when="2017-10-19">2017. October 19, 2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gunders, D., and Bloom, J. (2017). Wasted: How America is Losing up to 40% of its Food from Farm to Fork to Landfill 2 nd Edition. Natural Resources Defense Council. Available online at: https://www.nrdc.org/resources/wasted- how-america-losing-40-percent-its-food-farm-fork-landfill (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<monogr>
+		<title level="m" type="main">Global Food Losses and Food Waste</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gustavsson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Cederberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Sonesson</surname></persName>
+		</author>
+		<ptr target="https://www.fao.org/3/mb060e/mb060e00.pdf" />
+		<imprint>
+			<date type="published" when="2011-10-19">2011. October 19, 2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gustavsson, J., Cederberg, C., and Sonesson, U. (2011). Global Food Losses and Food Waste. Available online at: https://www.fao.org/3/mb060e/mb060e00.pdf (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Food waste quantification in primary production -The Nordic countries as a case study</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Hartikainen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Mogensen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Svanes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Franke</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.wasman.2017.10.026</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Waste Manage</title>
+		<imprint>
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="page" from="502" to="511" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hartikainen, H., Mogensen, L., Svanes, E., and Franke, U. (2018). Food waste quantification in primary production -The Nordic countries as a case study. Waste Manage. 71, 502-511. doi: 10.1016/j.wasman.2017.10.026</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Food supply chains during the COVID-19 pandemic</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Hobbs</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/cjag.12237</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Canad. J. Agric. Econ</title>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="page" from="171" to="176" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hobbs, J. E. (2020). Food supply chains during the COVID-19 pandemic. Canad. J. Agric. Econ. 68, 171-176. doi: 10.1111/cjag.12237</note>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<monogr>
+		<ptr target="https://report.ipcc.ch/ar6wg2/" />
+		<title level="m">Intergovernmental Panel on Climate Change. AR6 Summary for Policymakers</title>
+		<imprint>
+			<publisher>IPCC</publisher>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">IPCC (2022). Intergovernmental Panel on Climate Change. AR6 Summary for Policymakers. Available online at: https://report.ipcc.ch/ar6wg2/</note>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">We see a real opportunity around food waste&quot;: exploring the relationship between on-farm food waste and farm characteristics</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Janousek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Markey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Roseland</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/21683565.2018.1468381</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Agroecol. Sustain. Food Syst</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="933" to="960" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Janousek, A., Markey, S., and Roseland, M. (2018). &quot;We see a real opportunity around food waste&quot;: exploring the relationship between on-farm food waste and farm characteristics. Agroecol. Sustain. Food Syst. 42, 933-960. doi: 10.1080/21683565.2018.1468381</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Farmer harvest decisions and vegetable loss in primary production</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">K</forename><surname>Johnson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Bloom</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">D</forename><surname>Dunning</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">C</forename><surname>Gunter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Boyette</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">G</forename><surname>Creamer</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.agsy.2019.102672</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Agric. Syst</title>
+		<imprint>
+			<biblScope unit="volume">176</biblScope>
+			<biblScope unit="page">102672</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Johnson, L. K., Bloom, J. D., Dunning, R. D., Gunter, C. C., Boyette, M. D., and Creamer, N. G. (2019). Farmer harvest decisions and vegetable loss in primary production. Agric. Syst. 176, 102672. doi: 10.1016/j.agsy.2019.102672</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Estimating on-farm food loss at the field level: A methodology and applied case study on a North Carolina farm</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">K</forename><surname>Johnson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">D</forename><surname>Dunning</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Bloom</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">C</forename><surname>Gunter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Boyette</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">G</forename><surname>Creamer</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.resconrec.2018.05.017</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Resour. Conserv. Recycl</title>
+		<imprint>
+			<biblScope unit="volume">137</biblScope>
+			<biblScope unit="page" from="243" to="250" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Johnson, L. K., Dunning, R. D., Bloom, J. D., Gunter, C. C., Boyette, M. D., and Creamer, N. G. (2018). Estimating on-farm food loss at the field level: A methodology and applied case study on a North Carolina farm. Resour. Conserv. Recycl. 137, 243-250. doi: 10.1016/j.resconrec.2018.05.017</note>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Challenges and opportunities for improved postharvest loss measurements in plant-based food crops</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kitinoja</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">Y</forename><surname>Tokala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Brondy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Postharvest Technol</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="16" to="34" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kitinoja, L., Tokala, V. Y., and Brondy, A. (2018). Challenges and opportunities for improved postharvest loss measurements in plant-based food crops. J. Postharvest Technol. 6, 16-34.</note>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Dealing with the game-changing technologies of Agriculture 4.0: How do we manage diversity and responsibility in food system transition pathways?</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Klerkx</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rose</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.gfs.2019.100347</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Global Food Secur</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page">100347</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Klerkx, L., and Rose, D. (2020). Dealing with the game-changing technologies of Agriculture 4.0: How do we manage diversity and responsibility in food system transition pathways? Global Food Secur. 24, 100347. doi: 10.1016/j.gfs.2019.100347</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Sample size justification</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lakens</surname></persName>
+		</author>
+		<idno type="DOI">10.1525/collabra.33267</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Collabra: Psychol</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page">33267</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lakens, D. (2022). Sample size justification. Collabra: Psychol. 8, 33267. doi: 10.1525/collabra.33267</note>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Farmers follow the herd: a theoretical model on social norms and payments for environmental services</title>
+		<author>
+			<persName><forename type="first">Le</forename><surname>Coent</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Préget</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Thoyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename></persName>
+		</author>
+		<idno type="DOI">10.1007/s10640-020-00532-y</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Environ. Resour. Econ</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="page" from="287" to="306" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Le Coent, P., Préget, R., and Thoyer, S. (2021). Farmers follow the herd: a theoretical model on social norms and payments for environmental services. Environ. Resour. Econ. 78, 287-306. doi: 10.1007/s10640-020-00532-y</note>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<monogr>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lipinski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Hanson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Waite</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Searchinger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lomax</surname></persName>
+		</author>
+		<title level="m">Working Paper, Installment 2 of Creating a Sustainable Food Future</title>
+		<meeting><address><addrLine>Washington, DC</addrLine></address></meeting>
+		<imprint>
+			<publisher>World Resources Institute</publisher>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note>Reducing Food Loss and Waste</note>
+	<note type="raw_reference">Lipinski, B., Hanson, C., Waite, R., Searchinger, T., and Lomax, J. (2013). &quot;Reducing Food Loss and Waste.&quot; Working Paper, Installment 2 of Creating a Sustainable Food Future. Washington, DC: World Resources Institute.</note>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">An assessment of experimental evidence on agricultural technology adoption in developing countries</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Magruder</surname></persName>
+		</author>
+		<idno type="DOI">10.1146/annurev-resource-100517-023202</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Rev. Resour. Econ</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="299" to="316" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Magruder, J. R. (2018). An assessment of experimental evidence on agricultural technology adoption in developing countries. Ann. Rev. Resour. Econ. 10, 299-316. doi: 10.1146/annurev-resource-100517-023202</note>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<monogr>
+		<title level="m" type="main">A Guide to Effective Climate Change Communication</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Markowitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Hodge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Harp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>St John</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Marx</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Speiser</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+			<pubPlace>Columbia</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Centre for Research on Environmental Decisions, Earth Institute, Columbia University</orgName>
+		</respStmt>
+	</monogr>
+	<note type="raw_reference">Markowitz, E., Hodge, C., Harp, G., St John, C., Marx, S. M., Speiser, M., et al. (2014). A Guide to Effective Climate Change Communication. Columbia: Centre for Research on Environmental Decisions, Earth Institute, Columbia University.</note>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Does sample size matter in qualitative research?: a review of qualitative interviews in IS research</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Marshall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Cardon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Poddar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Fontenot</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/08874417.2013.11645667</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Comput. Inf. Syst</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="11" to="22" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Marshall, B., Cardon, P., Poddar, A., and Fontenot, R. (2013). Does sample size matter in qualitative research?: a review of qualitative interviews in IS research. J. Comput. Inf. Syst.54, 11-22. doi: 10.1080/08874417.2013.11645667</note>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">The &quot;Prevention Paradox&quot;: food waste prevention and the quandary of systemic surplus production</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Messner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Richards</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Johnson</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s10460-019-10014-7</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Agric. Human Values</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="805" to="817" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Messner, R., Richards, C., and Johnson, H. (2020). The &quot;Prevention Paradox&quot;: food waste prevention and the quandary of systemic surplus production. Agric. Human Values 37, 805-817. doi: 10.1007/s10460-019-10014-7</note>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<monogr>
+		<ptr target="www.metrovancouver.org" />
+		<title level="m">Regional Food System Strategy Sustainable Region Initiative Turning Ideas into Action</title>
+		<meeting><address><addrLine>Metro Vancouver</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2011-10-19">2011. October 19, 2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Metro Vancouver. (2011). Regional Food System Strategy Sustainable Region Initiative Turning Ideas into Action. Available online at: www.metrovancouver.org (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<monogr>
+		<ptr target="http://www.metrovancouver.org/services/regional-planning/PlanningPublications/Metro2050-PolicySummary-Agriculture.pdf" />
+		<title level="m">Farming in Metro Vancouver: Policy Backgrounder</title>
+		<meeting><address><addrLine>Metro Vancouver</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2014-06-09">2014. June 9. October 19, 2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Metro Vancouver. (2014). Farming in Metro Vancouver: Policy Backgrounder. Retrieved June 9th from Available online at: http://www.metrovancouver.org/ services/regional-planning/PlanningPublications/Metro2050-PolicySummary- Agriculture.pdf (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Determining sample size</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Morse</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/104973200129118183</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Qualit. Health Res</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="3" to="5" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Morse, J. M. (2000). Determining sample size. Qualit. Health Res. 10, 3-5. doi: 10.1177/104973200129118183</note>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">Salvageable food losses from Vermont farms</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Neff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">K</forename><surname>Dean</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Spiker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Snow</surname></persName>
+		</author>
+		<idno type="DOI">10.5304/jafscd.2018.082.006</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Agric. Food Syst. Commun. Develop</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="39" to="72" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Neff, R. A., Dean, E. K., Spiker, M. L., and Snow, T. (2018). Salvageable food losses from Vermont farms. J. Agric. Food Syst. Commun. Develop. 8, 39-72. doi: 10.5304/jafscd.2018.082.006</note>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Farming smarter with big data: Insights from the case of Australia&apos;s national dairy herd milk recording scheme</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Newton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Nettle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pryce</forename></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename></persName>
+		</author>
+		<idno type="DOI">10.1016/j.agsy.2020.102811</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Agric. Syst</title>
+		<imprint>
+			<biblScope unit="volume">181</biblScope>
+			<biblScope unit="page">102811</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Newton, J. E., Nettle, R., and Pryce, J. E. (2020). Farming smarter with big data: Insights from the case of Australia&apos;s national dairy herd milk recording scheme. Agric. Syst. 181, 102811. doi: 10.1016/j.agsy.2020.102811</note>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<monogr>
+		<author>
+			<persName><forename type="first">L</forename><surname>Nikkel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Maguire</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gooch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bucknell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Laplain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Dent</surname></persName>
+		</author>
+		<title level="m">The Avoidable Crisis of Food Waste: The Roadmap</title>
+		<meeting><address><addrLine>Ontario, Canada</addrLine></address></meeting>
+		<imprint>
+			<publisher>Second Harvest and Value Chain Management International</publisher>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Nikkel, L., Maguire, M., Gooch, M., Bucknell, D., LaPlain, D., Dent, B., et al. (2019). The Avoidable Crisis of Food Waste: The Roadmap. Ontario, Canada: Second Harvest and Value Chain Management International.</note>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<analytic>
+		<title level="a" type="main">Food waste within food supply chains: quantification and potential for change to 2050</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Parfitt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Barthel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Macnaughton</surname></persName>
+		</author>
+		<idno type="DOI">10.1098/rstb.2010.0126</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Biol. Sci</title>
+		<imprint>
+			<biblScope unit="volume">365</biblScope>
+			<biblScope unit="page" from="3065" to="3081" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Parfitt, J., Barthel, M., and MacNaughton, S. (2010). Food waste within food supply chains: quantification and potential for change to 2050. Biol. Sci. 365, 3065-3081. doi: 10.1098/rstb.2010.0126</note>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<author>
+			<persName><forename type="first">S</forename><surname>Piras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Garcia Herrero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Burgos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Colin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gheoldus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ledoux</surname></persName>
+		</author>
+		<ptr target="https://eu-refresh.org/unfair-trading-practice-regulation-and-voluntary-agreements-targeting-food-waste.html" />
+	</analytic>
+	<monogr>
+		<title level="m">Unfair Trading Practice Regulation and Voluntary Agreements targeting food waste: A policy assessment in select EU Member States</title>
+		<title level="s">REFRESH Deliverable</title>
+		<imprint>
+			<date type="published" when="2018-10-20">2018. October 20, 2022</date>
+			<biblScope unit="volume">3</biblScope>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Piras, S., Garcia Herrero, L., Burgos, S., Colin, F., Gheoldus, M., Ledoux, C., et al. (2018). Unfair Trading Practice Regulation and Voluntary Agreements targeting food waste: A policy assessment in select EU Member States. REFRESH Deliverable 3.2. Retrieved from: https://eu-refresh.org/unfair-trading-practice- regulation-and-voluntary-agreements-targeting-food-waste.html (accessed October 20, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Existing efforts in modelling early value chain food losses</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Roe</surname></persName>
+		</author>
+		<idno type="DOI">10.4324/9780429264139-3</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Econ. Food Loss Prod. Ind</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="25" to="39" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Roe, B. (2020). Existing efforts in modelling early value chain food losses. Econ. Food Loss Prod. Ind. 3, 25-39. doi: 10.4324/9780429264139-3</note>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Automated pastures and the digital divide: How agricultural technologies are shaping labour and rural communities</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Rotz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Gravely</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Mosby</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Duncan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Finnis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Horgan</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jrurstud.2019.01.023</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Rural Stud</title>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="page" from="112" to="122" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rotz, S., Gravely, E., Mosby, I., Duncan, E., Finnis, E., Horgan, M., et al. (2019). Automated pastures and the digital divide: How agricultural technologies are shaping labour and rural communities. J. Rural Stud. 68, 112-122. doi: 10.1016/j.jrurstud.2019.01.023</note>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">Role of big data on digital farming</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">N I</forename><surname>Sarker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Islam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Murmu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Rozario</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int J Sci Technol Res</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="1222" to="1225" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sarker, M. N. I., Islam, M. S., Murmu, H., and Rozario, E. (2020). Role of big data on digital farming. Int J Sci Technol Res. 9, 1222-5.</note>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Reducing food loss and waste to enhance food security and environmental sustainability</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shafiee-Jood</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Cai</surname></persName>
+		</author>
+		<idno type="DOI">10.1021/acs.est.6b01993</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Environ. Sci. Technol</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="page" from="8432" to="8443" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Shafiee-Jood, M., and Cai, X. (2016). Reducing food loss and waste to enhance food security and environmental sustainability. Environ. Sci. Technol. 50, 8432-8443. doi: 10.1021/acs.est.6b01993</note>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">Review: Food loss and waste in Sub-Saharan Africa</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sheahan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Barrett</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.foodpol.2017.03.012</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Food Policy</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sheahan, M., and Barrett, C. B. (2017). Review: Food loss and waste in Sub- Saharan Africa. Food Policy 70, 1-12. doi: 10.1016/j.foodpol.2017.03.012</note>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Priorities for science to overcome hurdles thwarting the full promise of the &apos;digital agriculture&apos; revolution</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shepherd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Turner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Small</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wheeler</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/jsfa.9346</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J. Sci. Food Agric</title>
+		<imprint>
+			<biblScope unit="volume">100</biblScope>
+			<biblScope unit="page" from="5083" to="5092" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Shepherd, M., Turner, J. A., Small, B., and Wheeler, D. (2020). Priorities for science to overcome hurdles thwarting the full promise of the &apos;digital agriculture&apos; revolution. J. Sci. Food Agric. 100, 5083-5092. doi: 10.1002/jsfa.9346</note>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<analytic>
+		<title level="a" type="main">Tilling food under: Barriers and opportunities to address the loss of edible food at the farm-level in British Columbia, Canada</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Soma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kozhikode</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Krishnan</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.resconrec.2021.105571</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Resour. Conserv. Recycl</title>
+		<imprint>
+			<biblScope unit="volume">170</biblScope>
+			<biblScope unit="page">105571</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Soma, T., Kozhikode, R., and Krishnan, R. (2021). Tilling food under: Barriers and opportunities to address the loss of edible food at the farm-level in British Columbia, Canada. Resour. Conserv. Recycl. 170, 105571. doi: 10.1016/j.resconrec.2021.105571</note>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<analytic>
+		<title level="a" type="main">Communicating the benefits and risks of digital agriculture technologies: perspectives on the future of digital agricultural education and training</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Soma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Nuckchady</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fcomm.2021.762201</idno>
+		<ptr target="https://www150.statcan.gc.ca/n1/daily-quotidien/220511/dq220511a-eng.htm" />
+	</analytic>
+	<monogr>
+		<title level="m">Canada&apos;s 2021 Census of Agriculture: A story about the transformation of the agriculture industry and adaptiveness of Canadian farmers</title>
+		<imprint>
+			<date type="published" when="2021-10-19">2021. 2021. October 19, 2022</date>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page">259</biblScope>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Soma, T., and Nuckchady, B. (2021). Communicating the benefits and risks of digital agriculture technologies: perspectives on the future of digital agricultural education and training. Front. Commun. 6, 259. doi: 10.3389/fcomm.2021. 762201 Statistics Canada. (2021). Canada&apos;s 2021 Census of Agriculture: A story about the transformation of the agriculture industry and adaptiveness of Canadian farmers. Available online at: https://www150.statcan.gc.ca/n1/daily-quotidien/ 220511/dq220511a-eng.htm (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<monogr>
+		<ptr target="https://www.unccd.int/publications" />
+		<title level="m">Restoring Life to the Land. The Role of Sustainable Land Management in Ecosystem Restoration</title>
+		<imprint>
+			<publisher>UNCCD</publisher>
+			<date type="published" when="2021-10-19">2021. October 19, 2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">UNCCD. (2021). Restoring Life to the Land. The Role of Sustainable Land Management in Ecosystem Restoration. Available online at: https://www.unccd. int/publications (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b66">
+	<monogr>
+		<title level="m" type="main">Food Waste Index Report</title>
+		<ptr target="https://www.unep.org/resources/report/unep-food-waste-index-report-2021" />
+		<imprint>
+			<date type="published" when="2021-10-19">2021. 2021. October 19, 2022</date>
+			<publisher>United Nations Environment Programme</publisher>
+			<pubPlace>Nairobi</pubPlace>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">United Nations Environment Programme. (2021). Food Waste Index Report 2021. Nairobi. Available online at: https://www.unep.org/resources/report/unep- food-waste-index-report-2021 (accessed October 19, 2022).</note>
+</biblStruct>
+
+<biblStruct xml:id="b67">
+	<analytic>
+		<title level="a" type="main">A systems approach to food loss and solutions: Understanding practices, causes, and indicators</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Verma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Plaisier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">P</forename><surname>Van Wagenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Achterbosch</surname></persName>
+		</author>
+		<idno type="DOI">10.3390/su11030579</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Towards Sustain. Global Food Syst</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="102" to="120" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Verma, M., Plaisier, C., van Wagenberg, C. P., and Achterbosch, T. (2019). A systems approach to food loss and solutions: Understanding practices, causes, and indicators. Towards Sustain. Global Food Syst. 11, 102-120. doi: 10.3390/su11030579</note>
+</biblStruct>
+
+<biblStruct xml:id="b68">
+	<analytic>
+		<title level="a" type="main">COVID-19 and the agri-food system in the United States and Canada</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Weersink</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Von Massow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Bannon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ifft</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Maples</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mcewan</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.agsy.2020.103039</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Agric. Syst</title>
+		<imprint>
+			<biblScope unit="volume">188</biblScope>
+			<biblScope unit="page">103039</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Weersink, A., von Massow, M., Bannon, N., Ifft, J., Maples, J., McEwan, K., et al. (2021). COVID-19 and the agri-food system in the United States and Canada. Agric. Syst. 188, 103039. doi: 10.1016/j.agsy.2020.103039</note>
+</biblStruct>
+
+<biblStruct xml:id="b69">
+	<analytic>
+		<title level="a" type="main">Climate change impacts on global food security</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wheeler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Von</forename><surname>Braun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename></persName>
+		</author>
+		<idno type="DOI">10.1126/science.1239402\aftergroup\futurelet\@let@token\egroup</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">341</biblScope>
+			<biblScope unit="page" from="508" to="513" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wheeler, T., and Von Braun, J. (2013). Climate change impacts on global food security. Science. 341, 508-513. doi: 10.1126/science.1239402</note>
+</biblStruct>
+
+<biblStruct xml:id="b70">
+	<analytic>
+		<title level="a" type="main">Advancing food sovereignty through farmer-driven digital agroecology</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wittman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>James</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Mehrabi</surname></persName>
+		</author>
+		<idno type="DOI">10.7764/ijanr.v47i3.2299</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Ciencia e Investigación Agrarian</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="page" from="235" to="248" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wittman, H., James, D., and Mehrabi, Z. (2020). Advancing food sovereignty through farmer-driven digital agroecology. Ciencia e Investigación Agrarian. 47, 235-248. doi: 10.7764/ijanr.v47i3.2299</note>
+</biblStruct>
+
+<biblStruct xml:id="b71">
+	<monogr>
+		<title level="m" type="main">LiteFarm sustainability assessment framework</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Wohlers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Le</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Stewart</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Frame</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<publisher>University of British Columbia Library</publisher>
+			<pubPlace>Vancouver</pubPlace>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wohlers, A., Le, E., Stewart, M., and Frame, M. (2021). LiteFarm sustainability assessment framework. Vancouver: University of British Columbia Library</note>
+</biblStruct>
+
+<biblStruct xml:id="b72">
+	<analytic>
+		<title level="a" type="main">Food Waste of the Pandemic -The New York Times</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yaffe-Bellany</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Corkery</surname></persName>
+		</author>
+		<ptr target="https://www.nytimes.com/2020/04/11/business/coronavirus-destroying-food.html" />
+	</analytic>
+	<monogr>
+		<title level="m">Dumped Milk, Smashed Eggs, Plowed Vegetables</title>
+		<imprint>
+			<date type="published" when="2020-10-19">2020. October 19, 2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Yaffe-Bellany, D., and Corkery, M. (2020). Dumped Milk, Smashed Eggs, Plowed Vegetables: Food Waste of the Pandemic -The New York Times. Available online at: https://www.nytimes.com/2020/04/11/business/coronavirus- destroying-food.html (accessed October 19, 2022).</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
