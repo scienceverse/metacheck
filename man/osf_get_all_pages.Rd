@@ -4,10 +4,12 @@
 \alias{osf_get_all_pages}
 \title{Get All OSF API Query Pages}
 \usage{
-osf_get_all_pages(url)
+osf_get_all_pages(url, page_end = Inf)
 }
 \arguments{
 \item{url}{the OSF API URL}
+
+\item{page_end}{The last page to get}
 }
 \value{
 a table of the returned data
@@ -15,4 +17,11 @@ a table of the returned data
 \description{
 OSF API queries only return up to 10 items per page, so this helper functions checks for extra pages and returns all of them
 }
-\keyword{internal}
+\examples{
+# get the 20 newest preprints
+\donttest{
+osf_api <- getOption("papercheck.osf.api")
+url <- sprintf("\%s/preprints/?search=date_created-desc", osf_api)
+preprints <- osf_get_all_pages(url, 2)
+}
+}
