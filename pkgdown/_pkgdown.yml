@@ -88,6 +88,7 @@ reference:
   - '`osf_file_download`'
   - '`osf_links`'
   - '`osf_retrieve`'
+  - '`osf_get_all_pages`'
   - '`osf_api_calls`'
 - title: AsPredicted/ResearchBox Functions
   desc: ~
