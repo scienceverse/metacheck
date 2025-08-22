@@ -3,6 +3,9 @@
 #' @description
 #' Check for frequently miscited papers. This module is just a proof of concept -- the miscite database is not yet populated with real examples.
 #'
+#' @details
+#' If you want to use your own database, create a data frame with the columns "doi", "reftext", and "warning", which will be used to match the DOI in papers (use short DOIs like xxx/1234, not https://doi.org/xxx/1234) and produce the report text.
+#'
 #' @import dplyr
 #' @import tidyr
 #'
