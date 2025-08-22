@@ -140,7 +140,9 @@ test_that("TEI", {
 
   # references
   expect_equal(paper$bib |> nrow(), 77) # 78?
-  expect_equal(paper$xrefs|> nrow(), 186)
+  expect_equal(paper$xrefs|> nrow(), 178)
+  expect_equal(unique(paper$xrefs) |> nrow(),
+               paper$xrefs|> nrow())
   obs_bibtypes <- paper$bib$bibtype |> unique()
   exp_bibtypes <- c("Article", "Misc", "InCollection")
   # expect_equal(obs_bibtypes, exp_bibtypes)

@@ -1,0 +1,277 @@
+---
+title: Check correct Citations
+format:
+  html:
+    toc: true
+    embed-resources: true
+    df-print: paged
+execute: 
+  echo: false
+  messages: false
+---
+
+```{r, setup}
+#| include: false
+library(papercheck)
+library(dplyr)
+
+# Specify path with pdf files
+pdf_source_folder <- "pdfs_lakens"
+xml_folder <- "xmls_lakens"
+```
+
+## Setup
+
+Skip this if lakens.Rds exists
+
+```{r, prep}
+#| eval: false
+
+library(openalexR)
+options(openalexR.mailto = "D.Lakens@tue.nl")
+
+# Get OpenAlexID of paper
+work_info <- oa_fetch(
+  entity = "works",
+  doi = "10.1525/collabra.33267",
+  verbose = TRUE
+)
+oa_id <- work_info$id[1]
+
+# Get latest 10 works citing it
+citing_works <- oa_fetch(
+  entity = "works",
+  cites = oa_id,
+  options = list(sort = "publication_date:desc"),
+  #pages = 1,
+  #per_page = 10,
+  verbose = TRUE
+)
+
+# Extract relevant fields
+df_links <- citing_works |>
+  mutate(
+    title = display_name,
+    doi = doi,
+    pdf_url = pdf_url
+  ) |>
+  select(title, doi, pdf_url)
+
+# Function to download PDF when URL ends with .pdf or contains "pdf"
+download_pdfs <- function(df, outdir = ".") {
+  dir.create(outdir, showWarnings = FALSE)
+  for (i in seq_len(nrow(df))) {
+    url <- df$pdf_url[i]
+    if (!is.na(url)) {
+      outpath <- file.path(outdir, paste0("paper_", i, ".pdf"))
+      tryCatch({
+        httr::GET(url, httr::write_disk(outpath, overwrite = TRUE), httr::timeout(60))
+        message("Downloaded: ", outpath)
+      }, error = function(e) {
+        message("Error downloading row ", i, ": ", e$message)
+      })
+    } else {
+      message("Skipping: not OA or no direct PDF for row ", i)
+    }
+  }
+}
+
+download_pdfs(df_links, pdf_source_folder)
+
+# Convert the pdf files to GROBID xml (in same folder, or different one if you prefer).
+dir.create(xml_folder, showWarnings = FALSE)
+converts <- pdf2grobid(filename = pdf_source_folder,
+           save_path = xml_folder)
+
+# Read in all xml files as papercheck objects
+paper <- read(xml_folder)
+
+saveRDS(paper, "lakens.Rds")
+```
+
+## Miscitation database
+
+Mockup of the data frame from a miscitation database
+
+```{r}
+miscite <- data.frame(
+  doi = c("10.1525/collabra.33267", "10.1177/2515245920965119"),
+  reftext = c(
+    "Lakens D (2022). “Sample Size Justification.” _Collabra
+Psychology_, *8*.",
+    "DeBruine LM, Barr DJ (2021). “Understanding Mixed-Effects
+Models Through Data Simulation.” _Advances in Methods and
+Practices in Psychological Science_, *4*."
+  ),
+  warning = c(
+    "The article by Lakens, 2022, is often miscited to justify small sample sizes. Authors might write that the sample size was judged based on feasibility, citing Lakens, 2022. But Lakens 2022 says some sample sizes are too small to provide useful information, and asks authors to consider whether their study is mainly input for a future meta-analysis, whether a decision needs to be made, to report the critical effect size (the smallest effect size that can be significant, the width of the confidence interval, and which effect sizes can be detected with sufficient power. If these points are not considered, the authors are not following the advice of Lakens, 2022",
+    "The article by DeBruine & Barr is sometimes miscited by misspelling the first author's last name."
+  ),
+  bad = c(
+    "The citation is BAD if researchers incorrectly cite this paper as a justification of performing a study with a small sample size due to resource constraints without providing additional justification for the small sample size.",
+    "The citation is BAD if they spell DeBruine with a lowercase b."
+  ),
+  good = c(
+    "The citation is GOOD if nothing about feasibility is mentioned, or if researchers evaluate the consequences of the small sample size, such as that they are only interested in larger effect sizes, or that the study is input for a future meta-analysis, or that they will carefully interpret non-significant results.",
+    "The citation is GOOD if they spell DeBruine with an uppercase B."
+  )
+)
+
+miscite
+```
+
+
+```{r}
+#| eval: false
+
+# Figuring out how to get good bib info
+
+library(openalexR)
+options(openalexR.mailto = "debruine@gmail.com")
+work_info <- oa_fetch(
+  entity = "works",
+  doi = miscite$doi,
+  verbose = FALSE, 
+)
+
+authorships2persons <- function(authorships) {
+  authorships$person <- NA
+  
+  for (i in seq_along(authorships$id)) {
+    a <- authorships[i, ]
+    
+    if (!is.null(a$orcid)) {
+      # get info from ORCiD
+      resp <- httr::GET(a$orcid)
+      content <- httr::content(resp)
+      given <- content$person$name$`given-names`
+      family <- content$person$name$`family-name`
+      email <- content$person$emails$email[[1]]$email
+    }
+    
+    name <- a$display_name
+    person <- utils::person(
+      given = given,
+      family = family,
+      email = email,
+      comment = list(orcid = a$orcid)
+    )
+    authorships$person[[i]] <- person
+  }
+  
+  authorships
+}
+
+wi <- work_info |>
+  rowwise() |>
+  mutate(bibentry = list(utils::bibentry(
+    bibtype = type, 
+    doi = doi, 
+    author = paste(authorships$display_name, collapse = ", "),
+    journal = source_display_name,
+    title = title,
+    year = publication_year,
+    volume = volume,
+    issue = issue,
+    pages = ifelse(is.na(first_page), "",
+                   paste(first_page, "-", last_page))
+  ))
+)
+wi$bibentry
+
+
+```
+
+
+## Check citations
+
+```{r}
+paper <- readRDS("lakens.Rds")
+
+# consolidate bib tables and filter to relevant DOI
+bibs <- concat_tables(paper, "bib") |>
+  select(xref_id, ref, doi, id) |>
+  inner_join(miscite, by = "doi")
+
+# consolidate xrefs, filter, and expand
+xrefs <- concat_tables(paper, "xrefs") |>
+  inner_join(bibs, by = c("xref_id", "id")) |>
+  expand_text(paper, expand_to = "paragraph") |>
+  # TODO: fix this in expand_text()
+  mutate(expanded = ifelse(is.na(expanded), text, expanded))
+```
+
+
+```{r}
+#| results: asis
+to_warn <- xrefs |>
+  select(doi, warning, reftext) |>
+  unique()
+
+# Now, first we should print warnings provided by the author.
+cat("We found the citations to papers that are commonly miscited\n\n")
+
+for (i in seq_along(to_warn$doi)) {
+  warn_doi <- to_warn$doi[[i]]
+  cat("### ", warn_doi)
+  cat("\n\n", to_warn$reftext[[i]], "\n\n")
+  cat(to_warn$warning[[i]])
+  cat("\n\n")
+}
+```
+
+
+```{r}
+#| eval: false
+# run query
+
+llm_max_calls(200)
+
+query_pre <- "The following text is part of a scientific article. It contains a citation to a paper on sample size justification. I want you to classify each paragraph as 'GOOD' or 'BAD'. You must return only a single word, either 'GOOD' or 'BAD'."
+
+xrefs$query <- paste(query_pre, xrefs$good, xrefs$bad)
+unique_queries <- unique(xrefs$query)
+
+llm_response <- lapply(unique_queries, \(q) {
+  text <- xrefs[xrefs$query == q, ]
+  llm(text, q, text_col = "expanded",
+      model = "llama-3.3-70b-versatile")
+}) |>
+  do.call(dplyr::bind_rows, args = _)
+
+readr::write_csv(llm_response, "llm_response.csv")
+
+text
+```
+
+```{r}
+llm_response <- readr::read_csv("llm_response.csv", show_col_types = FALSE)
+
+x <- llm_response |>
+  select(id, expanded, answer) |>
+  unique()
+```
+
+## BAD
+
+```{r}
+#| results: asis
+#| echo: false
+x |> filter(answer == "BAD") |>
+  pull(expanded) |>
+  paste(collapse = "\n\n------\n\n") |>
+  cat()
+```
+
+## GOOD
+
+```{r}
+#| results: asis
+#| echo: false
+x |> filter(answer == "GOOD") |>
+  pull(expanded) |>
+  paste(collapse = "\n\n------\n\n") |>
+  cat()
+```
+
+

@@ -572,6 +572,8 @@ jats_xrefs <- function(xml) {
     contents = contents,
     p = p
   ) |>
+    # stop initials getting parsed as sentences
+    dplyr::mutate(p = gsub("\\b([A-Z])\\.", "\\1", p)) |>
     tidytext::unnest_sentences(output = "text", input = "p", to_lower = FALSE) |>
     dplyr::filter(grepl("<xref", text, fixed = TRUE)) |>
     dplyr::rowwise() |>
@@ -585,7 +587,9 @@ jats_xrefs <- function(xml) {
     dplyr::arrange(type,
                    gsub("\\D", "", x = xref_id) |> as.integer())
 
-  return(xref_data[c("xref_id", "type", "contents", "text")])
+  xrefs <- xref_data[c("xref_id", "type", "contents", "text")] |> unique()
+
+  return(xrefs)
 }
 
 #' Get bibliography from JATS APA-DTD or NLM DTD type XML
@@ -991,6 +995,8 @@ tei_xrefs <- function(xml) {
     contents = contents,
     p = p
   ) |>
+    # stop initials getting parsed as sentences
+    dplyr::mutate(p = gsub("\\b([A-Z])\\.", "\\1", p)) |>
     tidytext::unnest_sentences(output = "text", input = "p", to_lower = FALSE) |>
     dplyr::filter(grepl("<ref", text, fixed = TRUE)) |>
     dplyr::rowwise() |>
@@ -1006,7 +1012,8 @@ tei_xrefs <- function(xml) {
       dplyr::arrange(type, gsub("\\D", "", x = xref_id) |> as.integer())
   }
 
-  return(xref_data[c("xref_id", "type", "contents", "text")])
+  xrefs <- xref_data[c("xref_id", "type", "contents", "text")] |> unique()
+  return(xrefs)
 }
 
 #' Get bibliography from TEI type XML
