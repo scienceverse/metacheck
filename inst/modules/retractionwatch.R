@@ -21,7 +21,8 @@
 retractionwatch <- function(paper) {
   # detailed table of results ----
   bibs <- papercheck::concat_tables(paper, c('bib'))
-  table <- dplyr::inner_join(bibs, papercheck::retractionwatch, by = 'doi')
+  rw <- papercheck::rw()
+  table <- dplyr::inner_join(bibs, rw, by = 'doi')
   if (nrow(table) > 0) {
     xrefs <- papercheck::concat_tables(paper, c('xrefs'))
     table <- dplyr::left_join(table, xrefs, by = c('xref_id', "id"))

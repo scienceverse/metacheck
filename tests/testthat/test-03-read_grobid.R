@@ -203,7 +203,7 @@ test_that("tei_refs", {
   obs <- dplyr::count(refs, type)
   exp <- dplyr::tibble(
     type = c("bibr", "figure", "foot", "table"),
-    n = c(191L, 11L, 7L, 1L)
+    n = c(151L, 11L, 7L, 1L)
   )
   expect_equal(obs, exp)
 })

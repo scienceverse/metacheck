@@ -114,6 +114,8 @@ reference:
   - '`openalex`'
   - '`crossref`'
   - '`retractionwatch`'
+  - '`rw_date`'
+  - '`rw_update`'
   - '`check_orcid`'
   - '`get_orcid`'
   - '`credit_roles`'

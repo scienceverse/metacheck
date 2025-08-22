@@ -1,10 +1,20 @@
+# papercheck 0.0.0.9056
+
+* If `expand_text()` doesn't find a text match because sentence location info is missing, it now returns the original text instead of NA
+* Fixed a bug that prevented matching xrefs sentences under some circumstances (when there was an initial with a full stop in the citation) -- re-run `read()` on XMLs to update any saved paper objects
+* `psychsci` updated for these fixes
+* Changed `retractionwatch` internal data to `retractionwatch()` function (alias `rw()`) to support user updating.
+* Added new function `rw_date()` so you can find out when retractionwatch was last updated
+* New function `rw_update()` lets you update retractionwatch yourself
+
 # papercheck 0.0.0.9055
 
 * `pdf2grobid()` handles `save_path` batter if any path components don't exist yet. The argument `save_path` also now can take a vector of the same length as the number of PDFs to convert, so you can specify the name of each output XML. 
 * `read()` now skips any imports with errors and warns you about them after importing all files
 * Fixed a bug that errored on read() when bibentry files don't format correctly
 * Function `osf_get_all_pages()` now has a new argument `page_end` to limit the number of pages retrieved (mainly for testing purposes), and is external (previously internal)
-* Fixed a bug in `osf_files()` that failed on paths with sapces
+* Fixed a bug in `osf_files()` that failed on paths with spaces
+* Fixed a bug in `read()` that duplicated entries in xrefs
 
 # papercheck 0.0.0.9054
 

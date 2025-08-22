@@ -72,7 +72,7 @@ test_that("detected", {
   retracted <- data.frame(
     xref_id = "x",
     ref = "Test retracted paper",
-    doi = retractionwatch$doi[[1]],
+    doi = retractionwatch()$doi[[1]],
     bibtype = "Article",
     title = "Fake",
     journal = "Fake Journal",

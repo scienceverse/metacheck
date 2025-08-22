@@ -123,9 +123,11 @@ llm <- function(text, query,
         # request limit exceeded
         sleep <- response$headers$`retry-after` |>
           as.numeric() |> ceiling()
-        # message("Request limit exceeded. Retrying in ",
-        #         sleep, "seconds")
+        msg <- paste0("Request limit exceeded. Retrying in ", sleep, " seconds")
+        if (verbose()) pb$message(msg)
         Sys.sleep(sleep)
+        msg <- "Querying LLM [:bar] :current/:total :elapsedfull"
+        if (verbose()) pb$message(msg)
 
         response <- httr::POST(
           url, config,

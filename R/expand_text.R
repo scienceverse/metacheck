@@ -95,5 +95,10 @@ expand_text <- function(results_table,
   expanded_table <- results_table |>
     dplyr::left_join(full_text, by = by)
 
+  # if expanded doesn't match anything, at least return the text
+  expanded_table$expanded <- ifelse(is.na(expanded_table$expanded),
+                                    expanded_table$text,
+                                    expanded_table$expanded)
+
   return(expanded_table)
 }

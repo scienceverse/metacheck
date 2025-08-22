@@ -114,3 +114,22 @@ test_that("issue 47", {
 
   expect_equal(obs, exp)
 })
+
+
+test_that("issue 72", {
+  # if the location info isn't present, expand_text returns an NA
+  paper <- psychsci[[1]]
+  results_table <- search_text(paper, "significant")
+  results_table$div[[1]] <- NA
+  obs <- expand_text(results_table, paper, expand_to = "paragraph")
+  expect_equal(obs$text[[1]], obs$expanded[[1]])
+
+  # underlying problem in xref creation..
+  filename <- "problem_xml/paper_361.xml"
+  paper <- read(filename)
+  text <- search_text(paper, "\\(Lakens, 2022\\;")
+  b32 <- paper$xrefs |> dplyr::filter(xref_id == "b32")
+
+  # had small differences due to removing full stops after initials
+  expect_equal(b32$text, text$text)
+})

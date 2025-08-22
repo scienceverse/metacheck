@@ -18,7 +18,7 @@ test_that("defaults", {
   expect_equal(paper$full_text |> nrow(), 252)
   expect_equal(colnames(paper$full_text), cols)
   expect_equal(paper$bib |> nrow(), 42)
-  expect_equal(paper$xrefs |> nrow(), 78)
+  expect_equal(paper$xrefs |> nrow(), 76)
 
   # check cermine alias
   paper2 <- read_cermine(filename)

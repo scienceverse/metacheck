@@ -1,0 +1,1747 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Identifying trends in reporting on the ethical treatment of insects in research</title>
+				<funder>
+					<orgName type="full">Insect Welfare Research Society</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Craig</forename><forename type="middle">D</forename><surname>Perl</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Insect Welfare Research Society</orgName>
+								<address>
+									<settlement>Indianapolis</settlement>
+									<region>IN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Cat</forename><surname>Kissinger</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Philosophy</orgName>
+								<orgName type="institution">Texas State University</orgName>
+								<address>
+									<settlement>San Marcos</settlement>
+									<region>TX</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">R</forename><forename type="middle">Keating</forename><surname>Godfrey</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department">Department of Biological Sciences</orgName>
+								<orgName type="institution">Dartmouth College</orgName>
+								<address>
+									<settlement>Hanover</settlement>
+									<region>NH</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Enrique</forename><forename type="middle">M</forename><surname>Castillo</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Philosophy</orgName>
+								<orgName type="institution">Texas State University</orgName>
+								<address>
+									<settlement>San Marcos</settlement>
+									<region>TX</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Bob</forename><surname>Fischer</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Philosophy</orgName>
+								<orgName type="institution">Texas State University</orgName>
+								<address>
+									<settlement>San Marcos</settlement>
+									<region>TX</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Meghan</forename><surname>Barrett</surname></persName>
+							<affiliation key="aff3">
+								<orgName type="department">Department of Biology</orgName>
+								<orgName type="institution">Indiana University Indianapolis</orgName>
+								<address>
+									<settlement>Indianapolis</settlement>
+									<region>IN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Identifying trends in reporting on the ethical treatment of insects in research</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">CB36F9BD0CCA40575A25E1C088C5124B</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2025-08-21T10:02+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Transparent reporting on the ethical treatment of research animals (e.g., implementation of the 3Rs, replace, reduce, and refine) is recommended when publishing in the peer-reviewed literature. This is meant to foster public trust, safeguard animal welfare, and generate reproducible science. However, entomologists are not expected to engage in such reporting, as their research is not subject to legislated ethical review. Recently, however, entomologists have reported increased concern about the ethical treatment of insects in research, and associated reproducibility and public trust issues. To what degree are these increasing concerns reflected in changes in practices? We surveyed 15 high-impact journals that publish on insects over 20 years to collect data on reporting related to the ethical treatment of insects in research, including animal reduction methods, analgesics/anesthesia statements, and information regarding sacrifice. Out of 1359 sampled papers, no studies reported any methods to reduce animal use. Over 20 years, we found an increase in the proportion of papers reporting insect death and a decrease in the papers reporting significant invasive handling. 84% of papers with significant animal handling or death did not report the use of any anesthetics. We also found an increase in animal-treatment-specific ethics statements (from 0% to 8%), largely driven by the journal Animal Behaviour. We end by 1) making recommendations for entomologists looking to improve their reporting practices and 2) providing tools to improve transparent reporting of information related to the ethical treatment of insects in research.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introduction</head><p>The ethical treatment of animals used in research is a cornerstone of generating reproducible science, safeguarding animal welfare, and fostering public trust. Transparent reporting on the practices used during animal experiments is thus recommended when publishing peer-reviewed literature <ref type="bibr" target="#b50">(Sert et al., 2020)</ref>. Historically, however, similar norms have not been considered best practice for animals excluded from legislated ethical oversight <ref type="bibr" target="#b25">(Freelance, 2019;</ref><ref type="bibr" target="#b28">Harvey-Clark, 2011)</ref>, such as insects [ <ref type="bibr" target="#b22">(Eisemann et al., 1984)</ref>, but see <ref type="bibr" target="#b27">(Gibbons et al., 2022)</ref>]. In these cases, disciplines like entomology have developed permissive research and reporting norms for animal use relative to those that are standard for other animals. Where these permissive norms create risks for 1) public trust, 2) animal welfare, or 3) reproducible science, entomologists may wish to review their norms and establish new best practices for the field.</p><p>There are reasons to think that permissive norms indeed create such risks. For instance, recent research shows that public trust in invertebrate research declines without ethical oversight <ref type="bibr" target="#b10">(Brunt et al., 2022)</ref>, suggesting that entomologists may have just as much need to transparently report on ethical practices used in research as vertebrate biologists. Further, public opinion on insect sentience (i.e., the capacity for valenced states like pain) may be shifting <ref type="bibr" target="#b20">(Drinkwater et al., 2019)</ref>, at least in Western nations. 47.2% of American adults believed insects used as livestock feed could feel pain, with only 18.9% uncertain; further, younger respondents were more likely to be concerned about the ethical treatment of insects <ref type="bibr" target="#b26">(Fukuda et al., 2023)</ref>. Numbers may be even higher for more charismatic animals commonly used in the lab, such as bees: a survey of American adults found differences in the public's belief in the plausibility of insect pain was highest for bees (65% yes, 27% unsure), compared to ants (56% yes, 32% unsure) or termites (52% yes, 35% unsure; <ref type="bibr" target="#b21">Dullaghan et al., 2021)</ref>. Recent examples of public outcry about lethal insect collecting studies (e.g., BBC <ref type="bibr">Radio 4, 2018)</ref> suggests that the public is becoming more concerned about ethical treatment of insect research subjects, which matches growing attention to this issue by researchers as well <ref type="bibr" target="#b4">(Barrett et al., 2023;</ref><ref type="bibr" target="#b24">Fischer &amp; Larson, 2019;</ref><ref type="bibr" target="#b34">Lövei et al., 2023)</ref>.</p><p>Although there is no scientific consensus on insect sentience, a recent review <ref type="bibr" target="#b27">(Gibbons et al., 2022)</ref> suggests there is enough neurobiological and behavioural evidence to warrant precautionary approaches towards their welfare in research until more data can be collected <ref type="bibr" target="#b0">(Andrews et al., 2024;</ref><ref type="bibr" target="#b18">Crump et al., 2023;</ref><ref type="bibr" target="#b19">Cuff et al., 2023;</ref><ref type="bibr" target="#b24">Fischer &amp; Larson, 2019;</ref><ref type="bibr" target="#b31">Klobučar &amp; Fisher, 2023;</ref><ref type="bibr" target="#b49">Sandall &amp; Fischer, 2019)</ref>. Indeed, such a precautionary approach has even been recommended by professional entomologists who are skeptical about insect sentience <ref type="bibr" target="#b22">(Eisemann et al., 1984)</ref>. Reporting on ethical animal use practices is itself a precautionary measure, encouraging animal researchers to articulate and refine their practices to reduce avoidable harms <ref type="bibr" target="#b39">(Nawroth &amp; Krause, 2022)</ref>.</p><p>Finally, reporting on ethical animal use is a critical part of reproducible science wherever either affective states or physiological/behavioural changes due to stressors may be expected to confound or otherwise alter study results (see examples from the vertebrate literature: <ref type="bibr" target="#b12">Cait et al., 2022;</ref><ref type="bibr" target="#b33">Loss et al., 2021;</ref><ref type="bibr" target="#b52">Soulsbury et al., 2020)</ref>. Just as in vertebrates, studies in insects suggest that many welfarerelevant practices can influence study results. For example, some methods of anesthesia (cold, CO2) can impact behaviour for days after the anesthetic was applied in Drosophila melanogaster, while others (halogenated ethers) do not have the same behavioural effects <ref type="bibr" target="#b36">(MacMillan et al., 2017)</ref>. A lack of reporting on the anaesthetics used, the duration, and the dosage applied can thus represent a reproducibility concern in the literature that better reporting on animal welfare would simultaneously address <ref type="bibr" target="#b13">(Carbone &amp; Austin, 2016)</ref>.</p><p>A recent survey of entomologists suggests there is growing concern about insect welfare based on the considerations just surveyed-i.e., preserving public trust, the intrinsic value of animal welfare itself, and generating reproducible science <ref type="bibr" target="#b3">(Barrett et al., 2024)</ref>. However, it is unclear whether and how this increase in concern is reflected in practice. One valuable public metric is increased reporting of welfare-relevant information in entomological publications. To determine trends in historical reporting of the ethical treatment of insects, we survey five papers per year from the past 20 years <ref type="bibr">(2003)</ref><ref type="bibr">(2004)</ref><ref type="bibr">(2005)</ref><ref type="bibr">(2006)</ref><ref type="bibr">(2007)</ref><ref type="bibr">(2008)</ref><ref type="bibr">(2009)</ref><ref type="bibr">(2010)</ref><ref type="bibr">(2011)</ref><ref type="bibr">(2012)</ref><ref type="bibr">(2013)</ref><ref type="bibr">(2014)</ref><ref type="bibr">(2015)</ref><ref type="bibr">(2016)</ref><ref type="bibr">(2017)</ref><ref type="bibr">(2018)</ref><ref type="bibr">(2019)</ref><ref type="bibr">(2020)</ref><ref type="bibr">(2021)</ref><ref type="bibr">(2022)</ref> that use live insects from 15 peer-reviewed journals with a range of impact factors, subdisciplinary breadth, and taxonomic focus.</p><p>We report on trends in the data related to two components of the standard 3Rs framework for ethical animal use in research: reduction (using fewer animals when possible) and refinement (minimizing harm to living animals when possible; <ref type="bibr" target="#b47">Russell &amp; Burch, 1959)</ref>. This framework has recently been recommended by several authors as a best practice for use with invertebrates <ref type="bibr" target="#b18">(Crump et al., 2023;</ref><ref type="bibr" target="#b38">Montero-Castaño et al., 2022)</ref>. We thus looked for reports that authors were reducing animal use to the minimum number required (e.g., through the use of statistical methods for determining appropriate power), or refining their practices via the use of anaesthetics/analgesics prior to significant handling or non-instantaneous sacrifice. Further, we discuss the prevalence of explicitlylabeled ethics statements. Finally, we make recommendations for how entomologists could improve transparent reporting of information related to the ethical treatment of their research subjects in the peer-reviewed literature, with the goal of addressing concerns about public trust, welfare, and reproducibility.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Journal and Article Selection</head><p>We used the Scopus CiteScore rankings, as of January 2023, to determine the top 40 entomology journals. We excluded any journals from the list that, by name, focus mostly on review papers, non-animals (e.g., plants, fungi, etc.), or non-insect animals (e.g., ticks, etc.). From the remaining 26 journals, we selected 9 that represented a broad swath of applied and fundamental entomological disciplines, to capture a range of methods and sub-disciplinary practices. Applied insect-focused journals included: Journal of Pest Science, Insect Conservation and Diversity, Medical and Veterinary Entomology, and Journal of Insects as Food and Feed. Fundamental insect-focused journals included: Insect Biochemistry and Molecular Biology, Insect Science, Journal of Insect Physiology, Ecological Entomology, and Arthropod Structure and Development. We selected an additional six, high-impact journals that publish fundamental papers from a variety of subdisciplines, but that are not taxonomically focused on insects despite frequently featuring insect work: Nature, PNAS, Journal of Experimental Biology, Animal Behavior, eLife, and Proceedings of the Royal Society B. These journals were selected to better understand if publishing alongside vertebrate articles would shape entomological ethics reporting practices.</p><p>Five articles were randomly selected from each journal for each year they were in operation between <ref type="bibr">2003 and 2022 (n = 1,359)</ref>. Articles that did not report primary research on insect specimens were not used and were replaced by another randomly selected article from that journal in that year, unless no additional articles that met these criteria could be found.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Article Assessment and Searches</head><p>The methods of each article were read and assessed to determine 1) if any insects were significantly handled during the experiment (e.g., restraint, dissection) and 2) if any insects died during the experiment (e.g., whole-body sampling for DNA) or as a direct result of experimental procedures (e.g., electrophysiology). Other papers likely involved insect death as part of their ongoing experimental procedure but animal sacrifice may not have been an explicit part of their protocol (e.g., rearing of fruit flies for behavioural investigations). These were not recorded as having involved animal sacrifice. The methods of each paper were also searched for reporting of any a priori statistical analyses for assessing the number of animals needed to complete an experiment (e.g., power analyses).</p><p>Further, articles were searched automatically for the following keywords: 'anesth*', 'anaesth*', 'analg*', 'welfare', 'ethic*', 'handling', 'manipulation', 'cold', 'freeze*', 'froze*', 'ice', 'liquid (nitrogen)', 'carbon (dioxide)', 'CO2', 'ether', '*flurane', 'euthan*', 'sacrific*', 'ethanol', 'morphine', 'opioid', 'GABA', 'gaba*', 'ɣ-aminobutyric acid', 'potassium chloride', 'NSAID', 'antidepressant'. When these terms resulted in a 'hit', the area of the paper containing the search term was read to determine if the hit was welfare relevant (e.g., a sacrifice or analgesia/anaesthesia statement, or something else). For welfare-relevant hits, the method of anesthesia/sacrifice was recorded, the location of the hit within the paper (methods, or elsewhere), and if the hit was part of an explicit 'ethics' statement or only in the general methodology. Only the main materials (i.e., not supplemental files) of publications were searched for these terms.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Statistical Analyses</head><p>All statistical analyses were conducted using R v. <ref type="bibr">4.4.0 (R Core Team, 2022)</ref>. Linear regressions, Pearson-product moment correlations, t-tests, ANOVAs and Tukey Honest Significant Difference tests were implemented using the R base package. Alpha was set to 0.05.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>Throughout the results, 'ethics statement' refers to any ethics statement appearing in a paper if that statement was welfare-relevant (e.g., statements about permitting, or that say 'no ethics approval required for insects', were not excluded). 'Anesthetic/analgesic statement' refers to any mention in the paper of an anesthetic or analgesic being employed during the study, whether that information is reported for ethical or methodological reasons. 'Sacrifice statement' refers to any mention in the paper of an animal being sacrificed, whether that information is reported for ethical or methodological reasons.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Description of Sacrifice and Anesthetic Usage in Papers</head><p>No papers in our sample reported the use of any a priori methods (e.g. power analyses) for reducing the number of animals used in the experiment.</p><p>A mean (± standard deviation) of 77.17 ± 4.79% of papers across all years contained insect death during or resulting from studies (range: 63.33 -82.35%; Table <ref type="table" target="#tab_0">1</ref>). 59.90% ± 7.18% of papers contained insect death with no significant handling (48.33 -70.77%) while 17.11% ± 5.62% of papers contained significant handling prior to death (range: 7.69 -27.12%). 10.27% ± 5.04% of papers contained significant handling not followed by death (range: 4.00 -23.33%). Finally, 12.48% ± 3.25% of papers contained neither significant handling nor death resulting from the study (range: 5.08 -163 18.33%). The most common anesthetics/analgesics (Table <ref type="table" target="#tab_1">2</ref>) used prior to significant handling or death 168 (and found as a result of our search terms) were freezing/chilling (n = 125 reports) and carbon dioxide (n = 80). Less commonly reported methods were chloroform (n = 1), nitrogen/nitrogen monoxide (n = 2), ether (n = 3), isoflurane (n = 1). 84.16% of papers that reported significant handling or death did not report the use of any anesthetics/analgesics prior to the event (Table <ref type="table" target="#tab_1">2</ref>). When sacrifice methods were captured by our automated methods, cold/freezing/LN2/dry ice (n = 120) and dissection (n = 48) were the most commonly reported (Table <ref type="table" target="#tab_2">3</ref>). Less commonly reported methods were immersion in ethanol/solvent/fixative (n = 24) and homogenisation (n = 15), among others. 79 studies that our automated methods highlighted as containing an animal sacrifice method did not report which method was used to kill their animals (38.05%). 1164 total papers were manually identified as containing insect death, with 873 papers that contained insect death but were not recognized by our automated methods. Of the papers where the sacrifice method was captured manually (Table <ref type="table" target="#tab_3">4</ref>), the most common methods were dissection (n = 304) or cold/freezing/LN2/dry ice (n = 137). The largest contingent of papers (Table <ref type="table" target="#tab_3">4</ref>; n = 307), did not explicitly state any sacrifice method but on examination of the methods, death could be inferred with certainty. The most common experimental procedures from which insect death could be inferred (Supplemental Table <ref type="table" target="#tab_0">1</ref>) were nucleic acid extraction (n = 119) and electrophysiology (n = 28). </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>195</head><p>*** The "not stated" category refers to those papers identified as having an insect die as a result of their methods but did not 196 describe the process that resulted in death.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="197">198</head><p>Of all the papers reporting dissection as a sacrifice method, 52 (17.11%) reported the use of an  The percentage of studies that contained an ethics statement increased over time from 0.00% in 2003 to 7.59 % in 2022 (maximum = 9.59% in 2020) (Figure <ref type="figure" target="#fig_2">2</ref>; linear regression, t20,18 = 4.29, p &lt; 0.001, R 2 = 0.48). There was no significant relationship over time in the percentage of studies that contained dissection with no accompanying anaesthesia or analgesia statement (linear regression; t20,18 = 1.62, p = 0.12) </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Trends in Reporting by Journal</head><p>Comparing prevalence of ethics statements among journals (Figure <ref type="figure" target="#fig_3">3</ref>) indicated that the aforementioned increase in ethics statements over time was largely driven by a single publication:</p><p>Animal Behaviour. However, even when excluding this journal from the analysis, there was still a slight but significant increase in the use of ethics statements across the other journals from 0.00% in 2003 to 1.35% by 2022 (Figure <ref type="figure" target="#fig_2">2</ref>; linear regression, t20,18 = 3.83, p = 0.001, R 2 = 0.42). Animal Behaviour is the only journal in our sample to currently require an ethics statement, even for studies on invertebrates. We therefore first tested for any significant differences in the proportion of papers with an ethics statement among the 14 other journals, where no ethics statement was required when working with invertebrates. There was no significant difference among them (ANOVA; F13,253 = 1.29, p = 0.22). We then collapsed them into a single factor, in order to compare journals where no ethics statement is required for studies with invertebrates to journals where this is required -in this case, only Animal Behaviour. Animal Behaviour had a significantly higher mean proportion of ethics statements than the journals that did not require an ethics statement when working with invertebrates (Figure <ref type="figure">4</ref>; t19,273 = 3.38, p-value &lt; 0.01).  Journals that also publish vertebrate research had a significantly higher proportion of papers reporting an anaesthesia or analgesia statement compared with journals that publish only invertebrate research <ref type="bibr">(Figure 5;</ref><ref type="bibr">t40,</ref><ref type="bibr">38,</ref><ref type="bibr">3.19,</ref><ref type="bibr">p &lt; 0.003)</ref>. Journals that publish vertebrate research also had a significantly higher proportion of papers reporting a sacrifice statement compared with journals that publish only invertebrate research (Figure <ref type="figure" target="#fig_5">5</ref>; t-test, t40,38 = 3.05, p &lt; 0.005). Journals that publish vertebrate research also had a significantly higher proportion of papers reporting a sacrifice statement compared with journals that publish only invertebrate research (t-test, t40,38 = 3.05, p &lt; 0.005).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Trends in Reporting By Taxa</head><p>To facilitate robust statistical analysis, the seven most common orders (Supplemental Figure <ref type="figure" target="#fig_1">1</ref>; Diptera, Hymenoptera, Coleoptera, Lepidoptera, Hemiptera, Orthoptera, Blattodea) within our sample were selected for analysis; all other taxa were collapsed into a single category ("Other Orders"), creating a total of eight categories. The seven most common orders accounted for 94% of the instances within the data.</p><p>There was a significant difference in the proportion of anaesthesia statements prior to invasive handling among orders (Figure <ref type="figure" target="#fig_6">6A</ref>; ANOVA; F7,8 = 6.36, p &lt; 0.0001). Investigations using Diptera contained a significantly greater proportion of relevant anaesthesia statements than investigations using Coleoptera (Tukey HSD; p = 0.02), Lepidoptera (Tukey HSD; p = 0.001), Orthoptera (Tukey HSD; p &lt; 0.0001) and Other Orders (Tukey HSD; p = 0.001). Investigations using Hymenoptera had a greater proportion of relevant anaesthetic statements than those using Orthoptera (Tukey HSD; p = 0.04).</p><p>We found no significant difference in the proportion of sacrifice statements (Figure <ref type="figure" target="#fig_6">6B</ref>; ANOVA; F7,8 = 0.21, p = 0.98), or the proportion of anaesthesia statements (Figure <ref type="figure" target="#fig_6">6C</ref>; ANOVA; F7,8 = 0.86, p = 0.54), prior to death among orders. towards open research practices <ref type="bibr" target="#b19">(Cuff et al., 2023;</ref><ref type="bibr" target="#b37">Mellor et al., 2016)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Reporting on methods of sacrifice, anaesthetics, and analgesics</head><p>When considering refinements, we looked for reporting that demonstrated anaesthetics were being used prior to invasive handling or death. The majority of papers with invasive handling or death did not report the prior use of analgesics/anaesthesics (84%), despite the fact that papers reporting invasive handling and/or death were the vast majority of papers in our sample (88%). Further, when the use of anaesthetics was reported, freezing/chilling was the most frequently reported method (59%).</p><p>However, invertebrate veterinarians have consistently stated that cold is not considered an appropriate anesthetic for insects <ref type="bibr" target="#b17">(Cooper, 2011;</ref><ref type="bibr" target="#b57">Wahltinez et al., 2023)</ref>, suggesting a lack of guidance from or interaction with the veterinary community may be causing entomologists to employ 'anaesthetics' that are not actually recognized as anaesthetics by the veterinary community. This may indicate that allowing self-regulation of welfare within entomology may be insufficient to improve animal welfare in line with modern veterinary guidance without significant changes in how these communities interact-a hypothesis in line with the judgments of professional entomologists, who have indicated that self-management is likely to be the least effective strategy for protecting insect welfare in research <ref type="bibr" target="#b3">(Barrett et al., 2024)</ref>, perhaps due to their lack of knowledge and training on insect welfare.</p><p>Importantly, the lack of reporting the use of a specific anaesthetic/analgesic does not necessarily represent an animal welfare issue in practice, as an anesthetic may still have been used.</p><p>However, if an anaesthetic was used and not reported in the methods, this reflects a reproducibility issue as the use of different anaesthetic agents can have both behavioural and physiological consequences for the animal. In Drosophila, CO2 anaesthesia can delay copulation <ref type="bibr" target="#b5">(Barron, 2000)</ref>, shorten lifespans <ref type="bibr" target="#b51">(Shen et al., 2020)</ref>, induces metabolic changes <ref type="bibr" target="#b16">(Colinet &amp; Renault, 2012)</ref>, and lower fecundity <ref type="bibr" target="#b36">(MacMillan et al., 2017;</ref><ref type="bibr" target="#b43">Perron et al., 1972)</ref>. Behavioural impacts include impaired climbing and flight capacity <ref type="bibr" target="#b6">(Bartholomew et al., 2015)</ref>. Other insects are not immune, and the effects of anesthesia can be wide-ranging and specific to a species' unique capacities: for example, CO2</p><p>anaesthesia increased bioluminescence in a species of glow-worm <ref type="bibr" target="#b15">(Charlton &amp; Merritt, 2020)</ref>.</p><p>Critically, these effects are not general to all anaesthetics, but can be a result of the specific anaesthetic employed <ref type="bibr" target="#b36">(MacMillan et al., 2017)</ref>. Thus, not reporting specific use of an anaesthetic when they are employed is a major concern for generating reproducible scientific research.</p><p>Anaesthetics may not always be needed to protect an animal's welfare during sacrifice if the sacrifice method employed is instantaneous; this could mean that the low reporting of anaesthetics prior to sacrifice in our studies was simply due to the common usage of instantaneous sacrifice methods. However, many of the most commonly reported sacrifice methods captured in our study</p><p>were not instantaneous including, most notably, dissection. Dissection as a method of death made up 26% of our overall study population. Only 17% of papers that reported dissection as a method of death reported the use of an anesthetic or analgesic prior. If this reporting accurately reflects the practices employed by entomologists, vivisection (live, unanesthetized dissection of an animal) was reported in 83% of studies in our overall sample. This trend in reporting represents a serious public perception concern: vivisection has historically been one of the oldest and most publicly inflammatory animal welfare issues in research <ref type="bibr" target="#b7">(Bates, 2017)</ref>. Further, only 35% of the papers that reported the use of any anesthetic used one recognized by veterinary specialists as appropriate for use prior to invasive, surgical, or otherwise stressful/noxious procedures in insects (carbon dioxide <ref type="bibr">;</ref><ref type="bibr" target="#b17">Cooper, 2011;</ref><ref type="bibr" target="#b57">Wahltinez et al., 2023)</ref>.</p><p>Finally, methods of sacrifice were more frequently reported, with 60% of papers explicitly stating their sacrifice methods. However, just as the method of anaesthesia may affect reproducibility through impacts on physiology, the method of death may also impact study results. For instance, gene expression profiles change as a result of different kinds of stress -well studied, for instance, in the case of heat stress <ref type="bibr" target="#b30">(King &amp; Macrae, 2014)</ref>. Plausibly, stress experienced by an insect when frozen instantly in liquid nitrogen is minimal; the stress of drowning <ref type="bibr" target="#b29">(Hibicke &amp; Nichols, 2022)</ref> in RNAlater may not be. Results from gene expression studies that collect insects using these two different methods thus may not be comparable, which can only be determined through accurate reporting of the sacrifice method employed in each study. This highlights the importance of reporting on sacrifice methods to ensure accurate comparisons across studies can be made and that results can be reproduced.</p><p>Many papers also contained a lack of detail around insect death, especially those that trap insects ("samples were collected") or extract nucleic acid ("RNA was extracted from samples following manufacturers instructions"). The vagaries introduced by use of euphemistic language <ref type="bibr" target="#b56">(Trampe, 2017)</ref> are an ethical and practical problem that also persists in research using animals covered by legislation, as it can undermine the function of reporting methodological information with detriments to transparency, reproducibility, and reporting on ethical animal use <ref type="bibr" target="#b54">(Taylor et al., 2024)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Trends over time and by publication</head><p>The percentage of lethal studies in our sample increased over time; those containing just invasive handling decreased. Importantly, the percentage of studies that contained an explicit ethics statement to address animal welfare also increased over the study period (2003 to 2022) from 0% to nearly 8%. Ethics statements in general were rare, and the increase we recorded over time was found to largely be driven by policy changes at the journal Animal Behaviour, where ethics statements have been mandated for all studies with invertebrates at least since 2004 (Roth, personal communication).</p><p>Even with Animal Behaviour's policy change, the vast majority of studies from that journal after 2004 do not contain an ethics statement (&gt; 70%). Poor reporting of welfare relevant information is common, even when studies involve vertebrate animals covered by welfare legislation <ref type="bibr" target="#b54">(Taylor et al. 2024)</ref> and not simply journal policies. Top-down enforcement of reporting, from either administrative bodies or journals, are thus only as impactful as the research community enforcing it.</p><p>Enforcement can be further complicated when both the authors and the reviewers of a community have little training in or guidance on reporting on the ethical treatment of their research animals, as is the case for entomologists <ref type="bibr" target="#b3">(Barrett et al., 2024)</ref>. Further, guidance on what to report can vary by the national origin of a publisher or a disciplinary speciality <ref type="bibr" target="#b40">(Novak et al., 2022)</ref>, resulting in confusion when authors attempt to prepare publications for submission.</p><p>Given that ethics statements are culturally non-standard for entomologists, journals considering implementing policies related to ethics reporting for insects will likely need to 1) create significant resources related to the structure and content of an ethics statement; 2) publicize the change and these resources well in advance of a mandated change <ref type="bibr" target="#b3">(Barrett et al., 2024)</ref>; and 3) engage in active enforcement of journal policies at the editorial level, not just the reviewer level, during the transition period.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Trends by taxonomic scope</head><p>Overall, journals that co-published vertebrate research contained a higher proportion of anaesthesia and sacrifice information than those journals that only publish invertebrate research. This suggests that reporting norms may vary across journals, where invertebrate-focused authors that more frequently read and publish in journals that also publish on vertebrates may be slightly more likely to consider ethics reporting even without mandates/enforcement.</p><p>Among insect orders, there were no differences in the proportion of sacrifice or anaesthesia statements prior to death. However, there were some differences in the use of anaesthetic statements prior to invasive handling. Studies with Diptera and Hymenoptera had a higher proportion of statements than Orthoptera, and studies on Diptera also had a higher proportion of statements than those on Coleoptera, Leipdoptera, and other orders. Interestingly, these results partially confirm the results of <ref type="bibr" target="#b3">Barrett et al., (2024)</ref>, where entomologists working with Hymenoptera were more likely to report the use of practices that promote insect welfare than those that did not work with Hymenoptera.</p><p>Entomologists working on Diptera and Hymenoptera do not report greater familiarity with, training on, or interest in insect welfare <ref type="bibr" target="#b3">(Barrett et al., 2024)</ref>, suggesting that these trends in reporting have not been driven by insect-welfare-related reasoning. Increased reporting of anesthetic use due to invasive handling in Hymenoptera could simply be due to occupational health and safety concerns associated with insect stings. Increased reporting in Diptera could be driven by the increased standardization of reporting when using the model organism, Drosophila melanogaster, in highlycontrolled laboratory settings. Given that the strongest evidence for insect sentience is found in adult Diptera, Blattodea and, to a lesser extent, Hymenoptera <ref type="bibr" target="#b27">(Gibbons et al., 2022)</ref>, it is possible reporting norms in these orders may shift more rapidly moving forward.</p><p>Finally, Hemiptera was the fifth-most common order to be studied in our dataset, representing 9% of studies. Despite their popularity as an order for research, no official reviews of the neurobiological or behavioral data related to hemipteran sentience has been conducted <ref type="bibr" target="#b27">(Gibbons et al., 2022)</ref>. Given their heavy use in entomological research, further attention to the neurobiology and behavior of hemipteran species in relation to the plausibility of their sentience is urgent to better understand our ethical obligations to these animals.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusions</head><p>Despite growing concern among entomologists about insect welfare <ref type="bibr" target="#b3">(Barrett et al., 2024)</ref>, the slow increase in ethics statements over the past twenty years suggests that the field has significant room for improvement, not least to address reproducibility and translatability issues in the field. As importantly, change is likely required to address public concerns related to animal welfare <ref type="bibr" target="#b20">(Drinkwater et al., 2019)</ref>, a problem accentuated by the findings of a recent study that showed that 1) trust in scientists declines when the public learns there is an absence of oversight in invertebrate research; and</p><p>2) the public believes invertebrates should receive oversight at approximately 2/3rds the level of oversight currently afforded to vertebrates (in Canada; <ref type="bibr" target="#b10">Brunt et al., 2022)</ref>. Further, both those arguing for and skeptical of insect sentience agree that some precautionary measures are appropriate to protect welfare when using insects in research <ref type="bibr" target="#b18">(Crump et al., 2023;</ref><ref type="bibr" target="#b19">Cuff et al., 2023;</ref><ref type="bibr" target="#b20">Drinkwater et al., 2019;</ref><ref type="bibr" target="#b22">Eisemann et al., 1984;</ref><ref type="bibr" target="#b24">Fischer &amp; Larson, 2019;</ref><ref type="bibr" target="#b31">Klobučar &amp; Fisher, 2023;</ref><ref type="bibr" target="#b49">Sandall &amp; Fischer, 2019;</ref><ref type="bibr" target="#b58">Wigglesworth, 1980)</ref>. Indeed, one of the most-cited articles critical of insect sentience ends with the "...recommendation that insects have their nervous systems inactivated prior to traumatizing manipulation…[to guard] against the remaining possibility of pain infliction" <ref type="bibr" target="#b22">(Eisemann et al., 1984)</ref>.</p><p>One challenge with changing the entomological community's practice is a lack of resources, training, and guidance to assist community members interested in updating their practices <ref type="bibr" target="#b2">(Barrett et al., 2024)</ref>. Entomologists interested in reducing animal use to the minimum number required to have appropriate power can begin by looking at resources for a priori analyses <ref type="bibr" target="#b32">(Lakens, 2022;</ref><ref type="bibr" target="#b35">Lynch &amp; Perl, 2024;</ref><ref type="bibr">C. Perl, 2023)</ref>. General guidance is also available from scientific societies on refining research practices when using insects <ref type="bibr" target="#b23">(Fischer et al., 2024)</ref> or animals, inclusive of invertebrates (ASAB Ethical Committee/ABS Animal Care Committee, 2023); there is also general guidance on anesthesia or euthanasia from veterinarians (reviewed in <ref type="bibr" target="#b2">Barrett, 2024;</ref><ref type="bibr">and see Cooper, 2011;</ref><ref type="bibr" target="#b57">Wahltinez et al., 2023)</ref>.</p><p>Entomologists interested in improving their reporting practices, for welfare or reproducibility reasons, should review the ARRIVE guidelines <ref type="bibr" target="#b50">(Sert et al., 2020)</ref>, guidance by <ref type="bibr" target="#b53">Spanagel (2022)</ref>, and the requirements of journals like Animal Behaviour or Animal Welfare, which require more detailed reporting in their ethics statements. Finally, to further facilitate entomologists' reporting of the ethical use of their research animals, we have provided a table (Supplemental File 1) that can be modified and included as either a supplement or in the main manuscript, to assist entomologists in capturing reproducibility-and welfare-relevant data.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>199</head><label></label><figDesc>anaesthetic or analgesic prior to the dissection, with chilling/freezing (n = 33) and carbon dioxide (n = 200 18) the most commonly employed methods (Supplemental Table2).201Trends in Reporting Over Time202The percentage of studies that contained any insect death increased from 2003 to 2022 (Figure2031; linear regression; t20,18 = 2.33, p = 0.031, R 2 = 0.23) while the percentage of studies that contained 204 just invasive handling decreased (linear regression; t20,18 = 4.00, P = 0.001, R 2 = 0.44). There were no 205 other significant changes over time in the use of invasive handling only (not followed by death), death 206 only (not preceded by invasive handling), or neither handling nor death (linear regression; t20,18 &lt; 2.06, p &gt; 0.05).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. The percentage of studies that resulted in insect death increased over time.There was a significant increase in the proportion of studies containing any form of insect sacrifice over time (linear regression; t20,18 = 2.33, p = 0.031, R 2 = 0.23). There was a significant decrease in the proportion of studies reporting just invasive handling without sacrifice over time (linear regression; t20,18 = 4.00, p = 0.001, R 2 = 0.44). There was no change in the percentage of studies containing death only (no handling), both death and significant handling, or neither death nor significant handling (linear regression; t20,18 &lt; 1.19, p &gt; 0.05).</figDesc><graphic coords="13,72.00,134.64,468.00,347.61" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. The percentage of studies that contained an ethics statement increased over time, largely driven by Animal Behaviour. There was a significant increase in the proportion of studies containing an ethics statement over time (black line; linear regression, t20,18 = 4.29, p &lt; 0.001, R 2 = 0.48). Much of this increase in the use of ethics statements was driven by publications in AnimalBehaviour, however even with this journal excluded there was still a significant increase from 0.00% in 2003 to 1.35% in 2022 in the proportion of studies containing an ethics statement in the other 14 journals (green line; linear regression, t20,18 = 3.83, p = 0.001, R 2 = 0.42).</figDesc><graphic coords="14,72.00,134.64,468.00,330.00" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3. The journal Animal Behaviour has a greater proportion of papers with an ethics statement than the other journals combined. (Mean ± standard error). None of the other 14 journals, excluding Animal Behaviour, have a significantly different proportion of papers with ethics statements from each other. Journal abbreviations: ASaD -Arthropod Structure and Development; EE -Ecological Entomology; IBaMB -Insect Biochemistry and Molecular Biology; IS -Insect Science; JEB -Journal of Experimental Biology, JoIP -Journal of Insect Physiology; JoPS -Journal of Pest Science; MaVE -Medical and Veterinary Entomology; Nature -Nature; PNAS -Proceedings of the National Academy of Sciences; ProcB: Proceedings of the Royal Society B; ICaD -Insect Conservation and Diversity; JIFF -Journal of Insects as Food and Feed; eLife -eLife.</figDesc><graphic coords="15,72.00,165.96,468.00,312.00" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure</head><label></label><figDesc>Figure 4. The journal that requires an ethics statement for studies that use invertebrates</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 5 .</head><label>5</label><figDesc>Figure 5. The percentage of papers reporting relevant anaesthesia or sacrifice statements by journal taxonomic scope. (blue) Journals that publish vertebrate research as well as invertebrate research had a significantly higher proportion of papers reporting an anaesthesia or analgesia statement compared with journals that publish only invertebrate research (t-test, t40,3 = 3.19, p &lt; 0.003). (black)</figDesc><graphic coords="18,72.00,72.00,468.00,333.00" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 6 .</head><label>6</label><figDesc>Figure 6. Percentage of studies with an anaesthetic or sacrifice statement prior to handling or death by order. Left) Percentage of studies with an anaesthetic statement prior to handling varied by order. Letters indicate statistically significant differences between orders. Middle) There was no significant difference in the percentage of studies with an anaesthetic statement prior to death among orders. Right) There was no significant difference in the percentage of studies with a sacrifice statement prior to death among orders.</figDesc><graphic coords="19,72.00,447.84,468.00,151.65" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 :</head><label>1</label><figDesc>Number of papers sampled and their respective counts and proportions of animal sacrifice 165 and invasive handling per year.</figDesc><table><row><cell>164</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>166</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Publication</cell><cell>Papers</cell><cell>All papers</cell><cell>Papers</cell><cell>Papers</cell><cell>Papers</cell><cell>Papers</cell></row><row><cell>year</cell><cell>sampled</cell><cell>containing</cell><cell>containing</cell><cell>containing</cell><cell>containing</cell><cell>containing</cell></row><row><cell></cell><cell></cell><cell>sacrifice</cell><cell>sacrifice</cell><cell>both</cell><cell>invasive</cell><cell>neither</cell></row><row><cell></cell><cell></cell><cell></cell><cell>without</cell><cell>invasive</cell><cell>handling</cell><cell>sacrifice or</cell></row><row><cell></cell><cell></cell><cell></cell><cell>invasive</cell><cell>handling</cell><cell>without</cell><cell>invasive</cell></row><row><cell></cell><cell></cell><cell></cell><cell>handling</cell><cell>and sacrifice</cell><cell>sacrifice</cell><cell>handling</cell></row><row><cell></cell><cell>n</cell><cell>n %</cell><cell>n %</cell><cell>n %</cell><cell>n %</cell><cell>n %</cell></row><row><cell>2003</cell><cell>59</cell><cell>48 81.36</cell><cell>32 54.24</cell><cell>16 27.12</cell><cell>8 13.56</cell><cell>5.08</cell></row><row><cell>2004</cell><cell>60</cell><cell>42 70.00</cell><cell>29 48.33</cell><cell>13 21.67</cell><cell>11 18.33</cell><cell>11.67</cell></row><row><cell>2005</cell><cell>60</cell><cell>38 63.33</cell><cell>29 48.33</cell><cell>9 15</cell><cell>14 23.33</cell><cell>13.33</cell></row><row><cell>2006</cell><cell>61</cell><cell>45 73.77</cell><cell>37 60.66</cell><cell>8 13.11</cell><cell>11 18.03</cell><cell>8.2</cell></row><row><cell>2007</cell><cell>59</cell><cell>46 77.97</cell><cell>41 69.49</cell><cell>5 8.47</cell><cell>6 10.17</cell><cell>11.86</cell></row><row><cell>2008</cell><cell>65</cell><cell>51 78.46</cell><cell>46 70.77</cell><cell>5 7.69</cell><cell>4 6.15</cell><cell>15.38</cell></row><row><cell>2009</cell><cell>65</cell><cell>50 76.92</cell><cell>37 56.92</cell><cell>13 20</cell><cell>9 13.85</cell><cell>9.23</cell></row><row><cell>2010</cell><cell>69</cell><cell>54 78.26</cell><cell>45 65.22</cell><cell>9 13.04</cell><cell>7 10.14</cell><cell>10.14</cell></row><row><cell>2011</cell><cell>60</cell><cell>43 71.67</cell><cell>36 60.00</cell><cell>6 10</cell><cell>6 10</cell><cell>18.33</cell></row><row><cell>2012</cell><cell>62</cell><cell>51 82.26</cell><cell>41 66.13</cell><cell>10 16.13</cell><cell>4 6.45</cell><cell>11.29</cell></row><row><cell>2013</cell><cell>68</cell><cell>56 82.35</cell><cell>46 67.65</cell><cell>10 14.71</cell><cell>5 7.35</cell><cell>10.29</cell></row><row><cell>2014</cell><cell>68</cell><cell>55 80.88</cell><cell>44 64.71</cell><cell>10 14.71</cell><cell>4 5.88</cell><cell>13.24</cell></row><row><cell>2015</cell><cell>77</cell><cell>56 72.73</cell><cell>39 50.65</cell><cell>17 22.08</cell><cell>10 12.99</cell><cell>14.29</cell></row><row><cell>2016</cell><cell>75</cell><cell>60 80</cell><cell>50 66.67</cell><cell>10 13.33</cell><cell>7 9.33</cell><cell>10.67</cell></row><row><cell>2017</cell><cell>75</cell><cell>59 78.67</cell><cell>45 60.00</cell><cell>14 18.67</cell><cell>3 4</cell><cell>17.33</cell></row><row><cell>2018</cell><cell>75</cell><cell>58 77.33</cell><cell>38 50.67</cell><cell>20 26.67</cell><cell>5 6.67</cell><cell>16</cell></row><row><cell>2019</cell><cell>74</cell><cell>57 77.03</cell><cell>41 55.41</cell><cell>16 21.62</cell><cell>7 9.46</cell><cell>13.51</cell></row><row><cell>2020</cell><cell>73</cell><cell>57 78.08</cell><cell>40 54.79</cell><cell>17 23.29</cell><cell>4 5.48</cell><cell>16.44</cell></row><row><cell>2021</cell><cell>75</cell><cell>61 81.33</cell><cell>50 66.67</cell><cell>11 14.67</cell><cell>5 6.67</cell><cell>12</cell></row><row><cell>2022</cell><cell>79</cell><cell>64 81.01</cell><cell>48 60.76</cell><cell>16 20.25</cell><cell>6 7.59</cell><cell>11.39</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 :</head><label>2</label><figDesc>List of anaesthetics reported in papers with invasive handling or insect sacrifice. Not stated category refers to those papers with invasive handling or insect sacrifice but no reported anaesthetic or</figDesc><table><row><cell>analgesic information.</cell><cell></cell><cell></cell></row><row><cell>Anaesthetic</cell><cell>n</cell><cell>%</cell></row><row><cell>chloroform</cell><cell>1</cell><cell>0.08</cell></row><row><cell>isoflurane</cell><cell>1</cell><cell>0.08</cell></row><row><cell>nitrogen</cell><cell>1</cell><cell>0.08</cell></row><row><cell>nitrogen monoxide</cell><cell>1</cell><cell>0.08</cell></row><row><cell>ether</cell><cell>3</cell><cell>0.25</cell></row><row><cell>freezing</cell><cell>20</cell><cell>1.68</cell></row><row><cell>CO2</cell><cell>80</cell><cell>6.74</cell></row><row><cell>chilling</cell><cell>105</cell><cell>8.85</cell></row><row><cell>not stated</cell><cell>999</cell><cell>84.16</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 :</head><label>3</label><figDesc>Sacrifice methods reported in papers extracted by our automated process. Not stated category refers to those papers identified as having an insect die as a result of their methods but that did not describe the process that resulted in death.</figDesc><table><row><cell>Sacrifice method</cell><cell>n</cell><cell>%</cell></row><row><cell>boiled</cell><cell>1</cell><cell>0.49</cell></row><row><cell>cold</cell><cell>1</cell><cell>0.49</cell></row><row><cell>diethyl ether</cell><cell>1</cell><cell>0.49</cell></row><row><cell>ether</cell><cell>1</cell><cell>0.49</cell></row><row><cell>glycerol</cell><cell>1</cell><cell>0.49</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 4 :</head><label>4</label><figDesc>Sacrifice methods reported in papers extracted by manual searching.</figDesc><table><row><cell>Sacrifice method</cell><cell>n</cell><cell>%</cell></row><row><cell>dry ice</cell><cell>1</cell><cell>0.1</cell></row><row><cell>microwave</cell><cell>1</cell><cell>0.1</cell></row><row><cell>CO2</cell><cell>2</cell><cell>0.19</cell></row><row><cell>cold</cell><cell>2</cell><cell>0.19</cell></row><row><cell>irradiated</cell><cell>2</cell><cell>0.19</cell></row><row><cell>starved</cell><cell>2</cell><cell>0.19</cell></row><row><cell>Bt toxin</cell><cell>3</cell><cell>0.29</cell></row><row><cell>heat treatment</cell><cell>3</cell><cell>0.29</cell></row><row><cell>drowned</cell><cell>5</cell><cell>0.48</cell></row></table><note><p>*The "experimental death" category refers to those papers were insects died through the course of rearing or during 194 development.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>4. The journal that requires an ethics statement for studies that use invertebrates (Animal Behaviour) has a higher mean proportion of papers with an ethics statement compared to journals that do not require an ethics statement for studies that use invertebrates.</head><label></label><figDesc>Animal Behaviour had a significantly higher mean percentage of ethics statements</figDesc><table><row><cell>(mean ± SE; 24.2 ± 6.89) than the journals that did not require an ethics statement (mean ± SE; 0.95 ±</cell></row><row><cell>0.29) when working with invertebrates, combined (t19,273 = 3.38, p-value &lt; 0.01).</cell></row><row><cell>Six journals (Animal Behaviour, eLife, Journal of Experimental Biology, Nature, Proceedings of</cell></row><row><cell>National Academy of Sciences, Proceedings of the Royal Society B) from our sample publish papers</cell></row></table><note><p>investigating both invertebrates and vertebrates, while the remaining nine (Arthropod Structure and Development, Ecological Entomology, Insect Biochemistry and Molecular Biology, Insect Science, Journal of Insect Physiology, Journal of Pest Science, Medical and Veterinary Entomology, Insect Conservation and Diversity, Journal of Insects as Food and Feed) publish almost exclusively invertebrate research.</p></note></figure>
+		</body>
+		<back>
+
+			<div type="funding">
+<div><p>CDP is employed by the <rs type="funder">Insect Welfare Research Society</rs>. Conflicts of Interest: MB and BF report a relationship with the <rs type="institution">Insect Welfare Research Society</rs> that includes: board of advisors (unpaid). CDP reports a relationship with the <rs type="institution">Insect Welfare Research Society</rs> that includes: employment.</p></div>
+			</div>
+			<listOrg type="funding">
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>We sampled 1359 papers that used live insects from 15 journals across a 20 year period to ascertain trends in reporting on a priori power analyses, anesthetic use, and sacrifice methods across the discipline. Our study was only designed to look for specific indicators of 'reduction' and 'refinement' in studies where live animals were used (two of the 3Rs; <ref type="bibr" target="#b47">Russell &amp; Burch, 1959)</ref>; we did not attempt to determine if there were opportunities in any studies to have replaced live animals with less-sentient alternatives (such as replacing live animals with museum specimens or performing studies on cells instead of whole organisms).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Reporting on animal reduction via a priori sample size estimation</head><p>No paper in our sample reported the use of a priori methods for determining sample sizes, a process that is recommended to reduce the number of animals used to the minimum necessary for a study to have appropriate power <ref type="bibr" target="#b32">(Lakens, 2022;</ref><ref type="bibr">C. Perl, 2023)</ref>. This practice has been shown to be essential for producing valid scientific conclusions as well as promoting animal welfare <ref type="bibr" target="#b11">(Button et al., 2013;</ref><ref type="bibr" target="#b42">C. D. Perl &amp; Fischer, 2024;</ref><ref type="bibr" target="#b46">Richter, 2024)</ref>. Estimating sample sizes is a more common practice in vertebrate research, as ethical review boards can serve as a point of intervention during study design <ref type="bibr" target="#b41">(Papalouka et al., 2023)</ref>. However, recent studies suggest that methods for determining power or precision often are not used appropriately or transparently reported <ref type="bibr" target="#b14">(Charles et al., 2009;</ref><ref type="bibr">Dumas-Mallet et al., 2017;</ref><ref type="bibr" target="#b48">Rutterford et al., 2015;</ref><ref type="bibr" target="#b55">Thibault et al., 2024)</ref>. This can affect the reproducibility and validity of study results, ultimately contributing to translatability and generalizability issues <ref type="bibr" target="#b53">(Spanagel, 2022)</ref>. Increasing the correct use and transparent reporting <ref type="bibr" target="#b50">(Sert et al., 2020;</ref><ref type="bibr" target="#b53">Spanagel,</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplemental Figures</head><p>648 Supplemental Table <ref type="table">1</ref>. Experimental methods that would result in insect death but were left 649 explicitly unstated within the sampled paper, but can be inferred from reading the methods section. 650 Some methods are not explicit even on reading methods sections, some animals were "sacrifice" before 651 further experimentation but the exact methods of sacrifice were not stated. </p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<author>
+			<persName><forename type="first">K</forename><surname>Andrews</surname></persName>
+		</author>
+		<ptr target="https://sites.google.com/nyu.edu/nydeclaration/declaration" />
+		<title level="m">The New York Declaration on Animal Consciousness</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note>NY Declaration</note>
+	<note type="raw_reference">Andrews, K., &amp; et al. (2024). The New York Declaration on Animal Consciousness. NY Declaration. https://sites.google.com/nyu.edu/nydeclaration/declaration</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Guidelines for the ethical treatment of nonhuman animals in behavioural research and teaching</title>
+		<author>
+			<orgName type="collaboration">ASAB Ethical Committee/ABS Animal Care Committee</orgName>
+		</author>
+		<idno type="DOI">10.1016/j.anbehav.2022.09.006</idno>
+		<ptr target="https://doi.org/10.1016/j.anbehav.2022.09.006" />
+	</analytic>
+	<monogr>
+		<title level="j">Animal Behaviour</title>
+		<imprint>
+			<biblScope unit="volume">195</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">ASAB Ethical Committee/ABS Animal Care Committee. (2023). Guidelines for the ethical treatment of nonhuman animals in behavioural research and teaching. Animal Behaviour, 195, I-XI. https://doi.org/10.1016/j.anbehav.2022.09.006</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Barrett</surname></persName>
+		</author>
+		<idno type="DOI">10.31219/osf.io/qem7f</idno>
+		<ptr target="https://doi.org/10.31219/osf.io/qem7f" />
+		<title level="m">Pain and Suffering in Farmed Animals: First Steps Towards Better Understanding and Management (Musk and Clutton, 2024) -Insects</title>
+		<imprint>
+			<publisher>OSF</publisher>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Barrett, M. (2024). Pain and Suffering in Farmed Animals: First Steps Towards Better Understanding and Management (Musk and Clutton, 2024) -Insects. OSF. https://doi.org/10.31219/osf.io/qem7f</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Entomologists&apos; knowledge of, and attitudes towards, insect welfare in research and education</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Barrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Drewery</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischer</surname></persName>
+		</author>
+		<idno type="DOI">10.31219/osf.io/tg357</idno>
+		<ptr target="https://doi.org/10.31219/osf.io/tg357" />
+	</analytic>
+	<monogr>
+		<title level="j">OSF</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Barrett, M., Drewery, M. L., &amp; Fischer, B. (2024). Entomologists&apos; knowledge of, and attitudes towards, insect welfare in research and education. OSF. https://doi.org/10.31219/osf.io/tg357</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Informing policy and practice on insect pollinator declines: Tensions between conservation and animal welfare</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Barrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Buchmann</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fevo.2022.1071251</idno>
+		<ptr target="https://www.frontiersin.org/articles/10.3389/fevo.2022.1071251" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Ecology and Evolution</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Barrett, M., Fischer, B., &amp; Buchmann, S. (2023). Informing policy and practice on insect pollinator declines: Tensions between conservation and animal welfare. Frontiers in Ecology and Evolution, 10. https://www.frontiersin.org/articles/10.3389/fevo.2022.1071251</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Anaesthetising Drosophila for behavioural studies</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Barron</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S0022-1910(99)00129-8</idno>
+		<ptr target="https://doi.org/10.1016/S0022-1910(99)00129-8" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Insect Physiology</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="439" to="442" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Barron, A. B. (2000). Anaesthetising Drosophila for behavioural studies. Journal of Insect Physiology, 46(4), 439-442. https://doi.org/10.1016/S0022-1910(99)00129-8</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Impaired climbing and flight behaviour in Drosophila melanogaster following carbon dioxide anaesthesia</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">R</forename><surname>Bartholomew</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Burdett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Vandenbrooks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Quinlan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">B</forename><surname>Call</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/srep15298</idno>
+		<ptr target="https://doi.org/10.1038/srep15298" />
+	</analytic>
+	<monogr>
+		<title level="j">Scientific Reports</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">15298</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bartholomew, N. R., Burdett, J. M., VandenBrooks, J. M., Quinlan, M. C., &amp; Call, G. B. (2015). Impaired climbing and flight behaviour in Drosophila melanogaster following carbon dioxide anaesthesia. Scientific Reports, 5(1), 15298. https://doi.org/10.1038/srep15298</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Anti-Vivisection and the Profession of Medicine in Britain: A Social History</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">W H</forename><surname>Bates</surname></persName>
+		</author>
+		<idno type="DOI">10.1057/978-1-137-55697-4_2</idno>
+		<ptr target="https://doi.org/10.1057/978-1-137-55697-4_2" />
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<publisher>Palgrave Macmillan</publisher>
+		</imprint>
+	</monogr>
+	<note>Vivisection, Virtue, and the Law in the Nineteenth Century. Internet</note>
+	<note type="raw_reference">Bates, A. W. H. (2017). Vivisection, Virtue, and the Law in the Nineteenth Century. In Anti- Vivisection and the Profession of Medicine in Britain: A Social History [Internet]. Palgrave Macmillan. https://doi.org/10.1057/978-1-137-55697-4_2</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title/>
+	</analytic>
+	<monogr>
+		<title level="j">BBC Radio</title>
+		<imprint/>
+	</monogr>
+	<note type="raw_reference">BBC Radio</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Inside the Killing Jar [Broadcast</title>
+		<author>
+			<persName><forename type="first">)</forename><surname>Director</surname></persName>
+		</author>
+		<ptr target="https://www.bbc.co.uk/programmes/b09qfwpt" />
+	</analytic>
+	<monogr>
+		<title level="j">BBC Radio</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Director). (2018). Inside the Killing Jar [Broadcast]. BBC Radio 4. https://www.bbc.co.uk/programmes/b09qfwpt</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Invertebrate research without ethical or regulatory oversight reduces public confidence and trust</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Brunt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kreiberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A G</forename><surname>Von Keyserlingk</surname></persName>
+		</author>
+		<idno type="DOI">10.1057/s41599-022-01272-8</idno>
+		<ptr target="https://doi.org/10.1057/s41599-022-01272-8" />
+	</analytic>
+	<monogr>
+		<title level="j">Humanities and Social Sciences Communications</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note>Article 1</note>
+	<note type="raw_reference">Brunt, M. W., Kreiberg, H., &amp; von Keyserlingk, M. A. G. (2022). Invertebrate research without ethical or regulatory oversight reduces public confidence and trust. Humanities and Social Sciences Communications, 9(1), Article 1. https://doi.org/10.1057/s41599-022-01272-8</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Power failure: Why small sample size undermines the reliability of neuroscience</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">S</forename><surname>Button</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P A</forename><surname>Ioannidis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Mokrysz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Nosek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Flint</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">S J</forename><surname>Robinson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Munafò</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/nrn3475</idno>
+		<ptr target="https://doi.org/10.1038/nrn3475" />
+	</analytic>
+	<monogr>
+		<title level="j">Nature Reviews. Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="365" to="376" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Button, K. S., Ioannidis, J. P. A., Mokrysz, C., Nosek, B. A., Flint, J., Robinson, E. S. J., &amp; Munafò, M. R. (2013). Power failure: Why small sample size undermines the reliability of neuroscience. Nature Reviews. Neuroscience, 14(5), 365-376. https://doi.org/10.1038/nrn3475</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Conventional laboratory housing increases morbidity and mortality in research rodents: Results of a meta-analysis</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cait</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Cait</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">W</forename><surname>Scott</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Winder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">J</forename><surname>Mason</surname></persName>
+		</author>
+		<idno type="DOI">10.1186/s12915-021-01184-0</idno>
+		<ptr target="https://doi.org/10.1186/s12915-021-01184-0" />
+	</analytic>
+	<monogr>
+		<title level="j">BMC Biology</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">15</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Cait, J., Cait, A., Scott, R. W., Winder, C. B., &amp; Mason, G. J. (2022). Conventional laboratory housing increases morbidity and mortality in research rodents: Results of a meta-analysis. BMC Biology, 20(1), 15. https://doi.org/10.1186/s12915-021-01184-0</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Pain and Laboratory Animals: Publication Practices for Better Data Reproducibility and Better Animal Welfare</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Carbone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Austin</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pone.0155001</idno>
+		<ptr target="https://doi.org/10.1371/journal.pone.0155001" />
+	</analytic>
+	<monogr>
+		<title level="j">PLOS ONE</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page">155001</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Carbone, L., &amp; Austin, J. (2016). Pain and Laboratory Animals: Publication Practices for Better Data Reproducibility and Better Animal Welfare. PLOS ONE, 11(5), e0155001. https://doi.org/10.1371/journal.pone.0155001</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Reporting of sample size calculation in randomised controlled trials: Review</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Charles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Giraudeau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dechartres</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Baron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Ravaud</surname></persName>
+		</author>
+		<idno type="DOI">10.1136/bmj.b1732</idno>
+		<ptr target="https://doi.org/10.1136/bmj.b1732" />
+	</analytic>
+	<monogr>
+		<title level="j">BMJ</title>
+		<imprint>
+			<biblScope unit="volume">338</biblScope>
+			<biblScope unit="page">1732</biblScope>
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Charles, P., Giraudeau, B., Dechartres, A., Baron, G., &amp; Ravaud, P. (2009). Reporting of sample size calculation in randomised controlled trials: Review. BMJ, 338, b1732. https://doi.org/10.1136/bmj.b1732</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Carbon dioxide-induced bioluminescence increase in Arachnocampa larvae</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Charlton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Merritt</surname></persName>
+		</author>
+		<idno type="DOI">10.1242/jeb.225151</idno>
+		<ptr target="https://doi.org/10.1242/jeb.225151" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Experimental Biology</title>
+		<imprint>
+			<biblScope unit="volume">223</biblScope>
+			<biblScope unit="issue">15</biblScope>
+			<biblScope unit="page">225151</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Charlton, H. R., &amp; Merritt, D. J. (2020). Carbon dioxide-induced bioluminescence increase in Arachnocampa larvae. Journal of Experimental Biology, 223(15), jeb225151. https://doi.org/10.1242/jeb.225151</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Metabolic effects of CO2 anaesthesia in Drosophila melanogaster</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Colinet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Renault</surname></persName>
+		</author>
+		<idno type="DOI">10.1098/rsbl.2012.0601</idno>
+		<ptr target="https://doi.org/10.1098/rsbl.2012.0601" />
+	</analytic>
+	<monogr>
+		<title level="j">Biology Letters</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1050" to="1054" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Colinet, H., &amp; Renault, D. (2012). Metabolic effects of CO2 anaesthesia in Drosophila melanogaster. Biology Letters, 8(6), 1050-1054. https://doi.org/10.1098/rsbl.2012.0601</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Anesthesia, Analgesia, and Euthanasia of Invertebrates</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Cooper</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/ilar.52.2.196</idno>
+		<ptr target="https://doi.org/10.1093/ilar.52.2.196" />
+	</analytic>
+	<monogr>
+		<title level="j">ILAR Journal</title>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="196" to="204" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Cooper, J. E. (2011). Anesthesia, Analgesia, and Euthanasia of Invertebrates. ILAR Journal, 52(2), 196-204. https://doi.org/10.1093/ilar.52.2.196</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Is it time for insect researchers to consider their subjects&apos; welfare?</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Crump</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gibbons</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Barrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Birch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chittka</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pbio.3002138</idno>
+		<ptr target="https://doi.org/10.1371/journal.pbio.3002138" />
+	</analytic>
+	<monogr>
+		<title level="j">PLOS Biology</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page">3002138</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Crump, A., Gibbons, M., Barrett, M., Birch, J., &amp; Chittka, L. (2023). Is it time for insect researchers to consider their subjects&apos; welfare? PLOS Biology, 21(6), e3002138. https://doi.org/10.1371/journal.pbio.3002138</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cuff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Barrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Gray</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Fox</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Watt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Aimé</surname></persName>
+		</author>
+		<idno type="DOI">10.31219/osf.io/cufpq</idno>
+		<ptr target="https://doi.org/10.31219/osf.io/cufpq" />
+		<title level="m">The case for open research in entomology: Reducing harm, refining reproducibility and advancing insect science</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Cuff, J., Barrett, M., Gray, H., Fox, C., Watt, A., &amp; Aimé, E. (2023). The case for open research in entomology: Reducing harm, refining reproducibility and advancing insect science. https://doi.org/10.31219/osf.io/cufpq</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Keeping invertebrate research ethical in a landscape of shifting public opinion</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Drinkwater</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">J H</forename><surname>Robinson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Hart</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/2041-210X.13208</idno>
+		<ptr target="https://doi.org/10.1111/2041-210X.13208" />
+	</analytic>
+	<monogr>
+		<title level="j">Methods in Ecology and Evolution</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1265" to="1273" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Drinkwater, E., Robinson, E. J. H., &amp; Hart, A. G. (2019). Keeping invertebrate research ethical in a landscape of shifting public opinion. Methods in Ecology and Evolution, 10(8), 1265-1273. https://doi.org/10.1111/2041-210X.13208</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Low statistical power in biomedical science: A review of three human research domains</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Dullaghan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Wildeford</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Moss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Mallet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">S</forename><surname>Button</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Boraud</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Gonon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Munafò</surname></persName>
+		</author>
+		<idno type="DOI">10.1098/rsos.160254</idno>
+		<ptr target="https://doi.org/10.1098/rsos.160254" />
+	</analytic>
+	<monogr>
+		<title level="m">Rethink Priorities</title>
+		<imprint>
+			<date type="published" when="2017">2021. 2017</date>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page">160254</biblScope>
+		</imprint>
+	</monogr>
+	<note>Rethink Priorities poll: US attitudes towards insects</note>
+	<note type="raw_reference">Dullaghan, N., Wildeford, P., &amp; Moss, D. (2021). Rethink Priorities poll: US attitudes towards insects (pp. 1-27). Rethink Priorities. https://rethinkpriorities.org/publications/us-attitudes- towards-insects Dumas-Mallet, E., Button, K. S., Boraud, T., Gonon, F., &amp; Munafò, M. R. (2017). Low statistical power in biomedical science: A review of three human research domains. Royal Society Open Science, 4(2), 160254. https://doi.org/10.1098/rsos.160254</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Do insects feel pain? -A biological view</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Eisemann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">K</forename><surname>Jorgensen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Merritt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Rice</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">W</forename><surname>Cribb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">D</forename><surname>Webb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Zalucki</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/BF01963580</idno>
+		<ptr target="https://doi.org/10.1007/BF01963580" />
+	</analytic>
+	<monogr>
+		<title level="j">Experientia</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="164" to="167" />
+			<date type="published" when="1984">1984</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Eisemann, C. H., Jorgensen, W. K., Merritt, D. J., Rice, M. J., Cribb, B. W., Webb, P. D., &amp; Zalucki, M. P. (1984). Do insects feel pain? -A biological view. Experientia, 40(2), 164-167. https://doi.org/10.1007/BF01963580</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Guidelines for Protecting and Promoting Insect Welfare in Research</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Barrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J J</forename><surname>Adcock</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Barron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Browning</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chittka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Crump</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Drinkwater</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gibbons</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Haverkamp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Perl</surname></persName>
+		</author>
+		<ptr target="https://static1.squarespace.com/static/633dcce66ff3284353256a63/t/65ad7a8231bdea211355ec83/1705867906190/IWRS+Guidelines.2024.Insect.pdf" />
+	</analytic>
+	<monogr>
+		<title level="j">Insect Welfare Research Society</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fischer, B., Barrett, M., Adcock, S. J. J., Barron, A., Browning, H., Chittka, L., Crump, A., Drinkwater, E., Gibbons, M., Haverkamp, A., &amp; Perl, C. (2024). Guidelines for Protecting and Promoting Insect Welfare in Research. Insect Welfare Research Society. https://static1.squarespace.com/static/633dcce66ff3284353256a63/t/65ad7a8231bdea21135 5ec83/1705867906190/IWRS+Guidelines.2024.Insect.pdf</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Collecting insects to conserve them: A call for ethical caution</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">M H</forename><surname>Larson</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/icad.12344</idno>
+		<ptr target="https://doi.org/10.1111/icad.12344" />
+	</analytic>
+	<monogr>
+		<title level="j">Insect Conservation and Diversity</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="173" to="182" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fischer, B., &amp; Larson, B. M. H. (2019). Collecting insects to conserve them: A call for ethical caution. Insect Conservation and Diversity, 12(3), 173-182. https://doi.org/10.1111/icad.12344</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">To Regulate or Not to Regulate? The Future of Animal Ethics in Experimental Research with Insects</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Freelance</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11948-018-0066-9</idno>
+		<ptr target="https://doi.org/10.1007/s11948-018-0066-9" />
+	</analytic>
+	<monogr>
+		<title level="j">Science and Engineering Ethics</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1339" to="1355" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Freelance, C. B. (2019). To Regulate or Not to Regulate? The Future of Animal Ethics in Experimental Research with Insects. Science and Engineering Ethics, 25(5), 1339-1355. https://doi.org/10.1007/s11948-018-0066-9</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">US consumer perceptions of insects as livestock feed: Ethical considerations for insects</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">P</forename><surname>Fukuda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">N</forename><surname>Carrasco</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Perez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Drewery</surname></persName>
+		</author>
+		<idno type="DOI">10.1163/23524588-20230028</idno>
+		<ptr target="https://doi.org/10.1163/23524588-20230028" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Insects as Food and Feed</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="1" to="15" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fukuda, E. P., Carrasco, M. N., Perez, A. J., Fischer, B., &amp; Drewery, M. L. (2023). US consumer perceptions of insects as livestock feed: Ethical considerations for insects. Journal of Insects as Food and Feed, 1(aop), 1-15. https://doi.org/10.1163/23524588-20230028</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Chapter Three -Can insects feel pain? A review of the neural and behavioural evidence</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gibbons</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Crump</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Barrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sarlak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Birch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chittka</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/bs.aiip.2022.10.001</idno>
+		<ptr target="https://doi.org/10.1016/bs.aiip.2022.10.001" />
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Insect Physiology</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="page" from="155" to="229" />
+			<date type="published" when="2022">2022</date>
+			<publisher>Academic Press</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gibbons, M., Crump, A., Barrett, M., Sarlak, S., Birch, J., &amp; Chittka, L. (2022). Chapter Three -Can insects feel pain? A review of the neural and behavioural evidence. In Advances in Insect Physiology (Vol. 63, pp. 155-229). Academic Press. https://doi.org/10.1016/bs.aiip.2022.10.001</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">IACUC Challenges in Invertebrate Research</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Harvey-Clark</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/ilar.52.2.213</idno>
+		<ptr target="https://doi.org/10.1093/ilar.52.2.213" />
+	</analytic>
+	<monogr>
+		<title level="j">ILAR Journal</title>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="213" to="220" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Harvey-Clark, C. (2011). IACUC Challenges in Invertebrate Research. ILAR Journal, 52(2), 213- 220. https://doi.org/10.1093/ilar.52.2.213</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Validation of the forced swim test in Drosophila, and its use to demonstrate psilocybin has long-lasting antidepressant-like effects in flies</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hibicke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Nichols</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41598-022-14165-2</idno>
+		<ptr target="https://doi.org/10.1038/s41598-022-14165-2" />
+	</analytic>
+	<monogr>
+		<title level="j">Scientific Reports</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">10019</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Hibicke, M., &amp; Nichols, C. D. (2022). Validation of the forced swim test in Drosophila, and its use to demonstrate psilocybin has long-lasting antidepressant-like effects in flies. Scientific Reports, 12(1), 10019. https://doi.org/10.1038/s41598-022-14165-2</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Insect Heat Shock Proteins During Stress and Diapause</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>King</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Macrae</surname></persName>
+		</author>
+		<idno type="DOI">10.1146/annurev-ento-011613-162107</idno>
+		<ptr target="https://doi.org/10.1146/annurev-ento-011613-162107" />
+	</analytic>
+	<monogr>
+		<title level="j">Annual Review of Entomology</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">King, A., &amp; Macrae, T. (2014). Insect Heat Shock Proteins During Stress and Diapause. Annual Review of Entomology, 60. https://doi.org/10.1146/annurev-ento-011613-162107</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">When Do We Start Caring About Insect Welfare?</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Klobučar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">N</forename><surname>Fisher</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s13744-022-01023-z</idno>
+		<ptr target="https://doi.org/10.1007/s13744-022-01023-z" />
+	</analytic>
+	<monogr>
+		<title level="j">Neotropical Entomology</title>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="5" to="10" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Klobučar, T., &amp; Fisher, D. N. (2023). When Do We Start Caring About Insect Welfare? Neotropical Entomology, 52(1), 5-10. https://doi.org/10.1007/s13744-022-01023-z</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Sample Size Justification</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lakens</surname></persName>
+		</author>
+		<idno type="DOI">10.1525/collabra.33267</idno>
+		<ptr target="https://doi.org/10.1525/collabra.33267" />
+	</analytic>
+	<monogr>
+		<title level="j">Collabra: Psychology</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">33267</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lakens, D. (2022). Sample Size Justification. Collabra: Psychology, 8(1), 33267. https://doi.org/10.1525/collabra.33267</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Combining Animal Welfare With Experimental Rigor to Improve Reproducibility in Behavioral Neuroscience</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Loss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">F</forename><surname>Melleu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Domingues</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Lino-De-Oliveira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">G</forename><surname>Viola</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fnbeh.2021.763428</idno>
+		<ptr target="https://doi.org/10.3389/fnbeh.2021.763428" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Behavioral Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="page">763428</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Loss, C. M., Melleu, F. F., Domingues, K., Lino-de-Oliveira, C., &amp; Viola, G. G. (2021). Combining Animal Welfare With Experimental Rigor to Improve Reproducibility in Behavioral Neuroscience. Frontiers in Behavioral Neuroscience, 15, 763428. https://doi.org/10.3389/fnbeh.2021.763428</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">The need for a (nondestructive) method revolution in entomology</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">L</forename><surname>Lövei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ferrante</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Möller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Möller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">É</forename><surname>Vincze</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.biocon.2023.110075</idno>
+		<ptr target="https://doi.org/10.1016/j.biocon.2023.110075" />
+	</analytic>
+	<monogr>
+		<title level="j">Biological Conservation</title>
+		<imprint>
+			<biblScope unit="volume">282</biblScope>
+			<biblScope unit="page">110075</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lövei, G. L., Ferrante, M., Möller, D., Möller, G., &amp; Vincze, É. (2023). The need for a (non- destructive) method revolution in entomology. Biological Conservation, 282, 110075. https://doi.org/10.1016/j.biocon.2023.110075</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<monogr>
+		<title level="m" type="main">A User&apos;s Guide for a Power Analysis by Simulation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Lynch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Perl</surname></persName>
+		</author>
+		<idno type="DOI">10.13140/RG.2.2.19753.36967</idno>
+		<ptr target="https://doi.org/10.13140/RG.2.2.19753.36967" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lynch, C., &amp; Perl, C. (2024). A User&apos;s Guide for a Power Analysis by Simulation. https://doi.org/10.13140/RG.2.2.19753.36967</note>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">A critical test of Drosophila anaesthetics: Isoflurane and sevoflurane are benign alternatives to cold and CO2</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">A</forename><surname>Macmillan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Nørgård</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">J</forename><surname>Maclean</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Overgaard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J A</forename><surname>Williams</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jinsphys.2017.07.005</idno>
+		<ptr target="https://doi.org/10.1016/j.jinsphys.2017.07.005" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Insect Physiology</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="page" from="97" to="106" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">MacMillan, H. A., Nørgård, M., MacLean, H. J., Overgaard, J., &amp; Williams, C. J. A. (2017). A critical test of Drosophila anaesthetics: Isoflurane and sevoflurane are benign alternatives to cold and CO2. Journal of Insect Physiology, 101, 97-106. https://doi.org/10.1016/j.jinsphys.2017.07.005</note>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<monogr>
+		<title level="m" type="main">Templates of OSF Registration Forms</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">T</forename><surname>Mellor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Dehaven</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Pfeiffer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Lowrey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Call</surname></persName>
+		</author>
+		<ptr target="https://osf.io/zab38/" />
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Mellor, D. T., DeHaven, A. C., Pfeiffer, N., Lowrey, O., &amp; Call, M. (2016). Templates of OSF Registration Forms. https://osf.io/zab38/</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Pursuing best practices for minimizing wild bee captures to support biological research</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Montero-Castaño</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B U</forename><surname>Koch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T.-T</forename><forename type="middle">T</forename><surname>Lindsay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Love</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Mola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Newman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">K</forename><surname>Sharkey</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/csp2.12734</idno>
+		<ptr target="https://doi.org/10.1111/csp2.12734" />
+	</analytic>
+	<monogr>
+		<title level="j">Conservation Science and Practice</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page">12734</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Montero-Castaño, A., Koch, J. B. U., Lindsay, T.-T. T., Love, B., Mola, J. M., Newman, K., &amp; Sharkey, J. K. (2022). Pursuing best practices for minimizing wild bee captures to support biological research. Conservation Science and Practice, 4(7), e12734. https://doi.org/10.1111/csp2.12734</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">The Academic, Societal and Animal Welfare Benefits of Open Science for Animal Science</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Nawroth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">T</forename><surname>Krause</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fvets.2022.810989</idno>
+		<ptr target="https://doi.org/10.3389/fvets.2022.810989" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Veterinary Science</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page">810989</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Nawroth, C., &amp; Krause, E. T. (2022). The Academic, Societal and Animal Welfare Benefits of Open Science for Animal Science. Frontiers in Veterinary Science, 9, 810989. https://doi.org/10.3389/fvets.2022.810989</note>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Animal welfare requirements in publishing guidelines</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Novak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Shaw</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Clutton</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/00236772221097825</idno>
+		<ptr target="https://doi.org/10.1177/00236772221097825" />
+	</analytic>
+	<monogr>
+		<title level="j">Laboratory Animals</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="561" to="575" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Novak, A. L., Shaw, D. J., &amp; Clutton, R. E. (2022). Animal welfare requirements in publishing guidelines. Laboratory Animals, 56(6), 561-575. https://doi.org/10.1177/00236772221097825</note>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<author>
+			<persName><forename type="first">S</forename><surname>Papalouka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kovacs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Munafo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Thibault</surname></persName>
+		</author>
+		<idno type="DOI">10.31222/osf.io/5sehdPerl,C</idno>
+		<ptr target="https://doi.org/10.13140/RG.2.2.11998.61768" />
+	</analytic>
+	<monogr>
+		<title level="m">Research Ethics Committees as an intervention point to promote a priori sample size calculations</title>
+		<imprint>
+			<date type="published" when="2023">2023. 2023</date>
+		</imprint>
+	</monogr>
+	<note>Power Analyses and Estimating Sample Sizes</note>
+	<note type="raw_reference">Papalouka, S., Kovacs, M., Munafo, M., &amp; Thibault, R. T. (2023). Research Ethics Committees as an intervention point to promote a priori sample size calculations. OSF. https://doi.org/10.31222/osf.io/5sehd Perl, C. (2023). Power Analyses and Estimating Sample Sizes. https://doi.org/10.13140/RG.2.2.11998.61768</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Entomological Sample Sizes Should Be Lagom</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Perl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischer</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/ae/tmae031</idno>
+		<ptr target="https://doi.org/10.1093/ae/tmae031" />
+	</analytic>
+	<monogr>
+		<title level="j">American Entomologist</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="42" to="45" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Perl, C. D., &amp; Fischer, B. (2024). Entomological Sample Sizes Should Be Lagom. American Entomologist, 70(2), 42-45. https://doi.org/10.1093/ae/tmae031</note>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Effects of carbon dioxide anaesthesia on Drosophila melanogaster</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Perron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Huot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G.-W</forename><surname>Corrivault</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Chawla</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/0022-1910(72)90157-6</idno>
+		<ptr target="https://doi.org/10.1016/0022-1910(72)90157-6" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Insect Physiology</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="1869" to="1874" />
+			<date type="published" when="1972">1972</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Perron, J. M., Huot, L., Corrivault, G.-W., &amp; Chawla, S. S. (1972). Effects of carbon dioxide anaesthesia on Drosophila melanogaster. Journal of Insect Physiology, 18(10), 1869-1874. https://doi.org/10.1016/0022-1910(72)90157-6</note>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<monogr>
+		<title level="m" type="main">R: A Language and Environment for Statistical Computing</title>
+		<author>
+			<persName><forename type="first">Team</forename><surname>Core</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">Computer software</note>
+	<note type="raw_reference">R Core Team. (2022). R: A Language and Environment for Statistical Computing [Computer software].</note>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<monogr>
+		<ptr target="https://www.r-project.org" />
+		<title level="m">R Foundation for Statistical Computing</title>
+		<imprint/>
+	</monogr>
+	<note type="raw_reference">R Foundation for Statistical Computing. https://www.r-project.org</note>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Challenging current scientific practice: How a shift in research methodology could reduce animal use</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Richter</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41684-023-01308-9</idno>
+		<ptr target="https://doi.org/10.1038/s41684-023-01308-9" />
+	</analytic>
+	<monogr>
+		<title level="j">Lab Animal</title>
+		<imprint>
+			<biblScope unit="volume">53</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="9" to="12" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Richter, S. H. (2024). Challenging current scientific practice: How a shift in research methodology could reduce animal use. Lab Animal, 53(1), 9-12. https://doi.org/10.1038/s41684-023- 01308-9</note>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<monogr>
+		<title level="m" type="main">The principles of humane technique</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Russell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Burch</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1959">1959</date>
+			<publisher>Universities Federation for Animal Welfare</publisher>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Russell, W., &amp; Burch, R. (1959). The principles of humane technique. Universities Federation for Animal Welfare.</note>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Reporting and methodological quality of sample size calculations in cluster randomized trials could be improved: A review</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rutterford</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Taljaard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Dixon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Copas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Eldridge</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jclinepi.2014.10.006</idno>
+		<ptr target="https://doi.org/10.1016/j.jclinepi.2014.10.006" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Clinical Epidemiology</title>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="716" to="723" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rutterford, C., Taljaard, M., Dixon, S., Copas, A., &amp; Eldridge, S. (2015). Reporting and methodological quality of sample size calculations in cluster randomized trials could be improved: A review. Journal of Clinical Epidemiology, 68(6), 716-723. https://doi.org/10.1016/j.jclinepi.2014.10.006</note>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Be a Professional: Attend to the Insects</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Sandall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">American Entomologist</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">65</biblScope>
+			<biblScope unit="page" from="176" to="179" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sandall, E., &amp; Fischer, B. (2019). Be a Professional: Attend to the Insects. American Entomologist, 3(65), 176-179.</note>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Reporting animal research: Explanation and elaboration for the ARRIVE guidelines 2.0</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">P</forename><surname>Sert</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ahluwalia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Alam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">T</forename><surname>Avey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Baker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">J</forename><surname>Browne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Clark</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">C</forename><surname>Cuthill</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Dirnagl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Emerson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Garner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">T</forename><surname>Holgate</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Howells</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Hurst</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">A</forename><surname>Karp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Lazic</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lidster</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Maccallum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Macleod</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Würbel</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pbio.3000411</idno>
+		<ptr target="https://doi.org/10.1371/journal.pbio.3000411" />
+	</analytic>
+	<monogr>
+		<title level="j">PLOS Biology</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page">3000411</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sert, N. P. du, Ahluwalia, A., Alam, S., Avey, M. T., Baker, M., Browne, W. J., Clark, A., Cuthill, I. C., Dirnagl, U., Emerson, M., Garner, P., Holgate, S. T., Howells, D. W., Hurst, V., Karp, N. A., Lazic, S. E., Lidster, K., MacCallum, C. J., Macleod, M., … Würbel, H. (2020). Reporting animal research: Explanation and elaboration for the ARRIVE guidelines 2.0. PLOS Biology, 18(7), e3000411. https://doi.org/10.1371/journal.pbio.3000411</note>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">CO2 anesthesia on Drosophila survival in aging research</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/arch.21639</idno>
+		<ptr target="https://doi.org/10.1002/arch.21639" />
+	</analytic>
+	<monogr>
+		<title level="j">Archives of Insect Biochemistry and Physiology</title>
+		<imprint>
+			<biblScope unit="volume">103</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">21639</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Shen, J., Yang, P., Zhu, X., Gu, Y., Huang, J., &amp; Li, M. (2020). CO2 anesthesia on Drosophila survival in aging research. Archives of Insect Biochemistry and Physiology, 103(1), e21639. https://doi.org/10.1002/arch.21639</note>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">The welfare and ethics of research involving wild animals: A primer</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Soulsbury</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">E</forename><surname>Gray</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Braithwaite</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">C</forename><surname>Cotter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">W</forename><surname>Elwood</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Wilkinson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Collins</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/2041-210X.13435</idno>
+		<ptr target="https://doi.org/10.1111/2041-210X.13435" />
+	</analytic>
+	<monogr>
+		<title level="j">Methods in Ecology and Evolution</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="1164" to="1181" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Soulsbury, C. D., Gray, H. E., Smith, L. M., Braithwaite, V., Cotter, S. C., Elwood, R. W., Wilkinson, A., &amp; Collins, L. M. (2020). The welfare and ethics of research involving wild animals: A primer. Methods in Ecology and Evolution, 11(10), 1164-1181. https://doi.org/10.1111/2041- 210X.13435</note>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Ten Points to Improve Reproducibility and Translation of Animal Research</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Spanagel</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fnbeh.2022.869511</idno>
+		<ptr target="https://doi.org/10.3389/fnbeh.2022.869511" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Behavioral Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page">869511</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Spanagel, R. (2022). Ten Points to Improve Reproducibility and Translation of Animal Research. Frontiers in Behavioral Neuroscience, 16, 869511. https://doi.org/10.3389/fnbeh.2022.869511</note>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">Have the non-technical summaries of animal experiments in Europe improved? An update</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Taylor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Weber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">R</forename><surname>Alvarez</surname></persName>
+		</author>
+		<idno type="DOI">10.14573/altex.2310181</idno>
+		<ptr target="https://doi.org/10.14573/altex.2310181" />
+	</analytic>
+	<monogr>
+		<title level="j">ALTEX -Alternatives to Animal Experimentation</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Taylor, K., Weber, T., &amp; Alvarez, L. R. (2024). Have the non-technical summaries of animal experiments in Europe improved? An update. ALTEX -Alternatives to Animal Experimentation, 41(3), Article 3. https://doi.org/10.14573/altex.2310181</note>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<monogr>
+		<title level="m" type="main">An evaluation of reproducibility and errors in published sample size calculations performed using G*Power</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Thibault</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">A</forename><surname>Zavalis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Malički</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Pedder</surname></persName>
+		</author>
+		<idno type="DOI">10.1101/2024.07.15.24310458</idno>
+		<idno>07.15.24310458</idno>
+		<ptr target="https://doi.org/10.1101/2024.07.15.24310458" />
+		<imprint>
+			<date type="published" when="2024">2024. 2024</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Thibault, R. T., Zavalis, E. A., Malički, M., &amp; Pedder, H. (2024). An evaluation of reproducibility and errors in published sample size calculations performed using G*Power (p. 2024.07.15.24310458). medRxiv. https://doi.org/10.1101/2024.07.15.24310458</note>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">Euphemisms for Killing Animals and for Other Forms of Their Use</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Trampe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">The Routledge Handbook of Ecolinguistics</title>
+		<imprint>
+			<publisher>Routledge</publisher>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Trampe, W. (2017). Euphemisms for Killing Animals and for Other Forms of Their Use. In The Routledge Handbook of Ecolinguistics. Routledge.</note>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Chapter 26: Anesthesia and analgesia in invertebrates</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Wahltinez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">A</forename><surname>Harms</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Lewbart</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Anesthesia and analgesia in laboratory animals</title>
+		<imprint>
+			<publisher>Academic Press</publisher>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="647" to="671" />
+		</imprint>
+	</monogr>
+	<note>3rd ed.</note>
+	<note type="raw_reference">Wahltinez, S. J., Harms, C. A., &amp; Lewbart, G. A. (2023). Chapter 26: Anesthesia and analgesia in invertebrates. In Anesthesia and analgesia in laboratory animals (3rd ed., pp. 647-671). Academic Press.</note>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Do insects feel pain?</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wigglesworth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Antenna</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="8" to="9" />
+			<date type="published" when="1980">1980</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wigglesworth, C. (1980). Do insects feel pain? Antenna, 4, 8-9.</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
