@@ -417,6 +417,43 @@ test_that("statcheck", {
   )
 })
 
+test_that("miscitation", {
+  paper <- read("problem_xml")
+  module <- "miscitation"
+
+  mod_output <- module_run(paper, module)
+  expect_true("10.1525/collabra.33267" %in% mod_output$table$doi)
+  expect_true("miscite_10.1525/collabra.33267" %in%
+                names(mod_output$summary))
+  expect_equal(nrow(mod_output$summary),
+               list.files("problem_xml") |> length())
+  expect_equal(mod_output$traffic_light, "yellow")
+
+  ## custom db
+  test_doi <- "10.1038/nrn3475"
+  db <- data.frame(
+    doi = test_doi,
+    reftext = "The full reference (this is a test)",
+    warning = "Lorem ipsum this is a test..."
+  )
+
+  mod_output <- module_run(paper, module, db = db)
+  expect_equal(mod_output$table$doi[[1]], test_doi)
+  expect_equal(mod_output$summary$`miscite_10.1038/nrn3475`,
+               c("b11", NA, NA, NA, "b6"))
+
+  ## custom db - doi is in bib but not xref text!
+  test_doi <- "10.1016/j.anbehav.2022.09.006"
+  db <- data.frame(
+    doi = test_doi,
+    reftext = "The full reference (this is a test)",
+    warning = "Lorem ipsum this is a test..."
+  )
+
+  mod_output <- module_run(paper, module, db = db)
+  expect_equal(mod_output$table$doi, test_doi)
+})
+
 test_that("chaining modules", {
   paper <- psychsci[1:50]
 

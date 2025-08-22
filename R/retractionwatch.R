@@ -15,7 +15,7 @@
 #' @examples
 #' retractionwatch()
 retractionwatch <- function() {
-  int <- system.file("retractionwatch.Rds", package = "papercheck")
+  int <- system.file("databases/retractionwatch.Rds", package = "papercheck")
   int_rw <- readRDS(int)
 
   ext <- rappdirs::user_data_dir("papercheck", "scienceverse") |>

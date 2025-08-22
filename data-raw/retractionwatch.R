@@ -23,7 +23,7 @@ attr(retractionwatch, "date") <- Sys.Date()
 
 #usethis::use_data(retractionwatch, overwrite = TRUE, compress = "xz")
 
-saveRDS(retractionwatch, "inst", compress = "xz")
+saveRDS(retractionwatch, "inst/databases/retractionwatch.Rds", compress = "xz")
 
 
 

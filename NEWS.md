@@ -1,3 +1,7 @@
+# papercheck 0.0.0.9057
+
+* New demo module: `miscitation`
+
 # papercheck 0.0.0.9056
 
 * If `expand_text()` doesn't find a text match because sentence location info is missing, it now returns the original text instead of NA
