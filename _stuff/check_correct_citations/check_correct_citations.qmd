@@ -127,7 +127,7 @@ miscite
 # Figuring out how to get good bib info
 
 library(openalexR)
-options(openalexR.mailto = "debruine@gmail.com")
+options(openalexR.mailto = email())
 work_info <- oa_fetch(
   entity = "works",
   doi = miscite$doi,

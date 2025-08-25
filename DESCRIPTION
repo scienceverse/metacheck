@@ -57,7 +57,8 @@ Imports:
     fs,
     htmltools,
     anytime,
-    rappdirs
+    rappdirs,
+    bib2df
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/papercheck, https://scienceverse.github.io/papercheck/
 BugReports: https://github.com/scienceverse/papercheck/issues
