@@ -32,6 +32,13 @@
 #' @export
 #' @keywords internal
 .onAttach <- function(libname, pkgname) {
+  # check if email is set
+  email <- getOption("papercheck.email") %||% ""
+  mailset <- ""
+  if (!grepl(".+@.+\\..+$", email)) {
+    mailset <- "\n\u26A0\uFE0F Set an email to use APIs like OpenAlex\npapercheck::email('your@address.org')\n"
+  }
+
   stripe <- paste0(
     "\033[31m*****", # red
     "\033[33m*****", # yellow
@@ -54,8 +61,8 @@
     "\u2705 Welcome to PaperCheck",
     "For support and examples visit:",
     "https://scienceverse.github.io/papercheck/",
-    "",
-    "\u26A0\uFE0F This is alpha software; please check any",
+    mailset,
+    "\u203C\uFE0F This is alpha software; please check any",
     "results. False positives and negatives will",
     "occur at unknown rates.",
     stripe,

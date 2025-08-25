@@ -120,4 +120,16 @@ test_that("verbose", {
   expect_visible(verbose())
 })
 
+test_that("email", {
+  orig <- email()
+  e <- "debruine@gmail.com"
+  expect_invisible(email(email = e))
+  expect_error(email("email"))
+  expect_equal(email(), e)
+  expect_equal(email(email = e), e)
+  expect_equal(email(), e)
+  expect_visible(email())
+  email(orig)
+})
+
 

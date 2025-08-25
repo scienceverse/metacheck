@@ -5,7 +5,7 @@ library(dplyr)
 # download newest RW update
 options(timeout=300)
 tmp <- tempfile(fileext = ".csv")
-url <- "https://api.labs.crossref.org/data/retractionwatch?debruine@gmail.com"
+url <- paste0("https://api.labs.crossref.org/data/retractionwatch?", email())
 download.file(url, destfile = tmp)
 
 # tmp <- "../retractions.csv"

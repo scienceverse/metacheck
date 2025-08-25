@@ -61,7 +61,7 @@ rw_update <- function() {
   options(timeout=300)
 
   tmp <- tempfile(fileext = ".csv")
-  url <- "https://api.labs.crossref.org/data/retractionwatch?debruine@gmail.com"
+  url <- paste0("https://api.labs.crossref.org/data/retractionwatch?", email())
   utils::download.file(url, destfile = tmp)
   on.exit(unlink(tmp))
 
