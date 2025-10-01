@@ -2,8 +2,10 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^README\.Rmd$
+^README\.md$
 ^_pkgdown\.yml$
 ^docs$
+^\.git$
 ^pkgdown$
 ^\.github$
 ^profile$
@@ -14,3 +16,4 @@ inst/modules/sample-size*
 ^_stuff/*
 ^vignettes/articles$
 codecov.yml
+^inst/plumber$

@@ -1,0 +1,9 @@
+services:
+  papercheck:
+    build:
+      context: ../..  # package root
+      dockerfile: inst/plumber/Dockerfile
+    ports:
+      - "2005:2005"
+    volumes:
+      - .:/srv/papercheck
