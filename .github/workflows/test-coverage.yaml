@@ -22,30 +22,13 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
-          r-version: '4.5.1'
+          r-version: "4.5.1"
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::covr, any::xml2, any::plumber, any::logger
           needs: coverage
           cache-version: 1
-
-      - name: Start Papercheck API
-        run: |
-          cd inst/plumber
-          nohup Rscript run_api.R > api.log 2>&1 &
-          echo $! > api.pid
-          # Wait for API to be ready
-          for i in {1..30}; do
-            if curl -s http://localhost:2005/health > /dev/null 2>&1; then
-              echo "API is ready"
-              break
-            fi
-            echo "Waiting for API to start... ($i/30)"
-            sleep 2
-          done
-          cat api.log
-        shell: bash
 
         # this step should be revisited to still publish a report when a test fails
         # , which is not the case now
@@ -71,14 +54,6 @@ jobs:
         run: |
           ## --------------------------------------------------------------------
           find '${{ runner.temp }}/package' -name 'testthat.Rout*' -exec cat '{}' \; || true
-        shell: bash
-
-      - name: Stop Papercheck API
-        if: always()
-        run: |
-          if [ -f inst/plumber/api.pid ]; then
-            kill $(cat inst/plumber/api.pid) || true
-          fi
         shell: bash
 
       - name: Upload test results
