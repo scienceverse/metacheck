@@ -23,11 +23,15 @@ statcheck <- function(paper) {
   table <- stat_table[stat_table$error, ]
 
   # summary output for paperlists ----
-  summary_table <- dplyr::summarise(stat_table,
-                                    stats_found = dplyr::n(),
-                                    stats_error = sum(error),
-                                    decision_error = sum(decision_error),
-                                    .by = id)
+  if (nrow(stat_table) > 0 && "id" %in% names(stat_table)) {
+    summary_table <- dplyr::summarise(stat_table,
+                                      stats_found = dplyr::n(),
+                                      stats_error = sum(error),
+                                      decision_error = sum(decision_error),
+                                      .by = id)
+  } else {
+    summary_table <- NULL
+  }
 
   # determine the traffic light ----
   tl <- dplyr::case_when(

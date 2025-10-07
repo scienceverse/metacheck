@@ -1,3 +1,10 @@
+# papercheck 0.0.0.9057
+
+* Added an API wrapper - it is now possible to run papercheck functions and modules via a REST API. See `inst/plumber/README.md` for details.
+* Added documentation and plumber/Docker quickstart for the API
+* Fixed a bug that crashed `stat_table()` function by generating a summary table in case of empty stat table
+* Changed parameter names in pdf2grobid to be consistently snake_case (consolidate_headers etc.) whilst keeping backward compatibility for the old camelCase (consolidateHeaders etc.)
+
 # papercheck 0.0.0.9056
 
 * If `expand_text()` doesn't find a text match because sentence location info is missing, it now returns the original text instead of NA
@@ -9,7 +16,7 @@
 
 # papercheck 0.0.0.9055
 
-* `pdf2grobid()` handles `save_path` batter if any path components don't exist yet. The argument `save_path` also now can take a vector of the same length as the number of PDFs to convert, so you can specify the name of each output XML. 
+* `pdf2grobid()` handles `save_path` batter if any path components don't exist yet. The argument `save_path` also now can take a vector of the same length as the number of PDFs to convert, so you can specify the name of each output XML.
 * `read()` now skips any imports with errors and warns you about them after importing all files
 * Fixed a bug that errored on read() when bibentry files don't format correctly
 * Function `osf_get_all_pages()` now has a new argument `page_end` to limit the number of pages retrieved (mainly for testing purposes), and is external (previously internal)
@@ -27,14 +34,14 @@
 # papercheck 0.0.0.9053
 
 * Updated `read()` to parse more stupid date formats that turn up in the submission string (and added the unparsed submission string back just in case)
-* Completely overhauled how paper objects handle references. 
-    - the `paper$reference` table is now `paper$bib`
-    - the `paper$citations` table is now `paper$xrefs` and also contains  information for internal cross-references to figures, tables, footnotes, and formulae
-    - the `ref_id` and `bib_id` in both tables is now `xref_id`
-    - the `xrefs` table also contains location information (section, div, p, s) for the sentence containing the cross-ref, so you can use `expand_text()` 
-    - The `read()` function now returns paper objects with these new tables, so you will need to re-read any XML files (if you have stored the papercheck list as Rdata)
-    - The `psychsci` object has been updated for this new format
-    - Modules and vignettes have been updated as well
+* Completely overhauled how paper objects handle references.
+  * the `paper$reference` table is now `paper$bib`
+  * the `paper$citations` table is now `paper$xrefs` and also contains  information for internal cross-references to figures, tables, footnotes, and formulae
+  * the `ref_id` and `bib_id` in both tables is now `xref_id`
+  * the `xrefs` table also contains location information (section, div, p, s) for the sentence containing the cross-ref, so you can use `expand_text()`
+  * The `read()` function now returns paper objects with these new tables, so you will need to re-read any XML files (if you have stored the papercheck list as Rdata)
+  * The `psychsci` object has been updated for this new format
+  * Modules and vignettes have been updated as well
 
 # papercheck 0.0.0.9052
 
@@ -102,7 +109,7 @@
 # papercheck 0.0.0.9042
 
 * New OSF functions and vignette
-* Build pkgdown manually 
+* Build pkgdown manually
 
 # papercheck 0.0.0.9041
 
@@ -110,7 +117,7 @@
 * Combined the two effect size modules into "effect_size"
 * Renamed the module "imprecise_p" to "exact_p" (I keep typo-ing "imprecise")
 * Added a loading message
-* Added code coverage at https://app.codecov.io/gh/scienceverse/papercheck
+* Added code coverage at <https://app.codecov.io/gh/scienceverse/papercheck>
 * updated "all_p_values" to handle unicode operators like <=or >>
 
 # papercheck 0.0.0.9040
@@ -158,7 +165,6 @@
 
 * `openalex()` takes paper objects, paper lists, and vectors of DOIs as input, not just a single DOI
 * fixed paper object naming problem when nested files are not all at the same depth
-
 
 # papercheck 0.0.0.9033
 

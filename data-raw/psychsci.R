@@ -15,9 +15,9 @@ sink <- pdf2grobid(
   filename = filename,
   save_path = dir,
   #grobid_url = "http://localhost:8070",
-  consolidateHeader = 1,
-  consolidateCitations = 1,
-  consolidateFunders = 1
+  consolidate_header = 1,
+  consolidate_citations = 1,
+  consolidate_funders = 1
 )
 
 
