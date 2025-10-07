@@ -19,19 +19,12 @@ logger::log_info("Loaded {length(AVAILABLE_MODULES)} modules: {paste(AVAILABLE_M
 
 #* Process a paper and return info table
 #* @post /info
-#* @param file:file PDF or GROBID XML file to process
+#* @param file:file GROBID XML file to process
 #* @param fields:[string] Comma-separated fields to include (optional, e.g., "title,keywords,doi,description")
-#* @param grobidUrl:[string] URL to GROBID server (optional, defaults to "https://kermitt2-grobid.hf.space")
-#* @param start:[int] First page to process (optional, defaults to -1 for all pages)
-#* @param end:[int] Last page to process (optional, defaults to -1 for all pages)
-#* @param consolidateCitations:[int] Whether to consolidate citations (0 or 1, optional)
-#* @param consolidateHeader:[int] Whether to consolidate header (0 or 1, optional)
-#* @param consolidateFunders:[int] Whether to consolidate funders (0 or 1, optional)
 #* @serializer json
 function(req, res) {
     request_id <- uuid::UUIDgenerate()
     logger::log_info("Request started (info): {request_id}")
-
     # Parse multipart form data
     mp <- mime::parse_multipart(req)
     uploaded_file <- extract_uploaded_file(mp)
@@ -42,11 +35,18 @@ function(req, res) {
         return(error_response(res, validation$status, validation$message))
     }
 
-    # Parse GROBID parameters
-    grobid_params <- parse_grobid_params(mp)
+    # Save the uploaded file as a temporary file, then unlink after processing
+    #
+    # This block may seem redundant to have in every endpoint, but harder than
+    # expected to abstract it away
+    tmp_xml <- tempfile(fileext = ".xml")
+    on.exit(unlink(tmp_xml), add = TRUE)
+    file.copy(uploaded_file, tmp_xml)
+    uploaded_file <- tmp_xml
+
 
     # Read paper
-    paper_obj <- read_paper(uploaded_file, request_id, grobid_params)
+    paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
         return(error_response(res, 500, paper_obj$error))
     }
@@ -63,13 +63,7 @@ function(req, res) {
 
 #* Get author table from a paper
 #* @post /authors
-#* @param file:file PDF or GROBID XML file to process
-#* @param grobidUrl:[string] URL to GROBID server (optional, defaults to "https://kermitt2-grobid.hf.space")
-#* @param start:[int] First page to process (optional, defaults to -1 for all pages)
-#* @param end:[int] Last page to process (optional, defaults to -1 for all pages)
-#* @param consolidateCitations:[int] Whether to consolidate citations (0 or 1, optional)
-#* @param consolidateHeader:[int] Whether to consolidate header (0 or 1, optional)
-#* @param consolidateFunders:[int] Whether to consolidate funders (0 or 1, optional)
+#* @param file:file GROBID XML file to process
 #* @serializer json
 function(req, res) {
     request_id <- uuid::UUIDgenerate()
@@ -83,10 +77,17 @@ function(req, res) {
         return(error_response(res, validation$status, validation$message))
     }
 
-    # Parse GROBID parameters
-    grobid_params <- parse_grobid_params(mp)
+    # Save the uploaded file as a temporary file, then unlink after processing
+    #
+    # This block may seem redundant to have in every endpoint, but harder than
+    # expected to abstract it away
+    tmp_xml <- tempfile(fileext = ".xml")
+    on.exit(unlink(tmp_xml), add = TRUE)
+    file.copy(uploaded_file, tmp_xml)
+    uploaded_file <- tmp_xml
 
-    paper_obj <- read_paper(uploaded_file, request_id, grobid_params)
+
+    paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
         return(error_response(res, 500, paper_obj$error))
     }
@@ -96,13 +97,7 @@ function(req, res) {
 
 #* Get references from a paper
 #* @post /references
-#* @param file:file PDF or GROBID XML file to process
-#* @param grobidUrl:[string] URL to GROBID server (optional, defaults to "https://kermitt2-grobid.hf.space")
-#* @param start:[int] First page to process (optional, defaults to -1 for all pages)
-#* @param end:[int] Last page to process (optional, defaults to -1 for all pages)
-#* @param consolidateCitations:[int] Whether to consolidate citations (0 or 1, optional)
-#* @param consolidateHeader:[int] Whether to consolidate header (0 or 1, optional)
-#* @param consolidateFunders:[int] Whether to consolidate funders (0 or 1, optional)
+#* @param file:file GROBID XML file to process
 #* @serializer json
 function(req, res) {
     request_id <- uuid::UUIDgenerate()
@@ -116,10 +111,16 @@ function(req, res) {
         return(error_response(res, validation$status, validation$message))
     }
 
-    # Parse GROBID parameters
-    grobid_params <- parse_grobid_params(mp)
+    # This block may seem redundant to have in every endpoint, but harder than
+    # expected to abstract it away
+    #
+    # Save the uploaded file as a temporary file, then unlink after processing
+    tmp_xml <- tempfile(fileext = ".xml")
+    on.exit(unlink(tmp_xml), add = TRUE)
+    file.copy(uploaded_file, tmp_xml)
+    uploaded_file <- tmp_xml
 
-    paper_obj <- read_paper(uploaded_file, request_id, grobid_params)
+    paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
         return(error_response(res, 500, paper_obj$error))
     }
@@ -129,13 +130,7 @@ function(req, res) {
 
 #* Get cross-references from a paper
 #* @post /cross-references
-#* @param file:file PDF or GROBID XML file to process
-#* @param grobidUrl:[string] URL to GROBID server (optional, defaults to "https://kermitt2-grobid.hf.space")
-#* @param start:[int] First page to process (optional, defaults to -1 for all pages)
-#* @param end:[int] Last page to process (optional, defaults to -1 for all pages)
-#* @param consolidateCitations:[int] Whether to consolidate citations (0 or 1, optional)
-#* @param consolidateHeader:[int] Whether to consolidate header (0 or 1, optional)
-#* @param consolidateFunders:[int] Whether to consolidate funders (0 or 1, optional)
+#* @param file:file GROBID XML file to process
 #* @serializer json
 function(req, res) {
     request_id <- uuid::UUIDgenerate()
@@ -149,10 +144,16 @@ function(req, res) {
         return(error_response(res, validation$status, validation$message))
     }
 
-    # Parse GROBID parameters
-    grobid_params <- parse_grobid_params(mp)
+    # Save the uploaded file as a temporary file, then unlink after processing
+    #
+    # This block may seem redundant to have in every endpoint, but harder than
+    # expected to abstract it away
+    tmp_xml <- tempfile(fileext = ".xml")
+    on.exit(unlink(tmp_xml), add = TRUE)
+    file.copy(uploaded_file, tmp_xml)
+    uploaded_file <- tmp_xml
 
-    paper_obj <- read_paper(uploaded_file, request_id, grobid_params)
+    paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
         return(error_response(res, 500, paper_obj$error))
     }
@@ -162,14 +163,8 @@ function(req, res) {
 
 #* Search text in a paper
 #* @post /search
-#* @param file:file PDF or GROBID XML file to process
+#* @param file:file GROBID XML file to process
 #* @param q:[string] Search query
-#* @param grobidUrl:[string] URL to GROBID server (optional, defaults to "https://kermitt2-grobid.hf.space")
-#* @param start:[int] First page to process (optional, defaults to -1 for all pages)
-#* @param end:[int] Last page to process (optional, defaults to -1 for all pages)
-#* @param consolidateCitations:[int] Whether to consolidate citations (0 or 1, optional)
-#* @param consolidateHeader:[int] Whether to consolidate header (0 or 1, optional)
-#* @param consolidateFunders:[int] Whether to consolidate funders (0 or 1, optional)
 #* @serializer json
 function(req, res) {
     request_id <- uuid::UUIDgenerate()
@@ -183,14 +178,20 @@ function(req, res) {
         return(error_response(res, validation$status, validation$message))
     }
 
+    # Save the uploaded file as a temporary file, then unlink after processing
+    #
+    # This block may seem redundant to have in every endpoint, but harder than
+    # expected to abstract it away
+    tmp_xml <- tempfile(fileext = ".xml")
+    on.exit(unlink(tmp_xml), add = TRUE)
+    file.copy(uploaded_file, tmp_xml)
+    uploaded_file <- tmp_xml
+
     if (is.null(mp$q) || mp$q == "") {
         return(error_response(res, 400, "Query parameter 'q' is required"))
     }
 
-    # Parse GROBID parameters
-    grobid_params <- parse_grobid_params(mp)
-
-    paper_obj <- read_paper(uploaded_file, request_id, grobid_params)
+    paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
         return(error_response(res, 500, paper_obj$error))
     }
@@ -201,14 +202,8 @@ function(req, res) {
 
 #* Run a specific module on the paper
 #* @post /module
-#* @param file:file PDF or GROBID XML file to process
+#* @param file:file GROBID XML file to process
 #* @param name:[string] Name of the module to run (required)
-#* @param grobidUrl:[string] URL to GROBID server (optional, defaults to "https://kermitt2-grobid.hf.space")
-#* @param start:[int] First page to process (optional, defaults to -1 for all pages)
-#* @param end:[int] Last page to process (optional, defaults to -1 for all pages)
-#* @param consolidateCitations:[int] Whether to consolidate citations (0 or 1, optional)
-#* @param consolidateHeader:[int] Whether to consolidate header (0 or 1, optional)
-#* @param consolidateFunders:[int] Whether to consolidate funders (0 or 1, optional)
 #* @serializer json
 function(req, res) {
     request_id <- uuid::UUIDgenerate()
@@ -222,6 +217,15 @@ function(req, res) {
         return(error_response(res, validation$status, validation$message))
     }
 
+    # Save the uploaded file as a temporary file, then unlink after processing
+    #
+    # This block may seem redundant to have in every endpoint, but harder than
+    # expected to abstract it away
+    tmp_xml <- tempfile(fileext = ".xml")
+    on.exit(unlink(tmp_xml), add = TRUE)
+    file.copy(uploaded_file, tmp_xml)
+    uploaded_file <- tmp_xml
+
     if (is.null(mp$name) || mp$name == "") {
         return(error_response(res, 400, "Module name parameter 'name' is required"))
     }
@@ -230,10 +234,7 @@ function(req, res) {
         return(error_response(res, 400, paste0("Module '", mp$name, "' not found. Available modules: ", paste(AVAILABLE_MODULES, collapse = ", "))))
     }
 
-    # Parse GROBID parameters
-    grobid_params <- parse_grobid_params(mp)
-
-    paper_obj <- read_paper(uploaded_file, request_id, grobid_params)
+    paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
         return(error_response(res, 500, paper_obj$error))
     }
@@ -262,14 +263,8 @@ function(req, res) {
 
 #* Get all relevant metadata from a paper, and run papercheck modules on it
 #* @post /check
-#* @param file:file PDF or GROBID XML file to process
+#* @param file:file GROBID XML file to process
 #* @param modules:[string] Comma-separated list of modules to run (optional, defaults to all)
-#* @param grobidUrl:[string] URL to GROBID server (optional, defaults to "https://kermitt2-grobid.hf.space")
-#* @param start:[int] First page to process (optional, defaults to -1 for all pages)
-#* @param end:[int] Last page to process (optional, defaults to -1 for all pages)
-#* @param consolidateCitations:[int] Whether to consolidate citations (0 or 1, optional)
-#* @param consolidateHeader:[int] Whether to consolidate header (0 or 1, optional)
-#* @param consolidateFunders:[int] Whether to consolidate funders (0 or 1, optional)
 #* @serializer json
 function(req, res) {
     request_id <- uuid::UUIDgenerate()
@@ -282,6 +277,15 @@ function(req, res) {
     if (!validation$valid) {
         return(error_response(res, validation$status, validation$message))
     }
+
+    # Save the uploaded file as a temporary file, then unlink after processing
+    #
+    # This block may seem redundant to have in every endpoint, but harder than
+    # expected to abstract it away
+    tmp_xml <- tempfile(fileext = ".xml")
+    on.exit(unlink(tmp_xml), add = TRUE)
+    file.copy(uploaded_file, tmp_xml)
+    uploaded_file <- tmp_xml
 
     # Parse modules parameter
     modules <- if (!is.null(mp$modules) && mp$modules != "") {
@@ -296,10 +300,7 @@ function(req, res) {
         return(error_response(res, 400, paste0("Invalid modules: ", paste(invalid_modules, collapse = ", "), ". Available modules: ", paste(AVAILABLE_MODULES, collapse = ", "))))
     }
 
-    # Parse GROBID parameters
-    grobid_params <- parse_grobid_params(mp)
-
-    paper_obj <- read_paper(uploaded_file, request_id, grobid_params)
+    paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
         return(error_response(res, 500, paper_obj$error))
     }
@@ -339,7 +340,7 @@ function(req, res) {
 
     # Set module names as keys
     names(module_output) <- modules
-    
+
     logger::log_info("Request completed successfully: {request_id}")
     # Return the aggregated report
     list(
