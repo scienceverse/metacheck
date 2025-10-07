@@ -1,5 +1,9 @@
 ## code to prepare `psychsci` dataset goes here
 
+grobid_url <- "http://grobid-server.panda-pythagorean.ts.net:8070"
+pdf <- "data-raw/psychsci/pdf/0956797613520608.pdf"
+xml <- pdf2grobid(pdf, "data-raw/test2.xml", grobid_url)
+
 # make relative filename make sense
 dir <- "data-raw/psychsci/grobid_0.8.2/"
 setwd(dir)
