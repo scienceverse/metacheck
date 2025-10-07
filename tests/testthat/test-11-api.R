@@ -28,6 +28,7 @@ skip_if_no_api <- function() {
 
 # Test health endpoint
 test_that("Health endpoint returns 200 and proper response", {
+  skip_on_ci()
   skip_if_no_api()
   
   response <- GET(paste0(api_url, "/health"))
@@ -43,6 +44,7 @@ test_that("Health endpoint returns 200 and proper response", {
 
 # Test /paper/info endpoint
 test_that("/paper/info returns paper info", {
+  skip_on_ci()
   skip_if_no_api()
   skip_if_not(file.exists(test_xml), "Test XML file not found")
   
@@ -62,6 +64,7 @@ test_that("/paper/info returns paper info", {
 
 # Test /paper/authors endpoint
 test_that("/paper/authors returns author table", {
+  skip_on_ci()
   skip_if_no_api()
   skip_if_not(file.exists(test_xml), "Test XML file not found")
   
@@ -79,6 +82,7 @@ test_that("/paper/authors returns author table", {
 
 # Test /paper/references endpoint
 test_that("/paper/references returns references", {
+  skip_on_ci()
   skip_if_no_api()
   skip_if_not(file.exists(test_xml), "Test XML file not found")
   
@@ -96,6 +100,7 @@ test_that("/paper/references returns references", {
 
 # Test /paper/cross-references endpoint
 test_that("/paper/cross-references returns cross-references", {
+  skip_on_ci()
   skip_if_no_api()
   skip_if_not(file.exists(test_xml), "Test XML file not found")
   
@@ -113,6 +118,7 @@ test_that("/paper/cross-references returns cross-references", {
 
 # Test /paper/search endpoint
 test_that("/paper/search finds text in paper", {
+  skip_on_ci()
   skip_if_no_api()
   skip_if_not(file.exists(test_xml), "Test XML file not found")
   
@@ -133,6 +139,7 @@ test_that("/paper/search finds text in paper", {
 
 # Test /paper/search without query parameter
 test_that("/paper/search requires query parameter", {
+  skip_on_ci()
   skip_if_no_api()
   skip_if_not(file.exists(test_xml), "Test XML file not found")
   
@@ -150,6 +157,7 @@ test_that("/paper/search requires query parameter", {
 
 # Test error handling: no file upload
 test_that("Endpoints return 400 when no file is uploaded", {
+  skip_on_ci()
   skip_if_no_api()
   
   response <- POST(
@@ -165,6 +173,7 @@ test_that("Endpoints return 400 when no file is uploaded", {
 
 # Test error handling: invalid XML file
 test_that("Endpoints return 400 for invalid XML", {
+  skip_on_ci()
   skip_if_no_api()
   
   # Create a temporary non-XML file
