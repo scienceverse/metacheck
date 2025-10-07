@@ -1,3 +1,12 @@
+# papercheck 0.0.0.9057
+
+* Added an API wrapper - it is now possible to run papercheck functions and modules via a REST API. See `inst/plumber/README.md` for details.
+* Added `plumber` and `logger` dependencies for the API
+* Added documentation and quickstart for the API
+* Fixed a bug that crashed `stat_table()` function by generating a summary table in case of empty stat table
+* Changed parameter names in pdf2grobid to be consistently snake_case (consolidate_headers etc.) whilst keeping backward compatibility for the old camelCase (consolidateHeaders etc.)
+
+
 # papercheck 0.0.0.9056
 
 * If `expand_text()` doesn't find a text match because sentence location info is missing, it now returns the original text instead of NA
