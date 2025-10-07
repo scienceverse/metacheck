@@ -7,7 +7,7 @@ miscite <- data.frame(
   ),
   warning = c(
     "This is often miscited to justify small sample sizes. Authors often only write that the sample size was judged based on feasibility, citing Lakens (2022). But this paper says some sample sizes are too small to provide useful information, and asks authors to additionally consider whether their study is mainly input for a future meta-analysis, whether a decision needs to be made, to report the critical effect size (the smallest effect size that can be significant), the width of the confidence interval, and which effect sizes can be detected with sufficient power. If these points are not considered, the authors are not following the advice of Lakens (2022).",
-    "The article by Barr and colleagues is sometimes miscited to justify including all random effects in models of observational data, but it is mainly applicable to experimental data.",
+    "This paper is often miscited by stating that it recommends using a data-driven approach to justify the random effect structure, e.g., 'We chose the model with the maximal random effect structure that would converge justified by the data'. This is the opposite of what we argued in this paper, which is that one should choose the maximal random effects structure justified by the design.",
     "This paper is often cited as \"people make rapid judgements of personality impressions from peoples' voices\", however, we never analysed reaction times. More accurately it would be \"people make judgements of personality from short exerpts of peoples' voices\". The voices were short (<500 msecs) but we never looked at how long it take to make those judgements."
   )
 )
