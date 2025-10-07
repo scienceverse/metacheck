@@ -16,3 +16,6 @@ You can install the development version of papercheck from [GitHub](https://gith
 # install.packages("devtools")
 devtools::install_github("scienceverse/papercheck")
 ```
+
+## API
+To use the optional papercheck REST API, see [`inst/plumber/README.md`](inst/plumber/README.md) for setup instructions and documentation.
