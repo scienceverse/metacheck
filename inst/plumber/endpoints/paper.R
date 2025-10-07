@@ -164,7 +164,12 @@ function(req, res) {
 #* Search text in a paper
 #* @post /search
 #* @param file:file GROBID XML file to process
-#* @param q:[string] Search query
+#* @param pattern the regex pattern to search for (required)
+#* @param section the section(s) to search in (optional)
+#* @param return the kind of text to return: "sentence", "paragraph", "div", "section", "match", or "id" (optional, defaults to "sentence")
+#* @param ignore.case whether to ignore case when text searching (optional, defaults to TRUE)
+#* @param fixed logical. If TRUE, pattern is a string to be matched as is (optional, defaults to FALSE)
+#* @param perl logical. Should Perl-compatible regexps be used? (optional, defaults to FALSE)
 #* @serializer json
 function(req, res) {
     request_id <- uuid::UUIDgenerate()
@@ -187,8 +192,8 @@ function(req, res) {
     file.copy(uploaded_file, tmp_xml)
     uploaded_file <- tmp_xml
 
-    if (is.null(mp$q) || mp$q == "") {
-        return(error_response(res, 400, "Query parameter 'q' is required"))
+    if (is.null(mp$pattern) || mp$pattern == "") {
+        return(error_response(res, 400, "Query parameter 'pattern' is required"))
     }
 
     paper_obj <- read_paper(uploaded_file, request_id)
@@ -196,7 +201,19 @@ function(req, res) {
         return(error_response(res, 500, paper_obj$error))
     }
 
-    search_text(paper_obj$paper, query = mp$q, return = "div")
+    # Prepare optional parameters with defaults
+    search_params <- list(
+        paper = paper_obj$paper,
+        pattern = mp$pattern
+    )
+
+    if (!is.null(mp$section)) search_params$section <- mp$section
+    if (!is.null(mp$return)) search_params$return <- mp$return
+    if (!is.null(mp$ignore.case)) search_params$ignore.case <- as.logical(mp$ignore.case)
+    if (!is.null(mp$fixed)) search_params$fixed <- as.logical(mp$fixed)
+    if (!is.null(mp$perl)) search_params$perl <- as.logical(mp$perl)
+
+    do.call(search_text, search_params)
 }
 
 
