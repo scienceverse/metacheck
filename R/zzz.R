@@ -12,6 +12,7 @@
     papercheck.verbose = TRUE,
     papercheck.llm_max_calls = 30L,
     papercheck.llm.model = "llama-3.3-70b-versatile",
+    papercheck.llm.use = FALSE,
     papercheck.osf.delay = 0,
     papercheck.osf.api = "https://api.osf.io/v2",
     papercheck.osf.api.calls = 0
