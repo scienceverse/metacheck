@@ -71,7 +71,7 @@ llm <- function(text, query,
   ncalls <- length(unique_text)
   if (ncalls == 0) stop("No calls to the LLM")
   if (ncalls > llm_max_calls()) {
-    stop("This would make ", ncalls, " calls to the LLM, but your maximum number of calls is set to ", llm_max_calls(), ". Use `llm_max_calls()` to change this.")
+    stop("This would make ", ncalls, " calls to the LLM, but your maximum number of calls is set to ", llm_max_calls(), ". Use `llm_max_calls()` to change this.", call. = FALSE)
   }
 
 
@@ -364,4 +364,32 @@ json_expand <- function(table, col = "answer") {
 
   # add expanded to table
   dplyr::bind_cols(table, expanded)
+}
+
+#' Set or get papercheck LLM use
+#'
+#' Mainly for use in optional LLM workflows in modules, also checks if the GROQ API key is set and returns false if it isn't.
+#'
+#' @param verbose if logical, sets whether to use LLMs
+#'
+#' @returns the current option value (logical)
+#' @export
+#'
+#' @examples
+#' if (llm_use()) {
+#'   print("We can use LLMs")
+#' } else {
+#'   print("We will not use LLMs")
+#' }
+llm_use <- function(llm_use = NULL) {
+  if (is.null(llm_use)) {
+    if (Sys.getenv("GROQ_API_KEY") == "") return(FALSE)
+
+    return(getOption("papercheck.llm.use"))
+  } else if (as.logical(llm_use) %in% c(TRUE, FALSE)) {
+    options(papercheck.llm.use = as.logical(llm_use))
+    invisible(getOption("papercheck.llm.use"))
+  } else {
+    stop("set llm_use with TRUE or FALSE")
+  }
 }

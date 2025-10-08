@@ -19,6 +19,7 @@ test_that(".onLoad", {
   op.defaults <- c(
     papercheck.verbose = TRUE,
     papercheck.llm_max_calls = 30L,
+    papercheck.llm.use = FALSE,
     papercheck.llm.model = "llama-3.3-70b-versatile",
     papercheck.osf.delay = 0,
     papercheck.osf.api = "https://api.osf.io/v2",
@@ -118,6 +119,21 @@ test_that("verbose", {
   expect_error(verbose("G"))
   expect_invisible(verbose(TRUE))
   expect_visible(verbose())
+})
+
+test_that("llm_use", {
+  expect_equal(llm_use(FALSE), FALSE)
+  expect_equal(llm_use(), FALSE)
+  expect_equal(llm_use(TRUE), TRUE)
+  expect_equal(llm_use(), TRUE)
+  expect_equal(llm_use(0), FALSE)
+  expect_equal(llm_use("FALSE"), FALSE)
+  expect_equal(llm_use(1), TRUE)
+  expect_equal(llm_use("TRUE"), TRUE)
+
+  expect_error(llm_use("G"))
+  expect_invisible(llm_use(TRUE))
+  expect_visible(llm_use())
 })
 
 test_that("email", {
