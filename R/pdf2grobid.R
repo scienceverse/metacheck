@@ -117,7 +117,15 @@ pdf2grobid <- function(filename, save_path = ".",
       )
     }
 
-    return(xmls)
+    # summary message
+    n_success <- sum(!errors)
+    n_total <- length(xmls)
+    message(sprintf(
+      "%d out of %d PDF file%s successfully converted to Grobid TEI XML.",
+      n_success, n_total, ifelse(n_total == 1, "", "s")
+    ))
+
+    return(invisible(xmls)) # invisible to prioritize formatted print at the end
   } else if (dir.exists(filename)) {
     pdfs <- list.files(filename, "\\.pdf",
       full.names = TRUE,
@@ -128,7 +136,7 @@ pdf2grobid <- function(filename, save_path = ".",
       warning("There are no PDF files in the directory ", filename)
     }
     xmls <- pdf2grobid(pdfs, save_path, grobid_url)
-    return(xmls)
+    return(invisible(xmls))
   }
 
   if (!file.exists(filename)) {
