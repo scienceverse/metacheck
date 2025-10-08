@@ -27,6 +27,7 @@ test_that("crossref", {
 })
 
 test_that("openalex", {
+  skip() # skipping due to constant changes in OA data, TODO rework
   skip_if_offline("api.openalex.org")
 
   doi <- "10.1177/fake"
