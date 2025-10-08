@@ -1,7 +1,7 @@
 # Dockerfile for papercheck plumber API
 
 # Base image
-FROM rocker/r-ver:latest
+FROM rocker/r-ver:4.5
 
 # system dependencies
 RUN apt-get update && apt-get install -y \
@@ -34,4 +34,4 @@ RUN R -e "remotes::install_local(dependencies = TRUE)"
 EXPOSE 2005
 
 # run API
-CMD ["R", "-e", "api <- plumber::plumb('api.R'); api$run(host='0.0.0.0', port=2005)"]
+CMD ["R", "-e", "api <- plumber::plumb('./inst/plumber/api.R'); api$run(host='0.0.0.0', port=2005)"]
