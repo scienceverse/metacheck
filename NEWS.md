@@ -10,6 +10,7 @@
 ## Changes
 
 * Changes to `module_find()` to find potential modules in the working directory and ./modules/
+* Changes to `effect_size` module so text of the potential effect size is given in `mod_output$table$es` (`mod_output$summary$ttests_n` and `mod_output$summary$Ftests_n` columns removed, as they are just the sum of `*tests_with_es` and `*tests_without_es`)
 
 ## Bug Fixes
 
