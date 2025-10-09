@@ -35,9 +35,14 @@
 .onAttach <- function(libname, pkgname) {
   # check if email is set
   email <- getOption("papercheck.email") %||% ""
-  mailset <- ""
+
   if (!grepl(".+@.+\\..+$", email)) {
     mailset <- "\n\u26A0\uFE0F Set an email to use APIs like OpenAlex\npapercheck::email('your@address.org')\n"
+  } else {
+    mailset <- paste0(
+      "\n\uD83D\uDCE7 The email for APIs like OpenAlex:",
+      "\n", email, "\n"
+    )
   }
 
   stripe <- paste0(

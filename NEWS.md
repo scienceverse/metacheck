@@ -1,6 +1,21 @@
 # papercheck 0.0.0.9057
 
-* New demo module: `miscitation`
+## New functions/modules
+
+* New module: `miscitation` to detect commonly mis-cited papers (a proof-of-concept)
+* New module: `power` to detect and classify power analyses (currently being validated)
+* New module: `aspredicted` to get structured data from AsPredicted preregistrations (mainly for info)
+* `module_template()` creates a module file from a template
+
+## Changes
+
+* Changes to `module_find()` to find potential modules in the working directory and ./modules/
+
+## Bug Fixes
+
+* Fixed warning messages in `osf_check` module when there are no OSF links
+* Fixed a problem in module_report() that happens when the table returned from module_run() has no rows
+
 
 # papercheck 0.0.0.9056
 

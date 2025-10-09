@@ -1,5 +1,7 @@
 test_that("effect_size", {
   module <- "effect_size"
+  mods <- module_list()
+  expect_true(module %in% mods$name)
 
   # no relevant text
   paper <- psychsci[[210]]

@@ -1,7 +1,7 @@
 Package: papercheck
 Title: Check Scientific Papers for Best Practices
 Version: 0.0.0.9057
-Date: 2025-08-22
+Date: 2025-10-08
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -34,7 +34,8 @@ Suggests:
     shinydashboard,
     shinyjs,
     testthat (>= 3.0.0),
-    waiter
+    waiter,
+    rstudioapi
 Config/testthat/edition: 3
 Imports: 
     dplyr,

@@ -9,7 +9,9 @@ test_that("errors", {
 
 email("debruine@gmail.com")
 
-#httptest::with_mock_api({
+#httptest::start_capturing()
+
+httptest::with_mock_api({
 
 test_that("bibsearch", {
   skip_if_offline("api.openalex.org")
@@ -53,6 +55,7 @@ test_that("bibtex_add_dois", {
 
 test_that("bib_add_dois", {
   skip_if_offline("api.openalex.org")
+  email("debruine@gmail.com")
 
   bib <- psychsci[[2]]$bib[1:10, ]
   expect_message(bib_strict <- bib_add_dois(bib))
@@ -73,4 +76,6 @@ test_that("bib_add_dois", {
   expect_equal(bib_nostrict$doi[[8]], doi8)
 })
 
-#}) # end with_mock_api
+}) # end with_mock_api
+
+# httptest::stop_capturing()

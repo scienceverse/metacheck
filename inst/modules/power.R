@@ -3,7 +3,9 @@
 #' @description
 #' Find power analyses and return their components.
 #'
-#' @author Daniel Lakens, Lisa DeBruine, Cristian Mesquida
+#' @author Lisa DeBruine (\email{debruine@gmail.com})
+#' @author Daniel Lakens (\email{lakens@gmail.com})
+#' @author Cristian Mesquida
 #'
 #' @import tidyr
 #'

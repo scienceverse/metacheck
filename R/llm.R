@@ -370,7 +370,7 @@ json_expand <- function(table, col = "answer") {
 #'
 #' Mainly for use in optional LLM workflows in modules, also checks if the GROQ API key is set and returns false if it isn't.
 #'
-#' @param verbose if logical, sets whether to use LLMs
+#' @param llm_use if logical, sets whether to use LLMs
 #'
 #' @returns the current option value (logical)
 #' @export
