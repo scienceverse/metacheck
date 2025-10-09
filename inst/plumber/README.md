@@ -6,6 +6,30 @@ The API wraps papercheck functionality to provide endpoints that can be accessed
 
 This enables the use papercheck as a web service, as part of various pipelines, with other services, or a with a frontend.
 
+## Running the API
+
+### Using the prebuilt Docker Image
+```bash
+docker run -p 2005:2005 thesanogoeffect/papercheck:latest
+```
+
+### From R
+
+```r
+# install.packages(c("plumber", "logger"), repos = "https://cloud.r-project.org/") # getting the necessary packages to run the API
+library(plumber)
+pr <- plumb("inst/plumber/api.R")
+pr$run(host = "0.0.0.0", port = 2005)
+```
+
+### Using Docker Compose
+
+```bash
+cd inst/plumber
+docker compose up --build
+```
+
+
 ## Directory Structure
 
 ```
@@ -109,20 +133,3 @@ Main entry point that mounts endpoint groups.
 Paper analysis endpoints - handles GROBID XML file uploads, reads papers via `read_paper()`, and runs papercheck functions/modules.
 
 
-## Running the API
-
-### From R
-
-```r
-# install.packages(c("plumber", "logger"), repos = "https://cloud.r-project.org/") # getting the necessary packages to run the API
-library(plumber)
-pr <- plumb("inst/plumber/api.R")
-pr$run(host = "0.0.0.0", port = 2005)
-```
-
-### Using Docker Compose
-
-```bash
-cd inst/plumber
-docker compose up --build
-```
