@@ -41,7 +41,6 @@ inst/plumber/
 ├── Dockerfile               # Docker image definition
 ├── endpoints/               # API endpoint definitions
 │   ├── paper.R             # Paper analysis endpoints
-│   └── grobid.R            # GROBID PDF processing endpoint
 └── utils/                   # Shared utility functions
     ├── validators.R        # Validation functions
     └── helpers.R           # Helper functions
