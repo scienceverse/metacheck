@@ -1,0 +1,914 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Theory of Mind Enhances Preference for Fairness</title>
+				<funder ref="#_hRfRD2S">
+					<orgName type="full">unknown</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Haruto</forename><surname>Takagishi</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Department of Behavioral Science</orgName>
+								<orgName type="department" key="dep2">Faculty of Letters</orgName>
+								<orgName type="laboratory">Laboratory of Social Psychology</orgName>
+								<orgName type="institution" key="instit1">Hokkaido University) Shinya Kameshima</orgName>
+								<orgName type="institution" key="instit2">Kansai University of Welfare Sciences)</orgName>
+								<orgName type="institution" key="instit3">Hokkaido University)</orgName>
+								<orgName type="institution" key="instit4">Hokkaido University)</orgName>
+								<orgName type="institution" key="instit5">Hokkaido University</orgName>
+								<orgName type="institution" key="instit6">Hokkaido University N</orgName>
+								<address>
+									<addrLine>10 W.7 Kita-ku</addrLine>
+									<postCode>060-0810</postCode>
+									<settlement>Sapporo</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Department of Behavioral Science</orgName>
+								<orgName type="department" key="dep2">Faculty of Letters</orgName>
+								<orgName type="laboratory">Laboratory of Social Psychology</orgName>
+								<orgName type="institution" key="instit1">Hokkaido University) Shinya Kameshima</orgName>
+								<orgName type="institution" key="instit2">Kansai University of Welfare Sciences)</orgName>
+								<orgName type="institution" key="instit3">Hokkaido University)</orgName>
+								<orgName type="institution" key="instit4">Hokkaido University)</orgName>
+								<orgName type="institution" key="instit5">Hokkaido University</orgName>
+								<orgName type="institution" key="instit6">Hokkaido University N</orgName>
+								<address>
+									<addrLine>10 W.7 Kita-ku</addrLine>
+									<postCode>060-0810</postCode>
+									<settlement>Sapporo</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Joanna</forename><surname>Schug</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Department of Behavioral Science</orgName>
+								<orgName type="department" key="dep2">Faculty of Letters</orgName>
+								<orgName type="laboratory">Laboratory of Social Psychology</orgName>
+								<orgName type="institution" key="instit1">Hokkaido University) Shinya Kameshima</orgName>
+								<orgName type="institution" key="instit2">Kansai University of Welfare Sciences)</orgName>
+								<orgName type="institution" key="instit3">Hokkaido University)</orgName>
+								<orgName type="institution" key="instit4">Hokkaido University)</orgName>
+								<orgName type="institution" key="instit5">Hokkaido University</orgName>
+								<orgName type="institution" key="instit6">Hokkaido University N</orgName>
+								<address>
+									<addrLine>10 W.7 Kita-ku</addrLine>
+									<postCode>060-0810</postCode>
+									<settlement>Sapporo</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Michiko</forename><surname>Koizumi</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Department of Behavioral Science</orgName>
+								<orgName type="department" key="dep2">Faculty of Letters</orgName>
+								<orgName type="laboratory">Laboratory of Social Psychology</orgName>
+								<orgName type="institution" key="instit1">Hokkaido University) Shinya Kameshima</orgName>
+								<orgName type="institution" key="instit2">Kansai University of Welfare Sciences)</orgName>
+								<orgName type="institution" key="instit3">Hokkaido University)</orgName>
+								<orgName type="institution" key="instit4">Hokkaido University)</orgName>
+								<orgName type="institution" key="instit5">Hokkaido University</orgName>
+								<orgName type="institution" key="instit6">Hokkaido University N</orgName>
+								<address>
+									<addrLine>10 W.7 Kita-ku</addrLine>
+									<postCode>060-0810</postCode>
+									<settlement>Sapporo</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Toshio</forename><surname>Yamagishi</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Department of Behavioral Science</orgName>
+								<orgName type="department" key="dep2">Faculty of Letters</orgName>
+								<orgName type="laboratory">Laboratory of Social Psychology</orgName>
+								<orgName type="institution" key="instit1">Hokkaido University) Shinya Kameshima</orgName>
+								<orgName type="institution" key="instit2">Kansai University of Welfare Sciences)</orgName>
+								<orgName type="institution" key="instit3">Hokkaido University)</orgName>
+								<orgName type="institution" key="instit4">Hokkaido University)</orgName>
+								<orgName type="institution" key="instit5">Hokkaido University</orgName>
+								<orgName type="institution" key="instit6">Hokkaido University N</orgName>
+								<address>
+									<addrLine>10 W.7 Kita-ku</addrLine>
+									<postCode>060-0810</postCode>
+									<settlement>Sapporo</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Theory of Mind Enhances Preference for Fairness</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">CDA295730086A9156F167127E5F962ED</idno>
+					<idno type="DOI">10.1016/j.jecp.2009.09.005</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.2-SNAPSHOT" ident="GROBID" when="2025-10-09T09:15+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Decision Making</term>
+					<term>Theory of Mind</term>
+					<term>Morality</term>
+					<term>Cognitive Development</term>
+					<term>Cooperation</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The purpose of the current study was to examine the role of theory of mind in fairness-related behavior in pre-school children and to introduce a tool for examining fairness-related behavior in children. A total of sixty-eight preschoolers played the Ultimatum Game in a face-to-face setting.</p><p>Acquisition of theory of mind was defined as the understanding of false-beliefs using the Sally-Anne task <ref type="bibr" target="#b0">(Baron-Cohen et al., 1985)</ref>. The results showed that preschoolers who had acquired theory of mind proposed higher mean offers than children who had not. These findings imply that the ability to infer the mental states of others plays an important role in fairness-related behavior.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>INTRODUCTION</head><p>Compared with other species in the animal kingdom, humans are unique in their propensity to form cooperative societies comprised of various genetically unrelated members <ref type="bibr" target="#b26">(Sober &amp; Wilson, 1998;</ref><ref type="bibr">Fehr &amp; Fischbacher, 2003)</ref>. As a key to human cooperation, previous research in the social sciences has demonstrated that punishment of norm violators, based on preferences for fairness, is essential for the maintenance of social order <ref type="bibr" target="#b28">(Yamagishi, 1986;</ref><ref type="bibr" target="#b11">Fehr &amp; Gächter, 2002)</ref>. The advocates of punishment argue that incentives to violate social norms decrease when norm violators are punished by peers, enabling cooperation to persist in society.</p><p>Punishment promotes cooperation in two ways, through learning and through incentives.</p><p>People who have learned a contingency between non-cooperative behavior and punishment will exhibit cooperative behavior more than those who have not learned such a contingency. Furthermore, the knowledge that non-cooperative behavior can be punished produces an incentive for rational actors to avoid such behavior. However, in order for the latter effect of punishment to take place, those who are potential targets of punishment should be able to infer the mental states of others (anticipating others' social preferences), since punishments constitute an incentive only when the potential targets are able to anticipate how others will react to their behaviors and respond accordingly <ref type="bibr" target="#b11">(Fehr &amp; Gächter, 2002;</ref><ref type="bibr" target="#b27">Spitzer, Fischbacher, Herrnberger, Grön, &amp; Fehr, 2007)</ref>. For instance, understanding that others may become angered by and punish those who behave unfairly encourages us to follow social norms and promote cooperative relationships with others. <ref type="bibr" target="#b11">Fehr and Gächter's (2002)</ref> study showed that anticipating others' social preferences enhance cooperative behavior in the public goods game, when others could punish other members. Thus, punishment, and the threat of punishment associated with norm violation, is essential for cooperation in society. In this study, we examine the effect of the ability to infer the mental states of others on fairness-related behavior in preschool children who have the potential to be punished by others, and propose a tool for examining fairness-related behavior in children using an economic bargaining game well known as the Ultimatum Game <ref type="bibr" target="#b16">(Güth, Schmittberger, &amp; Schwarze, 1982)</ref> for use with preschoolers. In the Ultimatum Game, responders' rejection of low offers is generally considered as punishment of norm violators <ref type="bibr" target="#b2">(Blount, 1995;</ref><ref type="bibr" target="#b8">Falk, &amp; Fischbacher, 2006)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>The Ultimatum Game</head><p>A considerable number of studies investigating responses to violations of fairness norms in reward distribution have been conducted using the Ultimatum Game <ref type="bibr" target="#b23">(Roth, Prasnikar, Okuno-Fujiwara, &amp; Zamir, 1991;</ref><ref type="bibr" target="#b3">Camerer, 2003;</ref><ref type="bibr" target="#b29">Yamagishi et al., 2009)</ref>. The Ultimatum Game is a simple two person economic game in which one player (the proposer) receives a monetary endowment from the experimenter, and makes an offer regarding how to divide the endowment between him/herself and a second player (the responder). The responder then decides whether to accept or reject the proposer's offer. If the responder accepts the offer, each player receives payment according to the proposer's offer. However, if the responder rejects the offer, both players receive nothing.</p><p>Economic models which view humans as rational and self-regarding agents predict that the responder should accept any offer above zero, and the proposer should propose the minimum possible offer to the responder. However, empirical data significantly differ from this theoretical prediction.</p><p>Although levels of offers and rejection rates of unfair offers vary widely across cultures <ref type="bibr" target="#b18">(Henrich et al., 2005)</ref>, the modal offer made by adult proposers in industrial societies is 50/50 (proposer 50%, responder 50%) while the mean offer is about 60/40 (proposer 60%, responder 40%; <ref type="bibr" target="#b23">Roth et al., 1991;</ref><ref type="bibr" target="#b3">Camerer, 2003)</ref>. Furthermore, about half of responders reject unfair offers below 20% <ref type="bibr" target="#b23">(Roth, et al., 1991;</ref><ref type="bibr" target="#b29">Yamagishi et al., 2009)</ref>.</p><p>Recently, economists and developmental psychologists have made several attempts to examine the development of fairness-related behavior using economic games <ref type="bibr" target="#b17">(Harbaugh, Krause, &amp; Liday, 2003;</ref><ref type="bibr" target="#b1">Benenson, Pascoe, &amp; Radmore, 2007;</ref><ref type="bibr" target="#b9">Fehr, Bernhard, &amp; Rockenbach, 2008;</ref><ref type="bibr" target="#b15">Gummerum, Hanoch, &amp; Keller, 2008;</ref><ref type="bibr" target="#b14">Gummerum, Keller, Takezawa, &amp; Mata, 2008)</ref>. One pioneering developmental study investigating the preference for fairness in children and adolescents ranging from seven to eighteen years of age found that the preference for fairness substantially increases with age <ref type="bibr" target="#b17">(Harbaugh, Krause, &amp; Liday, 2003)</ref>. More recently, <ref type="bibr">Fehr and his colleagues (2008)</ref> showed that fairness-related behavior, especially toward in-group members, increases with age among children age three to eight. This pattern has been observed not only in personal decision making, but also in group decision making <ref type="bibr" target="#b14">(Gummerum, Keller, Takezawa, &amp; Mata, 2008)</ref>. One study conducted by <ref type="bibr">Sally and Hill (2005)</ref> examined how the cognitive ability to infer the mental states of others, such as theory of mind <ref type="bibr" target="#b22">(Premack &amp; Woodruff, 1978)</ref>, affects fairness-related behavior by conducting an Ultimatum Game with children with and without Autistic Spectrum Disorder (ASD). The result indicated that ASD had a substantial negative effect on the amount of tokens allocated by the proposer in the Ultimatum Game.</p><p>Taken together, the above findings strongly implicate theory of mind as a facilitator of fairness-related behavior <ref type="bibr">(Sally &amp; Hill, 2005)</ref>. However, to date no study has directly investigated the role that theory of mind plays in fairness-related behavior among normally developed children. In this study, we examined the role of theory of mind in fairness-related behavior in the Ultimatum Game, particularly the behavior of the proposer whose decision of how much to offer should depend on the expected response of the responder. While <ref type="bibr">Sally and Hill's (2005)</ref> study used a paradigm using computers, because young children may not be familiar with computers we decided against using a computer-based task and, instead, constructed a tool that enables children to easily understand the rules of the game.</p><p>We predicted that compared with proposers who had not yet acquired theory of mind, proposers who had acquired the ability to infer the mental states of others and how other participants (responders) would respond to unfair offers, would behave in a more fair manner.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>EFFECT OF INCENTIVES</head><p>In the Ultimatum Game, we used candies as incentives. Prior to conducting the Ultimatum Game, we examined if the candies would function as meaningful incentives for the subject population.</p><p>Thirty-four younger grade preschoolers (20 males and 14 females) participated in this pilot study. The mean age in months of participants was 53.4 (SD = 3.8). Every preschooler performed the following task independently from the Ultimatum Game experiment. First the experimenter placed two plates in front of the preschooler, placed some candies on each plate, and asked him/her to point to the plate he/she wanted to have. The experimenter counted the number of candies as he put them on the plate. This task was repeated five times, each time with different combinations of candies on the two plates; 5 vs. 6 candies, 6 vs. 7 candies, 7 vs. 8 candies, 8 vs. 9 candies, and 9 vs. 10 candies task. The overwhelming majority of the preschoolers chose the plate with the larger number of candies in all tasks: 82 % in the 5-6 task (Binomial test, P &lt;.001), 88 % in the 6-7 task (Binomial test, P &lt; .0001), 79 % in the 7-8 task (Binomial test, P &lt; .001), 88 % in the 8-9 task (Binomial test, P &lt; .0001), and 79 % in the 9-10 task (Binomial test, P &lt; .001). These results clearly indicate that preschoolers prefer more candies than less; that is, the candies can work as incentives for our population.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>ULTIMATUM GAME EXPERIMENT</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>METHODS</head><p>A total of 68 preschoolers (36 males and 32 females) participated in the study. The mean age in months was 65.8 (SD = 7.0). Preschoolers from two grades participated in the study: Fifty-six from an older grade (62 month old to 73 month old, mean age in month = 68.5, SD = 3.3) and twelve from a younger grade (47 month old to 58 month old, mean age in month = 52.9, SD = 4.7). Experimental sessions were conducted either in the morning (AM 9:00) or in the afternoon (PM 14:00), and were completed in fewer than 20 minutes. Parents of participants gave written consent for their preschooler's participation in advance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Procedure</head><p>Thirty four pairs matched by gender, class, and grade played the Ultimatum Game. In order to make the task simple enough for preschoolers to understand, the game was conducted face-to-face without anonymity (Figure <ref type="figure">1</ref>) and nonmonetary incentives (candies) were used. Two participants and two experimenters (male and female) were present in the classroom during each session. The experimenters explained the rule of the game to the participants. Half of the participants were randomly assigned the role of proposer and others the role of responder. Participants played the Ultimatum Game only once. First, the proposer received 10 candies from the experimenter, and made an offer regarding how to divide the candies between him/herself and another preschooler (the responder) by placing the candies on a tray that were divided into two sections. The proposer placed the candies that he/she wanted to keep for him/herself on the section of the tray which was closer to him/her, and placed the remaining candies on the section of the tray which was closer to the responder.</p><p>After the proposer had made the allocation decision by placing candies on the tray, the responder decided whether to accept or reject the proposer's offer by lifting or pushing the tray. If the responder lifted the tray, the candies placed on the proposer's section of the tray tumbled down a ramp to the proposer's side, and those placed on the recipient's section tumbled down to the recipient's side.</p><p>On the other hand, if the responder pushed a lever which supported the tray, all the candies placed on the tray dropped down into a black box and was confiscated by the experimenter. It was clearly instructed and demonstrated that once candies fell down to the black box, neither the proposer nor the responder would receive any candies. The game was completed immediately after the responder had made a decision and the participants received the candies. In addition, to examine possible effects of the quality of any pre-existing relationship of the pair on fairness-related behavior, we asked the participants' teachers to evaluate the quality of the relationship between the proposer and the responder for all 34 pairs (1= very bad relationship to 7= very good relationship).</p><p>Following the Ultimatum Game, acquisition of theory of mind was determined by whether or not participants successfully completed a false-beliefs task (Sally-Anne task; <ref type="bibr" target="#b0">Baron-Cohen, Leslie, &amp; Frith, 1985)</ref>. Prior to the beginning of the game, the experimenter individually took the participants to an adjacent room to administer the task on a one-on-one basis. In this commonly used task, participants view a short video clip with a computer where a child (named "Natsuki" in the Japanese version) stores a ball in a chest and leaves the room. While Natsuki is out of the room, another child, Yuta, moves the ball to a new location. When Natuski returns, the participant is asked where Natuski will look for the ball. Participants who have acquired theory of mind should correctly assume that Natuski will look in the chest where she originally stored her ball. On the other hand, children who</p><p>have not yet acquired theory of mind will assume that Natuski will look in the location that Yuta had moved the ball to.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>RESULTS</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>False-belief task</head><p>Twenty-three out of 34 proposers (68 %) and twenty-five out of 34 responders (74 %) passed the false-beliefs task. While 80 % of the preschooler from the older grade passed the false-beliefs task, only 25 % of the preschooler from the younger grade passed it. The difference in the passage rate between the two grades was significant (Fisher's exact test; P &lt; .01).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Amount offered by the proposer</head><p>The mean offer to the responders made by the proposers who passed the false-beliefs task (N = 23, M = 4.70, SD = 2.38) was significantly higher than that made by those who did not (N = 11, M = 2.64, SD = 2.38; t (32) = 2.36, P &lt; .05, d = .89). As shown in Figure <ref type="figure" target="#fig_0">2</ref>, nineteen out of twenty-three children (83 %) who passed the false belief task proposed a fair (5 candies to the responder) or hyper fair (6 or more candies to the responder) offer while only four out of eleven (36 %) of those who failed to pass the false belief task proposed such an offer (Fisher's exact test; P &lt; .05).</p><p>To examine the effect of theory of mind on the proposer's offer level, we used a series of multiple regression analyses. We first regressed age on the proposer's offer level, and found that age did not have a significant effect on the offer (β = .17, P = .34). This effect was much reduced (β = .07, P = .66) as theory of mind (failed the false belief task = 0, passed the false belief task= 1) was added as another independent variable, whereas the effect of theory of mind was found to be significant (β = .37, P = .04). Finally, we further added sex (male = 0, female = 1) and relationship quality as control variables to see if the above results would be affected, and found that adding those controls did not alter the above conclusion. That is, the effect of theory of mind was significant (β = .39, P = .04) while the effect of age was not (β = -.03, P = .86). While the results of the above regression analysis indicates that preschooler's performance in the false belief task, rather than age per se, was responsible for the proposer's offer, we further examined if age, independent of false belief task, had an effect on the offer by separately examining the effect of age among those who passed the task and those who failed the task. Among the eleven proposers who failed the false belief task, seven were in the older grade and four were in the younger grade. The seven proposers in the older grade who failed the false belief task proposed an average of 2.86 (SD = 2.41) candies in comparison to the average of 2.25 (SD = 2.63) among those in the younger grade who failed the false belief task, and the difference was not statistically significant, t (9) = 0.39, P = .71. Similarly, among those who passed the false belief task, the average offer among the 21 proposers in the older grade was 4.71 (SD = 2.05) and the average among the two in the younger grade was 4.50 (SD = 6.36), although only two preschoolers in the younger grade passed the task. The difference between the two grades either for those who passed the false belief task (4.71 vs. 4.50) or those who failed the task (2.86 vs. 2.25) was much greater than the difference between those who passed and failed the task either in the older grade (4.71 vs. 2.85) or the younger grade (4.50 vs. 2.25). Those results consistently indicate that children's performance in the false belief task, rather than the effect of age per se, is the major source of difference in their offer.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>The responder's response</head><p>While six of 11 unfair (i.e., less than 5 candies to the responder) offers (55 %) were rejected, none of 23 fair or hyper fair offers (i.e., at least 5 candies to the responder) was rejected by the responder, and this difference was significant (Fisher's exact test, P &lt; .01). Theory of mind did not affect rejection of unfair offers (four or less candies to the responder). Four of the seven responders (57 %) who passed the false belief task rejected an unfair offer, whereas the rejection rate was 50 % (two of four responders) among those who failed the task. The difference was not significant (Fisher's exact test, P = .99).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>SUPPLEMENTAL STUDY</head><p>While the results of the Ultimatum Game experiment demonstrated that preschoolers who passed the theory of mind test made fairer offers than those who failed in the test, there was no direct evidence demonstrating that those who passed the test actually anticipated that unfair offers would elicit anger from proposers. To supplement this shortage of evidence, we conducted a supplemental study in which we presented preschoolers an unfair allocation of candies (the participants received 8 candies and the other classmate received 2 candies), asking them to report how they thought a child who faced such an unfair allocation of candies would feel. To do so, we asked children to point to one of two cards, one with a drawing of a smiling child's face and the other with a drawing of an angry child's face. Following this task, all participants took the Sally-Anne task.</p><p>Thirty-four preschoolers (20 males and 14 females, mean age = 53.4, SD = 3.8) participated in this test. These participants were from a different sample of preschoolers than those who participated in the Ultimatum Game experiment but they attend same preschool. As in the pilot study, each participant performed the task independently from others. While ten out of twelve participants (83 %) who passed the false belief task pointed to the angry face (Binomial test of difference from 50 %; P = .02), fifteen out of twenty-two participants (68 %, which is not significantly different from 50 %; Binomial test; P = .09) who failed the false belief task did so. The results of this supplemental study demonstrate that preschoolers who passed the false belief task were able to understand that another child who faced an unfair allocation of candies would be angered by the unfair offer.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>DISCUSSION</head><p>While it has been proposed that theory of mind and perspective-taking abilities play an important role in normative behavior (e.g., fair distribution) <ref type="bibr" target="#b9">(Fehr et al., 2008)</ref>, no study has directly examined the developmental role of theory of mind on fairness-related behavior in normal developed children using the Ultimatum Game. The current study addressed this issue by investigating the relationship between theory of mind and fairness-related behavior in non-autistic children. Our results showed that theory of mind had a major effect on fairness-related behavior of the proposer: Participants who had not yet developed theory of mind made selfish offers more frequently than those who had. In other words, preschoolers who had acquired theory of mind, and thus possessed the ability to understand how others might respond to their actions, proposed a fairer division of the candies. Preschoolers who had not yet developed the ability to infer how others would react to their actions behaved in a more selfish manner. This result is consistent with the findings of previous studies which suggest a link between fairness-related behavior and theory of mind, providing further support to this claim from a new angle <ref type="bibr" target="#b21">(McCabe, Houser, Ryan, Smith, &amp; Trouard, 2001;</ref><ref type="bibr">Sally &amp; Hill, 2005;</ref><ref type="bibr">Jensen, Call, &amp; Tomasello, 2007;</ref><ref type="bibr" target="#b5">Chiu et al., 2008;</ref><ref type="bibr" target="#b13">Frith &amp; Frith, 2008)</ref>. For instance, studies using functional magnetic resonance imaging (fMRI) found that brain areas related to theory of mind (medial prefrontal cortex) were activated as adult participants behaved cooperatively in a trust game <ref type="bibr" target="#b21">(McCabe, Houser, Ryan, Smith, &amp; Trouard, 2001)</ref>, while another recent study found that compared with control adult participants, adult men with Autistic Spectrum Disorder (ASD) showed reduced activity in the mid cingulate cortex, an area thought to be related to cognitions of the self acting in a social context, when deciding to trust one's partner in a trust game <ref type="bibr" target="#b5">(Chiu et al. 2008)</ref>. This result is speculated to arise from the lack of ability of autistic adult individuals to simulate their reputation in the eyes of others <ref type="bibr" target="#b13">(Frith &amp; Frith, 2008)</ref>. Furthermore, studies of non-human primates have found that chimpanzees, who do not have a well developed theory of mind in the human sense, are rational maximizers in the sense that they made unfair offers and accepted unfair offers in the Ultimatum Game <ref type="bibr">(Jensen, Call, &amp; Tomasello, 2007)</ref>. These results suggest that fairness-related behavior related to the ability to infer the mental states and intentions of others. This suggestion is directly, and successfully, tested in the current study.</p><p>Three questions remain open. The first is the degree to which theory of mind is required for the proposer's behavior in the Ultimatum Game. On the one hand, acquisition of false-beliefs strongly affected the offer level in the Ultimatum Game. On the other hand, thirty-six percent of children who failed the false belief task nevertheless proposed a fair offer. The fair offers by those who failed to pass the false belief task may be explained in terms of the children's concern for the expected response from the adult experimenter rather than from their respondent, and may have exhibited learned behavior based on adults' responses to unfair behavior. While theory of mind may not be the necessary condition for fair offers, we can safely conclude that theory of mind certainly enhances fair offers in the Ultimatum Game among preschoolers.</p><p>The second question is whether empathy toward the responder and reputation seeking played a role in the proposer's decision. In this study, participants played the Ultimatum Game in a face-to-face setting with two adults present. A number of the studies have shown that empathy towards others plays an important role in pro-social behavior <ref type="bibr" target="#b6">(Eisenberg &amp; Fabes, 1990</ref>) and a social psychological study has shown that the presence of stylized eyes also enhances pro-social behavior <ref type="bibr" target="#b19">(Haley &amp; Fessler, 2005)</ref>. Further studies are needed to examine the effect of empathy and reputation seeking on proposer's behavior in the Ultimatum Game with children.</p><p>The third question is regarding the effect of theory of mind on responder's rejection behavior.</p><p>The results of the current study suggest that theory of mind do not affect rejection behavior, though the paucity of participants who faced unfair offers prevents us from drawing a firm conclusion on this issue. Recent studies have shown that unfair treatment in the Ultimatum Game induces the emotion of disgust <ref type="bibr" target="#b25">(Sanfey et al., 2003;</ref><ref type="bibr" target="#b4">Chapman, 2009)</ref>, and that rejection behavior occurs only when the recipients face an unfair offer that reflects the proposer's malignant intentions <ref type="bibr" target="#b2">(Blount, 1995;</ref><ref type="bibr" target="#b7">Falk, Fehr, &amp; Fischbacher, 2003)</ref> According to these studies, the ability to detect unfair intentions in the proposer should play an important role in the responder's rejection behavior. However, in our study about 50% of the responders who failed the false belief task rejected unfair offers. This result suggests that the unfair outcome itself (e.g., inequity aversion; <ref type="bibr" target="#b12">Fehr &amp; Schmidt, 1999)</ref> may play a more important role among preschoolers than among adults.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>ACKNOWLEDGEMENT</head><p>This study was supported by the Grant-in-Aid for JSPS Fellows (20-1020) and Grant-in-Aid Figure <ref type="figure">1</ref>. A picture of the experimental environment. The proposer sits on the far side, and the responder sits the opposite side. First, the proposer places 10 candies onto the tray. Then, the responder decides whether or not to accept the offer by either lifting the tray or pulling the lever which sustains the tray. </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. Distribution of proposer's offers based on false belief test result.</figDesc><graphic coords="26,82.74,134.34,440.95,329.76" type="vector_box" /></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p><rs type="grantNumber">19046005</rs>. We thank <rs type="person">Koichi Kawahito</rs>, <rs type="person">Koich Warabioka</rs>, <rs type="person">Takayuki Fujii</rs>, <rs type="person">Erika Izutani</rs> for their support and encouragement.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_hRfRD2S">
+					<idno type="grant-number">19046005</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Does the autistic child have a theory of mind?</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Baron-Cohen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Leslie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Frith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cognition</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="37" to="46" />
+			<date type="published" when="1985">1985</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Baron-Cohen, S., Leslie, A. M., &amp; Frith, U. (1985). Does the autistic child have a theory of mind? Cognition, 21, 37-46.</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Children&apos;s altruistic behavior in the dictator game</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">F</forename><surname>Benenson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pascoe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Radmore</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evolution and Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="168" to="175" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Benenson, J. F., Pascoe, J., &amp; Radmore, N. (2007). Children&apos;s altruistic behavior in the dictator game. Evolution and Human Behavior, 28 (3), 168-175.</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">When social outcomes aren&apos;t fair: the effect of causal attributions on preferences</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Blount</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Organizational behavior and human decision processes</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="page" from="131" to="144" />
+			<date type="published" when="1995">1995</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Blount, S. (1995). When social outcomes aren&apos;t fair: the effect of causal attributions on preferences. Organizational behavior and human decision processes, 63, 131-144.</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Behavioral game theory</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Camerer</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2003">2003</date>
+			<publisher>Princeton University Press</publisher>
+			<pubPlace>Princeton, NJ</pubPlace>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Camerer, C. (2003). Behavioral game theory. Princeton, NJ: Princeton University Press.</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">In Bad Taste: Evidence for the Oral Origins of Moral Disgust</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">A</forename><surname>Chapman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Sussking</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Anderson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">323</biblScope>
+			<biblScope unit="page" from="1222" to="1226" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Chapman, H. A., Kim, D. A., Sussking, J. M., Anderson, A. K. (2009). In Bad Taste: Evidence for the Oral Origins of Moral Disgust. Science, 323, 1222-1226.</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Self Responses along Cingulate Cortex Reveal Quantitative Neural Phenotype for High-Functioning Autism</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H</forename><surname>Chiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Kayali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">T</forename><surname>Kishida</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tomlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">G</forename><surname>Klinger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Klinger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">R</forename><surname>Montaugue</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuron</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page" from="463" to="473" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Chiu, P. H., Kayali, M. A., Kishida, K. T., Tomlin, D., Klinger, L. G., Klinger, M. R., &amp; Montaugue, P. R. (2008). Self Responses along Cingulate Cortex Reveal Quantitative Neural Phenotype for High-Functioning Autism. Neuron, 57, 463-473.</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Empathy: Conceptualization, Measurement, and Relation to Prosocial Behavior</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Eisenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Fabes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Motivation and Emotion</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="131" to="149" />
+			<date type="published" when="1990">1990</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Eisenberg, N., &amp; Fabes, R. A. (1990). Empathy: Conceptualization, Measurement, and Relation to Prosocial Behavior. Motivation and Emotion, 14, 131-149.</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">On the Nature of Fair Behavior</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Falk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Fehr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Fischbacher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Economic Inquiry</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="page" from="20" to="26" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Falk, A., Fehr, E., &amp; Fischbacher, U. (2003). On the Nature of Fair Behavior. Economic Inquiry, 41, 20-26.</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">A Theory of Reciprocity</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Falk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Fischbacher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Games and Economic Behavior</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="293" to="315" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Falk, A., &amp; Fischbacher, U. (2006). A Theory of Reciprocity. Games and Economic Behavior, 54 (2), 293-315.</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Egalitarianism in young children</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Fehr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bernhard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Rockenbach</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">454</biblScope>
+			<biblScope unit="page" from="1079" to="1083" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fehr, E., Bernhard, H., &amp; Rockenbach, B. (2008). Egalitarianism in young children. Nature, 454, 1079-1083.</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">The Nature of Human Altruism</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Fehr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Fischbacher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">425</biblScope>
+			<biblScope unit="page" from="785" to="791" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fehr, E., &amp; Fischbacher, U. (2003). The Nature of Human Altruism. Nature, 425, 785-791.</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Altruistic punishment in humans</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Fehr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gächter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">415</biblScope>
+			<biblScope unit="page" from="137" to="140" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fehr, E., &amp; Gächter, S. (2002). Altruistic punishment in humans. Nature, 415, 137-140.</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A Theory of Fairness, Competition, and Cooperation</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Fehr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Schmidt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quartely Jounal of Economics</title>
+		<imprint>
+			<biblScope unit="volume">114</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="817" to="868" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Fehr, E., &amp; Schmidt, K. (1999). &quot;A Theory of Fairness, Competition, and Cooperation.&quot; Quartely Jounal of Economics, 114(3), 817-868.</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">The Self and Its Reputation in Autism</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Frith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Frith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuron</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page" from="331" to="332" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Frith, C. D., &amp; Frith, U. (2008). The Self and Its Reputation in Autism. Neuron, 57, 331-332.</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">To give or not to give: Children&apos;s and adolescents&apos; sharing and moral negotiations in economic decision situations</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gummerum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Keller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Takezawa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mata</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Child Development</title>
+		<imprint>
+			<biblScope unit="volume">79</biblScope>
+			<biblScope unit="page" from="562" to="576" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gummerum, M., Keller, M., Takezawa, M., &amp; Mata, J. (2008). To give or not to give: Children&apos;s and adolescents&apos; sharing and moral negotiations in economic decision situations. Child Development, 79, 562-576.</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">When child development meets economic game theory: An interdisciplinary approach to investigating social development</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gummerum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hanoch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Keller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Human Development</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page" from="235" to="261" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gummerum, M., Hanoch, Y., &amp; Keller, M. (2008). When child development meets economic game theory: An interdisciplinary approach to investigating social development. Human Development, 51, 235-261.</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">An experimental analysis of ultimatum bargaining</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Güth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Schmittberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schwarze</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Economic Behavior and Organization</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="367" to="388" />
+			<date type="published" when="1982">1982</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Güth, W., Schmittberger, R., &amp; Schwarze, B. (1982). An experimental analysis of ultimatum bargaining. Journal of Economic Behavior and Organization, 3, 367-388.</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Bargaining by Children</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">T</forename><surname>Harbaugh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Liday</surname></persName>
+		</author>
+		<idno>No. 2002-4</idno>
+		<imprint>
+			<date type="published" when="2003">2003</date>
+		</imprint>
+		<respStmt>
+			<orgName>University of Oregon Economics</orgName>
+		</respStmt>
+	</monogr>
+	<note type="report_type">Working Paper</note>
+	<note type="raw_reference">Harbaugh, W. T., Krause, K., Liday, S. J. (2003). Bargaining by Children. University of Oregon Economics Working Paper No. 2002-4.</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Economic Man&apos; in Cross-Cultural Perspective: Ethnography and Experiments from 15 small-scale societies</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Henrich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Boyd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bowles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Gintis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Fehr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Camerer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Behavioral and Brain Sciences</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="795" to="855" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Henrich, J., Boyd, R., Bowles, S., Gintis, H., Fehr, E., Camerer, C. et al., (2005). &apos;Economic Man&apos; in Cross-Cultural Perspective: Ethnography and Experiments from 15 small-scale societies. Behavioral and Brain Sciences, 28, 795-855.</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Nobody&apos;s watching? Subtle cues affect generosity in an anonymous economic game</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">J</forename><surname>Haley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M T</forename><surname>Fessler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Evolution and Human Behavior</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="page" from="245" to="256" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Haley, K. J., &amp; Fessler, D. M. T. (2005). Nobody&apos;s watching? Subtle cues affect generosity in an anonymous economic game. Evolution and Human Behavior, 26, 245-256.</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Chimpanzees are rational maximizers in an ultimatum game</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jensen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="middle">J</forename><surname>Call</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tomasselo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">318</biblScope>
+			<biblScope unit="page" from="107" to="109" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Jensen, K., Call. J., &amp; Tomasselo, M. (2007). Chimpanzees are rational maximizers in an ultimatum game. Nature, 318, 107-109.</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">A functional imaging study of cooperation in two-person reciprocal exchange</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mccabe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Houser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ryan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Trouard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences</title>
+		<imprint>
+			<biblScope unit="volume">98</biblScope>
+			<biblScope unit="page" from="11832" to="11835" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">McCabe, K., Houser, D., Ryan, L., Smith, V., &amp; Trouard, T. (2001). A functional imaging study of cooperation in two-person reciprocal exchange. Proceedings of the National Academy of Sciences, 98, 11832-11835.</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Does the chimpanzee have a theory of mind</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Premack</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Woodruff</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Behavioral and Brain Sciences</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="515" to="526" />
+			<date type="published" when="1978">1978</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Premack, D., &amp; Woodruff, G. (1978). Does the chimpanzee have a theory of mind. Behavioral and Brain Sciences, 1, 515-526.</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Bargaining and market behavior in Jerusalem, Ljubjana, Pittsburgh and Tokyo: An experimental study</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Roth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Prasnikar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Okuno-Fujiwara</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zamir</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">American Economic Review</title>
+		<imprint>
+			<biblScope unit="volume">81</biblScope>
+			<biblScope unit="page" from="1068" to="1095" />
+			<date type="published" when="1991">1991</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Roth, A. E., Prasnikar, V., Okuno-Fujiwara, M., &amp; Zamir, S. (1991). Bargaining and market behavior in Jerusalem, Ljubjana, Pittsburgh and Tokyo: An experimental study, American Economic Review, 81, 1068-95.</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">The development of interpersonal strategy: Autism, theory-of-mind, cooperation and fairness</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Sally</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Elisabeth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Economic Psychology</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="page" from="73" to="97" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sally, D., &amp; Elisabeth, H. (2005). The development of interpersonal strategy: Autism, theory-of-mind, cooperation and fairness. Journal of Economic Psychology, 27, 73-97.</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">The Neural Basis of Economic Decision-Making in the Ultimatum Game</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sanfey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">K</forename><surname>Rilling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Aronson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">E</forename><surname>Nystrom</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Cohen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">300</biblScope>
+			<biblScope unit="page" from="1755" to="1758" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sanfey, A., Rilling, J. K., Aronson, J. A., Nystrom, L. E., &amp; Cohen, J. D. (2003). The Neural Basis of Economic Decision-Making in the Ultimatum Game. Science, 300, 1755-1758.</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<author>
+			<persName><forename type="first">E</forename><surname>Sober</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Wilson</surname></persName>
+		</author>
+		<title level="m">Unto Others: The Evolution and Psychology of Unselfish Behavior</title>
+		<meeting><address><addrLine>Cambridge</addrLine></address></meeting>
+		<imprint>
+			<publisher>Harvard University Press</publisher>
+			<date type="published" when="1998">1998</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sober, E., &amp; Wilson, D. S. (1998). Unto Others: The Evolution and Psychology of Unselfish Behavior. Harvard University Press, Cambridge.</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">The Neural Signature of Social Norm Compliance</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Spitzer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Fischbacher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Herrnberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Grön</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Fehr</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuron</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="page" from="185" to="196" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Spitzer, M., Fischbacher, U., Herrnberger, B., Grön, G., &amp; Fehr, E. (2007). The Neural Signature of Social Norm Compliance. Neuron, 56, 185-196.</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">The Provision of a Sanctioning System as a Public Good</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Yamagishi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Personality and Social Psychology</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page" from="110" to="116" />
+			<date type="published" when="1986">1986</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Yamagishi, T. (1986). The Provision of a Sanctioning System as a Public Good. Journal of Personality and Social Psychology, 51, 110-116.</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Private Rejection of Unfair Offers and Emotional Comittment</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Yamagishi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Horita</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Takagishi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shinada</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tanida</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Cook</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PNAS</title>
+		<imprint>
+			<biblScope unit="volume">106</biblScope>
+			<biblScope unit="issue">28</biblScope>
+			<biblScope unit="page" from="11520" to="11523" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Yamagishi, T., Horita, Y., Takagishi, H., Shinada, M., Tanida, S., &amp; Cook, K. (2009). Private Rejection of Unfair Offers and Emotional Comittment. PNAS, 106(28), 11520-11523.</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

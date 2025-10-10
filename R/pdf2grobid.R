@@ -4,7 +4,7 @@
 #'
 #' Consolidation of citations, headers, and funders looks up these items in CrossRef or another database to fix or enhance information (see <https://grobid.readthedocs.io/en/latest/Consolidation/>). This can slow down conversion. Consolidating headers is only useful for published papers, and can be set to 0 for work in prep.
 #'
-#' @param filename path to the PDF
+#' @param filename path to the PDF, a vector of paths, or a directory name that contains PDFs
 #' @param save_path directory or file path to save to; set to NULL to save to a temp file
 #' @param grobid_url the URL to the grobid server
 #' @param start the first page of the PDF to read (defaults to -1 to read all pages)
@@ -34,18 +34,17 @@ pdf2grobid <- function(filename, save_path = ".",
   # test if the server is up using the isalive endpoint, instead of sitedown
   service_status_url <- httr::modify_url(grobid_url, path = "/api/isalive")
   resp <- tryCatch({
-    httr::GET(service_status_url)
-  },
-  error = function(e) {
-    stop("Connection to the GROBID server failed!
-    Please check your connection or the URL: ", grobid_url)
-  }
+      httr::GET(service_status_url)
+    },
+    error = function(e) {
+      stop("Connection to the GROBID server failed!
+      Please check your connection or the URL: ", grobid_url)
+    }
   )
 
   status <- httr::status_code(resp)
   if (status != 200) {
-    stop("GROBID server does not appear up and running
-     on the provided URL. Status: ", status)
+    stop("GROBID server does not appear up and running on the provided URL. Status: ", status)
   }
 
   # handle list of files or a directory----
@@ -82,15 +81,16 @@ pdf2grobid <- function(filename, save_path = ".",
         consolidateFunders = consolidateFunders
       )
       xml <- tryCatch(do.call(pdf2grobid, args),
-                      error = function(e) { return(FALSE) })
+                      error = function(e) { return(e$message) })
       if (verbose()) pb$tick()
       xml
     }, pdf = filename, sp = save_path)
 
-    errors <- sapply(xmls, isFALSE)
+    errors <- !file.exists(xmls)
     if (any(errors)) {
-      warning(sum(errors), " of ", length(xmls), " files did not convert: ",
-              paste(filename[errors], collapse = ", "))
+      warning(sum(errors), " of ", length(xmls), " files did not convert: \n",
+              paste0(" * ", filename[errors], ": ", xmls[errors], collapse = "\n"))
+      xmls[errors] <- NA_character_
     }
 
     return(xmls)
