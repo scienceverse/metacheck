@@ -6,6 +6,7 @@
 * New module: `power` to detect and classify power analyses (currently being validated)
 * New module: `aspredicted` to get structured data from AsPredicted preregistrations (mainly for info)
 * `module_template()` creates a module file from a template
+* `orcid_person()` gets details from an ORCiD, such as name, emails, country
 
 ## Changes
 
