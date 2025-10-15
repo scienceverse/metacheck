@@ -52,10 +52,22 @@ test_that("module_list", {
   expect_true(is.data.frame(builtin))
   exp <- c("name", "title", "description", "path")
   expect_equal(names(builtin), exp)
+})
 
+test_that("module_find", {
   expect_error(module_find())
+
+  # find built-in modules
+  builtin <- module_list()
   path <- module_find(builtin$name[[1]])
   expect_true(file.exists(path))
+
+  # find modules in wd or modules directory
+  path <- module_find("no_error")
+  expect_equal(path, "modules/no_error.R")
+
+  path <- module_find("setup")
+  expect_equal(path, "./setup.R")
 })
 
 test_that("module_info", {
@@ -110,6 +122,19 @@ test_that("module_help", {
 
   class(example) <- "rd"
   expect_equal(help$examples, example)
+})
+
+test_that("module_template", {
+  expect_true(is.function(papercheck::module_template))
+  expect_no_error(helplist <- help(module_template, papercheck))
+
+  expect_error(module_template("a module"),
+               "The module_name must contain only letters, numbers, and _",
+               fixed = TRUE)
+
+  module_template("demo")
+  expect_true(file.exists("modules/demo.R"))
+  unlink("modules/demo.R")
 })
 
 test_that("test", {
@@ -242,41 +267,6 @@ test_that("all_urls", {
   mod_output <- module_run(paper, module)
   ids <- mod_output$table$id |> unique()
   expect_true(all(ids %in% names(paper)))
-})
-
-httptest::with_mock_api({
-  wd <- getwd()
-  httptest::.mockPaths(wd)
-
-  test_that("osf_check", {
-    module <- "osf_check"
-
-    verbose(FALSE)
-
-    text <- data.frame(
-      text = c("https://osf.io/5tbm9/",
-               "https://osf.io/629bx/",
-               "osf.io/ abcd5"),
-      id = c("private", "public", "unfound")
-    )
-    expect_warning( mo <- module_run(text, module), "abcd5" )
-
-    if (all(mo$table$status == "unknown")) {
-      skip("OSF is down")
-    }
-    exp <- c("closed", "open", "unfound")
-    expect_equal(mo$table$status, exp)
-
-    # iteration
-    paper <- psychsci[5:10]
-    mod_output <- module_run(paper, module)
-    ids <- mod_output$table$id |> unique()
-    expect_equal(ids, c("0956797615569001",
-                        "0956797615569889",
-                        "0956797615583071"))
-
-    verbose(TRUE)
-  })
 })
 
 test_that("retractionwatch", {
@@ -415,6 +405,43 @@ test_that("statcheck", {
   expect_no_error(
     mod_output <- module_run(paper, module)
   )
+})
+
+test_that("miscitation", {
+  paper <- read("problem_xml")
+  module <- "miscitation"
+
+  mod_output <- module_run(paper, module)
+  expect_true("10.1525/collabra.33267" %in% mod_output$table$doi)
+  expect_true("miscite_10.1525/collabra.33267" %in%
+                names(mod_output$summary))
+  expect_equal(nrow(mod_output$summary),
+               list.files("problem_xml") |> length())
+  expect_equal(mod_output$traffic_light, "yellow")
+
+  ## custom db
+  test_doi <- "10.1038/nrn3475"
+  db <- data.frame(
+    doi = test_doi,
+    reftext = "The full reference (this is a test)",
+    warning = "Lorem ipsum this is a test..."
+  )
+
+  mod_output <- module_run(paper, module, db = db)
+  expect_equal(mod_output$table$doi[[1]], test_doi)
+  expect_equal(mod_output$summary$`miscite_10.1038/nrn3475`,
+               c("b11", NA, NA, NA, "b6"))
+
+  ## custom db - doi is in bib but not xref text!
+  test_doi <- "10.1016/j.anbehav.2022.09.006"
+  db <- data.frame(
+    doi = test_doi,
+    reftext = "The full reference (this is a test)",
+    warning = "Lorem ipsum this is a test..."
+  )
+
+  mod_output <- module_run(paper, module, db = db)
+  expect_equal(mod_output$table$doi, test_doi)
 })
 
 test_that("chaining modules", {

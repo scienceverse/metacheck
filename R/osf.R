@@ -114,7 +114,7 @@ osf_api_check <- function(osf_api = getOption("papercheck.osf.api")) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   # get info on one OSF node
 #'   osf_retrieve("pngda")
 #'
@@ -431,7 +431,7 @@ filetype <- function(filename) {
   )
 
   add_types <- ext |>
-    dplyr::left_join(file_types, by = "ext") |>
+    dplyr::left_join(papercheck::file_types, by = "ext") |>
     dplyr::summarise(type = paste(.data$type, collapse = ";"),
                      .by = c("id", "ext"))
 

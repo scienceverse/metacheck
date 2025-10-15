@@ -144,7 +144,7 @@ github_files <- function(repo, dir = "",
       if (length(x) < 2) return("")
       x[[length(x)]]
     }) |> tolower()
-  files <- dplyr::left_join(files, file_types, by = "ext")
+  files <- dplyr::left_join(files, papercheck::file_types, by = "ext")
   files$type[is.na(files$type)] <- files$ft[is.na(files$type)]
   files$ft <- NULL
 

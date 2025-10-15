@@ -156,7 +156,7 @@ As we see, the LLM does a very good job evaluating whether the authors adhered t
 
 ## AI Results Always Need Checking!
 
-The use of AI to interpret deviations is convenient, but **can't replace human judgment**. The following article, [Exploring the Facets of Emotional Episodic Memory: Remembering “What,” “When,” and “Which”](https://journals.sagepub.com/doi/10.1177/0956797621991548) is categorized by the large language model as a deviation from the preregistration. However, it misses that the authors explicitly say that Cohort B was not preregistered, and therefore, falling short of the planned sample size of 60 in that cohort should not be seen as a deviation from the preregistration. Manually checking the sentences in the method section that contain the words 'sample' or 'particip...' reveal the misclassification by the llm.
+The use of AI to interpret deviations is convenient, but **can't replace human judgment**. The following article, [Exploring the Facets of Emotional Episodic Memory: Remembering “What,” “When,” and “Which”](https://journals.sagepub.com/doi/10.1177/0956797621991548) is categorized by the large language model as a deviation from the preregistration. However, it misses that the authors explicitly say that Cohort B was not preregistered, and therefore, falling short of the planned sample size of 60 in that cohort should not be seen as a deviation from the preregistration. Manually checking the sentences in the method section that contain the words 'sample' or 'particip...' reveal the misclassification by the LLM.
 
 ```{r}
 #| results: 'asis'

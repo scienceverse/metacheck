@@ -1,9 +1,28 @@
 # papercheck 0.0.0.9057
 
+## New functions/modules
+
+* New module: `miscitation` to detect commonly mis-cited papers (a proof-of-concept)
+* New module: `power` to detect and classify power analyses (currently being validated)
+* New module: `aspredicted` to get structured data from AsPredicted preregistrations (mainly for info)
+* `module_template()` creates a module file from a template
+* `orcid_person()` gets details from an ORCiD, such as name, emails, country
 * Added an API wrapper - it is now possible to run papercheck functions and modules via a REST API. See `inst/plumber/README.md` for details.
 * Added documentation and plumber/Docker quickstart for the API
-* Fixed a bug that crashed `stat_table()` function by generating a summary table in case of empty stat table
+
+## Changes
+
+* Changes to `module_find()` to find potential modules in the working directory and ./modules/
+* Changes to `effectsize` module so text of the potential effect size is given in `mod_output$table$es` (`mod_output$summary$ttests_n` and `mod_output$summary$Ftests_n` columns removed, as they are just the sum of `*tests_with_es` and `*tests_without_es`)
+* `pdf2grobid()` now gives more useful information in the warning if some files do not convert when converting more than one PDF
 * Changed parameter names in pdf2grobid to be consistently snake_case (consolidate_headers etc.) whilst keeping backward compatibility for the old camelCase (consolidateHeaders etc.)
+
+## Bug Fixes
+
+* Fixed warning messages in `osf_check` module when there are no OSF links
+* Fixed a problem in module_report() that happens when the table returned from module_run() has no rows
+* Fixed a bug that crashed `stat_table()` function by generating a summary table in case of empty stat table
+
 
 # papercheck 0.0.0.9056
 

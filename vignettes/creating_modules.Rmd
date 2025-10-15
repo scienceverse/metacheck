@@ -65,7 +65,7 @@ If you have experience writing R functions with roxygen, you can also omit the `
 
 ### Author
 
-Include the module authors so they can get credit! Adda new `@author` tag for each author, and optionally add ther emailaddress.
+Include the module authors so they can get credit! Add a new `@author` tag for each author, and optionally add their email address.
 
 ```{r}
 #' @author Lisa DeBruine (\email{debruine@gmail.com})

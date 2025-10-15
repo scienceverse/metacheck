@@ -202,32 +202,32 @@ get_orcid <- function(family, given = "*") {
 
   given2 <- given |>
     trimws() |>
-    gsub("^(\\w)\\.?$", "\\1\\*", .) |> # single initial
-    gsub("^(.)\\.?\\s", "\\1\\* ", .) |> # initial initial
-    gsub("\\s(.)\\.?$", " \\1\\*", .) |> # ending initial
-    gsub("\\s(.)\\.?\\s", " \\1\\* ", .) |> # internal initial
+    gsub("^(\\w)\\.?$", "\\1\\*", x = _) |> # single initial
+    gsub("^(.)\\.?\\s", "\\1\\* ", x = _) |> # initial initial
+    gsub("\\s(.)\\.?$", " \\1\\*", x = _) |> # ending initial
+    gsub("\\s(.)\\.?\\s", " \\1\\* ", x = _) |> # internal initial
     utils::URLencode()
 
   family2 <- trimws(family) |> utils::URLencode()
   url <- sprintf(query, family2, given2) |> url("rb")
   on.exit(close(url))
 
-  xml <- tryCatch(xml2::read_xml(url), error = function(e) {
-    warning("You might not have an internet connection")
-    return(list())
-  })
-  l <- xml2::as_list(xml)
+  xml <- tryCatch(xml2::read_xml(url), error = function(e) {})
+  if (is.null(xml)) {
+    warning("ORCID search failed")
+    return("")
+  }
 
-  n <- length(l$search)
+  orcid <- xml_find(xml, "//common:path")
+
+  n <- length(orcid)
   if (n == 0) {
     message("No ORCID found for ", given, " ", family)
   } else if (n > 1) {
     message("Multiple (", n, ") ORCIDs found for ", given, " ", family)
   }
 
-  sapply(l$search, function(res) {
-    res$`orcid-identifier`$path
-  }) |> unlist() |> unname()
+  return(orcid)
 }
 
 #' Create a study object
@@ -283,3 +283,54 @@ get_idx <- function(study, id = NULL, section = "hypotheses") {
 
   return(idx)
 }
+
+#' Get Person Details for ORCiD
+#'
+#' @param orcid a vector of ORCiDs
+#'
+#' @return A data frame of details
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   orcids <- c("0000-0002-0247-239X", "0000-0002-7523-5539")
+#'   orcid_person(orcids)
+#' }
+orcid_person <- function(orcid) {
+  details <- lapply(orcid, \(x) {
+    path <- file.path("https://pub.orcid.org/v3.0", x, "person")
+
+    xml <- tryCatch({
+      url <- suppressWarnings(url(path, "rb"))
+      on.exit(close(url))
+      xml2::read_xml(url)
+    },
+    error = function(e) { e$message })
+
+    if (is.character(xml)) {
+      return(data.frame(
+        orcid = x,
+        error = xml
+      ))
+    }
+
+    list(
+      orcid = x,
+     # name  = xml_find(xml, "//personal-details:credit-name", ";"),
+      given = xml_find(xml, "//personal-details:given-names", " "),
+      family =  xml_find(xml, "//personal-details:family-name", " "),
+      email = xml_find(xml, "//email:email //email:email") |> list(),
+      country = xml_find(xml, "//address:country", ";"),
+      keywords = xml_find(xml, "//keyword:content") |> list(),
+      urls = xml_find(xml, "//researcher-url:url") |> list()
+    )
+  }) |>
+    do.call(dplyr::bind_rows, args = _)
+  return(details)
+}
+
+
+a <- list(a = 1, b = list(1:3))
+b <- list(a = 2, b = list(3))
+c <- do.call(dplyr::bind_rows, list(a, b))
+c
