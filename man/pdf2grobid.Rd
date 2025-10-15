@@ -16,7 +16,7 @@ pdf2grobid(
 )
 }
 \arguments{
-\item{filename}{path to the PDF}
+\item{filename}{path to the PDF, a vector of paths, or a directory name that contains PDFs}
 
 \item{save_path}{directory or file path to save to; set to NULL to save to a temp file}
 

@@ -127,7 +127,7 @@ miscite
 # Figuring out how to get good bib info
 
 library(openalexR)
-options(openalexR.mailto = "debruine@gmail.com")
+options(openalexR.mailto = email())
 work_info <- oa_fetch(
   entity = "works",
   doi = miscite$doi,
@@ -196,9 +196,7 @@ bibs <- concat_tables(paper, "bib") |>
 # consolidate xrefs, filter, and expand
 xrefs <- concat_tables(paper, "xrefs") |>
   inner_join(bibs, by = c("xref_id", "id")) |>
-  expand_text(paper, expand_to = "paragraph") |>
-  # TODO: fix this in expand_text()
-  mutate(expanded = ifelse(is.na(expanded), text, expanded))
+  expand_text(paper, expand_to = "paragraph")
 ```
 
 
@@ -241,7 +239,6 @@ llm_response <- lapply(unique_queries, \(q) {
 
 readr::write_csv(llm_response, "llm_response.csv")
 
-text
 ```
 
 ```{r}

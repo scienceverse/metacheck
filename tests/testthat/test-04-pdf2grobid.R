@@ -21,9 +21,19 @@ test_that("non-Grobid URL is rejected", {
 
   filename <- demopdf()
   expect_error(pdf2grobid(filename, grobid_url = "https://google.com"),
-               "GROBID server does not appear up and running
-     on the provided URL. Status: 404")
+               "GROBID server does not appear up and running on the provided URL. Status: 404")
 })
+
+test_that("missing file", {
+  filename <- "wrongfile.pdf"
+  expect_error(pdf2grobid(filename), "wrongfile.pdf does not exist")
+
+  filename <- c("wrongfile.pdf", "wrongfile.pdf")
+  expect_warning(x <- pdf2grobid(filename), "2 of 2 files did not convert")
+  exp <- c("wrongfile.pdf" = NA_character_, "wrongfile.pdf" = NA_character_)
+  expect_equal(x, exp)
+})
+
 
 # test_that("invalid file type", { needs more thought
 #   skip_on_ci()
@@ -35,18 +45,28 @@ skip_grobid <- function() {
   skip("pdf2grobid") # comment out to run local tests
   skip_on_covr()
   skip_on_cran()
+  skip_if_offline("kermitt2-grobid.hf.space")
 }
 
 #httptest::with_mock_api({
 
 grobid_server <- "https://kermitt2-grobid.hf.space"
-old_groq <- Sys.getenv("GROQ_API_KEY")
-Sys.setenv(GROQ_API_KEY = "test") # doesn't need to be set with_mock_api
-on.exit(Sys.setenv(GROQ_API_KEY = old_groq))
+
+test_that("bad PDF", {
+  skip_grobid()
+
+  filename <- "problems/xml_with_pdf_extension.pdf"
+  expect_error(pdf2grobid(filename), "Internal Server Error")
+
+  filename <- c("problems/xml_with_pdf_extension.pdf", "wrongfile.pdf")
+  expect_warning(x <- pdf2grobid(filename), "2 of 2 files did not convert")
+  exp <- c("problems/xml_with_pdf_extension.pdf" = NA_character_,
+           "wrongfile.pdf" = NA_character_)
+  expect_equal(x, exp)
+})
 
 test_that("makes missing save directory", {
   skip_grobid()
-  skip_if_offline("kermitt2-grobid.hf.space")
 
   newdir <- file.path(tempdir(), "testnewdir")
   if (dir.exists(newdir)) unlink(newdir, recursive = TRUE)
@@ -96,7 +116,6 @@ test_that("makes missing save directory", {
 
 test_that("defaults", {
   skip_grobid()
-  skip_if_offline("kermitt2-grobid.hf.space")
 
   filename <- demopdf()
   first_sentence <- "Although intentional dishonestly might be a successful way to boost creativity"

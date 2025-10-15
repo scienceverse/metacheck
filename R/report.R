@@ -26,13 +26,7 @@ report <- function(paper,
   }
 
   # check if modules are available ----
-  builtin <- module_list()$name
-  custom <- setdiff(modules, builtin)
-  cm_exists <- sapply(custom, file.exists)
-  if (any(!cm_exists)) {
-    stop("Some modules are not available: ",
-         paste(custom[!cm_exists], collapse = ", "))
-  }
+  mod_exists <- sapply(modules, module_find)
 
   # set up progress bar ----
   if (verbose()) {
@@ -80,6 +74,7 @@ report <- function(paper,
                      "    embed-resources: true\n")
   }
 
+  emojis <- papercheck::emojis
   head <- paste0("---\n",
                 "title: PaperCheck Report\n",
                 "subtitle: \"", paper$info$title, "\"\n",
@@ -156,6 +151,7 @@ module_report <- function(module_output,
   # set up table
   if ("table" %in% names(module_output)) {
     tab <- module_output$table
+    if (is.data.frame(tab) && nrow(tab) == 0) tab <- ""
   } else {
     tab <- ""
   }

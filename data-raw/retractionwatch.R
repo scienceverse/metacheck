@@ -5,7 +5,7 @@ library(dplyr)
 # download newest RW update
 options(timeout=300)
 tmp <- tempfile(fileext = ".csv")
-url <- "https://api.labs.crossref.org/data/retractionwatch?debruine@gmail.com"
+url <- paste0("https://api.labs.crossref.org/data/retractionwatch?", email())
 download.file(url, destfile = tmp)
 
 # tmp <- "../retractions.csv"
@@ -23,7 +23,7 @@ attr(retractionwatch, "date") <- Sys.Date()
 
 #usethis::use_data(retractionwatch, overwrite = TRUE, compress = "xz")
 
-saveRDS(retractionwatch, "inst", compress = "xz")
+saveRDS(retractionwatch, "inst/databases/retractionwatch.Rds", compress = "xz")
 
 
 

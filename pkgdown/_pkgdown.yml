@@ -111,6 +111,9 @@ reference:
   contents:
   - '`filetype`'
   - '`summarize_contents`'
+  - '`bibsearch`'
+  - '`bib_add_dois`'
+  - '`bibtex_add_dois`'
   - '`openalex`'
   - '`crossref`'
   - '`retractionwatch`'

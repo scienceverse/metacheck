@@ -8,5 +8,7 @@
 
 library(testthat)
 suppressPackageStartupMessages(library(papercheck))
+email("debruine@gmail.com")
 
 test_check("papercheck")
+

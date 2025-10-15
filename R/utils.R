@@ -59,6 +59,26 @@ verbose <- function(verbose = NULL) {
   }
 }
 
+#' Set or get email
+#'
+#' @param email if a string, sets the email
+#'
+#' @returns the current option value (character)
+#' @export
+#'
+#' @examples
+#' email()
+email <- function(email = NULL) {
+  if (is.null(email)) {
+    return(getOption("papercheck.email"))
+  } else if (is.character(email) && grepl(".+@.+\\..+$", email)) {
+    options(papercheck.email = email)
+    invisible(getOption("papercheck.email"))
+  } else {
+    stop("Set email with a valid email address")
+  }
+}
+
 
 #' Check if site is available
 #'
