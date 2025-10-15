@@ -317,15 +317,20 @@ orcid_person <- function(orcid) {
     list(
       orcid = x,
      # name  = xml_find(xml, "//personal-details:credit-name", ";"),
-      given = xml_find(xml, "//personal-details:given-names", ";"),
-      family =  xml_find(xml, "//personal-details:family-name", ";"),
-      email = xml_find(xml, "//email:email //email:email", ";"),
+      given = xml_find(xml, "//personal-details:given-names", " "),
+      family =  xml_find(xml, "//personal-details:family-name", " "),
+      email = xml_find(xml, "//email:email //email:email") |> list(),
       country = xml_find(xml, "//address:country", ";"),
-      keywords = xml_find(xml, "//keyword:content", ";"),
-      urls = xml_find(xml, "//researcher-url:url", ";")
+      keywords = xml_find(xml, "//keyword:content") |> list(),
+      urls = xml_find(xml, "//researcher-url:url") |> list()
     )
   }) |>
     do.call(dplyr::bind_rows, args = _)
   return(details)
 }
 
+
+a <- list(a = 1, b = list(1:3))
+b <- list(a = 2, b = list(3))
+c <- do.call(dplyr::bind_rows, list(a, b))
+c
