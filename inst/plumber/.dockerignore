@@ -1,0 +1,17 @@
+.Rproj.user
+.Rhistory
+.RData
+.httr-oauth
+/docs/
+/pkgdown/
+/vignettes/
+/_stuff/
+.git
+.gitignore
+.dockerignore
+docker-compose.yml
+Dockerfile
+README.md
+profile/
+data-raw/
+tests/

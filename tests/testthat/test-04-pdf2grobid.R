@@ -147,9 +147,9 @@ test_that("defaults", {
   default_params <- list(
     start=-1,
     end=-1,
-    consolidateCitations=0, # 0, 1, 2
-    consolidateHeader=0, # 0, 1, 2, 3
-    consolidateFunders=0, # 0, 1, 2
+    consolidate_citations=0, # 0, 1, 2
+    consolidate_header=0, # 0, 1, 2, 3
+    consolidate_funders=0, # 0, 1, 2
     includeRawAffiliations=0,
     includeRawCitations=0,
     includeRawCopyrights=0,
@@ -161,9 +161,9 @@ test_that("defaults", {
 
   # reference consolidation
   ref <- tei_bib(xml)
-  xml_cite0 <- pdf2grobid(filename, NULL, consolidateCitations = 0)
-  xml_cite1 <- pdf2grobid(filename, NULL, consolidateCitations = 1)
-  xml_cite2 <- pdf2grobid(filename, NULL, consolidateCitations = 2)
+  xml_cite0 <- pdf2grobid(filename, NULL, consolidate_citations = 0)
+  xml_cite1 <- pdf2grobid(filename, NULL, consolidate_citations = 1)
+  xml_cite2 <- pdf2grobid(filename, NULL, consolidate_citations = 2)
   ref0 <- tei_bib(xml_cite0)
   ref1 <- tei_bib(xml_cite1)
   ref2 <- tei_bib(xml_cite2)

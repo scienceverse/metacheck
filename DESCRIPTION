@@ -1,7 +1,7 @@
 Package: papercheck
 Title: Check Scientific Papers for Best Practices
 Version: 0.0.0.9057
-Date: 2025-10-13
+Date: 2025-10-15
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -21,7 +21,7 @@ Authors@R: c(
   person(  given = "Jakub",
            family = "Werner",
            role = c("ctb"),
-           email = "jakubwerner1@gmail.com",
+           email = "jakub@jakubwerner.com",
            comment = c(ORCID = "0009-0004-0388-0362")))
 Description: A modular, extendable system for automatically checking scientific papers for best practices using text search, R code, and/or (optional) LLM queries.
 License: AGPL (>= 3)

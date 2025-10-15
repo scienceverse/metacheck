@@ -9,9 +9,9 @@
 #' @param grobid_url the URL to the grobid server
 #' @param start the first page of the PDF to read (defaults to -1 to read all pages)
 #' @param end the last page of the PDF to read (defaults to -1 to read all pages)
-#' @param consolidateCitations whether to fix/enhance citations
-#' @param consolidateHeader whether to fix/enhance paper info
-#' @param consolidateFunders whether to fix/enhance funder info
+#' @param consolidate_citations whether to fix/enhance citations
+#' @param consolidate_header whether to fix/enhance paper info
+#' @param consolidate_funders whether to fix/enhance funder info
 #'
 #' @return XML object
 #' @export
@@ -20,11 +20,29 @@ pdf2grobid <- function(filename, save_path = ".",
                        grobid_url = "https://kermitt2-grobid.hf.space",
                        start = -1,
                        end = -1,
-                       consolidateCitations = 0,
-                       consolidateHeader = 0,
-                       consolidateFunders = 0) {
+                       consolidate_citations = 0,
+                       consolidate_header = 0,
+                       consolidate_funders = 0,
+                       # deprecated camelCase params
+                       consolidateCitations = NULL,
+                       consolidateHeader = NULL,
+                       consolidateFunders = NULL) {
   # "http://localhost:8070"
   # "https://grobid.work.abed.cloud"
+
+  # Handle deprecated parameters
+  if (!is.null(consolidateCitations)) {
+    warning("'consolidateCitations' is deprecated. Use 'consolidate_citations' instead.")
+    consolidate_citations <- consolidateCitations
+  }
+  if (!is.null(consolidateHeader)) {
+    warning("'consolidateHeader' is deprecated. Use 'consolidate_header' instead.")
+    consolidate_header <- consolidateHeader
+  }
+  if (!is.null(consolidateFunders)) {
+    warning("'consolidateFunders' is deprecated. Use 'consolidate_funders' instead.")
+    consolidate_funders <- consolidateFunders
+  }
 
   # check if grobid_url is a valid url, before connecting to it
   if (!grepl("^https?://", grobid_url)) {
@@ -33,12 +51,13 @@ pdf2grobid <- function(filename, save_path = ".",
 
   # test if the server is up using the isalive endpoint, instead of sitedown
   service_status_url <- httr::modify_url(grobid_url, path = "/api/isalive")
+
   resp <- tryCatch({
       httr::GET(service_status_url)
     },
     error = function(e) {
-      stop("Connection to the GROBID server failed!
-      Please check your connection or the URL: ", grobid_url)
+      stop("Connection to the GROBID server failed!",
+           "Please check your connection or the URL: ", grobid_url)
     }
   )
 
@@ -49,7 +68,7 @@ pdf2grobid <- function(filename, save_path = ".",
 
   # handle list of files or a directory----
   if (length(filename) > 1) {
-    if (is.null(save_path)) save_path = "."
+    if (is.null(save_path)) save_path <- "."
     if (length(save_path) == 1) {
       dir.create(save_path, FALSE)
       save_path <- rep_len(save_path, length(filename))
@@ -76,9 +95,9 @@ pdf2grobid <- function(filename, save_path = ".",
         grobid_url = grobid_url,
         start = start,
         end = end,
-        consolidateCitations = consolidateCitations,
-        consolidateHeader = consolidateHeader,
-        consolidateFunders = consolidateFunders
+        consolidate_citations = consolidate_citations,
+        consolidate_header = consolidate_header,
+        consolidate_funders = consolidate_funders
       )
       xml <- tryCatch(do.call(pdf2grobid, args),
                       error = function(e) { return(e$message) })
@@ -93,17 +112,26 @@ pdf2grobid <- function(filename, save_path = ".",
       xmls[errors] <- NA_character_
     }
 
-    return(xmls)
+    # summary message
+    n_success <- sum(!errors)
+    n_total <- length(xmls)
+    message(sprintf(
+      "%d out of %d PDF file%s successfully converted to Grobid TEI XML.",
+      n_success, n_total, ifelse(n_total == 1, "", "s")
+    ))
+
+    return(invisible(xmls)) # invisible to prioritize formatted print at the end
   } else if (dir.exists(filename)) {
     pdfs <- list.files(filename, "\\.pdf",
-                       full.names = TRUE,
-                       recursive = TRUE,
-                       ignore.case = TRUE)
+      full.names = TRUE,
+      recursive = TRUE,
+      ignore.case = TRUE
+    )
     if (length(pdfs) == 0) {
       warning("There are no PDF files in the directory ", filename)
     }
     xmls <- pdf2grobid(pdfs, save_path, grobid_url)
-    return(xmls)
+    return(invisible(xmls))
   }
 
   if (!file.exists(filename)) {
@@ -112,13 +140,15 @@ pdf2grobid <- function(filename, save_path = ".",
 
   file <- httr::upload_file(filename)
   post_url <- httr::modify_url(grobid_url, path = "/api/processFulltextDocument")
-  args <- list(input = file,
-               start = start,
-               end = end,
-               consolidateCitations = consolidateCitations,
-               consolidateHeader = consolidateHeader,
-               consolidateFunders = consolidateFunders,
-               includeRawCitations = 1)
+  args <- list(
+    input = file,
+    start = start,
+    end = end,
+    consolidateCitations = consolidate_citations,
+    consolidateHeader = consolidate_header,
+    consolidateFunders = consolidate_funders,
+    includeRawCitations = 1
+  )
   resp <- httr::POST(post_url, body = args, encode = "multipart")
 
   # Check if the request was successful
@@ -138,8 +168,9 @@ pdf2grobid <- function(filename, save_path = ".",
   } else { # save_path is a file name
     # make subdirs if necessary
     dir.create(dirname(save_path),
-               showWarnings = FALSE,
-               recursive = TRUE)
+      showWarnings = FALSE,
+      recursive = TRUE
+    )
 
     save_file <- save_path |>
       sub("\\.xml", "", x = _, TRUE) |>
@@ -158,4 +189,3 @@ pdf2grobid <- function(filename, save_path = ".",
     save_file
   }
 }
-
