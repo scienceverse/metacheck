@@ -10,13 +10,16 @@ pdf2grobid(
   grobid_url = "https://kermitt2-grobid.hf.space",
   start = -1,
   end = -1,
-  consolidateCitations = 0,
-  consolidateHeader = 0,
-  consolidateFunders = 0
+  consolidate_citations = 0,
+  consolidate_header = 0,
+  consolidate_funders = 0,
+  consolidateCitations = NULL,
+  consolidateHeader = NULL,
+  consolidateFunders = NULL
 )
 }
 \arguments{
-\item{filename}{path to the PDF}
+\item{filename}{path to the PDF, a vector of paths, or a directory name that contains PDFs}
 
 \item{save_path}{directory or file path to save to; set to NULL to save to a temp file}
 
@@ -26,11 +29,11 @@ pdf2grobid(
 
 \item{end}{the last page of the PDF to read (defaults to -1 to read all pages)}
 
-\item{consolidateCitations}{whether to fix/enhance citations}
+\item{consolidate_citations}{whether to fix/enhance citations}
 
-\item{consolidateHeader}{whether to fix/enhance paper info}
+\item{consolidate_header}{whether to fix/enhance paper info}
 
-\item{consolidateFunders}{whether to fix/enhance funder info}
+\item{consolidate_funders}{whether to fix/enhance funder info}
 }
 \value{
 XML object

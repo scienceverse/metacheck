@@ -1,4 +1,4 @@
-#' Module Name
+#' Module Title
 #'
 #' @description
 #' A short description of the module

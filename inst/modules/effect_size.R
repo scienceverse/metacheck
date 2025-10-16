@@ -14,6 +14,8 @@
 #'
 #' @returns a list with table, summary, traffic light, and report text
 effect_size <- function(paper, ...) {
+  # paper <- psychsci[[9]] # to test
+
   # Narrow down to sentences that could contain stats
   stat_sentences <- paper |>
     search_text("=") |> # sentences with an equal sign
@@ -30,9 +32,7 @@ effect_size <- function(paper, ...) {
   )
   text_found_test <- stat_sentences |>
     search_text(test_regex, perl = TRUE, ignore.case = FALSE) |>
-    dplyr::select(id, text, div, p, s)
-
-  t_total_n <- nrow(text_found_test)
+    dplyr::select(id, text, section, div, p, s)
 
   ## detect relevant effect sizes ----
   potentials <- c(
@@ -50,39 +50,22 @@ effect_size <- function(paper, ...) {
     "\\s*[=≈<>\u2264\u2265]{1,3}\\s*", # comparators
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
-  text_found_es <- search_text(text_found_test, es_regex, perl = FALSE)
 
-  # Identify t-tests without reported effect sizes
-  es_not_reported <- dplyr::anti_join(
-    text_found_test,
-    text_found_es,
-    by = "text"
-  )
-
-  es_not_reported$test <- "t-test"
+  by <- c("id", "section", "div", "p", "s")
+  text_found_es <- search_text(text_found_test, es_regex,
+                               return = "match", perl = FALSE) |>
+    dplyr::summarise(es = paste(text, collapse = "; "),
+                     .by = dplyr::all_of(by))
 
   ## add exact text ----
   test_match <- search_text(text_found_test, test_regex, return = "match",
                             perl = TRUE, ignore.case = FALSE) |>
     dplyr::summarise(test_text = paste(text, collapse = "; "),
-                     .by = c("div", "p", "s", "id"))
-  t_table <- dplyr::left_join(es_not_reported, test_match,
-                              by = c("div", "p", "s", "id"))
-
-  ## summary table ----
-  summary_not <- dplyr::count(es_not_reported, id,
-                              name = "ttests_without_es")
-  summary_test <- dplyr::count(text_found_test, id,
-                               name = "ttests_n")
-  summary_es <- dplyr::count(text_found_es, id,
-                             name = "ttests_with_es")
-  t_summary_table <- summary_test |>
-    dplyr::left_join(summary_es, by = "id") |>
-    dplyr::left_join(summary_not, by = "id") |>
-    dplyr::mutate(
-      ttests_with_es = tidyr::replace_na(ttests_with_es, 0),
-      ttests_without_es = tidyr::replace_na(ttests_without_es, 0)
-    )
+                     .by = dplyr::all_of(by))
+  t_table <- text_found_test |>
+    dplyr::left_join(text_found_es, by = by) |>
+    dplyr::left_join(test_match,by = by)
+  t_table$test <- "t-test"
 
   # F-tests -----
 
@@ -97,9 +80,7 @@ effect_size <- function(paper, ...) {
   # sentences with a relevant test
   text_found_test <- stat_sentences |>
     search_text(test_regex, perl = TRUE, ignore.case = FALSE) |>
-    dplyr::select(id, text, div, p, s)
-
-  f_total_n <- nrow(text_found_test)
+    dplyr::select(id, section, text, div, p, s)
 
   ## detect relevant effect sizes ----
   potentials <- c(
@@ -127,47 +108,35 @@ effect_size <- function(paper, ...) {
   )
 
   text_found_es <- search_text(text_found_test, es_regex,
-                               perl = FALSE, ignore.case = FALSE)
-
-  # Identify tests without reported effect sizes
-  es_not_reported <- dplyr::anti_join(
-    text_found_test,
-    text_found_es,
-    by = "text"
-  )
-
-  es_not_reported$test <- "F-test"
+                               return = "match", perl = FALSE) |>
+    dplyr::summarise(es = paste(text, collapse = "; "),
+                     .by = dplyr::all_of(by))
 
   ## add exact text ----
   test_match <- search_text(text_found_test, test_regex, return = "match",
                             perl = TRUE, ignore.case = FALSE) |>
     dplyr::summarise(test_text = paste(text, collapse = "; "),
-                     .by = c("div", "p", "s", "id"))
-  f_table <- dplyr::left_join(es_not_reported, test_match,
-                              by = c("div", "p", "s", "id"))
-
-  ## summary table ----
-  summary_not <- dplyr::count(es_not_reported, id,
-                              name = "Ftests_without_es")
-  summary_test <- dplyr::count(text_found_test, id,
-                               name = "Ftests_n")
-  summary_es <- dplyr::count(text_found_es, id,
-                             name = "Ftests_with_es")
-  f_summary_table <- summary_test |>
-    dplyr::left_join(summary_es, by = "id") |>
-    dplyr::left_join(summary_not, by = "id") |>
-    dplyr::mutate(
-      Ftests_with_es = tidyr::replace_na(Ftests_with_es, 0),
-      Ftests_without_es = tidyr::replace_na(Ftests_without_es, 0)
-    )
+                     .by = dplyr::all_of(by))
+  f_table <- text_found_test |>
+    dplyr::left_join(text_found_es, by = by) |>
+    dplyr::left_join(test_match,by = by)
+  f_table$test <- "F-test"
 
   # combine tests ----
   table <- dplyr::bind_rows(t_table, f_table)
-  summary_table <- dplyr::full_join(t_summary_table, f_summary_table, by = "id")
+
+  ## summary table ----
+  summary_table <- table |>
+    dplyr::summarise(
+      ttests_with_es = sum(test == "t-test" & !is.na(es)),
+      ttests_without_es = sum(test == "t-test" & is.na(es)),
+      Ftests_with_es = sum(test == "F-test" & !is.na(es)),
+      Ftests_without_es = sum(test == "F-test" & is.na(es)),
+      .by = dplyr::all_of(c("id")))
 
   # traffic light ----
-  total_n <- t_total_n + f_total_n
-  noes_n <- nrow(table)
+  total_n <- nrow(table)
+  noes_n <- is.na(table$es) |> sum()
   tl <- dplyr::case_when(
     total_n == 0 ~ "na",
     noes_n == 0 ~ "green",

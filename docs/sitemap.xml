@@ -29,6 +29,9 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/aspredicted_retrieve.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/author.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/author_table.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/bib_add_dois.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/bibsearch.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/bibtex_add_dois.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/cermine2bib.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/check_orcid.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/concat_tables.html</loc></url>
@@ -40,6 +43,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/distinctive_words.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/dot-onAttach.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/dot-onLoad.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/email.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/emojis.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/expand_text.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/file_types.html</loc></url>
@@ -72,6 +76,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/llm_max_calls.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/llm_model.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/llm_model_list.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/llm_use.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/message.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/module_find.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/module_help.html</loc></url>
@@ -79,11 +84,13 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/module_list.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/module_report.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/module_run.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/module_template.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/nlm_authors.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/nlm_full_text.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/nlm_info.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/op-null-default.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/openalex.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/orcid_person.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/osf_api_calls.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/osf_api_calls_inc.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/osf_api_check.html</loc></url>
@@ -101,6 +108,7 @@
 <url><loc>https://scienceverse.github.io/papercheck/reference/osf_node_data.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/osf_parent_project.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/osf_preprint_data.html</loc></url>
+<url><loc>https://scienceverse.github.io/papercheck/reference/osf_preprint_list.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/osf_reg_data.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/osf_retrieve.html</loc></url>
 <url><loc>https://scienceverse.github.io/papercheck/reference/osf_user_data.html</loc></url>

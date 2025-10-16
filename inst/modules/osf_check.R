@@ -20,26 +20,32 @@ osf_check <- function(paper, ...) {
   # test private: url = "https://osf.io/5tbm9"
   # test public: url = "https://osf.io/629bx"
 
-  # detailed table of results ----
+  # check for OSF link ----
   found_osf <- osf_links(paper)
 
-  table <- osf_retrieve(found_osf)
-  table$status <- dplyr::case_when(
-    is.na(table$osf_id) ~ "invalid",
-    table$osf_type == "too many requests" ~ "too many requests",
-    table$osf_type == "unfound" ~ "unfound",
-    table$osf_type == "private" ~ "closed",
-    table$public == FALSE ~ "closed",
-    table$public == TRUE ~ "open",
-    !is.na(table$osf_type) ~ "open",
-    .default = ""
-  )
+  if (nrow(found_osf) == 0) {
+    table <- data.frame(id = character(0))
+    summary_table <- data.frame(id = character(0))
+  } else {
+    # detailed table of results ----
+    table <- osf_retrieve(found_osf)
+    table$status <- dplyr::case_when(
+      is.na(table$osf_id) ~ "invalid",
+      table$osf_type == "too many requests" ~ "too many requests",
+      table$osf_type == "unfound" ~ "unfound",
+      table$osf_type == "private" ~ "closed",
+      table$public == FALSE ~ "closed",
+      table$public == TRUE ~ "open",
+      !is.na(table$osf_type) ~ "open",
+      .default = ""
+    )
 
-  # summary output for paperlists ----
-  summary_table <- dplyr::count(table, id, status) |>
-    tidyr::pivot_wider(names_from = status,
-                       names_prefix = "osf.",
-                       values_from = n, values_fill = 0)
+    # summary output for paperlists ----
+    summary_table <- dplyr::count(table, id, status) |>
+      tidyr::pivot_wider(names_from = status,
+                         names_prefix = "osf.",
+                         values_from = n, values_fill = 0)
+  }
 
   # determine the traffic light ----
   tl <- dplyr::case_when(

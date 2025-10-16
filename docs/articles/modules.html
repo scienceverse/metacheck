@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9056</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9057</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -90,14 +90,20 @@ will share more modules.</p>
 <li>all_p_values: List all p-values in the text, returning the matched
 text (e.g., ‘p = 0.04’) and document location in a table.</li>
 <li>all_urls: List all the URLs in the main text.</li>
+<li>aspredicted: Get data from AdPredicted pre-regosterations in a
+structured way</li>
 <li>effect_size: Detect t-tests and F-tests with missing effect
 sizes</li>
 <li>exact_p: List any p-values reported with insufficient precision
 (e.g., p &lt; .05 or p = n.s.)</li>
 <li>marginal: List all sentences that describe an effect as ‘marginally
 significant’.</li>
+<li>miscitation: Check for frequently miscited papers. This module is
+just a proof of concept – the miscite database is not yet populated with
+real examples.</li>
 <li>osf_check: List all OSF links and whether they are open, closed, or
 do not exist.</li>
+<li>power: Find power analyses and return their components.</li>
 <li>ref_consistency: Check if all references are cited and all citations
 are referenced</li>
 <li>retractionwatch: Flag any cited papers in the RetractionWatch

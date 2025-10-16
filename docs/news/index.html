@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9056</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9057</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,37 @@
       <small>Source: <a href="https://github.com/scienceverse/papercheck/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.0.9057" id="papercheck-0009057">papercheck 0.0.0.9057<a class="anchor" aria-label="anchor" href="#papercheck-0009057"></a></h2>
+<div class="section level3">
+<h3 id="new-functionsmodules-0-0-0-9057">New functions/modules<a class="anchor" aria-label="anchor" href="#new-functionsmodules-0-0-0-9057"></a></h3>
+<ul><li>New module: <code>miscitation</code> to detect commonly mis-cited papers (a proof-of-concept)</li>
+<li>New module: <code>power</code> to detect and classify power analyses (currently being validated)</li>
+<li>New module: <code>aspredicted</code> to get structured data from AsPredicted preregistrations (mainly for info)</li>
+<li>
+<code><a href="../reference/module_template.html">module_template()</a></code> creates a module file from a template</li>
+<li>
+<code><a href="../reference/orcid_person.html">orcid_person()</a></code> gets details from an ORCiD, such as name, emails, country</li>
+<li>
+<code><a href="../reference/osf_preprint_list.html">osf_preprint_list()</a></code> returns a table of preprints from the OSF optionally filtered by archive and dates created or modified</li>
+<li>Added an API wrapper - it is now possible to run papercheck functions and modules via a REST API. See <code>inst/plumber/README.md</code> for details.</li>
+<li>Added documentation and plumber/Docker quickstart for the API</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changes-0-0-0-9057">Changes<a class="anchor" aria-label="anchor" href="#changes-0-0-0-9057"></a></h3>
+<ul><li>Changes to <code><a href="../reference/module_find.html">module_find()</a></code> to find potential modules in the working directory and ./modules/</li>
+<li>Changes to <code>effectsize</code> module so text of the potential effect size is given in <code>mod_output$table$es</code> (<code>mod_output$summary$ttests_n</code> and <code>mod_output$summary$Ftests_n</code> columns removed, as they are just the sum of <code>*tests_with_es</code> and <code>*tests_without_es</code>)</li>
+<li>
+<code><a href="../reference/pdf2grobid.html">pdf2grobid()</a></code> now gives more useful information in the warning if some files do not convert when converting more than one PDF</li>
+<li>Changed parameter names in pdf2grobid to be consistently snake_case (consolidate_headers etc.) whilst keeping backward compatibility for the old camelCase (consolidateHeaders etc.)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-0-0-9057">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-0-0-9057"></a></h3>
+<ul><li>Fixed warning messages in <code>osf_check</code> module when there are no OSF links</li>
+<li>Fixed a problem in module_report() that happens when the table returned from module_run() has no rows</li>
+<li>Fixed a bug that crashed <code>stat_table()</code> function by generating a summary table in case of empty stat table</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9056" id="papercheck-0009056">papercheck 0.0.0.9056<a class="anchor" aria-label="anchor" href="#papercheck-0009056"></a></h2>
 <ul><li>If <code><a href="../reference/expand_text.html">expand_text()</a></code> doesn’t find a text match because sentence location info is missing, it now returns the original text instead of NA</li>

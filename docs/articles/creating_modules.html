@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9056</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9057</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -83,14 +83,17 @@
 <span><span class="co">#&gt; For support and examples visit:</span></span>
 <span><span class="co">#&gt; https://scienceverse.github.io/papercheck/</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ⚠️ This is alpha software; please check any</span></span>
+<span><span class="co">#&gt; ⚠️ Set an email to use APIs like OpenAlex</span></span>
+<span><span class="co">#&gt; papercheck::email('your@address.org')</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ‼️ This is alpha software; please check any</span></span>
 <span><span class="co">#&gt; results. False positives and negatives will</span></span>
 <span><span class="co">#&gt; occur at unknown rates.</span></span>
 <span><span class="co">#&gt; *******************************************</span></span></code></pre></div>
 <p>Modules are user-created patterns for checking a paper or set of
 papers. Module specifications are written in the same format as
 functions in R packages, using roxygen2 for documentation.</p>
-<pre><code><span><span class="co">#' Module Name</span></span>
+<pre><code><span><span class="co">#' Module Title</span></span>
 <span><span class="co">#'</span></span>
 <span><span class="co">#' @description</span></span>
 <span><span class="co">#' A short description of the module</span></span>
@@ -186,9 +189,9 @@ rely on paragraph spacing to distinguish description from details.</p>
 <div class="section level3">
 <h3 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a>
 </h3>
-<p>Include the module authors so they can get credit! Adda new
-<code>@author</code> tag for each author, and optionally add ther
-emailaddress.</p>
+<p>Include the module authors so they can get credit! Add a new
+<code>@author</code> tag for each author, and optionally add their email
+address.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' @author Lisa DeBruine (\email{debruine@gmail.com})</span></span>
 <span><span class="co">#' @author Daniel Lakens (\email{lakens@gmail.com})</span></span></code></pre></div>

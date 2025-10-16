@@ -1,7 +1,7 @@
 Package: papercheck
-Title: Check Scientific Papers for Best Practices
+Title: Check Research Outputs for Best Practices
 Version: 0.0.0.9057
-Date: 2025-10-07
+Date: 2025-10-16
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -27,7 +27,7 @@ Description: A modular, extendable system for automatically checking scientific 
 License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Suggests: 
     DT,
     ggplot2,
@@ -39,7 +39,8 @@ Suggests:
     shinydashboard,
     shinyjs,
     testthat (>= 3.0.0),
-    waiter
+    waiter,
+    rstudioapi
 Config/testthat/edition: 3
 Imports: 
     dplyr,
@@ -62,7 +63,8 @@ Imports:
     fs,
     htmltools,
     anytime,
-    rappdirs
+    rappdirs,
+    bib2df
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/papercheck, https://scienceverse.github.io/papercheck/
 BugReports: https://github.com/scienceverse/papercheck/issues

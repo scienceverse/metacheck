@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9056</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9057</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,9 +52,12 @@
 <span>  grobid_url <span class="op">=</span> <span class="st">"https://kermitt2-grobid.hf.space"</span>,</span>
 <span>  start <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>,</span>
 <span>  end <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>,</span>
-<span>  consolidateCitations <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  consolidateHeader <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  consolidateFunders <span class="op">=</span> <span class="fl">0</span></span>
+<span>  consolidate_citations <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  consolidate_header <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  consolidate_funders <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  consolidateCitations <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  consolidateHeader <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  consolidateFunders <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -63,7 +66,7 @@
 
 
 <dl><dt id="arg-filename">filename<a class="anchor" aria-label="anchor" href="#arg-filename"></a></dt>
-<dd><p>path to the PDF</p></dd>
+<dd><p>path to the PDF, a vector of paths, or a directory name that contains PDFs</p></dd>
 
 
 <dt id="arg-save-path">save_path<a class="anchor" aria-label="anchor" href="#arg-save-path"></a></dt>
@@ -82,15 +85,15 @@
 <dd><p>the last page of the PDF to read (defaults to -1 to read all pages)</p></dd>
 
 
-<dt id="arg-consolidatecitations">consolidateCitations<a class="anchor" aria-label="anchor" href="#arg-consolidatecitations"></a></dt>
+<dt id="arg-consolidate-citations">consolidate_citations<a class="anchor" aria-label="anchor" href="#arg-consolidate-citations"></a></dt>
 <dd><p>whether to fix/enhance citations</p></dd>
 
 
-<dt id="arg-consolidateheader">consolidateHeader<a class="anchor" aria-label="anchor" href="#arg-consolidateheader"></a></dt>
+<dt id="arg-consolidate-header">consolidate_header<a class="anchor" aria-label="anchor" href="#arg-consolidate-header"></a></dt>
 <dd><p>whether to fix/enhance paper info</p></dd>
 
 
-<dt id="arg-consolidatefunders">consolidateFunders<a class="anchor" aria-label="anchor" href="#arg-consolidatefunders"></a></dt>
+<dt id="arg-consolidate-funders">consolidate_funders<a class="anchor" aria-label="anchor" href="#arg-consolidate-funders"></a></dt>
 <dd><p>whether to fix/enhance funder info</p></dd>
 
 </dl></div>

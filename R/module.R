@@ -122,14 +122,20 @@ module_run <- function(paper, module, ...) {
 #' @returns the path to the module
 #' @keywords internal
 module_find <- function(module) {
-  # search for module in built-in directory
-  module_libs <- system.file("modules", package = "papercheck")
-  module_paths <- sapply(module_libs, list.files, full.names = TRUE, recursive = TRUE)
+  # search for modules in built-in directory
+  module_libs <- system.file("modules", package = "papercheck") |>
+    list.dirs() |>
+    c(".", "modules") # also search working directory and any directory called modules
+  module_paths <- sapply(module_libs, list.files,
+                         pattern = "\\.R$",
+                         full.names = TRUE) |>
+    unlist(use.names = FALSE)
+
   module_names <- basename(module_paths) |> sub("\\.R$", "", x = _)
 
   which_mod <- which(module_names == module)
-  if (length(which_mod) == 1) {
-    module_path <- module_paths[which_mod]
+  if (length(which_mod) > 0) {
+    module_path <- module_paths[which_mod[[1]]]
   } else if (file.exists(module)) {
     module_path <- module
   } else {
@@ -298,4 +304,39 @@ print.ppchk_module_help <- function(x, ...) {
     gsub("\n{2,}", "\n\n", x = _) |>
     trimws() |>
     cat()
+}
+
+
+
+#' Create a Module from a Template
+#'
+#' @param module_name The short name of the module (should contain only letters, numbers, and _)
+#' @param path The path to save the module (defaults to a directory called "modules" in the working directory)
+#'
+#' @returns the file path (invisibly)
+#' @export
+module_template <- function(module_name, path = "./modules") {
+  if (!grepl("^[a-zA-Z0-9_]+$", module_name)) {
+    stop("The module_name must contain only letters, numbers, and _")
+  }
+
+  template <- system.file("module_example.R", package = "papercheck") |>
+    readLines() |>
+    gsub("module_name", module_name, x = _)
+
+  dir.create(path, FALSE)
+  filepath <- file.path(path, paste0(module_name, ".R"))
+  write(template, filepath)
+
+  if (!file.exists(filepath)) {
+    stop("The file ", filepath, " did not save")
+  }
+
+  if (interactive() &
+      requireNamespace("rstudioapi", quietly = TRUE) &
+      rstudioapi::isAvailable()) {
+    rstudioapi::documentOpen(filepath)
+  }
+
+  invisible(filepath)
 }

@@ -32,7 +32,7 @@ crossref <- function(doi) {
   }
 
   url <- sprintf("https://api.labs.crossref.org/works/%s?mailto=%s",
-                 doi, "debruine@gmail.com")
+                 doi, email())
   j <- jsonlite::read_json(url)
 
   if (j$status == "ok") {
@@ -125,7 +125,7 @@ openalex <- function(doi, select = NULL) {
   }
 
   url <- sprintf("https://api.openalex.org/works/https://doi.org/%s?mailto=%s",
-                 doi, "debruine@gmail.com")
+                 doi, email())
 
   info <- tryCatch( suppressWarnings( jsonlite::read_json(url) ),
                  error = function(e) {
@@ -138,7 +138,7 @@ openalex <- function(doi, select = NULL) {
   #   # try title
   #   message("Trying to search OpenAlex by title")
   #   url <- sprintf("https://api.openalex.org/works?filter=title.search:%s&mailto=%s",
-  #                  URLencode(paper$info$title), "debruine@gmail.com")
+  #                  URLencode(paper$info$title), email())
   #   res <- tryCatch( suppressWarnings( jsonlite::read_json(url) ),
   #                     error = function(e) {
   #                       if (verbose())

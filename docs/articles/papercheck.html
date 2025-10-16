@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">papercheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9056</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9057</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -90,7 +90,10 @@
 <span><span class="co">#&gt; For support and examples visit:</span></span>
 <span><span class="co">#&gt; https://scienceverse.github.io/papercheck/</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ⚠️ This is alpha software; please check any</span></span>
+<span><span class="co">#&gt; ⚠️ Set an email to use APIs like OpenAlex</span></span>
+<span><span class="co">#&gt; papercheck::email('your@address.org')</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ‼️ This is alpha software; please check any</span></span>
 <span><span class="co">#&gt; results. False positives and negatives will</span></span>
 <span><span class="co">#&gt; occur at unknown rates.</span></span>
 <span><span class="co">#&gt; *******************************************</span></span></code></pre>
@@ -189,7 +192,7 @@ info, references, and citations.</p>
 <span><span class="co">#&gt; [1] ""</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $filename</span></span>
-<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/RtmpyxvPSp/temp_libpath16a8d4d45c6f3/papercheck/extdata/to_err_is_human.xml"</span></span></code></pre>
+<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/Rtmp3Xlqsg/temp_libpathcf4f41099fa7/papercheck/extdata/to_err_is_human.xml"</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="bibliography">Bibliography<a class="anchor" aria-label="anchor" href="#bibliography"></a>
@@ -1210,10 +1213,13 @@ will share more modules.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/module_list.html">module_list</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt;  * all_p_values: List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.</span></span>
 <span><span class="co">#&gt;  * all_urls: List all the URLs in the main text.</span></span>
+<span><span class="co">#&gt;  * aspredicted: Get data from AdPredicted pre-regosterations in a structured way</span></span>
 <span><span class="co">#&gt;  * effect_size: Detect t-tests and F-tests with missing effect sizes</span></span>
 <span><span class="co">#&gt;  * exact_p: List any p-values reported with insufficient precision (e.g., p &lt; .05 or p = n.s.)</span></span>
 <span><span class="co">#&gt;  * marginal: List all sentences that describe an effect as 'marginally significant'.</span></span>
+<span><span class="co">#&gt;  * miscitation: Check for frequently miscited papers. This module is just a proof of concept -- the miscite database is not yet populated with real examples.</span></span>
 <span><span class="co">#&gt;  * osf_check: List all OSF links and whether they are open, closed, or do not exist.</span></span>
+<span><span class="co">#&gt;  * power: Find power analyses and return their components.</span></span>
 <span><span class="co">#&gt;  * ref_consistency: Check if all references are cited and all citations are referenced</span></span>
 <span><span class="co">#&gt;  * retractionwatch: Flag any cited papers in the RetractionWatch database</span></span>
 <span><span class="co">#&gt;  * statcheck: Check consistency of p-values and test statistics</span></span>
