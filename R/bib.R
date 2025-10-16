@@ -178,6 +178,13 @@ bibtex_add_dois <- function(bibfile,
 }
 
 
+#' Add DOIs to bibliography
+#'
+#' @param bib the bib table
+#' @param strict Should there be a single exact match for title and journal, if FALSE, gives the best match
+#'
+#' @returns the bib table with updated DOIs
+#' @export
 bib_add_dois <- function(bib, strict = TRUE) {
   old_doi <- bib$doi
 

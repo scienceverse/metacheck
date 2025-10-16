@@ -7,6 +7,7 @@
 * New module: `aspredicted` to get structured data from AsPredicted preregistrations (mainly for info)
 * `module_template()` creates a module file from a template
 * `orcid_person()` gets details from an ORCiD, such as name, emails, country
+* `osf_preprint_list()` returns a table of preprints from the OSF optionally filtered by archive and dates created or modified
 * Added an API wrapper - it is now possible to run papercheck functions and modules via a REST API. See `inst/plumber/README.md` for details.
 * Added documentation and plumber/Docker quickstart for the API
 

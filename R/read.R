@@ -1254,7 +1254,7 @@ xml2bib <- function(ref) {
 
       utils::person(given = forename,
                     family = surname)
-    }) |> do.call(c, args = _)
+    }) |> do.call(base::c, args = _)
 
   b$editor <- xml2::xml_find_all(ref, ".//editor //persName") |>
     lapply(\(a) {
@@ -1263,7 +1263,7 @@ xml2bib <- function(ref) {
 
       utils::person(given = forename,
                     family = surname)
-    }) |> do.call(c, args = _)
+    }) |> do.call(base::c, args = _)
 
   b$journal <- xml2::xml_find_first(ref, ".//title[@level='j']") |>
     xml2::xml_text() |>

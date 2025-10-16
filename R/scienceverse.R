@@ -324,13 +324,7 @@ orcid_person <- function(orcid) {
       keywords = xml_find(xml, "//keyword:content") |> list(),
       urls = xml_find(xml, "//researcher-url:url") |> list()
     )
-  }) |>
-    do.call(dplyr::bind_rows, args = _)
-  return(details)
+  })
+
+  dplyr::bind_rows(details)
 }
-
-
-a <- list(a = 1, b = list(1:3))
-b <- list(a = 2, b = list(3))
-c <- do.call(dplyr::bind_rows, list(a, b))
-c

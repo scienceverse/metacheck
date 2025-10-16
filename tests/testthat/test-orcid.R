@@ -42,7 +42,7 @@ test_that("orcid_person", {
   expect_equal(person$given, "Lisa")
   expect_equal(person$family, "DeBruine")
   expect_equal(person$country, "GB")
-  expect_equal(person$email, "lisa.debruine@glasgow.ac.uk;debruine@gmail.com")
+  expect_equal(person$email[[1]], c("lisa.debruine@glasgow.ac.uk", "debruine@gmail.com"))
 })
 
 
