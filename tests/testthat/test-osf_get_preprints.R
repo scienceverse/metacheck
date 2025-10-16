@@ -19,8 +19,13 @@ test_that("defaults", {
   psyarxiv <- osf_preprint_list(provider)
   expect_equal(nrow(psyarxiv), 10)
 
-  psyarxiv20 <- osf_preprint_list(provider, max_n = 20)
+  psyarxiv20 <- osf_preprint_list(provider, page_end = 2)
   expect_equal(nrow(psyarxiv20), 20)
+  expect_equal(psyarxiv$osf_id, psyarxiv20$osf_id[1:10])
+
+  psyarxiv10 <- osf_preprint_list(provider, page_start = 2)
+  expect_equal(nrow(psyarxiv10), 10)
+  expect_equal(psyarxiv20$osf_id[11:20], psyarxiv10$osf_id)
 
   # date_created
   date_created <- psyarxiv$date_created[[1]]

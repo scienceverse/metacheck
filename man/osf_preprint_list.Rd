@@ -8,7 +8,8 @@ osf_preprint_list(
   provider = NULL,
   date_created = NULL,
   date_modified = NULL,
-  max_n = 10
+  page_start = 1,
+  page_end = page_start
 )
 }
 \arguments{
@@ -18,7 +19,9 @@ osf_preprint_list(
 
 \item{date_modified}{a single date or a vector of two date (min and max)}
 
-\item{max_n}{the maximum number of entries to return (will be rounded up to the nearest 10)}
+\item{page_start}{the first page of 10 entries}
+
+\item{page_end}{the last page of 10 entires to read}
 }
 \value{
 a table of preprint info
