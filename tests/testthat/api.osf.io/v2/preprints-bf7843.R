@@ -1,6 +1,6 @@
-structure(list(url = "https://api.osf.io/v2/preprints/?filter%5Bprovider%5D=psyarxiv&page=2", 
+structure(list(url = "https://api.osf.io/v2/preprints/?page=2&filter[provider]=psyarxiv", 
     status_code = 200L, headers = structure(list(server = "nginx", 
-        date = "Thu, 16 Oct 2025 14:08:37 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
+        date = "Thu, 16 Oct 2025 14:08:39 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
         vary = "Accept-Encoding", vary = "Accept, Cookie, origin", 
         allow = "GET, POST, HEAD, OPTIONS", `x-content-type-options` = "nosniff", 
         `referrer-policy` = "same-origin", `cross-origin-opener-policy` = "same-origin", 
@@ -8,7 +8,7 @@ structure(list(url = "https://api.osf.io/v2/preprints/?filter%5Bprovider%5D=psya
         expires = "-1", pragma = "no-cache", `content-encoding` = "gzip", 
         via = "1.1 google", `alt-svc` = "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"), class = c("insensitive", 
     "list")), all_headers = list(list(status = 200L, version = "HTTP/2", 
-        headers = structure(list(server = "nginx", date = "Thu, 16 Oct 2025 14:08:37 GMT", 
+        headers = structure(list(server = "nginx", date = "Thu, 16 Oct 2025 14:08:39 GMT", 
             `content-type` = "application/vnd.api+json; charset=utf-8", 
             vary = "Accept-Encoding", vary = "Accept, Cookie, origin", 
             allow = "GET, POST, HEAD, OPTIONS", `x-content-type-options` = "nosniff", 
@@ -4950,7 +4950,7 @@ structure(list(url = "https://api.osf.io/v2/preprints/?filter%5Bprovider%5D=psya
     0x70, 0x61, 0x67, 0x65, 0x22, 0x3a, 0x31, 0x30, 0x7d, 0x7d, 
     0x2c, 0x22, 0x6d, 0x65, 0x74, 0x61, 0x22, 0x3a, 0x7b, 0x22, 
     0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x22, 0x3a, 0x22, 
-    0x32, 0x2e, 0x30, 0x22, 0x7d, 0x7d)), date = structure(1760623717, class = c("POSIXct", 
+    0x32, 0x2e, 0x30, 0x22, 0x7d, 0x7d)), date = structure(1760623719, class = c("POSIXct", 
     "POSIXt"), tzone = "GMT"), times = c(redirect = 0, namelookup = 0, 
-    connect = 0, pretransfer = 0.00014, starttransfer = 1.492627, 
-    total = 1.493349)), class = "response")
+    connect = 0, pretransfer = 0.000117, starttransfer = 1.619135, 
+    total = 1.62508)), class = "response")

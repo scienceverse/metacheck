@@ -50,7 +50,8 @@
 <span>  provider <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  date_created <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  date_modified <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  max_n <span class="op">=</span> <span class="fl">10</span></span>
+<span>  page_start <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  page_end <span class="op">=</span> <span class="va">page_start</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -70,8 +71,12 @@
 <dd><p>a single date or a vector of two date (min and max)</p></dd>
 
 
-<dt id="arg-max-n">max_n<a class="anchor" aria-label="anchor" href="#arg-max-n"></a></dt>
-<dd><p>the maximum number of entries to return (will be rounded up to the nearest 10)</p></dd>
+<dt id="arg-page-start">page_start<a class="anchor" aria-label="anchor" href="#arg-page-start"></a></dt>
+<dd><p>the first page of 10 entries</p></dd>
+
+
+<dt id="arg-page-end">page_end<a class="anchor" aria-label="anchor" href="#arg-page-end"></a></dt>
+<dd><p>the last page of 10 entires to read</p></dd>
 
 </dl></div>
     <div class="section level2">
