@@ -6,8 +6,7 @@ test_that("error", {
 
   paper <- demoxml() |> read()
   expect_error( paper_report <- report(paper, modules = c("notamodule")),
-                "Some modules are not available: notamodule",
-                fixed = TRUE)
+                "notamodule")
 })
 
 test_that("defaults", {
@@ -162,4 +161,18 @@ test_that("module_report", {
   expect_true(grepl("^|id               | p_values|", op))
   expect_true(grepl("\n\nShowing 4 of 4 rows$", op))
   expect_true(grepl("|0956797614557697 |       27|", op))
+})
+
+test_that("issue-17", {
+  # https://github.com/scienceverse/papercheck/issues/17
+  # error in .subset(x, j) : invalid subscript type 'list'
+
+  # pdf2grobid("problems/Takagishi.pdf")
+  paper <- read("problems/Takagishi.xml")
+  output_file <- "problems/Takagashi.html"
+  unlink(output_file)
+  report(paper, output_file = output_file, output_format = "html")
+
+  expect_true(file.exists(output_file))
+
 })

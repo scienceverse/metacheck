@@ -69,6 +69,7 @@ reference:
   - '`module_info`'
   - '`module_run`'
   - '`module_report`'
+  - '`module_template`'
   - '`report`'
   - '`papercheck_app`'
 - title: LLM Functions
@@ -78,6 +79,7 @@ reference:
   - '`llm_max_calls`'
   - '`llm_model`'
   - '`llm_model_list`'
+  - '`llm_use`'
   - '`json_expand`'
 - title: OSF Functions
   desc: ~
@@ -90,6 +92,7 @@ reference:
   - '`osf_retrieve`'
   - '`osf_get_all_pages`'
   - '`osf_api_calls`'
+  - '`osf_preprint_list`'
 - title: AsPredicted/ResearchBox Functions
   desc: ~
   contents:
@@ -109,8 +112,12 @@ reference:
 - title: Integrations
   desc: ~
   contents:
+  - '`email`'
   - '`filetype`'
   - '`summarize_contents`'
+  - '`bibsearch`'
+  - '`bib_add_dois`'
+  - '`bibtex_add_dois`'
   - '`openalex`'
   - '`crossref`'
   - '`retractionwatch`'
@@ -118,6 +125,7 @@ reference:
   - '`rw_update`'
   - '`check_orcid`'
   - '`get_orcid`'
+  - '`orcid_person`'
   - '`credit_roles`'
 - title: Validation Functions
   desc: ~

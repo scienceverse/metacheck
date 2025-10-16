@@ -114,7 +114,7 @@ osf_api_check <- function(osf_api = getOption("papercheck.osf.api")) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   # get info on one OSF node
 #'   osf_retrieve("pngda")
 #'
@@ -166,7 +166,7 @@ osf_retrieve <- function(osf_url, id_col = 1,
   while (!too_many & i < length(valid_ids)) {
     i = i + 1
     oi <- osf_info(valid_ids[[i]])
-    if (oi$osf_type == "too many requests") too_many <- TRUE
+    if ("too many requests" %in% oi$osf_type) too_many <- TRUE
     id_info[[i]] <- oi
   }
 
@@ -431,7 +431,7 @@ filetype <- function(filename) {
   )
 
   add_types <- ext |>
-    dplyr::left_join(file_types, by = "ext") |>
+    dplyr::left_join(papercheck::file_types, by = "ext") |>
     dplyr::summarise(type = paste(.data$type, collapse = ";"),
                      .by = c("id", "ext"))
 
@@ -457,11 +457,17 @@ osf_preprint_data <- function(data) {
     osf_id = data$id,
     name = att$title,
     description = att$description %||% NA_character_,
+    #tags = sapply(att$tags, paste, collapse = ";"),
     osf_type = data$type,
+    provider = data$relationships$provider$data$id,
     public = att$public %||% NA,
     doi = att$doi %||% NA_character_,
     version = att$version %||% NA_integer_,
-    parent = data$relationships$node$data$id %||% NA_character_
+    is_published = att$is_published %||% NA,
+    date_created = att$date_created %||% NA_character_,
+    date_modified = att$date_modified %||% NA_character_,
+    parent = data$relationships$node$data$id %||% NA_character_,
+    primary_file = data$relationships$primary_file$links$related$href %||% NA_character_
   )
 
   return(obj)
@@ -542,18 +548,17 @@ osf_check_id <- function(osf_id) {
         sapply(utils::tail, 1)
 
       # All OSF IDs are 5 or 24 characters
-      if (!nchar(path) %in% c(5, 24)) {
-        stop()
-      }
+      if (grepl("^[a-z0-9]{5}(_v\\d+)?$", path)) return(path)
+      if (nchar(path) == 24) return(path)
 
-      path
+      stop()
     },
     error = \(e) {
       # try to extract 5-char ID
-      m <- gregexpr("(?<=osf\\.io/)[a-z0-9]{5}[?/]?",
+      m <- gregexpr("(?<=osf\\.io/)[a-z0-9]{5}(_v\\d+)?[?/]?",
                     id, perl = TRUE)
       id5 <- regmatches(id, m) |> sub("[?/]$", "", x = _)
-      if (nchar(id5) == 5) return(id5)
+      if (nchar(id5) %in% c(5, 8, 9)) return(id5)
 
       # else...
       warning(id, " is not a valid OSF ID",
@@ -1031,4 +1036,70 @@ osf_file_download <- function(osf_id,
   }
 
   invisible(ret)
+}
+
+
+#' Get A list of preprints from the OSF
+#'
+#' @param provider a vector of the preprint providers, e.g. psyarxiv, socarxiv, edarxiv (see <https://osf.io/preprints/discover>)
+#' @param date_created a single date or a vector of two date (min and max)
+#' @param date_modified a single date or a vector of two date (min and max)
+#' @param max_n the maximum number of entries to return (will be rounded up to the nearest 10)
+#'
+#' @returns a table of preprint info
+#' @export
+#' @examples
+#' \donttest{
+#'   dc <- c("2025-09-01", "2025-10-01")
+#'   pp <- osf_preprint_list("psyarxiv", date_created = dc)
+#'   files <- pp$primary_file
+#' }
+osf_preprint_list <- function(provider = NULL,
+                  date_created = NULL,
+                  date_modified = NULL,
+                  #is_published = NULL, # can only access own unpublished works
+                  max_n = 10) {
+  filters <- c()
+
+  if (!is.null(provider)) {
+    f <- paste0(provider, collapse = ",") |>
+      paste0("filter[provider]=", x = _)
+    filters <- c(filters, f)
+  }
+
+  if (!is.null(date_created)) {
+    if (length(date_created) == 1) {
+      f <- paste0("filter[date_created]=", date_created)
+      filters <- c(filters, f)
+    } else if (length(date_created) == 2) {
+      gte <- paste0("filter[date_created][gte]=", min(date_created))
+      lte <- paste0("filter[date_created][lte]=", max(date_created))
+      filters <- c(filters, gte, lte)
+    }
+  }
+
+  if (!is.null(date_modified)) {
+    if (length(date_modified) == 1) {
+      f <- paste0("filter[date_modified]=", date_modified)
+      filters <- c(filters, f)
+    } else if (length(date_modified) == 2) {
+      gte <- paste0("filter[date_modified][gte]=", min(date_modified))
+      lte <- paste0("filter[date_modified][lte]=", max(date_modified))
+      filters <- c(filters, gte, lte)
+    }
+  }
+
+  # if (!is.null(is_published)) {
+  #   val <- ifelse(is_published == TRUE || is_published == "true",
+  #                 "true", "false")
+  #   f <- paste0("filter[is_published]=", val)
+  #   filters <- c(filters, f)
+  # }
+
+  url <- paste(filters, collapse = "&") |>
+    paste0(getOption("papercheck.osf.api"), "/preprints/", "?", x = _)
+
+  pp <- osf_get_all_pages(url, page_end = ceiling(max_n/10))
+
+  osf_preprint_data(pp)
 }

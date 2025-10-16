@@ -15,7 +15,7 @@
 #' @examples
 #' retractionwatch()
 retractionwatch <- function() {
-  int <- system.file("retractionwatch.Rds", package = "papercheck")
+  int <- system.file("databases/retractionwatch.Rds", package = "papercheck")
   int_rw <- readRDS(int)
 
   ext <- rappdirs::user_data_dir("papercheck", "scienceverse") |>
@@ -61,7 +61,7 @@ rw_update <- function() {
   options(timeout=300)
 
   tmp <- tempfile(fileext = ".csv")
-  url <- "https://api.labs.crossref.org/data/retractionwatch?debruine@gmail.com"
+  url <- paste0("https://api.labs.crossref.org/data/retractionwatch?", email())
   utils::download.file(url, destfile = tmp)
   on.exit(unlink(tmp))
 

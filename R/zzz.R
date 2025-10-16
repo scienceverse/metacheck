@@ -12,6 +12,7 @@
     papercheck.verbose = TRUE,
     papercheck.llm_max_calls = 30L,
     papercheck.llm.model = "llama-3.3-70b-versatile",
+    papercheck.llm.use = FALSE,
     papercheck.osf.delay = 0,
     papercheck.osf.api = "https://api.osf.io/v2",
     papercheck.osf.api.calls = 0
@@ -32,6 +33,18 @@
 #' @export
 #' @keywords internal
 .onAttach <- function(libname, pkgname) {
+  # check if email is set
+  email <- getOption("papercheck.email") %||% ""
+
+  if (!grepl(".+@.+\\..+$", email)) {
+    mailset <- "\n\u26A0\uFE0F Set an email to use APIs like OpenAlex\npapercheck::email('your@address.org')\n"
+  } else {
+    mailset <- paste0(
+      "\n\uD83D\uDCE7 The email for APIs like OpenAlex:",
+      "\n", email, "\n"
+    )
+  }
+
   stripe <- paste0(
     "\033[31m*****", # red
     "\033[33m*****", # yellow
@@ -54,8 +67,8 @@
     "\u2705 Welcome to PaperCheck",
     "For support and examples visit:",
     "https://scienceverse.github.io/papercheck/",
-    "",
-    "\u26A0\uFE0F This is alpha software; please check any",
+    mailset,
+    "\u203C\uFE0F This is alpha software; please check any",
     "results. False positives and negatives will",
     "occur at unknown rates.",
     stripe,
