@@ -1044,7 +1044,8 @@ osf_file_download <- function(osf_id,
 #' @param provider a vector of the preprint providers, e.g. psyarxiv, socarxiv, edarxiv (see <https://osf.io/preprints/discover>)
 #' @param date_created a single date or a vector of two date (min and max)
 #' @param date_modified a single date or a vector of two date (min and max)
-#' @param max_n the maximum number of entries to return (will be rounded up to the nearest 10)
+#' @param page_start the first page of 10 entries
+#' @param page_end the last page of 10 entires to read
 #'
 #' @returns a table of preprint info
 #' @export
@@ -1058,8 +1059,9 @@ osf_preprint_list <- function(provider = NULL,
                   date_created = NULL,
                   date_modified = NULL,
                   #is_published = NULL, # can only access own unpublished works
-                  max_n = 10) {
-  filters <- c()
+                  page_start = 1,
+                  page_end = page_start) {
+  filters <- paste0("page=", page_start)
 
   if (!is.null(provider)) {
     f <- paste0(provider, collapse = ",") |>
@@ -1099,7 +1101,7 @@ osf_preprint_list <- function(provider = NULL,
   url <- paste(filters, collapse = "&") |>
     paste0(getOption("papercheck.osf.api"), "/preprints/", "?", x = _)
 
-  pp <- osf_get_all_pages(url, page_end = ceiling(max_n/10))
+  pp <- osf_get_all_pages(url, page_end = page_end)
 
   osf_preprint_data(pp)
 }
