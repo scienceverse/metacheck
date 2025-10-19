@@ -361,7 +361,10 @@ function(req, res) {
     logger::log_info("Request completed successfully: {request_id}")
     # Return the aggregated report
     list(
-        paper_info = info_table(paper_obj$paper, c("title", "doi", "keywords")),
+        paper_info = info_table(
+            paper_obj$paper,
+            c("title", "description", "keywords", "doi", "submission", "received", "accepted")
+        ),
         authors = authors,
         references = references,
         cross_references = cross_references,
