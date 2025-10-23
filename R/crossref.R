@@ -134,6 +134,14 @@ openalex <- function(doi, select = NULL) {
                    return(list(error = doi))
                  })
 
+  if (!is.null(info$abstract_inverted_index)) {
+    # convert inverted index to abstract
+    aii <- info$abstract_inverted_index
+    words <- rep(names(aii), sapply(aii, length))
+    order <- unname(unlist(aii))
+    info$abstract <- paste(words[order(order)], collapse = " ")
+  }
+
   # if ("error" %in% names(info) & !is.null(paper)) {
   #   # try title
   #   message("Trying to search OpenAlex by title")
@@ -162,20 +170,4 @@ ref_info <- function(paper) {
       list()
     }
   })
-}
-
-#' Update Paper Info
-#'
-#' Check OpenAlex and/or CrossRef for paper info and update the paper object accordingly to fix import problems.
-#'
-#' @param paper a papercheck paper object or list
-#'
-#' @returns the updated paper object
-#' @export
-#' @keywords internal
-#'
-#' @examples
-#' ps1 <- paper_info(psychsci[[1]])
-paper_info <- function(paper) {
-
 }
