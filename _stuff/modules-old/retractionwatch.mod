@@ -11,12 +11,12 @@
     "email": "debruine@gmail.com"
   }],
   "code": {
-    "packages": ["papercheck", "dplyr"],
+    "packages": ["metacheck", "dplyr"],
     "code": [
-      "refs <- papercheck::concat_tables(paper, c('references'))",
-      "rw <- dplyr::inner_join(refs, papercheck::retractionwatch, by = 'doi')",
+      "refs <- metacheck::concat_tables(paper, c('references'))",
+      "rw <- dplyr::inner_join(refs, metacheck::retractionwatch, by = 'doi')",
       "if (nrow(rw) > 0) {",
-      "  cites <- papercheck::concat_tables(paper, c('citations'))",
+      "  cites <- metacheck::concat_tables(paper, c('citations'))",
       "  rw <- dplyr::left_join(rw, cites, by = c('id', 'ref_id'))",
       "}",
       "rw"

@@ -17,7 +17,7 @@
 #'
 #' @examples
 #' module_run(psychsci, "miscitation")
-miscitation <- function(paper, db = readRDS(system.file("databases/miscite.Rds", package = "papercheck")), ...) {
+miscitation <- function(paper, db = readRDS(system.file("databases/miscite.Rds", package = "metacheck")), ...) {
   # consolidate bib tables and filter to relevant DOI
   bibs <- concat_tables(paper, "bib") |>
     dplyr::select(xref_id, ref, doi, id) |>

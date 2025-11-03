@@ -13,8 +13,8 @@ module_run <- function(paper, module, ...) {
   module_path <- module_find(module)
   info <- module_info(module_path)
 
-  # handle ppchk_module_output in pipeline
-  if (inherits(paper, "ppchk_module_output")) {
+  # handle metacheck_module_output in pipeline
+  if (inherits(paper, "metacheck_module_output")) {
     summary_table <- paper$summary
     paper <- paper$paper
   } else if (is_paper_list(paper)) {
@@ -110,7 +110,7 @@ module_run <- function(paper, module, ...) {
     paper = paper
   )
 
-  class(report_items) <- "ppchk_module_output"
+  class(report_items) <- "metacheck_module_output"
 
   return(report_items)
 }
@@ -123,7 +123,7 @@ module_run <- function(paper, module, ...) {
 #' @keywords internal
 module_find <- function(module) {
   # search for modules in built-in directory
-  module_libs <- system.file("modules", package = "papercheck") |>
+  module_libs <- system.file("modules", package = "metacheck") |>
     list.dirs() |>
     c(".", "modules") # also search working directory and any directory called modules
   module_paths <- sapply(module_libs, list.files,
@@ -154,7 +154,7 @@ module_find <- function(module) {
 #'
 #' @examples
 #' module_list()
-module_list <- function(module_dir = system.file("modules", package = "papercheck")) {
+module_list <- function(module_dir = system.file("modules", package = "metacheck")) {
   files <- list.files(module_dir, "\\.R$",
                       full.names = TRUE,
                       recursive = TRUE)
@@ -174,7 +174,7 @@ module_list <- function(module_dir = system.file("modules", package = "paperchec
       sapply(\(x) x[[1]] %||% ""),
     path = files[valid]
   )
-  class(display) <- c("ppchk_module_list", "data.frame")
+  class(display) <- c("metacheck_module_list", "data.frame")
   rownames(display) <- NULL
 
   return(display)
@@ -243,33 +243,33 @@ module_help <- function(module = NULL) {
 
   help <- info[c("title", "description", "details", "examples")]
   help[sapply(help, is.null)] <- NULL
-  class(help) <- "ppchk_module_help"
+  class(help) <- "metacheck_module_help"
 
   return(help)
 }
 
 #' Print Module List Object
 #'
-#' @param x The ppchk_module_list object
+#' @param x The metacheck_module_list object
 #' @param ... Additional parameters for print
 #'
 #' @export
 #' @keywords internal
 #'
-print.ppchk_module_list <- function(x, ...) {
+print.metacheck_module_list <- function(x, ...) {
   txt <- paste0("* ", x$name, ": ", x$description, "\n")
   cat("", txt, "\nUse `module_help(\"module_name\")` for help with a specific module\n")
 }
 
 #' Print Module Output
 #'
-#' @param x The ppchk_module_output object
+#' @param x The metacheck_module_output object
 #' @param ... Additional parameters for `module_report()`
 #'
 #' @export
 #' @keywords internal
 #'
-print.ppchk_module_output <- function(x, ...) {
+print.metacheck_module_output <- function(x, ...) {
   args <- list(...)
   args$module_output <- x
 
@@ -284,13 +284,13 @@ print.ppchk_module_output <- function(x, ...) {
 
 #' Print Module Help Object
 #'
-#' @param x The ppchk_module_help object
+#' @param x The metacheck_module_help object
 #' @param ... Additional parameters for print
 #'
 #' @export
 #' @keywords internal
 #'
-print.ppchk_module_help <- function(x, ...) {
+print.metacheck_module_help <- function(x, ...) {
   examples <- ""
   if (!is.null(x$examples)) {
     examples <- sprintf("``` r\n%s\n```", x$examples)
@@ -320,7 +320,7 @@ module_template <- function(module_name, path = "./modules") {
     stop("The module_name must contain only letters, numbers, and _")
   }
 
-  template <- system.file("module_example.R", package = "papercheck") |>
+  template <- system.file("module_example.R", package = "metacheck") |>
     readLines() |>
     gsub("module_name", module_name, x = _)
 

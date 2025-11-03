@@ -19,7 +19,7 @@ test_that("from text file", {
 })
 
 test_that("from txt", {
-  filename <- system.file("extdata/to_err_is_human.txt", package = "papercheck")
+  filename <- system.file("extdata/to_err_is_human.txt", package = "metacheck")
   p <- read(filename)
   ft <- p$full_text
 
@@ -30,7 +30,7 @@ test_that("from txt", {
 })
 
 test_that("from word docx", {
-  filename <- system.file("extdata/to_err_is_human.docx", package = "papercheck")
+  filename <- system.file("extdata/to_err_is_human.docx", package = "metacheck")
   p <- read(filename)
   ft <- p$full_text
 
@@ -41,7 +41,7 @@ test_that("from word docx", {
 })
 
 # test_that("from word doc", {
-#   filename <- system.file("extdata/to_err_is_human.doc", package = "papercheck")
+#   filename <- system.file("extdata/to_err_is_human.doc", package = "metacheck")
 #   p <- read(filename)
 #   ft <- p$full_text
 #

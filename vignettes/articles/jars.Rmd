@@ -11,13 +11,13 @@ vignette: >
 ```{r load functions}
 #| include: false
 
-library(papercheck)
+library(metacheck)
 library(tidyverse)
 ```
 
 JARS (journal article reporting standards), by the American Psychological Association offer guidance on the information that should be reported in scientific articles to enhance their scientific rigour [@appelbaum_journal_2018]. The guidelines for quantitative research are a set of excellent recommendations, and almost every published scientific article would be improved if researchers actually followed JARS.
 
-However, as the guidelines are not well known, authors usually do not implement them, and reviewers do not check if journal article reporting standards are followed. Furthermore, there are so many guidelines, it would take a lot of time to check them all manually. Automation can help increase awareness of JARS by systematically checking if recommendations are followed, and if not, point out where improvements can be made. Below we will illustrate how 2 JARS guidelines can be automatically checked. There are dozens of other potential guidelines for which dedicated Papercheck modules could be created. Anyone who has created an R package will have the experience of running R CMD check, which automatically checks dozens of requirements that an R package must adhere to before it is allowed on CRAN. It should be possible to automatically check many of the JARS guidelines in a similar manner.
+However, as the guidelines are not well known, authors usually do not implement them, and reviewers do not check if journal article reporting standards are followed. Furthermore, there are so many guidelines, it would take a lot of time to check them all manually. Automation can help increase awareness of JARS by systematically checking if recommendations are followed, and if not, point out where improvements can be made. Below we will illustrate how 2 JARS guidelines can be automatically checked. There are dozens of other potential guidelines for which dedicated metacheck modules could be created. Anyone who has created an R package will have the experience of running R CMD check, which automatically checks dozens of requirements that an R package must adhere to before it is allowed on CRAN. It should be possible to automatically check many of the JARS guidelines in a similar manner.
 
 ## Exact p-values
 
@@ -25,19 +25,19 @@ The first reporting guideline we will illustrate is to report exact p-values. Th
 
 > Report exact p values (e.g., p = .031) to two or three decimal places. However, report p values less than .001 as p \< .001.
 
-Reporting *p* values precisely allows readers to include the test results in *p* value meta-analytic tests, such as p-curve, or z-curve [@simonsohn_p-curve_2014; @bartos_zcurve_2020], and makes it possible the check the internal coherence of the reported result with tools such as Statcheck [@nuijten_prevalencestatisticalreporting_2015]. Papercheck has a dedicated module, "exact-p", to identify the presence of imprecise p-values. We can run it on a single paper:
+Reporting *p* values precisely allows readers to include the test results in *p* value meta-analytic tests, such as p-curve, or z-curve [@simonsohn_p-curve_2014; @bartos_zcurve_2020], and makes it possible the check the internal coherence of the reported result with tools such as Statcheck [@nuijten_prevalencestatisticalreporting_2015]. metacheck has a dedicated module, "exact-p", to identify the presence of imprecise p-values. We can run it on a single paper:
 
 ```{r}
 #| results: asis
 
-library(papercheck)
+library(metacheck)
 res_imprecise <- module_run(psychsci$`0956797617744542`, "exact_p")
 
 res_imprecise
 
 ```
 
-The module only returns the exact *p* values, but the Papercheck software has several convenient functions to interact with the information in scientific manuscripts. The `expand_text` function can be used to retrieve text around matches (for example by retrieving the previous and next sentence as well). We can retrieve the full sentence so that users can easily examine whether the reported *p* values should have been precise:
+The module only returns the exact *p* values, but the metacheck software has several convenient functions to interact with the information in scientific manuscripts. The `expand_text` function can be used to retrieve text around matches (for example by retrieving the previous and next sentence as well). We can retrieve the full sentence so that users can easily examine whether the reported *p* values should have been precise:
 
 ```{r}
 res_imprecise_expanded <- expand_text(
@@ -79,9 +79,9 @@ You can also run modules for multiple papers at once and get a summary table.
 module_run(psychsci[1:10], "effect_size")
 ```
 
-This can be useful for meta-scientific research questions, such as whether there is an increase in the best practice to report effect sizes for *t*-tests over time. In the plot below we have run the module on 1838 published articles in the journal Psychological Science between 2014 and 2024. We can see that where a decade ago, close to half the reported t-tests would not be followed by an effect size, but a decade later, this holds for only around 25% of tests. Perhaps the introduction of a tool like Papercheck can reduce this percentage even further (although it does not need to be 0, as we discuss below).
+This can be useful for meta-scientific research questions, such as whether there is an increase in the best practice to report effect sizes for *t*-tests over time. In the plot below we have run the module on 1838 published articles in the journal Psychological Science between 2014 and 2024. We can see that where a decade ago, close to half the reported t-tests would not be followed by an effect size, but a decade later, this holds for only around 25% of tests. Perhaps the introduction of a tool like metacheck can reduce this percentage even further (although it does not need to be 0, as we discuss below).
 
-Our main point is to demonstrate that it is relatively easy to answer some meta-scientific questions with Papercheck. Editors could easily replicate the plot below for articles in their own journal, and see which practices they should improve. As we highlighted in the [introductory blog post](https://daniellakens.blogspot.com/2025/06/introducing-papercheck.html), when modules are used for metascience, they need to be validated, and have low error rates. We have manually checked the *t*-tests and *F*-tests in 250 papers in Psychological Science, and our effect_size module detected 100% of *t*-tests with effect sizes, 99% of *t*-tests without effect sizes, 99% of *F*-tests with effect sizes, and 100% of *F*-tests without effect sizes. This is accurate enough for meta-scientific research.
+Our main point is to demonstrate that it is relatively easy to answer some meta-scientific questions with metacheck. Editors could easily replicate the plot below for articles in their own journal, and see which practices they should improve. As we highlighted in the [introductory blog post](https://daniellakens.blogspot.com/2025/06/introducing-metacheck.html), when modules are used for metascience, they need to be validated, and have low error rates. We have manually checked the *t*-tests and *F*-tests in 250 papers in Psychological Science, and our effect_size module detected 100% of *t*-tests with effect sizes, 99% of *t*-tests without effect sizes, 99% of *F*-tests with effect sizes, and 100% of *F*-tests without effect sizes. This is accurate enough for meta-scientific research.
 
 ```{r}
 #| include: false

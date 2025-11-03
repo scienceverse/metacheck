@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{verbose}
 \alias{verbose}
-\title{Set or get papercheck verbosity}
+\title{Set or get metacheck verbosity}
 \usage{
 verbose(verbose = NULL)
 }
@@ -13,7 +13,7 @@ verbose(verbose = NULL)
 the current option value (logical)
 }
 \description{
-Set or get papercheck verbosity
+Set or get metacheck verbosity
 }
 \examples{
 verbose()

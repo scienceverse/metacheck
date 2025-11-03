@@ -6,7 +6,7 @@
 # test_that("basic", {
 #   skip("python install is messed up")
 #   skip_on_cran()
-#   model_dir <- system.file("modules/sample-size", package = "papercheck")
+#   model_dir <- system.file("modules/sample-size", package = "metacheck")
 #
 #   if (model_dir == "") {
 #     skip("needs big classifier: sample-size")

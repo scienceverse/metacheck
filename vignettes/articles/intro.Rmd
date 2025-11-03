@@ -1,10 +1,10 @@
 ---
-title: "Introducing Papercheck"
+title: "Introducing metacheck"
 subtitle: "An Automated Tool to Check for Best Practices in Scientific Articles"
 output: rmarkdown::html_vignette
 bibliography: refs_intro.bib
 vignette: >
-  %\VignetteIndexEntry{Introducing Papercheck}
+  %\VignetteIndexEntry{Introducing metacheck}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -25,19 +25,19 @@ Recent progress in machine learning and artificial intelligence has made it incr
 
 As a team, we have a specific philosophy on how to create useful automated checks. First, automated checks should make users aware of a potential points of improvement, and can point to sources to learn how to implement improvements, but the user decides whether and how to incorporate suggestions. Second, algorithms should be validated against community-annotated ground truth where possible, and the error rates should be transparently communicated. We use open software and tools, and as much as possible, open data. For each research practice to detect or check, domain experts should establish what best practices are, and automated checks should continually be revised and updated based on criticism. Any use of AI must be minimal, optional, and based on open source tools that guarantee data privacy. As a matter of principle, we start the development modules without the use of LLMs. Finally, the creation of modules should be open to the entire scientific community, such that any domain expert who wants to contribute an automated check can easily do so.
 
-## PaperCheck
+## metacheck
 
-![](https://scienceverse.github.io/papercheck/logo.png){style="float:right; width: 10em;" fig-alt="Papercheck Logo, a green hexagon with PAPAERCHECK in art deco font"}
+![](https://scienceverse.github.io/metacheck/logo.png){style="float:right; width: 10em;" fig-alt="metacheck Logo, a green hexagon with PAPAERCHECK in art deco font"}
 
-In this post, we introduce [Papercheck](https://scienceverse.github.io/papercheck/), a new tool that leverages text search, code, and large language models to extract and supplement information from scientific documents (including manuscripts, submitted or published articles, or preregistration documents) and provides automated suggestions for improvement.
+In this post, we introduce [metacheck](https://scienceverse.github.io/metacheck/), a new tool that leverages text search, code, and large language models to extract and supplement information from scientific documents (including manuscripts, submitted or published articles, or preregistration documents) and provides automated suggestions for improvement.
 
 ```{r, message=FALSE}
-library(papercheck)
+library(metacheck)
 ```
 
-Inspired by practices in software development, where automated checks (e.g., CRAN checks for R packages) are used to identify issues before release, Papercheck aims to screen scientific manuscripts to identify potential issues or areas for improvement and guide researchers in adopting best practices.
+Inspired by practices in software development, where automated checks (e.g., CRAN checks for R packages) are used to identify issues before release, metacheck aims to screen scientific manuscripts to identify potential issues or areas for improvement and guide researchers in adopting best practices.
 
-Papercheck is modular, with each module focused on a specific practice that the scientific community wants to improve, and for which automation is viable. This modularity allows the tool to be extended and customized by the community, enabling the development of specialized modules tailored to the standards and best practices of different scientific fields. It can also offer an overarching platform to integrate existing tools (e.g., checks for retracted articles, Statcheck, etc).
+metacheck is modular, with each module focused on a specific practice that the scientific community wants to improve, and for which automation is viable. This modularity allows the tool to be extended and customized by the community, enabling the development of specialized modules tailored to the standards and best practices of different scientific fields. It can also offer an overarching platform to integrate existing tools (e.g., checks for retracted articles, Statcheck, etc).
 
 ::: callout-note
 ## An example of the "retractionwatch" module
@@ -48,7 +48,7 @@ module_run(paper, "retractionwatch")
 ```
 :::
 
-In addition to the initial modules already introduced on the [Papercheck website](https://scienceverse.github.io/papercheck/), we will demonstrate Papercheck's capabilities through four practical scenarios in an upcoming series of blog posts:
+In addition to the initial modules already introduced on the [metacheck website](https://scienceverse.github.io/metacheck/), we will demonstrate metacheck's capabilities through four practical scenarios in an upcoming series of blog posts:
 
 1.  Identifying adherence to the American Psychological Association's Journal Article Reporting Standards (JARS), such as reporting exact *p*-values and including effect sizes alongside their corresponding statistical test results;
 
@@ -71,12 +71,12 @@ dplyr::filter(rw$summary, rw_Retraction > 0 | rw_Correction > 0)
 
 There are more possible modules than our team can create, and we welcome anyone who wants to collaborate with us on building and validating new modules. In addition to the modules demonstrated in the four blog posts, future modules could be developed to check if open data and materials are Findable, Accessible, Interoperable, and Reusable (FAIR) [@wilkinson_fair], to perform checks on specific types of articles (e.g., meta-analyses), check journal-specific reporting guidelines, or perform checks on the references. We see great potential for new modules; the only limitation is your own creativity and your engineering skills.
 
-We are excited to continue developing Papercheck in close collaboration with the broader scientific community and welcome feedback, suggestions, and contributions. You can explore Papercheck on GitHub: <https://scienceverse.github.io/papercheck/>. If you want to contribute to new papercheck modules, validate existing modules in your own scientific discipline, or explore the use of Papercheck for metascientific projects, reach out to [Lisa DeBruine](mailto:lisa.debruine@glasgow.ac.uk?subject=Papercheck) or [Daniel Lakens](mailto:d.lakens@tue.nl?subject=Papercheck).
+We are excited to continue developing metacheck in close collaboration with the broader scientific community and welcome feedback, suggestions, and contributions. You can explore metacheck on GitHub: <https://scienceverse.github.io/metacheck/>. If you want to contribute to new metacheck modules, validate existing modules in your own scientific discipline, or explore the use of metacheck for metascientific projects, reach out to [Lisa DeBruine](mailto:lisa.debruine@glasgow.ac.uk?subject=metacheck) or [Daniel Lakens](mailto:d.lakens@tue.nl?subject=metacheck).
 
-## Papercheck Team
+## Metacheck Team
 
-Papercheck is developed by a collaborative team of researchers, consisting of (from left to right in the picture below) [Lisa DeBruine](https://debruine.github.io) (developer and maintainer) and [Daniël Lakens](https://sites.google.com/site/lakens2/Home) (developer), [René Bekkers](https://research.vu.nl/en/persons/rene-bekkers) (collaborator and PI of Transparency Check), [Cristian Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/) (postdoctoral researcher), and Max Littel and Jakub Werner (research assistants).
+Metacheck is developed by a collaborative team of researchers, consisting of (from left to right in the picture below) [Lisa DeBruine](https://debruine.github.io) (developer and maintainer) and [Daniël Lakens](https://sites.google.com/site/lakens2/Home) (developer), [René Bekkers](https://research.vu.nl/en/persons/rene-bekkers) (collaborator and PI of Transparency Check), [Cristian Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/) (postdoctoral researcher), and Max Littel and Jakub Werner (research assistants).
 
-![](papercheck_team.png){fig-alt="The faces of the papercheck team"}
+![](team.png){fig-alt="The faces of the metacheck team"}
 
-Papercheck is a component of a broader research project, Research Transparency Check, led by René Bekkers, and funded by a [TDCC-SSH grant](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check/) from the Dutch Research Council (NWO). Our funded project priorities are described in more detail in our grant proposal, available here: <https://osf.io/cpv4d/>.
+metacheck is a component of a broader research project, Research Transparency Check, led by René Bekkers, and funded by a [TDCC-SSH grant](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check/) from the Dutch Research Council (NWO). Our funded project priorities are described in more detail in our grant proposal, available here: <https://osf.io/cpv4d/>.

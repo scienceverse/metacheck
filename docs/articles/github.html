@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Exploring GitHub Repositories • papercheck</title>
+<title>Exploring GitHub Repositories • metacheck</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -32,9 +32,9 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">papercheck</a>
+    <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9057</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9059</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../articles/papercheck.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -52,7 +52,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/metacheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -68,29 +68,29 @@
       <img src="../logo.png" class="logo" alt=""><h1>Exploring GitHub Repositories</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/scienceverse/papercheck/blob/HEAD/vignettes/github.Rmd" class="external-link"><code>vignettes/github.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/scienceverse/metacheck/blob/HEAD/vignettes/github.Rmd" class="external-link"><code>vignettes/github.Rmd</code></a></small>
       <div class="d-none name"><code>github.Rmd</code></div>
     </div>
 
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/metacheck" class="external-link">metacheck</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; *******************************************</span></span>
-<span><span class="co">#&gt; ✅ Welcome to PaperCheck</span></span>
+<span><span class="co">#&gt; ✅ Welcome to metacheck</span></span>
 <span><span class="co">#&gt; For support and examples visit:</span></span>
-<span><span class="co">#&gt; https://scienceverse.github.io/papercheck/</span></span>
+<span><span class="co">#&gt; https://scienceverse.github.io/metacheck/</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ⚠️ Set an email to use APIs like OpenAlex</span></span>
-<span><span class="co">#&gt; papercheck::email('your@address.org')</span></span>
+<span><span class="co">#&gt; metacheck::email('your@address.org')</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ‼️ This is alpha software; please check any</span></span>
 <span><span class="co">#&gt; results. False positives and negatives will</span></span>
 <span><span class="co">#&gt; occur at unknown rates.</span></span>
 <span><span class="co">#&gt; *******************************************</span></span></code></pre></div>
-<p>There are some built-in functions in papercheck for exploring GitHub
+<p>There are some built-in functions in metacheck for exploring GitHub
 repositories. You can use these in custom modules.</p>
 <div class="section level2">
 <h2 id="github_repo">github_repo<a class="anchor" aria-label="anchor" href="#github_repo"></a>
@@ -112,8 +112,8 @@ referring to repositories:</p>
 <p>The <code><a href="../reference/github_repo.html">github_repo()</a></code> function returns the simplified format
 of. repo name, and an error if the repository in inaccessible.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/github_repo.html">github_repo</a></span><span class="op">(</span><span class="st">"https://github.com/scienceverse/papercheck.git"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "scienceverse/papercheck"</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/github_repo.html">github_repo</a></span><span class="op">(</span><span class="st">"https://github.com/scienceverse/metacheck.git"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "scienceverse/metacheck"</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/github_repo.html">github_repo</a></span><span class="op">(</span><span class="st">"scienceverse/checkpaper"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "unavailable"</span></span></code></pre></div>
@@ -124,7 +124,7 @@ of. repo name, and an error if the repository in inaccessible.</p>
 <p>Get the text of the readme file, regardless of the exact file name
 (e.g., README vs README.md).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">readme</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/github_readme.html">github_readme</a></span><span class="op">(</span><span class="st">"scienceverse/papercheck"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">readme</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/github_readme.html">github_readme</a></span><span class="op">(</span><span class="st">"scienceverse/metacheck"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">readme</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; # papercheck</span></span>
@@ -155,11 +155,11 @@ of. repo name, and an error if the repository in inaccessible.</p>
 <p>You can retrieve the number of bytes dedicated to various coding
 languages, as detected and classified by GitHub.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/github_languages.html">github_languages</a></span><span class="op">(</span><span class="st">"scienceverse/papercheck"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/github_languages.html">github_languages</a></span><span class="op">(</span><span class="st">"scienceverse/metacheck"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      language   bytes</span></span>
-<span><span class="co">#&gt; 1        HTML 4360393</span></span>
-<span><span class="co">#&gt; 2           R 2905592</span></span>
-<span><span class="co">#&gt; 3         TeX   25601</span></span>
+<span><span class="co">#&gt; 1           R 6132209</span></span>
+<span><span class="co">#&gt; 2        HTML 5782555</span></span>
+<span><span class="co">#&gt; 3         TeX   58985</span></span>
 <span><span class="co">#&gt; 4        AMPL    7578</span></span>
 <span><span class="co">#&gt; 5      Python    6986</span></span>
 <span><span class="co">#&gt; 6         CSS    3358</span></span>
@@ -176,7 +176,7 @@ and a guess at their type.</p>
 <p>By default, you just retrieve the files and directories in the base
 directory, non-recursively.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/github_files.html">github_files</a></span><span class="op">(</span><span class="st">"scienceverse/papercheck"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/github_files.html">github_files</a></span><span class="op">(</span><span class="st">"scienceverse/metacheck"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                name             path  size          ext   type</span></span>
 <span><span class="co">#&gt; 1            _stuff           _stuff     0                 dir</span></span>
 <span><span class="co">#&gt; 2           .github          .github     0       github    dir</span></span>
@@ -185,13 +185,13 @@ directory, non-recursively.</p>
 <span><span class="co">#&gt; 5       codecov.yml      codecov.yml   134          yml config</span></span>
 <span><span class="co">#&gt; 6              data             data     0                 dir</span></span>
 <span><span class="co">#&gt; 7          data-raw         data-raw     0                 dir</span></span>
-<span><span class="co">#&gt; 8       DESCRIPTION      DESCRIPTION  1871                file</span></span>
+<span><span class="co">#&gt; 8       DESCRIPTION      DESCRIPTION  1898                file</span></span>
 <span><span class="co">#&gt; 9              docs             docs     0                 dir</span></span>
 <span><span class="co">#&gt; 10             inst             inst     0                 dir</span></span>
 <span><span class="co">#&gt; 11       LICENSE.md       LICENSE.md 34303           md   text</span></span>
 <span><span class="co">#&gt; 12              man              man     0                 dir</span></span>
-<span><span class="co">#&gt; 13        NAMESPACE        NAMESPACE  1978                file</span></span>
-<span><span class="co">#&gt; 14          NEWS.md          NEWS.md 12115           md   text</span></span>
+<span><span class="co">#&gt; 13        NAMESPACE        NAMESPACE  2123                file</span></span>
+<span><span class="co">#&gt; 14          NEWS.md          NEWS.md 13491           md   text</span></span>
 <span><span class="co">#&gt; 15 papercheck.Rproj papercheck.Rproj   462        rproj config</span></span>
 <span><span class="co">#&gt; 16          pkgdown          pkgdown     0                 dir</span></span>
 <span><span class="co">#&gt; 17          profile          profile     0                 dir</span></span>
@@ -200,14 +200,14 @@ directory, non-recursively.</p>
 <span><span class="co">#&gt; 20            tests            tests     0                 dir</span></span>
 <span><span class="co">#&gt; 21        vignettes        vignettes     0                 dir</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/github_files.html">github_files</a></span><span class="op">(</span><span class="st">"scienceverse/papercheck"</span>, dir <span class="op">=</span> <span class="st">".github"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/github_files.html">github_files</a></span><span class="op">(</span><span class="st">"scienceverse/metacheck"</span>, dir <span class="op">=</span> <span class="st">".github"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         name               path size       ext   type</span></span>
 <span><span class="co">#&gt; 1 .gitignore .github/.gitignore    7 gitignore config</span></span>
 <span><span class="co">#&gt; 2  workflows  .github/workflows    0              dir</span></span></code></pre></div>
 <p>You can also retrieve files recursively. Searching a large repository
 recursively can take a while.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/github_files.html">github_files</a></span><span class="op">(</span><span class="st">"scienceverse/papercheck"</span>,</span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/github_files.html">github_files</a></span><span class="op">(</span><span class="st">"scienceverse/metacheck"</span>,</span>
 <span>             dir <span class="op">=</span> <span class="st">".github"</span>,</span>
 <span>             recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                  name                                  path size       ext</span></span>

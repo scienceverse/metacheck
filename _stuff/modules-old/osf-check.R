@@ -2,16 +2,16 @@
 # test public: url = "https://osf.io/629bx"
 
 # get OSF links
-found_urls <- papercheck::module_run(paper, "all-urls")$table
-found_osf <- papercheck::search_text(found_urls, "osf\\.io")
+found_urls <- metacheck::module_run(paper, "all-urls")$table
+found_osf <- metacheck::search_text(found_urls, "osf\\.io")
 unique_urls <- unique(found_osf["text"])
 
-if (papercheck:::site_down("osf.io", error = FALSE)) {
+if (metacheck:::site_down("osf.io", error = FALSE)) {
   unique_urls$status <- "unknown"
   message("osf.io cannot be reached to assess link status")
 } else {
   # set up progress bar ----
-  if (papercheck::verbose()) {
+  if (metacheck::verbose()) {
     pb <- progress::progress_bar$new(
       total = nrow(unique_urls), clear = FALSE, show_after = 0,
       format = "Checking OSF availability [:bar] :current/:total :elapsedfull"
@@ -41,7 +41,7 @@ if (papercheck:::site_down("osf.io", error = FALSE)) {
       return("error")
     })
 
-    if (papercheck::verbose()) pb$tick()
+    if (metacheck::verbose()) pb$tick()
 
     return(status)
   })

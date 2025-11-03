@@ -3,7 +3,7 @@
 #' If you have a table resulting from `search_text()` or a module return object, you can expand the text column to the full sentence, paragraph, or section. You can also set `plus` and `minus` to append and prepend sentences to the result (only when `expand_to` is "sentence").
 #'
 #' @param results_table the table to expand
-#' @param paper a papercheck paper object or a list of paper objects to look up the expanded text from
+#' @param paper a metacheck paper object or a list of paper objects to look up the expanded text from
 #' @param expand_to whether to expand to the sentence, paragraph, div, or section level
 #' @param plus append additional sentences after the target expansion
 #' @param minus prepend additional sentences before the target expansion
@@ -29,7 +29,7 @@ expand_text <- function(results_table,
 
   # check results_table and extract table if object
   if (!is.data.frame(results_table)) {
-    if (inherits(results_table, "ppchk_module_output")) {
+    if (inherits(results_table, "metacheck_module_output")) {
       results_table <- results_table$table
     } else if (is_paper(results_table)) {
       results_table <- results_table$full_text

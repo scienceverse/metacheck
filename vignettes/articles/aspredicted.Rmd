@@ -19,16 +19,16 @@ knitr::opts_chunk$set(
 ```{r setup}
 #| include: false
 
-library(papercheck)
+library(metacheck)
 library(dplyr)
 ```
 
 
 It is increasingly common for researchers to preregister their studies [@spitzer_registered_2023; @imai_preregistration_2025]. As it is a new practice, and not all researchers are trained in how to preregister, it is not surprising that the quality of preregistration is not always sufficient to allow others to identify opportunistic flexibility in the data analysis [@vandenakker_potential_2024]. Reviewers could check whether researchers adhere to the preregistration, but this requires some effort. Automation can provide a partial solution be making information more easily available, and perhaps even performing automated checks.
 
-Here we demonstrate how [Papercheck](https://scienceverse.github.io/papercheck/), our software to perform automated checks on scientific manuscripts, can also retrieve the content of a preregistration. The preregistration can then be presented alongside the relevant information in the manuscript. This makes it easier for peer reviewers to compare the information. 
+Here we demonstrate how [metacheck](https://scienceverse.github.io/metacheck/), our software to perform automated checks on scientific manuscripts, can also retrieve the content of a preregistration. The preregistration can then be presented alongside the relevant information in the manuscript. This makes it easier for peer reviewers to compare the information. 
 
-We will illustrate code that automatically retrieves and presents preregistrations in this blog post. We focus on AsPredicted preregistrations. Their structured format makes it especially easy to retrieve information, but the same can be achieved for OSF preregistrations, especially those that use a template. We can easily search for AsPredicted links in all 250 open access papers from psychological science. The Papercheck package conveniently includes these in xml format in the `psychsci` object.
+We will illustrate code that automatically retrieves and presents preregistrations in this blog post. We focus on AsPredicted preregistrations. Their structured format makes it especially easy to retrieve information, but the same can be achieved for OSF preregistrations, especially those that use a template. We can easily search for AsPredicted links in all 250 open access papers from psychological science. The metacheck package conveniently includes these in xml format in the `psychsci` object.
 
 ## Find AsPredicted Links
 
@@ -90,9 +90,9 @@ Now we need to check what the achieved sample size in the paper is.
 
 To facilitate this comparison, we can retrieve all paragraphs that contain words such as 'sample' or 'participants' from the manuscript, in the hope that this contains the relevant text. A more advanced version of this tool could attempt to identify the relevant information in the manuscript with a search for specific words used in the preregistration, but we also show how AI can be used to identify the related text in the manuscript.
 
-A papercheck module could automatically print the information from the preregistration, and possible relevant text from the manuscript. Our main goal is to increase the ease with which important information from the preregistration is available to the authors and peer reviewers, and remind users that they need to discuss deviations from their preregistration.
+A metacheck module could automatically print the information from the preregistration, and possible relevant text from the manuscript. Our main goal is to increase the ease with which important information from the preregistration is available to the authors and peer reviewers, and remind users that they need to discuss deviations from their preregistration.
 
-It might in addition be useful to retrieve the corresponding section in the article. A simple attempt to achieve this would be to search for words related to 'sample' or 'participants', and retrieve that paragraph. We can use Papercheck's inbuilt `search_text()` function. For this paper, we see this simple approach works well.
+It might in addition be useful to retrieve the corresponding section in the article. A simple attempt to achieve this would be to search for words related to 'sample' or 'participants', and retrieve that paragraph. We can use metacheck's inbuilt `search_text()` function. For this paper, we see this simple approach works well.
 
 ```{r}
 #| results: 'asis'
@@ -130,7 +130,7 @@ methres <- search_text(paper, regex_sample,
 
 This gives us `r nrow(methres)` paragraphs to deal with. We can then send them to an LLM, and ask which paragraph is most closely related to the text in the preregistration. 
 
-Papercheck has a custom function to send text and a query to Groq.
+metacheck has a custom function to send text and a query to Groq.
 
 ```{r}
 #| results: 'asis'
@@ -203,7 +203,7 @@ sample$text |> cat("> ", x = _)
 
 ## Putting it All Together
 
-Papercheck does not yet contain this module, as it is still under development, but you could [create you own local module](https://scienceverse.github.io/papercheck/articles/creating_modules.html) by using (or improving) the following code:
+metacheck does not yet contain this module, as it is still under development, but you could [create you own local module](https://scienceverse.github.io/metacheck/articles/creating_modules.html) by using (or improving) the following code:
 
 ```{r}
 # save to a file aspredicted_sample.R
@@ -297,4 +297,4 @@ ap_no_links <- aspredicted_sample(paper)
 
 The extent to which making information from the preregistration more available will lead to more peers checking for deviations from the preregistration remains to be seen, but we believe it has potential to reduce the workload of peer reviewers, and it might remind authors to discuss deviations from the preregistration. 
 
-This code can be substantially improved before we include it as a built-in Papercheck module, and also needs to be further developed to work well with multi-study papers that contain multiple preregistrations. If you are interested in developing this papercheck module further, or performing such a validation study, do reach out to us.
+This code can be substantially improved before we include it as a built-in metacheck module, and also needs to be further developed to work well with multi-study papers that contain multiple preregistrations. If you are interested in developing this metacheck module further, or performing such a validation study, do reach out to us.

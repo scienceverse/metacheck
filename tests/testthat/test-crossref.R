@@ -1,9 +1,9 @@
 test_that("exists", {
-  expect_true(is.function(papercheck::crossref))
-  expect_no_error(helplist <- help(crossref, papercheck))
+  expect_true(is.function(metacheck::crossref))
+  expect_no_error(helplist <- help(crossref, metacheck))
 
-  expect_true(is.function(papercheck::openalex))
-  expect_no_error(helplist <- help(openalex, papercheck))
+  expect_true(is.function(metacheck::openalex))
+  expect_no_error(helplist <- help(openalex, metacheck))
 })
 
 test_that("crossref", {

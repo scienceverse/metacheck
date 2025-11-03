@@ -39,20 +39,20 @@ test_that("exists", {
 test_that("llm_max_calls", {
   expect_true(is.function(llm_max_calls))
 
-  n <- getOption("papercheck.llm_max_calls")
+  n <- getOption("metacheck.llm_max_calls")
   n2 <- llm_max_calls()
   expect_true(is.integer(n))
   expect_true(n > 0)
   expect_equal(n, n2)
 
   expect_error(llm_max_calls("a"), "n must be a number")
-  expect_equal(getOption("papercheck.llm_max_calls"), n)
+  expect_equal(getOption("metacheck.llm_max_calls"), n)
 
   expect_warning(llm_max_calls(0), "n must be greater than 0")
-  expect_equal(getOption("papercheck.llm_max_calls"), n)
+  expect_equal(getOption("metacheck.llm_max_calls"), n)
 
   expect_no_error(llm_max_calls(8))
-  expect_equal(getOption("papercheck.llm_max_calls"), 8)
+  expect_equal(getOption("metacheck.llm_max_calls"), 8)
 
   text <- data.frame(
     text = 1:20,

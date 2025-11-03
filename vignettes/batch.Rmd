@@ -25,7 +25,7 @@ mytable <- function(tbl) {
 ```{r}
 #| label: setup
 #| message: false
-library(papercheck)
+library(metacheck)
 library(dplyr) # for data wrangling
 library(readr) # reading and writing CSV files
 ```
@@ -44,7 +44,7 @@ pdf2grobid(filename = "pdf",
            grobid_url = "http://localhost:8070")
 ```
 
-Then read in the XML files to papercheck and save in an object called `papers`. 
+Then read in the XML files to metacheck and save in an object called `papers`. 
 
 ```{r}
 #| eval: false
@@ -68,7 +68,7 @@ papers <- psychsci
 
 ## Paper Objects
 
-Now `papers` is a list of papercheck paper objects, each of which contains structured information about the paper.
+Now `papers` is a list of metacheck paper objects, each of which contains structured information about the paper.
 
 ```{r}
 paper <- papers[[10]]

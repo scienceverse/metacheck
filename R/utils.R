@@ -39,7 +39,7 @@ message <- function (..., domain = NULL, appendLF = TRUE) {
   }
 }
 
-#' Set or get papercheck verbosity
+#' Set or get metacheck verbosity
 #'
 #' @param verbose if logical, sets whether to show verbose output messages and progress bars
 #'
@@ -50,10 +50,10 @@ message <- function (..., domain = NULL, appendLF = TRUE) {
 #' verbose()
 verbose <- function(verbose = NULL) {
   if (is.null(verbose)) {
-    return(getOption("papercheck.verbose"))
+    return(getOption("metacheck.verbose"))
   } else if (as.logical(verbose) %in% c(TRUE, FALSE)) {
-    options(papercheck.verbose = as.logical(verbose))
-    invisible(getOption("papercheck.verbose"))
+    options(metacheck.verbose = as.logical(verbose))
+    invisible(getOption("metacheck.verbose"))
   } else {
     stop("set verbose with TRUE or FALSE")
   }
@@ -70,10 +70,10 @@ verbose <- function(verbose = NULL) {
 #' email()
 email <- function(email = NULL) {
   if (is.null(email)) {
-    return(getOption("papercheck.email"))
+    return(getOption("metacheck.email"))
   } else if (is.character(email) && grepl(".+@.+\\..+$", email)) {
-    options(papercheck.email = email)
-    invisible(getOption("papercheck.email"))
+    options(metacheck.email = email)
+    invisible(getOption("metacheck.email"))
   } else {
     stop("Set email with a valid email address")
   }
@@ -228,7 +228,7 @@ print.scivrs_paperlist <- function(x, ...) {
 #' @examples
 #' demopdf()
 demopdf <- function() {
-  grobid_dir <- system.file("extdata", package="papercheck")
+  grobid_dir <- system.file("extdata", package="metacheck")
   pattern <- "to_err_is_human\\.pdf$"
   file <- list.files(grobid_dir, pattern, full.names = TRUE)
   return(file)
@@ -242,7 +242,7 @@ demopdf <- function() {
 #' @examples
 #' demoxml()
 demoxml <- function() {
-  grobid_dir <- system.file("extdata", package="papercheck")
+  grobid_dir <- system.file("extdata", package="metacheck")
   pattern <- "to_err_is_human\\.xml$"
   file <- list.files(grobid_dir, pattern, full.names = TRUE)
   return(file)
@@ -256,7 +256,7 @@ demoxml <- function() {
 #' @examples
 #' demodir()
 demodir <- function() {
-  grobid_dir <- system.file("grobid", package="papercheck")
+  grobid_dir <- system.file("grobid", package="metacheck")
   return(grobid_dir)
 }
 

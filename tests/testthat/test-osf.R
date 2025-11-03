@@ -1,5 +1,5 @@
 verbose(FALSE)
-# options(papercheck.osf.api = "https://api.osf.io/v2/")
+# options(metacheck.osf.api = "https://api.osf.io/v2/")
 # osf_delay(0)
 
 # skip if requires OSF API
@@ -19,25 +19,25 @@ osf_skip <- function() {
 httptest::with_mock_api({
 
 test_that("exists", {
-  expect_true(is.function(papercheck::osf_check_id))
+  expect_true(is.function(metacheck::osf_check_id))
 
-  expect_true(is.function(papercheck::osf_links))
-  expect_no_error(helplist <- help(osf_links, papercheck))
+  expect_true(is.function(metacheck::osf_links))
+  expect_no_error(helplist <- help(osf_links, metacheck))
 
-  expect_true(is.function(papercheck::osf_retrieve))
-  expect_no_error(helplist <- help(osf_retrieve, papercheck))
+  expect_true(is.function(metacheck::osf_retrieve))
+  expect_no_error(helplist <- help(osf_retrieve, metacheck))
 
-  expect_true(is.function(papercheck::osf_info))
-  expect_no_error(helplist <- help(osf_info, papercheck))
+  expect_true(is.function(metacheck::osf_info))
+  expect_no_error(helplist <- help(osf_info, metacheck))
 
-  expect_true(is.function(papercheck::osf_delay))
-  expect_no_error(helplist <- help(osf_delay, papercheck))
+  expect_true(is.function(metacheck::osf_delay))
+  expect_no_error(helplist <- help(osf_delay, metacheck))
 
-  expect_true(is.function(papercheck::summarize_contents))
-  expect_no_error(helplist <- help(summarize_contents, papercheck))
+  expect_true(is.function(metacheck::summarize_contents))
+  expect_no_error(helplist <- help(summarize_contents, metacheck))
 
-  expect_true(is.function(papercheck::osf_file_download))
-  expect_no_error(helplist <- help(osf_file_download, papercheck))
+  expect_true(is.function(metacheck::osf_file_download))
+  expect_no_error(helplist <- help(osf_file_download, metacheck))
 })
 
 test_that("osf_api_check", {
@@ -49,7 +49,7 @@ test_that("osf_api_check", {
 
 test_that("osf_headers", {
   header <- osf_headers()
-  expect_equal(header$`User-Agent`, "Papercheck")
+  expect_equal(header$`User-Agent`, "metacheck")
 })
 
 test_that("osf_links", {
@@ -166,7 +166,7 @@ test_that("osf_check_id", {
 test_that("osf_get_all_pages", {
   osf_skip()
 
-  osf_api <- getOption("papercheck.osf.api")
+  osf_api <- getOption("metacheck.osf.api")
 
   # fewer than 10
   url <- sprintf("%s/nodes/pngda/files/osfstorage/", osf_api)

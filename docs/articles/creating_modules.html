@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Creating Modules • papercheck</title>
+<title>Creating Modules • metacheck</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -32,9 +32,9 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">papercheck</a>
+    <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9057</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9059</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../articles/papercheck.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -52,7 +52,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/metacheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -68,23 +68,23 @@
       <img src="../logo.png" class="logo" alt=""><h1>Creating Modules</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/scienceverse/papercheck/blob/HEAD/vignettes/creating_modules.Rmd" class="external-link"><code>vignettes/creating_modules.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/scienceverse/metacheck/blob/HEAD/vignettes/creating_modules.Rmd" class="external-link"><code>vignettes/creating_modules.Rmd</code></a></small>
       <div class="d-none name"><code>creating_modules.Rmd</code></div>
     </div>
 
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/metacheck" class="external-link">metacheck</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; *******************************************</span></span>
-<span><span class="co">#&gt; ✅ Welcome to PaperCheck</span></span>
+<span><span class="co">#&gt; ✅ Welcome to metacheck</span></span>
 <span><span class="co">#&gt; For support and examples visit:</span></span>
-<span><span class="co">#&gt; https://scienceverse.github.io/papercheck/</span></span>
+<span><span class="co">#&gt; https://scienceverse.github.io/metacheck/</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ⚠️ Set an email to use APIs like OpenAlex</span></span>
-<span><span class="co">#&gt; papercheck::email('your@address.org')</span></span>
+<span><span class="co">#&gt; metacheck::email('your@address.org')</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ‼️ This is alpha software; please check any</span></span>
 <span><span class="co">#&gt; results. False positives and negatives will</span></span>
@@ -212,8 +212,8 @@ them here.</p>
 <div class="section level3">
 <h3 id="import">Import<a class="anchor" aria-label="anchor" href="#import"></a>
 </h3>
-<p>If you are using packages other than <code>papercheck</code>, add
-each with an <code>@import</code> statement.</p>
+<p>If you are using packages other than <code>metacheck</code>, add each
+with an <code>@import</code> statement.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' @import dplyr</span></span>
 <span><span class="co">#' @import tidyr</span></span></code></pre></div>
@@ -225,9 +225,9 @@ practice to use the package name prefix for all functions, like
 <div class="section level3">
 <h3 id="parameters">Parameters<a class="anchor" aria-label="anchor" href="#parameters"></a>
 </h3>
-<p>Each argument should be defined for a function. All papercheck
-modules require the first argument to be <code>paper</code>. The last
-argument can optionally be <code>...</code>. This allows the
+<p>Each argument should be defined for a function. All metacheck modules
+require the first argument to be <code>paper</code>. The last argument
+can optionally be <code>...</code>. This allows the
 <code><a href="../reference/module_run.html">module_run()</a></code> function to pass any arguments, and your code
 can use them by name (e.g.,
 <code>extra_args &lt;- list(...)</code>).</p>
@@ -293,7 +293,7 @@ creates a table with a row for each sentence that contains to word
 <span>  <span class="va">pattern</span> <span class="op">&lt;-</span> <span class="st">"significant"</span></span>
 <span>  <span class="va">table</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/search_text.html">search_text</a></span><span class="op">(</span><span class="va">paper</span>, <span class="va">pattern</span><span class="op">)</span></span></code></pre></div>
 <p>You will need to make sure that your module works with both single
-paper object sand lists of paper objects. The papercheck functions
+paper object sand lists of paper objects. The metacheck functions
 <code><a href="../reference/search_text.html">search_text()</a></code> and <code><a href="../reference/llm.html">llm()</a></code> are already vectorised
 for paper lists.</p>
 </div>

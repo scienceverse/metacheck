@@ -9,7 +9,7 @@ format:
 ```{r}
 #| message: false
 
-# library(papercheck)
+# library(metacheck)
 library(tidyverse)
 library(readxl)
 

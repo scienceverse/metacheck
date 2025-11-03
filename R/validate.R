@@ -105,7 +105,7 @@ validate <- function(paper, module, ...) {
     stats = stats
   )
 
-  class(info) <- "ppchk_validate"
+  class(info) <- "metacheck_validate"
 
   return(info)
 }
@@ -113,12 +113,12 @@ validate <- function(paper, module, ...) {
 
 #' Print Validation List Object
 #'
-#' @param x The ppchk_validate object
+#' @param x The metacheck_validate object
 #' @param ... Additional parameters for print
 #'
 #' @export
 #' @keywords internal
-print.ppchk_validate <- function(x, ...) {
+print.metacheck_validate <- function(x, ...) {
   txt <- sprintf("Validated matches for module `%s`:\n\n", x$module)
   txt <- sprintf("%s* N in validation sample: %i", txt, x$stats$n_papers)
   for (stat in names(x$stats[-1])) {
@@ -182,7 +182,7 @@ accuracy <- function(expected, observed) {
     beta = beta
   )
 
-  class(measures) <- "ppchk_accuracy_measures"
+  class(measures) <- "metacheck_accuracy_measures"
 
   return(measures)
 }

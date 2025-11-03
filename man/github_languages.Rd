@@ -17,6 +17,6 @@ Get Languages from GitHub Repo
 }
 \examples{
 \donttest{
-  github_languages("scienceverse/papercheck")
+  github_languages("scienceverse/metacheck")
 }
 }

@@ -45,7 +45,7 @@
 #'
 #'   py_ml_classifier <- NULL # stops annoying cmdcheck warning
 #'   # load script
-#'   pyscript <- system.file("python/ml-classifier.py", package = "papercheck")
+#'   pyscript <- system.file("python/ml-classifier.py", package = "metacheck")
 #'   tryCatch(reticulate::source_python(pyscript),
 #'            error = \(e) { stop("Error in ml-classifier.py script, is your reticulate setup correct?")})
 #'

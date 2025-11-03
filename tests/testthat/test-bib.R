@@ -1,6 +1,6 @@
 test_that("exists", {
-  expect_true(is.function(papercheck::bibsearch))
-  expect_no_error(helplist <- help(bibsearch, papercheck))
+  expect_true(is.function(metacheck::bibsearch))
+  expect_no_error(helplist <- help(bibsearch, metacheck))
 })
 
 test_that("errors", {

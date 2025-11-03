@@ -8,7 +8,7 @@
 #'
 #' @examples
 #' \donttest{
-#'   github_info("scienceverse/papercheck")
+#'   github_info("scienceverse/metacheck")
 #' }
 github_info <- function(repo, recursive = FALSE) {
   repo <- github_repo(repo)
@@ -32,9 +32,9 @@ github_info <- function(repo, recursive = FALSE) {
 #' @export
 #'
 #' @examples
-#' github_repo("scienceverse/papercheck")
-#' github_repo("https://github.com/scienceverse/papercheck/")
-#' github_repo("https://github.com/scienceverse/papercheck.git")
+#' github_repo("scienceverse/metacheck")
+#' github_repo("https://github.com/scienceverse/metacheck/")
+#' github_repo("https://github.com/scienceverse/metacheck.git")
 github_repo <- function(repo) {
   # get repo name ----
   match <- regexec("(?<=^|/)([a-z0-9-])+/([a-z0-9\\._-])+(?=\\.git|/|$)",
@@ -62,7 +62,7 @@ github_repo <- function(repo) {
 #'
 #' @examples
 #' \donttest{
-#'   github_readme("scienceverse/papercheck")
+#'   github_readme("scienceverse/metacheck")
 #' }
 github_readme <- function(repo) {
   repo <- github_repo(repo)
@@ -94,7 +94,7 @@ github_readme <- function(repo) {
 #'
 #' @examples
 #' \donttest{
-#'   github_files("scienceverse/papercheck")
+#'   github_files("scienceverse/metacheck")
 #' }
 github_files <- function(repo, dir = "",
                          recursive = FALSE) {
@@ -144,7 +144,7 @@ github_files <- function(repo, dir = "",
       if (length(x) < 2) return("")
       x[[length(x)]]
     }) |> tolower()
-  files <- dplyr::left_join(files, papercheck::file_types, by = "ext")
+  files <- dplyr::left_join(files, metacheck::file_types, by = "ext")
   files$type[is.na(files$type)] <- files$ft[is.na(files$type)]
   files$ft <- NULL
 
@@ -181,12 +181,12 @@ github_config <- function() {
     config <- httr::add_headers(
       Authorization = paste("token", token$password),
       Accept = "application/vnd.github.v3+json",
-      `User-Agent` = "scienceverse/papercheck"
+      `User-Agent` = "scienceverse/metacheck"
     )
   } else {
     config <- httr::add_headers(
       Accept = "application/vnd.github.v3+json",
-      `User-Agent` = "scienceverse/papercheck"
+      `User-Agent` = "scienceverse/metacheck"
     )
   }
 
@@ -202,7 +202,7 @@ github_config <- function() {
 #'
 #' @examples
 #' \donttest{
-#'   github_languages("scienceverse/papercheck")
+#'   github_languages("scienceverse/metacheck")
 #' }
 github_languages <- function(repo) {
   repo <- github_repo(repo)

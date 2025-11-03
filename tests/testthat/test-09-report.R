@@ -138,7 +138,7 @@ test_that("detected", {
 })
 
 test_that("module_report", {
-  expect_true(is.function(papercheck::module_report))
+  expect_true(is.function(metacheck::module_report))
 
   expect_error(module_report())
 
@@ -164,7 +164,7 @@ test_that("module_report", {
 })
 
 test_that("issue-17", {
-  # https://github.com/scienceverse/papercheck/issues/17
+  # https://github.com/scienceverse/metacheck/issues/17
   # error in .subset(x, j) : invalid subscript type 'list'
 
   # pdf2grobid("problems/Takagishi.pdf")

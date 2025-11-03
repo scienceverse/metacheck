@@ -1,9 +1,9 @@
 test_that("exists", {
-  expect_true(is.function(papercheck::retractionwatch))
-  expect_true(is.function(papercheck::rw))
-  expect_true(is.function(papercheck::rw_date))
-  expect_true(is.function(papercheck::rw_update))
-  expect_no_error(helplist <- help(retractionwatch, papercheck))
+  expect_true(is.function(metacheck::retractionwatch))
+  expect_true(is.function(metacheck::rw))
+  expect_true(is.function(metacheck::rw_date))
+  expect_true(is.function(metacheck::rw_update))
+  expect_no_error(helplist <- help(retractionwatch, metacheck))
 })
 
 test_that("errors", {

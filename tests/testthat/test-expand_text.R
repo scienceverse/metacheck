@@ -1,6 +1,6 @@
 test_that("exists", {
-  expect_true(is.function(papercheck::expand_text))
-  expect_no_error(helplist <- help(expand_text, papercheck))
+  expect_true(is.function(metacheck::expand_text))
+  expect_no_error(helplist <- help(expand_text, metacheck))
   #expect_equal(helplist$topic, "expand_text")
 
   paper <- demoxml() |> read()

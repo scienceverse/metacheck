@@ -3,7 +3,7 @@
   "description": "Check consistency of p-values and test statistics",
   "example": "module_run(psychsci[[1]], \"statcheck\")",
   "code": {
-    "packages": ["papercheck"],
+    "packages": ["metacheck"],
     "path": "statcheck.R"
   },
   "report": {

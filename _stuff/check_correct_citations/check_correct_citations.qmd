@@ -12,7 +12,7 @@ execute:
 
 ```{r, setup}
 #| include: false
-library(papercheck)
+library(metacheck)
 library(dplyr)
 
 # Specify path with pdf files
@@ -83,7 +83,7 @@ dir.create(xml_folder, showWarnings = FALSE)
 converts <- pdf2grobid(filename = pdf_source_folder,
            save_path = xml_folder)
 
-# Read in all xml files as papercheck objects
+# Read in all xml files as metacheck objects
 paper <- read(xml_folder)
 
 saveRDS(paper, "lakens.Rds")

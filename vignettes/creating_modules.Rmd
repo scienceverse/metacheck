@@ -15,13 +15,13 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(papercheck)
+library(metacheck)
 ```
 
 Modules are user-created patterns for checking a paper or set of papers. Module specifications are written in the same format as functions in R packages, using roxygen2 for documentation. 
 
 ```{r, echo = FALSE, comment = ""}
-code_lines <- system.file("module_example.R", package = "papercheck") |>
+code_lines <- system.file("module_example.R", package = "metacheck") |>
   readLines()
 cat(paste0(code_lines, collapse = "\n"))
 ```
@@ -86,7 +86,7 @@ Optionally include references that you would want available to users. If you are
 
 ### Import
 
-If you are using packages other than `papercheck`, add each with an `@import` statement.
+If you are using packages other than `metacheck`, add each with an `@import` statement.
 
 ```{r}
 #' @import dplyr
@@ -97,7 +97,7 @@ Technically, you can then use functions from these packages in your function cod
 
 ### Parameters
 
-Each argument should be defined for a function. All papercheck modules require the first argument to be `paper`. The last argument can optionally be `...`. This allows the `module_run()` function to pass any arguments, and your code can use them by name (e.g., `extra_args <- list(...)`).
+Each argument should be defined for a function. All metacheck modules require the first argument to be `paper`. The last argument can optionally be `...`. This allows the `module_run()` function to pass any arguments, and your code can use them by name (e.g., `extra_args <- list(...)`).
 
 ```{r}
 #' @param paper a paper object or paperlist object
@@ -151,7 +151,7 @@ Most modules will need to structure their output in a table that can be shown in
   table <- search_text(paper, pattern)
 ```
 
-You will need to make sure that your module works with both single paper object sand lists of paper objects. The papercheck functions `search_text()` and `llm()` are already vectorised for paper lists. 
+You will need to make sure that your module works with both single paper object sand lists of paper objects. The metacheck functions `search_text()` and `llm()` are already vectorised for paper lists. 
 
 ### Summary
 

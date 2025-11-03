@@ -187,7 +187,7 @@ llm <- function(text, query,
                   .by = dplyr::all_of(text_col))
 
   # add metadata about the query ----
-  class(answer_df) <- c("ppchk_llm", "data.frame")
+  class(answer_df) <- c("metacheck_llm", "data.frame")
   attr(answer_df, "llm") <- bodylist
   attr(answer_df, "llm")$messages[[2]]$content <- ""
 
@@ -250,17 +250,17 @@ llm_model_list <- function(API_KEY = Sys.getenv("GROQ_API_KEY")) {
 #' @export
 #'
 llm_max_calls <- function(n = NULL) {
-  if (is.null(n)) return(getOption("papercheck.llm_max_calls"))
+  if (is.null(n)) return(getOption("metacheck.llm_max_calls"))
   if (!is.numeric(n)) stop("n must be a number")
 
   n <- as.integer(n)
   if (n < 1) {
-    warning("n must be greater than 0; it was not changed from ", getOption("papercheck.llm_max_calls"))
+    warning("n must be greater than 0; it was not changed from ", getOption("metacheck.llm_max_calls"))
   } else {
-    options(papercheck.llm_max_calls = n)
+    options(metacheck.llm_max_calls = n)
   }
 
-  invisible(getOption("papercheck.llm_max_calls"))
+  invisible(getOption("metacheck.llm_max_calls"))
 }
 
 #' Set the default LLM model
@@ -274,10 +274,10 @@ llm_max_calls <- function(n = NULL) {
 #'
 llm_model <- function(model = NULL) {
   if (is.null(model)) {
-    return(getOption("papercheck.llm.model"))
+    return(getOption("metacheck.llm.model"))
   } else if (is.character(model)) {
-    options(papercheck.llm.model = model)
-    invisible(getOption("papercheck.llm.model"))
+    options(metacheck.llm.model = model)
+    invisible(getOption("metacheck.llm.model"))
   } else {
     stop("set llm_model with the name of a model, use `llm_model_list()` to get available models")
   }
@@ -291,7 +291,7 @@ llm_model <- function(model = NULL) {
 #
 #   # set up virtual environment
 #   message("Setting up virtual environment ", envname, "...")
-#   req <- system.file("python/requirements.txt", package = "papercheck")
+#   req <- system.file("python/requirements.txt", package = "metacheck")
 #   if (!reticulate::virtualenv_exists(envname)) {
 #     reticulate::virtualenv_create(envname, requirements = req)
 #   } else {
@@ -366,7 +366,7 @@ json_expand <- function(table, col = "answer") {
   dplyr::bind_cols(table, expanded)
 }
 
-#' Set or get papercheck LLM use
+#' Set or get metacheck LLM use
 #'
 #' Mainly for use in optional LLM workflows in modules, also checks if the GROQ API key is set and returns false if it isn't.
 #'
@@ -385,10 +385,10 @@ llm_use <- function(llm_use = NULL) {
   if (is.null(llm_use)) {
     if (Sys.getenv("GROQ_API_KEY") == "") return(FALSE)
 
-    return(getOption("papercheck.llm.use"))
+    return(getOption("metacheck.llm.use"))
   } else if (as.logical(llm_use) %in% c(TRUE, FALSE)) {
-    options(papercheck.llm.use = as.logical(llm_use))
-    invisible(getOption("papercheck.llm.use"))
+    options(metacheck.llm.use = as.logical(llm_use))
+    invisible(getOption("metacheck.llm.use"))
   } else {
     stop("set llm_use with TRUE or FALSE")
   }

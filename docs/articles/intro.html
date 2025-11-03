@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Introducing Papercheck • papercheck</title>
+<title>Introducing metacheck • metacheck</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -17,7 +17,7 @@
 <link href="../deps/Fira_Code-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Introducing Papercheck">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Introducing metacheck">
 <!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-160147578-1"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -32,9 +32,9 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">papercheck</a>
+    <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9057</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9059</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../articles/papercheck.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -52,7 +52,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/metacheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -65,12 +65,12 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Introducing Papercheck</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Introducing metacheck</h1>
             <h3 data-toc-skip class="subtitle">An Automated Tool to
 Check for Best Practices in Scientific Articles</h3>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/scienceverse/papercheck/blob/HEAD/vignettes/articles/intro.Rmd" class="external-link"><code>vignettes/articles/intro.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/scienceverse/metacheck/blob/HEAD/vignettes/articles/intro.Rmd" class="external-link"><code>vignettes/articles/intro.Rmd</code></a></small>
       <div class="d-none name"><code>intro.Rmd</code></div>
     </div>
 
@@ -142,29 +142,28 @@ such that any domain expert who wants to contribute an automated check
 can easily do so.</p>
 </div>
 <div class="section level2">
-<h2 id="papercheck">PaperCheck<a class="anchor" aria-label="anchor" href="#papercheck"></a>
+<h2 id="metacheck">metacheck<a class="anchor" aria-label="anchor" href="#metacheck"></a>
 </h2>
-<p><img src="https://scienceverse.github.io/papercheck/logo.png" style="float:right; width: 10em;" fig-alt="Papercheck Logo, a green hexagon with PAPAERCHECK in art deco font"></p>
-<p>In this post, we introduce <a href="https://scienceverse.github.io/papercheck/">Papercheck</a>, a new
+<p><img src="https://scienceverse.github.io/metacheck/logo.png" style="float:right; width: 10em;" fig-alt="metacheck Logo, a green hexagon with PAPAERCHECK in art deco font"></p>
+<p>In this post, we introduce <a href="https://scienceverse.github.io/metacheck/">metacheck</a>, a new
 tool that leverages text search, code, and large language models to
 extract and supplement information from scientific documents (including
 manuscripts, submitted or published articles, or preregistration
 documents) and provides automated suggestions for improvement.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/metacheck" class="external-link">metacheck</a></span><span class="op">)</span></span></code></pre></div>
 <p>Inspired by practices in software development, where automated checks
 (e.g., CRAN checks for R packages) are used to identify issues before
-release, Papercheck aims to screen scientific manuscripts to identify
+release, metacheck aims to screen scientific manuscripts to identify
 potential issues or areas for improvement and guide researchers in
 adopting best practices.</p>
-<p>Papercheck is modular, with each module focused on a specific
-practice that the scientific community wants to improve, and for which
-automation is viable. This modularity allows the tool to be extended and
-customized by the community, enabling the development of specialized
-modules tailored to the standards and best practices of different
-scientific fields. It can also offer an overarching platform to
-integrate existing tools (e.g., checks for retracted articles,
-Statcheck, etc).</p>
+<p>metacheck is modular, with each module focused on a specific practice
+that the scientific community wants to improve, and for which automation
+is viable. This modularity allows the tool to be extended and customized
+by the community, enabling the development of specialized modules
+tailored to the standards and best practices of different scientific
+fields. It can also offer an overarching platform to integrate existing
+tools (e.g., checks for retracted articles, Statcheck, etc).</p>
 </div>
 <div class="section level2 callout-note">
 <h2 id="an-example-of-the-retractionwatch-module">An example of the “retractionwatch” module<a class="anchor" aria-label="anchor" href="#an-example-of-the-retractionwatch-module"></a>
@@ -236,9 +235,9 @@ way to boost creativity (Gino &amp; Wiltermuth…</td>
 </table>
 <p>Showing 1 of 1 rows</p>
 </div>
-<p>In addition to the initial modules already introduced on the <a href="https://scienceverse.github.io/papercheck/">Papercheck
-website</a>, we will demonstrate Papercheck’s capabilities through four
-practical scenarios in an upcoming series of blog posts:</p>
+<p>In addition to the initial modules already introduced on the <a href="https://scienceverse.github.io/metacheck/">metacheck website</a>,
+we will demonstrate metacheck’s capabilities through four practical
+scenarios in an upcoming series of blog posts:</p>
 <ol style="list-style-type: decimal">
 <li><p>Identifying adherence to the American Psychological Association’s
 Journal Article Reporting Standards (JARS), such as reporting exact
@@ -290,27 +289,27 @@ checks on specific types of articles (e.g., meta-analyses), check
 journal-specific reporting guidelines, or perform checks on the
 references. We see great potential for new modules; the only limitation
 is your own creativity and your engineering skills.</p>
-<p>We are excited to continue developing Papercheck in close
+<p>We are excited to continue developing metacheck in close
 collaboration with the broader scientific community and welcome
-feedback, suggestions, and contributions. You can explore Papercheck on
-GitHub: <a href="https://scienceverse.github.io/papercheck/" class="uri">https://scienceverse.github.io/papercheck/</a>. If you want
-to contribute to new papercheck modules, validate existing modules in
-your own scientific discipline, or explore the use of Papercheck for
-metascientific projects, reach out to <a href="mailto:lisa.debruine@glasgow.ac.uk?subject=Papercheck">Lisa
-DeBruine</a> or <a href="mailto:d.lakens@tue.nl?subject=Papercheck">Daniel Lakens</a>.</p>
+feedback, suggestions, and contributions. You can explore metacheck on
+GitHub: <a href="https://scienceverse.github.io/metacheck/" class="uri">https://scienceverse.github.io/metacheck/</a>. If you want
+to contribute to new metacheck modules, validate existing modules in
+your own scientific discipline, or explore the use of metacheck for
+metascientific projects, reach out to <a href="mailto:lisa.debruine@glasgow.ac.uk?subject=metacheck">Lisa
+DeBruine</a> or <a href="mailto:d.lakens@tue.nl?subject=metacheck">Daniel Lakens</a>.</p>
 </div>
 <div class="section level2">
-<h2 id="papercheck-team">Papercheck Team<a class="anchor" aria-label="anchor" href="#papercheck-team"></a>
+<h2 id="metacheck-team">Metacheck Team<a class="anchor" aria-label="anchor" href="#metacheck-team"></a>
 </h2>
-<p>Papercheck is developed by a collaborative team of researchers,
+<p>Metacheck is developed by a collaborative team of researchers,
 consisting of (from left to right in the picture below) <a href="https://debruine.github.io" class="external-link">Lisa DeBruine</a> (developer and
 maintainer) and <a href="https://sites.google.com/site/lakens2/Home" class="external-link">Daniël Lakens</a>
 (developer), <a href="https://research.vu.nl/en/persons/rene-bekkers" class="external-link">René Bekkers</a>
 (collaborator and PI of Transparency Check), <a href="https://ssreplicationcentre.com/author/cristian-mesquida/" class="external-link">Cristian
 Mesquida</a> (postdoctoral researcher), and Max Littel and Jakub Werner
 (research assistants).</p>
-<p><img src="papercheck_team.png" fig-alt="The faces of the papercheck team"></p>
-<p>Papercheck is a component of a broader research project, Research
+<p><img src="team.png" fig-alt="The faces of the metacheck team"></p>
+<p>metacheck is a component of a broader research project, Research
 Transparency Check, led by René Bekkers, and funded by a <a href="https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check/" class="external-link">TDCC-SSH
 grant</a> from the Dutch Research Council (NWO). Our funded project
 priorities are described in more detail in our grant proposal, available

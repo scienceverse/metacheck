@@ -15,10 +15,10 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(papercheck)
+library(metacheck)
 ```
 
-There are some built-in functions in papercheck for exploring GitHub repositories. You can use these in custom modules.
+There are some built-in functions in metacheck for exploring GitHub repositories. You can use these in custom modules.
 
 ## github_repo
 
@@ -32,7 +32,7 @@ The github functions all work with the following formats for referring to reposi
 The `github_repo()` function returns the simplified format of. repo name, and an error if the repository in inaccessible.
 
 ```{r}
-github_repo("https://github.com/scienceverse/papercheck.git")
+github_repo("https://github.com/scienceverse/metacheck.git")
 ```
 
 ```{r, error = TRUE}
@@ -45,7 +45,7 @@ github_repo("scienceverse/checkpaper")
 Get the text of the readme file, regardless of the exact file name (e.g., README vs README.md). 
 
 ```{r}
-readme <- github_readme("scienceverse/papercheck")
+readme <- github_readme("scienceverse/metacheck")
 
 cat(readme)
 ```
@@ -57,7 +57,7 @@ cat(readme)
 You can retrieve the number of bytes dedicated to various coding languages, as detected and classified by GitHub.
 
 ```{r}
-github_languages("scienceverse/papercheck")
+github_languages("scienceverse/metacheck")
 ```
 
 ## github_files
@@ -67,17 +67,17 @@ You can get a list of file names, their path, size, file extension, and a guess 
 By default, you just retrieve the files and directories in the base directory, non-recursively.
 
 ```{r}
-github_files("scienceverse/papercheck")
+github_files("scienceverse/metacheck")
 ```
 
 ```{r}
-github_files("scienceverse/papercheck", dir = ".github")
+github_files("scienceverse/metacheck", dir = ".github")
 ```
 
 You can also retrieve files recursively. Searching a large repository recursively can take a while. 
 
 ```{r}
-github_files("scienceverse/papercheck",
+github_files("scienceverse/metacheck",
              dir = ".github",
              recursive = TRUE)
 ```

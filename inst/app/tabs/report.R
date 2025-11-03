@@ -1,6 +1,6 @@
 # set up module list
 
-modules <- papercheck::module_list()
+modules <- metacheck::module_list()
 
 ### report_tab ----
 report_tab <- tabItem(

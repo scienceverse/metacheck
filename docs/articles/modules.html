@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Modules • papercheck</title>
+<title>Modules • metacheck</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -32,9 +32,9 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">papercheck</a>
+    <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9057</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9059</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../articles/papercheck.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -52,7 +52,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/metacheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -68,16 +68,16 @@
       <img src="../logo.png" class="logo" alt=""><h1>Modules</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/scienceverse/papercheck/blob/HEAD/vignettes/modules.Rmd" class="external-link"><code>vignettes/modules.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/scienceverse/metacheck/blob/HEAD/vignettes/modules.Rmd" class="external-link"><code>vignettes/modules.Rmd</code></a></small>
       <div class="d-none name"><code>modules.Rmd</code></div>
     </div>
 
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/papercheck" class="external-link">papercheck</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/metacheck" class="external-link">metacheck</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
-<p>Papercheck is designed modularly, so you can add modules to check for
+<p>metacheck is designed modularly, so you can add modules to check for
 anything. It comes with a set of pre-defined modules, and we hope people
 will share more modules.</p>
 <div class="section level2">
@@ -821,8 +821,8 @@ they are found and open.</p>
 <span><span class="co">#&gt; status       "open"</span></span></code></pre>
 <p>You can also run this module on a batch of papers. You can only make
 100 API requests per hour, unless you authorise your requests, when you
-can make 10K requests per day. The OSF functions in papercheck often
-make several requests per URL to get all of the info, so it’s worthwhile
+can make 10K requests per day. The OSF functions in metacheck often make
+several requests per URL to get all of the info, so it’s worthwhile
 setting your PAT. You can authorise them by creating an OSF token at <a href="https://osf.io/settings/tokens" class="external-link uri">https://osf.io/settings/tokens</a> and including the
 following line in your .Renviron file (which you can open using
 <code><a href="https://usethis.r-lib.org/reference/edit.html" class="external-link">usethis::edit_r_environ()</a></code>):</p>
@@ -958,7 +958,7 @@ reference list.</p>
 </h3>
 <p>Flag any cited papers in the RetractionWatch database. It takes a
 substantial time to make calls to crossref for each reference, so we
-provide a summary of the database in papercheck, which is updated
+provide a summary of the database in metacheck, which is updated
 regularly (last 2025-02-28).</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"retractionwatch"</span><span class="op">)</span></span>

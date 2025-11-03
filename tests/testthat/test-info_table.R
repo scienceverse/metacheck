@@ -1,9 +1,9 @@
 test_that("exists", {
-  expect_true(is.function(papercheck::info_table))
-  expect_no_error(helplist <- help(info_table, papercheck))
+  expect_true(is.function(metacheck::info_table))
+  expect_no_error(helplist <- help(info_table, metacheck))
 
-  expect_true(is.function(papercheck::author_table))
-  expect_no_error(helplist <- help(author_table, papercheck))
+  expect_true(is.function(metacheck::author_table))
+  expect_no_error(helplist <- help(author_table, metacheck))
 })
 
 test_that("errors", {

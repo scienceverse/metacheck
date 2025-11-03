@@ -1,5 +1,5 @@
 verbose(FALSE)
-# options(papercheck.osf.api = "https://api.osf.io/v2/")
+# options(metacheck.osf.api = "https://api.osf.io/v2/")
 # osf_delay(0)
 
 # skip if requires OSF API

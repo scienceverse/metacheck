@@ -3,7 +3,7 @@
 
 test_that("defaults", {
   filename <- system.file("psychsci/0956797620955209.cermine.xml",
-                          package = "papercheck")
+                          package = "metacheck")
   paper <- read(filename)
   title <- "Preregistered Direct Replication of “Sick Body, Vigilant Mind: The Biological Immune System Activates the Behavioral Immune System”"
   abstract <- "^The tendency to attend to and avoid cues to pathogens"
@@ -27,7 +27,7 @@ test_that("defaults", {
 
 test_that("read_xml", {
   filename <- system.file("extdata/to_err_is_human.cermine.xml",
-                          package = "papercheck")
+                          package = "metacheck")
   xml <- read_xml(filename)
   expect_s3_class(xml, "xml_document")
 
@@ -58,7 +58,7 @@ test_that("nlm_info", {
 
 test_that("nlm_full_text", {
   filename <- system.file("psychsci/0956797620955209.cermine.xml",
-                          package = "papercheck")
+                          package = "metacheck")
   xml <- read_xml(filename)
   body <- nlm_full_text(xml) |> process_full_text()
   sections <- c("abstract", "intro", "method", "results",
@@ -69,7 +69,7 @@ test_that("nlm_full_text", {
 
 test_that("get_authors", {
   filename <- system.file("psychsci/0956797620955209.cermine.xml",
-                          package = "papercheck")
+                          package = "metacheck")
   xml <- read_xml(filename)
 
   expect_no_error( authors <- nlm_authors(xml) )
@@ -78,7 +78,7 @@ test_that("get_authors", {
 
 test_that("jats_bib", {
   filename <- system.file("psychsci/0956797620955209.cermine.xml",
-                          package = "papercheck")
+                          package = "metacheck")
   xml <- read_xml(filename)
 
   bib <- jats_bib(xml)
@@ -90,7 +90,7 @@ test_that("jats_bib", {
 })
 
 test_that("iteration", {
-  cermine_dir <- system.file("cermine", package = "papercheck")
+  cermine_dir <- system.file("cermine", package = "metacheck")
   s <- read(cermine_dir)
 
   file_list <- list.files(cermine_dir, ".xml")
@@ -120,7 +120,7 @@ test_that("iteration", {
   expect_equal(names(s) |> paste0(".xml"), file_list[3:1])
 
   # recursive file search
-  filename <- system.file(package="papercheck")
+  filename <- system.file(package="metacheck")
   suppressWarnings(
     s <- read(filename)
   )

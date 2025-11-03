@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 ```{r setup}
 #| message: false
 
-library(papercheck)
+library(metacheck)
 library(dplyr)
 library(ggplot2)
 
@@ -46,7 +46,7 @@ test <- anti_join(ground_truth, train, by = "text")
 
 ## Get important words
 
-You can use any method for finding the words you want to use in your model, but papercheck has a built-in function to find the words that are most distinctive in your classification groups. The classification values here are 0 and 1, but can be TRUE/FALSE or any two text values.
+You can use any method for finding the words you want to use in your model, but metacheck has a built-in function to find the words that are most distinctive in your classification groups. The classification values here are 0 and 1, but can be TRUE/FALSE or any two text values.
 
 `n_X` is the total number of incidents of the word in category X, while `freq_X` is the average number of incidents per text string in category X (so can be higher than 1 if a word tends to be found several times per sentence). The table gives you the top `n` words with the largest absolute difference in frequency.
 
@@ -204,8 +204,8 @@ saveRDS(model, "power/power_log_model.Rds")
 power_log_model <- function(paper) {
   # initial text search
   table <- paper |>
-    papercheck::search_text("power(ed)?\\b") |>
-    papercheck::search_text("(\\.[0-9]|[0-9]%)")
+    metacheck::search_text("power(ed)?\\b") |>
+    metacheck::search_text("(\\.[0-9]|[0-9]%)")
 
   # get text features
   words <- c("size", "sampl", "effect", "particip", "α", "analysi", "80", 

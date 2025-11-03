@@ -16,8 +16,8 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-# devtools::install_github("scienceverse/papercheck")
-library(papercheck)
+# devtools::install_github("scienceverse/metacheck")
+library(metacheck)
 library(tidyverse)
 
 mytable <- function(tbl) {
@@ -25,18 +25,18 @@ mytable <- function(tbl) {
 }
 ```
 
-*In this blog post we will explain how Papercheck can automatically check the content of data repositories that are linked to in a scientific manuscript, using some papercheck functions for exploring OSF repositories to create a custom module.*
+*In this blog post we will explain how metacheck can automatically check the content of data repositories that are linked to in a scientific manuscript, using some metacheck functions for exploring OSF repositories to create a custom module.*
 
 
 There is an increasing awareness of the importance of open science practices, and widespread support among scientists for open science practices, such as data and code sharing [@ferguson_survey_2023]. As data and code sharing is a relatively new practice, and many scientists lack training in open science, it is common to see badly documented data repositories. Best practices exist, such as the [TIER protocol](https://www.projecttier.org/tier-protocol/protocol-4-0/), but not all researchers might be aware of best practices.
 
-At a minimum a data repository should contain a README file with instructions for how to reproduce the results. If data is shared, it should be stored in a 'data' folder, or at least have the word 'data' in the filename. Code or scripts should similarly be shared in a folder with that name, or at least with the word in the filename. Finally, if data is shared, there should be a codebook or data dictionary that explains which variables are in the dataset in order to allow others to re-use the data. Although it is easy to forget to organize a data repository well, it is also easy to automatically check. Here we demonstrate how [Papercheck](https://scienceverse.github.io/papercheck/) can check if a README is present, whether data and/or code are shared, and if there is a codebook.
+At a minimum a data repository should contain a README file with instructions for how to reproduce the results. If data is shared, it should be stored in a 'data' folder, or at least have the word 'data' in the filename. Code or scripts should similarly be shared in a folder with that name, or at least with the word in the filename. Finally, if data is shared, there should be a codebook or data dictionary that explains which variables are in the dataset in order to allow others to re-use the data. Although it is easy to forget to organize a data repository well, it is also easy to automatically check. Here we demonstrate how [metacheck](https://scienceverse.github.io/metacheck/) can check if a README is present, whether data and/or code are shared, and if there is a codebook.
 
 Ideally peer reviewers or editors would check the contents of a data repository. In practice, time constraints mean that no one actually checks what is in a data repository. Automation can perform some of the checks that peers might otherwise perform manually. We provide an illustration of some checks that could be performed. Specifically 1) is any data that is shared clearly labeled as such, 2) is code that is shared clearly labeled as such, 3) is there a README file that explains to potential users which files are shared, where they can be found in the repository, and how the can be used to reproduce any reported results, and 4) is there a codebook or data dictionary?
 
-## Checking an OSF repository with Papercheck
+## Checking an OSF repository with metacheck
 
-We will illustrate the process of checking a data repository by focusing on projects on the [Open Science Framework](www.osf.io). For this illustration we use an open access paper published in Psychological Science that has already been converted to a papercheck object using GROBID. There are 250 open access papers in the Papercheck object `psychsci`; we will choose one for this example.
+We will illustrate the process of checking a data repository by focusing on projects on the [Open Science Framework](www.osf.io). For this illustration we use an open access paper published in Psychological Science that has already been converted to a metacheck object using GROBID. There are 250 open access papers in the metacheck object `psychsci`; we will choose one for this example.
 
 ```{r example-paper}
 # paper to use in this example
@@ -45,7 +45,7 @@ paper <- psychsci[[250]]
 
 ### Set up OSF functions
 
-You can only make 100 API requests per hour, unless you authorise your requests, when you can make 10K requests per day. The OSF functions in papercheck often make several requests per URL to get all of the info, so it's worthwhile setting your PAT. You can authorise them by creating an OSF token at <https://osf.io/settings/tokens> and including the following line in your .Renviron file (which you can open using `usethis::edit_r_environ()`):
+You can only make 100 API requests per hour, unless you authorise your requests, when you can make 10K requests per day. The OSF functions in metacheck often make several requests per URL to get all of the info, so it's worthwhile setting your PAT. You can authorise them by creating an OSF token at <https://osf.io/settings/tokens> and including the following line in your .Renviron file (which you can open using `usethis::edit_r_environ()`):
 
 ```         
 OSF_PAT="replace-with-your-token-string"
@@ -123,7 +123,7 @@ osf_files_summary |>
 
 ### Report Text
 
-Finally, we print a report that communicates to the user - for example, a researcher preparing their manuscript for submission - whether there are suggestions to improve their data repository. We provide feedback about whether any of the four categories could be automatically detected, and if not, provide additional information about what would have made the automated tool recognize the files of interest. The output gives a detailed overview of the information it could not find, alongside a suggestion for how to learn more about best practices in this domain. If researchers use this Papercheck module before submission, they can improve the quality of their data repository in case any information is missing. Papercheck might miss data and code that is shared, but not clearly named, but by indicating this, users might realize that the data repository can be improved by more clearly naming folders and files.
+Finally, we print a report that communicates to the user - for example, a researcher preparing their manuscript for submission - whether there are suggestions to improve their data repository. We provide feedback about whether any of the four categories could be automatically detected, and if not, provide additional information about what would have made the automated tool recognize the files of interest. The output gives a detailed overview of the information it could not find, alongside a suggestion for how to learn more about best practices in this domain. If researchers use this metacheck module before submission, they can improve the quality of their data repository in case any information is missing. metacheck might miss data and code that is shared, but not clearly named, but by indicating this, users might realize that the data repository can be improved by more clearly naming folders and files.
 
 ```{r osf_report-func}
 osf_report <- function(summary) {
@@ -185,7 +185,7 @@ module_report(report) |> cat()
 
 ### Checking the Contents of files
 
-So far we have used Papercheck to automatically check whether certain types of files exist. But it is also possible to automatically download files, examine their contents, and provide feedback to users. This can be useful to examine datasets (e.g., do files contain IP addresses or other personal information), or code files. We will illustrate the latter by automatically checking the content of R scripts stored on the OSF, in repositories that are linked to in a scientific manuscript.
+So far we have used metacheck to automatically check whether certain types of files exist. But it is also possible to automatically download files, examine their contents, and provide feedback to users. This can be useful to examine datasets (e.g., do files contain IP addresses or other personal information), or code files. We will illustrate the latter by automatically checking the content of R scripts stored on the OSF, in repositories that are linked to in a scientific manuscript.
 
 We can check R files for good coding practices that improve reproducibility. We have created a check that examines 1) whether all libraries are loaded in one block, instead of throughout the R script, 2) whether relative paths are used that will also work when someone runs the code on a different computer (e.g., `data <- read.csv(file='../data/data_study_1.csv')` ) instead of fixed paths (e.g., `data <- read.csv(file='C:/data/data_study_1.csv')` ), and 3) whether information is provided about the software used (i.e., the R version), the version of packages that were used, and properties of the computer that the analyses were performed on. In R, this can be achieved by:
 

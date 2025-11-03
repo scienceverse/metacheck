@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Checking OSF Data Repositories • papercheck</title>
+<title>Checking OSF Data Repositories • metacheck</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -32,9 +32,9 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">papercheck</a>
+    <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9057</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9059</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../articles/papercheck.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -52,7 +52,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/papercheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/scienceverse/metacheck/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -68,16 +68,16 @@
       <img src="../logo.png" class="logo" alt=""><h1>Checking OSF Data Repositories</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/scienceverse/papercheck/blob/HEAD/vignettes/articles/osf.Rmd" class="external-link"><code>vignettes/articles/osf.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/scienceverse/metacheck/blob/HEAD/vignettes/articles/osf.Rmd" class="external-link"><code>vignettes/articles/osf.Rmd</code></a></small>
       <div class="d-none name"><code>osf.Rmd</code></div>
     </div>
 
     
     
-<p><em>In this blog post we will explain how Papercheck can
-automatically check the content of data repositories that are linked to
-in a scientific manuscript, using some papercheck functions for
-exploring OSF repositories to create a custom module.</em></p>
+<p><em>In this blog post we will explain how metacheck can automatically
+check the content of data repositories that are linked to in a
+scientific manuscript, using some metacheck functions for exploring OSF
+repositories to create a custom module.</em></p>
 <p>There is an increasing awareness of the importance of open science
 practices, and widespread support among scientists for open science
 practices, such as data and code sharing <span class="citation">(Ferguson et al. 2023)</span>. As data and code sharing
@@ -95,9 +95,9 @@ data is shared, there should be a codebook or data dictionary that
 explains which variables are in the dataset in order to allow others to
 re-use the data. Although it is easy to forget to organize a data
 repository well, it is also easy to automatically check. Here we
-demonstrate how <a href="https://scienceverse.github.io/papercheck/">Papercheck</a> can
-check if a README is present, whether data and/or code are shared, and
-if there is a codebook.</p>
+demonstrate how <a href="https://scienceverse.github.io/metacheck/">metacheck</a> can check
+if a README is present, whether data and/or code are shared, and if
+there is a codebook.</p>
 <p>Ideally peer reviewers or editors would check the contents of a data
 repository. In practice, time constraints mean that no one actually
 checks what is in a data repository. Automation can perform some of the
@@ -109,14 +109,14 @@ to potential users which files are shared, where they can be found in
 the repository, and how the can be used to reproduce any reported
 results, and 4) is there a codebook or data dictionary?</p>
 <div class="section level2">
-<h2 id="checking-an-osf-repository-with-papercheck">Checking an OSF repository with Papercheck<a class="anchor" aria-label="anchor" href="#checking-an-osf-repository-with-papercheck"></a>
+<h2 id="checking-an-osf-repository-with-metacheck">Checking an OSF repository with metacheck<a class="anchor" aria-label="anchor" href="#checking-an-osf-repository-with-metacheck"></a>
 </h2>
 <p>We will illustrate the process of checking a data repository by
 focusing on projects on the <a href="www.osf.io">Open Science
 Framework</a>. For this illustration we use an open access paper
 published in Psychological Science that has already been converted to a
-papercheck object using GROBID. There are 250 open access papers in the
-Papercheck object <code>psychsci</code>; we will choose one for this
+metacheck object using GROBID. There are 250 open access papers in the
+metacheck object <code>psychsci</code>; we will choose one for this
 example.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># paper to use in this example</span></span>
@@ -126,9 +126,9 @@ example.</p>
 </h3>
 <p>You can only make 100 API requests per hour, unless you authorise
 your requests, when you can make 10K requests per day. The OSF functions
-in papercheck often make several requests per URL to get all of the
-info, so it’s worthwhile setting your PAT. You can authorise them by
-creating an OSF token at <a href="https://osf.io/settings/tokens" class="external-link uri">https://osf.io/settings/tokens</a> and including the
+in metacheck often make several requests per URL to get all of the info,
+so it’s worthwhile setting your PAT. You can authorise them by creating
+an OSF token at <a href="https://osf.io/settings/tokens" class="external-link uri">https://osf.io/settings/tokens</a> and including the
 following line in your .Renviron file (which you can open using
 <code><a href="https://usethis.r-lib.org/reference/edit.html" class="external-link">usethis::edit_r_environ()</a></code>):</p>
 <pre><code><span><span class="va">OSF_PAT</span><span class="op">=</span><span class="st">"replace-with-your-token-string"</span></span></code></pre>
@@ -1652,12 +1652,12 @@ automatically detected, and if not, provide additional information about
 what would have made the automated tool recognize the files of interest.
 The output gives a detailed overview of the information it could not
 find, alongside a suggestion for how to learn more about best practices
-in this domain. If researchers use this Papercheck module before
+in this domain. If researchers use this metacheck module before
 submission, they can improve the quality of their data repository in
-case any information is missing. Papercheck might miss data and code
-that is shared, but not clearly named, but by indicating this, users
-might realize that the data repository can be improved by more clearly
-naming folders and files.</p>
+case any information is missing. metacheck might miss data and code that
+is shared, but not clearly named, but by indicating this, users might
+realize that the data repository can be improved by more clearly naming
+folders and files.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">osf_report</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">summary</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">files</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">summary</span>, <span class="va">osf_type</span> <span class="op">==</span> <span class="st">"files"</span><span class="op">)</span></span>
@@ -1729,7 +1729,7 @@ reproduce your results!</p>
 <div class="section level3">
 <h3 id="checking-the-contents-of-files">Checking the Contents of files<a class="anchor" aria-label="anchor" href="#checking-the-contents-of-files"></a>
 </h3>
-<p>So far we have used Papercheck to automatically check whether certain
+<p>So far we have used metacheck to automatically check whether certain
 types of files exist. But it is also possible to automatically download
 files, examine their contents, and provide feedback to users. This can
 be useful to examine datasets (e.g., do files contain IP addresses or
@@ -1768,10 +1768,10 @@ by:</p>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt;  [1] lubridate_1.9.4       forcats_1.0.0         stringr_1.5.2        </span></span>
-<span><span class="co">#&gt;  [4] dplyr_1.1.4           purrr_1.1.0           readr_2.1.5          </span></span>
-<span><span class="co">#&gt;  [7] tidyr_1.3.1           tibble_3.3.0          ggplot2_4.0.0        </span></span>
-<span><span class="co">#&gt; [10] tidyverse_2.0.0       papercheck_0.0.0.9057</span></span>
+<span><span class="co">#&gt;  [1] lubridate_1.9.4      forcats_1.0.0        stringr_1.5.2       </span></span>
+<span><span class="co">#&gt;  [4] dplyr_1.1.4          purrr_1.1.0          readr_2.1.5         </span></span>
+<span><span class="co">#&gt;  [7] tidyr_1.3.1          tibble_3.3.0         ggplot2_4.0.0       </span></span>
+<span><span class="co">#&gt; [10] tidyverse_2.0.0      metacheck_0.0.0.9059</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] sass_0.4.10        generics_0.1.4     stringi_1.8.7      hms_1.1.3         </span></span>
@@ -1920,7 +1920,7 @@ Science.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/module_report.html">module_report</a></span><span class="op">(</span><span class="va">module_results</span>, header <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="section level4 yellow">
-<h4 class="yellow" id="osf-file-check">OSF File Check<a class="anchor" aria-label="anchor" href="#osf-file-check"></a>
+<h4 class="yellow" id="module-title">Module Title<a class="anchor" aria-label="anchor" href="#module-title"></a>
 </h4>
 <p>⚠️ No README files were identified. A read me is best practice to
 facilitate re-use. If you have a README, please name it explicitly

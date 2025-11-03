@@ -1,18 +1,18 @@
 test_that("exists", {
-  expect_true(is.function(papercheck::module_run))
-  expect_no_error(helplist <- help(module_run, papercheck))
+  expect_true(is.function(metacheck::module_run))
+  expect_no_error(helplist <- help(module_run, metacheck))
 
-  expect_true(is.function(papercheck::module_list))
-  expect_no_error(helplist <- help(module_list, papercheck))
+  expect_true(is.function(metacheck::module_list))
+  expect_no_error(helplist <- help(module_list, metacheck))
 
-  expect_true(is.function(papercheck:::module_find))
-  expect_no_error(helplist <- help(module_find, papercheck))
+  expect_true(is.function(metacheck:::module_find))
+  expect_no_error(helplist <- help(module_find, metacheck))
 
-  expect_true(is.function(papercheck::module_help))
-  expect_no_error(helplist <- help(module_help, papercheck))
+  expect_true(is.function(metacheck::module_help))
+  expect_no_error(helplist <- help(module_help, metacheck))
 
-  expect_true(is.function(papercheck::module_info))
-  expect_no_error(helplist <- help(module_info, papercheck))
+  expect_true(is.function(metacheck::module_info))
+  expect_no_error(helplist <- help(module_info, metacheck))
 })
 
 test_that("errors", {
@@ -116,7 +116,7 @@ test_that("module_help", {
   output <- capture.output(help)
   expect_equal(output, expected)
 
-  expect_equal(class(help), "ppchk_module_help")
+  expect_equal(class(help), "metacheck_module_help")
   expect_equal(help$title, title)
   expect_equal(help$description, desc)
 
@@ -125,8 +125,8 @@ test_that("module_help", {
 })
 
 test_that("module_template", {
-  expect_true(is.function(papercheck::module_template))
-  expect_no_error(helplist <- help(module_template, papercheck))
+  expect_true(is.function(metacheck::module_template))
+  expect_no_error(helplist <- help(module_template, metacheck))
 
   expect_error(module_template("a module"),
                "The module_name must contain only letters, numbers, and _",
@@ -352,7 +352,7 @@ test_that("marginal", {
 # test_that("sample-size", {
 #   skip("python install is messed up")
 #   skip_on_cran()
-#   model_dir <- system.file("modules/sample-size", package = "papercheck")
+#   model_dir <- system.file("modules/sample-size", package = "metacheck")
 #
 #   if (model_dir == "") {
 #     skip("needs big classifier: sample-size")

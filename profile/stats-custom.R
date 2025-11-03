@@ -108,7 +108,7 @@ RGX_DF1_I_L <- "I|l"
 #' @export
 #'
 #' @examples
-#' filename <- system.file("grobid", "incest.xml", package="papercheck")
+#' filename <- system.file("grobid", "incest.xml", package="metacheck")
 #' study <- read(filename)
 #' stats(study)
 stats <- function(text, ...) {
@@ -141,7 +141,7 @@ stats <- function(text, ...) {
 #' @export
 #'
 #' @examples
-#' filename <- system.file("grobid", "incest.xml", package="papercheck")
+#' filename <- system.file("grobid", "incest.xml", package="metacheck")
 #' study <- read(filename)
 #' check_p_values(study)
 check_p_values <- function(text) {
@@ -153,7 +153,7 @@ check_p_values <- function(text) {
   return(p)
 }
 
-#' Statcheck (papercheck version)
+#' Statcheck (metacheck version)
 #'
 #' @inheritParams statcheck::statcheck
 #'

@@ -15,7 +15,7 @@ expand_text(
 \arguments{
 \item{results_table}{the table to expand}
 
-\item{paper}{a papercheck paper object or a list of paper objects to look up the expanded text from}
+\item{paper}{a metacheck paper object or a list of paper objects to look up the expanded text from}
 
 \item{expand_to}{whether to expand to the sentence, paragraph, div, or section level}
 

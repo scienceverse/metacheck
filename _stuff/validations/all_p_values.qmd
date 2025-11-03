@@ -9,7 +9,7 @@ format:
 ```{r}
 #| message: false
 
-# library(papercheck)
+# library(metacheck)
 library(tidyverse)
 
 # use local dev version
@@ -173,7 +173,7 @@ ggsave("~/Desktop/pval.png", width = 7, height= 5)
 
 An issue was filed about text ways of stating a p-value, like "the p-value was 0.03". However, all ways to catch that produce way more fale positives for threshold sentences.
 
-https://github.com/scienceverse/papercheck/issues/24
+https://github.com/scienceverse/metacheck/issues/24
 
 ```{r}
 pattern <- "\\b\\w+\\s+p(-| )?values?\\s+.{1,20}\\s+[0-9\\.]+"

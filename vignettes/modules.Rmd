@@ -15,11 +15,11 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, message=FALSE}
-library(papercheck)
+library(metacheck)
 library(dplyr)
 ```
 
-Papercheck is designed modularly, so you can add modules to check for anything. It comes with a set of pre-defined modules, and we hope people will share more modules.
+metacheck is designed modularly, so you can add modules to check for anything. It comes with a set of pre-defined modules, and we hope people will share more modules.
 
 ## Module List
 
@@ -158,7 +158,7 @@ osf_check$table[1,] |> t()
 ```
 
 
-You can also run this module on a batch of papers. You can only make 100 API requests per hour, unless you authorise your requests, when you can make 10K requests per day. The OSF functions in papercheck often make several requests per URL to get all of the info, so it's worthwhile setting your PAT. You can authorise them by creating an OSF token at <https://osf.io/settings/tokens> and including the following line in your .Renviron file (which you can open using `usethis::edit_r_environ()`):
+You can also run this module on a batch of papers. You can only make 100 API requests per hour, unless you authorise your requests, when you can make 10K requests per day. The OSF functions in metacheck often make several requests per URL to get all of the info, so it's worthwhile setting your PAT. You can authorise them by creating an OSF token at <https://osf.io/settings/tokens> and including the following line in your .Renviron file (which you can open using `usethis::edit_r_environ()`):
 
 ```
 OSF_PAT="replace-with-your-token-string"
@@ -187,7 +187,7 @@ It looks like there are some references with missing citations. The first one do
 
 ### retractionwatch
 
-Flag any cited papers in the RetractionWatch database. It takes a substantial time to make calls to crossref for each reference, so we provide a summary of the database in papercheck, which is updated regularly (last 2025-02-28). 
+Flag any cited papers in the RetractionWatch database. It takes a substantial time to make calls to crossref for each reference, so we provide a summary of the database in metacheck, which is updated regularly (last 2025-02-28). 
 
 ```{r}
 rw <- module_run(paper, "retractionwatch")

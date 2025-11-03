@@ -1,8 +1,8 @@
 #setwd("tests/testthat/")
 
 test_that("exists", {
-  expect_true(is.function(papercheck::validate))
-  expect_no_error(helplist <- help(validate, papercheck))
+  expect_true(is.function(metacheck::validate))
+  expect_no_error(helplist <- help(validate, metacheck))
 })
 
 test_that("errors", {
@@ -52,9 +52,9 @@ test_that("basic", {
   v <- validate(paper, module, summary = exp_summary)
   expect_equal(v$stats$summary$marginal, 1)
 
-  # print.ppchk_validate
+  # print.metacheck_validate
   op <- capture_output(print(v))
-  op2 <- capture_output(print.ppchk_validate(v))
+  op2 <- capture_output(print.metacheck_validate(v))
   exp_op <- " Validated matches for module `marginal`:\n\n* N in validation sample: 10\n* summary: \n  * marginal: 1"
   expect_equal(op2, op)
   expect_equal(op, exp_op)
