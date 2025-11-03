@@ -1,7 +1,7 @@
 # endpoints/paper.R
 # Paper analysis endpoints - can work with uploaded PDFs or GROBID XML
 
-library(papercheck)
+library(metacheck)
 library(logger)
 
 # Source utility functions
@@ -9,7 +9,7 @@ source("../utils/validators.R", local = TRUE)
 source("../utils/helpers.R", local = TRUE)
 
 AVAILABLE_MODULES <- list.files(
-    path = system.file("modules", package = "papercheck"),
+    path = system.file("modules", package = "metacheck"),
     pattern = "\\.R$",
     full.names = FALSE
 ) |>
@@ -257,7 +257,7 @@ function(req, res) {
     }
 
     # Dynamically source and run the module
-    module_path <- system.file("modules", paste0(mp$name, ".R"), package = "papercheck")
+    module_path <- system.file("modules", paste0(mp$name, ".R"), package = "metacheck")
     if (module_path == "") {
         return(error_response(res, 500, paste0("Module file for '", mp$name, "' not found.")))
     }
@@ -278,7 +278,7 @@ function(req, res) {
     )
 }
 
-#* Get all relevant metadata from a paper, and run papercheck modules on it
+#* Get all relevant metadata from a paper, and run metacheck modules on it
 #* @post /check
 #* @param file:file GROBID XML file to process
 #* @param modules:[string] Comma-separated list of modules to run (optional, defaults to all)
@@ -333,7 +333,7 @@ function(req, res) {
         tryCatch(
             {
                 result <- module_run(paper_obj$paper, module_name)
-                # Convert ppchk_module_output to plain list for JSON serialization
+                # Convert metacheck_module_output to plain list for JSON serialization
                 list(
                     module = result$module,
                     title = result$title,

@@ -1,11 +1,11 @@
 # api.R
-# Plumber API for papercheck
+# Plumber API for metacheck
 # Supports both single-paper analysis and GROBID processing
 
 library(plumber)
-library(papercheck)
+library(metacheck)
 
-#* @apiTitle Papercheck API
+#* @apiTitle metacheck API
 #* @apiDescription API for analyzing academic papers. Upload GROBID TEI XML to extract metadata, authors, references, and more.
 
 #* @plumber

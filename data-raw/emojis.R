@@ -58,7 +58,7 @@ usethis::use_r("emojis")
 
 #' Print Emojis
 #'
-#' @param x The escaped emoji characters (from papercheck::emoji)
+#' @param x The escaped emoji characters (from metacheck::emoji)
 #' @param ... Additional parameters for print
 #'
 #' @export

@@ -4,7 +4,7 @@
 #' @export
 #' @keywords internal
 osf_headers <- function() {
-  headers <- list(`User-Agent` = "Papercheck")
+  headers <- list(`User-Agent` = "metacheck")
   osf_pat <- Sys.getenv("OSF_PAT")
   if (!is.null(osf_pat)) {
     headers$Authorization <- sprintf("Bearer %s", osf_pat)
@@ -68,7 +68,7 @@ osf_links <- function(paper) {
 #'
 #' The OSF API server is down a lot, so it's often good to check it before you run a bunch of OSF functions. When the server is down, it can take several seconds to return an error, so scripts where you are checking many URLs can take a long time before you realise they aren't working.
 #'
-#' You can only make 100 API requests per hour, unless you authorise your requests, when you can make 10K requests per day. The osf functions in papercheck often make several requests per URL to get all of the info. You can authorise them by creating an OSF token at https://osf.io/settings/tokens and including the following line in your .Renviron file:
+#' You can only make 100 API requests per hour, unless you authorise your requests, when you can make 10K requests per day. The osf functions in metacheck often make several requests per URL to get all of the info. You can authorise them by creating an OSF token at https://osf.io/settings/tokens and including the following line in your .Renviron file:
 #'
 #' OSF_PAT="replace-with-your-token-string"
 #'
@@ -79,7 +79,7 @@ osf_links <- function(paper) {
 #'
 #' @examples
 #' osf_api_check()
-osf_api_check <- function(osf_api = getOption("papercheck.osf.api")) {
+osf_api_check <- function(osf_api = getOption("metacheck.osf.api")) {
   if (!curl::has_internet()) {
     return("no internet")
   }
@@ -127,7 +127,7 @@ osf_retrieve <- function(osf_url, id_col = 1,
   api_check <- osf_api_check()
   if (api_check != "ok") {
     stop("The OSF API seems to be having a problem: ", api_check,
-        "\nCheck ", getOption("papercheck.osf.api"))
+        "\nCheck ", getOption("metacheck.osf.api"))
   }
 
   # handle list of links
@@ -253,7 +253,7 @@ osf_retrieve <- function(osf_url, id_col = 1,
 #' @keywords internal
 osf_info <- function(osf_id) {
   message("* Retrieving info from ", osf_id, "...")
-  osf_api <- getOption("papercheck.osf.api")
+  osf_api <- getOption("metacheck.osf.api")
 
   # double-check ID
   valid_id <- osf_check_id(osf_id)
@@ -431,7 +431,7 @@ filetype <- function(filename) {
   )
 
   add_types <- ext |>
-    dplyr::left_join(papercheck::file_types, by = "ext") |>
+    dplyr::left_join(metacheck::file_types, by = "ext") |>
     dplyr::summarise(type = paste(.data$type, collapse = ";"),
                      .by = c("id", "ext"))
 
@@ -580,7 +580,7 @@ osf_check_id <- function(osf_id) {
 #' @examples
 #' # get the 20 newest preprints
 #' \donttest{
-#' osf_api <- getOption("papercheck.osf.api")
+#' osf_api <- getOption("metacheck.osf.api")
 #' url <- sprintf("%s/preprints/?search=date_created-desc", osf_api)
 #' preprints <- osf_get_all_pages(url, 2)
 #' }
@@ -635,7 +635,7 @@ osf_get_all_pages <- function(url, page_end = Inf) {
 #' @export
 #' @keywords internal
 osf_files <- function(osf_id) {
-  osf_api <- getOption("papercheck.osf.api")
+  osf_api <- getOption("metacheck.osf.api")
   node_id <- osf_check_id(osf_id)
 
   message("* Retrieving files for ", node_id, "...")
@@ -669,7 +669,7 @@ osf_files <- function(osf_id) {
 #' @export
 #' @keywords internal
 osf_children <- function(osf_id) {
-  osf_api <- getOption("papercheck.osf.api")
+  osf_api <- getOption("metacheck.osf.api")
   node_id <- osf_check_id(osf_id)
 
   message("* Retrieving children for ", node_id, "...")
@@ -780,10 +780,10 @@ osf_parent_project <- function(osf_id) {
 #' osf_delay()
 osf_delay <- function(delay = NULL) {
   if (is.null(delay)) {
-    return(getOption("papercheck.osf.delay"))
+    return(getOption("metacheck.osf.delay"))
   } else if (is.numeric(delay)) {
-    options(papercheck.osf.delay = delay)
-    invisible(getOption("papercheck.osf.delay"))
+    options(metacheck.osf.delay = delay)
+    invisible(getOption("metacheck.osf.delay"))
   } else {
     stop("set osf_delay with a numeric value for the number of seconds to wait between OSF calls")
   }
@@ -795,8 +795,8 @@ osf_delay <- function(delay = NULL) {
 #' @export
 #' @keywords internal
 osf_api_calls_inc <- function() {
-  n <- getOption("papercheck.osf.api.calls") |> as.integer()
-  options(papercheck.osf.api.calls = n + 1)
+  n <- getOption("metacheck.osf.api.calls") |> as.integer()
+  options(metacheck.osf.api.calls = n + 1)
 }
 
 #' Get/set the OSF API Call Count
@@ -810,10 +810,10 @@ osf_api_calls_inc <- function() {
 #' osf_api_calls()
 osf_api_calls <- function(calls = NULL) {
   if (is.null(calls)) {
-    return(getOption("papercheck.osf.api.calls"))
+    return(getOption("metacheck.osf.api.calls"))
   } else if (is.numeric(calls)) {
-    options(papercheck.osf.api.calls = calls)
-    invisible(getOption("papercheck.osf.api.calls"))
+    options(metacheck.osf.api.calls = calls)
+    invisible(getOption("metacheck.osf.api.calls"))
   } else {
     stop("set osf_api_calls with a numeric value (usually reset to 0)")
   }
@@ -1099,7 +1099,7 @@ osf_preprint_list <- function(provider = NULL,
   # }
 
   url <- paste(filters, collapse = "&") |>
-    paste0(getOption("papercheck.osf.api"), "/preprints/", "?", x = _)
+    paste0(getOption("metacheck.osf.api"), "/preprints/", "?", x = _)
 
   pp <- osf_get_all_pages(url, page_end = page_end)
 

@@ -18,11 +18,11 @@ classification <- c(1, 1, 1, 1, 1, 1, 1,
                     0, 0 ,0, 0, 0, 0, 0)
 
 test_that("exists", {
-  expect_true(is.function(papercheck::distinctive_words))
-  expect_no_error(helplist <- help(distinctive_words, papercheck))
+  expect_true(is.function(metacheck::distinctive_words))
+  expect_no_error(helplist <- help(distinctive_words, metacheck))
 
-  expect_true(is.function(papercheck::text_features))
-  expect_no_error(helplist <- help(text_features, papercheck))
+  expect_true(is.function(metacheck::text_features))
+  expect_no_error(helplist <- help(text_features, metacheck))
 })
 
 test_that("errors", {

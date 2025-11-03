@@ -2,7 +2,7 @@
 % Please edit documentation in R/llm.R
 \name{llm_use}
 \alias{llm_use}
-\title{Set or get papercheck LLM use}
+\title{Set or get metacheck LLM use}
 \usage{
 llm_use(llm_use = NULL)
 }

@@ -4,7 +4,7 @@ suppressPackageStartupMessages({
   library(shinyjs)
   library(shinydashboard)
   library(DT)
-  library(papercheck)
+  library(metacheck)
   library(dplyr)
   library(shiny.i18n)
 })
@@ -24,7 +24,7 @@ source("tabs/report.R")
 ## UI ----
 ui <- dashboardPage(
   skin = "black",
-  dashboardHeader(title = "PaperCheck"),
+  dashboardHeader(title = "metacheck"),
   dashboardSidebar(
     sidebarMenu(
       id = "tabs",
@@ -73,7 +73,7 @@ ui <- dashboardPage(
 
 ## server ----
 server <- function(input, output, session) {
-  updateNumericInput(session, "llm_max_calls", value = papercheck::llm_max_calls())
+  updateNumericInput(session, "llm_max_calls", value = metacheck::llm_max_calls())
 
   if (Sys.getenv("GROQ_API_KEY") != "") hide("llm_api")
 
@@ -458,7 +458,7 @@ server <- function(input, output, session) {
   output$report_dl_quarto <- downloadHandler(
     filename = function() {
       debug_msg("report_dl_quarto")
-      paste0("papercheck_report.qmd")
+      paste0("metacheck_report.qmd")
     },
     content = function(file) {
       file.copy(report_path(), file)
@@ -469,7 +469,7 @@ server <- function(input, output, session) {
   output$report_dl_html <- downloadHandler(
     filename = function() {
       debug_msg("report_dl_html")
-      paste0("papercheck_report.html")
+      paste0("metacheck_report.html")
     },
     content = function(file) {
       waiter <- waiter::Waiter$new(id = "report_text")

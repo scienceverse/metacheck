@@ -19,6 +19,6 @@ Get GitHub Repo Info
 }
 \examples{
 \donttest{
-  github_info("scienceverse/papercheck")
+  github_info("scienceverse/metacheck")
 }
 }

@@ -1,16 +1,16 @@
 # Plumber API Structure
 
-This directory contains the Plumber API for the papercheck package.
+This directory contains the Plumber API for the metacheck package.
 
-The API wraps papercheck functionality to provide endpoints that can be accessed via HTTP requests, accepting GROBID XML files and mostly optional parameters.
+The API wraps metacheck functionality to provide endpoints that can be accessed via HTTP requests, accepting GROBID XML files and mostly optional parameters.
 
-This enables the use papercheck as a web service, as part of various pipelines, with other services, or a with a frontend.
+This enables the use metacheck as a web service, as part of various pipelines, with other services, or a with a frontend.
 
 ## Running the API
 
 ### Using the prebuilt Docker Image
 ```bash
-docker run -p 2005:2005 thesanogoeffect/papercheck:latest
+docker run -p 2005:2005 thesanogoeffect/metacheck:latest
 ```
 
 ### From R
@@ -57,21 +57,21 @@ These endpoints all accept **uploaded GROBID XML files** for analysis:
 - `POST /paper/references` - Get bibliography/references
 - `POST /paper/cross-references` - Get in-text citation cross-references
 - `POST /paper/search` - Search text within the paper (requires `q` parameter)
-- `POST /paper/module` - Run a specific papercheck module on the paper (requires `name` parameter)
-- `POST /paper/check` - Get all metadata + run all/select papercheck modules on the paper (optional `modules` parameter)
+- `POST /paper/module` - Run a specific metacheck module on the paper (requires `name` parameter)
+- `POST /paper/check` - Get all metadata + run all/select metacheck modules on the paper (optional `modules` parameter)
 
 
 ## Key Features
 
 ### GROBID XML Input
 
-Paper analysis endpoints accept **GROBID XML files** which are directly analyzed with `papercheck::read_grobid()`. You can get the GROBID TEI XML by processing PDFs with a GROBID server, for example using the pdf2grobid in Papercheck function,
+Paper analysis endpoints accept **GROBID XML files** which are directly analyzed with `metacheck::read_grobid()`. You can get the GROBID TEI XML by processing PDFs with a GROBID server, for example using the pdf2grobid in metacheck function,
 (not available in the API due to strategic reasons) or the official GROBID client.
 
 ### Module Support
 
-Shadows the available papercheck modules as API endpoints.
-The `/paper/module` endpoint allows you to run any papercheck module dynamically. Available modules are automatically detected from the package installation.
+Shadows the available metacheck modules as API endpoints.
+The `/paper/module` endpoint allows you to run any metacheck module dynamically. Available modules are automatically detected from the package installation.
 You can also use the `/paper/check` endpoint to run multiple/all available checking modules at once.
 
 ## Example Usage
@@ -129,6 +129,6 @@ Main entry point that mounts endpoint groups.
 
 ### `endpoints/paper.R`
 
-Paper analysis endpoints - handles GROBID XML file uploads, reads papers via `read_paper()`, and runs papercheck functions/modules.
+Paper analysis endpoints - handles GROBID XML file uploads, reads papers via `read_paper()`, and runs metacheck functions/modules.
 
 

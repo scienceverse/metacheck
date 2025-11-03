@@ -10,5 +10,5 @@ rw_update()
 the path to the data frame (invisibly)
 }
 \description{
-Papercheck comes with a built-in data frame called \code{retractionwatch}. We update it regularly, but you can use this function to download the newest version. The download is >50MB, but this function will summarise the information into a smaller version (~0.5 MB) and delete the original file.
+metacheck comes with a built-in data frame called \code{retractionwatch}. We update it regularly, but you can use this function to download the newest version. The download is >50MB, but this function will summarise the information into a smaller version (~0.5 MB) and delete the original file.
 }

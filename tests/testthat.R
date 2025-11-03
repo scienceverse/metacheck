@@ -7,8 +7,8 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-suppressPackageStartupMessages(library(papercheck))
+suppressPackageStartupMessages(library(metacheck))
 email("debruine@gmail.com")
 
-test_check("papercheck")
+test_check("metacheck")
 

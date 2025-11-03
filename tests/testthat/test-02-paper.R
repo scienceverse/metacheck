@@ -1,6 +1,6 @@
 test_that("exists", {
-  expect_true(is.function(papercheck::paper))
-  expect_true(is.function(papercheck::paperlist))
+  expect_true(is.function(metacheck::paper))
+  expect_true(is.function(metacheck::paperlist))
 })
 
 test_that("paper", {

@@ -1,10 +1,10 @@
 # test-11-api.R
-# Tests for the papercheck Plumber API
+# Tests for the metacheck Plumber API
 
 library(httr, warn.conflicts = FALSE)
 
 # GET test files
-test_xml <- system.file("grobid", "prereg.xml", package = "papercheck")
+test_xml <- system.file("grobid", "prereg.xml", package = "metacheck")
 
 # API base URL
 api_url <- "http://localhost:2005"

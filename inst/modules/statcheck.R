@@ -19,7 +19,7 @@
 #' module_run(psychsci[[10]], "statcheck")
 statcheck <- function(paper) {
   # detailed table of results ----
-  stat_table <- papercheck::stats(paper)
+  stat_table <- metacheck::stats(paper)
   table <- stat_table[stat_table$error, ]
 
   # summary output for paperlists ----

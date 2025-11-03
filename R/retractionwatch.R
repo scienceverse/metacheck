@@ -15,10 +15,10 @@
 #' @examples
 #' retractionwatch()
 retractionwatch <- function() {
-  int <- system.file("databases/retractionwatch.Rds", package = "papercheck")
+  int <- system.file("databases/retractionwatch.Rds", package = "metacheck")
   int_rw <- readRDS(int)
 
-  ext <- rappdirs::user_data_dir("papercheck", "scienceverse") |>
+  ext <- rappdirs::user_data_dir("metacheck", "scienceverse") |>
     file.path("retractionwatch.Rds")
 
   if (file.exists(ext)) {
@@ -49,7 +49,7 @@ rw_date <- function() {
 
 #' Update retractionwatch
 #'
-#' Papercheck comes with a built-in data frame called `retractionwatch`. We update it regularly, but you can use this function to download the newest version. The download is >50MB, but this function will summarise the information into a smaller version (~0.5 MB) and delete the original file.
+#' metacheck comes with a built-in data frame called `retractionwatch`. We update it regularly, but you can use this function to download the newest version. The download is >50MB, but this function will summarise the information into a smaller version (~0.5 MB) and delete the original file.
 #'
 #' @returns the path to the data frame (invisibly)
 #' @export
@@ -78,7 +78,7 @@ rw_update <- function() {
 
   # how/where to save this file?
   # https://blog.r-hub.io/2020/03/12/user-preferences/
-  dir <- rappdirs::user_data_dir("papercheck", "scienceverse")
+  dir <- rappdirs::user_data_dir("metacheck", "scienceverse")
   dir.create(dir, FALSE, TRUE)
   path <- file.path(dir, "retractionwatch.Rds")
   saveRDS(retractionwatch, path, compress = "xz")

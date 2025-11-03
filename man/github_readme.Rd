@@ -17,6 +17,6 @@ Get README from GitHub
 }
 \examples{
 \donttest{
-  github_readme("scienceverse/papercheck")
+  github_readme("scienceverse/metacheck")
 }
 }

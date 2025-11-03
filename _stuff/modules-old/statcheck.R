@@ -1,4 +1,4 @@
-stat_table <- papercheck::stats(paper)
+stat_table <- metacheck::stats(paper)
 
 if (nrow(stat_table) == 0) {
   tl = "na"

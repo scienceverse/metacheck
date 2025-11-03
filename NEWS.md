@@ -1,3 +1,7 @@
+# metacheck 0.0.0.9059
+
+* Package name changed to metacheck!
+
 # papercheck 0.0.0.9058
 
 * `openalex()` results now include `abstract`, which parses the abstract_inverted_index for you

@@ -17,13 +17,13 @@ test_that("site_down", {
 
 test_that(".onLoad", {
   op.defaults <- c(
-    papercheck.verbose = TRUE,
-    papercheck.llm_max_calls = 30L,
-    papercheck.llm.use = FALSE,
-    papercheck.llm.model = "llama-3.3-70b-versatile",
-    papercheck.osf.delay = 0,
-    papercheck.osf.api = "https://api.osf.io/v2",
-    papercheck.osf.api.calls = 0
+    metacheck.verbose = TRUE,
+    metacheck.llm_max_calls = 30L,
+    metacheck.llm.use = FALSE,
+    metacheck.llm.model = "llama-3.3-70b-versatile",
+    metacheck.osf.delay = 0,
+    metacheck.osf.api = "https://api.osf.io/v2",
+    metacheck.osf.api.calls = 0
   )
 
   # op.current <- names(op.defaults) |> sapply(getOption)
@@ -31,22 +31,22 @@ test_that(".onLoad", {
   op.null <- names(op.defaults) |> sapply(getOption)
   expect_true(sapply(op.null, is.null) |> all())
 
-  papercheck:::.onLoad()
+  metacheck:::.onLoad()
   op.reset <- names(op.defaults) |> sapply(getOption)
   expect_false(sapply(op.reset, is.null) |> any())
   expect_equal(op.reset, op.defaults)
 })
 
 test_that(".onAttach", {
-  op <- capture_message(papercheck:::.onAttach())
-  expect_true(grepl("Welcome to PaperCheck", op))
+  op <- capture_message(metacheck:::.onAttach())
+  expect_true(grepl("Welcome to metacheck", op))
   expect_true(grepl("This is alpha software", op))
 })
 
 test_that("demo functions", {
 
   d <- demodir()
-  e <- system.file("grobid", package = "papercheck")
+  e <- system.file("grobid", package = "metacheck")
   expect_equal(d, e)
 
   x <- demoxml()

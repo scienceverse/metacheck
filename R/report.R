@@ -74,9 +74,9 @@ report <- function(paper,
                      "    embed-resources: true\n")
   }
 
-  emojis <- papercheck::emojis
+  emojis <- metacheck::emojis
   head <- paste0("---\n",
-                "title: PaperCheck Report\n",
+                "title: metacheck Report\n",
                 "subtitle: \"", paper$info$title, "\"\n",
                 "date: ", Sys.Date(), "\n",
                 "format:\n", format,

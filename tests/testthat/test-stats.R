@@ -1,4 +1,4 @@
-grobid_dir <- system.file("grobid", package="papercheck")
+grobid_dir <- system.file("grobid", package="metacheck")
 filename <- file.path(grobid_dir, "incest.xml")
 
 test_that("exists", {

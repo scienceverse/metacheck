@@ -1,5 +1,5 @@
 library(dplyr)
-library(papercheck)
+library(metacheck)
 
 psychsci_all_urls <- module_run(psychsci, "all-urls")
 expanded_urls <- expand_text(psychsci_all_urls$table, psychsci) |>

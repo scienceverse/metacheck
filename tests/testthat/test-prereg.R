@@ -1,6 +1,6 @@
 test_that("exists", {
-  expect_true(is.function(papercheck::aspredicted_links))
-  expect_no_error(helplist <- help(aspredicted_links, papercheck))
+  expect_true(is.function(metacheck::aspredicted_links))
+  expect_no_error(helplist <- help(aspredicted_links, metacheck))
 })
 
 test_that("errors", {

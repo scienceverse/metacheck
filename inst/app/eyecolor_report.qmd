@@ -1,5 +1,5 @@
 ---
-title: PaperCheck Report
+title: metacheck Report
 subtitle: Positive sexual imprinting for human eye color
 date: 2024-06-21
 format:

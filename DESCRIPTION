@@ -1,7 +1,7 @@
-Package: papercheck
+Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.0.0.9058
-Date: 2025-10-23
+Version: 0.0.0.9059
+Date: 2025-11-03
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -23,7 +23,7 @@ Authors@R: c(
            role = c("ctb"),
            email = "jakub@jakubwerner.com",
            comment = c(ORCID = "0009-0004-0388-0362")))
-Description: A modular, extendable system for automatically checking scientific papers for best practices using text search, R code, and/or (optional) LLM queries.
+Description: A modular, extendable system for automatically checking research outputs for best practices using text search, R code, and/or (optional) LLM queries.
 License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -66,8 +66,8 @@ Imports:
     rappdirs,
     bib2df
 VignetteBuilder: knitr
-URL: https://github.com/scienceverse/papercheck, https://scienceverse.github.io/papercheck/
-BugReports: https://github.com/scienceverse/papercheck/issues
+URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
+BugReports: https://github.com/scienceverse/metacheck/issues
 Depends: 
     R (>= 4.2.0) 
 LazyData: true

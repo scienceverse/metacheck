@@ -11,12 +11,12 @@
 #' @returns A study object created or edited by the app
 #'
 #' @examples
-#' \dontrun{ s <- papercheck_app() }
+#' \dontrun{ s <- metacheck_app() }
 #'
-papercheck_app <- function(study = NULL, quiet = FALSE, ...) {
+metacheck_app <- function(study = NULL, quiet = FALSE, ...) {
   # check study
   if (!is.null(study) && !"scivrs_paper" %in% class(study)) {
-    stop("The argument study must be a paper object created by papercheck, or NULL to create it entirely in the app.")
+    stop("The argument study must be a paper object created by metacheck, or NULL to create it entirely in the app.")
   }
 
   # check required packages
@@ -29,7 +29,7 @@ papercheck_app <- function(study = NULL, quiet = FALSE, ...) {
     .GlobalEnv$.app.study. <- study
     on.exit(rm(".app.study.", envir=.GlobalEnv))
 
-    shiny::runApp(appDir = system.file("app", package = "papercheck"), quiet = quiet, ...) |> invisible()
+    shiny::runApp(appDir = system.file("app", package = "metacheck"), quiet = quiet, ...) |> invisible()
   } else {
     warning("You need to install the following packages to run the app: ",
             paste(names(req_pckgs[!req_pckgs]), collapse = ", "))

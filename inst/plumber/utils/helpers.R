@@ -56,7 +56,7 @@ read_paper <- function(file_path, request_id) {
   result <- tryCatch(
     {
       logger::log_info("Reading GROBID XML file")
-      papercheck::read_grobid(file_path)
+      metacheck::read_grobid(file_path)
     },
     error = function(e) {
       logger::log_error("Error reading paper: {e$message}")

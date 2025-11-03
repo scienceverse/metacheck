@@ -1,4 +1,4 @@
-library(papercheck)
+library(metacheck)
 library(dplyr)
 
 urls <- module_run(psychsci, "all_urls")

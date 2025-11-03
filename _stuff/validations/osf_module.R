@@ -1,6 +1,6 @@
 #' OSF Module
 #'
-#' @param paper the papercheck object
+#' @param paper the metacheck object
 #'
 #' @returns list
 osf_module <- function(paper) {

@@ -14,7 +14,7 @@ download_osf_project_files <- function(osf_project_id, max_folder_length = 40, i
   while (is.null(info) && attempt <= max_attempts) {
     cat("Attempt", attempt, "to retrieve OSF project...\n")
     info <- tryCatch(
-      papercheck::osf_retrieve(osf_project_id, recursive = TRUE, find_project = TRUE),
+      metacheck::osf_retrieve(osf_project_id, recursive = TRUE, find_project = TRUE),
       error = function(e) {
         cat("Error:", e$message, "\n")
         Sys.sleep(2 ^ attempt)

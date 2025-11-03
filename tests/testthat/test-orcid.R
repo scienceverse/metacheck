@@ -1,9 +1,9 @@
 test_that("exists", {
-  expect_true(is.function(papercheck::get_orcid))
-  expect_no_error(helplist <- help(get_orcid, papercheck))
+  expect_true(is.function(metacheck::get_orcid))
+  expect_no_error(helplist <- help(get_orcid, metacheck))
 
-  expect_true(is.function(papercheck::orcid_person))
-  expect_no_error(helplist <- help(orcid_person, papercheck))
+  expect_true(is.function(metacheck::orcid_person))
+  expect_no_error(helplist <- help(orcid_person, metacheck))
 })
 
 test_that("errors", {

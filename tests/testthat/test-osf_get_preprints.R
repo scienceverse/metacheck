@@ -1,6 +1,6 @@
 test_that("exists", {
-  expect_true(is.function(papercheck::osf_preprint_list))
-  expect_no_error(helplist <- help(osf_preprint_list, papercheck))
+  expect_true(is.function(metacheck::osf_preprint_list))
+  expect_no_error(helplist <- help(osf_preprint_list, metacheck))
 })
 
 test_that("errors", {

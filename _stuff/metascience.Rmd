@@ -1,8 +1,8 @@
 ---
-title: "Using Papercheck for MetaScience"
+title: "Using metacheck for MetaScience"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using Papercheck for MetaScience}
+  %\VignetteIndexEntry{Using metacheck for MetaScience}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -25,7 +25,7 @@ mytable <- function(tbl, cols = c("id", "text")) {
 ```{r}
 #| label: setup
 #| message: false
-library(papercheck)
+library(metacheck)
 library(readr) # reading and writing CSV files
 library(dplyr) # for data wrangling
 ```
@@ -34,7 +34,7 @@ In this vignette, we will demonstrate the steps towards creating a module that d
 
 ## Initial Text Search
 
-First, we need to set up the sample of papers we will code for ground truth. See the [batch processing vignette](batch.html) for information on how to load multiple PDFs. Here, we will load 250 open access papers from Psychological Science, which have been previously read in to papercheck. 
+First, we need to set up the sample of papers we will code for ground truth. See the [batch processing vignette](batch.html) for information on how to load multiple PDFs. Here, we will load 250 open access papers from Psychological Science, which have been previously read in to metacheck. 
 
 ```{r}
 papers <- psychsci

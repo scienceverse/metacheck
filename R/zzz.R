@@ -9,13 +9,13 @@
 .onLoad <- function(libname, pkgname) {
   op <- options()
   op.pkg <- list(
-    papercheck.verbose = TRUE,
-    papercheck.llm_max_calls = 30L,
-    papercheck.llm.model = "llama-3.3-70b-versatile",
-    papercheck.llm.use = FALSE,
-    papercheck.osf.delay = 0,
-    papercheck.osf.api = "https://api.osf.io/v2",
-    papercheck.osf.api.calls = 0
+    metacheck.verbose = TRUE,
+    metacheck.llm_max_calls = 30L,
+    metacheck.llm.model = "llama-3.3-70b-versatile",
+    metacheck.llm.use = FALSE,
+    metacheck.osf.delay = 0,
+    metacheck.osf.api = "https://api.osf.io/v2",
+    metacheck.osf.api.calls = 0
   )
   # only set if not already set
   toset <- !(names(op.pkg) %in% names(op))
@@ -34,10 +34,10 @@
 #' @keywords internal
 .onAttach <- function(libname, pkgname) {
   # check if email is set
-  email <- getOption("papercheck.email") %||% ""
+  email <- getOption("metacheck.email") %||% ""
 
   if (!grepl(".+@.+\\..+$", email)) {
-    mailset <- "\n\u26A0\uFE0F Set an email to use APIs like OpenAlex\npapercheck::email('your@address.org')\n"
+    mailset <- "\n\u26A0\uFE0F Set an email to use APIs like OpenAlex\nmetacheck::email('your@address.org')\n"
   } else {
     mailset <- paste0(
       "\n\uD83D\uDCE7 The email for APIs like OpenAlex:",
@@ -64,9 +64,9 @@
   paste(
     "\n",
     stripe,
-    "\u2705 Welcome to PaperCheck",
+    "\u2705 Welcome to metacheck",
     "For support and examples visit:",
-    "https://scienceverse.github.io/papercheck/",
+    "https://scienceverse.github.io/metacheck/",
     mailset,
     "\u203C\uFE0F This is alpha software; please check any",
     "results. False positives and negatives will",

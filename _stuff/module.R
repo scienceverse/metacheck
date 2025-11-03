@@ -78,7 +78,7 @@ module_run <- function(paper, module, ...) {
     report = results$report,
     traffic_light = results$traffic_light
   )
-  class(report_items) <- "ppchk_module_output"
+  class(report_items) <- "metacheck_module_output"
 
   return(report_items)
 }
@@ -202,7 +202,7 @@ module_run_llm <- function(paper, args) {
 #'
 #' @examples
 #' module_list()
-module_list <- function(module_dir = system.file("modules", package = "papercheck")) {
+module_list <- function(module_dir = system.file("modules", package = "metacheck")) {
   files <- list.files(module_dir, "\\.mod$",
                       full.names = TRUE,
                       recursive = TRUE)
@@ -223,7 +223,7 @@ module_list <- function(module_dir = system.file("modules", package = "paperchec
     type = type,
     path = files
   )
-  class(display) <- c("ppchk_module_list", "data.frame")
+  class(display) <- c("metacheck_module_list", "data.frame")
   rownames(display) <- NULL
 
   return(display)
@@ -238,7 +238,7 @@ module_list <- function(module_dir = system.file("modules", package = "paperchec
 #' @keywords internal
 module_find <- function(module) {
   # search for module in built-in directory
-  module_libs <- system.file("modules", package = "papercheck")
+  module_libs <- system.file("modules", package = "metacheck")
   module_paths <- sapply(module_libs, list.files, full.names = TRUE, recursive = TRUE)
   module_names <- basename(module_paths) |> sub("\\.mod$", "", x = _)
 

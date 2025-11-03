@@ -4,7 +4,7 @@
 \alias{module_list}
 \title{List modules}
 \usage{
-module_list(module_dir = system.file("modules", package = "papercheck"))
+module_list(module_dir = system.file("modules", package = "metacheck"))
 }
 \arguments{
 \item{module_dir}{the directory to search for modules (defaults to the built-in modules)}

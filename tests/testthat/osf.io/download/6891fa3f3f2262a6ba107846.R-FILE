@@ -1,4 +1,4 @@
-Package: papercheck
+Package: metacheck
 Title: Check Scientific Papaers for Best Practices
 Version: 0.0.0.9000
 Authors@R: c(
@@ -26,5 +26,5 @@ Imports:
     dplyr,
     xml2
 VignetteBuilder: knitr
-URL: https://github.com/debruine/papercheck
-BugReports: https://github.com/debruine/papercheck/issues
+URL: https://github.com/debruine/metacheck
+BugReports: https://github.com/debruine/metacheck/issues

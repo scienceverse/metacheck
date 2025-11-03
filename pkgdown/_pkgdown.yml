@@ -1,4 +1,4 @@
-url: https://scienceverse.github.io/papercheck/
+url: https://scienceverse.github.io/metacheck/
 development:
   mode: auto
 template:
@@ -71,7 +71,7 @@ reference:
   - '`module_report`'
   - '`module_template`'
   - '`report`'
-  - '`papercheck_app`'
+  - '`metacheck_app`'
 - title: LLM Functions
   desc: ~
   contents:

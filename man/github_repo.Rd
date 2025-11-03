@@ -16,7 +16,7 @@ character string of short repo name
 Get Short GitHub Repo Name
 }
 \examples{
-github_repo("scienceverse/papercheck")
-github_repo("https://github.com/scienceverse/papercheck/")
-github_repo("https://github.com/scienceverse/papercheck.git")
+github_repo("scienceverse/metacheck")
+github_repo("https://github.com/scienceverse/metacheck/")
+github_repo("https://github.com/scienceverse/metacheck.git")
 }

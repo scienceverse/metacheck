@@ -10,7 +10,7 @@ llm_tab <- tabItem(
         column(4, actionButton("llm_submit", "Search")),
         column(4, numericInput("llm_max_calls",
                                "Maximum allowed calls",
-                               getOption("papercheck.llm_max_calls"), 1, NA, 1)),
+                               getOption("metacheck.llm_max_calls"), 1, NA, 1)),
         valueBoxOutput("total_cost")
       )
   ),

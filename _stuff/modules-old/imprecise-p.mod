@@ -11,7 +11,7 @@
     "email": "debruine@gmail.com"
   }],
   "code": {
-    "packages": ["papercheck"],
+    "packages": ["metacheck"],
     "path": "imprecise-p.R"
   },
   "report": {

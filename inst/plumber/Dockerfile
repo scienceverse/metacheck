@@ -1,4 +1,4 @@
-# Dockerfile for papercheck plumber API
+# Dockerfile for metacheck plumber API
 
 # Base image
 FROM rocker/r-ver:4.5
@@ -24,10 +24,10 @@ RUN R -e "install.packages(c('remotes', 'plumber'))"
 RUN R -e "remotes::install_cran(c('dplyr', 'tidyr', 'logger', 'progress', 'tidytext', 'SnowballC', 'xml2', 'statcheck', 'httr', 'jsonlite', 'quarto', 'knitr'))"
 
 # copy app
-COPY . /srv/papercheck
-WORKDIR /srv/papercheck
+COPY . /srv/metacheck
+WORKDIR /srv/metacheck
 
-# install papercheck
+# install metacheck
 RUN R -e "remotes::install_local(dependencies = TRUE)"
 
 # expose port

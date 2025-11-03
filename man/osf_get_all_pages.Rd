@@ -20,7 +20,7 @@ OSF API queries only return up to 10 items per page, so this helper functions ch
 \examples{
 # get the 20 newest preprints
 \donttest{
-osf_api <- getOption("papercheck.osf.api")
+osf_api <- getOption("metacheck.osf.api")
 url <- sprintf("\%s/preprints/?search=date_created-desc", osf_api)
 preprints <- osf_get_all_pages(url, 2)
 }

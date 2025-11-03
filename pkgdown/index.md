@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# papercheck <img src="man/figures/logo.png" align="right" height="120" alt="" />
+# metacheck <img src="man/figures/logo.png" align="right" height="120" alt="" />
 
 <!-- badges: start -->
 
@@ -9,29 +9,30 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 
 <!--
-[![Codecov test coverage](https://codecov.io/gh/scienceverse/papercheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/papercheck)
+[![Codecov test coverage](https://codecov.io/gh/scienceverse/metacheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/metacheck)
 -->
 
 <!-- badges: end -->
 
-PaperCheck provides extendable and integrated tools for automatically
-checking scientific papers for best practices.
+Metacheck provides extendable and integrated tools for automatically
+checking research outputs for best practices. (formerly named
+papercheck)
 
 Inspired by practices in software development, where automated checks
 (e.g., CRAN checks for R packages) are used to identify issues before
-release, Papercheck aims to screen scientific manuscripts to identify
+release, metacheck aims to screen scientific manuscripts to identify
 potential issues or areas for improvement and guide researchers in
 adopting best practices. It can also assist with processing large
 numbers of papers for metascientific enquiry.
 
-See [Get Started](articles/papercheck.html) for the basics,
+See [Get Started](articles/metacheck.html) for the basics,
 [Articles](articles/) for more detailed examples of what you can do, or
 our [introductory blog post](articles/intro.html) for a more conceptual
 overview.
 
 ## The Team
 
-Papercheck is developed by a collaborative team of researchers,
+metacheck is developed by a collaborative team of researchers,
 consisting of (from left to right in the picture below) [Lisa
 DeBruine](https://debruine.github.io) (developer and maintainer) and
 [Daniël Lakens](https://sites.google.com/site/lakens2/Home) (developer),
@@ -41,11 +42,10 @@ Check](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check))
 [Cristian
 Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/)
 (postdoctoral researcher), and Max Littel and Jakub Werner (research
-assistants). Papercheck was initially developed by Lisa and Daniël in
+assistants). metacheck was initially developed by Lisa and Daniël in
 2024 during Lisa’s visiting professorship at the Eindhoven Artificial
 Intelligence Systems Institute
 ([EAISI](https://www.tue.nl/en/research/institutes/eindhoven-artificial-intelligence-systems-institute)).
 
-<img
-src="https://scienceverse.github.io/papercheck/articles/papercheck_team.png"
+<img src="https://scienceverse.github.io/metacheck/articles/team.png"
 data-fig-alt="Faces of the team" />
