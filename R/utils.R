@@ -10,7 +10,7 @@
 #' 1 %||% 2
 #' NULL %||% 2
 `%||%` <- function(x, y) {
-  if (is_null(x)) y else x
+  if (is.null(x)) y else x
 }
 
 # Reexport from base on newer versions of R to avoid conflict messages

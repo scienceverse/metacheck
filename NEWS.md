@@ -1,3 +1,7 @@
+# papercheck 0.0.0.9058
+
+* `openalex()` results now include `abstract`, which parses the abstract_inverted_index for you
+
 # papercheck 0.0.0.9057
 
 ## New functions/modules

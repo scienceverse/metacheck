@@ -26,9 +26,10 @@ test_that("crossref", {
   cr2 <- crossref(doi)
 })
 
+# httptest::start_capturing()
+httptest::with_mock_api({
 test_that("openalex", {
-  skip() # skipping due to constant changes in OA data, TODO rework
-  skip_if_offline("api.openalex.org")
+  email("debruine@gmail.com")
 
   doi <- "10.1177/fake"
   expect_warning(oa <- openalex(doi))
@@ -38,34 +39,33 @@ test_that("openalex", {
   doi <- "10.1177/0956797614520714"
   oa <- openalex(doi)
   expect_equal(oa$is_retracted, TRUE)
+  expect_equal(oa$abstract, "We propose that dishonest and creative behavior have something in common: They both involve breaking rules. Because of this shared feature, creativity may lead to dishonesty (as shown in prior work), and dishonesty may lead to creativity (the hypothesis we tested in this research). In five experiments, participants had the opportunity to behave dishonestly by overreporting their performance on various tasks. They then completed one or more tasks designed to measure creativity. Those who cheated were subsequently more creative than noncheaters, even when we accounted for individual differences in their creative ability (Experiment 1). Using random assignment, we confirmed that acting dishonestly leads to greater creativity in subsequent tasks (Experiments 2 and 3). The link between dishonesty and creativity is explained by a heightened feeling of being unconstrained by rules, as indicated by both mediation (Experiment 4) and moderation (Experiment 5).")
 
   # long DOI
   doi <- c("https://doi.org/10.1177/0956797613520608")
   oa <- openalex(doi)
-  # expect_equal(oa$id, "https://openalex.org/W2134722098") disabled ID comparison due to changing ids on OpenAlex side
+  expect_equal(oa$id, "https://openalex.org/W2134722098")
 
   # multiple DOIs
   dois <- c("10.1177/0956797613520608", "10.1177/0956797614522816")
   oa <- openalex(dois)
-  # expect_equal(oa[[1]]$id, "https://openalex.org/W2134722098") disabled ID comparison due to changing ids on OpenAlex side
-  # expect_equal(oa[[2]]$id, "https://openalex.org/W2103593746") disabled ID comparison due to changing ids on OpenAlex side
-
+  expect_equal(oa[[1]]$id, "https://openalex.org/W2134722098")
+  expect_equal(oa[[2]]$id, "https://openalex.org/W2103593746")
   # DOI from paper
   paper <- psychsci[[1]]
   oa <- openalex(paper)
-  # expect_equal(oa$id, "https://openalex.org/W2134722098") disabled due to changing ids on OpenAlex side
+  expect_equal(oa$id, "https://openalex.org/W2134722098")
 
   # DOIs from paperlist
   paper <- psychsci[1:2]
   oa <- openalex(paper)
-  # expect_equal(oa[[1]]$id, "https://openalex.org/W2134722098") disabled ID comparison due to changing ids on OpenAlex side
-  # expect_equal(oa[[2]]$id, "https://openalex.org/W2103593746") disabled ID comparison due to changing ids on OpenAlex side
-
+  expect_equal(oa[[1]]$id, "https://openalex.org/W2134722098")
+  expect_equal(oa[[2]]$id, "https://openalex.org/W2103593746")
   # one malformatted DOI
   paper <- psychsci[10:11]
   paper[[2]]$info$doi <- paste0(paper[[2]]$info$doi, "x")
   expect_warning(oa <- openalex(paper))
-  # expect_equal(oa[[1]]$id, "https://openalex.org/W1824074316") disabled ID comparison due to changing ids on OpenAlex side
+  expect_equal(oa[[1]]$id, "https://openalex.org/W1824074316")
   expect_equal(oa[[2]], list(error = paper[[2]]$info$doi))
 
   # select
@@ -73,19 +73,6 @@ test_that("openalex", {
   oa <- openalex(doi, select = "is_retracted")
   expect_equal(oa$is_retracted, TRUE)
 })
+}) # end mock api
+# httptest::stop_capturing()
 
-test_that("exists", {
-  expect_true(is.function(papercheck::paper_info))
-  expect_no_error(helplist <- help(paper_info, papercheck))
-})
-
-test_that("paper_info", {
-  paper <- psychsci[[1]]
-
-  # good DOI, in OpenAlex
-  p1 <- paper_info(paper)
-
-  # bad DOI
-  paper$info$doi <- "baddoi"
-  p2 <- paper_info(paper)
-})
