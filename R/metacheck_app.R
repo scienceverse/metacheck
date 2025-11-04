@@ -11,7 +11,7 @@
 #' @returns A study object created or edited by the app
 #'
 #' @examples
-#' \dontrun{ s <- metacheck_app() }
+#' \donttest{ s <- metacheck_app() }
 #'
 metacheck_app <- function(study = NULL, quiet = FALSE, ...) {
   # check study

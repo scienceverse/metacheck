@@ -186,7 +186,7 @@ check_orcid <- function(orcid) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   get_orcid("DeBruine", "Lisa")
 #' }
 get_orcid <- function(family, given = "*") {
@@ -292,7 +292,7 @@ get_idx <- function(study, id = NULL, section = "hypotheses") {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   orcids <- c("0000-0002-0247-239X", "0000-0002-7523-5539")
 #'   orcid_person(orcids)
 #' }
