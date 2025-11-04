@@ -955,11 +955,15 @@ osf_file_download <- function(osf_id,
       files$path <- fs::path_sanitize(files$name)
 
       while(duplicated(files$path) |> any()) {
-        dupes <- files$path[duplicated(files$path)]
+        # get all duplicated paths
+        d <- which(files$path %in% files$path[duplicated(files$path)])
+
+        dupes <- files$path[d]
+        parents <- files$parent[d]
         ext <-  fs::path_ext(dupes)
-        if (ext != "") ext <- paste0(".", ext)
+        ext[ext != ""] <- paste0(".", ext[ext != ""])
         base <- fs::path_ext_remove(dupes)
-        files$path[duplicated(files$path)] <- paste0(base, "_copy", ext)
+        files$path[d] <- paste0(base, "_", parents, ext)
       }
     } else {
       ## structure files into download_to ----
