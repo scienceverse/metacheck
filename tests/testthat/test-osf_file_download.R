@@ -4,7 +4,7 @@ verbose(FALSE)
 
 # skip if requires OSF API
 osf_skip <- function() {
-  skip("Skip OSF") # skips all tests that require API
+  #skip("Skip OSF") # skips all tests that require API
 
   # skips tests if contraindicated
   skip_if_offline()
@@ -152,11 +152,31 @@ test_that("osf_file_download long", {
   expect_true("test-4.txt" %in% dl$path)
   f <- file.path(getwd(), osf_id)
   expect_true(dir.exists(f))
-  expect_true(file.path(f, "README") |> file.exists())
-  expect_true(file.path(f, "README_copy") |> file.exists())
+  expect_true(file.path(f, "README_685a46eb8c103f8ab307047f") |> file.exists())
+  expect_true(file.path(f, "README_j3gcx") |> file.exists())
   expect_true(file.path(f, "test-4.txt") |> file.exists())
   expect_false(file.path(f, "nest-1") |> dir.exists())
   unlink(f, recursive = TRUE)
+})
+
+test_that("osf_file_download ignore_folder_structure", {
+  osf_skip()
+
+  # https://github.com/scienceverse/metacheck/issues/100
+  osf_id <- c("mjrpy")
+
+  x <- osf_file_download(osf_id = osf_id,
+                         download_to = tempdir(),
+                         ignore_folder_structure = TRUE
+                         )
+
+  destdir <- tempdir() |> file.path(osf_id)
+
+  f <- list.files(destdir)
+  expect_true("S1_mjrpy.pdf" %in% f)
+  expect_true("S1_twm2a.pdf" %in% f)
+
+  unlink(destdir, recursive = TRUE)
 })
 
 verbose(TRUE)
