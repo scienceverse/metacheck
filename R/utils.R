@@ -18,6 +18,27 @@ if (exists("%||%", envir = baseenv())) {
   `%||%` <- get("%||%", envir = baseenv())
 }
 
+#' Replace If
+#'
+#' Replace values if NULL, NA, or sepcified value
+#'
+#' @param x For each `x[[i]]` if NULL, return `y[[i]]`; otherwise return `x[[i]]`.
+#' @param y Replacement value(s); if not the same length as `x`, then values will be recycled
+#' @export
+#' @keywords internal
+#' @name op-vect-null-default
+#' @examples
+#' list(NULL, 1) %|||% 2
+#' list(NULL, 0, NULL) %|||% 1:3
+rep_if <- function(x, y, replace = NULL) {
+  y <- rep_len(y, length(x))
+  for (i in seq_along(x)) {
+    x[[i]] <- if (is.null(x[[i]]) || x[[i]] %in% replace) y[[i]] else x[[i]]
+  }
+
+  return(x)
+}
+
 #' Less scary green messages
 #'
 #' @param ... message components (see \code{\link[base]{message}})
