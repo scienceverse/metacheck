@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' filename <- demoxml()
 #' paper <- read(filename)
 #' report(paper)

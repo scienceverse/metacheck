@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   bibsearch("Sample Size Justification", "Collabra Psychology")
 #' }
 bibsearch <- function(title, source = NA, authors = NA, strict = TRUE) {

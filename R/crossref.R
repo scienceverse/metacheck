@@ -6,7 +6,7 @@
 #' @export
 #' @examples
 #' doi <- "10.7717/peerj.4375"
-#' \dontrun{
+#' \donttest{
 #'   cr_info <- crossref(doi)
 #' }
 crossref <- function(doi) {
@@ -111,7 +111,7 @@ crossref <- function(doi) {
 #'
 #' @examples
 #' doi <- "10.7717/peerj.4375"
-#' \dontrun{
+#' \donttest{
 #'   oa_info <- openalex(doi)
 #' }
 openalex <- function(doi, select = NULL) {
