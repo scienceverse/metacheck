@@ -1,6 +1,9 @@
 # metacheck 0.0.0.9059
 
 * Package name changed to metacheck!
+* Fixed a bug in `osf_file_download()` when multiple files have the same name and `ignore_folder_structure = TRUE`.
+* `osf_file_download()` should handle errors more gracefully (with warnings, but not fail)
+
 
 # papercheck 0.0.0.9058
 

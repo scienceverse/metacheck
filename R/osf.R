@@ -856,13 +856,19 @@ osf_file_download <- function(osf_id,
   if (length(osf_id) > 1) {
     message("Starting downloads for ", length(osf_id),
             " OSF projects...\n")
-    dl <- lapply(osf_id,
-                osf_file_download,
-                download_to,
-                max_file_size,
-                max_download_size,
-                max_folder_length,
-                ignore_folder_structure) |>
+    dl <- lapply(osf_id, function(x) {
+      tryCatch({
+        osf_file_download(x,
+                          download_to,
+                          max_file_size,
+                          max_download_size,
+                          max_folder_length,
+                          ignore_folder_structure)
+      }, error = function(e) {
+        warning(x, " resulted in an error:\n  ",
+                e$message, "\n")
+      })
+    }) |>
       do.call(dplyr::bind_rows, args = _)
     message("...Completed downloads for ", length(osf_id),
             " OSF projects")
