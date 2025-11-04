@@ -22,28 +22,7 @@ pdf2grobid <- function(filename, save_path = ".",
                        end = -1,
                        consolidate_citations = 0,
                        consolidate_header = 0,
-                       consolidate_funders = 0,
-                       # deprecated camelCase params
-                       consolidateCitations = NULL,
-                       consolidateHeader = NULL,
-                       consolidateFunders = NULL) {
-  # "http://localhost:8070"
-  # "https://grobid.work.abed.cloud"
-
-  # Handle deprecated parameters
-  if (!is.null(consolidateCitations)) {
-    warning("'consolidateCitations' is deprecated. Use 'consolidate_citations' instead.")
-    consolidate_citations <- consolidateCitations
-  }
-  if (!is.null(consolidateHeader)) {
-    warning("'consolidateHeader' is deprecated. Use 'consolidate_header' instead.")
-    consolidate_header <- consolidateHeader
-  }
-  if (!is.null(consolidateFunders)) {
-    warning("'consolidateFunders' is deprecated. Use 'consolidate_funders' instead.")
-    consolidate_funders <- consolidateFunders
-  }
-
+                       consolidate_funders = 0) {
   # check if grobid_url is a valid url, before connecting to it
   if (!grepl("^https?://", grobid_url)) {
     stop("grobid_url must be a valid URL, starting with http or https!")

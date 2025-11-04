@@ -114,7 +114,7 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api")) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   # get info on one OSF node
 #'   osf_retrieve("pngda")
 #'
