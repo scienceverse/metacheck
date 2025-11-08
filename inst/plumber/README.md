@@ -10,7 +10,7 @@ This enables the use metacheck as a web service, as part of various pipelines, w
 
 ### Using the prebuilt Docker Image
 ```bash
-docker run -p 2005:2005 thesanogoeffect/metacheck:latest
+docker run -p 2005:2005 scienceverse/metacheck:latest
 ```
 
 ### From R
