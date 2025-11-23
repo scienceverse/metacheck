@@ -171,3 +171,30 @@ ref_info <- function(paper) {
     }
   })
 }
+
+#' Get DOI from Reference
+#'
+#' @param reference the full text reference of the paper to get info for
+#'
+#' @return doi
+#' @export
+#' @examples
+#' ref <- "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1)."
+#' \donttest{
+#'   doi <- get_doi(ref)
+#' }
+
+# Function to get a doi from crossref by sending the full reference text.  
+get_doi <- function(reference) {
+  options(crossref_email = email())
+  tryCatch({
+    res <- cr_works(query = reference, limit = 1)
+    if (nrow(res$data) > 0) {
+      return(res$data$doi[1])
+    } else {
+      return(NA)
+    }
+  }, error = function(e) {
+    return(NA)
+  })
+}
