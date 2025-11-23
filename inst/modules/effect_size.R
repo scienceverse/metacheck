@@ -1,5 +1,5 @@
-#' Missing Effect Sizes
-#'
+#' Missing Effect Sizes in t-tests and F-tests
+#' 
 #' @description
 #' Detect t-tests and F-tests with missing effect sizes
 #'
@@ -125,6 +125,7 @@ effect_size <- function(paper, ...) {
   # combine tests ----
   table <- dplyr::bind_rows(t_table, f_table)
 
+  table_missing <- subset(table, is.na(es))
   ## summary table ----
   summary_table <- table |>
     dplyr::summarise(
@@ -135,8 +136,8 @@ effect_size <- function(paper, ...) {
       .by = dplyr::all_of(c("id")))
 
   # traffic light ----
-  total_n <- nrow(table)
-  noes_n <- is.na(table$es) |> sum()
+  total_n <- nrow(table_missing)
+  noes_n <- is.na(table_missing$es) |> sum()
   tl <- dplyr::case_when(
     total_n == 0 ~ "na",
     noes_n == 0 ~ "green",
@@ -145,14 +146,29 @@ effect_size <- function(paper, ...) {
     .default = "fail"
   )
 
-  # report text ----
-  report <- c(
-    na = "No t-tests or F-tests were detected.",
-    red = "No effect sizes were detected for any t-tests or F-tests. The Journal Article Reporting Standards state effect sizes should be reported.",
-    yellow = "Effect sizes were detected for some, but not all t-tests or F-tests. The Journal Article Reporting Standards state effect sizes should be reported.",
-    green = "All detected t-tests and F-tests had an effect size reported in the same sentence.",
-    fail = "There was an error detecting effect sizes."
-  )
+  if (nrow(table_missing) == 0) {
+    report <- "No t-tests or F-tests were detected, or all detected t-tests and F-tests had an effect size reported in the same sentence."
+  } else {
+    module_output <- sprintf(
+      "We found %d t-tests and/or F-tests where effect sizes are not reported. We recommend checking the sentences below, and add any missing effect sizes.",
+      nrow(table_missing)
+    )
+    issues_found <- paste(sprintf("**%s**", table_missing$text), collapse = "\n\n")
+    guidance <- paste0(
+      "For metascientific articles demonstrating that effect sizes are often not reported, see:<br>",
+      "Peng, C.-Y. J., Chen, L.-T., Chiang, H.-M., & Chiang, Y.-C. (2013). The Impact of APA and AERA Guidelines on Effect Size Reporting. Educational Psychology Review, 25(2), 157–209.",
+      "<a href='https://doi.org/10.1007/s10648-013-9218-2' target='_blank'>https://doi.org/10.1007/s10648-013-9218-2</a> <br>",
+      "For educational material on reporting effect sizes, see: <a href='https://matthewbjane.quarto.pub/guide-to-effect-sizes-and-confidence-intervals/' target='_blank'>https://matthewbjane.quarto.pub/guide-to-effect-sizes-and-confidence-intervals/</a>."
+    )
+    
+    # report text 
+    
+    report <- sprintf(
+      "%s\n\n#### The Following Sentences are Missing Effect Sizes\n\n%s\n\n#### Guidance\n\n%s",
+      module_output, issues_found, guidance
+    )
+  }
+  
 
   # return a list ----
   list(
@@ -160,6 +176,6 @@ effect_size <- function(paper, ...) {
     summary = summary_table,
     na_replace = 0,
     traffic_light = tl,
-    report = report[[tl]]
+    report = report
   )
 }
