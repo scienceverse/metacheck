@@ -177,10 +177,10 @@ code_check <- function(paper) {
   # Create the report string hardcoded folders
   hardcoded_issues <- r_files$name[r_files$hardcoded_folders == 1]
   if (length(hardcoded_issues) == 0) {
-    report_hardcoded <- "\n\n#### Hardcoded Paths\n\n Best programming practice is to use relative file paths instead of hardcoded file paths (e.g., C://Lakens/files as these folder names are do not exist on other computers. No hardcoded file paths were found in any of the R files.\n\n"
+    report_hardcoded <- "\n\n#### Hardcoded Paths\n\n Best programming practice is to use relative file paths instead of hardcoded file paths (e.g., C://Lakens/files) as these folder names are do not exist on other computers. No hardcoded file paths were found in any of the R files.\n\n"
   } else {
     hardcoded_report <- sprintf(
-      "\n\n#### Hardcoded Paths\n\n Best programming practice is to use relative file paths instead of hardcoded file paths (e.g., C://Lakens/files as these folder names are do not exist on other computers. The following hardcoded file paths were found in %d R file(s).\n\n",
+      "\n\n#### Hardcoded Paths\n\n Best programming practice is to use relative file paths instead of hardcoded file paths (e.g., C://Lakens/files) as these folder names are do not exist on other computers. The following hardcoded file paths were found in %d R file(s).\n\n",
       length(hardcoded_issues)  )
     issues_hardcoded <- paste(sprintf("**%s**", hardcoded_issues), collapse = "\n\n")
     paths_hardcoded <- paste(sprintf("**%s**", r_files$absolute_paths[r_files$hardcoded_folders == 1]), collapse = "\n\n")

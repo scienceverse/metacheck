@@ -175,6 +175,7 @@ ref_info <- function(paper) {
 #' Get DOI from Reference
 #'
 #' @param reference the full text reference of the paper to get info for
+#' @param min_score minimal score that is taken to be a reliable match (default 50)
 #'
 #' @return doi
 #' @export
@@ -185,11 +186,11 @@ ref_info <- function(paper) {
 #' }
 
 # Function to get a doi from crossref by sending the full reference text.  
-get_doi <- function(reference) {
+get_doi <- function(reference, min_score = 50) {
   options(crossref_email = email())
   tryCatch({
     res <- rcrossref::cr_works(query = reference, limit = 1)
-    if (nrow(res$data) > 0) {
+    if (nrow(res$data) > 0 && as.numeric(res$data$score[1]) > min_score) {
       return(res$data$doi[1])
     } else {
       return(NA_character_)
