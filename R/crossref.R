@@ -192,7 +192,7 @@ get_doi <- function(reference) {
     if (nrow(res$data) > 0) {
       return(res$data$doi[1])
     } else {
-      return(NA)
+      return(NA_character_)
     }
   }, error = function(e) {
     return(NA)
