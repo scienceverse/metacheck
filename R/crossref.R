@@ -195,6 +195,6 @@ get_doi <- function(reference) {
       return(NA_character_)
     }
   }, error = function(e) {
-    return(NA)
+    return(NA_character_)
   })
 }
