@@ -59,9 +59,9 @@ FReD_update <- function() {
   options(timeout=300)
 
   tmp <- tempfile()
-  osf_file_download(osf_id = "z5u9b",
+  suppressMessages(osf_file_download(osf_id = "z5u9b",
                     download_to = tmp,
-                    ignore_folder_structure = TRUE)
+                    ignore_folder_structure = TRUE))
   on.exit(unlink(tmp))
 
   file <- list.files(tmp, "\\.xls", full.names = TRUE)
