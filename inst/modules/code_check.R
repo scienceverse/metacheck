@@ -22,18 +22,23 @@ code_check <- function(paper) {
   # Best example, with many issues, for paper: paper <- psychsci[[233]]
   osf_links_found <- osf_links(paper)
   # If there are no rows, return immediately
-  if (nrow(osf_links_found) == 0) {
-    report_r_osf <- "No links to the Open Science Framework were found."
-    return(list(
-      traffic_light = "na",
-      report = report_r_osf
-    ))
+  print("retrieving file info from the OSF")
+  if (nrow(osf_links_found) > 0) {
+    osf_info_retrieved <- suppressWarnings(osf_retrieve(osf_links_found, recursive = TRUE, find_project = TRUE))
   }
-  osf_info_retrieved <- osf_retrieve(osf_links_found, recursive = TRUE, find_project = TRUE)
   # Regex pattern for GitHub URLs (including subpaths)
   github_regex <- "https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*"
-  github_found <- search_text(psychsci, github_regex, return = "match")
-  github_file_list <- github_files(github_found$text[2], recursive = TRUE)
+  github_found <- search_text(paper, github_regex, return = "match")
+  if (nrow(github_found) > 0) {
+    github_file_list <- github_files(github_found$text[2], recursive = TRUE)
+  }
+  if (nrow(osf_links_found) == 0 && nrow(github_found) == 0) {
+    report <- "No links to the Open Science Framework or Github were found."
+    return(list(
+      traffic_light = "na",
+      report = report
+    ))
+  }
   
   # Ensure both data frames have the same columns
   common_cols <- union(names(osf_info_retrieved), names(github_file_list))
@@ -49,6 +54,14 @@ code_check <- function(paper) {
   # Create dataframe with only r files
   r_files <- all_files[grepl("\\.(r|rmd|qmd)$", all_files$name, ignore.case = TRUE), ]
 
+  if (nrow(r_files) == 0) {
+    report <- "No R files were found in the repository."
+    return(list(
+      traffic_light = "na",
+      report = report
+    ))
+  }
+  
   # Add comments for aspects we will check
   r_files$comment_lines <- NA
   r_files$code_lines <- NA
@@ -176,9 +189,41 @@ code_check <- function(paper) {
       hardcoded_report, issues_hardcoded, paths_hardcoded)
   }
   
-  report <- paste(report_hardcoded, report_library)
+  # Create the report string for lack of comments
+  comment_issue <- min(r_files$percentage_comment)
+  if (comment_issue > 0) {
+    report_comments <- "\n\n#### Commenting Code\n\n Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code. All your code files had comments.\n\n"
+  } else {
+    comments_report <- sprintf(
+      "\n\n#### Commenting Code\n\n Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code. The following %d files had no comments:\n\n",
+      sum(r_files$percentage_comment == 0)  )
+    issues_comments <- paste(sprintf("**%s**", r_files$name[r_files$percentage_comment == 0]), collapse = "\n\n")
+    report_comments <- sprintf(
+      "%s\n\n%s\n\n",
+      comments_report, issues_comments)
+  }
   
-  tl <- "yellow"
+  # Create the report string for files loaded but not in repository
+  missingfiles_issue <- r_files$loaded_files_missing[!is.na(r_files$loaded_files_missing)]
+  if (length(missingfiles_issue) == 0) {
+    report_missingfiles <- "\n\n#### Missing Files\n\n All files loaded in the R scripts were present in the repository.\n\n"
+  } else {
+    missingfiles_report <- sprintf(
+      "\n\n#### Missing Files\n\n The scripts load files, but %d scripts loaded files that could not be automatically identified in the repository. Check if the following files are made available, so that others can reproduce your code, or that the files are missing:\n\n",
+      length(missingfiles_issue))
+    issues_missingfiles <- paste(sprintf("**%s**", missingfiles_issue), collapse = "\n\n")
+    report_missingfiles <- sprintf(
+      "%s\n\n%s\n\n",
+      missingfiles_report, issues_missingfiles)
+  }
+
+  report <- paste(report_missingfiles, report_hardcoded, report_library, report_comments)
+  
+  if (length(missingfiles_issue) == 0 && comment_issue > 0 && length(hardcoded_issues) == 0 && length(library_issue) == 0) {
+    tl <- "green"
+  } else {
+    tl <- "yellow"
+  }
   # return a list ----
   list(
     traffic_light = tl,
