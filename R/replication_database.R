@@ -67,7 +67,13 @@ FReD_update <- function() {
   FReD <- read_excel(paste0(tmp,"\\FReD.xlsx"))
   # Remove first 2 rows
   FReD <- FReD[-c(1, 2), ]
-  # Remove all rows without doi for original study and replication
+# Remove all rows without doi for original study and replication and decrease size
+  rows <- FReD$doi_original != "" &
+    !is.na(FReD$doi_original) &
+    FReD$doi_replication != "" &
+    !is.na(FReD$doi_replication)
+  cols <- c("ref_original", "doi_original", "ref_replication", "doi_replication")
+  FReD <- unique(FReD[rows, cols])
   FReD <- FReD[FReD$doi_original != "" & !is.na(FReD$doi_original) & 
                  FReD$doi_replication != "" & !is.na(FReD$doi_replication), ]
   # decrease size
