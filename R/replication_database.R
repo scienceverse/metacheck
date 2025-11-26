@@ -64,7 +64,11 @@ FReD_update <- function() {
                     ignore_folder_structure = TRUE)
   on.exit(unlink(tmp))
 
-  FReD <- read_excel(paste0(tmp,"\\FReD.xlsx"))
+  file <- list.files(tmp, "\\.xls", full.names = TRUE)
+  if (length(file) == 0) stop("The file at osf.io/z5u9b is missing")
+  FReD <- suppressMessages(
+    readxl::read_excel(file[[1]])
+  )
   # Remove first 2 rows
   FReD <- FReD[-c(1, 2), ]
 # Remove all rows without doi for original study and replication and decrease size
