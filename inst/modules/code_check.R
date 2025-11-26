@@ -63,7 +63,7 @@ code_check <- function(paper) {
   files_in_repository <- basename(all_files$name)
   # Create variable to store missing files
   
-  # Lines with data-loading calls
+  # Lines with data-loading calls 
   grepl_load <- "\\b((?:[[:alnum:]_.]+::)?read\\.(?:csv2?|table|delim2?)|(?:[[:alnum:]_.]+::)?readRDS|(?:[[:alnum:]_.]+::)?load|(?:[[:alnum:]_.]+::)?read_(?:csv2?|tsv|delim|rds|lines)|(?:[[:alnum:]_.]+::)?fread|(?:[[:alnum:]_.]+::)?read_(?:xlsx?|excel)|(?:[[:alnum:]_.]+::)?read\\.xlsx|(?:[[:alnum:]_.]+::)?read_(?:dta|sav|sas)|(?:[[:alnum:]_.]+::)?read\\.dta|(?:[[:alnum:]_.]+::)?read_feather|(?:[[:alnum:]_.]+::)?read_parquet|(?:[[:alnum:]_.]+::)?fromJSON|(?:[[:alnum:]_.]+::)?read_yaml|(?:[[:alnum:]_.]+::)?read_xml|(?:[[:alnum:]_.]+::)?read_ods|(?:[[:alnum:]_.]+::)?readtext)\\s*\\(|\\bsource\\s*\\("
   
   for (i in 1:nrow(r_files)) {
@@ -147,7 +147,7 @@ code_check <- function(paper) {
     }
   } # end of loop over r files
   # Create the report string
-  library_issue <- r_files$name[r_files$library_on_top == 1]
+  library_issue <- r_files$name[which(r_files$library_on_top == 1)]
   if (length(library_issue) == 0) {
     report_library <- "\n\n#### Libraries Loaded\n\n Best programming practice is to load all required libraries at one place in the code. In all R files, all libraries were loaded in one block.\n\n"
   } else {
@@ -155,7 +155,7 @@ code_check <- function(paper) {
       "\n\n#### \n\n#### Libraries Loaded\n\n Best programming practice is to load all required libraries at one place in the code. In %d R files, libraries were at multiple places in the R files (i.e., with more than 3 lines in between). This was true in the following R files, where libraries were loaded on the following lines:\n\n",
       length(library_issue)  )
     issues_library <- paste(sprintf("**%s**", library_issue), collapse = "\n\n")
-    lines_library <- paste(sprintf("**%s**", r_files$absolute_paths[r_files$library_on_top == 1]), collapse = "\n\n")
+    lines_library <- paste(sprintf("**%s**", r_files$library_lines[which(r_files$library_on_top == 1)]), collapse = "\n\n")
     report_library <- sprintf(
       "%s\n\n%s\n\n%s\n\n",
       library_report, issues_library, lines_library)
