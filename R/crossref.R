@@ -188,7 +188,7 @@ ref_info <- function(paper) {
 get_doi <- function(reference) {
   options(crossref_email = email())
   tryCatch({
-    res <- cr_works(query = reference, limit = 1)
+    res <- rcrossref::cr_works(query = reference, limit = 1)
     if (nrow(res$data) > 0) {
       return(res$data$doi[1])
     } else {
