@@ -76,3 +76,14 @@ test_that("openalex", {
 }) # end mock api
 # httptest::stop_capturing()
 
+test_that("get_doi", {
+  ref <- "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1)."
+  
+  doi <- get_doi(ref, min_score = 50)
+  exp <- "10.1080/2833373x.2024.2376046"
+  expect_equal(doi, exp)
+  
+  ref <- "DeBruine, L. (2027) I haven't written this paper. Journal of Journals."
+  doi <- get_doi(ref, min_score = 50)
+  expect_equal(doi, NA_character_)
+})

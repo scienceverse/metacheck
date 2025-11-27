@@ -36,12 +36,11 @@ nonsignificant_pvalue <- function(paper) {
   # summary output for paperlists ----
   # must have id column as the id of each paper, one row per paper
   # further columns to be added to a master summary table
-  summary_table <- table %>%
-    group_by(id) %>%
-    summarise(
+    summary_table <- dplyr::summarise(
+      dplyr::group_by(table, id),
       n_significant = sum(significance == "significant", na.rm = TRUE),
       n_nonsignificant = sum(significance == "nonsignificant", na.rm = TRUE)
-    )  
+    )
   # determine the traffic light ----
   # possible values: na, info, red, yellow, green, fail
   tl <- if (sum(summary_table$n_nonsignificant) > 0) "yellow" else "green"

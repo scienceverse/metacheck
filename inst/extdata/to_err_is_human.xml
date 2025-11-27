@@ -28,13 +28,13 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 							<date/>
 						</imprint>
 					</monogr>
-					<idno type="MD5">782F7C80193494DA4CB39CA15CCFBA8D</idno>
+					<idno type="MD5">71E759FB538791B05B73F760C74BF496</idno>
 				</biblStruct>
 			</sourceDesc>
 		</fileDesc>
 		<encodingDesc>
 			<appInfo>
-				<application version="0.8.1" ident="GROBID" when="2025-02-25T18:30+0000">
+				<application version="0.8.2-SNAPSHOT" ident="GROBID" when="2025-11-27T19:08+0000">
 					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
 					<ref target="https://github.com/kermitt2/grobid"/>
 				</application>
@@ -42,24 +42,49 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		</encodingDesc>
 		<profileDesc>
 			<abstract>
-<div xmlns="http://www.tei-c.org/ns/1.0"><p>This paper demonstrates some good and poor practices for use with the {metacheck} R package and Shiny app. All data are simulated. The paper shows examples of (1) open and closed OSF links; (2) citation of retracted papers; (3) missing/mismatched citations and references; (4) imprecise reporting of p-values; and (5) use of "marginally significant" to describe non-significant findings.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>This paper demonstrates some good and poor practices for use with the {metacheck} R package and Shiny app. All data are simulated. The paper shows examples of (1) open and closed OSF links; (2a) citation of retracted papers, (2b) citations without a doi, (2c) citations with Pubpeer comments, (2d) citations in the FORTT replication database, and (2e) missing/mismatched/incorrect citations and references; (3a) R files with code on GitHub that do not load libraries in one location, (3b) load files that are not shared in the repository, (3c) lack comments, and (3d) have hard-coded files, (4) imprecise reporting of non-significant p-values;</p><p>(5) tests with and without effect sizes, and (6) use of "marginally significant" to describe non-significant findings.</p></div>
 			</abstract>
 		</profileDesc>
 	</teiHeader>
 	<text xml:lang="en">
 		<body>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introduction</head><p>Although intentional dishonestly might be a successful way to boost creativity <ref type="bibr" target="#b0">(Gino &amp; Wiltermuth, 2014)</ref>, it is safe to say most mistakes researchers make are unintentional. From a human factors perspective, human error is a symptom of a poor design <ref type="bibr">(Smithy, 2020)</ref>. Automation can be use to check for errors in scientific manuscripts, and inform authors about possible corrections. In this study we examine the usefulness of metacheck to improve best practices.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method and Participants</head><p>In this study we examine whether automated checks reduce the amount of errors that researchers make in scientific manuscripts. This study was preregistered at osf.io/5tbm9. We randomly assigned 50 scientists to a condition where their manuscript was automatically checked for errors, an 50 scientists to a control condition with a checklist. Scientists had the opportunity to make changes to their manuscript based on the feedback of the tool. We subsequently coded all manuscripts for mistakes, and counted the total number of mistakes. We also measured the expertise of researchers (in years) to explore whether the automated tool would be more useful, the less research experience researchers had. We also asked researchers to rate how useful they found the checklist or app on a scale from 1 (not at all) to 7 (extremely useful).</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>All data needed to reproduce these analyses is available from <ref type="url" target="https://osf.io/5tbm9">https://osf.io/5tbm9</ref> and code is available from <ref type="url" target="https://osf.io/629bx">https://osf.io/629bx</ref>. On average researchers in the experimental (app) condition made fewer mistakes (M = 9.12) than researchers in the control (checklist) condition (M = 10.9), t(97.7) = 2.9, p = 0.005.</p><p>On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152. There was no effect of experience on the reduction in errors when using the tool (p &gt; .05), as the correlation was non-significant.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>It seems automated tools can help prevent errors by providing researchers with feedback about potential mistakes, and researchers feel the app is useful. We conclude the use of automated checks has potential to reduce the number of mistakes in scientific manuscripts.</p></div>		</body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introduction</head><p>Although intentional dishonestly might be a successful way to boost creativity <ref type="bibr" target="#b1">(Gino &amp; Wiltermuth, 2014)</ref>, it is safe to say most mistakes researchers make are unintentional. From a human factors perspective, human error is a symptom of a poor design <ref type="bibr">(Smithy, 2020)</ref>. Automation can be use to check for errors in scientific manuscripts, and inform authors about possible corrections. In this study we examine the usefulness of metacheck to improve best practices.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method and Participants</head><p>In this study we examine whether automated checks reduce the amount of errors that researchers make in scientific manuscripts. This study was preregistered at osf.io/5tbm9. We randomly assigned 50 scientists to a condition where their manuscript was automatically checked for errors, an 50 scientists to a control condition with a checklist. Scientists had the opportunity to make changes to their manuscript based on the feedback of the tool. We subsequently coded all manuscripts for mistakes, and counted the total number of mistakes. We also measured the expertise of researchers (in years) to explore whether the automated tool would be more useful, the less research experience researchers had. We also asked researchers to rate how useful they found the checklist or app on a scale from 1 (not at all) to 7 (extremely useful). Data and analysis code is available from <ref type="url" target="https://github.com/Lakens/to_err_is_human">https://github.com/Lakens/to_err_is_human</ref>. All data needed to reproduce the analyses in Table <ref type="table" target="#tab_0">1</ref> is available from <ref type="url" target="https://osf.io/5tbm9">https://osf.io/5tbm9</ref> and code is available from the OSF. On average researchers in the experimental (app) condition made fewer mistakes (M = 9.12) than researchers in the control (checklist) condition (M = 10.9), t(97.7) = 2.9, p = 0.005, d = 0.59.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152. </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: The simulated data</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 :</head><label>1</label><figDesc>The average number of mistakes and usefulness score for the control and experimental conditions.</figDesc><table><row><cell>Condition</cell><cell cols="2">Mistakes Usefulness</cell></row><row><cell>control</cell><cell>10.90</cell><cell>4.50</cell></row><row><cell>experimental</cell><cell>9.12</cell><cell>5.06</cell></row></table></figure>
+		</body>
 		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>It seems automated tools can help prevent errors by providing researchers with feedback about potential mistakes, and researchers feel the app is useful. We conclude the use of automated checks has potential to reduce the number of mistakes in scientific manuscripts.</p></div>			</div>
 			<div type="references">
 
 				<listBibl>
 
 <biblStruct xml:id="b0">
 	<analytic>
-		<title level="a" type="main">Retracted: Evil Genius? How Dishonesty Can Lead to Greater Creativity</title>
+		<title level="a" type="main">Menstrual cycle variation in women&apos;s preferences for the scent of symmetrical men</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">W</forename><surname>Gangestad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Thornhill</surname></persName>
+		</author>
+		<idno type="DOI">10.1098/rspb.1998.0380</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings Biological Sciences</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="page" from="927" to="933" />
+			<date type="published" when="1998">1998</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gangestad, S. W., &amp; Thornhill, R. (1998). Menstrual cycle variation in women&apos;s prefer- ences for the scent of symmetrical men. Proceedings Biological Sciences, 22, 927-933. doi: 10.1098/rspb.1998.0380.</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Evil Genius? How Dishonesty Can Lead to Greater Creativity</title>
 		<author>
 			<persName><forename type="first">F</forename><surname>Gino</surname></persName>
 		</author>
@@ -78,9 +103,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 			<date type="published" when="2014">2014</date>
 		</imprint>
 	</monogr>
+	<note type="raw_reference">Gino, F., &amp; Wiltermuth, S. S. (2014). Evil Genius? How Dishonesty Can Lead to Greater Cre- ativity. Psychological Science, 25(4), 973-981. https://doi.org/10.1177/0956797614520714</note>
 </biblStruct>
 
-<biblStruct xml:id="b1">
+<biblStruct xml:id="b2">
 	<analytic>
 		<title level="a" type="main">Human error is a symptom of a poor design</title>
 		<author>
@@ -98,6 +124,25 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 			<date type="published" when="2021">2021</date>
 		</imprint>
 	</monogr>
+	<note type="raw_reference">Smith, F. (2021). Human error is a symptom of a poor design. Journal of Journals, 0(0), 0. https://doi.org/10.0000/0123456789</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Equivalence testing for psychological research</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lakens</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Methods and Practices in Psychological Science</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="259" to="270" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lakens, D. (2018). Equivalence testing for psychological research. Advances in Methods and Practices in Psychological Science, 1, 259-270.</note>
 </biblStruct>
 
 				</listBibl>

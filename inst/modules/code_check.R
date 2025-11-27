@@ -41,16 +41,24 @@ code_check <- function(paper) {
   }
   
   # Ensure both data frames have the same columns
-  common_cols <- union(names(osf_info_retrieved), names(github_file_list))
-  # Add missing columns as NA
-  for (col in setdiff(common_cols, names(osf_info_retrieved))) {
-    osf_info_retrieved[[col]] <- NA
+  if (nrow(osf_links_found) > 0 && nrow(github_found) > 0) {
+    common_cols <- union(names(osf_info_retrieved), names(github_file_list))
+    # Add missing columns as NA
+    for (col in setdiff(common_cols, names(osf_info_retrieved))) {
+      osf_info_retrieved[[col]] <- NA
+    }
+    for (col in setdiff(common_cols, names(github_file_list))) {
+      github_file_list[[col]] <- NA
+    }
+    # Bind rows
+    all_files <- rbind(osf_info_retrieved, github_file_list)
   }
-  for (col in setdiff(common_cols, names(github_file_list))) {
-    github_file_list[[col]] <- NA
+  if (nrow(osf_links_found) > 0) {
+    all_files <- osf_info_retrieved
   }
-  # Bind rows
-  all_files <- rbind(osf_info_retrieved, github_file_list)
+  if (nrow(github_found) > 0) {
+    all_files <- github_file_list
+  }
   # Create dataframe with only r files
   r_files <- all_files[grepl("\\.(r|rmd|qmd)$", all_files$name, ignore.case = TRUE), ]
 
