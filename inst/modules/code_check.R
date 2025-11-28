@@ -30,7 +30,7 @@ code_check <- function(paper) {
   github_regex <- "https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*"
   github_found <- search_text(paper, github_regex, return = "match")
   if (nrow(github_found) > 0) {
-    github_file_list <- github_files(github_found$text[2], recursive = TRUE)
+    github_file_list <- github_files(github_found$text, recursive = TRUE)
   }
   if (nrow(osf_links_found) == 0 && nrow(github_found) == 0) {
     report <- "No links to the Open Science Framework or Github were found."
@@ -52,11 +52,9 @@ code_check <- function(paper) {
     }
     # Bind rows
     all_files <- rbind(osf_info_retrieved, github_file_list)
-  }
-  if (nrow(osf_links_found) > 0) {
+  } else if (nrow(osf_links_found) > 0) {
     all_files <- osf_info_retrieved
-  }
-  if (nrow(github_found) > 0) {
+  } else if (nrow(github_found) > 0) {
     all_files <- github_file_list
   }
   # Create dataframe with only r files
