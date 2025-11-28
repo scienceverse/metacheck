@@ -167,3 +167,64 @@ rbox_info <- function(rb_url) {
 
   return(obj)
 }
+
+
+#' Retrieve files from ResearchBox by URL
+#'
+#' @param rb_url a ResearchBox URL
+#'
+#' @returns a data frame of information
+#' @export
+#' @keywords internal
+rbox_file_download <- function(rb_url, id_col = 1) {
+  message("* Retrieving files from ", rb_url, "...")
+  
+  # set up return table
+  obj <- data.frame(
+    rb_url = rb_url
+  )
+  
+  # Cross-platform: download a ZIP to a temp dir, unzip, and list files
+  tmp_dir <- file.path(tempdir(), paste0("rbx_", as.integer(Sys.time())))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+    
+  # 2) Create a path for the ZIP file
+  zip_path <- file.path(tmp_dir, basename(rb_url[[id_col]]))
+  if (!grepl("\\.zip$", zip_path, ignore.case = TRUE)) {
+    zip_path <- file.path(tmp_dir, "archive.zip")
+  }
+    
+  # 3) Download (use binary mode on Windows)
+  message("Downloading to: ", zip_path)
+  url_researchbox <- paste0("https://s3.wasabisys.com/zipballs.researchbox.org/ResearchBox_",sub("^https://researchbox.org/", "", rb_url[[id_col]]),".zip")
+  utils::download.file(url_researchbox, destfile = zip_path, mode = "wb", quiet = TRUE)
+    
+  if (!file.exists(zip_path) || file.size(zip_path) == 0) {
+    stop("Download failed or resulted in an empty file: ", zip_path)
+  }
+    
+  # 4) Unzip into a subfolder
+  out_dir <- file.path(tmp_dir, "unzipped")
+  dir.create(out_dir, showWarnings = FALSE)
+    
+  message("Unzipping into: ", out_dir)
+  unzipped_files <- utils::unzip(zip_path, exdir = out_dir)
+    
+  if (length(unzipped_files) == 0) {
+    stop("Unzip produced no files. The archive might be corrupt.")
+  }
+    
+  # 5) List files (recursively) and return
+  files <- list.files(out_dir, recursive = TRUE, full.names = FALSE)
+  file_locations <- list.files(out_dir, recursive = TRUE, full.names = TRUE)
+  
+  # Create dataframe
+  return(data.frame(
+    text = rep(rb_url[[1]], length(listed)),
+    name = listed,
+    file_location = file_locations,
+    stringsAsFactors = FALSE
+  ))
+}
+
+rbox_files <- rbox_file_download(rb_url)
