@@ -33,7 +33,7 @@ Although intentional dishonestly might be a successful way to boost creativity (
 
 ## Method and Participants
 
-In this study we examine whether automated checks reduce the amount of errors that researchers make in scientific manuscripts. This study was preregistered at [osf.io/5tbm9](https://osf.io/5tbm9) and on AsPredicted at https://aspredicted.org/by8i8v.pdf. We randomly assigned 50 scientists to a condition where their manuscript was automatically checked for errors, and 50 scientists to a control condition with a checklist. Scientists had the opportunity to make changes to their manuscript based on the feedback of the tool. We subsequently coded all manuscripts for mistakes, and counted the total number of mistakes. We also measured the expertise of researchers (in years) to explore whether the automated tool would be more useful, the less research experience researchers had. We also asked researchers to rate how useful they found the checklist or app on a scale from 1 (not at all) to 7 (extremely useful). Data and analysis code is available on GitHub from https://github.com/Lakens/to_err_is_human and from https://researchbox.org/4377. 
+In this study we examine whether automated checks reduce the amount of errors that researchers make in scientific manuscripts. This study was preregistered at https://osf.io/48ncu and on AsPredicted at https://aspredicted.org/by8i8v.pdf. We randomly assigned 50 scientists to a condition where their manuscript was automatically checked for errors, and 50 scientists to a control condition with a checklist. Scientists had the opportunity to make changes to their manuscript based on the feedback of the tool. We subsequently coded all manuscripts for mistakes, and counted the total number of mistakes. We also measured the expertise of researchers (in years) to explore whether the automated tool would be more useful, the less research experience researchers had. We also asked researchers to rate how useful they found the checklist or app on a scale from 1 (not at all) to 7 (extremely useful). Data and analysis code is available on GitHub from https://github.com/Lakens/to_err_is_human and from https://researchbox.org/4377. Data is also available from https://osf.io/5tbm9 and code is also available from https://osf.io/629bx. 
 
 ## Results
 
@@ -56,8 +56,6 @@ data <- sim_design(
                 usefulness = norm2likert(usefulness, c(1,2,4,8,10,8,4)),
                 experience = norm2pois(experience, 10))
 ```
-
-All data needed to reproduce the analyses in @tbl-summary is available from <https://osf.io/5tbm9> and code is available from the OSF at https://osf.io/629bx. 
 
 ```{r}
 #| label: tbl-summary

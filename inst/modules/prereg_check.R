@@ -46,7 +46,7 @@ prereg_check <- function(paper, ...) {
       "<a href='https://doi.org/10.1037/met0000687' target='_blank'>https://doi.org/10.1037/met0000687</a> <br>",
       "For educational material on how to report deviations from preregistrations, see:<br>",
       "Lakens, D. (2024). When and How to Deviate From a Preregistration. Collabra: Psychology, 10(1), 117094. ",
-      "<a href='https://doi.org/10.1525/collabra.117094' target='_blank'>https://doi.org/10.1525/collabra.117094</a> <br><br> #### Full preregistration:"
+      "<a href='https://doi.org/10.1525/collabra.117094' target='_blank'>https://doi.org/10.1525/collabra.117094</a> <br><br> Full preregistration:"
     )
     # Select columns starting with "AP_"
     prereg_table <- dplyr::select(table, dplyr::starts_with("AP_"))
