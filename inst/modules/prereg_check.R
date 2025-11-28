@@ -10,7 +10,6 @@
 #' @import tidyr
 #'
 #' @param paper a paper object or paperlist object
-#' @param ... further arguments (not used)
 #'
 #' @returns a list with table, summary, traffic light, and report text
 prereg_check <- function(paper, ...) {
@@ -47,11 +46,19 @@ prereg_check <- function(paper, ...) {
       "<a href='https://doi.org/10.1037/met0000687' target='_blank'>https://doi.org/10.1037/met0000687</a> <br>",
       "For educational material on how to report deviations from preregistrations, see:<br>",
       "Lakens, D. (2024). When and How to Deviate From a Preregistration. Collabra: Psychology, 10(1), 117094. ",
-      "<a href='https://doi.org/10.1525/collabra.117094' target='_blank'>https://doi.org/10.1525/collabra.117094</a> <br>"
+      "<a href='https://doi.org/10.1525/collabra.117094' target='_blank'>https://doi.org/10.1525/collabra.117094</a> <br> For the full preregistration, see the table below:"
     )
     
+    table2 <- table <- table2
+    # Select columns starting with "AP_"
+    table <- dplyr::select(table, dplyr::starts_with("AP_"))
+    # Transpose the selected data
+    table <- t(table)
+    colnames(table) <- c("Answer")
+    # Convert to a table (matrix)
+    table <- as.table(table)
+    print(table)
     # report text 
-    
     report <- sprintf(
       "%s\n\n%s\n\n#### Guidance\n\n%s",
       module_output, issues_found, guidance
