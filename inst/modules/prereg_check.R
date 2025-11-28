@@ -46,25 +46,26 @@ prereg_check <- function(paper, ...) {
       "<a href='https://doi.org/10.1037/met0000687' target='_blank'>https://doi.org/10.1037/met0000687</a> <br>",
       "For educational material on how to report deviations from preregistrations, see:<br>",
       "Lakens, D. (2024). When and How to Deviate From a Preregistration. Collabra: Psychology, 10(1), 117094. ",
-      "<a href='https://doi.org/10.1525/collabra.117094' target='_blank'>https://doi.org/10.1525/collabra.117094</a> <br> For the full preregistration, see the table below:"
+      "<a href='https://doi.org/10.1525/collabra.117094' target='_blank'>https://doi.org/10.1525/collabra.117094</a> <br><br> #### Full preregistration:"
+    )
+    # Select columns starting with "AP_"
+    prereg_table <- dplyr::select(table, dplyr::starts_with("AP_"))
+    # Transpose the selected data
+    prereg_table <- t(prereg_table)
+    colnames(prereg_table) <- c("Answer")
+    # report text 
+    prereg_table <- paste(knitr::kable(prereg_table, format = "markdown"), collapse = "\n")
+    
+    report <- sprintf(
+      "%s\n\n%s\n\n#### Guidance\n\n%s\n\n%s",
+      module_output,
+      issues_found,
+      guidance,
+      prereg_table
     )
     
-    table2 <- table <- table2
-    # Select columns starting with "AP_"
-    table <- dplyr::select(table, dplyr::starts_with("AP_"))
-    # Transpose the selected data
-    table <- t(table)
-    colnames(table) <- c("Answer")
-    # Convert to a table (matrix)
-    table <- as.table(table)
-    print(table)
-    # report text 
-    report <- sprintf(
-      "%s\n\n%s\n\n#### Guidance\n\n%s",
-      module_output, issues_found, guidance
-    )
   }
-  
+
   # return a list ----
   list(
     table = table,
