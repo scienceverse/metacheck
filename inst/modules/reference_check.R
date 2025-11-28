@@ -63,7 +63,7 @@ reference_check <- function(paper) {
   # Create a reference for 
   articles$ref_doi <- ifelse(
   articles$doi_from_crossref == 1 & !is.na(articles$doi),
-  paste(articles$ref, "<span_style =\"color:red;\">", articles$doi,"//span>"),
+  paste(articles$ref, articles$doi),
   NA_character_)
 
   # Create the report string for missing doi
@@ -102,24 +102,24 @@ reference_check <- function(paper) {
   cited_replications <- FReD_data[FReD_data$doi_original %in% articles_with_doi$doi, ]
   # Create the report string
   if (nrow(cited_replications) == 0) {
-    report_FReD <- "\n\n#### Citations to Studies that have been Replicated\n\n No references to studies in the FReD replication database were found."
+    report_FReD <- "\n\n#### Citations of Studies that have been Replicated\n\n No references to studies in the FReD replication database were found."
   } else {
     FRED_report <- sprintf(
-      "\n\n#### Citations to Studies that have been Replicated\n\nYou have cited %d article(s) for which a replication studies exists in the FORRT Replication Database. Check if you are aware of the replication study, and cite it where appropriate.",
+      "\n\n#### Citations of Studies that have been Replicated\n\nYou have cited %d article(s) for which a replication studies exists in the FORRT Replication Database. Check if you are aware of the replication study, and cite it where appropriate:",
       nrow(cited_replications)
     )
     replicated_FReD_found <- paste(sprintf("**%s**", cited_replications$ref_original), collapse = "\n\n")
     replication_FReD_found <- paste(sprintf("**%s**", cited_replications$ref_replication), collapse = "\n\n")
     
     report_FReD <- sprintf(
-      "%s\n\n#### Replication Articles:\n\n%s\n\n#### These studies have replication studies in papers you have cited:\n\n%s",
+      "%s\n\n%s\n\n#### Has been replicated in:\n\n%s",
       FRED_report, replicated_FReD_found, replication_FReD_found)
   }
   
   # Check citations to retractions
   rw_data <- retractionwatch()
   # for testing: paper <- psychsci[[109]]
-  cited_retractions <- rw_data[rw_data$doi %in% articles_with_doi$doi, ]
+  cited_retractions <- articles[articles$doi %in% rw_data$doi, ]
   # Create the report string
   if (nrow(cited_retractions) == 0) {
     report_rw <- "\n\n#### Citations to Retracted Articles\n\n No citations to articles in the RetractionWatch database were found."
@@ -128,10 +128,10 @@ reference_check <- function(paper) {
       "\n\n#### Citations to Retracted Articles\n\nYou have cited  %d articles in the RetractionWatch Database. Check if you are aware of the retractions.",
       nrow(cited_retractions)
     )
-    retractions_rw_found <- paste(sprintf("**%s**", cited_retractions$retractionwatch), collapse = "\n\n")
+    retractions_rw_found <- paste(sprintf("**%s**", cited_retractions$ref), collapse = "\n\n")
 
     report_rw <- sprintf(
-      "%s\n\n#### The following retracted articles were cited:\n\n%s\n\n",
+      "%s\n\n%s\n\n",
       rw_report, retractions_rw_found)
   }
 

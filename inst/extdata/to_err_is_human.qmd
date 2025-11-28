@@ -1,7 +1,7 @@
 ---
 title: 'To Err is Human: An Empirical Investigation'
 author: "Daniel Lakens & Lisa DeBruine"
-date: "2024-06-21"
+date: "2025-11-28"
 format: 
   html: 
     embed-resources: true
@@ -57,7 +57,7 @@ data <- sim_design(
                 experience = norm2pois(experience, 10))
 ```
 
-All data needed to reproduce the analyses in @tbl-summary is available from <https://osf.io/5tbm9> and code is available from [the OSF](https://osf.io/629bx). 
+All data needed to reproduce the analyses in @tbl-summary is available from <https://osf.io/5tbm9> and code is available from the OSF at https://osf.io/629bx. 
 
 ```{r}
 #| label: tbl-summary
