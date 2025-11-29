@@ -154,25 +154,111 @@ effect_size <- function(paper, ...) {
       nrow(table_missing)
     )
     issues_found <- paste(sprintf("**%s**", table_missing$text), collapse = "\n\n")
-    guidance <- paste0(
-      "For metascientific articles demonstrating that effect sizes are often not reported, see:<br>",
-      "Peng, C.-Y. J., Chen, L.-T., Chiang, H.-M., & Chiang, Y.-C. (2013). The Impact of APA and AERA Guidelines on Effect Size Reporting. Educational Psychology Review, 25(2), 157–209.",
-      "<a href='https://doi.org/10.1007/s10648-013-9218-2' target='_blank'>https://doi.org/10.1007/s10648-013-9218-2</a> <br>",
-      "For educational material on reporting effect sizes, see: <a href='https://matthewbjane.quarto.pub/guide-to-effect-sizes-and-confidence-intervals/' target='_blank'>https://matthewbjane.quarto.pub/guide-to-effect-sizes-and-confidence-intervals/</a>."
-    )
-    
-    # report text 
-    
-    report <- sprintf(
-      "%s\n\n#### The Following Sentences are Missing Effect Sizes\n\n%s\n\n#### Guidance\n\n%s",
-      module_output, issues_found, guidance
-    )
+    if (nrow(table_missing) == 0) {
+      report <- "No t-tests or F-tests were detected, or all detected t-tests and F-tests had an effect size reported in the same sentence."
+    } else {
+      module_output <- sprintf(
+        "We found <strong><span style='color:#006400;'>%d</span></strong> t-tests and/or F-tests where effect sizes are not reported. We recommend checking the sentences below, and add any missing effect sizes.",
+        nrow(table_missing)
+      )
+      issues_found <- paste(
+        sprintf("<li style='border-bottom:1px solid #ddd; padding-bottom:6px; margin-bottom:6px;'>%s</li>", table_missing$text),
+        collapse = "\n"
+      )
+      sentences_block <- paste0(
+        "<div style='border:1px solid #ccc; padding:10px; ",
+        "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
+        "margin-top:5px; margin-bottom:15px;'>",
+        
+        "<ul style='list-style-type: circle; padding-left:20px; margin:0;'>",
+        issues_found,
+        "</ul>",
+        
+        "</div>"
+      )
+      
+      # I wrapped the guidance in a block that collapses + increased the size of the heading and made the color dark green
+      # I also used bullets & BOLD labels so both guidance resources look clearly separated 
+      guidance <- paste0(
+        "<ul style='list-style-type: circle; padding-left: 20px;'>",
+        "<li><strong>For metascientific articles demonstrating that effect sizes are often not reported</strong>:<br>",
+        "Peng, C.-Y. J., Chen, L.-T., Chiang, H.-M., & Chiang, Y.-C. (2013). The Impact of APA and AERA Guidelines on Effect Size Reporting. Educational Psychology Review, 25(2), 157–209. ",
+        "<a href='https://doi.org/10.1007/s10648-013-9218-2' target='_blank'>https://doi.org/10.1007/s10648-013-9218-2</a>",
+        "</li><br>",
+        "<li><strong>For educational material on reporting effect sizes</strong>:<br>",
+        "<a href='https://matthewbjane.quarto.pub/guide-to-effect-sizes-and-confidence-intervals/' target='_blank'>https://matthewbjane.quarto.pub/guide-to-effect-sizes-and-confidence-intervals/</a>",
+        "</li>",
+        "</ul>"
+      )
+
+      guidance_block <- paste0(
+        "<details style='display:inline-block;'>",
+        "<summary style='cursor:pointer; margin:0; padding:0;'>",
+        "<strong><span style='font-size:20px; color:#006400;'>Guidance</span></strong>",
+        "</summary>",
+        "<div style='margin-top:10px;'>",
+        guidance,
+        "</div>",
+        "</details>"
+      )
+      
+      ## I can use this color "#1BA57B" if I want the same green as the one on the side in the table of contents!! 
+      # I made the detailed table here become expandable + chose the columns (can be changed) 
+      table_subset <- table[, c("text", "section", "es", "test_text", "test"), drop=FALSE]
+      colnames(table_subset) <- c("Sentence", "Section", "Effect Size", "Reported Test", "Test Type")
+      
+      table_headers <- paste0(
+        "<tr>",
+        paste(
+          sprintf(
+            "<th style='border:1px solid #ccc; padding:4px; background-color:#f0f0f0;'>%s</th>",
+            names(table_subset)
+          ),
+          collapse = ""
+        ),
+        "</tr>"
+      )
+      
+      table_rows <- apply(table_subset, 1, function(row) {
+        paste0(
+          "<tr>",
+          paste(
+            sprintf("<td style='border:1px solid #ccc; padding:4px;'>%s</td>", row),
+            collapse = ""
+          ),
+          "</tr>"
+        )
+      })
+      table_rows <- paste(table_rows, collapse = "\n")
+      
+      detailed_table_html <- paste0(
+        "<table style='border-collapse:collapse; width:100%; font-size:90%;'>",
+        "<thead>", table_headers, "</thead>",
+        "<tbody>", table_rows, "</tbody>",
+        "</table>"
+      )
+      
+      detailed_table_block <- paste0(
+        "<details style='display:block; margin-top:15px;'>",
+        "<summary style='cursor:pointer; margin:0; padding:0;'>",
+        "<strong><span style='font-size:20px; color:#006400;'>Detailed Table</span></strong>",
+        "</summary>",
+        "<div style='margin-top:10px; max-height:450px; overflow:auto; border:1px solid #999; padding:5px; background-color:#ffffff;'>",
+        detailed_table_html,
+        "</div>",
+        "</details>"
+      )
+      
+      # I structured the report so the main summary is followed by the missing sentences, guidance, and the detailed table (expandable) in one section!
+      report <- sprintf(
+        "%s\n\n<div><strong>The Following Sentences are Missing Effect Sizes:</strong></div>\n\n%s\n\n%s\n\n%s",
+        module_output, sentences_block, guidance_block, detailed_table_block
+      )
+    }
   }
-  
 
   # return a list ----
   list(
-    table = table,
     summary = summary_table,
     na_replace = 0,
     traffic_light = tl,

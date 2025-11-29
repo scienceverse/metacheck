@@ -48,7 +48,7 @@ statcheck <- function(paper, ...) {
   # base report text for each possible traffic light ----
   report_base <- c(
     na    = "No test statistics were detected.",
-    red   = "We detected possible errors in test statistics. Note that as the accuracy of statcheck has only been validated for t-tests and F-tests, and as Metacheck only uses validated modules, we do not provide statcheck results for other tests.",
+    red   = "We detected possible errors in test statistics. Note that as the accuracy of statcheck has only been validated for *t*-tests and *F*-tests. As Metacheck only uses validated modules, we only provide statcheck results for *t* tests and *F*-tests",
     green = "We detected no errors in test statistics.",
     fail  = "StatCheck failed."
   )
@@ -126,8 +126,19 @@ statcheck <- function(paper, ...) {
         "Nuijten, M. B., & Wicherts, J. (2023). The effectiveness of implementing statcheck in the peer review process to avoid statistical reporting errors. PsyArXiv. ",
         "<a href='https://doi.org/10.31234/osf.io/bxau9' target='_blank'>https://doi.org/10.31234/osf.io/bxau9</a> <br>"
         )
+      guidance_block <- paste0(
+        "<details style='display:inline-block;'>",
+        "<summary style='cursor:pointer; margin:0; padding:0;'>",
+        "<strong><span style='font-size:20px; color:#006400;'>Learn More</span></strong>",
+        "</summary>",
+        "<div style='margin-top:10px;'>",
+        guidance,
+        "</div>",
+        "</details>"
+      )
       
-      report_text <- paste(report_text, scroll_box, "#### To Read ",guidance, sep = "\n\n")
+      
+      report_text <- paste(report_text, scroll_box, guidance_block, sep = "\n\n")
     }
   }
   
