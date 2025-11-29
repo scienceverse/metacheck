@@ -60,81 +60,247 @@ reference_check <- function(paper) {
   }
   articles_with_pubpeer <- subset(articles, !is.na(pubpeer_url))
   
-  # Create a reference for 
-  articles$ref_doi <- ifelse(
-  articles$doi_from_crossref == 1 & !is.na(articles$doi),
-  paste(articles$ref, articles$doi),
-  NA_character_)
+  articles_without_doi <- subset(articles, doi_from_crossref == 1)
+  
+  # Create a reference with DOI in green
+  articles_without_doi$doi <- paste0("<https://doi.org/",articles_without_doi$doi,">")
+  articles_without_doi$ref_doi <- ifelse(
+    articles_without_doi$doi_from_crossref == 1 & !is.na(articles_without_doi$doi),
+    paste(articles_without_doi$ref, sprintf('<span style="color:green;">%s</span>',
+                                articles_without_doi$doi)),
+    NA_character_
+  )
 
   # Create the report string for missing doi
   if (nrow(articles_without_doi) == 0) {
     report_doi <- "This module only checks references classified as articles. No references to articles with a missing DOI were found."
   } else {
     doi_report <- sprintf(
-      "This module only checks references classified as articles. Out of %d articles in the reference list, %d have a DOI. Articles with a missing DOI were:",
+      paste0(
+        "This module only checks references classified as articles. Out of <strong><span style='color:#006400;'>%d</span></strong> references to articles in the reference list, ",
+        "<strong><span style='color:#006400;'>%d</span></strong> have a DOI. "),
       nrow(articles),
       nrow(articles_with_doi)
     )
-    issues_doi_found <- paste(sprintf("**%s**", articles$ref_doi[!is.na(articles$ref_doi)]), collapse = "\n\n")
+    missing_heading <- "<div><strong>Articles with a missing DOI were (our best guess for the correct DOI is below in green):</strong></div>"
+    
+    issues_doi_found <- paste(
+      sprintf(
+        "<li style='border-bottom:1px solid #ddd; padding-bottom:6px; margin-bottom:6px;'>%s</li>",
+        articles_without_doi$ref_doi),
+      collapse = "\n"
+    )
+    
+    refs_block <- paste0(
+      "<div style='border:1px solid #ccc; padding:10px; ",
+      "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
+      "margin-top:5px; margin-bottom:15px;'>",
+      "<ul style='list-style-type: circle; padding-left:20px; margin:0;'>",
+      issues_doi_found,
+      "</ul>",
+      "</div>"
+    )
     
     report_doi <- sprintf(
-      "%s\n\n%s",
-      doi_report, issues_doi_found)
+      "%s\n\n%s\n\n%s",
+      doi_report,
+      missing_heading,
+      refs_block
+    )
   }
   
-  
-  # Create the report string
+  # PubPeer report (scrollable layout) ----
   if (nrow(articles_with_pubpeer) == 0) {
-    report_pubpeer <- "\n\n#### Pubpeer\n\n No Pubpeer comments were found.\n\n"
+    # Even if there is nothing to show, I keep a collapsible section -> UI stays sonsistent across papers
+    report_pubpeer <- paste0(
+      "<strong><span style='font-size:20px; color:#006400;'>Pubpeer</span></strong>",
+      "</summary>",
+      "<div style='margin-top:10px;'>",
+      "No Pubpeer comments were found.",
+      "</div>",
+      "</details>"
+    )
   } else {
-  pubpeer_report <- sprintf(
-    "\n\n#### Pubpeer\n\nWe found %d reference(s) with comments on Pubpeer. You can check out the comments by visiting the URLs below:",
-    nrow(articles_with_pubpeer)  )
-  issues_pubpeer_found <- paste(sprintf("**%s**", articles_with_pubpeer$pubpeer_url), collapse = "\n\n")
-  report_pubpeer <- sprintf(
-    "%s\n\n%s\n\n",
-    pubpeer_report, issues_pubpeer_found)
+    # Text with green bold count
+    pubpeer_report <- sprintf(
+      paste0(
+        "We found <strong><span style='color:#006400;'>%d</span></strong> references with comments on Pubpeer. ",
+        "You can check out the comments by visiting the URLs below:"
+      ),
+      nrow(articles_with_pubpeer)
+    )
+    
+    # I show each Pubpeer URL as a bullet with a separator line
+    issues_pubpeer_found <- paste(
+      sprintf(
+        "<li style='border-bottom:1px solid #ddd; padding-bottom:6px; margin-bottom:6px;'>
+           <a href='%s' target='_blank'>%s</a>
+         </li>",
+        articles_with_pubpeer$pubpeer_url,
+        articles_with_pubpeer$pubpeer_url
+      ),
+      collapse = "\n"
+    )
+    
+    # I put the URL list in a scrollable box with bullets 
+    pubpeer_box <- paste0(
+      "<div style='border:1px solid #ccc; padding:10px; ",
+      "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
+      "margin-top:5px; margin-bottom:15px;'>",
+      
+      "<ul style='list-style-type: circle; padding-left:20px; margin:0;'>",
+      issues_pubpeer_found,
+      "</ul>",
+      
+      "</div>"
+    )
+    
+    # I wrapped here the PubPeer content in a collapsible block -> users can expand it when they want to view its content
+    report_pubpeer <- paste0(
+      "<strong><span style='font-size:20px; color:#006400;'>Pubpeer</span></strong>",
+      "</summary>",
+      "<div style='margin-top:10px;'>",
+      pubpeer_report, "<br><br>",
+      pubpeer_box,
+      "</div>",
+      "</details>"
+    )
   }
   
   # Check citations to references
   FReD_data <- FReD()
   # for testing: paper <- psychsci[[109]]
   cited_replications <- FReD_data[FReD_data$doi_original %in% articles_with_doi$doi, ]
-  # Create the report string
+
+  # Citations to Replicated Studies layout --- 
+  # Similar steps and layout as PubPeer
   if (nrow(cited_replications) == 0) {
-    report_FReD <- "\n\n#### Citations of Studies that have been Replicated\n\n No references to studies in the FReD replication database were found."
+    report_FReD <- paste0(
+      "<strong><span style='font-size:20px; color:#006400;'>Citations to Replicated Studies</span></strong>",
+      "</summary>",
+      "<div style='margin-top:10px;'>",
+      "No citations to studies in the FReD replication database were found.",
+      "</div>",
+      "</details>"
+    )
   } else {
     FRED_report <- sprintf(
-      "\n\n#### Citations of Studies that have been Replicated\n\nYou have cited %d article(s) for which a replication studies exists in the FORRT Replication Database. Check if you are aware of the replication study, and cite it where appropriate:",
+      paste0(
+        "You have cited <strong><span style='color:#006400;'>%d</span></strong> articles for which replication studies exist, ",
+        "and are listed in the FORRT Replication Database. Check if you are aware of the replication studies, ",
+        "and cite them where appropriate."
+      ),
       nrow(cited_replications)
     )
-    replicated_FReD_found <- paste(sprintf("**%s**", cited_replications$ref_original), collapse = "\n\n")
-    replication_FReD_found <- paste(sprintf("**%s**", cited_replications$ref_replication), collapse = "\n\n")
     
-    report_FReD <- sprintf(
-      "%s\n\n%s\n\n#### Has been replicated in:\n\n%s",
-      FRED_report, replicated_FReD_found, replication_FReD_found)
+    # Original articles cited ----
+    replicated_items <- paste(
+      sprintf(
+        "<li style='border-bottom:1px solid #ddd; padding-bottom:6px; margin-bottom:6px;'>%s</li>",
+        cited_replications$ref_original
+      ),
+      collapse = "\n"
+    )
+    
+    replicated_box <- paste0(
+      "<div style='border:1px solid #ccc; padding:10px; ",
+      "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
+      "margin-top:5px; margin-bottom:15px;'>",
+      "<ul style='list-style-type: circle; padding-left:20px; margin:0;'>",
+      replicated_items,
+      "</ul>",
+      "</div>"
+    )
+    
+    # Replication studies ----
+    replication_items <- paste(
+      sprintf(
+        "<li style='border-bottom:1px solid #ddd; padding-bottom:6px; margin-bottom:6px;'>%s</li>",
+        cited_replications$ref_replication
+      ),
+      collapse = "\n"
+    )
+    
+    replication_box <- paste0(
+      "<div style='border:1px solid #ccc; padding:10px; ",
+      "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
+      "margin-top:5px; margin-bottom:15px;'>",
+      "<ul style='list-style-type: circle; padding-left:20px; margin:0;'>",
+      replication_items,
+      "</ul>",
+      "</div>"
+    )
+    
+    report_FReD <- paste0(
+      "<strong><span style='font-size:20px; color:#006400;'>Citations to Replicated Studies</span></strong>",
+      "</summary>",
+      "<div style='margin-top:10px;'>",
+      FRED_report,
+      "<br><br><div><strong>The articles you cited that has been replicated:</strong></div>",
+      replicated_box,
+      "<div><strong>The reference to the replication study:</strong></div>",
+      replication_box,
+      "</div>",
+      "</details>"
+    )
   }
+  
   
   # Check citations to retractions
   rw_data <- retractionwatch()
   # for testing: paper <- psychsci[[109]]
   cited_retractions <- articles[articles$doi %in% rw_data$doi, ]
-  # Create the report string
+
+  # Citations to Retracted Articles (Retractionwatch) layout ---
+  # Same layout as before as well!
   if (nrow(cited_retractions) == 0) {
-    report_rw <- "\n\n#### Citations to Retracted Articles\n\n No citations to articles in the RetractionWatch database were found."
+    report_rw <- paste0(
+      "<strong><span style='font-size:20px; color:#006400;'>Citations to Retracted Articles</span></strong>",
+      "</summary>",
+      "<div style='margin-top:10px;'>",
+      "No citations to articles in the RetractionWatch database were found.",
+      "</div>",
+      "</details>"
+    )
   } else {
     rw_report <- sprintf(
-      "\n\n#### Citations to Retracted Articles\n\nYou have cited  %d articles in the RetractionWatch Database. Check if you are aware of the retractions.",
+      paste0(
+        "You have cited <strong><span style='color:#006400;'>%d</span></strong> articles in the RetractionWatch Database. ",
+        "Check if you are aware of the retraction."
+      ),
       nrow(cited_retractions)
     )
-    retractions_rw_found <- paste(sprintf("**%s**", cited_retractions$ref), collapse = "\n\n")
-
-    report_rw <- sprintf(
-      "%s\n\n%s\n\n",
-      rw_report, retractions_rw_found)
+    
+    retractions_rw_items <- paste(
+      sprintf(
+        "<li style='border-bottom:1px solid #ddd; padding-bottom:6px; margin-bottom:6px;'>%s</li>",
+        cited_retractions$ref
+      ),
+      collapse = "\n"
+    )
+    
+    retractions_box <- paste0(
+      "<div style='border:1px solid #ccc; padding:10px; ",
+      "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
+      "margin-top:5px; margin-bottom:15px;'>",
+      "<ul style='list-style-type: circle; padding-left:20px; margin:0;'>",
+      retractions_rw_items,
+      "</ul>",
+      "</div>"
+    )
+    
+    report_rw <- paste0(
+      "<strong><span style='font-size:20px; color:#006400;'>Citations to Retracted Articles</span></strong>",
+      "</summary>",
+      "<div style='margin-top:10px;'>",
+      rw_report,
+      "<br><br><div><strong>The retracted articles were cited:</strong></div>",
+      retractions_box,
+      "</div>",
+      "</details>"
+    )
   }
-
+  
   report <- paste(report_doi, report_pubpeer, report_FReD, report_rw)
   
   tl <- "yellow"
