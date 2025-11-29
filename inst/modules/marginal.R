@@ -18,7 +18,7 @@ marginal <- function(paper) {
   table <- search_text(paper, pattern)
   
   # I dopped here ID and Header columns (unwanted)
-  drop_cols <- c("id", "header")
+  drop_cols <- c("id", "header", "div", "p", "s")
   table <- table[, setdiff(names(table), drop_cols), drop = FALSE]
   
   # summary output for paperlists ----
