@@ -226,5 +226,3 @@ rbox_file_download <- function(rb_url, id_col = 1) {
     stringsAsFactors = FALSE
   ))
 }
-
-rbox_files <- rbox_file_download(rb_url)
