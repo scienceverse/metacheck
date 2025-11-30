@@ -43,10 +43,10 @@ exact_p <- function(paper, ...) {
   
   # ---- Build report ----
   if (nrow(table) == 0) {
-    report <- "We detected no imprecise p-values."
+    report <- "We detected no imprecise *p* values."
   } else {
     module_output <- sprintf(
-      "We found %d imprecise p-values. Reporting *p* values imprecisely (e.g., p < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., p = .032) unless p values are smaller than 0.001, in which case you can use p < .001.",
+      "We found %d imprecise *p* values. Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001.",
       nrow(table)
     )
     
@@ -55,6 +55,7 @@ exact_p <- function(paper, ...) {
     
     # Scrollable block for sentences
     sentences_block <- paste0(
+      "<strong><span style='font-size:20px; color:#006400;'>Imprecise p values</span></strong>",
       "<div style='border:1px solid #ccc; padding:10px; ",
       "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
       "margin-top:5px; margin-bottom:15px;'>",
@@ -83,7 +84,7 @@ exact_p <- function(paper, ...) {
     
     # Combine everything into report
     report <- sprintf(
-      "%s\n\n#### The Following Sentences Contain Imprecise P-Values\n\n%s\n\n%s",
+      "%s\n\n%s\n\n%s",
       module_output, sentences_block, guidance_block
     )
   }
