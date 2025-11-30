@@ -15,45 +15,85 @@
 #' @examples
 #' module_run(psychsci, "exact_p")
 exact_p <- function(paper, ...) {
-  # detailed table of results ----
+  # ---- Detailed table of results ----
   p <- module_run(paper, "all_p_values")$table
-
+  
+  # Expand the sentences so the full sentence can be seen
+  p <- expand_text(
+    p,
+    paper,
+    expand_to = c("sentence")
+  )
+  
+  # Flag imprecise p-values
   p$imprecise <- p$p_comp == "<" & p$p_value > .001
   p$imprecise <- p$imprecise | !p$p_comp %in% c("=", "<")
   p$imprecise <- p$imprecise | is.na(p$p_value)
-  cols <- c("text", "p_comp", "p_value", "section", "header", "div", "p", "s", "id")
+  
+  cols <- c("expanded")
   table <- p[p$imprecise, cols]
-
-  # summary output for paperlists ----
-  summary_table <- dplyr::count(p, id, imprecise) |>
-    dplyr::mutate(imprecise = factor(imprecise, c("FALSE", "TRUE"))) |>
-    tidyr::pivot_wider(names_from = imprecise, values_from = n,
-                       # in case no instances of T or F
-                       names_expand = TRUE, values_fill = 0) |>
-    dplyr::rename(exact_p = `FALSE`, imprecise_p = `TRUE`)
-
-  # determine the traffic light ----
-  tl <- dplyr::case_when(
-    nrow(p) == 0 ~ "na",
-    any(p$imprecise) ~ "red",
-    !all(p$imprecise) ~ "green",
-    .default = "yellow"
-  )
-
-  # report text for each possible traffic light ----
-  report <- c(
-    red = "You may have reported some imprecise p-values",
-    yellow ="You may have reported some imprecise p-values",
-    green = "All p-values were reported with standard precision",
-    na = "No p-values were detected"
-  )
-
-  # return a list ----
+  
+  
+  # ---- Determine traffic light ----
+  if(nrow(table) == 0) {
+    tl <- "na"
+    } else {
+    tl <- "red"
+    }
+  
+  # ---- Build report ----
+  if (nrow(table) == 0) {
+    report <- "We detected no imprecise p-values."
+  } else {
+    module_output <- sprintf(
+      "We found %d imprecise p-values. Reporting p-values with inequality signs (e.g., p < .05) or without exact values reduces transparency and reproducibility. Best practice is to report exact p-values (e.g., p = .032) unless extremely small (p < .001).",
+      nrow(table)
+    )
+    
+    # Combine problematic sentences
+    issues_found <- paste(sprintf("%s", table$expanded), collapse = "\n\n")
+    
+    # Scrollable block for sentences
+    sentences_block <- paste0(
+      "<div style='border:1px solid #ccc; padding:10px; ",
+      "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
+      "margin-top:5px; margin-bottom:15px;'>",
+      "<ul style='list-style-type: circle; padding-left:20px; margin:0;'>",
+      issues_found,
+      "</ul>",
+      "</div>"
+    )
+    
+    # Guidance block
+    guidance <- paste0(
+      "For best practices on reporting p-values, see:<br><br>",
+      "American Statistical Association (2016). The ASA's Statement on p-Values: Context, Process, and Purpose.<br>",
+      "<a href='https://doi.org/10.1080/00031305.108https://doi.org/10.1080/00031305.2016.1154108</a><br>",
+      "Lakens, D. (2016). Calculating and reporting effect sizes to facilitate cumulative science.<br>",
+      "<a href='https://doi.org/10.550617697178https://doi.org/10.1177/1948550617697178</a>"
+    )
+    
+    guidance_block <- paste0(
+      "<details style='display:inline-block;'>",
+      "<summary style='cursor:pointer; margin:0; padding:0;'>",
+      "<strong><span style='font-size:20px; color:#006400;'>Learn More</span></strong>",
+      "</summary>",
+      "<div style='margin-top:10px;'>",
+      guidance,
+      "</div>",
+      "</details>"
+    )
+    
+    # Combine everything into report
+    report <- sprintf(
+      "%s\n\n#### The Following Sentences Contain Imprecise P-Values\n\n%s\n\n%s",
+      module_output, sentences_block, guidance_block
+    )
+  }
+  
+  # ---- Return list ----
   list(
-    table = table,
-    summary = summary_table,
-    na_replace = 0,
     traffic_light = tl,
-    report = report[[tl]]
+    report = report
   )
 }
