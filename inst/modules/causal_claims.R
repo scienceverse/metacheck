@@ -12,7 +12,7 @@
 #' @examples
 #' paper <- psychsci[[100]]
 #' module_run(paper, "causal_claims")
-marginal <- function(paper) {
+causal_claims <- function(paper) {
   # detailed table of results ----
   table <- search_text(paper, pattern = ".*", section = "discussion", return = "sentence")
   # Get the inference
@@ -24,48 +24,67 @@ marginal <- function(paper) {
   # Remove duplicates based on 'sentence' as the inference returns multiple rows per sentence if there are mutiple causal aspects
   causal_classification <- causal_classification[!duplicated(causal_classification$sentence), ]
   
-  # summary output for paperlists ----
-  summary_table <- dplyr::count(causal_classification, causal, name = "sentences")
-  
   # determine the traffic light ----
   tl <- ifelse(nrow(causal_classification) > 0 | nrow(causal_title) > 0, "yellow", "green")
   
   report_text = c(
-    yellow = "Medical journals often have the following instruction in the author guidelines about the use of causal language: Causal language (including use of terms such as effect and efficacy) should be used only for randomized clinical trials. For all other study designs (including meta-analyses of randomized clinical trials), methods and results should be described in terms of association or correlation and should avoid cause-and-effect wording. You have sentences with causal statements in the title and/or discussion. Carefully check if the sentences based on the data you have collected are warranted, given the study design.",
+    yellow = "Medical journals often have the following instruction in the author guidelines about the use of causal language: <br><br> *Causal language (including use of terms such as effect and efficacy) should be used only for randomized clinical trials. For all other study designs (including meta-analyses of randomized clinical trials), methods and results should be described in terms of association or correlation and should avoid cause-and-effect wording.* <br><br> You have sentences with causal statements in the title and/or discussion. Carefully check if the sentences based on the data you have collected are warranted, given the study design.",
     green = "No sentences with causal claims were identified in the title or discussion."
   )
+  
   
   # If there are results → build scrollable table
   if (nrow(causal_classification) > 0) {
     
-    # I render each result row as HTML <tr>/<td> with borders and padding so the sentences are clearly separated
+    # Build title block if causal_title has results
+    title_block <- ""
+    if (causal_title$causal == TRUE) {
+      title_rows <- apply(causal_title, 1, function(row) {
+        paste0(
+          "<tr>",
+          paste(sprintf("<td style='border:1px solid #ccc; padding:6px;'>%s</td>", row), collapse = ""),
+          "</tr>"
+        )
+      }) |> paste(collapse = "\n")
+      
+      title_html <- paste0(
+        "<table style='border-collapse:collapse; width:100%; font-size:90%;'>",
+        "<thead><tr>",
+        paste(sprintf("<th style='border:1px solid #ccc; padding:6px; background-color:#f0f0f0;'>%s</th>", names(causal_title)), collapse = ""),
+        "</tr></thead>",
+        "<tbody>", title_rows, "</tbody>",
+        "</table>"
+      )
+      
+      title_block <- paste0(
+        "<br><div><strong>Causal claims detected in the title:</strong></div>",
+        "<div style='border:1px solid #444; padding:10px; max-height:150px; overflow-y:auto; ",
+        "background-color:#ffffff; margin-top:5px; margin-bottom:15px;'>",
+        title_html,
+        "</div>"
+      )
+    }
+    
+    # Build discussion table as before
     table_rows <- apply(causal_classification, 1, function(row) {
       paste0(
         "<tr>",
-        paste(
-          sprintf("<td style='border:1px solid #ccc; padding:6px;'>%s</td>", row),
-          collapse = ""
-        ),
+        paste(sprintf("<td style='border:1px solid #ccc; padding:6px;'>%s</td>", row), collapse = ""),
         "</tr>"
       )
-    }) |> paste(collapse="\n")
+    }) |> paste(collapse = "\n")
     
-    # Here I built a full HTML table with styled headers + smaller font to make it fit (without feeling cramped)
     table_html <- paste0(
       "<table style='border-collapse:collapse; width:100%; font-size:90%;'>",
       "<thead><tr>",
-      paste(
-        sprintf("<th style='border:1px solid #ccc; padding:6px; background-color:#f0f0f0;'>%s</th>", names(causal_classification)),
-        collapse=""
-      ),
+      paste(sprintf("<th style='border:1px solid #ccc; padding:6px; background-color:#f0f0f0;'>%s</th>", names(causal_classification)), collapse = ""),
       "</tr></thead>",
       "<tbody>", table_rows, "</tbody>",
       "</table>"
     )
     
-    # I wrapped the table here in a scrollable box. I chose the max hight of the box to keep control of how high it must be to not make the report too long (we can scroll in the box either way!)
     scrollbox <- paste0(
-      "<br><div><strong>You can see these detected sentences in the following table:</strong></div>",
+      "<br><div><strong>Causal claims detected in the discussion section:</strong></div>",
       "<div style='border:1px solid #444; padding:10px; max-height:450px; overflow-y:auto; ",
       "background-color:#ffffff; margin-top:5px; margin-bottom:15px;'>",
       table_html,
@@ -73,11 +92,11 @@ marginal <- function(paper) {
     )
     
     guidance <- paste0(
-      "For metascientific articles demonstrating the rate at which non-significant p-values are interpreted as marginally significant, see:<br><br>",
-      "Olsson-Collentine, A., van Assen, M. A. L. M., & Hartgerink, C. H. J. (2019). The Prevalence of Marginally Significant Results in Psychology Over Time. Psychological Science, 30(4), 576–586. ",
-      "<a href='https://doi.org/10.1177/0956797619830326' target='_blank'>https://doi.org/10.1177/0956797619830326</a> <br>",
-      "For the list of terms used to identifify marginally significant results, see this blog post by Matthew Hankins: ",
-      "<a href='https://mchankins.wordpress.com/2013/04/21/still-not-significant-2' target='_blank'>https://web.archive.org/web/20251001114321/https://mchankins.wordpress.com/2013/04/21/still-not-significant-2/</a><br><br>"
+      "For advice on how to make causal claims, and when not to, see:<br><br>",
+      "Antonakis, J., Bendahan, S., Jacquart, P., & Lalive, R. (2010). On making causal claims: A review and recommendations. The Leadership Quarterly, 21(6), 1086–1120. ",
+      "<a href='https://doi.org/10.1016/j.leaqua.2010.10.010' target='_blank'>https://doi.org/10.1016/j.leaqua.2010.10.010</a> <br>",
+      "Grosz, M. P., Rohrer, J. M., & Thoemmes, F. (2020). The Taboo Against Explicit Causal Inference in Nonexperimental Psychology. Perspectives on Psychological Science, 15(5), 1243–1255. ",
+      "<a href='https://doi.org/10.1177/1745691620921521' target='_blank'>https://doi.org/10.1177/1745691620921521</a> <br>"
     )
     guidance_block <- paste0(
       "<details style='display:inline-block;'>",
@@ -90,22 +109,26 @@ marginal <- function(paper) {
       "</details>"
     )
     
-    # Combining the main feedback text with the scrollable table -> user will be able to see the interpretation first then see the sentences
+    
+    # Combine everything: report text + title block + discussion table + guidance
     final_report <- paste0(
       report_text[[tl]],
       "<div style='margin-top:8px;'></div>",
+      title_block,
       scrollbox,
       guidance_block
     )
     
   } else {
-    # When nothing is detected -> return textual feedback with no tables (as minimal output when it is not needed to keep the report clear)
-    final_report <- report_text[[tl]]
+    # When nothing is detected
+    final_report <- paste0(
+      report_text[[tl]],
+      "<div style='margin-top:8px;'></div>",
+      guidance_block   # <-- add here too
+    )
   }
   
   list(
-    summary = summary_table,
-    na_replace = 0,
     traffic_light = tl,
     report = final_report
   )
