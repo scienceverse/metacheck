@@ -3,7 +3,7 @@
 #' @description
 #' List any p-values reported with insufficient precision (e.g., p < .05 or p = n.s.)
 #'
-#' @author Lisa DeBruine
+#' @author  Lisa DeBruine (\email{lisa.debruin@glasgow.ac.uk}) and Daniel Lakens (\email{D.Lakens@tue.nl})
 #'
 #' @import dplyr
 #'
@@ -46,7 +46,7 @@ exact_p <- function(paper, ...) {
     report <- "We detected no imprecise p-values."
   } else {
     module_output <- sprintf(
-      "We found %d imprecise p-values. Reporting p-values with inequality signs (e.g., p < .05) or without exact values reduces transparency and reproducibility. Best practice is to report exact p-values (e.g., p = .032) unless extremely small (p < .001).",
+      "We found %d imprecise p-values. Reporting *p* values imprecisely (e.g., p < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., p = .032) unless p values are smaller than 0.001, in which case you can use p < .001.",
       nrow(table)
     )
     
@@ -66,11 +66,8 @@ exact_p <- function(paper, ...) {
     
     # Guidance block
     guidance <- paste0(
-      "For best practices on reporting p-values, see:<br><br>",
-      "American Statistical Association (2016). The ASA's Statement on p-Values: Context, Process, and Purpose.<br>",
-      "<a href='https://doi.org/10.1080/00031305.108https://doi.org/10.1080/00031305.2016.1154108</a><br>",
-      "Lakens, D. (2016). Calculating and reporting effect sizes to facilitate cumulative science.<br>",
-      "<a href='https://doi.org/10.550617697178https://doi.org/10.1177/1948550617697178</a>"
+      "The APA manual states: Report exact *p* values (e.g., *p* = .031) to two or three decimal places. However, report *p* values less than .001 as *p* < .001. However, 2 decimals is too imprecise for many use-cases (e.g., a *p* value meta-analysis), so report *p* values with three digits.",
+      "American Psychological Association. (2020). Publication manual of the American Psychological Association 2020: the official guide to APA style (7th ed.). American Psychological Association."
     )
     
     guidance_block <- paste0(
