@@ -20,12 +20,12 @@ prereg_check <- function(paper, ...) {
   table <- aspredicted_retrieve(links_ap, id_col = 1)
   
   # traffic light ----
-  tl <- "yellow"
 
   if (nrow(table) == 0) {
     report <- "We detected no links to preregistrations."
+    tl <- "na"
   } else {
-    
+    tl <- "yellow"
     # I turned each preregistration URL into a clickable hyperlink -> easier than copying the link and pasting it in a browser if the user wants to access the link 
     links <- sprintf("<a href='%s' target='_blank'>%s</a><br>", table$text, table$text)
     
@@ -123,16 +123,21 @@ prereg_check <- function(paper, ...) {
   }
     
     # Bringing everything together here into one HTML report string
+  
+  if (nrow(table) > 0) {
+    # When preregistrations exist → include all blocks
     report <- paste0(
       module_output,
-      "\n\n",
+      "<div style='margin-top:8px;'></div>",
       ss_block,
-      "\n\n",
-      if (nzchar(detailed_table_block)) paste0("\n\n", detailed_table_block) else "",
-      "\n\n", 
+      if (nzchar(detailed_table_block)) paste0("<div style='margin-top:8px;'></div>", detailed_table_block) else "",
       guidance_block
     )
-
+  } else {
+    # When no preregistrations → minimal report + guidance
+    report <- report
+  }
+  
   # return a list ----
   list(
     traffic_light = tl,
