@@ -93,7 +93,7 @@ expand_text <- function(results_table,
 
   # join to results and process
   expanded_table <- results_table |>
-    dplyr::left_join(full_text, by = by)
+    dplyr::left_join(full_text, by = by, suffix = c("", ".full"))
 
   # if expanded doesn't match anything, at least return the text
   expanded_table$expanded <- ifelse(is.na(expanded_table$expanded),

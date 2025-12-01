@@ -22,7 +22,7 @@ A data frame with citation info
 Search for biblio info
 }
 \examples{
-\donttest{
+\dontrun{
   bibsearch("Sample Size Justification", "Collabra Psychology")
 }
 }

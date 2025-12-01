@@ -18,26 +18,6 @@ if (exists("%||%", envir = baseenv())) {
   `%||%` <- get("%||%", envir = baseenv())
 }
 
-#' Replace If
-#'
-#' Replace values if NULL, NA, or sepcified value
-#'
-#' @param x For each `x[[i]]` if NULL, return `y[[i]]`; otherwise return `x[[i]]`.
-#' @param y Replacement value(s); if not the same length as `x`, then values will be recycled
-#' @export
-#' @keywords internal
-#' @name op-vect-null-default
-#' @examples
-#' list(NULL, 1) %|||% 2
-#' list(NULL, 0, NULL) %|||% 1:3
-rep_if <- function(x, y, replace = NULL) {
-  y <- rep_len(y, length(x))
-  for (i in seq_along(x)) {
-    x[[i]] <- if (is.null(x[[i]]) || x[[i]] %in% replace) y[[i]] else x[[i]]
-  }
-
-  return(x)
-}
 
 #' Less scary green messages
 #'
@@ -100,31 +80,19 @@ email <- function(email = NULL) {
   }
 }
 
-
-#' Check if site is available
+#' Check if the host of a URL is online
 #'
-#' @param url A URL to check
-#' @param msg A message that contains %s to replace in the site name
-#' @param error Throw an error if the site is down; otherwise return a logical
+#' @param url a URL to check
 #'
-#' @return logical
-#' @keywords internal
-site_down <- function(url, msg = "The website %s is not available", error = TRUE) {
-  site <- url |>
-    gsub("https?\\://", "", x = _) |>
-    gsub("/.*", "", x = _)
-
-  down <- tryCatch(httr::http_error(site),
-                          error = function(e) { return(TRUE) })
-
-  if (down & error) {
-    sprintf(msg, site) |> stop(call. = FALSE)
-  }
-
-  return(down)
+#' @returns boolean
+#' @export
+#'
+#' @examples
+#' online()
+online <- function(url = "google.com") {
+  host <- urltools::domain(url)
+  !is.null(curl::nslookup(host, error = FALSE))
 }
-
-
 
 #' Concatenate tables
 #'

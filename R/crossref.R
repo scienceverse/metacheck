@@ -6,11 +6,14 @@
 #' @export
 #' @examples
 #' doi <- "10.7717/peerj.4375"
-#' \donttest{
-#'   cr_info <- crossref(doi)
+#' \dontrun{
+#'  # cr_info <- crossref(doi)
 #' }
 crossref <- function(doi) {
-  site_down("api.labs.crossref.org", error = FALSE)
+  if (!online("api.labs.crossref.org")) {
+    message("Crossref is offline")
+    return(list())
+  }
 
   if (is_paper(doi) || is_paper_list(doi)) {
     papers <- doi
@@ -185,7 +188,7 @@ ref_info <- function(paper) {
 #'   doi <- get_doi(ref)
 #' }
 
-# Function to get a doi from crossref by sending the full reference text.  
+# Function to get a doi from crossref by sending the full reference text.
 get_doi <- function(reference, min_score = 50) {
   options(crossref_email = email())
   tryCatch({

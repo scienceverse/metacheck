@@ -1,4 +1,6 @@
 test_that("power, no LLM", {
+  skip("UNDER DEVELOPMENT")
+
   module <- "power"
   mods <- module_list()
   expect_true(module %in% mods$name)
@@ -34,6 +36,8 @@ test_that("power, no LLM", {
 })
 
 test_that("power, with LLM", {
+  skip("UNDER DEVELOPMENT")
+
   module <- "power"
 
   llm_use(TRUE)

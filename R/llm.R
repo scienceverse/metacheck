@@ -37,11 +37,7 @@ llm <- function(text, query,
                 seed = sample(1000000:9999999, 1),
                 API_KEY = Sys.getenv("GROQ_API_KEY")) {
   ## error detection ----
-  #site_down("api.groq.com")
-
-  if (API_KEY == "") {
-    stop("You need to include the argument API_KEY or set the variable GROQ_API_KEY in your Renviron")
-  }
+  if (!llm_use(API_KEY = API_KEY)) stop()
 
   models <- llm_model_list(API_KEY)
   if (!model %in% models$id) {
@@ -353,7 +349,16 @@ json_expand <- function(table, col = "answer") {
       if (length(j) == 0) {
         j <- data.frame(error = NA_character_)
       }
+
+      # j <- lapply(j, \(x) I(list(x)))
+      if (!is.data.frame(j)) {
+        j <- lapply(j, paste, collapse = ";")
+      }
+
+      # make all character to avoid bind conflicts
+      j[] <- lapply(j, as.character)
       j$.temp_id. <- i
+
       return(j)
     }, error = \(e) {
       return(data.frame(.temp_id. = i, error = "parsing error"))
@@ -362,7 +367,7 @@ json_expand <- function(table, col = "answer") {
     do.call(dplyr::bind_rows, args = _)
 
 
-  # fix data types
+  # fix data types from making all char
   for (i in names(expanded)) {
     expanded[[i]] <- utils::type.convert(expanded[[i]], as.is = TRUE)
   }
@@ -384,6 +389,7 @@ json_expand <- function(table, col = "answer") {
 #' Mainly for use in optional LLM workflows in modules, also checks if the GROQ API key is set and returns false if it isn't.
 #'
 #' @param llm_use if logical, sets whether to use LLMs
+#' @param API_KEY your API key for the LLM
 #'
 #' @returns the current option value (logical)
 #' @export
@@ -394,11 +400,25 @@ json_expand <- function(table, col = "answer") {
 #' } else {
 #'   print("We will not use LLMs")
 #' }
-llm_use <- function(llm_use = NULL) {
+llm_use <- function(llm_use = NULL,
+                    API_KEY = Sys.getenv("GROQ_API_KEY")) {
   if (is.null(llm_use)) {
-    if (Sys.getenv("GROQ_API_KEY") == "") return(FALSE)
+    use <- getOption("metacheck.llm.use")
+    if (!use) return(FALSE)
 
-    return(getOption("metacheck.llm.use"))
+    # check if API KEY set
+    if (API_KEY == "") {
+      message("Set the environment variable GROQ_API_KEY to use LLMs")
+      return(FALSE)
+    }
+
+    # check if api online
+    if (!online("api.groq.com")) {
+      message("api.groq.com is not available")
+      return(FALSE)
+    }
+
+    return(TRUE)
   } else if (as.logical(llm_use) %in% c(TRUE, FALSE)) {
     options(metacheck.llm.use = as.logical(llm_use))
     invisible(getOption("metacheck.llm.use"))

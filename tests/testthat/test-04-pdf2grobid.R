@@ -17,7 +17,7 @@ test_that("URL without http/https detected", {
 
 
 test_that("non-Grobid URL is rejected", {
-  skip_if_not(curl::has_internet())
+  skip_if_offline()
 
   filename <- demopdf()
   expect_error(pdf2grobid(filename, grobid_url = "https://google.com"),

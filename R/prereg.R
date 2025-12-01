@@ -44,11 +44,12 @@ aspredicted_links <- function(paper) {
 #'
 #' @param ap_url an AsPredicted URL, or a table containing them (e.g., as created by `aspredicted_links()`)
 #' @param id_col the index or name of the column that contains AsPredicted URLs, if id is a table
+#' @param wait wait time in seconds
 #'
 #' @returns a data frame of information
 #' @export
 aspredicted_retrieve <- function(ap_url, id_col = 1, wait = 1) {
-  if (is.null(curl::nslookup("aspredicted.org", error = FALSE))) {
+  if (!online("aspredicted.org")) {
     stop("AsPredicted.org seems to be offline")
   }
 

@@ -127,10 +127,11 @@ reference:
   - '`get_orcid`'
   - '`orcid_person`'
   - '`credit_roles`'
+  - '`online`'
 - title: Validation Functions
   desc: ~
   contents:
-  - '`validate`'
+  - '`compare_tables`'
   - '`accuracy`'
   - '`text_features`'
   - '`distinctive_words`'

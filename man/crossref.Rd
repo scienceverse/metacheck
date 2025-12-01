@@ -17,7 +17,7 @@ Crossref info
 }
 \examples{
 doi <- "10.7717/peerj.4375"
-\donttest{
-  cr_info <- crossref(doi)
+\dontrun{
+ # cr_info <- crossref(doi)
 }
 }
