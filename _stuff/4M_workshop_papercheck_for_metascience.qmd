@@ -1,0 +1,387 @@
+---
+title: "4M Workshop Metascience with Papercheck"
+author: "Lisa DeBruine and Daniel Lakens"
+format: html
+---
+
+## Answering Metascientific Questions With Papercheck
+
+Papercheck is software that reads in scientific PDF files, extracts text, and returns information. It can be used to interactively provide automated feedback to scientists about best practices when writing a scientific article. For example, papercheck might automatically detect that authors report the result of a statistical test as p \< .05, and suggest that authors follow reporting guidelines to report precisely reported p-values instead (e.g., p = 0.012). Papercheck is also a useful tool to perform metascience. For example, you might be interested in whether researchers who publish in a specific journal have started to report exact p-values more often over the year. You can then use the same module, run it on hundreds of PDF files or articles from a journal, and summarize the results. Let's start by loading papercheck:
+
+```{r}
+# install.packages("devtools") #Un-comment this line to also install devtools.  
+# devtools::install_github("scienceverse/papercheck")
+library(papercheck)
+
+```
+
+We have developed a number of modules for papercheck that aim to detect specific practices. But researchers can also easily develop their own modules. In this workshop we will go through the step required to develop our own module. A module can be made for any practice that can be automatically detected.
+
+There are certain ways to provide automatic feedback, and these different ways can also be combined into mode complex modules. The first approach is based on a simple text search. Through a **regex** string you can flexibly match character combinations. For example, the regex string "power(ed)?\\b" will match words that end with power or powered (the brackets and the questionmark make the "ed" part optional, and the "\\b" marks the end of a word). This regex string will thus match the word 'underpowered' but not 'powerful'.
+
+Papercheck works with xml files created from PDF files by GROBID. This process is explained elsewhere, and here we will start with an .RDATA file that contains 250 open access scientific articles published in the last decade in the journal Psychological Science. This file is part of papercheck, and can be loaded as follows:
+
+```{r}
+psych_oa_xml <- psychsci
+```
+
+If you check the environment you should see a large list 'psych_oa_xml' that contains 250 elements (or papers). The xml files contain the full text, and we can browse through the text from a single article. You can open the file in the RStudio environment, and browse through it.
+
+Papercheck has a 'search_text' function that allows you search the full text for a match, and return either the matched text, the sentence, or the paragraph. In the example below, we will search all 250 articles and return paragraphs that match word ending with 'power' or 'powered'.
+
+```{r}
+regex_power <- "power(ed)?\\b"
+text_found_power <- search_text(psych_oa_xml, regex_power, return = "paragraph")
+```
+
+This search returns 440 observations. This means that in the 250 scientific articles we are analyzing the word 'power' or 'powered' occurs 440 times. We can scroll through the first paragraphs that is returned:
+
+```{r}
+text_found_power[1,]
+```
+
+This first hit seems to describe an a-priori power analysis, but not all sentences might. There are 2 ways to narrow down hits to what we are searching for. The first approach is to the train a classification model, the second is to send all hits to a large language model, and ask it through a prompt if the text matches what we are searching for. Papercheck has an easy to use function to get answers from an LLM. It uses Groq, and you will need to get your own API key from https://console.groq.com/keys. We can use the LLM to ask if text we have found is an a-priori power analysis, or not. Try it out below. After this, we will start with the main part of this workshop.
+
+```{r}
+text <- text_found_power[1,]$text
+text # print the text
+query <- "Is the following text a statistical power analysis? Answer 'yes' or 'no'."
+llm_answer <- llm(text, query, API_KEY = Sys.getenv("GROQ_API_KEY"))
+llm_answer$answer # print the answer
+```
+
+# Cohen's benchmarks
+
+In this workshop we will try to find scientific papers that interpret effect sizes in light of the 'small', 'medium', and 'large' benchmarks proposed by Jacob Cohen. These benchmarks are not very useful, and whenever they are used, researchers are not implementing best practices. Either they are using benchmarks in power analyses (e.g., designing a study to have power for a 'medium' effect size) when they should have performed a more meaningful sample size justification, or they are interpreting results tautologically, without adding anything meaningful (we observed an effect of d = 0.2, which is 'small').
+
+Step 1: Create regex to detect as many sentences as possible containing the information we want. Some useful information is that you can make matches case insensitive using (?i), you can search for a OR b through a\|b. So (?i)(small effect\|medium effect) would match any sentences that contains 'small effect' or 'medium effect', ignoring capitalization. Adjust the regex below, and see who can find the most matches! You can view the sentences you found in the dataframe returned by the 'search_text' function by viewing the dataframe.
+
+```{r}
+
+regex_benchmark <- "medium effect size"
+text_found_benchmark <- search_text(psych_oa_xml, regex_benchmark, return = "sentence")
+View(text_found_benchmark)
+
+```
+
+Sometimes it can be easier to search for sentences iteratively, where you first search for sentences than contain one word, and than narrow it down further for a second word. For example, we can search for all sentences containing the word 'effect' and then narrow that result down to sentences that contain small, medium, or large (but only the whole word, so not 'larger effect'). Below, the first search for 'effect' returns 5702 sentences. Then we search the resulting dataframe (notice the first parameter in the search-text function is now the text_found_benchmark dataframe itself, and not the xml files) which narrows it down to 310 results.
+
+```{r}
+regex_benchmark <- "effect"
+text_found_benchmark <- search_text(psych_oa_xml, regex_benchmark, return = "sentence")
+regex_benchmark <- "(?i)\\b(small|medium|large)\\b"
+text_found_benchmark <- search_text(text_found_benchmark, regex_benchmark, return = "sentence")
+
+```
+
+Not all these sentences might contain a reference to a Cohen's benchmark. One approach to classifying sentences automatically is to tweak the regex so that it does not miss too many sentences (few Type 2 errors) and all sentences it returns describe Cohen's benchmarks (few Type 1 errors).
+
+Another approach is to create a classifier. There are many ways to do this, for example using language models, such as SciBert (a Bidirectional Encoder Representations from Transformers (BERT)) trained on scientific texts. Here, we will use a more simple and lightweight logistic regression model. Fist, we will need to manually classify sentences to create a ground truth dataframe. We can do this in Excel, by saving the results of our search, and adding a column 'contains_benchmark' where we will manually code as 1 if a reference to a benchmark is present, and 0 if the benchmark is not present.
+
+```{r}
+text_found_benchmark$contains_benchmark <- NA
+library(writexl)
+write_xlsx(text_found_benchmark, path = "benchmark_coding.xlsx")
+
+```
+
+We can now code sentences. It can be useful to do this with others, for example in an online google spreadsheet. We have put this spreadsheet online [at this link](https://docs.google.com/spreadsheets/d/1pXTxDkE3jrRjg698sa2rA-Ct1MIR3UvN/edit?usp=sharing&ouid=103428849592318653290&rtpof=true&sd=true).
+
+If the coding is completed we can use it to build a prediction model, as explained in [this vignette](https://scienceverse.github.io/papercheck/articles/text_model.html). First, we will read in the coded ground truth from Google sheets:
+
+```{r}
+library(readr)
+library(dplyr)
+csv_url <- "https://docs.google.com/spreadsheets/d/1pXTxDkE3jrRjg698sa2rA-Ct1MIR3UvN/gviz/tq?tqx=out:csv"
+# Read the Google spreadsheet
+benchmark_coded <- read_csv(csv_url) |>
+  filter(contains_benchmark %in% c(0, 1))
+
+```
+
+We will create a training set, and a test set, by splitting up the data:
+
+```{r}
+train <- dplyr::slice_sample(benchmark_coded, prop = 0.5)
+test <- anti_join(benchmark_coded, train, by = "text")
+```
+
+The next step is to identify the most important words to classify sentences. For example, if you would want to identify an a priori power analysis, common words might be 'sample' 'size' 'power' 'alpha' 'effect' 'size', but also numbers (e.g., 80), percentage signs, and equal signs. Papercheck has a function to create distinctive words.
+
+```{r}
+words <- distinctive_words(
+  text = train$text,
+  classification = train$contains_benchmark,
+  n = 20,
+  numbers = "specific",
+  stop_words = c("the", "a", "of", "an", "and", "in", "we", "to", "with", "were", "et", "al")
+)
+```
+
+Next, we want to determine the features of the ground truth text using text_features(). This will give you a data frame that codes 0 or 1 for the absence or presence of each word or feature.
+
+```{r}
+has_symbols <- c(has_equals = "=", 
+                 has_percent = "%")
+
+features <- text_features(
+  text = train$text, 
+  words = words,
+  word_count = FALSE, 
+  has_number = TRUE,
+  has_symbol = has_symbols, 
+  values = "presence" # presence or count
+)
+
+# show the first row
+features[1, ] |> str()
+```
+
+Then we can create the model to classify sentences. We will use a simple logistic regression model.
+
+```{r}
+# Train logistic regression model
+
+model <- glm(train$contains_benchmark ~ .,
+             data = features,
+             family = "binomial")
+
+summary(model)
+```
+
+We can first see how well to model predicts on the training model:
+
+```{r}
+train$model_response <- predict(model, features)
+
+train$contains_benchmark_predict <-
+  train$model_response > 0.5
+
+dplyr::count(train, 
+             contains_benchmark, 
+             contains_benchmark_predict)
+```
+
+Now let's test this on a new set of data.
+
+```{r}
+
+test_features <- text_features(
+  text = test$text, 
+  words = words,
+  word_count = FALSE, 
+  has_number = TRUE,
+  has_symbol = has_symbols, 
+  values = "presence" # presence or count
+)
+test$model_response <- predict(model, test_features)
+
+test$contains_benchmark_predict <-
+  test$model_response > 0.5
+
+dplyr::count(test, 
+             contains_benchmark, 
+             contains_benchmark_predict)
+```
+
+If the prediction model has been made, and it pretty accurate, we can create a new column where sentences that were extracted based on our simple text search are now classified as describing a benchmark effect size, or not:
+
+```{r}
+
+features <- text_features(
+  text = benchmark_coded$text, 
+  words = words,
+  word_count = FALSE, 
+  has_number = TRUE,
+  has_symbol = has_symbols, 
+  values = "presence" # presence or count
+)
+
+
+benchmark_coded$model_response <- predict(model, features)
+
+
+benchmark_coded$contains_benchmark_predict <-
+  benchmark_coded$model_response > 0.5
+
+```
+
+A final step to retrieve data from text that one can use in papercheck is to ask an llm to get us more specific details. LLM's are good at summarizing, so we can ask how to summarize information from the sentences that have been coded as containing a benchmark. (In this example, we do not have new data, but you can ask Daniel and Lisa to run this code on the full set of Psychological Science articles from 2014 to 2024). In this case, we are not retrieving that much information, but you can consider using the this on statistical tests, power analyses, or other descriptions in papers that contain more specific information that is worth coding. As was explained above, do not forget to specify the API key. You can 'engineer' prompts for the LLM, and see which prompts are best at yielding correct results.
+
+```{r, eval = FALSE}
+# RUN LMM IN BATCHES
+
+library(dplyr)
+
+# Define the query
+query <- paste0("Cohen proposed to classify the size of effects underlying scientific claims as 'small', 'medium', and 'large'. Researchers can use these benchmarks either when planning a study, or when interpreting the statistical results of the study. Extract the benchmark (return: 'small', 'medium', 'large', or similar) and whether it is used to plan a study, or report the results (return: 'plan sample', or 'report result'), and format the output as a JSON object. {",
+  "  \"effect_size_benchmark\": \"x\",",
+  "  \"plan_sample_or_report_result\": \"x\"} ",
+  "The text is:"
+)
+
+# Define batch size
+batch_size <- 10
+
+# Ensure 'llm_result' exists
+benchmark_coded$llm_result <- NA_character_  
+
+# Get indices of rows where contains_benchmark == 1
+rows_to_process <- which(benchmark_coded$contains_benchmark == 1)
+
+# Loop in batches over selected rows
+for (i in seq(1, length(rows_to_process), by = batch_size)) {
+  # Define batch indices
+  batch_indices <- rows_to_process[i:min(i + batch_size - 1, length(rows_to_process))]
+  
+  # Select batch of text
+  text_batch <- benchmark_coded$text[batch_indices]
+  
+  # Try sending requests to LLM
+  tryCatch({
+    res <- llm(text_batch, query, API_KEY = Sys.getenv("GROQ_API_KEY"))  # Call the LLM
+    
+    # Store results directly in the original dataframe
+    benchmark_coded$llm_result[batch_indices] <- res$answer  
+    
+    # Print progress
+    cat("Completed batch:", i, "to", min(i + batch_size - 1, length(rows_to_process)), "\n")
+    
+    # Ask whether to continue after this batch
+    continue <- readline(prompt = "Do you want to continue? (Y/N): ")
+    
+    if (tolower(continue) == "n") {
+      # Print next batch start point and stop the loop
+      cat("You can continue later starting from batch:", i + batch_size, "\n")
+      break  
+    }
+    
+  }, error = function(e) {
+    # Print error and stop execution
+    cat("Error at batch:", i, ".\n")
+    cat("Error message:", e$message, "\n")
+    stop("Stopping script due to error.")
+  })
+}
+
+
+```
+
+Now, we can take the results from the large language model, take the json formatted results, and add them as columns to the dataframe.
+
+```{r, eval = FALSE}
+library(jsonlite)
+library(stringr)
+library(dplyr)
+
+# Extract JSON and add as columns
+benchmark_coded <- benchmark_coded %>%
+  mutate(
+        json_match = str_extract(llm_result, "\\{[^\\}]*\\}"),  # Extract only JSON
+    effect_size_benchmark = sapply(json_match, function(x) if (!is.na(x)) fromJSON(x)$effect_size_benchmark else NA_character_),
+    plan_sample_or_report_result = sapply(json_match, function(x) if (!is.na(x)) fromJSON(x)$plan_sample_or_report_result else NA_character_)
+  ) %>%
+  select(-json_match)  # Remove temporary column
+
+```
+
+The filenames of the xml files in our dataframe are actually the central part of the doi. It is very useful to store the files you want to work with in a way that their filename can be used to identify which article it is. In this way, by adding '10.1177/' in front of the filename and removing the .xml we get the DOI of the paper. This allows us to retrieve information from other sources, such as crossref.
+
+```{r, include = FALSE}
+# We create a new column with the doi
+benchmark_coded$doi <- paste0("10.1177/", sub("\\.xml$", "", benchmark_coded$id))
+
+library(rcrossref)
+crossref_results <- cr_works(dois=benchmark_coded$doi,
+   .progress="text")
+
+```
+
+We can print the first result to see what is in the data we downloaded, and we see we can trieve the title, authors, year of publication, and citation count, among other things.
+
+```{r}
+crossref_results$data[1,]
+```
+
+We can add information from the crossref data to our dataframe. Let's add the year and the citation count.
+
+```{r}
+# We need to remove duplicates from the crossref data.
+crossref_unique <- crossref_results$data %>%
+  group_by(doi) %>%
+  slice(1) %>%  # Keeps only the first row per doi
+  ungroup()
+
+
+# Merge the columns from crossref_results$data into benchmark_coded
+benchmark_merged <- benchmark_coded %>%
+  left_join(crossref_unique %>% select(doi, is.referenced.by.count, published.print), by = "doi")
+
+```
+
+We can plot the frequency of the use of Cohen's d benchmarks over time. Is the percentage of papers doing this suboptimal practice increasing, descreasing, or does it stay the same?
+
+```{r}
+
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+
+# Ensure published is formatted correctly
+benchmark_merged <- benchmark_merged %>%
+  mutate(
+    published_date = ym(published.print),  # Convert to date format
+    year = year(published_date)            # Extract year
+  )
+
+# Count total articles and those containing the benchmark per year
+yearly_counts <- benchmark_merged %>%
+  group_by(year) %>%
+  summarise(
+    total_articles = n(),
+    benchmark_articles = sum(contains_benchmark == 1, na.rm = TRUE)
+  ) %>%
+  mutate(benchmark_percentage = (benchmark_articles / total_articles) * 100) # Calculate percentage
+
+# Plot percentage over years
+plot_percentage <- yearly_counts %>%
+  ggplot(aes(x = year, y = benchmark_percentage)) +
+  geom_col(fill = "#4F46E5", color = "white", width = 0.7) +
+  geom_text(aes(label = sprintf("%.1f%%", benchmark_percentage)), vjust = -0.5, 
+            color = "#374151", size = 5, fontface = "bold") +
+  labs(
+    title = "Percentage of Articles Containing Benchmark Over Years",
+    x = "Year",
+    y = "Percentage (%)"
+  ) +
+  theme_minimal(base_size = 15) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 20),
+    axis.text = element_text(color = "#374151"),
+    panel.grid.minor = element_blank()
+  )
+
+plot_percentage
+
+```
+
+We can also check if citation counts differ between papers that use benchmarks, or not. Citations counts are notably messy, and not normally distributed.
+
+```{r}
+benchmark_merged$is.referenced.by.count <- as.numeric(benchmark_merged$is.referenced.by.count)
+
+ggplot(benchmark_merged, aes(x = factor(contains_benchmark), y = as.numeric(is.referenced.by.count))) +
+  geom_violin(aes(fill = factor(contains_benchmark)), alpha = 0.7) +
+  labs(
+    title = "Citation Count Distribution by Benchmark Status",
+    x = "Contains Benchmark (0 = No, 1 = Yes)",
+    y = "Citation Count"
+  ) +
+  scale_x_discrete(labels = c("No Benchmark", "Has Benchmark")) +
+  scale_fill_manual(values = c("#E74C3C", "#3498DB"), labels = c("No Benchmark", "Has Benchmark"))
+
+
+wilcox.test(is.referenced.by.count ~ contains_benchmark, data = benchmark_merged)
+```
+
+This completes our tutorial on how you can use papercheck to do metascience. If you think this is a useful tool, and would like to use it in your research in the future, remember that it is still heavily in development. Reach out to us if you want to use it, and we will help you out.
