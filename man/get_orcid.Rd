@@ -18,7 +18,7 @@ A vector of matching ORCiDs
 Get ORCiD from Name
 }
 \examples{
-\dontrun{
+\donttest{
   get_orcid("DeBruine", "Lisa")
 }
 }

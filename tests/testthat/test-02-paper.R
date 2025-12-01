@@ -18,8 +18,8 @@ test_that("paper", {
 
   xml <- demoxml()
   p <- paper(xml)
-  expect_equal(nrow(p$full_text), 24)
-  expect_equal(nrow(p$bib), 2)
+  expect_equal(nrow(p$full_text), 27)
+  expect_equal(nrow(p$bib), 4)
   expect_equal(nrow(p$xrefs), 2)
 })
 

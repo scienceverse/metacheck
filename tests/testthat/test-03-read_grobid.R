@@ -47,7 +47,7 @@ test_that("basics", {
 
   expect_equal(substr(s$info$description, 1, 10), "This paper")
 
-  expect_equal(nrow(s$full_text), 24)
+  expect_equal(nrow(s$full_text), 27)
 
   # check grobid alias
   s2 <- read_grobid(filename)
@@ -62,8 +62,10 @@ test_that("urls", {
 
   # check for <url> style
   osf <- search_text(s, "(?<=<)[^>]+(?=>)", return = "match", perl = TRUE)
-  expect_equal(osf$text, c("https://osf.io/5tbm9",
-                           "https://osf.io/629bx"))
+  exp <- c("https://osf.io/48ncu", "https://aspredicted.org/by8i8v.pdf",
+          "https://github.com/Lakens/to_err_is_human", "https://researchbox.org/4377",
+          "https://osf.io/5tbm9", "https://osf.io/629bx")
+  expect_equal(osf$text, exp)
 })
 
 

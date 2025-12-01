@@ -28,7 +28,7 @@ the file path the report is saved to
 Create a report
 }
 \examples{
-\dontrun{
+\donttest{
 filename <- demoxml()
 paper <- read(filename)
 report(paper)
