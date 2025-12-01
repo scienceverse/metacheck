@@ -19,23 +19,28 @@ causal_claims <- function(paper) {
   causal_classification <- causal_relations(table$text)
   # And for the title
   causal_title <- causal_relations(paper$info$title)
-  # Keep only causal sentences
-  causal_classification <- causal_classification[causal_classification$causal == TRUE, ]
   # Remove duplicates based on 'sentence' as the inference returns multiple rows per sentence if there are mutiple causal aspects
   causal_classification <- causal_classification[!duplicated(causal_classification$sentence), ]
-  
+  # Bind the inference back to the id
+  causal_classification <- cbind(table, causal_classification)
+  # Keep only causal sentences
+  causal_classification <- causal_classification[causal_classification$causal == TRUE, ]
+
+  # summary output for paperlists ----
+  summary_table <- dplyr::count(causal_classification, id, name = "causal")
+
   # determine the traffic light ----
   tl <- ifelse(nrow(causal_classification) > 0 | nrow(causal_title) > 0, "yellow", "green")
-  
+
   report_text = c(
     yellow = "Medical journals often have the following instruction in the author guidelines about the use of causal language: <br><br> *Causal language (including use of terms such as effect and efficacy) should be used only for randomized clinical trials. For all other study designs (including meta-analyses of randomized clinical trials), methods and results should be described in terms of association or correlation and should avoid cause-and-effect wording.* <br><br> You have sentences with causal statements in the title and/or discussion. Carefully check if the sentences based on the data you have collected are warranted, given the study design.",
     green = "No sentences with causal claims were identified in the title or discussion."
   )
-  
-  
+
+
   # If there are results → build scrollable table
   if (nrow(causal_classification) > 0) {
-    
+
     # Build title block if causal_title has results
     title_block <- ""
     if (causal_title$causal == TRUE) {
@@ -46,7 +51,7 @@ causal_claims <- function(paper) {
           "</tr>"
         )
       }) |> paste(collapse = "\n")
-      
+
       title_html <- paste0(
         "<table style='border-collapse:collapse; width:100%; font-size:90%;'>",
         "<thead><tr>",
@@ -55,7 +60,7 @@ causal_claims <- function(paper) {
         "<tbody>", title_rows, "</tbody>",
         "</table>"
       )
-      
+
       title_block <- paste0(
         "<br><div><strong>Causal claims detected in the title:</strong></div>",
         "<div style='border:1px solid #444; padding:10px; max-height:150px; overflow-y:auto; ",
@@ -64,7 +69,7 @@ causal_claims <- function(paper) {
         "</div>"
       )
     }
-    
+
     # Build discussion table as before
     table_rows <- apply(causal_classification, 1, function(row) {
       paste0(
@@ -73,7 +78,7 @@ causal_claims <- function(paper) {
         "</tr>"
       )
     }) |> paste(collapse = "\n")
-    
+
     table_html <- paste0(
       "<table style='border-collapse:collapse; width:100%; font-size:90%;'>",
       "<thead><tr>",
@@ -82,7 +87,7 @@ causal_claims <- function(paper) {
       "<tbody>", table_rows, "</tbody>",
       "</table>"
     )
-    
+
     scrollbox <- paste0(
       "<br><div><strong>Causal claims detected in the discussion section:</strong></div>",
       "<div style='border:1px solid #444; padding:10px; max-height:450px; overflow-y:auto; ",
@@ -90,7 +95,7 @@ causal_claims <- function(paper) {
       table_html,
       "</div>"
     )
-    
+
     guidance <- paste0(
       "For advice on how to make causal claims, and when not to, see:<br><br>",
       "Antonakis, J., Bendahan, S., Jacquart, P., & Lalive, R. (2010). On making causal claims: A review and recommendations. The Leadership Quarterly, 21(6), 1086–1120. ",
@@ -108,8 +113,8 @@ causal_claims <- function(paper) {
       "</div>",
       "</details>"
     )
-    
-    
+
+
     # Combine everything: report text + title block + discussion table + guidance
     final_report <- paste0(
       report_text[[tl]],
@@ -118,7 +123,7 @@ causal_claims <- function(paper) {
       scrollbox,
       guidance_block
     )
-    
+
   } else {
     # When nothing is detected
     final_report <- paste0(
@@ -127,10 +132,12 @@ causal_claims <- function(paper) {
       guidance_block   # <-- add here too
     )
   }
-  
+
   list(
     traffic_light = tl,
-    report = final_report
+    report = final_report,
+    table = causal_classification,
+    summary = summary_table
   )
 }
 

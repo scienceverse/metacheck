@@ -1,7 +1,7 @@
 #' Preregistration Check
-#' 
+#'
 #' @description
-#' Retrieve information from preregistrations, make then easier to check. 
+#' Retrieve information from preregistrations, make then easier to check.
 #'
 #' @author Daniel Lakens
 #' @author Lisa DeBruine
@@ -18,7 +18,7 @@ prereg_check <- function(paper, ...) {
 
   links_ap <- aspredicted_links(paper)
   table <- aspredicted_retrieve(links_ap, id_col = 1)
-  
+
   # traffic light ----
 
   if (nrow(table) == 0) {
@@ -26,16 +26,16 @@ prereg_check <- function(paper, ...) {
     tl <- "na"
   } else {
     tl <- "yellow"
-    # I turned each preregistration URL into a clickable hyperlink -> easier than copying the link and pasting it in a browser if the user wants to access the link 
+    # I turned each preregistration URL into a clickable hyperlink -> easier than copying the link and pasting it in a browser if the user wants to access the link
     links <- sprintf("<a href='%s' target='_blank'>%s</a><br>", table$text, table$text)
-    
+
     # Here I combine the count, text, and the hyperlink into one message so the user first sees the overview and then the URLs
     module_output <- sprintf(
       "We found <strong><span style='color:#006400;'>%d</span></strong> preregistration(s) from AsPredicted.\n\nMeta-scientific research has shown that deviations from preregistrations are often not reported or checked, and that the most common deviations concern the sample size. We recommend manually checking the full preregistration at the link(s) below. If you check one aspect of the preregistration, make it the preregistered sample size.\n\n%s",
       nrow(table),
       paste(links, collapse = "\n")
     )
-    
+
     # I show each preregistered sample size as a separate bullet with light borders so the different entries are visually separated but still compact
     ss_items <- paste(
       sprintf(
@@ -44,7 +44,7 @@ prereg_check <- function(paper, ...) {
       ),
       collapse = "\n"
     )
-    
+
     # I placed the sample size inside a scrollable box!
     ss_box <- paste0(
       "<div style='border:1px solid #ccc; padding:10px; ",
@@ -55,7 +55,7 @@ prereg_check <- function(paper, ...) {
       "</ul>",
       "</div>"
     )
-    
+
     # Here I wrapped the preregistration sample sizes in a collapsible <details> block -> Users can expand when they need to do so (tidy report)
     ss_block <- paste0(
       "<strong><span style='font-size:20px; color:#006400;'>Preregistered Sample Size</span></strong>",
@@ -65,25 +65,25 @@ prereg_check <- function(paper, ...) {
       "</div>",
       "</details>"
     )
-    
+
     guidance <- paste0(
       "<ul style='list-style-type: circle; padding-left: 20px;'>",
-      
+
       "<li><strong>For metascientific work on preregistration deviations</strong>:<br>",
       "van den Akker, O. R., Bakker, M., van Assen, M. A. L. M., Pennington, C. R., Verweij, L., Elsherif, M. M., Claesen, A., Gaillard, S. D. M., Yeung, S. K., Frankenberger, J.-L., Krautter, K., Cockcroft, J. P., Kreuer, K. S., Evans, T. R., Heppel, F. M., Schoch, S. F., Korbmacher, M., Yamada, Y., Albayrak-Aydemir, N., … Wicherts, J. M. (2024). ",
       "The potential of preregistration in psychology: Assessing preregistration producibility and preregistration-study consistency. <em>Psychological Methods</em>. ",
       "<a href='https://doi.org/10.1037/met0000687' target='_blank'>https://doi.org/10.1037/met0000687</a>",
       "</li><br>",
-      
+
       "<li><strong>For educational material on reporting deviations from preregistrations</strong>:<br>",
       "Lakens, D. (2024). When and How to Deviate From a Preregistration. <em>Collabra: Psychology</em>, 10(1), 117094. ",
       "<a href='https://doi.org/10.1525/collabra.117094' target='_blank'>https://doi.org/10.1525/collabra.117094</a>",
       "</li>",
-      
+
       "</ul>"
     )
-    
-    # I made the guidance collapsible as well! 
+
+    # I made the guidance collapsible as well!
     guidance_block <- paste0(
       "<details style='display:block; margin-top:15px;'>",
       "<summary style='cursor:pointer; margin:0; padding:0;'>",
@@ -94,19 +94,19 @@ prereg_check <- function(paper, ...) {
       "</div>",
       "</details>"
     )
-    
-    # Report text 
+
+    # Report text
     detailed_table_block <- ""
     if (nrow(table) > 0) {
-      
+
       # Select columns starting with "AP_"
       prereg_table <- dplyr::select(table, dplyr::starts_with("AP_"))
       # Transpose the selected data
       prereg_table <- t(prereg_table)
       colnames(prereg_table) <- c("Answer")
-      # report text 
+      # report text
       prereg_table <- paste(knitr::kable(prereg_table, format = "html"), collapse = "\n")
-      
+
       # I put the table in a scrollable <details> block -> Users can expand it when they want
       detailed_table_block <- paste0(
         "<details style='display:block; margin-top:15px;'>",
@@ -121,9 +121,9 @@ prereg_check <- function(paper, ...) {
       )
     }
   }
-    
+
     # Bringing everything together here into one HTML report string
-  
+
   if (nrow(table) > 0) {
     # When preregistrations exist → include all blocks
     report <- paste0(
@@ -137,10 +137,12 @@ prereg_check <- function(paper, ...) {
     # When no preregistrations → minimal report + guidance
     report <- report
   }
-  
+
   # return a list ----
   list(
     traffic_light = tl,
-    report = report
+    report = report,
+    table <- table,
+    summary <- table
   )
 }

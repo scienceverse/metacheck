@@ -28,8 +28,8 @@ test_that("default", {
   equal <- search_text(s, "[a-zA-Z][a-zA-Z\\(\\)]*\\s*=\\s*[\\.0-9-]*\\d",
                        section = "results",
                        return = "match")
-  expect_equal(nrow(equal), 6)
-  expect_equal(equal$text[[1]], c("M = 9.12"))
+  expect_equal(nrow(equal), 3)
+  expect_equal(equal$text[[1]], c("M = 5.06"))
 })
 
 test_that("table as first argument", {

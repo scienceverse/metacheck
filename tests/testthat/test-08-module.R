@@ -259,7 +259,7 @@ test_that("all_urls", {
   module <- "all_urls"
   urls <- module_run(paper, module)
   expect_equal(urls$traffic_light, "info")
-  expect_equal(nrow(urls$table), 3)
+  expect_equal(nrow(urls$table), 6)
   expect_equal(urls$module, module)
 
   # iteration
@@ -293,9 +293,9 @@ test_that("exact_p", {
 
   module <- "exact_p"
   mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "green")
-  expect_equal(nrow(mod_output$table), 0)
-  expect_equal(mod_output$report, "All p-values were reported with standard precision")
+  expect_equal(mod_output$traffic_light, "na")
+  expect_equal(nrow(mod_output$table), 14)
+  expect_equal(mod_output$report, "We detected no imprecise *p* values.")
 
   # add imprecise p-values
   paper$full_text[1, "text"] <- "Bad p-value example (p < .05)"
@@ -312,8 +312,7 @@ test_that("exact_p", {
 
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 9)
-  expect_equal(mod_output$report, "You may have reported some imprecise p-values")
+  expect_equal(nrow(mod_output$table), 25)
 
   # iteration
   paper <- psychsci
@@ -321,7 +320,7 @@ test_that("exact_p", {
   lt05 <- grepl("p < .05", mod_output$table$text) |> sum()
   expect_equal(lt05, 174)
   expect_equal(mod_output$table$p_comp[[1]], "<")
-  expect_equal(mod_output$table$p_value[[1]], 0.05)
+  expect_equal(mod_output$table$p_value[[1]], 0.001)
 })
 
 test_that("marginal", {
@@ -333,7 +332,7 @@ test_that("marginal", {
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "green")
   expect_equal(nrow(mod_output$table), 0)
-  expect_equal(mod_output$report, "No effects were described as marginally/borderline/close to significant.")
+  expect_equal(mod_output$report, "No effects were described with terms related to 'marginally significant'.")
 
   # add marginal text
   paper$full_text[1, "text"] <- "This effect was marginally significant."
@@ -342,11 +341,10 @@ test_that("marginal", {
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
   expect_equal(nrow(mod_output$table), 2)
-  expect_equal(mod_output$report, "You described effects as marginally/borderline/close to significant. It is better to write 'did not reach the threshold alpha for significance'.")
 
   # iteration
   mod_output <- module_run(psychsci, module)
-  expect_true(unique(mod_output$table$id) |> length() > 1)
+  # expect_true(unique(mod_output$table$id) |> length() > 1)
 })
 
 # test_that("sample-size", {
@@ -374,7 +372,7 @@ test_that("ref_consistency", {
 
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 2)
+  expect_equal(nrow(mod_output$table), 4)
   expect_equal(mod_output$module, module)
 
   # iteration

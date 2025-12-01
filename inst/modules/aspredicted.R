@@ -1,7 +1,7 @@
 #' AsPredicted
 #'
 #' @description
-#' Get data from AdPredicted pre-regosterations in a structured way
+#' Get data from AsPredicted pre-registrations in a structured way
 #'
 #' @author Daniel Lakens (\email{lakens@gmail.com})
 #'

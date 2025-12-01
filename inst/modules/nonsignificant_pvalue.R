@@ -1,7 +1,7 @@
 #' Non-Significant P Value Check
 #'
 #' @description
-#' This module checks for imprecisely reported p values. If p > .05 is detected, it warns for misinterpretations. 
+#' This module checks for imprecisely reported p values. If p > .05 is detected, it warns for misinterpretations.
 #'
 #' @author  Lisa DeBruine (\email{lisa.debruin@glasgow.ac.uk}) and Daniel Lakens (\email{D.Lakens@tue.nl})
 #'
@@ -25,19 +25,19 @@ nonsignificant_pvalue <- function(paper) {
     res_p$table$p_value <= 0.05 &
     !is.na(res_p$table$p_comp) &
     res_p$table$p_comp %in% c("<", "=")
-  
+
   res_p$table$significance <- ifelse(cond, "significant", "nonsignificant")
   res_p$table <- subset(res_p$table, significance == "nonsignificant")
-  
+
   # Expand the sentences so the full sentence can be seen
   res_p$table <- expand_text(
     res_p$table,
     paper,
     expand_to = c("sentence")
   )
-  
+
   table <- res_p$table
-  
+
   # summary output for paperlists ----
   # must have id column as the id of each paper, one row per paper
   # further columns to be added to a master summary table
@@ -46,11 +46,11 @@ nonsignificant_pvalue <- function(paper) {
     summarise(
       n_significant = sum(significance == "significant", na.rm = TRUE),
       n_nonsignificant = sum(significance == "nonsignificant", na.rm = TRUE)
-    )  
+    )
   # determine the traffic light ----
   # possible values: na, info, red, yellow, green, fail
   tl <- if (sum(summary_table$n_nonsignificant) > 0) "yellow" else "green"
-  
+
   if (nrow(table) == 0) {
     report <- "We detected no nonsignificant p values."
   } else {
@@ -64,14 +64,14 @@ nonsignificant_pvalue <- function(paper) {
       "<div style='border:1px solid #ccc; padding:10px; ",
       "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
       "margin-top:5px; margin-bottom:15px;'>",
-      
+
       "<ul style='list-style-type: circle; padding-left:20px; margin:0;'>",
       issues_found,
       "</ul>",
-      
+
       "</div>"
     )
-    
+
     guidance <- paste0(
       "For metascientific articles demonstrating the rate of misinterpretations of non-significant results is high, see:<br><br>",
       "Aczel, B., Palfi, B., Szollosi, A., Kovacs, M., Szaszi, B., Szecsi, P., Zrubka, M., Gronau, Q. F., van den Bergh, D., & Wagenmakers, E.-J. (2018). ",
@@ -93,20 +93,21 @@ nonsignificant_pvalue <- function(paper) {
       "</div>",
       "</details>"
     )
-    
-    
-    # report text 
-    
+
+
+    # report text
+
     report <- sprintf(
       "%s\n\n#### The Following Sentences Contain Non-Significant P Values\n\n%s\n\n%s",
       module_output, sentences_block, guidance_block
     )
   }
-  
-  
+
+
   # return a list ----
   list(
     summary = summary_table,
+    table = table,
     na_replace = 0,
     traffic_light = tl,
     report = report

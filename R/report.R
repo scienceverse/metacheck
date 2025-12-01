@@ -15,7 +15,7 @@
 #' report(paper)
 #' }
 report <- function(paper,
-                   modules = c("exact_p", "marginal", "effect_size", "statcheck", "osf_check", "retractionwatch", "ref_consistency"),
+                   modules = c("exact_p", "marginal", "effect_size", "statcheck", "retractionwatch", "ref_consistency"),
                    output_file = paste0(paper$name, "_report.", output_format),
                    output_format = c("qmd", "html", "pdf")) {
   output_format <- match.arg(output_format)
@@ -149,17 +149,17 @@ module_report <- function(module_output,
                           maxrows = Inf,
                           trunc_cell = Inf) {
   # set up table
-  if ("table" %in% names(module_output)) {
-    tab <- module_output$table
-    if (is.data.frame(tab) && nrow(tab) == 0) tab <- ""
-  } else {
+  # if ("table" %in% names(module_output)) {
+  #   tab <- module_output$table
+  #   if (is.data.frame(tab) && nrow(tab) == 0) tab <- ""
+  # } else {
     tab <- ""
-  }
+  # }
   # use summary table if available and reporting more than one paper
-  if ("summary" %in% names(module_output) &&
-      nrow(module_output$summary) > 1) {
-    tab <- module_output$summary
-  }
+  # if ("summary" %in% names(module_output) &&
+  #     nrow(module_output$summary) > 1) {
+  #   tab <- module_output$summary
+  # }
 
 
   rowwarning <- ""

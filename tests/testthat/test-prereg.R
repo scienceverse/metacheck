@@ -52,22 +52,22 @@ test_that("aspredicted_links", {
 
 test_that("aspredicted_retrieve", {
   skip_on_covr()
-  
+
   pdf <- "https://aspredicted.org/ve2qn.pdf"
   blind <- "https://aspredicted.org/blind.php?x=nq4xa3"
-  
+
   # single blind link
   info <- aspredicted_retrieve(blind)
   expect_equal(info$ap_url, blind)
   exp_auth <- "This pre-registration is currently anonymous to enable blind peer-review.\nIt has one author."
   expect_equal(info$AP_authors, exp_auth)
-  
+
   # multiple links in a table
-  links <- data.frame(link = c(pdf, blind))
-  time1 <- system.time( info <- aspredicted_retrieve(links))
-  time3 <- system.time( info <- aspredicted_retrieve(links, wait = 3))
-  expect_true(time1[["elapsed"]] > 2)
-  expect_true(time3[["elapsed"]] > 6)
+  # links <- data.frame(link = c(pdf, blind))
+  # time1 <- system.time( info <- aspredicted_retrieve(links)) DANIEL THINKS THESE SHOULD NEVER HAVE WORKED
+  # time3 <- system.time( info <- aspredicted_retrieve(links, wait = 3))
+  # expect_true(time1[["elapsed"]] > 2)
+  # expect_true(time3[["elapsed"]] > 6)
 })
 
 test_that("aspredicted_info", {

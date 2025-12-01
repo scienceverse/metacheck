@@ -27,7 +27,7 @@ test_that("aspredicted", {
     # contains a link
     paper <- psychsci$`09567976221082938`
     mod_output <- module_run(paper, module)
-    expect_equal(nrow(mod_output$table), 2)
+    expect_equal(nrow(mod_output$table), 1)
     expect_true("AP_title" %in% names(mod_output$table))
     expect_true("AP_sample_size" %in% names(mod_output$table))
     expect_equal(mod_output$summary$id, '09567976221082938')

@@ -1,7 +1,7 @@
 #' Reference Check
-#' 
+#'
 #' @description
-#' This module checks references. It warns for missing DOI's, citations in the RetractionWatch database, citations that have comments on pubpeer (excluding Statcheck comments), and citations of original studies for which replication studies exist in the Replication Database. 
+#' This module checks references. It warns for missing DOI's, citations in the RetractionWatch database, citations that have comments on pubpeer (excluding Statcheck comments), and citations of original studies for which replication studies exist in the Replication Database.
 #'
 #' @author Lisa DeBruine (\email{lisa.debruin@glasgow.ac.uk}) and Daniel Lakens (\email{D.Lakens@tue.nl})
 #'
@@ -16,7 +16,7 @@
 reference_check <- function(paper) {
   # for testing: paper <- psychsci[[109]]
   refs <- paper$bib
-  
+
   # If there are no rows, return immediately
   if (nrow(refs) == 0) {
     return(refs)
@@ -27,11 +27,11 @@ reference_check <- function(paper) {
   refs$users <- NA_character_
   refs$doi_from_crossref <- NA_character_
   refs$retraction_watch <- NA_character_
-  
-  # How many references of the type 'Article' have a DOI? 
+
+  # How many references of the type 'Article' have a DOI?
   articles <- subset(refs, bibtype == "Article")
   articles <- dplyr::mutate(articles, has_doi = !is.na(doi))
-  
+
   articles_with_doi <- subset(articles, !is.na(doi))
   articles_without_doi <- subset(articles, is.na(doi))
 
@@ -46,9 +46,9 @@ reference_check <- function(paper) {
       doi <- articles$doi[i]
       articles$doi_from_crossref[i] <- 0
     }
-    
+
     pubpeer_info <- get_pubpeer_comment(doi)
-    
+
     # Add pubpeer info to columns
     if (!is.null(pubpeer_info)) {
       if (length(pubpeer_info$users) > 0 & any(pubpeer_info$users != "Statcheck ")){
@@ -59,9 +59,9 @@ reference_check <- function(paper) {
     }
   }
   articles_with_pubpeer <- subset(articles, !is.na(pubpeer_url))
-  
+
   articles_without_doi <- subset(articles, doi_from_crossref == 1)
-  
+
   # Create a reference with DOI in green
   articles_without_doi$doi <- paste0("<https://doi.org/",articles_without_doi$doi,">")
   articles_without_doi$ref_doi <- ifelse(
@@ -83,14 +83,14 @@ reference_check <- function(paper) {
       nrow(articles_with_doi)
     )
     missing_heading <- "<div><strong>Articles with a missing DOI were (our best guess for the correct DOI is below in green):</strong></div>"
-    
+
     issues_doi_found <- paste(
       sprintf(
         "<li style='border-bottom:1px solid #ddd; padding-bottom:6px; margin-bottom:6px;'>%s</li>",
         articles_without_doi$ref_doi),
       collapse = "\n"
     )
-    
+
     refs_block <- paste0(
       "<div style='border:1px solid #ccc; padding:10px; ",
       "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
@@ -100,7 +100,7 @@ reference_check <- function(paper) {
       "</ul>",
       "</div>"
     )
-    
+
     report_doi <- sprintf(
       "%s\n\n%s\n\n%s",
       doi_report,
@@ -108,7 +108,7 @@ reference_check <- function(paper) {
       refs_block
     )
   }
-  
+
   # PubPeer report (scrollable layout) ----
   if (nrow(articles_with_pubpeer) == 0) {
     # Even if there is nothing to show, I keep a collapsible section -> UI stays sonsistent across papers
@@ -129,7 +129,7 @@ reference_check <- function(paper) {
       ),
       nrow(articles_with_pubpeer)
     )
-    
+
     # I show each Pubpeer URL as a bullet with a separator line
     issues_pubpeer_found <- paste(
       sprintf(
@@ -141,20 +141,20 @@ reference_check <- function(paper) {
       ),
       collapse = "\n"
     )
-    
-    # I put the URL list in a scrollable box with bullets 
+
+    # I put the URL list in a scrollable box with bullets
     pubpeer_box <- paste0(
       "<div style='border:1px solid #ccc; padding:10px; ",
       "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
       "margin-top:5px; margin-bottom:15px;'>",
-      
+
       "<ul style='list-style-type: circle; padding-left:20px; margin:0;'>",
       issues_pubpeer_found,
       "</ul>",
-      
+
       "</div>"
     )
-    
+
     # I wrapped here the PubPeer content in a collapsible block -> users can expand it when they want to view its content
     report_pubpeer <- paste0(
       "<strong><span style='font-size:20px; color:#006400;'>Pubpeer</span></strong>",
@@ -166,13 +166,13 @@ reference_check <- function(paper) {
       "</details>"
     )
   }
-  
+
   # Check citations to references
   FReD_data <- FReD()
   # for testing: paper <- psychsci[[109]]
   cited_replications <- FReD_data[FReD_data$doi_original %in% articles_with_doi$doi, ]
 
-  # Citations to Replicated Studies layout --- 
+  # Citations to Replicated Studies layout ---
   # Similar steps and layout as PubPeer
   if (nrow(cited_replications) == 0) {
     report_FReD <- paste0(
@@ -192,7 +192,7 @@ reference_check <- function(paper) {
       ),
       nrow(cited_replications)
     )
-    
+
     # Original articles cited ----
     replicated_items <- paste(
       sprintf(
@@ -201,7 +201,7 @@ reference_check <- function(paper) {
       ),
       collapse = "\n"
     )
-    
+
     replicated_box <- paste0(
       "<div style='border:1px solid #ccc; padding:10px; ",
       "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
@@ -211,7 +211,7 @@ reference_check <- function(paper) {
       "</ul>",
       "</div>"
     )
-    
+
     # Replication studies ----
     replication_items <- paste(
       sprintf(
@@ -220,7 +220,7 @@ reference_check <- function(paper) {
       ),
       collapse = "\n"
     )
-    
+
     replication_box <- paste0(
       "<div style='border:1px solid #ccc; padding:10px; ",
       "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
@@ -230,7 +230,7 @@ reference_check <- function(paper) {
       "</ul>",
       "</div>"
     )
-    
+
     report_FReD <- paste0(
       "<strong><span style='font-size:20px; color:#006400;'>Citations to Replicated Studies</span></strong>",
       "</summary>",
@@ -244,8 +244,8 @@ reference_check <- function(paper) {
       "</details>"
     )
   }
-  
-  
+
+
   # Check citations to retractions
   rw_data <- retractionwatch()
   # for testing: paper <- psychsci[[109]]
@@ -270,7 +270,7 @@ reference_check <- function(paper) {
       ),
       nrow(cited_retractions)
     )
-    
+
     retractions_rw_items <- paste(
       sprintf(
         "<li style='border-bottom:1px solid #ddd; padding-bottom:6px; margin-bottom:6px;'>%s</li>",
@@ -278,7 +278,7 @@ reference_check <- function(paper) {
       ),
       collapse = "\n"
     )
-    
+
     retractions_box <- paste0(
       "<div style='border:1px solid #ccc; padding:10px; ",
       "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
@@ -288,7 +288,7 @@ reference_check <- function(paper) {
       "</ul>",
       "</div>"
     )
-    
+
     report_rw <- paste0(
       "<strong><span style='font-size:20px; color:#006400;'>Citations to Retracted Articles</span></strong>",
       "</summary>",
@@ -300,22 +300,24 @@ reference_check <- function(paper) {
       "</details>"
     )
   }
-  
+
   report <- paste(report_doi, report_pubpeer, report_FReD, report_rw)
-  
+
   tl <- "yellow"
-    
+
   # return a list ----
   list(
     traffic_light = tl,
-    report = report
+    report = report,
+    table = refs,
+    summary = refs
   )
 }
 
 #' Get Pubpeer Comments
 #'
 #' @description
-#' Function that takes a DOI, and retrieves information from pubpeer related to post-publication peer review comments.  
+#' Function that takes a DOI, and retrieves information from pubpeer related to post-publication peer review comments.
 #'
 #' @author  Daniel Lakens (\email{D.Lakens@tue.nl})
 #'
@@ -328,7 +330,7 @@ reference_check <- function(paper) {
 #' @examples
 #' get_pubpeer_comment("10.1177/0146167211398138")
 
-# Function that takes a DOI, and retrieves information from pubpeer related to post-publication peer review comments. 
+# Function that takes a DOI, and retrieves information from pubpeer related to post-publication peer review comments.
 get_pubpeer_comment <- function(doi) {
   url <- "https://pubpeer.com/v3/publications?devkey=PubPeerZotero"
   body <- list(

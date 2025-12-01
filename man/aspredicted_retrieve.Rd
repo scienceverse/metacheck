@@ -4,7 +4,7 @@
 \alias{aspredicted_retrieve}
 \title{Retrieve info from AsPredicted by URL}
 \usage{
-aspredicted_retrieve(ap_url, id_col = 1)
+aspredicted_retrieve(ap_url, id_col = 1, wait = 1)
 }
 \arguments{
 \item{ap_url}{an AsPredicted URL, or a table containing them (e.g., as created by \code{aspredicted_links()})}

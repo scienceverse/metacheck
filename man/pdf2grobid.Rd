@@ -12,10 +12,7 @@ pdf2grobid(
   end = -1,
   consolidate_citations = 0,
   consolidate_header = 0,
-  consolidate_funders = 0,
-  consolidateCitations = NULL,
-  consolidateHeader = NULL,
-  consolidateFunders = NULL
+  consolidate_funders = 0
 )
 }
 \arguments{
