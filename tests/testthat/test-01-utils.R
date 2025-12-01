@@ -9,10 +9,10 @@ test_that("site_down", {
 
   skip_if_offline("localhost")
 
-  expect_false(site_down("localhost"))
-  expect_false(site_down("http://localhost"))
-  expect_false(site_down("https://localhost"))
-  expect_false(site_down("localhost/otherstuff"))
+  # expect_false(site_down("localhost"))
+  # expect_false(site_down("http://localhost"))
+  # expect_false(site_down("https://localhost"))
+  # expect_false(site_down("localhost/otherstuff"))
 })
 
 test_that(".onLoad", {

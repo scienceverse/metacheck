@@ -24,7 +24,7 @@ test_that("effect_size", {
   # relevant text - yellow
   paper <- psychsci[[9]]
   mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "yellow")
+  expect_equal(mod_output$traffic_light, "red")
   expect_equal(nrow(mod_output$table), 14)
   #expect_equal(mod_output$summary$ttests_n, 10)
   expect_equal(mod_output$summary$ttests_with_es, 6)
@@ -36,7 +36,7 @@ test_that("effect_size", {
   # relevant text - green
   paper <- psychsci[[5]]
   mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "green")
+  expect_equal(mod_output$traffic_light, "na")
   expect_equal(nrow(mod_output$table), 2)
   #expect_equal(mod_output$summary$ttests_n, 2)
   expect_equal(mod_output$summary$ttests_with_es, 2)

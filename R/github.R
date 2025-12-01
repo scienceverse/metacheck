@@ -128,6 +128,7 @@ github_files <- function(repo, dir = "",
     data.frame(
       name = file$name,
       path = file$path,
+      download_url = ifelse(is.null(file$download_url), NA, file$download_url),
       ft = file$type,
       size = file$size
     )

@@ -47,7 +47,7 @@ aspredicted_links <- function(paper) {
 #'
 #' @returns a data frame of information
 #' @export
-aspredicted_retrieve <- function(ap_url, id_col = 1) {
+aspredicted_retrieve <- function(ap_url, id_col = 1, wait = 1) {
   if (is.null(curl::nslookup("aspredicted.org", error = FALSE))) {
     stop("AsPredicted.org seems to be offline")
   }
@@ -55,6 +55,10 @@ aspredicted_retrieve <- function(ap_url, id_col = 1) {
   # handle list of links
   if (is.data.frame(ap_url)) {
     table <- ap_url
+    # Remove blind and old public links
+    table <- table[!grepl("blind|publi", table$text, ignore.case = TRUE), ]
+    # Then remove duplicates
+    table <- dplyr::distinct(table, text, .keep_all = TRUE)
     id_col_name <- colnames(table[id_col])
     raw_urls <- table[[id_col]]
   } else {
@@ -88,6 +92,7 @@ aspredicted_retrieve <- function(ap_url, id_col = 1) {
     ap <- aspredicted_info(valid_ids[[i]])
     if (identical(ap$error, "captcha")) captcha <- TRUE
     id_info[[i]] <- ap
+    Sys.sleep(wait)
   }
 
   info <- id_info |>
