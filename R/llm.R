@@ -342,16 +342,21 @@ json_expand <- function(table, col = "answer") {
   if (is.vector(table)) table <- data.frame(json = table)
   if (is.null(table[[col]])) col <- 1
 
-  #table$.temp_id. <- seq_along(table[[1]])
+  table$.temp_id. <- seq_along(table[[1]])
 
   # expand JSON text
   to_expand <- table[[col]]
-  expanded <- lapply(to_expand, \(json) {
+  expanded <- lapply(seq_along(to_expand), \(i) {
     tryCatch({
+      json <- gsub('"null"', "null", to_expand[[i]])
       j <- jsonlite::fromJSON(json)
-      lapply(j, \(x) paste(as.character(x), collapse = "; "))
+      if (length(j) == 0) {
+        j <- data.frame(error = NA_character_)
+      }
+      j$.temp_id. <- i
+      return(j)
     }, error = \(e) {
-      return(data.frame(error = "parsing error"))
+      return(data.frame(.temp_id. = i, error = "parsing error"))
     })
   }) |>
     do.call(dplyr::bind_rows, args = _)
@@ -362,8 +367,16 @@ json_expand <- function(table, col = "answer") {
     expanded[[i]] <- utils::type.convert(expanded[[i]], as.is = TRUE)
   }
 
+  # get rid of error column if exists and no errors
+  if (!is.null(expanded[["error"]]) && all(is.na(expanded$error))) {
+    expanded$error <- NULL
+  }
+
   # add expanded to table
-  dplyr::bind_cols(table, expanded)
+  joined_tbl <- dplyr::left_join(table, expanded, by = ".temp_id.")
+  joined_tbl$.temp_id. <- NULL
+
+  return(joined_tbl)
 }
 
 #' Set or get metacheck LLM use
