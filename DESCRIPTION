@@ -59,12 +59,15 @@ Imports:
     gitcreds,
     roxygen2,
     rvest,
+    urltools,
     curl,
     fs,
     htmltools,
     anytime,
     rappdirs,
-    bib2df
+    bib2df,
+    rcrossref,
+    readxl
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
 BugReports: https://github.com/scienceverse/metacheck/issues

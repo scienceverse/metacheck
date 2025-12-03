@@ -10,6 +10,8 @@ aspredicted_retrieve(ap_url, id_col = 1, wait = 1)
 \item{ap_url}{an AsPredicted URL, or a table containing them (e.g., as created by \code{aspredicted_links()})}
 
 \item{id_col}{the index or name of the column that contains AsPredicted URLs, if id is a table}
+
+\item{wait}{wait time in seconds}
 }
 \value{
 a data frame of information

@@ -1,64 +1,16 @@
 #setwd("tests/testthat/")
 
 test_that("exists", {
-  expect_true(is.function(metacheck::validate))
-  expect_no_error(helplist <- help(validate, metacheck))
+  expect_true(is.function(metacheck::compare_tables))
+  expect_no_error(helplist <- help(compare_tables, metacheck))
 })
 
 test_that("errors", {
-  paper <- psychsci[1:10]
-  module <- "marginal"
-
-  expect_error(validate())
-  expect_error(validate(paper))
-  expect_error(validate(paper, "not-a-module"))
-  expect_error(validate(paper, module),
-               "The results of this module did not return any objects")
-  expect_error(validate(paper, module, x = 1),
-               "The results of this module did not return any objects named: x")
-
-  # expected table has columns not in the observed results
-  expected <- module_run(paper, module)
-  exp_sum <- expected$summary
-  exp_sum$extra_col <- 1
-  expect_error(validate(paper, module, summary = exp_sum),
-               "The `summary` table did not have the same columns as the expected table")
-
-  # table with no ID column
-  exp_sum <- exp_sum[, 2, drop = FALSE]
-  expect_error(validate(paper, module, summary = exp_sum),
-               "The `summary` table must have an `id` column")
+  exp <- data.frame(id = 1:2)
+  obs <- data.frame(id = 1:2)
+  expect_error(compare_tables(exp, obs), "match_cols")
 })
 
-test_that("basic", {
-  paper <- psychsci[1:10]
-  module <- "marginal"
-  expected <- module_run(paper, module)
-  exp_summary <- expected$summary
-  exp_summary[1,2] <- 5 # change some expected values
-  exp_summary[2,2] <- NA
-
-  v <- validate(paper, module, summary = exp_summary)
-
-  expect_equal(v$module, module)
-  expect_equal(v$observed$summary, expected$summary)
-  expect_equal(names(v$matches), "summary")
-  expect_equal(v$matches$summary$marginal.expected, c(exp_summary$marginal))
-  expect_equal(v$matches$summary$marginal.observed, expected$summary$marginal)
-  expect_equal(v$matches$summary$marginal, rep(c(F, T), c(2, 8)))
-
-  # handle type mismatch
-  exp_summary$marginal <- as.integer(expected$summary$marginal)
-  v <- validate(paper, module, summary = exp_summary)
-  expect_equal(v$stats$summary$marginal, 1)
-
-  # print.metacheck_validate
-  op <- capture_output(print(v))
-  op2 <- capture_output(print.metacheck_validate(v))
-  exp_op <- " Validated matches for module `marginal`:\n\n* N in validation sample: 10\n* summary: \n  * marginal: 1"
-  expect_equal(op2, op)
-  expect_equal(op, exp_op)
-})
 
 test_that("accuracy", {
   exp <- rep(c(T, F), 50)
@@ -74,4 +26,43 @@ test_that("accuracy", {
   expect_equal(a$specificity, 0.2)
   expect_equal(round(a$d_prime, 2), 1.68)
   expect_equal(a$beta, 1)
+})
+
+
+test_that("compare_tables", {
+  # all ident, 1/2 mis-classified
+  expected <- data.frame(id = 1:2, text = c("A", "B"), value = c(10, 20))
+  observed <- data.frame(id = 1:2, text = c("A", "B"), value = c(10, 25))
+  v <- compare_tables(expected, observed)
+
+  exp <- c(exp = 2, obs = 2, true_pos = 2, false_pos = 0, false_neg = 0)
+  expect_equal(v$identification, exp)
+  expect_equal(v$classification, c(value = 0.5))
+
+  # 1 extra observation
+  expected <- data.frame(id = 1:2, text = c("A", "B"), value = c(10, 20))
+  observed <- data.frame(id = 1:3, text = c("A", "B", "C"), value = c(10, 20, 30))
+  v <- compare_tables(expected, observed)
+
+  expect_equal(v$table$true_pos, c(TRUE, TRUE, FALSE))
+  expect_equal(v$table$false_pos, c(FALSE, FALSE, TRUE))
+  expect_equal(v$table$false_neg, c(FALSE, FALSE, FALSE))
+
+  # specify match_cols
+  exp <- data.frame(id = 1:2, val = 3:4)
+  obs <- data.frame(id = 1:2, val = 3:4)
+  v <- compare_tables(exp, obs, match_cols = "id")
+  expect_equal(v$identification[["true_pos"]], 2)
+  expect_equal(v$classification[["val"]], 1)
+
+  # specify match_cols
+  expected <- data.frame(id = 1:2, text = 3:4)
+  observed <- data.frame(id = 1:2, text = 3:4)
+  v <- compare_tables(expected, observed)
+  expect_equal(v$identification[["true_pos"]], 2)
+  expect_equal(v$classification, list())
+
+  exp <- c("id", "text", "exp", "obs",
+           "true_pos", "false_pos", "false_neg")
+  expect_equal(names(v$table), exp)
 })

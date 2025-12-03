@@ -165,15 +165,20 @@ test_that("llm_model_list", {
   expect_true(llm_model() %in% models$id)
 })
 
+# httptest::stop_capturing()
+
+}) # end with_mock_api
+
+
 test_that("json_expand", {
   table <- data.frame(
     id = 1:5,
     answer = c(
-      '{"number": "1", "letter": "A", "bool": true}',
-      '{"number": "2", "letter": "B", "bool": "FALSE"}',
-      '{"number": "3", "letter": "", "bool": null}',
+      '{"number": 1, "letter": "A", "bool": true}',
+      '{"number": 2, "letter": "B", "bool": "FALSE"}',
+      '{"number": 3, "letter": "", "bool": null}',
       'oh no, the LLM misunderstood',
-      '{"number": "5", "letter": ["E", "F"], "bool": false}'
+      '{"number": 5, "letter": ["E", "F"], "bool": false}'
     )
   )
 
@@ -187,10 +192,31 @@ test_that("json_expand", {
   expect_equal(typeof(expanded$number), "integer")
   expect_equal(typeof(expanded$letter), "character")
   expect_equal(typeof(expanded$bool), "logical")
-  expect_equal(expanded$letter, c("A", "B", "", NA, "E; F"))
+  expect_equal(expanded$letter, c("A", "B", "", NA, "E;F"))
   expect_equal(expanded$bool, c(TRUE, FALSE, NA, NA, FALSE))
 })
 
-# httptest::stop_capturing()
 
-}) # end with_mock_api
+test_that("json_expand multi-line", {
+  table <- data.frame(
+    id = 1:3,
+    answer = c(
+      '[
+        {"number": 1, "letter": "A", "bool": true},
+        {"number": 2, "letter": "B", "bool": null}
+      ]',
+      '[{"number": 3, "letter": "C", "bool": false}]',
+      '[]'
+    )
+  )
+
+  exp <- data.frame(
+    number = c(1L, 2L, 3L, NA),
+    letter = c("A", "B", "C", NA),
+    bool = c(TRUE, NA, FALSE, NA)
+  )
+
+  expanded <- json_expand(table)
+
+  expect_equal(expanded[, 3:5], exp)
+})

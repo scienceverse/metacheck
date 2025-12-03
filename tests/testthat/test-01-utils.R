@@ -1,20 +1,3 @@
-test_that("site_down", {
-  skip_on_ci()
-  expect_error(site_down("notarealwebsite"),
-               "The website notarealwebsite is not available")
-  expect_error(site_down("notarealwebsite", "No %s"),
-               "No notarealwebsite")
-
-  expect_true(site_down("notarealwebsite", error = FALSE))
-
-  skip_if_offline("localhost")
-
-  # expect_false(site_down("localhost"))
-  # expect_false(site_down("http://localhost"))
-  # expect_false(site_down("https://localhost"))
-  # expect_false(site_down("localhost/otherstuff"))
-})
-
 test_that(".onLoad", {
   op.defaults <- c(
     metacheck.verbose = TRUE,
@@ -146,6 +129,18 @@ test_that("email", {
   expect_equal(email(), e)
   expect_visible(email())
   email(orig)
+})
+
+test_that("online", {
+  skip_if_offline("google.com")
+
+  expect_true(online())
+  expect_true(online("google.com"))
+  expect_true(online("http://google.com"))
+  expect_true(online("https://google.com"))
+  expect_true(online("https://google.com/images"))
+
+  expect_false(online("notasite"))
 })
 
 

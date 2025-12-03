@@ -78,13 +78,13 @@ FReD_update <- function() {
     !is.na(FReD$doi_replication)
   cols <- c("ref_original", "doi_original", "ref_replication", "doi_replication")
   FReD <- unique(FReD[rows, cols])
-  FReD <- FReD[FReD$doi_original != "" & !is.na(FReD$doi_original) & 
+  FReD <- FReD[FReD$doi_original != "" & !is.na(FReD$doi_original) &
                  FReD$doi_replication != "" & !is.na(FReD$doi_replication), ]
   # decrease size
-  FReD <- FReD %>%
-    select(ref_original, doi_original, ref_replication, doi_replication) %>%
-    distinct()
-  
+  cols <- c("ref_original", "doi_original",
+            "ref_replication", "doi_replication")
+  FReD <- distinct(FReD[cols])
+
   attr(FReD, "date") <- Sys.Date()
 
   # how/where to save this file?
