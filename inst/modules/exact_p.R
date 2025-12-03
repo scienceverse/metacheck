@@ -31,65 +31,40 @@ exact_p <- function(paper, ...) {
   p$imprecise <- p$imprecise | is.na(p$p_value)
 
   cols <- c("expanded")
-  table <- p[p$imprecise, cols]
+  report_table <- p[p$imprecise, cols, drop = FALSE]
+  colnames(report_table) <- ""
 
   # summary output for paperlists ----
-  summary_table <- dplyr::filter(p, imprecise == TRUE)
+  summary_table <- p[p$imprecise, , drop = FALSE]
   summary_table <- dplyr::count(summary_table, id, name = "n_imprecise")
 
   # ---- Determine traffic light ----
-  if(nrow(table) == 0) {
+  if(nrow(report_table) == 0) {
     tl <- "na"
     } else {
     tl <- "red"
     }
 
   # ---- Build report ----
-  if (nrow(table) == 0) {
+  if (nrow(report_table) == 0) {
     report <- "We detected no imprecise *p* values."
   } else {
     module_output <- sprintf(
-      "We found %d imprecise *p* values. Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001.",
-      nrow(table)
+      "We found %d imprecise *p* value%s. Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001.",
+      nrow(report_table), ifelse(nrow(report_table) == 1, "", "s")
     )
 
-    # Combine problematic sentences
-    issues_found <- paste(sprintf("%s", table$expanded), collapse = "\n\n")
-
-    # Scrollable block for sentences
-    sentences_block <- paste0(
-      "<strong><span style='font-size:20px; color:#006400;'>Imprecise p values</span></strong>",
-      "<div style='border:1px solid #ccc; padding:10px; ",
-      "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
-      "margin-top:5px; margin-bottom:15px;'>",
-      "<ul style='list-style-type: circle; padding-left:20px; margin:0;'>",
-      issues_found,
-      "</ul>",
-      "</div>"
-    )
-
-    # Guidance block
-    guidance <- paste0(
+    # Guidance text
+    guidance <- c(
       "The APA manual states: Report exact *p* values (e.g., *p* = .031) to two or three decimal places. However, report *p* values less than .001 as *p* < .001. However, 2 decimals is too imprecise for many use-cases (e.g., a *p* value meta-analysis), so report *p* values with three digits.",
       "American Psychological Association. (2020). Publication manual of the American Psychological Association 2020: the official guide to APA style (7th ed.). American Psychological Association."
     )
 
-    guidance_block <- paste0(
-      "<details style='display:inline-block;'>",
-      "<summary style='cursor:pointer; margin:0; padding:0;'>",
-      "<strong><span style='font-size:20px; color:#006400;'>Learn More</span></strong>",
-      "</summary>",
-      "<div style='margin-top:10px;'>",
-      guidance,
-      "</div>",
-      "</details>"
-    )
-
-    # Combine everything into report
-    report <- sprintf(
-      "%s\n\n%s\n\n%s",
-      module_output, sentences_block, guidance_block
-    )
+    # Combine everything into report text
+    report <- c(module_output,
+                scroll_table(report_table),
+                collapse_section(guidance)) |>
+      paste(collapse = "\n\n")
   }
 
   # ---- Return list ----
@@ -97,6 +72,7 @@ exact_p <- function(paper, ...) {
     traffic_light = tl,
     report = report,
     table = p,
+    summary_text = "Exact p summary",
     summary_table = summary_table
   )
 }

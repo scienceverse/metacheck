@@ -46,14 +46,14 @@ statcheck <- function(paper, ...) {
   )
 
   # base report text for each possible traffic light ----
-  report_base <- c(
+  summary_text <- c(
     na    = "No test statistics were detected.",
     red   = "We detected possible errors in test statistics. Note that as the accuracy of statcheck has only been validated for *t*-tests and *F*-tests. As Metacheck only uses validated modules, we only provide statcheck results for *t* tests and *F*-tests",
     green = "We detected no errors in test statistics.",
     fail  = "StatCheck failed."
   )
 
-  report_text <- report_base[[tl]]
+  report_text <- summary_text[[tl]]
 
   # If there are errors, I added scrollable HTML table to show the details
   if (tl == "red" && nrow(table) > 0) {
@@ -62,7 +62,10 @@ statcheck <- function(paper, ...) {
     cols   <- intersect(wanted, names(table))
 
     if (length(cols) > 0) {
-      table_disp <- table[, cols, drop = FALSE]
+      report_table <- table[, cols, drop = FALSE]
+
+      summary_text <- sprintf("%d possible errors in test statistics",
+                              nrow(report_table))
 
       # I renamed the labels for more clarity during checking the table
       label_map <- c(
@@ -71,84 +74,29 @@ statcheck <- function(paper, ...) {
         computed_p  = "Recomputed p",
         section     = "Section"
       )
-      colnames(table_disp) <- label_map[cols]
+      colnames(report_table) <- label_map[cols]
 
-      # I styled the header row with a border and light background to differentiate it from the body rows
-      header_html <- paste0(
-        "<tr>",
-        paste(
-          sprintf(
-            "<th style='border:1px solid #ccc; padding:6px; background-color:#f0f0f0;'>%s</th>",
-            colnames(table_disp)
-          ),
-          collapse = ""
-        ),
-        "</tr>"
-      )
-
-      # For the body, I rendered each row with borders and pdding -> easier to scan as the rows will be separated
-      body_html <- ""
-      if (nrow(table_disp) > 0) {
-        body_rows <- apply(table_disp, 1, function(row) {
-          paste0(
-            "<tr>",
-            paste(
-              sprintf("<td style='border:1px solid #ccc; padding:6px;'>%s</td>", row),
-              collapse = ""
-            ),
-            "</tr>"
-          )
-        })
-        body_html <- paste(body_rows, collapse = "\n")
-      }
-
-      # I wrapped headers and rows in a table + smaller font to make the info fit
-      html_table <- paste0(
-        "<table style='border-collapse:collapse; width:100%; font-size:90%;'>",
-        "<thead>", header_html, "</thead>",
-        "<tbody>", body_html, "</tbody>",
-        "</table>"
-      )
-
-      # I put the table in a scrollable box
-      scroll_box <- paste0(
-        "<br><strong>The following table shows the test statistics with potential errors:</strong>",
-        "<div style='border:1px solid #444; padding:10px; ",
-        "max-height:450px; overflow-y:auto; background-color:#ffffff; margin-top:8px;'>",
-        html_table,
-        "</div>"
-      )
-
-      guidance <- paste0(
+      guidance <- c(
         "For metascientific research on the validity of statcheck, and it's usefulness to prevent statistical reporting errors, see:<br><br>",
-        "Nuijten, M. B., van Assen, M. A. L. M., Hartgerink, C. H. J., Epskamp, S., & Wicherts, J. M. (2017). The Validity of the Tool “statcheck” in Discovering Statistical Reporting Inconsistencies. PsyArXiv. ",
-        "<a href='https://doi.org/10.31234/osf.io/tcxaj' target='_blank'>https://doi.org/10.31234/osf.io/tcxaj</a> <br>",
-        "Nuijten, M. B., & Wicherts, J. (2023). The effectiveness of implementing statcheck in the peer review process to avoid statistical reporting errors. PsyArXiv. ",
-        "<a href='https://doi.org/10.31234/osf.io/bxau9' target='_blank'>https://doi.org/10.31234/osf.io/bxau9</a> <br>"
+        "Nuijten, M. B., van Assen, M. A. L. M., Hartgerink, C. H. J., Epskamp, S., & Wicherts, J. M. (2017). The Validity of the Tool “statcheck” in Discovering Statistical Reporting Inconsistencies. PsyArXiv. doi: [10.31234/osf.io/tcxaja](https://doi.org/10.31234/osf.io/tcxaja)",
+        "Nuijten, M. B., & Wicherts, J. (2023). The effectiveness of implementing statcheck in the peer review process to avoid statistical reporting errors. PsyArXiv. doi: [10.31234/osf.io/bxau9](https://doi.org/10.31234/osf.io/bxau9)"
         )
-      guidance_block <- paste0(
-        "<details style='display:inline-block;'>",
-        "<summary style='cursor:pointer; margin:0; padding:0;'>",
-        "<strong><span style='font-size:20px; color:#006400;'>Learn More</span></strong>",
-        "</summary>",
-        "<div style='margin-top:10px;'>",
-        guidance,
-        "</div>",
-        "</details>"
-      )
 
-
-      report_text <- paste(report_text, scroll_box, guidance_block, sep = "\n\n")
+      report_text <- c(report_text,
+                       scroll_table(report_table),
+                       collapse_section(guidance)) |>
+        paste(collapse = "\n\n")
     }
   }
 
   # return a list ----
   list(
-    summary = summary_table,
+    summary_table = summary_table,
     table = table,
     na_replace = 0,
     traffic_light = tl,
-    report = report_text
+    report = report_text,
+    summary_text = summary_text
   )
 }
 

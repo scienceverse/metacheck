@@ -581,6 +581,24 @@
       "en": "all_urls"
     },
     {
+      "en": "aspredicted"
+    },
+    {
+      "en": "AsPredicted"
+    },
+    {
+      "en": "Causal Claims"
+    },
+    {
+      "en": "causal_claims"
+    },
+    {
+      "en": "Code Check"
+    },
+    {
+      "en": "code_check"
+    },
+    {
       "en": "div"
     },
     {
@@ -602,13 +620,40 @@
       "en": "marginal"
     },
     {
-      "en": "Missing Effect Sizes"
+      "en": "miscitation"
     },
     {
-      "en": "osf_check"
+      "en": "Miscitation"
+    },
+    {
+      "en": "Missing Effect Sizes in t-tests and F-tests"
+    },
+    {
+      "en": "Non-Significant P Value Check"
+    },
+    {
+      "en": "nonsignificant_pvalue"
+    },
+    {
+      "en": "power"
+    },
+    {
+      "en": "Power"
+    },
+    {
+      "en": "prereg_check"
+    },
+    {
+      "en": "Preregistration Check"
     },
     {
       "en": "ref_consistency"
+    },
+    {
+      "en": "Reference Check"
+    },
+    {
+      "en": "reference_check"
     },
     {
       "en": "retractionwatch"

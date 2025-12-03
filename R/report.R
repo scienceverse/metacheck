@@ -43,13 +43,14 @@ report <- function(paper,
   module_output <- lapply(modules, \(module) {
     if (verbose())
       pb$tick(tokens = list(what = module))
-    op <- tryCatch(module_run(paper, module),
+      op <- tryCatch(module_run(paper, module),
              error = function(e) {
                report_items <- list(
                  module = module,
                  title = module,
                  table = NULL,
                  report = e$message,
+                 summary_text = "This module failed to run",
                  traffic_light = "fail"
                )
 
@@ -60,6 +61,7 @@ report <- function(paper,
   # set up report ----
   if (verbose())
     pb$tick(tokens = list(what = "Creating report"))
+
   if (output_format == "pdf") {
     format <- paste0("  pdf:\n",
                      "    toc: true\n")
@@ -67,29 +69,33 @@ report <- function(paper,
     format <- paste0("  html:\n",
                      "    theme: flatly\n",
                      "    toc: true\n",
-                     "    toc-float: true\n",
-                     "    toc-location: left\n",
-                     "    df-print: paged\n",
-                     "    minimal: true\n",
+                     "    toc-location: right\n",
+                     "    page-layout: full\n",
+                     "    title-block-banner: true\n",
+                     "    link-external-newwindow: true\n",
                      "    embed-resources: true\n")
   }
 
   emojis <- metacheck::emojis
   head <- paste0("---\n",
-                "title: metacheck Report\n",
+                "title: MetaCheck Report\n",
                 "subtitle: \"", paper$info$title, "\"\n",
                 "date: ", Sys.Date(), "\n",
                 "format:\n", format,
                 "---\n\n",
                 "<style>\n",
-                "  h2.na::before     { content: '", emojis$tl_na,     " '; }\n",
-                "  h2.fail::before   { content: '", emojis$tl_fail,   " '; }\n",
-                "  h2.info::before   { content: '", emojis$tl_info,   " '; }\n",
-                "  h2.red::before    { content: '", emojis$tl_red,    " '; }\n",
-                "  h2.yellow::before { content: '", emojis$tl_yellow, " '; }\n",
-                "  h2.green::before  { content: '", emojis$tl_green,  " '; }\n",
+                "  .na::before     { content: '", emojis$tl_na,     " '; }\n",
+                "  .fail::before   { content: '", emojis$tl_fail,   " '; }\n",
+                "  .info::before   { content: '", emojis$tl_info,   " '; }\n",
+                "  .red::before    { content: '", emojis$tl_red,    " '; }\n",
+                "  .yellow::before { content: '", emojis$tl_yellow, " '; }\n",
+                "  .green::before  { content: '", emojis$tl_green,  " '; }\n",
+                "  section::before { content: '' !important; }\n",
+                "  details summary { font-size: 150%; padding: 0.5em 0; }\n",
                 "</style>\n\n",
                 "::: {.column-margin}\n",
+                "[MetaCheck](http://www.scienceverse.org/metacheck) version ",
+                packageVersion("metacheck"), "<br><br>\n\n",
                 emojis$tl_green,  " no problems detected;<br>\n",
                 emojis$tl_yellow, " something to check;<br>\n",
                 emojis$tl_red,    " possible problems detected;<br>\n",
@@ -98,6 +104,16 @@ report <- function(paper,
                 emojis$tl_fail,   " check failed\n",
                 ":::\n\n")
 
+  summary_list <- sapply(module_output, \(x) {
+    sprintf("- [%s](#%s){.%s}: %s  ",
+            x$title,
+            gsub("\\s", "-", tolower(x$title)),
+            x$traffic_light %||% "info",
+            x$summary_text %||% "")
+  })
+  summary_text <- sprintf("## Summary\n\n%s\n\n",
+                          paste(summary_list, collapse = "\n"))
+
   body <- sapply(module_output, module_report) |>
     paste(collapse = "\n\n") |>
     gsub("\\n{3,}", "\n\n", x = _)
@@ -105,12 +121,12 @@ report <- function(paper,
   if (verbose())
     pb$tick(tokens = list(what = "Rendering Report"))
   if (output_format == "qmd") {
-    write(paste0(head, body), output_file)
+    write(paste0(head, summary_text, body), output_file)
   } else {
     # render report ----
     temp_input <- tempfile(fileext = ".qmd")
     temp_output <- sub("qmd$", output_format, temp_input)
-    write(paste0(head, body), temp_input)
+    write(paste0(head, summary_text, body), temp_input)
 
     tryCatch({
       quarto::quarto_render(input = temp_input,
@@ -148,70 +164,96 @@ module_report <- function(module_output,
                           header = 2,
                           maxrows = Inf,
                           trunc_cell = Inf) {
-  # set up table
-  # if ("table" %in% names(module_output)) {
-  #   tab <- module_output$table
-  #   if (is.data.frame(tab) && nrow(tab) == 0) tab <- ""
-  # } else {
-    tab <- ""
-  # }
-  # use summary table if available and reporting more than one paper
-  # if ("summary" %in% names(module_output) &&
-  #     nrow(module_output$summary) > 1) {
-  #   tab <- module_output$summary
-  # }
-
-
-  rowwarning <- ""
-  if (is.data.frame(tab)) {
-    # get rid of the id column if only one ID
-    if (unique(tab$id) |> length() < 2) tab$id <- NULL
-    # get rid of all columns with only NA or header column
-    keep <- sapply(tab, \(col) {!all(is.na(col))})
-    if ("header" %in% names(keep)) keep[["header"]] <- FALSE
-    tab <- tab[, keep, drop = FALSE]
-
-    if (nrow(tab) == 0 || ncol(tab) == 0) {
-      tab <- ""
-    } else {
-      # truncate
-      rows <- min(maxrows, nrow(tab))
-      rowwarning <- paste("\n\nShowing", rows, "of", nrow(tab), "rows")
-      tab <- tab[1:rows, ]
-      if (trunc_cell < Inf) {
-          char_cols <- names(tab)[sapply(tab, is.character)]
-          for (col in char_cols) {
-            needs_trunc <- which(nchar(tab[[col]]) > trunc_cell)
-            tab[[col]][needs_trunc] <- tab[[col]][needs_trunc] |>
-              substr(1, trunc_cell-3) |>
-              paste0("...")
-          }
-      }
-
-      tab <- tab |>
-        knitr::kable(format = "markdown") |>
-        as.character() |>
-        paste(collapse = "\n")
-    }
-  }
 
   # set up header
-  if (is.null(header) || header == "") {
+  if (is.null(header)) {
     head <- ""
   } else if (header == 0) {
-    head <- paste(module_output$title, "\n\n")
+    head <- module_output$title
   } else if (header %in% 1:6) {
     head <- rep("#", header) |> paste(collapse = "") |>
       paste0(" ", module_output$title,
-             " {.", module_output$traffic_light, "}\n\n")
+             " {.", module_output$traffic_light, "}")
   } else {
-    head <- paste0(header, "\n\n")
+    head <- header
   }
 
   # set up report
-  report <- ""
-  if (module_output$report != "")
-    report <- paste0(module_output$report, "\n\n")
+  report <- module_output$report
+  if (report == "") report <- NULL
 
-  paste0(head, report, tab, rowwarning)
+  paste0(c(head, report), collapse = "\n\n")
+}
+
+
+
+#' Make Scroll Table
+#'
+#' A helper function for making module reports.
+#'
+#' @param table the data frame to show in a table, or a vector for a list
+#' @param scroll_above if the table has more rows than this, scroll
+#' @param height the height of the scroll window
+#'
+#' @returns the markdown R chunk to create this table
+#' @export
+#'
+#' @examples
+#' scroll_table(LETTERS)
+scroll_table <- function(table,
+                         scroll_above = 2,
+                         height = 200) {
+  if (is.atomic(table)) {
+    table <- data.frame(table)
+    colnames(table) <- ""
+  }
+  tbl_code <- paste(deparse(table), collapse = "\n")
+
+  scrollY <- ifelse(nrow(table) <= scroll_above, "",
+                    sprintf(", scrollY = %d", height))
+
+  ordering <- FALSE
+
+  # generate markdown to create the table
+  md <- sprintf('
+```{r}
+#| echo: false
+# table data
+table <- %s
+
+# table options
+options <- list(dom = "t", ordering = %s %s)
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE)
+```
+', tbl_code, ordering, scrollY)
+
+  return(md)
+}
+
+#' Make Collapsible Section
+#'
+#' A helper function for making module reports.
+#'
+#' @param text The text to put in the collapsible section; vectors will be collapse with line breaks between (e.g., into paragraphs)
+#' @param title The title of the collapse header
+#'
+#' @returns text
+#' @export
+#'
+#' @examples
+#' text <- c("Paragraph 1...", "Paragraph 2...")
+#' collapse_section(text) |> cat()
+collapse_section <- function(text, title = "Learn More") {
+  p <- paste0(text, collapse = "\n\n")
+  fmt <- '
+<details>
+  <summary>%s</summary>
+  <div>
+%s
+  </div>
+</details>'
+
+  sprintf(fmt, title, p)
 }

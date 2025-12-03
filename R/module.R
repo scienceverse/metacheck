@@ -106,6 +106,7 @@ module_run <- function(paper, module, ...) {
     table = results$table,
     report = results$report,
     traffic_light = results$traffic_light,
+    summary_text = results$summary_text,
     summary = summary_table,
     paper = paper
   )
