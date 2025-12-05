@@ -4,12 +4,21 @@
 \alias{collapse_section}
 \title{Make Collapsible Section}
 \usage{
-collapse_section(text, title = "Learn More")
+collapse_section(
+  text,
+  title = "Learn More",
+  callout = c("tip", "note", "warning", "important", "caution"),
+  collapse = TRUE
+)
 }
 \arguments{
 \item{text}{The text to put in the collapsible section; vectors will be collapse with line breaks between (e.g., into paragraphs)}
 
 \item{title}{The title of the collapse header}
+
+\item{callout}{the type of quarto callout block}
+
+\item{collapse}{whether to collapse the block at the start}
 }
 \value{
 text

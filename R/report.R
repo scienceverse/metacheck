@@ -62,48 +62,20 @@ report <- function(paper,
   if (verbose())
     pb$tick(tokens = list(what = "Creating report"))
 
-  if (output_format == "pdf") {
-    format <- paste0("  pdf:\n",
-                     "    toc: true\n")
-  } else {
-    format <- paste0("  html:\n",
-                     "    theme: flatly\n",
-                     "    toc: true\n",
-                     "    toc-location: right\n",
-                     "    page-layout: full\n",
-                     "    title-block-banner: true\n",
-                     "    link-external-newwindow: true\n",
-                     "    embed-resources: true\n")
-  }
+  ## read in report template ----
+  report_template <- system.file("templates/_report.qmd",
+                                 package = "metacheck")
+  rt <- readLines(report_template)
+  cut_after <- which(rt == "## Demo") - 1
+  rt_head <- paste(rt[1:cut_after], collapse = "\n")
+  # turn real % to %%, leave %s, %d, %f, %i
+  rt_head <- gsub("\\%(?![sdfi])", "%%", rt_head, perl = TRUE)
+  qmd_header <- sprintf(rt_head,
+                        paper$info$title,
+                        as.character(packageVersion("metacheck")),
+                        Sys.Date())
 
-  emojis <- metacheck::emojis
-  head <- paste0("---\n",
-                "title: MetaCheck Report\n",
-                "subtitle: \"", paper$info$title, "\"\n",
-                "date: ", Sys.Date(), "\n",
-                "format:\n", format,
-                "---\n\n",
-                "<style>\n",
-                "  .na::before     { content: '", emojis$tl_na,     " '; }\n",
-                "  .fail::before   { content: '", emojis$tl_fail,   " '; }\n",
-                "  .info::before   { content: '", emojis$tl_info,   " '; }\n",
-                "  .red::before    { content: '", emojis$tl_red,    " '; }\n",
-                "  .yellow::before { content: '", emojis$tl_yellow, " '; }\n",
-                "  .green::before  { content: '", emojis$tl_green,  " '; }\n",
-                "  section::before { content: '' !important; }\n",
-                "  details summary { font-size: 150%; padding: 0.5em 0; }\n",
-                "</style>\n\n",
-                "::: {.column-margin}\n",
-                "[MetaCheck](http://www.scienceverse.org/metacheck) version ",
-                packageVersion("metacheck"), "<br><br>\n\n",
-                emojis$tl_green,  " no problems detected;<br>\n",
-                emojis$tl_yellow, " something to check;<br>\n",
-                emojis$tl_red,    " possible problems detected;<br>\n",
-                emojis$tl_info,   " informational only;<br>\n",
-                emojis$tl_na,     " not applicable;<br>\n",
-                emojis$tl_fail,   " check failed\n",
-                ":::\n\n")
-
+  ## generate summary section ----
   summary_list <- sapply(module_output, \(x) {
     sprintf("- [%s](#%s){.%s}: %s  ",
             x$title,
@@ -114,19 +86,30 @@ report <- function(paper,
   summary_text <- sprintf("## Summary\n\n%s\n\n",
                           paste(summary_list, collapse = "\n"))
 
-  body <- sapply(module_output, module_report) |>
+  ## format module reports ----
+  module_reports <- sapply(module_output, module_report) |>
     paste(collapse = "\n\n") |>
     gsub("\\n{3,}", "\n\n", x = _)
+
+  report_text <- paste(qmd_header,
+                       summary_text,
+                       module_reports,
+                       sep = "\n\n")
 
   if (verbose())
     pb$tick(tokens = list(what = "Rendering Report"))
   if (output_format == "qmd") {
-    write(paste0(head, summary_text, body), output_file)
+    write(report_text, output_file)
   } else {
     # render report ----
     temp_input <- tempfile(fileext = ".qmd")
     temp_output <- sub("qmd$", output_format, temp_input)
-    write(paste0(head, summary_text, body), temp_input)
+
+    ## clean up
+    on.exit(unlink(temp_input))
+    on.exit(unlink(temp_output)) # won't exist if rename works
+
+    write(report_text, temp_input)
 
     tryCatch({
       quarto::quarto_render(input = temp_input,
@@ -137,12 +120,12 @@ report <- function(paper,
     })
 
     file.rename(temp_output, output_file)
-    unlink(temp_input) # clean up
   }
+
   if (verbose())
     pb$tick(tokens = list(what = "Report Saved"))
 
-  return(output_file)
+  invisible(output_file)
 }
 
 #' Report from module output
@@ -180,7 +163,7 @@ module_report <- function(module_output,
 
   # set up report
   report <- module_output$report
-  if (report == "") report <- NULL
+  if (all(report == "")) report <- NULL
 
   paste0(c(head, report), collapse = "\n\n")
 }
@@ -191,9 +174,15 @@ module_report <- function(module_output,
 #'
 #' A helper function for making module reports.
 #'
+#' See [quarto article layout](https://quarto.org/docs/authoring/article-layout.html) for column options. The most common are "body" (centre column), "page" (span all columns"), and "margin" (only in right margin).
+#'
+#' To set colwidths, use a numeric or character vector. For a numeric vector, numbers greater than 1 wil be interpreted as pixels, less than 1 as percents. Character vectors will be passed as is (e.g., "3em"). If you only want to specify some columns, set the others to NA, like c(200, NA, NA, NA). Vectors shorter than the number of columns will be recycled.
+#'
 #' @param table the data frame to show in a table, or a vector for a list
+#' @param colwidths set column widths as a vector of px (number > 1) or percent (numbers <= 1)
 #' @param scroll_above if the table has more rows than this, scroll
 #' @param height the height of the scroll window
+#' @param column which quarto column to show tables in
 #'
 #' @returns the markdown R chunk to create this table
 #' @export
@@ -201,33 +190,69 @@ module_report <- function(module_output,
 #' @examples
 #' scroll_table(LETTERS)
 scroll_table <- function(table,
+                         colwidths = "auto",
                          scroll_above = 2,
-                         height = 200) {
+                         height = 200,
+                         column = "body") {
+  # convert vectors to a table
   if (is.atomic(table)) {
     table <- data.frame(table)
     colnames(table) <- ""
   }
+
+  # return nothing if no table contents
+  if (nrow(table) == 0 | ncol(table) == 0) {
+    return("")
+  }
+
   tbl_code <- paste(deparse(table), collapse = "\n")
 
   scrollY <- ifelse(nrow(table) <= scroll_above, "",
                     sprintf(", scrollY = %d", height))
 
-  ordering <- FALSE
+  column_loc <- ""
+  if (column != "body") {
+    column_loc <- paste0("#| column: ", column)
+  }
+
+  # columnDef
+  if (length(colwidths) == 1 && colwidths == "auto") {
+    cd_code <- "list()"
+  } else {
+    colwidths <- rep_len(colwidths, ncol(table))
+    cd <- lapply(seq_along(colwidths), \(i) {
+      x <- colwidths[[i]]
+      if (is.na(x)) return(NULL)
+
+      if (is.numeric(x)) {
+        if (x > 1) {
+          x <- paste0(x, "px")
+        } else {
+          x <- paste0(x*100, "%")
+        }
+      }
+      # targets are 0-based
+      list(targets = i-1, width = x)
+    })
+    cd_code <- paste(deparse(cd[!sapply(cd, is.null)]), collapse = "\n")
+  }
 
   # generate markdown to create the table
   md <- sprintf('
 ```{r}
 #| echo: false
+%s
 # table data
 table <- %s
 
 # table options
-options <- list(dom = "t", ordering = %s %s)
+cd <- %s
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd %s)
 
 # display table
 DT::datatable(table, options, selection = "none", rownames = FALSE)
 ```
-', tbl_code, ordering, scrollY)
+', column_loc, tbl_code, cd_code, scrollY)
 
   return(md)
 }
@@ -238,6 +263,8 @@ DT::datatable(table, options, selection = "none", rownames = FALSE)
 #'
 #' @param text The text to put in the collapsible section; vectors will be collapse with line breaks between (e.g., into paragraphs)
 #' @param title The title of the collapse header
+#' @param callout the type of quarto callout block
+#' @param collapse whether to collapse the block at the start
 #'
 #' @returns text
 #' @export
@@ -245,15 +272,16 @@ DT::datatable(table, options, selection = "none", rownames = FALSE)
 #' @examples
 #' text <- c("Paragraph 1...", "Paragraph 2...")
 #' collapse_section(text) |> cat()
-collapse_section <- function(text, title = "Learn More") {
-  p <- paste0(text, collapse = "\n\n")
-  fmt <- '
-<details>
-  <summary>%s</summary>
-  <div>
-%s
-  </div>
-</details>'
+collapse_section <- function(text, title = "Learn More",
+                             callout = c("tip", "note", "warning", "important", "caution"),
+                             collapse = TRUE) {
+  fmt <- '::: {.callout-%s title="%s" collapse="%s"}\n\n%s\n\n:::\n'
 
-  sprintf(fmt, title, p)
+  sprintf(
+    fmt,
+    match.arg(callout),
+    title,
+    ifelse(collapse, "true", "false"),
+    paste0(text, collapse = "\n\n")
+  )
 }

@@ -1,0 +1,101 @@
+---
+title: MetaCheck Report
+subtitle: "%s"
+metacheck:
+  version: "%s"
+  report-created: "%s"
+format:
+  html:
+    theme: flatly
+    toc: true
+    toc-location: right
+    page-layout: full
+    title-block-banner: true
+    link-external-newwindow: true
+    embed-resources: true
+    format-links: false
+  pdf: 
+    toc: false
+---
+
+<style>
+  .na::before     { content: '⚪️ '; }
+  .fail::before   { content: '⚫️ '; }
+  .info::before   { content: '🔵 '; }
+  .red::before    { content: '🔴 '; }
+  .yellow::before { content: '🟡 '; }
+  .green::before  { content: '🟢 '; }
+  section::before { content: '' !important; }
+  .quarto-title-banner { background-color: #327118; }
+  th { color: #327118; }
+</style>
+
+:::: {.content-visible when-format="html"}
+::: {.column-margin}
+[MetaCheck](http://www.scienceverse.org/metacheck) version {{< meta metacheck.version >}}<br>
+Report Created: {{< meta metacheck.report-created >}}
+
+-------
+
+🟢 no problems detected;  
+🟡 something to check;  
+🔴 possible problems detected;  
+🔵 informational only;  
+⚪️ not applicable;  
+⚫️ check failed
+:::
+::::
+
+## Demo
+
+Everything below here is for test purposes and removed when using this template to create a report.
+
+## Module A
+
+### Scroll Tables
+
+```{r}
+#| echo: false
+# table options
+
+cd <- list(list(targets = 4, width = "500px"))
+options <- list(dom="t", ordering=FALSE, autoWidth=TRUE,  
+                scrollY=200, columnDefs=cd)
+
+# display table
+DT::datatable(iris, options, selection = "none", rownames = FALSE)
+```
+
+
+### Collapsible Sections
+
+`r metacheck::collapse_section("Lorem ipsum...")`
+
+## Module B
+
+### Short Tables
+
+A shorter non-scrolling table
+
+```{r}
+#| echo: false
+# table options
+options <- list(dom = "t", ordering = FALSE)
+
+# display table
+DT::datatable(head(iris, 2), options, 
+              selection = "none", rownames = FALSE)
+```
+
+### Wide Scroll Tables
+
+```{r}
+#| echo: false
+#| column: page
+# table options
+options <- list(dom = "t", ordering = FALSE , scrollY = 200)
+
+# display table
+DT::datatable(mtcars, options, selection = "none", rownames = FALSE)
+```
+

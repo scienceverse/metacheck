@@ -31,9 +31,11 @@ pvals2 <- function(paper, ...) {
   # return a list ----
   list(
     table = table,
-    summary = summary_table,
+    summary_table = summary_table,
     na_replace = 0,
-    traffic_light = tl
+    traffic_light = tl,
+    summary_text = "summary text",
+    report = "report text"
   )
 }
 

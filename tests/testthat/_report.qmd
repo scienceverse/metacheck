@@ -1,7 +1,9 @@
 ---
 title: MetaCheck Report
 subtitle: "To Err is Human: An Empirical Investigation"
-date: 2025-12-03
+metacheck:
+  version: "0.0.0.9060"
+  report-created: "2025-12-04"
 format:
   html:
     theme: flatly
@@ -11,6 +13,9 @@ format:
     title-block-banner: true
     link-external-newwindow: true
     embed-resources: true
+    format-links: false
+  pdf: 
+    toc: false
 ---
 
 <style>
@@ -21,28 +26,37 @@ format:
   .yellow::before { content: '🟡 '; }
   .green::before  { content: '🟢 '; }
   section::before { content: '' !important; }
-  details summary { font-size: 150%; padding: 0.5em 0; }
+  .quarto-title-banner { background-color: #327118; }
+  th { color: #327118; }
 </style>
 
+:::: {.content-visible when-format="html"}
 ::: {.column-margin}
-[MetaCheck](http://www.scienceverse.org/metacheck) version 0.0.0.9059<br><br>
+[MetaCheck](http://www.scienceverse.org/metacheck) version {{< meta metacheck.version >}}<br>
+Report Created: {{< meta metacheck.report-created >}}
 
-🟢 no problems detected;<br>
-🟡 something to check;<br>
-🔴 possible problems detected;<br>
-🔵 informational only;<br>
-⚪️ not applicable;<br>
+-------
+
+🟢 no problems detected;  
+🟡 something to check;  
+🔴 possible problems detected;  
+🔵 informational only;  
+⚪️ not applicable;  
 ⚫️ check failed
 :::
+::::
+
 
 ## Summary
 
 - [Exact P-Values](#exact-p-values){.red}: Exact p summary  
 - [Marginal Significance](#marginal-significance){.red}: Marginal summary this one is a bit longer to span multiple line in the report  
-- [Missing Effect Sizes in t-tests and F-tests](#missing-effect-sizes-in-t-tests-and-f-tests){.red}: We found 1 t-test and/or F-test where effect sizes are not reported.  
-- [StatCheck](#statcheck){.red}: 1 possible errors in test statistics  
+- [Effect Sizes in t-tests and F-tests](#effect-sizes-in-t-tests-and-f-tests){.red}: We found 1 t-test and/or F-test where effect sizes are not reported.  
+- [StatCheck](#statcheck){.red}: 1 possible error in t-tests or F-tests  
 - [RetractionWatch](#retractionwatch){.yellow}: You cited 1 paper in the Retraction Watch database  
-- [Reference Consistency](#reference-consistency){.red}:   
+- [Reference Consistency](#reference-consistency){.red}: There are cross-references that are not in the bibliography and/or bibliography entries not cross-referenced in the text  
+
+
 
 ## Exact P-Values {.red}
 
@@ -50,25 +64,26 @@ We found 1 imprecise *p* value. Reporting *p* values imprecisely (e.g., *p* < .0
 
 ```{r}
 #| echo: false
+
 # table data
 table <- structure(list("There was no effect of experience on the reduction in errors when using the tool (p > .05), as the correlation was non-significant."), names = "", row.names = c(NA, 
 -1L), class = c("tbl_df", "tbl", "data.frame"))
 
 # table options
-options <- list(dom = "t", ordering = FALSE )
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
 
 # display table
 DT::datatable(table, options, selection = "none", rownames = FALSE)
 ```
 
-<details>
-  <summary>Learn More</summary>
-  <div>
+::: {.callout-tip title="Learn More" collapse="true"}
+
 The APA manual states: Report exact *p* values (e.g., *p* = .031) to two or three decimal places. However, report *p* values less than .001 as *p* < .001. However, 2 decimals is too imprecise for many use-cases (e.g., a *p* value meta-analysis), so report *p* values with three digits.
 
 American Psychological Association. (2020). Publication manual of the American Psychological Association 2020: the official guide to APA style (7th ed.). American Psychological Association.
-  </div>
-</details>
+
+:::
 
 ## Marginal Significance {.red}
 
@@ -76,6 +91,7 @@ You described effects with terms related to 'marginally significant'. If *p* val
 
 ```{r}
 #| echo: false
+
 # table data
 table <- structure(list(section = c("abstract", "results"), text = c("The paper shows examples of (1) open and closed OSF links; (2a) citation of retracted papers, (2b) citations without a doi, (2c) citations with Pubpeer comments, (2d) citations in the FORTT replication database, and (2e) missing/mismatched/incorrect citations and references; (3a) R files with code on GitHub that do not load libraries in one location, (3b) load files that are not shared in the repository, (3c) lack comments, and (3d) have hard-coded files, (4) imprecise reporting of non-significant p-values; (5) tests with and without effect sizes, (6) use of \"marginally significant\" to describe non-significant findings, and (7) retrieving information from preregistrations.", 
 "On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152."
@@ -83,15 +99,15 @@ table <- structure(list(section = c("abstract", "results"), text = c("The paper 
 ))
 
 # table options
-options <- list(dom = "t", ordering = FALSE )
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
 
 # display table
 DT::datatable(table, options, selection = "none", rownames = FALSE)
 ```
 
-<details>
-  <summary>Learn More</summary>
-  <div>
+::: {.callout-tip title="Learn More" collapse="true"}
+
 For metascientific articles demonstrating the rate at which non-significant p-values are interpreted as marginally significant, see:
 
 Olsson-Collentine, A., van Assen, M. A. L. M., & Hartgerink, C. H. J. (2019). The Prevalence of Marginally Significant Results in Psychology Over Time. Psychological Science, 30(4), 576–586. 
@@ -101,10 +117,10 @@ Olsson-Collentine, A., van Assen, M. A. L. M., & Hartgerink, C. H. J. (2019). Th
 For the list of terms used to identifify marginally significant results, see this blog post by Matthew Hankins:
 
 <https://web.archive.org/web/20251001114321/https://mchankins.wordpress.com/2013/04/21/still-not-significant-2/>
-  </div>
-</details>
 
-## Missing Effect Sizes in t-tests and F-tests {.red}
+:::
+
+## Effect Sizes in t-tests and F-tests {.red}
 
 We found 1 t-test and/or F-test where effect sizes are not reported. We recommend checking the sentences below, and add any missing effect sizes.
 
@@ -112,34 +128,36 @@ The following sentences are missing effect sizes
 
 ```{r}
 #| echo: false
+
 # table data
 table <- structure(list("On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152."), names = "", class = "data.frame", row.names = c(NA, 
 -1L))
 
 # table options
-options <- list(dom = "t", ordering = FALSE )
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
 
 # display table
 DT::datatable(table, options, selection = "none", rownames = FALSE)
 ```
 
-<details>
-  <summary>Learn More</summary>
-  <div>
-**For metascientific articles demonstrating that effect sizes are often not reported**:
+::: {.callout-tip title="Learn More" collapse="true"}
+
+For metascientific articles demonstrating that effect sizes are often not reported:
 
 * Peng, C.-Y. J., Chen, L.-T., Chiang, H.-M., & Chiang, Y.-C. (2013). The Impact of APA and AERA Guidelines on Effect Size Reporting. Educational Psychology Review, 25(2), 157–209. doi:[10.1007/s10648-013-9218-2](https://doi.org/10.1007/s10648-013-9218-2).
 
 For educational material on reporting effect sizes:
 
 * [Guide to Effect Sizes and Confidence Intervals](https://matthewbjane.quarto.pub/guide-to-effect-sizes-and-confidence-intervals/)
-  </div>
-</details>
 
-All detected and assessed stats:
+:::
+
+::: {.callout-tip title="All detected and assessed stats" collapse="true"}
 
 ```{r}
 #| echo: false
+
 # table data
 table <- structure(list(Sentence = c("On average researchers in the experimental (app) condition made fewer mistakes (M = 9.12) than researchers in the control (checklist) condition (M = 10.9), t(97.7) = 2.9, p = 0.005, d = 0.59.", 
 "On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152."
@@ -149,55 +167,60 @@ NA), "Reported Test" = c("t(97.7) = 2.9", "t(97.2) = -1.96"),
 ), class = c("tbl_df", "tbl", "data.frame"))
 
 # table options
-options <- list(dom = "t", ordering = FALSE )
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
 
 # display table
 DT::datatable(table, options, selection = "none", rownames = FALSE)
 ```
+
+:::
 
 ## StatCheck {.red}
 
-We detected possible errors in test statistics. Note that as the accuracy of statcheck has only been validated for *t*-tests and *F*-tests. As Metacheck only uses validated modules, we only provide statcheck results for *t* tests and *F*-tests
+We detected possible errors in test statistics. Note that as the accuracy of statcheck has only been validated for *t*-tests and *F*-tests. As Metacheck only uses validated modules, we only provide statcheck results for *t* tests and *F*-tests.
 
 ```{r}
 #| echo: false
+
 # table data
-table <- structure(list("Sentence / Text" = "On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152.", 
-    "Reported p" = 0.152, "Recomputed p" = 0.05285936397754, 
-    Section = "results"), class = c("statcheck", "data.frame"
-), row.names = 2L)
+table <- structure(list(Text = "t(97.2) = -1.96, p = 0.152", "Recomputed p" = 0.05286, 
+    Section = "results", Sentence = "On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152."), row.names = 2L, class = c("statcheck", 
+"data.frame"))
 
 # table options
-options <- list(dom = "t", ordering = FALSE )
+cd <- list(list(targets = 0, width = "10em"))
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
 
 # display table
 DT::datatable(table, options, selection = "none", rownames = FALSE)
 ```
 
-<details>
-  <summary>Learn More</summary>
-  <div>
+::: {.callout-tip title="Learn More" collapse="true"}
+
 For metascientific research on the validity of statcheck, and it's usefulness to prevent statistical reporting errors, see:<br><br>
 
 Nuijten, M. B., van Assen, M. A. L. M., Hartgerink, C. H. J., Epskamp, S., & Wicherts, J. M. (2017). The Validity of the Tool “statcheck” in Discovering Statistical Reporting Inconsistencies. PsyArXiv. doi: [10.31234/osf.io/tcxaja](https://doi.org/10.31234/osf.io/tcxaja)
 
 Nuijten, M. B., & Wicherts, J. (2023). The effectiveness of implementing statcheck in the peer review process to avoid statistical reporting errors. PsyArXiv. doi: [10.31234/osf.io/bxau9](https://doi.org/10.31234/osf.io/bxau9)
-  </div>
-</details>
+
+:::
 
 ## RetractionWatch {.yellow}
 
-You cited 1 paper in the Retraction Watch database (as of 2025-08-22). These may be retracted, have corrections, or expressions of concern.
+You cited 1 paper in the Retraction Watch database (as of 2025-12-04). These may be retracted, have corrections, or expressions of concern.
 
  
 ```{r}
 #| echo: false
+
 # table data
 table <- structure(list(doi = "10.1177/0956797614520714", "RW Status" = "Retraction"), class = "data.frame", row.names = c(NA, 
 -1L))
 
 # table options
-options <- list(dom = "t", ordering = FALSE )
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
 
 # display table
 DT::datatable(table, options, selection = "none", rownames = FALSE)
@@ -205,6 +228,26 @@ DT::datatable(table, options, selection = "none", rownames = FALSE)
 
 ## Reference Consistency {.red}
 
+There are cross-references that are not in the bibliography and/or bibliography entries not cross-referenced in the text
+
 This module relies on Grobid correctly parsing the references. There may be some false positives.
 
-There are cross-references that are not in the bibliography or bibliography entries not cross-referenced in the text
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list(xref_id = c("b0", "b2", "b3", NA), ref = c("Gangestad SW, Thornhill R (1998). “Menstrual cycle variation in women's preferences for the scent of symmetrical men.” _Proceedings Biological Sciences_, *22*, 927-933. doi:10.1098/rspb.1998.0380 <https://doi.org/10.1098/rspb.1998.0380>.", 
+"Smith F (2021). “Human error is a symptom of a poor design.” _Journal of Journals_, *0*(0), 0. doi:10.0000/0123456789 <https://doi.org/10.0000/0123456789>.", 
+"Lakens D (2018). “Equivalence testing for psychological research.” _Advances in Methods and Practices in Psychological Science_, *1*, 259-270.", 
+"From a human factors perspective, human error is a symptom of a poor design (Smithy, 2020)."
+), missing = c("xrefs", "xrefs", "xrefs", "bib")), class = "data.frame", row.names = c(NA, 
+-4L))
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd , scrollY = 200)
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE)
+```
+

@@ -1,4 +1,4 @@
-^_metacheck\.Rproj$
+^.*\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^README\.Rmd$
@@ -8,9 +8,7 @@
 ^\.git$
 ^pkgdown$
 ^\.github$
-^profile$
 ^data-raw$
-inst/modules/sample-size*
 ^doc$
 ^Meta$
 ^_stuff/*

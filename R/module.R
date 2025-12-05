@@ -15,7 +15,7 @@ module_run <- function(paper, module, ...) {
 
   # handle metacheck_module_output in pipeline
   if (inherits(paper, "metacheck_module_output")) {
-    summary_table <- paper$summary
+    summary_table <- paper$summary_table
     paper <- paper$paper
   } else if (is_paper_list(paper)) {
     summary_table <- data.frame(id = names(paper))
@@ -76,13 +76,13 @@ module_run <- function(paper, module, ...) {
   results$report <- results$report %||% ""
 
   # process summary table
-  if (!is.null(results$summary)) {
+  if (!is.null(results$summary_table)) {
     suffix <- module_path |> basename() |>
       sub("\\.(r|R)$", "", x = _,) |>
       paste0(".", x = _)
 
     summary_table <- summary_table |>
-      dplyr::left_join(results$summary, by = "id",
+      dplyr::left_join(results$summary_table, by = "id",
                        suffix = c("", suffix))
 
     if (!is.null(results$na_replace)) {
@@ -107,7 +107,7 @@ module_run <- function(paper, module, ...) {
     report = results$report,
     traffic_light = results$traffic_light,
     summary_text = results$summary_text,
-    summary = summary_table,
+    summary_table = summary_table,
     paper = paper
   )
 
@@ -321,7 +321,7 @@ module_template <- function(module_name, path = "./modules") {
     stop("The module_name must contain only letters, numbers, and _")
   }
 
-  template <- system.file("module_example.R", package = "metacheck") |>
+  template <- system.file("templates/_module.R", package = "metacheck") |>
     readLines() |>
     gsub("module_name", module_name, x = _)
 

@@ -338,7 +338,8 @@ function(req, res) {
                     module = result$module,
                     title = result$title,
                     table = result$table,
-                    summary = result$summary,
+                    summary_table = result$summary_table,
+                    summary_text = result$summary_text,
                     report = result$report,
                     traffic_light = result$traffic_light
                 )
@@ -348,6 +349,8 @@ function(req, res) {
                     module = module_name,
                     title = module_name,
                     table = NULL,
+                    summary_table = NULL,
+                    summary_text = "Error running module",
                     report = paste0("Error running module '", module_name, "': ", e$message),
                     traffic_light = "fail"
                 )

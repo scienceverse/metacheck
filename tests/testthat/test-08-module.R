@@ -147,9 +147,10 @@ test_that("test", {
   expect_equal(mod_output$module, module)
   expect_equal(mod_output$title, "List All P-Values (Test version)")
   expect_equal(mod_output$traffic_light, "info")
-  expect_equal(mod_output$report, "")
+  expect_equal(mod_output$report, "report text")
+  expect_equal(mod_output$summary_text, "summary text")
   expect_equal(mod_output$paper, paper)
-  expect_equal(mod_output$summary, expected_summary)
+  expect_equal(mod_output$summary_table, expected_summary)
 
   first_char <- substr(mod_output$table$text, 1, 1)
   expect_true(all(first_char == "p"))
@@ -276,7 +277,7 @@ test_that("retractionwatch", {
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "yellow")
   expect_equal(mod_output$table$doi, "10.1177/0956797614520714")
-  expect_equal(mod_output$report, "You cited some papers in the Retraction Watch database (as of 2025-05-20). These may be retracted, have corrections, or expressions of concern.")
+  expect_true(grepl("You cited 1 paper in the Retraction Watch database (as of", mod_output$report, fixed = TRUE))
 
   # iteration
   paper <- psychsci
@@ -293,9 +294,8 @@ test_that("exact_p", {
 
   module <- "exact_p"
   mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "na")
+  expect_equal(mod_output$traffic_light, "green")
   expect_equal(nrow(mod_output$table), 14)
-  expect_equal(mod_output$report, "We detected no imprecise *p* values.")
 
   # add imprecise p-values
   paper$full_text[1, "text"] <- "Bad p-value example (p < .05)"
@@ -394,8 +394,8 @@ test_that("statcheck", {
 
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 1)
-  expect_equal(mod_output$table$raw, "t(97.2) = -1.96, p = 0.152")
+  expect_equal(nrow(mod_output$table), 2)
+  expect_equal(mod_output$table$raw[[2]], "t(97.2) = -1.96, p = 0.152")
   expect_equal(mod_output$module, module)
 
   # iteration
@@ -412,8 +412,8 @@ test_that("miscitation", {
   mod_output <- module_run(paper, module)
   expect_true("10.1525/collabra.33267" %in% mod_output$table$doi)
   expect_true("miscite_10.1525/collabra.33267" %in%
-                names(mod_output$summary))
-  expect_equal(nrow(mod_output$summary),
+                names(mod_output$summary_table))
+  expect_equal(nrow(mod_output$summary_table),
                list.files("problem_xml") |> length())
   expect_equal(mod_output$traffic_light, "yellow")
 
@@ -427,7 +427,7 @@ test_that("miscitation", {
 
   mod_output <- module_run(paper, module, db = db)
   expect_equal(mod_output$table$doi[[1]], test_doi)
-  expect_equal(mod_output$summary$`miscite_10.1038/nrn3475`,
+  expect_equal(mod_output$summary_table$`miscite_10.1038/nrn3475`,
                c("b11", NA, NA, NA, "b6"))
 
   ## custom db - doi is in bib but not xref text!
@@ -453,7 +453,7 @@ test_that("chaining modules", {
     module_run("all_urls") |>
     module_run("modules/no_error.R")
 
-  expect_equal(names(x$summary), c("id", "p_values", "urls", "p_values.no_error"))
-  expect_equal(x$summary$p_values, p$summary$p_values)
-  expect_equal(x$summary$urls, url$summary$urls)
+  expect_equal(names(x$summary_table), c("id", "p_values", "urls", "p_values.no_error"))
+  expect_equal(x$summary_table$p_values, p$summary_table$p_values)
+  expect_equal(x$summary_table$urls, url$summary_table$urls)
 })

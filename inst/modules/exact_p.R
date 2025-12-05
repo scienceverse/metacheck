@@ -15,7 +15,7 @@
 #' @examples
 #' module_run(psychsci, "exact_p")
 exact_p <- function(paper, ...) {
-  # ---- Detailed table of results ----
+  # table ----
   p <- module_run(paper, "all_p_values")$table
 
   # Expand the sentences so the full sentence can be seen
@@ -30,29 +30,44 @@ exact_p <- function(paper, ...) {
   p$imprecise <- p$imprecise | !p$p_comp %in% c("=", "<")
   p$imprecise <- p$imprecise | is.na(p$p_value)
 
-  cols <- c("expanded")
-  report_table <- p[p$imprecise, cols, drop = FALSE]
-  colnames(report_table) <- ""
+  # remove false positive "*p < .05"
+  star_pattern <- "\\*\\s*p\\s*<\\s*0?\\.0+[15]"
+  stars <- grepl(star_pattern, p$expanded)
+  p$imprecise <- p$imprecise & !stars
 
-  # summary output for paperlists ----
+  cols <- c("text", "expanded")
+  report_table <- unique(p[p$imprecise, cols, drop = FALSE])
+  colnames(report_table) <- c("P-Value", "Sentence")
+
+  # summary_table ----
   summary_table <- p[p$imprecise, , drop = FALSE]
   summary_table <- dplyr::count(summary_table, id, name = "n_imprecise")
 
-  # ---- Determine traffic light ----
-  if(nrow(report_table) == 0) {
+  # traffic light ----
+  if (nrow(p) == 0) {
     tl <- "na"
-    } else {
+  } else if(nrow(report_table) == 0) {
+    tl <- "green"
+  } else {
     tl <- "red"
-    }
+  }
 
-  # ---- Build report ----
-  if (nrow(report_table) == 0) {
-    report <- "We detected no imprecise *p* values."
+  # report / summary_text ----
+  if (tl == "na") {
+    report <- "We detected no *p* values."
+    summary_text <- report
+  } else if (tl == "green") {
+    report <- "All detected *p* values were reported with appropriate precision."
+    summary_text <- report
   } else {
     module_output <- sprintf(
       "We found %d imprecise *p* value%s. Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001.",
       nrow(report_table), ifelse(nrow(report_table) == 1, "", "s")
     )
+
+    summary_text <- sprintf("We found %d imprecise *p* value%s.",
+                            nrow(report_table),
+                            ifelse(nrow(report_table) == 1, "", "s"))
 
     # Guidance text
     guidance <- c(
@@ -62,17 +77,16 @@ exact_p <- function(paper, ...) {
 
     # Combine everything into report text
     report <- c(module_output,
-                scroll_table(report_table),
-                collapse_section(guidance)) |>
-      paste(collapse = "\n\n")
+                scroll_table(report_table, colwidths = c(.1, .9)),
+                collapse_section(guidance))
   }
 
   # ---- Return list ----
   list(
-    traffic_light = tl,
-    report = report,
     table = p,
-    summary_text = "Exact p summary",
-    summary_table = summary_table
+    summary_table = summary_table,
+    traffic_light = tl,
+    summary_text = summary_text,
+    report = report
   )
 }

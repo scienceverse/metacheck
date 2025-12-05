@@ -4,18 +4,35 @@
 \alias{scroll_table}
 \title{Make Scroll Table}
 \usage{
-scroll_table(table, height = 200)
+scroll_table(
+  table,
+  colwidths = "auto",
+  scroll_above = 2,
+  height = 200,
+  column = "body"
+)
 }
 \arguments{
 \item{table}{the data frame to show in a table, or a vector for a list}
 
+\item{colwidths}{set column widths as a vector of px (number > 1) or percent (numbers <= 1)}
+
+\item{scroll_above}{if the table has more rows than this, scroll}
+
 \item{height}{the height of the scroll window}
+
+\item{column}{which quarto column to show tables in}
 }
 \value{
 the markdown R chunk to create this table
 }
 \description{
 A helper function for making module reports.
+}
+\details{
+See \href{https://quarto.org/docs/authoring/article-layout.html}{quarto article layout} for column options. The most common are "body" (centre column), "page" (span all columns"), and "margin" (only in right margin).
+
+To set colwidths, use a numeric or character vector. For a numeric vector, numbers greater than 1 wil be interpreted as pixels, less than 1 as percents. Character vectors will be passed as is (e.g., "3em"). If you only want to specify some columns, set the others to NA, like c(200, NA, NA, NA). Vectors shorter than the number of columns will be recycled.
 }
 \examples{
 scroll_table(LETTERS)

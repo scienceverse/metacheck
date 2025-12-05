@@ -20,23 +20,23 @@
 nonsignificant_pvalue <- function(paper) {
   # detailed table of results ----
   res_p <- module_run(paper, "all_p_values")
-  # Specify conditions for a significant result
-  cond <- !is.na(res_p$table$p_value) &
-    res_p$table$p_value <= 0.05 &
-    !is.na(res_p$table$p_comp) &
-    res_p$table$p_comp %in% c("<", "=")
+  table <- res_p$table
 
-  res_p$table$significance <- ifelse(cond, "significant", "nonsignificant")
-  res_p$table <- subset(res_p$table, significance == "nonsignificant")
+  # Specify conditions for a significant result
+  cond <- !is.na(table$p_value) &
+    table$p_value <= 0.05 &
+    !is.na(table$p_comp) &
+    table$p_comp %in% c("<", "=")
+
+  table$significance <- ifelse(cond, "significant", "nonsignificant")
+  table <- subset(table, significance == "nonsignificant")
 
   # Expand the sentences so the full sentence can be seen
-  res_p$table <- expand_text(
-    res_p$table,
+  table <- expand_text(
+    table,
     paper,
     expand_to = c("sentence")
   )
-
-  table <- res_p$table
 
   # summary output for paperlists ----
   # must have id column as the id of each paper, one row per paper
@@ -50,65 +50,48 @@ nonsignificant_pvalue <- function(paper) {
   # possible values: na, info, red, yellow, green, fail
   tl <- if (sum(summary_table$n_nonsignificant) > 0) "yellow" else "green"
 
-  if (nrow(table) == 0) {
+  if (tl == "green") {
     report <- "We detected no nonsignificant p values."
+    summary_text <- report
   } else {
-    module_output <- sprintf(
-      "We found %d non-significant p values. \n\nMeta-scientific research has shown nonsignificant p values are commonly misinterpreted. It is incorrect to infer that there is 'no effect', 'no difference', or that groups are 'the same' after p > 0.05. \n\nIt is possible that there is a true non-zero effect, but that the study did not detect it. Make sure your inference acknowledges that it is possible that there is a non-zero effect. It is correct to include the effect is 'not significantly' different, although this just restates that p > 0.05. \n\nMetacheck does not yet analyze automatically whether sentences which include non-significant p-values are correct, but we recommend manually checking the sentences below for possible misinterpreted non-significant p values.",
-      nrow(table)
-    )
-    issues_found <- paste(sprintf("%s", table$expanded), collapse = "\n\n")
-
-    sentences_block <- paste0(
-      "<div style='border:1px solid #ccc; padding:10px; ",
-      "max-height:250px; overflow-y:auto; background-color:#f9f9f9; ",
-      "margin-top:5px; margin-bottom:15px;'>",
-
-      "<ul style='list-style-type: circle; padding-left:20px; margin:0;'>",
-      issues_found,
-      "</ul>",
-
-      "</div>"
+    summary_text <- sprintf(
+      "We found %d non-significant p value%s that should be checked for appropriate interpretation.",
+      nrow(table), ifelse(nrow(table)==1, "", "s")
     )
 
-    guidance <- paste0(
-      "For metascientific articles demonstrating the rate of misinterpretations of non-significant results is high, see:<br><br>",
-      "Aczel, B., Palfi, B., Szollosi, A., Kovacs, M., Szaszi, B., Szecsi, P., Zrubka, M., Gronau, Q. F., van den Bergh, D., & Wagenmakers, E.-J. (2018). ",
-      "Quantifying Support for the Null Hypothesis in Psychology: An Empirical Investigation. <em>Advances in Methods and Practices in Psychological Science</em>, 1(3), 357–366. ",
-      "<a href='https://doi.org/10.1177/2515245918773742' target='_blank'>https://doi.org/10.1177/2515245918773742</a> <br>",
-      "Murphy, S. L., Merz, R., Reimann, L.-E., &amp; Fernández, A. (2025). ",
-      "Nonsignificance misinterpreted as an effect’s absence in psychology: Prevalence and temporal analyses. ",
-      "<em>Royal Society Open Science</em>, 12(3), 242167. ",
-      "<a href='https://doi.org/10.1098/rsos.242167' target='_blank'>https://doi.org/10.1098/rsos.242167</a><br><br>",
-      "For educational material on preventing the misinterpretation of p values, see: <a href='https://lakens.github.io/statistical_inferences/01-pvalue.html#sec-misconception1' target='_blank'>https://lakens.github.io/statistical_inferences</a>."
-    )
-    guidance_block <- paste0(
-      "<details style='display:inline-block;'>",
-      "<summary style='cursor:pointer; margin:0; padding:0;'>",
-      "<strong><span style='font-size:20px; color:#006400;'>Learn More</span></strong>",
-      "</summary>",
-      "<div style='margin-top:10px;'>",
-      guidance,
-      "</div>",
-      "</details>"
+    explanation <- c("Meta-scientific research has shown nonsignificant p values are commonly misinterpreted. It is incorrect to infer that there is 'no effect', 'no difference', or that groups are 'the same' after p > 0.05.",
+    "It is possible that there is a true non-zero effect, but that the study did not detect it. Make sure your inference acknowledges that it is possible that there is a non-zero effect. It is correct to include the effect is 'not significantly' different, although this just restates that p > 0.05.",
+    "Metacheck does not yet analyze automatically whether sentences which include non-significant p-values are correct, but we recommend manually checking the sentences below for possible misinterpreted non-significant p values.")
+
+
+    guidance <- c(
+      "For metascientific articles demonstrating the rate of misinterpretations of non-significant results is high, see:",
+      "* Aczel, B., Palfi, B., Szollosi, A., Kovacs, M., Szaszi, B., Szecsi, P., Zrubka, M., Gronau, Q. F., van den Bergh, D., & Wagenmakers, E.-J. (2018). Quantifying Support for the Null Hypothesis in Psychology: An Empirical Investigation. *Advances in Methods and Practices in Psychological Science*, 1(3), 357–366. doi: [10.1177/2515245918773742](https://doi.org/10.1177/2515245918773742)",
+      "* Murphy, S. L., Merz, R., Reimann, L.-E., &amp; Fernández, A. (2025). Nonsignificance misinterpreted as an effect’s absence in psychology: Prevalence and temporal analyses. *Royal Society Open Science*, 12(3), 242167. doi: [10.1098/rsos.242167](https://doi.org/10.1098/rsos.242167)",
+      "For educational material on preventing the misinterpretation of p values, see: [lakens.github.io/statistical_inferences](https://lakens.github.io/statistical_inferences/01-pvalue.html#sec-misconception1)."
     )
 
+    cols <- c("text", "expanded")
+    report_table <- table[, cols]
+    colnames(report_table) <- c("Text", "Sentence")
 
     # report text
-
-    report <- sprintf(
-      "%s\n\n#### The Following Sentences Contain Non-Significant P Values\n\n%s\n\n%s",
-      module_output, sentences_block, guidance_block
-    )
+    report <- c(
+      summary_text,
+      explanation,
+      scroll_table(report_table, colwidths = c(.1, .9)),
+      collapse_section(guidance)
+    ) |> paste(collapse = "\n\n")
   }
 
 
   # return a list ----
   list(
-    summary = summary_table,
+    summary_table = summary_table,
     table = table,
     na_replace = 0,
     traffic_light = tl,
-    report = report
+    report = report,
+    summary_text = summary_text
   )
 }

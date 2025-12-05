@@ -19,84 +19,101 @@
 #' module_run(psychsci[[10]], "statcheck")
 statcheck <- function(paper, ...) {
   # detailed table of results ----
+  v <- verbose()
+  verbose(FALSE)
   stat_table <- metacheck::stats(paper)
-  # We only select t-tests and F-tests for now, as statcheck is only validated for these tests.
-  stat_table <- stat_table[(stat_table$test_type == "t")|(stat_table$test_type == "F"),]
+  verbose(v)
 
-  table <- stat_table[stat_table$error, ]
-
-  # summary output for paperlists ----
-  if (nrow(stat_table) > 0 && "id" %in% names(stat_table)) {
-    summary_table <- dplyr::summarise(
-      stat_table,
-      stats_found    = dplyr::n(),
-      stats_error    = sum(error, na.rm = TRUE),
-      decision_error = sum(decision_error, na.rm = TRUE),
-      .by = id
+  # handle no stats
+  if (nrow(stat_table) == 0) {
+    ret <- list(
+      summary_table = data.frame(id = paper$id),
+      table = data.frame(),
+      traffic_light = "na",
+      report = "No detectable statistics. StatCheck currently only detects statistics written in APA format.",
+      summary_text = "No detectable statistics"
     )
-  } else {
-    summary_table <- NULL
+
+    return(ret)
   }
 
+  # We only select t-tests and F-tests for now,
+  # as statcheck is only validated for these tests.
+  stat_filter <- (stat_table$test_type == "t") |
+    (stat_table$test_type == "F")
+  table <- stat_table[stat_filter, ]
+
+  # no validated stats
+  if (nrow(table) == 0) {
+    ret <- list(
+      summary_table = data.frame(id = paper$id),
+      table = data.frame(),
+      traffic_light = "na",
+      report = "No t-tests or F-tests detected.\n\nThe accuracy of StatCheck has only been validated for *t*-tests and *F*-tests.",
+      summary_text = "No t-tests or F-tests detected"
+    )
+
+    return(ret)
+  }
+
+  # summary output for paperlists ----
+  summary_table <- dplyr::summarise(
+    table,
+    statcheck_found = dplyr::n(),
+    statcheck_errors = sum(error, na.rm = TRUE),
+    statcheck_decision_errors = sum(decision_error, na.rm = TRUE),
+    .by = id
+  )
+
   # determine the traffic light ----
-  tl <- dplyr::case_when(
-    nrow(stat_table) == 0 ~ "na",
-    all(!stat_table$error) ~ "green",
-    .default = "red"
-  )
+  tl <- "green"
+  if (any(table$error)) tl <- "red"
 
-  # base report text for each possible traffic light ----
-  summary_text <- c(
-    na    = "No test statistics were detected.",
-    red   = "We detected possible errors in test statistics. Note that as the accuracy of statcheck has only been validated for *t*-tests and *F*-tests. As Metacheck only uses validated modules, we only provide statcheck results for *t* tests and *F*-tests",
-    green = "We detected no errors in test statistics.",
-    fail  = "StatCheck failed."
-  )
+  if (tl == "green") {
+    report <- "We detected no errors in t-tests or F-tests."
+    summary_text <- report
+  } else if (tl == "red") {
+    n_errors <- sum(table$error, na.rm = TRUE)
+    report_text <- "We detected possible errors in test statistics. Note that as the accuracy of statcheck has only been validated for *t*-tests and *F*-tests. As Metacheck only uses validated modules, we only provide statcheck results for *t* tests and *F*-tests."
+    summary_text <- sprintf("%d possible error%s in t-tests or F-tests",
+                            n_errors, ifelse(n_errors==1, "", "s"))
 
-  report_text <- summary_text[[tl]]
-
-  # If there are errors, I added scrollable HTML table to show the details
-  if (tl == "red" && nrow(table) > 0) {
+    # report_table ----
     # Only show these columns in the HTML view (if they exist)
-    wanted <- c("text", "reported_p", "computed_p", "section")
+    wanted <- c("raw", "computed_p", "section", "text")
     cols   <- intersect(wanted, names(table))
+    report_table <- table[table$error, cols, drop = FALSE]
+    report_table$computed_p <- round(report_table$computed_p, 5)
 
-    if (length(cols) > 0) {
-      report_table <- table[, cols, drop = FALSE]
+    # rename the labels for more clarity during checking the table
+    label_map <- c(
+      raw         = "Text",
+      computed_p  = "Recomputed p",
+      section     = "Section",
+      text        = "Sentence"
+    )
+    colnames(report_table) <- label_map[cols]
 
-      summary_text <- sprintf("%d possible errors in test statistics",
-                              nrow(report_table))
-
-      # I renamed the labels for more clarity during checking the table
-      label_map <- c(
-        text        = "Sentence / Text",
-        reported_p  = "Reported p",
-        computed_p  = "Recomputed p",
-        section     = "Section"
+    guidance <- c(
+      "For metascientific research on the validity of statcheck, and it's usefulness to prevent statistical reporting errors, see:<br><br>",
+      "Nuijten, M. B., van Assen, M. A. L. M., Hartgerink, C. H. J., Epskamp, S., & Wicherts, J. M. (2017). The Validity of the Tool “statcheck” in Discovering Statistical Reporting Inconsistencies. PsyArXiv. doi: [10.31234/osf.io/tcxaja](https://doi.org/10.31234/osf.io/tcxaja)",
+      "Nuijten, M. B., & Wicherts, J. (2023). The effectiveness of implementing statcheck in the peer review process to avoid statistical reporting errors. PsyArXiv. doi: [10.31234/osf.io/bxau9](https://doi.org/10.31234/osf.io/bxau9)"
       )
-      colnames(report_table) <- label_map[cols]
 
-      guidance <- c(
-        "For metascientific research on the validity of statcheck, and it's usefulness to prevent statistical reporting errors, see:<br><br>",
-        "Nuijten, M. B., van Assen, M. A. L. M., Hartgerink, C. H. J., Epskamp, S., & Wicherts, J. M. (2017). The Validity of the Tool “statcheck” in Discovering Statistical Reporting Inconsistencies. PsyArXiv. doi: [10.31234/osf.io/tcxaja](https://doi.org/10.31234/osf.io/tcxaja)",
-        "Nuijten, M. B., & Wicherts, J. (2023). The effectiveness of implementing statcheck in the peer review process to avoid statistical reporting errors. PsyArXiv. doi: [10.31234/osf.io/bxau9](https://doi.org/10.31234/osf.io/bxau9)"
-        )
-
-      report_text <- c(report_text,
-                       scroll_table(report_table),
-                       collapse_section(guidance)) |>
-        paste(collapse = "\n\n")
-    }
+    report <- c(report_text,
+                     scroll_table(report_table, colwidths = c("10em", NA, NA, NA)),
+                     collapse_section(guidance)) |>
+      paste(collapse = "\n\n")
   }
 
   # return a list ----
   list(
-    summary_table = summary_table,
     table = table,
+    summary_table = summary_table,
     na_replace = 0,
     traffic_light = tl,
-    report = report_text,
-    summary_text = summary_text
+    summary_text = summary_text,
+    report = report
   )
 }
 

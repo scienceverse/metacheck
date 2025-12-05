@@ -1,6 +1,5 @@
 test_that("error", {
-  skip_on_ci()
-  expect_true(is.function(report))
+  expect_true(is.function(metacheck::report))
 
   expect_error(report(1), "The paper argument must be a paper object")
 
@@ -11,13 +10,14 @@ test_that("error", {
 
 test_that("defaults", {
   paper <- demoxml() |> read()
-  # skip modules that require osf.api
+  # skip modules that require external APIs
   modules <- c(
     "exact_p", "marginal", "effect_size", "statcheck",
     "retractionwatch", "ref_consistency"
   )
 
   # qmd
+  paper <- psychsci[[94]]
   qmd <- tempfile(fileext = ".qmd")
   if (file.exists(qmd)) unlink(qmd)
   paper_report <- report(paper, modules,
@@ -176,19 +176,41 @@ test_that("scroll_table", {
   # set scroll after scroll_above
   obs_scroll <- scroll_table(1:10)
   obs_no <- scroll_table(1:2)
-  obs_no10 <- scroll_table(1:10, 10)
+  obs_no10 <- scroll_table(1:10, scroll_above = 10)
 
   expect_true(grepl("scrollY", obs_scroll))
   expect_false(grepl("scrollY", obs_no))
   expect_false(grepl("scrollY", obs_no10))
+
+  # colwidths
+  obs <- scroll_table(data.frame(a = 1, b = 2), c(.3, .7))
+  expect_true(grepl('targets = 0, width = "30%"', obs))
+  expect_true(grepl('targets = 1, width = "70%"', obs))
+
+  obs <- scroll_table(data.frame(a = 1, b = 2, c = 3, d = 4), c(.1, .4))
+  expect_true(grepl('targets = 0, width = "10%"', obs))
+  expect_true(grepl('targets = 1, width = "40%"', obs))
+
+  obs <- scroll_table(data.frame(a = 1, b = 2, c = 3, d = 4), c(NA, 200, NA, NA))
+  expect_false(grepl('targets = 0', obs))
+  expect_true(grepl('targets = 1, width = "200px"', obs))
+  expect_false(grepl('targets = 2', obs))
+  expect_false(grepl('targets = 3', obs))
 })
 
 test_that("collapse_section", {
   expect_true(is.function(metacheck::collapse_section))
 
+  expect_error(collapse_section())
+  expect_error(collapse_section("a", callout = "d"))
+
   text <- "hello"
   obs <- collapse_section(text)
+  expect_true(grepl("callout-tip", obs))
+
+  obs <- collapse_section(text, callout = "warning")
+  expect_true(grepl("callout-warning", obs))
 })
 
-paper <- demoxml() |> read()
-report(paper)
+
+

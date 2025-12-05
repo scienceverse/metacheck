@@ -86,7 +86,7 @@ Answer only in valid JSON format, starting and ending with [].'
     .default = "red"
   )
 
-  report = c(
+  summary_text <- c(
     na = "No power analyses were detected",
     red = "You included power analysis, but some essential reporting aspects appear missing.",
     yellow = "You included power analysis, but did not use an LLM to assess completeness, so should check manually.",
@@ -97,11 +97,18 @@ Answer only in valid JSON format, starting and ending with [].'
 
 > An a priori power analysis for an independent samples t-test, conducted using the pwr.t.test function from pwr (Champely, 2020) with Cohen's d = 0.5 and a critical alpha of p = 0.05, determined that 64 participants are required in each group for 80% power."
 
+
+  report <- c(summary_text[[tl]],
+              scroll_table(table$expanded, scroll_above = 1),
+              help_text) |>
+    paste(collapse = "\n\n")
+
   list(
     table = table,
-    summary = summary_table,
+    summary_table = summary_table,
     na_replace = list(power.n = 0),
     traffic_light = tl,
-    report = paste0(help_text, "\n\n", report[[tl]])
+    report = report,
+    summary_text = summary_text[[tl]]
   )
 }

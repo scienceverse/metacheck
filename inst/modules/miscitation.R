@@ -80,7 +80,7 @@ miscitation <- function(paper, db = readRDS(system.file("databases/miscite.Rds",
   # return a list ----
   list(
     table = table,
-    summary = summary_table,
+    summary_table = summary_table,
     traffic_light = tl,
     report = report
   )

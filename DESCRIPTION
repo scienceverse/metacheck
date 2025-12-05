@@ -1,7 +1,7 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
 Version: 0.0.0.9060
-Date: 2025-12-03
+Date: 2025-12-05
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -29,7 +29,6 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Suggests: 
-    DT,
     ggplot2,
     httptest,
     readr,
@@ -40,9 +39,11 @@ Suggests:
     shinyjs,
     testthat (>= 3.0.0),
     waiter,
-    rstudioapi
+    rstudioapi,
+    knitr
 Config/testthat/edition: 3
 Imports: 
+    DT,
     dplyr,
     tidyr,
     progress,
@@ -53,7 +54,6 @@ Imports:
     httr,
     jsonlite,
     quarto,
-    knitr,
     officer,
     base64enc,
     gitcreds,

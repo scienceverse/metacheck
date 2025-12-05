@@ -227,7 +227,7 @@ We also returned a summary table, which gives a single row per paper, and the nu
 
 ```{r}
 #| echo: false
-mytable(mod_test$summary, c("id", "n_power"))
+mytable(mod_test$summary_table, c("id", "n_power"))
 ```
 
 

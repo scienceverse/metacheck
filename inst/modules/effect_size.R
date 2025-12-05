@@ -1,4 +1,4 @@
-#' Missing Effect Sizes in t-tests and F-tests
+#' Effect Sizes in t-tests and F-tests
 #'
 #' @description
 #' Detect t-tests and F-tests with missing effect sizes
@@ -124,8 +124,8 @@ effect_size <- function(paper, ...) {
 
   # combine tests ----
   table <- dplyr::bind_rows(t_table, f_table)
-
   table_missing <- subset(table, is.na(es))
+
   ## summary table ----
   summary_table <- table |>
     dplyr::summarise(
@@ -146,6 +146,7 @@ effect_size <- function(paper, ...) {
     .default = "fail"
   )
 
+  # report / summary_text ----
   if (tl == "na") {
     report <- "No t-tests or F-tests were detected."
     summary_text <- report
@@ -166,7 +167,7 @@ effect_size <- function(paper, ...) {
     )
 
     guidance <- c(
-      "**For metascientific articles demonstrating that effect sizes are often not reported**:",
+      "For metascientific articles demonstrating that effect sizes are often not reported:",
       "* Peng, C.-Y. J., Chen, L.-T., Chiang, H.-M., & Chiang, Y.-C. (2013). The Impact of APA and AERA Guidelines on Effect Size Reporting. Educational Psychology Review, 25(2), 157–209. doi:[10.1007/s10648-013-9218-2](https://doi.org/10.1007/s10648-013-9218-2).",
       "For educational material on reporting effect sizes:",
       "* [Guide to Effect Sizes and Confidence Intervals](https://matthewbjane.quarto.pub/guide-to-effect-sizes-and-confidence-intervals/)"
@@ -176,25 +177,27 @@ effect_size <- function(paper, ...) {
     cols <- c("text", "section", "es", "test_text", "test")
     report_table <- table[, cols, drop=FALSE]
     colnames(report_table) <- c("Sentence", "Section", "Effect Size", "Reported Test", "Test Type")
+    # wrap in a collapsible
+    detail_table <- scroll_table(report_table) |>
+      collapse_section("All detected and assessed stats")
 
-    # I structured the report so the main summary is followed by the missing sentences, guidance, and the detailed table (expandable) in one section!
+    # structure the report in order
     report <- c(
       module_output,
       "The following sentences are missing effect sizes",
       scroll_table(table_missing$text),
       collapse_section(guidance),
-      "All detected and assessed stats:",
-      scroll_table(report_table)
-    ) |> paste(collapse = "\n\n")
+      detail_table
+    )
   }
 
   # return a list ----
   list(
-    traffic_light = tl,
-    report = report,
     table = table,
     summary_table = summary_table,
     na_replace = 0,
-    summary_text = summary_text
+    traffic_light = tl,
+    summary_text = summary_text,
+    report = report
   )
 }

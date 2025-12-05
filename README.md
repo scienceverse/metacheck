@@ -6,7 +6,7 @@
 [![Codecov test coverage](https://codecov.io/gh/scienceverse/metacheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/metacheck)
 <!-- badges: end -->
 
-The goal of metacheck is to automatically check resaerch outputs for best practices. You can find out more at <https://scienceverse.github.io/metacheck/>.
+The goal of metacheck is to automatically check research outputs for best practices. You can find out more at <https://scienceverse.github.io/metacheck/>.
 
 ## Installation
 
