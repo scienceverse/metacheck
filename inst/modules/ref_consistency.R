@@ -19,11 +19,12 @@ ref_consistency <- function(paper) {
   # detailed table of results ----
   bibs <- concat_tables(paper, "bib")
   xrefs <- concat_tables(paper, "xrefs")
+  xrefs <- xrefs[xrefs$type == "bibr", ]
 
   missing_refs <- dplyr::anti_join(bibs, xrefs, by = c("id", "xref_id"))
-  if (nrow(missing_refs)) missing_refs$missing <- "xrefs"
+  missing_refs$missing <- rep("xrefs", nrow(missing_refs))
   missing_bib <- dplyr::anti_join(xrefs, bibs,  by = c("id", "xref_id"))
-  if (nrow(missing_bib)) missing_bib$missing <- "bib"
+  missing_bib$missing <- rep("bib", nrow(missing_bib))
   names(missing_bib) <- names(missing_bib) |> sub("text", "ref", x = _)
 
   table <- dplyr::bind_rows(missing_refs, missing_bib) |>
@@ -43,26 +44,31 @@ ref_consistency <- function(paper) {
   # determine the traffic light ----
   tl <- dplyr::case_when(
     nrow(bibs) == 0 ~ "na",
-    nrow(missing_bib) || nrow(missing_xrefs) ~ "red",
+    nrow(missing_bib) || nrow(missing_refs) ~ "red",
     .default = "green"
   )
 
   # report text for each possible traffic light ----
   report <- c(
-    red = "There are cross-references that are not in the bibliography or bibliography entries not cross-referenced in the text",
+    red = "There are cross-references that are not in the bibliography and/or bibliography entries not cross-referenced in the text",
     green = "All cross-references were in the bibliography and bibliography entries were cross-referenced in the text",
     na = "No bibliography entries were detected"
   )
 
-  report_text <- "This module relies on Grobid correctly parsing the references. There may be some false positives."
-  report_text <- paste(report_text, report[[tl]], sep = "\n\n")
+  cols <- c("xref_id", "ref", "missing")
+  report_table <- table[, cols]
+
+  report_text <- c(report[[tl]],
+                   "This module relies on Grobid correctly parsing the references. There may be some false positives.",
+                   scroll_table(report_table))
 
   # return
   list(
     table = table,
-    summary = summary_table,
+    summary_table = summary_table,
     na_replace = 0,
     traffic_light = tl,
-    report = report_text
+    report = report_text,
+    summary_text = report[[tl]]
   )
 }

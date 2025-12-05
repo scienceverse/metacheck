@@ -310,7 +310,7 @@ reference_check <- function(paper) {
     traffic_light = tl,
     report = report,
     table = refs,
-    summary = refs
+    summary_table = refs
   )
 }
 

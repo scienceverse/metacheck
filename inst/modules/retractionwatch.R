@@ -14,17 +14,19 @@
 #' @param paper a paper object or paperlist object
 #' @param ... further arguments (not used)
 #'
+#' @import dplyr
+#' @import tidyr
+#'
 #' @returns a list with table, traffic light, and report text
 #'
 #' @examples
 #' module_run(psychsci, "retractionwatch")
 retractionwatch <- function(paper) {
   # detailed table of results ----
-  bibs <- metacheck::concat_tables(paper, c('bib'))
-  rw <- metacheck::rw()
-  table <- dplyr::inner_join(bibs, rw, by = 'doi')
+  bibs <- concat_tables(paper, c('bib'))
+  table <- dplyr::inner_join(bibs, rw(), by = 'doi')
   if (nrow(table) > 0) {
-    xrefs <- metacheck::concat_tables(paper, c('xrefs'))
+    xrefs <- concat_tables(paper, c('xrefs'))
     table <- dplyr::left_join(table, xrefs, by = c('xref_id', "id"))
   }
 
@@ -37,18 +39,28 @@ retractionwatch <- function(paper) {
   tl <- if (nrow(table)) "yellow" else "green"
 
   # report text for each possible traffic light ----
-  report <- c(
-    yellow = "You cited some papers in the Retraction Watch database (as of 2025-05-20). These may be retracted, have corrections, or expressions of concern.",
-    green = "You cited no papers in the Retraction Watch database (as of 2025-05-20)"
+
+  summary_text <- sprintf(
+    "You cited %d paper%s in the Retraction Watch database",
+    nrow(table), ifelse(nrow(table) == 1, "", "s")
   )
+
+  report <- sprintf("%s (as of %s).", summary_text, rw_date())
+
+  if (tl == "yellow") {
+    report_table <- table[, c("doi", "retractionwatch")]
+    names(report_table) <- c("doi", "RW Status")
+    report <- paste(report, "These may be retracted, have corrections, or expressions of concern.\n\n", scroll_table(report_table))
+  }
 
   # return a list ----
   list(
     table = table,
-    summary = summary_table,
+    summary_table = summary_table,
     na_replace = 0,
     traffic_light = tl,
-    report = report[[tl]]
+    report = report,
+    summary_text = summary_text
   )
 }
 

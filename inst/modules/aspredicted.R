@@ -49,7 +49,7 @@ aspredicted <- function(paper) {
 
   list(
     table = table,
-    summary = summary_table,
+    summary_table = summary_table,
     na_replace = 0,
     traffic_light = tl,
     report = paste0(report[[tl]], ret_plus)

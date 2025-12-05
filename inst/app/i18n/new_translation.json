@@ -575,10 +575,58 @@
       "en": ""
     },
     {
+      "en": "AsPredicted"
+    },
+    {
+      "en": "Causal Claims"
+    },
+    {
+      "en": "Code Check"
+    },
+    {
+      "en": "Effect Sizes in t-tests and F-tests"
+    },
+    {
+      "en": "Exact P-Values"
+    },
+    {
+      "en": "GROQ API Key"
+    },
+    {
+      "en": "Miscitation"
+    },
+    {
+      "en": "Non-Significant P Value Check"
+    },
+    {
+      "en": "Power"
+    },
+    {
+      "en": "Preregistration Check"
+    },
+    {
+      "en": "Reference Check"
+    },
+    {
+      "en": "StatCheck"
+    },
+    {
+      "en": "Use `pdf2grobid()` to create XML files from PDFs. This relies on an external or local grobid server, and will save files to your machine, so needs to run outside this app."
+    },
+    {
       "en": "all_p_values"
     },
     {
       "en": "all_urls"
+    },
+    {
+      "en": "aspredicted"
+    },
+    {
+      "en": "causal_claims"
+    },
+    {
+      "en": "code_check"
     },
     {
       "en": "div"
@@ -587,13 +635,7 @@
       "en": "effect_size"
     },
     {
-      "en": "Exact P-Values"
-    },
-    {
       "en": "exact_p"
-    },
-    {
-      "en": "GROQ API Key"
     },
     {
       "en": "id"
@@ -602,25 +644,28 @@
       "en": "marginal"
     },
     {
-      "en": "Missing Effect Sizes"
+      "en": "miscitation"
     },
     {
-      "en": "osf_check"
+      "en": "nonsignificant_pvalue"
+    },
+    {
+      "en": "power"
+    },
+    {
+      "en": "prereg_check"
     },
     {
       "en": "ref_consistency"
+    },
+    {
+      "en": "reference_check"
     },
     {
       "en": "retractionwatch"
     },
     {
       "en": "statcheck"
-    },
-    {
-      "en": "StatCheck"
-    },
-    {
-      "en": "Use `pdf2grobid()` to create XML files from PDFs. This relies on an external or local grobid server, and will save files to your machine, so needs to run outside this app."
     }
   ]
 }

@@ -49,7 +49,7 @@ GROQ_API_KEY="key_value_asdf"
 See \url{https://console.groq.com/docs} for more information
 }
 \examples{
-\donttest{
+\dontrun{
   text <- c("hello", "number", "ten", 12)
   query <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
   is_number <- llm(text, query)

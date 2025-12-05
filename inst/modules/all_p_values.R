@@ -13,7 +13,7 @@
 #' @param paper a paper object or paperlist object
 #' @param ... further arguments (not used)
 #'
-#' @returns a list with table, summary, traffic light
+#' @returns a list
 #'
 #' @examples
 #' module_run(psychsci, "all_p_values")
@@ -36,7 +36,7 @@ all_p_values <- function(paper, ...) {
     "(\\s*[x\\*]\\s*10\\s*\\^\\s*-\\d+)?"
   )
 
-  # detailed table of results ----
+  # table ----
   p <- search_text(paper, pattern, return = "match",
                        perl = TRUE, ignore.case = FALSE)
 
@@ -52,17 +52,32 @@ all_p_values <- function(paper, ...) {
     gsub("[x*]10\\^", "e", x = _)
   p$p_value <- suppressWarnings(as.numeric(pvals))
 
-  # summary output for paperlists ----
+  # summary_table ----
   summary_table <- dplyr::count(p, id, name = "p_values")
 
-  # determine the traffic light ----
+  # traffic_light ----
   tl <- if (nrow(p)) "info" else "na"
+
+  # summary_text ----
+  summary_text <- sprintf("We found %d p-value%s",
+                    nrow(p),
+                    ifelse(nrow(p) == 1, "", "s"))
+
+  # report ----
+  cols <- c("text", "expanded")
+  report_table <- expand_text(p, paper)[, cols]
+  names(report_table) <- c("Text", "Sentence")
+  report_table_code <- scroll_table(report_table, colwidths = c("5em", NA))
+  explan <- "This will catch most comparators like =<>~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact debruine@gmail.com."
+  report <- c(summary_text, report_table_code, explan)
 
   # return a list ----
   list(
     table = p,
-    summary = summary_table,
+    summary_table = summary_table,
     na_replace = 0,
-    traffic_light = tl
+    traffic_light = tl,
+    report = report,
+    summary_text = summary_text
   )
 }

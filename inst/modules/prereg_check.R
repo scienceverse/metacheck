@@ -142,7 +142,7 @@ prereg_check <- function(paper, ...) {
   list(
     traffic_light = tl,
     report = report,
-    table <- table,
-    summary <- table
+    table = table,
+    summary_table = table
   )
 }

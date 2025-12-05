@@ -134,10 +134,10 @@ causal_claims <- function(paper) {
   }
 
   list(
-    traffic_light = tl,
-    report = final_report,
     table = causal_classification,
-    summary = summary_table
+    summary_table = summary_table,
+    traffic_light = tl,
+    report = final_report
   )
 }
 

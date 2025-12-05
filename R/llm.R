@@ -22,7 +22,7 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   text <- c("hello", "number", "ten", 12)
 #'   query <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
 #'   is_number <- llm(text, query)

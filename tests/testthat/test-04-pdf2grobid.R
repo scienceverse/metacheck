@@ -1,15 +1,17 @@
-test_that("invalid URL detected", {
-  expect_true(is.function(pdf2grobid))
+test_that("exists", {
+  expect_true(is.function(metacheck::pdf2grobid))
+  expect_no_error(helplist <- help(pdf2grobid, metacheck))
+})
 
+test_that("errors", {
+  expect_error(func(bad_arg))
+
+  # invalid URL
   filename <- demoxml()
   expect_error(pdf2grobid(filename, grobid_url = "notawebsite"),
                "grobid_url must be a valid URL, starting with http or https!")
-})
 
-
-test_that("URL without http/https detected", {
-  expect_true(is.function(pdf2grobid))
-
+  # URL without http/https detected"
   filename <- demoxml()
   expect_error(pdf2grobid(filename, grobid_url = "kermitt2-grobid.hf.space"),
                "grobid_url must be a valid URL, starting with http or https!")
@@ -25,11 +27,15 @@ test_that("non-Grobid URL is rejected", {
 })
 
 test_that("missing file", {
+  v <- verbose()
+  verbose(FALSE)
+  on.exit(verbose(v))
   filename <- "wrongfile.pdf"
   expect_error(pdf2grobid(filename), "wrongfile.pdf does not exist")
 
   filename <- c("wrongfile.pdf", "wrongfile.pdf")
-  expect_warning(x <- pdf2grobid(filename), "2 of 2 files did not convert")
+  expect_warning(x <- pdf2grobid(filename),
+                 "2 of 2 files did not convert")
   exp <- c("wrongfile.pdf" = NA_character_, "wrongfile.pdf" = NA_character_)
   expect_equal(x, exp)
 })

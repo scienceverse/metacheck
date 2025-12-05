@@ -1,6 +1,5 @@
 test_that("error", {
-  skip_on_ci()
-  expect_true(is.function(report))
+  expect_true(is.function(metacheck::report))
 
   expect_error(report(1), "The paper argument must be a paper object")
 
@@ -11,13 +10,14 @@ test_that("error", {
 
 test_that("defaults", {
   paper <- demoxml() |> read()
-  # skip modules that require osf.api
+  # skip modules that require external APIs
   modules <- c(
     "exact_p", "marginal", "effect_size", "statcheck",
     "retractionwatch", "ref_consistency"
   )
 
   # qmd
+  paper <- psychsci[[94]]
   qmd <- tempfile(fileext = ".qmd")
   if (file.exists(qmd)) unlink(qmd)
   paper_report <- report(paper, modules,
@@ -143,31 +143,74 @@ test_that("module_report", {
   expect_error(module_report())
 
   # set up module output
-  module_output <- module_run(psychsci[1:4], "all_p_values")
+  module_output <- module_run(psychsci[[4]], "exact_p")
 
   report <- module_report(module_output)
-  expect_true(grepl("^## List All P-Values \\{\\.info\\}", report))
+  expect_true(grepl("^## Exact P-Values \\{\\.red\\}", report))
 
   report <- module_report(module_output, header = 3, maxrows = 20, trunc_cell = 10)
-  expect_true(grepl("^### List All P-Values \\{\\.info\\}", report))
+  expect_true(grepl("^### Exact P-Values \\{\\.red\\}", report))
 
   report <- module_report(module_output, header = "Custom header")
   expect_true(grepl("^Custom header", report))
 
   op <- capture_output(print(module_output))
-  expect_true(grepl("^|id               | p_values|", op))
+  expect_true(grepl("DT::datatable", op))
 })
 
-test_that("issue-17", {
-  # https://github.com/scienceverse/metacheck/issues/17
-  # error in .subset(x, j) : invalid subscript type 'list'
+test_that("scroll_table", {
+  expect_true(is.function(metacheck::scroll_table))
 
-  # pdf2grobid("problems/Takagishi.pdf")
-  paper <- read("problems/Takagishi.xml")
-  output_file <- "problems/Takagashi.html"
-  unlink(output_file)
-  report(paper, output_file = output_file, output_format = "html")
+  table <- data.frame(uc = LETTERS,
+                      lc = letters)
+  obs <- scroll_table(table)
+  expect_true(grepl("```{r}", obs, fixed = TRUE))
 
-  expect_true(file.exists(output_file))
+  # vector vs unnamed table version
+  table <- data.frame(table = LETTERS)
+  colnames(table) <- ""
+  obs_table <- scroll_table(table)
+  obs_vec <- scroll_table(LETTERS)
+  expect_equal(obs_table, obs_vec)
 
+  # set scroll after scroll_above
+  obs_scroll <- scroll_table(1:10)
+  obs_no <- scroll_table(1:2)
+  obs_no10 <- scroll_table(1:10, scroll_above = 10)
+
+  expect_true(grepl("scrollY", obs_scroll))
+  expect_false(grepl("scrollY", obs_no))
+  expect_false(grepl("scrollY", obs_no10))
+
+  # colwidths
+  obs <- scroll_table(data.frame(a = 1, b = 2), c(.3, .7))
+  expect_true(grepl('targets = 0, width = "30%"', obs))
+  expect_true(grepl('targets = 1, width = "70%"', obs))
+
+  obs <- scroll_table(data.frame(a = 1, b = 2, c = 3, d = 4), c(.1, .4))
+  expect_true(grepl('targets = 0, width = "10%"', obs))
+  expect_true(grepl('targets = 1, width = "40%"', obs))
+
+  obs <- scroll_table(data.frame(a = 1, b = 2, c = 3, d = 4), c(NA, 200, NA, NA))
+  expect_false(grepl('targets = 0', obs))
+  expect_true(grepl('targets = 1, width = "200px"', obs))
+  expect_false(grepl('targets = 2', obs))
+  expect_false(grepl('targets = 3', obs))
 })
+
+test_that("collapse_section", {
+  expect_true(is.function(metacheck::collapse_section))
+
+  expect_error(collapse_section())
+  expect_error(collapse_section("a", callout = "d"))
+
+  text <- "hello"
+  obs <- collapse_section(text)
+  expect_true(grepl("callout-tip", obs))
+
+  obs <- collapse_section(text, callout = "warning")
+  expect_true(grepl("callout-warning", obs))
+})
+
+
+

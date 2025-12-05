@@ -6,7 +6,6 @@ inst/doc
 .DS_Store
 .quarto
 inst/python/constants.py
-profile/psych_science_xml*
 inst/modules/sample-size*
 tests/testthat/pdf
 /doc/
@@ -17,3 +16,4 @@ tests/testthat/pdf
 _stuff/modules-old/sample-size*
 _stuff/check_correct_citations/pdfs_lakens
 _stuff/check_correct_citations/xmls_lakens
+_stuff/report-demo/

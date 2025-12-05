@@ -34,10 +34,14 @@ articles:
  #     - text_model
       - modules
       - creating_modules
-      - validate
+  #    - validate
       - github
 
 reference:
+- title: App
+  des: ~
+  contents:
+  - '`metacheck_app`'
 - title: Reading in Papers
   desc: ~
   contents:
@@ -71,7 +75,11 @@ reference:
   - '`module_report`'
   - '`module_template`'
   - '`report`'
-  - '`metacheck_app`'
+- title: Module Helpers
+  desc: ~
+  contents:
+  - '`scroll_table`'
+  - '`collapse_section`'
 - title: LLM Functions
   desc: ~
   contents:
@@ -118,6 +126,11 @@ reference:
   - '`bibsearch`'
   - '`bib_add_dois`'
   - '`bibtex_add_dois`'
+  - '`causal_relations`'
+  - '`FReD`'
+  - '`FReD_update`'
+  - '`FReD_date`'
+  - '`get_doi`'
   - '`openalex`'
   - '`crossref`'
   - '`retractionwatch`'

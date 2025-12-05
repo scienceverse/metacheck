@@ -1,3 +1,8 @@
+# metacheck 0.0.0.9060
+
+* Lots of changes for how reports are formatted
+* in module output, `summary` is now `summary_table`
+
 # metacheck 0.0.0.9059
 
 * Package name changed to metacheck!
