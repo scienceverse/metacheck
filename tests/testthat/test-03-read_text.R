@@ -29,16 +29,16 @@ test_that("from txt", {
                   %in% ft$section))
 })
 
-# test_that("from word docx", {
-#   filename <- system.file("extdata/to_err_is_human.docx", package = "metacheck")
-#   p <- read(filename)
-#   ft <- p$full_text
-#
-#   expect_equal(class(p), c("scivrs_paper", "list"))
-#   expect_equal(colnames(ft), c("text", "section", "header", "div", "p", "s", "id"))
-#   expect_true(all(c("intro", "results", "discussion")
-#                   %in% ft$section))
-# })
+test_that("from word docx", {
+  filename <- system.file("extdata/to_err_is_human.docx", package = "metacheck")
+  p <- read(filename)
+  ft <- p$full_text
+
+  expect_equal(class(p), c("scivrs_paper", "list"))
+  expect_equal(colnames(ft), c("text", "section", "header", "div", "p", "s", "id"))
+  expect_true(all(c("intro", "results", "discussion", "references")
+                  %in% ft$section))
+})
 
 # test_that("from word doc", {
 #   filename <- system.file("extdata/to_err_is_human.doc", package = "metacheck")
