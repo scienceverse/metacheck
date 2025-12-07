@@ -182,7 +182,7 @@ module_report <- function(module_output,
 #' @param colwidths set column widths as a vector of px (number > 1) or percent (numbers <= 1)
 #' @param scroll_above if the table has more rows than this, scroll
 #' @param height the height of the scroll window
-#' @escape whether or not to escape the DT (necessary if using raw html)
+#' @param escape whether or not to escape the DT (necessary if using raw html)
 #' @param column which quarto column to show tables in
 #'
 #' @returns the markdown R chunk to create this table
@@ -194,7 +194,7 @@ scroll_table <- function(table,
                          colwidths = "auto",
                          scroll_above = 2,
                          height = 200,
-                         escape = TRUE, 
+                         escape = FALSE,
                          column = "body") {
   # convert vectors to a table
   if (is.atomic(table)) {
@@ -254,7 +254,8 @@ options <- list(dom = "t", ordering = FALSE, columnDefs = cd %s)
 # display table
 DT::datatable(table, options, selection = "none", rownames = FALSE, escape = %s)
 ```
-', column_loc, tbl_code, cd_code, scrollY, ifTRUE(escape, "TRUE", "FALSE"))
+', column_loc, tbl_code, cd_code, scrollY,
+   ifelse(isTRUE(escape), "TRUE", "FALSE"))
 
   return(md)
 }
