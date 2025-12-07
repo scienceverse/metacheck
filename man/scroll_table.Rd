@@ -9,6 +9,7 @@ scroll_table(
   colwidths = "auto",
   scroll_above = 2,
   height = 200,
+  escape = FALSE,
   column = "body"
 )
 }
@@ -20,6 +21,8 @@ scroll_table(
 \item{scroll_above}{if the table has more rows than this, scroll}
 
 \item{height}{the height of the scroll window}
+
+\item{escape}{whether or not to escape the DT (necessary if using raw html)}
 
 \item{column}{which quarto column to show tables in}
 }

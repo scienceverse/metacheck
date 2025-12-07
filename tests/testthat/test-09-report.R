@@ -165,6 +165,10 @@ test_that("scroll_table", {
                       lc = letters)
   obs <- scroll_table(table)
   expect_true(grepl("```{r}", obs, fixed = TRUE))
+  expect_true(grepl("escape = TRUE", obs, fixed = TRUE))
+
+  obs <- scroll_table(table, escape = FALSE)
+  expect_true(grepl("escape = FALSE", obs, fixed = TRUE))
 
   # vector vs unnamed table version
   table <- data.frame(table = LETTERS)

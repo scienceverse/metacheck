@@ -80,6 +80,7 @@ reference:
   contents:
   - '`scroll_table`'
   - '`collapse_section`'
+  - '`plural`'
 - title: LLM Functions
   desc: ~
   contents:

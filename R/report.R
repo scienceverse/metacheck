@@ -70,10 +70,13 @@ report <- function(paper,
   rt_head <- paste(rt[1:cut_after], collapse = "\n")
   # turn real % to %%, leave %s, %d, %f, %i
   rt_head <- gsub("\\%(?![sdfi])", "%%", rt_head, perl = TRUE)
+  doi_text <- ifelse(paper$info$doi == "", "",
+                     sprintf("DOI: [%s](https://doi.org/%s)", paper$info$doi, paper$info$doi))
   qmd_header <- sprintf(rt_head,
                         paper$info$title,
                         as.character(packageVersion("metacheck")),
-                        Sys.Date())
+                        Sys.Date(),
+                        doi_text)
 
   ## generate summary section ----
   summary_list <- sapply(module_output, \(x) {
@@ -182,7 +185,7 @@ module_report <- function(module_output,
 #' @param colwidths set column widths as a vector of px (number > 1) or percent (numbers <= 1)
 #' @param scroll_above if the table has more rows than this, scroll
 #' @param height the height of the scroll window
-#' @escape whether or not to escape the DT (necessary if using raw html)
+#' @param escape whether or not to escape the DT (necessary if using raw html)
 #' @param column which quarto column to show tables in
 #'
 #' @returns the markdown R chunk to create this table
@@ -194,7 +197,7 @@ scroll_table <- function(table,
                          colwidths = "auto",
                          scroll_above = 2,
                          height = 200,
-                         escape = TRUE,
+                         escape = FALSE,
                          column = "body") {
   # convert vectors to a table
   if (is.atomic(table)) {
@@ -203,7 +206,7 @@ scroll_table <- function(table,
   }
 
   # return nothing if no table contents
-  if (nrow(table) == 0 | ncol(table) == 0) {
+  if (is.null(table) || nrow(table) == 0 || ncol(table) == 0) {
     return("")
   }
 
@@ -287,4 +290,23 @@ collapse_section <- function(text, title = "Learn More",
     ifelse(collapse, "true", "false"),
     paste0(text, collapse = "\n\n")
   )
+}
+
+#' Pluralise
+#'
+#' Helper function for conditional plurals. For example, if you want to return "1 error" or "2 errors", you can use this in a sprintf().
+#'
+#' @param n the number
+#' @param singular the word or ending when n = 1
+#' @param plural the word or ending n != 1
+#'
+#' @returns a string
+#' @export
+#'
+#' @examples
+#' n <- 0:3
+#' sprintf("I have %d friend%s", n, plural(n))
+#' sprintf("I have %d %s", n, plural(n, "octopus", "octopi"))
+plural <- function(n, singular = "", plural = "s") {
+  ifelse(n == 1, singular, plural)
 }
