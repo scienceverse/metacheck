@@ -18,31 +18,36 @@
 #'
 pdf2grobid <- function(filename, save_path = ".",
                        grobid_url = "https://kermitt2-grobid.hf.space",
+                       #grobid_url = "http://api.metacheck.app",
                        start = -1,
                        end = -1,
                        consolidate_citations = 0,
                        consolidate_header = 0,
                        consolidate_funders = 0) {
+
   # check if grobid_url is a valid url, before connecting to it
   if (!grepl("^https?://", grobid_url)) {
     stop("grobid_url must be a valid URL, starting with http or https!")
   }
 
-  # test if the server is up using the isalive endpoint, instead of sitedown
-  service_status_url <- httr::modify_url(grobid_url, path = "/api/isalive")
+  if (grobid_url != "http://api.metacheck.app") {
+    # test if the server is up using the isalive endpoint, instead of sitedown
+    service_status_url <- httr2::url_modify(grobid_url, path = "/api/isalive")
 
-  resp <- tryCatch({
-      httr::GET(service_status_url)
-    },
-    error = function(e) {
-      stop("Connection to the GROBID server failed!",
-           "Please check your connection or the URL: ", grobid_url)
+    resp <- tryCatch({
+        req <- httr2::request(service_status_url)
+        httr2::req_perform(req)
+      },
+      error = function(e) {
+        stop("Connection to the GROBID server failed!",
+             "Please check your connection or the URL: ", grobid_url)
+      }
+    )
+
+    status <- httr2::resp_status(resp)
+    if (status != 200) {
+      stop("GROBID server does not appear up and running on the provided URL. Status: ", status)
     }
-  )
-
-  status <- httr::status_code(resp)
-  if (status != 200) {
-    stop("GROBID server does not appear up and running on the provided URL. Status: ", status)
   }
 
   # handle list of files or a directory----
@@ -117,23 +122,32 @@ pdf2grobid <- function(filename, save_path = ".",
     stop("The file ", filename, " does not exist.")
   }
 
-  file <- httr::upload_file(filename)
-  post_url <- httr::modify_url(grobid_url, path = "/api/processFulltextDocument")
-  args <- list(
-    input = file,
-    start = start,
-    end = end,
-    consolidateCitations = consolidate_citations,
-    consolidateHeader = consolidate_header,
-    consolidateFunders = consolidate_funders,
-    includeRawCitations = 1
-  )
-  resp <- httr::POST(post_url, body = args, encode = "multipart")
+  if (grobid_url == "http://api.metacheck.app") {
+    pyta <- pytacheck(filename)
+    content <- pyta$grobid_xml
+    # TODO: integrate other info into this
+  } else {
+    # grobid server
+    file <- httr::upload_file(filename)
+    post_url <- httr::modify_url(grobid_url, path = "/api/processFulltextDocument")
+    args <- list(
+      input = file,
+      start = start,
+      end = end,
+      consolidateCitations = consolidate_citations,
+      consolidateHeader = consolidate_header,
+      consolidateFunders = consolidate_funders,
+      includeRawCitations = 1
+    )
+    resp <- httr::POST(post_url, body = args, encode = "multipart")
 
-  # Check if the request was successful
-  status <- httr::http_status(resp)
-  if (status$category != "Success") {
-    stop(status$reason)
+    # Check if the request was successful
+    status <- httr::http_status(resp)
+    if (status$category != "Success") {
+      stop(status$reason)
+    }
+
+    content <- httr::content(resp, as = "raw")
   }
 
   # save to save_path
@@ -157,7 +171,6 @@ pdf2grobid <- function(filename, save_path = ".",
   }
 
   # Save the response content
-  content <- httr::content(resp, as = "raw")
   writeBin(content, save_file)
 
   # read in as xml
@@ -166,5 +179,44 @@ pdf2grobid <- function(filename, save_path = ".",
     return(xml)
   } else {
     save_file
+  }
+}
+
+#' Process a paper using the Pytacheck API
+#'
+#' @param filename Path to the PDF file
+#' @param api_url Base URL of the API
+#'
+#' @return A Tibble containing the processed data (id, filename, grobid_xml, ocr_markdown, etc.)
+#' @export
+#' @keywords internal
+pytacheck <- function(filename, api_url = "http://api.metacheck.app") {
+  # prepare request
+  req <- httr2::request(api_url) |>
+    httr2::req_url_path("/process/") |>
+    httr2::req_body_multipart(
+      file = curl::form_file(filename),
+      use_grobid = "true",
+      use_ocr = "true"
+    )
+
+  tryCatch({ resp <- httr2::req_perform(req) },
+           error = \(e) {
+             stop("There is an error with the server: ",
+                  e$message, call. = FALSE)
+           })
+
+  # process response
+  content_type <- httr2::resp_header(resp, "content-type")
+
+  if (grepl("application/vnd.apache.arrow.stream", content_type)) {
+    # It's an Arrow stream
+    buffer <- httr2::resp_body_raw(resp)
+    reader <- arrow::RecordBatchStreamReader$create(buffer)
+    table <- reader$read_table()
+    return(dplyr::as_tibble(table))
+  } else {
+    # It's JSON (likely an error or fallback)
+    return(httr2::resp_body_json(resp))
   }
 }
