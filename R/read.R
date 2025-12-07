@@ -102,7 +102,7 @@ read <- function(filename) {
   nlm <- grepl("//NLM//DTD", dtd)
   # https://jats.nlm.nih.gov/archiving/tag-library/1.1/
   xml_name <- xml2::xml_name(xml)
-  word <- grepl("office/word", xml2::xml_attrs(xml)) |> any()
+  word <- grepl("office.word", xml2::xml_attrs(xml)) |> any()
 
   xml_type <- dplyr::case_when(
     isTRUE(apa) ~ "apa",
@@ -340,12 +340,14 @@ process_full_text <- function(full_text) {
   method <- grepl("method|material", nospace_headers, ignore.case = TRUE)
   results <- grepl("result", nospace_headers, ignore.case = TRUE)
   discussion <- grepl("discuss", nospace_headers, ignore.case = TRUE)
+  references <- grepl("bibliography|reference", nospace_headers, ignore.case = TRUE)
   ft$section <- rep(NA_character_, nrow(ft))
   ft$section[abstract] <- "abstract"
   ft$section[intro] <- "intro"
   ft$section[method] <- "method"
   ft$section[discussion] <- "discussion"
   ft$section[results] <- "results"
+  ft$section[references] <- "references"
   ft$section[back] <- back_sections
 
   # beginning sections after abstract with no header labelled intro

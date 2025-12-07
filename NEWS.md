@@ -2,6 +2,7 @@
 
 * Lots of changes for how reports are formatted
 * in module output, `summary` is now `summary_table`
+* Fixed a bug where some .docx file wouldn't read in (support for Word files is still patchy -- ideally render to PDF)
 
 # metacheck 0.0.0.9059
 

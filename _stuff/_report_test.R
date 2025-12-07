@@ -26,7 +26,7 @@ modules <- c(
 )
 
 # generate reports for a sample of n papers
-n <- 10
+n <- 1
 files <- seq_along(psychsci) |> sample(n) |>
   lapply(\(i) {
     report(psychsci[[i]],
