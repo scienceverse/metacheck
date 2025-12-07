@@ -250,7 +250,7 @@ cd <- %s
 options <- list(dom = "t", ordering = FALSE, columnDefs = cd %s)
 
 # display table
-DT::datatable(table, options, selection = "none", rownames = FALSE)
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
 ```
 ', column_loc, tbl_code, cd_code, scrollY)
 
