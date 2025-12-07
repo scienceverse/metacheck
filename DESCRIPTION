@@ -52,6 +52,7 @@ Imports:
     xml2,
     statcheck,
     httr,
+    httr2,
     jsonlite,
     quarto,
     officer,

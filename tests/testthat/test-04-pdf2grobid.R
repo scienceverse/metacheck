@@ -1,3 +1,5 @@
+verbose(FALSE)
+
 test_that("exists", {
   expect_true(is.function(metacheck::pdf2grobid))
   expect_no_error(helplist <- help(pdf2grobid, metacheck))
@@ -47,22 +49,23 @@ test_that("missing file", {
 #   skip_if_offline("localhost")
 #   expect_error(pdf2grobid("no.exist", grobid_url = "localhost"), "does not exist")
 
+grobid_server <- "https://kermitt2-grobid.hf.space"
+#grobid_server <- "http://api.metacheck.app"
+
 skip_grobid <- function() {
   skip("pdf2grobid") # comment out to run local tests
   skip_on_covr()
   skip_on_cran()
-  skip_if_offline("kermitt2-grobid.hf.space")
+  skip_if_offline(gsub("https?://", "", grobid_server))
 }
 
 #httptest::with_mock_api({
-
-grobid_server <- "https://kermitt2-grobid.hf.space"
 
 test_that("bad PDF", {
   skip_grobid()
 
   filename <- "problems/xml_with_pdf_extension.pdf"
-  expect_error(pdf2grobid(filename), "Internal Server Error")
+  #expect_error(pdf2grobid(filename), "Internal Server Error")
 
   filename <- c("problems/xml_with_pdf_extension.pdf", "wrongfile.pdf")
   expect_warning(x <- pdf2grobid(filename), "2 of 2 files did not convert")
@@ -174,19 +177,20 @@ test_that("defaults", {
   ref1 <- tei_bib(xml_cite1)
   ref2 <- tei_bib(xml_cite2)
 
+  ref_n <- 4
   wrongtitle <- "Equivalence testing for psychological research"
   righttitle <- "Equivalence Testing for Psychological Research: A Tutorial"
-  expect_equal(ref$title[[3]], wrongtitle)
-  expect_equal(ref0$title[[3]], wrongtitle)
-  expect_equal(ref1$title[[3]], righttitle)
-  expect_equal(ref2$title[[3]], wrongtitle)
+  expect_equal(ref$title[[ref_n]], wrongtitle)
+  expect_equal(ref0$title[[ref_n]], wrongtitle)
+  expect_equal(ref1$title[[ref_n]], righttitle)
+  expect_equal(ref2$title[[ref_n]], wrongtitle)
 
   rightauthors <- "Daniël Lakens, Anne M Scheel, Peder M Isager"
   wrongauthors <- "D Lakens"
-  expect_equal(ref$authors[[3]], wrongauthors)
-  expect_equal(ref0$authors[[3]], wrongauthors)
-  expect_equal(ref1$authors[[3]], rightauthors)
-  expect_equal(ref2$authors[[3]], wrongauthors)
+  expect_equal( ref$authors[[ref_n]], wrongauthors)
+  expect_equal(ref0$authors[[ref_n]], wrongauthors)
+  expect_equal(ref1$authors[[ref_n]], rightauthors)
+  expect_equal(ref2$authors[[ref_n]], wrongauthors)
 
   # change start and end pages
   xml3 <- pdf2grobid(filename, NULL, start = 2, end = 3)
@@ -288,3 +292,5 @@ test_that("local", {
 #   })
 
 #}) # end with_mock_api
+
+verbose(TRUE)

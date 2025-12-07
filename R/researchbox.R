@@ -31,7 +31,7 @@ rbox_links <- function(paper) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   # get info on one OSF node
 #'   rbox_retrieve("https://researchbox.org/801")
 #' }
