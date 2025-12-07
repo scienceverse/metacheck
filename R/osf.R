@@ -222,7 +222,8 @@ osf_retrieve <- function(osf_url, id_col = 1,
   }
 
   # get top-level project ----
-  if (find_project) {
+  if (find_project && "parent" %in% colnames(data)) {
+
     parents <- data.frame(
       parent = unique(data$parent) |> stats::na.omit()
     )

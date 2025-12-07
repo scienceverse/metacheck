@@ -28,12 +28,14 @@ format:
   section::before { content: '' !important; }
   .quarto-title-banner { background-color: #327118; }
   th { color: #327118; }
+  .dataTables_scrollBody { margin: 0.5em 0; }
 </style>
 
 :::: {.content-visible when-format="html"}
 ::: {.column-margin}
 [MetaCheck](http://www.scienceverse.org/metacheck) version {{< meta metacheck.version >}}<br>
-Report Created: {{< meta metacheck.report-created >}}
+Report Created: {{< meta metacheck.report-created >}}  
+%s
 
 -------
 

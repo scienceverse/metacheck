@@ -1,0 +1,45 @@
+---
+title: "bad"
+output: html_document
+---
+
+Load up my library
+
+```{r}
+library(tidyverse)
+```
+
+Now I will load my data
+
+```{r}
+data <- read_csv("C://Lakens/files/example.csv")
+data2 <- read_csv("C://Lakens/files/example2.csv")
+```
+
+
+And set some variables
+
+```{r}
+a <- 1
+b <- 2
+c <- 3
+d <- 4
+e <- 5
+f <- 6
+g <- 7
+h <- 8
+i <- 9
+j <- 10
+```
+
+And load a useless library.
+
+```{r}
+library(dplyr)
+
+# more stuff
+
+
+```
+
+

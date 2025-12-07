@@ -12,6 +12,8 @@
 #' }
 github_info <- function(repo, recursive = FALSE) {
   repo <- github_repo(repo)
+  if (is.null(repo)) return(NULL)
+
   readme <- github_readme(repo)
   languages <- github_languages(repo)
   files <- github_files(repo, recursive = recursive)
@@ -36,6 +38,13 @@ github_info <- function(repo, recursive = FALSE) {
 #' github_repo("https://github.com/scienceverse/metacheck/")
 #' github_repo("https://github.com/scienceverse/metacheck.git")
 github_repo <- function(repo) {
+  if (length(repo) == 0) return(NULL)
+
+  if (length(repo) > 1) {
+    res <- sapply(repo, github_repo)
+    return(res)
+  }
+
   # get repo name ----
   match <- regexec("(?<=^|/)([a-z0-9-])+/([a-z0-9\\._-])+(?=\\.git|/|$)",
                    repo, perl = TRUE, ignore.case = TRUE)
@@ -47,7 +56,7 @@ github_repo <- function(repo) {
   head <- httr::HEAD(url)
 
   if (head$status_code != 200) {
-    return("unavailable")
+    return(NULL)
   }
 
   return(simple_repo)
@@ -65,7 +74,13 @@ github_repo <- function(repo) {
 #'   github_readme("scienceverse/metacheck")
 #' }
 github_readme <- function(repo) {
+  if (length(repo) > 1) {
+    res <- sapply(repo, github_readme)
+    return(res)
+  }
+
   repo <- github_repo(repo)
+  if (is.null(repo)) return("")
 
   readme_url <- sprintf(
     "https://api.github.com/repos/%s/readme",
@@ -99,6 +114,7 @@ github_readme <- function(repo) {
 github_files <- function(repo, dir = "",
                          recursive = FALSE) {
   repo <- github_repo(repo)
+  if (is.null(repo)) return(NULL)
 
   url <- sprintf(
     "https://api.github.com/repos/%s/contents/%s",
@@ -206,7 +222,14 @@ github_config <- function() {
 #'   github_languages("scienceverse/metacheck")
 #' }
 github_languages <- function(repo) {
+  if (length(repo) > 1) {
+    res <- lapply(repo, github_languages)
+    tbl <- do.call(dplyr::bind_rows, res)
+    return(tbl)
+  }
+
   repo <- github_repo(repo)
+  if (is.null(repo)) return(NULL)
 
   url <- sprintf(
     "https://api.github.com/repos/%s/languages",
@@ -216,6 +239,7 @@ github_languages <- function(repo) {
   results <- httr::GET(url, github_config())
   languages <- httr::content(results, "parsed")
   lang_df <- data.frame(
+    repo = repo,
     language = names(languages),
     bytes = unlist(languages),
     row.names = NULL

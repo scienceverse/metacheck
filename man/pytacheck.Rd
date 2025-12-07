@@ -4,10 +4,10 @@
 \alias{pytacheck}
 \title{Process a paper using the Pytacheck API}
 \usage{
-pytacheck(file_path, api_url = "http://api.metacheck.app")
+pytacheck(filename, api_url = "http://api.metacheck.app")
 }
 \arguments{
-\item{file_path}{Path to the PDF file}
+\item{filename}{Path to the PDF file}
 
 \item{api_url}{Base URL of the API}
 }
