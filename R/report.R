@@ -194,7 +194,7 @@ scroll_table <- function(table,
                          colwidths = "auto",
                          scroll_above = 2,
                          height = 200,
-                         escape = TRUE, 
+                         escape = TRUE,
                          column = "body") {
   # convert vectors to a table
   if (is.atomic(table)) {
@@ -254,7 +254,8 @@ options <- list(dom = "t", ordering = FALSE, columnDefs = cd %s)
 # display table
 DT::datatable(table, options, selection = "none", rownames = FALSE, escape = %s)
 ```
-', column_loc, tbl_code, cd_code, scrollY, ifTRUE(escape, "TRUE", "FALSE"))
+', column_loc, tbl_code, cd_code, scrollY,
+   ifelse(isTRUE(escape), "TRUE", "FALSE"))
 
   return(md)
 }
