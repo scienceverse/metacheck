@@ -1,3 +1,6 @@
+llm_use(TRUE)
+verbose
+
 httptest::with_mock_api({
   old_groq <- Sys.getenv("GROQ_API_KEY")
   Sys.setenv(GROQ_API_KEY = "test") # doesn't need to be set with_mock_api
@@ -70,10 +73,14 @@ test_that("llm_max_calls", {
 test_that("basic", {
   skip_if(Sys.getenv("GROQ_API_KEY") == "", message = "Requires groq API key")
 
+  # error on llm_use() == FALSE
+  llm_use(FALSE)
   text <- c("hello", "number", "ten", 12)
   query <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
-  expect_message( is_number <- llm(text, query, seed = 8675309) )
+  expect_error(is_number <- llm(text, query), "llm_use")
 
+  llm_use(TRUE)
+  is_number <- llm(text, query, seed = 8675309)
   expect_equal(is_number$text, text)
   expect_equal(is_number$answer[[1]], "FALSE")
   expect_equal(is_number$answer[[4]], "TRUE")
@@ -119,7 +126,7 @@ test_that("sample size", {
   expect_equal(res2$answer[[1]], res$answer[[1]])
 })
 
-test_that("exceeds tokens", {
+#test_that("exceeds tokens", {
   ## big text (new model has a much bigger limit)
   # text <- psychsci[7] |> search_text(return = "id")
   # # nchar(text$text)
@@ -129,7 +136,7 @@ test_that("exceeds tokens", {
   #     answer <- llm(text, query),
   #     "tokens/rate_limit_exceeded", fixed = TRUE),
   #   "requests left", fixed = TRUE)
-})
+#})
 
 test_that("rate limiting", {
   skip("Rate limiting test")

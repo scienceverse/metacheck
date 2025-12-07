@@ -37,7 +37,8 @@ llm <- function(text, query,
                 seed = sample(1000000:9999999, 1),
                 API_KEY = Sys.getenv("GROQ_API_KEY")) {
   ## error detection ----
-  if (!llm_use(API_KEY = API_KEY)) stop()
+  if (!llm_use(API_KEY = API_KEY))
+    stop("Set llm_use(TRUE) to use LLM functions")
 
   models <- llm_model_list(API_KEY)
   if (!model %in% models$id) {

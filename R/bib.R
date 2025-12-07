@@ -38,7 +38,21 @@ bibsearch <- function(title, source = NA, authors = NA, strict = TRUE) {
   )
 
   j <- tryCatch(jsonlite::read_json(url),
-                error = \(e) {})
+                error = \(e) { "error" },
+                warning = \(w) {
+                  if (grepl("Couldn't resolve host name",
+                            w$message)) return("offline")
+                })
+
+  if (is.character(j)) {
+    if (j == "offline") {
+      message("OpenAlex is offline")
+      return(NULL)
+    } else if (j == "error") {
+      message("Error querying OpenAlex")
+      return(NULL)
+    }
+  }
 
   if (is.null(j$results) || length(j$results) == 0) {
     if (grepl(":", title)) {
