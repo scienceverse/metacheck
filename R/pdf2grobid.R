@@ -32,11 +32,10 @@ pdf2grobid <- function(filename, save_path = ".",
 
   if (grobid_url != "http://api.metacheck.app") {
     # test if the server is up using the isalive endpoint, instead of sitedown
-    service_status_url <- httr2::url_modify(grobid_url, path = "/api/isalive")
+    service_status_url <- httr::modify_url(grobid_url, path = "/api/isalive")
 
     resp <- tryCatch({
-        req <- httr2::request(service_status_url)
-        httr2::req_perform(req)
+      httr::GET(service_status_url)
       },
       error = function(e) {
         stop("Connection to the GROBID server failed!",
@@ -44,7 +43,7 @@ pdf2grobid <- function(filename, save_path = ".",
       }
     )
 
-    status <- httr2::resp_status(resp)
+    status <- httr::status_code(resp)
     if (status != 200) {
       stop("GROBID server does not appear up and running on the provided URL. Status: ", status)
     }
@@ -62,15 +61,8 @@ pdf2grobid <- function(filename, save_path = ".",
     }
 
     # set up progress bar ----
-    if (verbose()) {
-      pb <- progress::progress_bar$new(
-        total = length(filename), clear = FALSE,
-        format = "Processing PDFs [:bar] :current/:total :elapsedfull"
-      )
-      pb$tick(0)
-      Sys.sleep(0.2)
-      pb$tick(0)
-    }
+    pb <- pb(length(filename),
+             "Processing PDFs [:bar] :current/:total :elapsedfull")
 
     xmls <- mapply(\(pdf, sp) {
       args <- list(
@@ -85,7 +77,7 @@ pdf2grobid <- function(filename, save_path = ".",
       )
       xml <- tryCatch(do.call(pdf2grobid, args),
                       error = function(e) { return(e$message) })
-      if (verbose()) pb$tick()
+      pb$tick()
       xml
     }, pdf = filename, sp = save_path)
 

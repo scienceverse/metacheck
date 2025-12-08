@@ -14,15 +14,8 @@ read <- function(filename) {
     # handle list of files or a directory----
 
     ## set up progress bar ----
-    if (verbose()) {
-      pb <- progress::progress_bar$new(
-        total = length(filename), clear = FALSE,
-        format = "Processing file [:bar] :current/:total :elapsedfull"
-      )
-      pb$tick(0)
-      Sys.sleep(0.2)
-      pb$tick(0)
-    }
+    pb <- pb(length(filename),
+             "Processing file [:bar] :current/:total :elapsedfull")
 
     ## get unique names ----
     dirs <- filename |>
@@ -47,7 +40,7 @@ read <- function(filename) {
                                call. = FALSE)
                        return(NULL)
                      })
-      if (verbose()) pb$tick()
+      pb$tick()
       p1
     })
 

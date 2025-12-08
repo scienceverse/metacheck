@@ -936,15 +936,9 @@ osf_file_download <- function(osf_id,
     dir.create(temppath)
 
     files_to_download <- which(files$kind == "file")
-    if (verbose()) {
-      pb <- progress::progress_bar$new(
-        total = length(files_to_download), clear = FALSE,
-        format = "Downloading files [:bar] :current/:total :elapsedfull"
-      )
-      pb$tick(0)
-      Sys.sleep(0.2)
-      pb$tick(0)
-    }
+    pb <- pb(total = length(files_to_download),
+             format = "Downloading files [:bar] :current/:total :elapsedfull")
+
     for (i in files_to_download) {
       tryCatch({
         write_loc <- file.path(temppath, files$osf_id[[i]]) |>
@@ -953,7 +947,7 @@ osf_file_download <- function(osf_id,
 
         # TODO: deal with errors
       }, error = \(e) {})
-      if (verbose()) pb$tick()
+      pb$tick()
     }
 
     trunc_warning <- FALSE

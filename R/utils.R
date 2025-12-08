@@ -257,3 +257,32 @@ demodir <- function() {
 #' @format A list of 250 paper objects
 #' @source \url{https://journals.sagepub.com/home/pss}
 "psychsci"
+
+
+#' Progress Bar
+#'
+#' @param total total number of ticks
+#' @param format The format of the progress bar
+#'
+#' @returns a function
+#' @export
+pb <- function(total, format = "[:bar] :percent") {
+  if (verbose()) {
+    pb <- progress::progress_bar$new(
+      total = total, clear = FALSE,
+      format = format,
+      show_after = 0
+    )
+    pb$tick(0)
+    # Sys.sleep(0.2)
+    # pb$tick(0)
+  } else {
+    # dummy functions so we don't have to call if (verbose())
+    pb <- list(
+      tick = function(...) { invisible() },
+      message = function(...) { invisible() }
+    )
+  }
+
+  return(pb)
+}

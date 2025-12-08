@@ -19,6 +19,7 @@ format:
 ---
 
 <style>
+  h3 { font-size: 110%; }
   .na::before     { content: '⚪️ '; }
   .fail::before   { content: '⚫️ '; }
   .info::before   { content: '🔵 '; }
@@ -28,7 +29,7 @@ format:
   section::before { content: '' !important; }
   .quarto-title-banner { background-color: #327118; }
   th { color: #327118; }
-  .dataTables_scrollBody { margin: 0.5em 0; }
+  table.dataTable, .dataTables_scrollBody { margin: 0.5em 0; }
 </style>
 
 :::: {.content-visible when-format="html"}

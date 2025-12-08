@@ -1,8 +1,11 @@
 # metacheck 0.0.0.9060
 
 * Lots of changes for how reports are formatted
-* in module output, `summary` is now `summary_table`
+* In module output, `summary` is now `summary_table`
 * Fixed a bug where some .docx file wouldn't read in (support for Word files is still patchy -- ideally render to PDF)
+* New `pubpeer_comments()` function (now vectorised)
+* Module helpers: `scroll_table()`, `collapse_section()`, `link()`, `plural()`, `pb()`
+
 
 # metacheck 0.0.0.9059
 

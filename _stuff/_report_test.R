@@ -7,19 +7,19 @@ dir.create(dir, showWarnings = FALSE)
 modules <- c(
   # "all_urls",
   # "aspredicted",
-   "code_check"#,
   # "power",
 
   # checked ----
-   # "all_p_values",
-   # "effect_size",
-   # "exact_p",
-   # "marginal",
-   # "prereg_check",
-   # "reference_check",
+  # "code_check",
+  # "all_p_values",
+  # "effect_size",
+  # "exact_p",
+  # "marginal",
+  # "prereg_check",
+  "reference_check"
   # "miscitation",
-   # "nonsignificant_pvalue",
-   # "causal_claims",
+  # "nonsignificant_pvalue",
+  # "causal_claims",
   # "ref_consistency",
   # "retractionwatch",
   # "statcheck"
@@ -29,6 +29,7 @@ modules <- c(
 n <- 1
 files <- seq_along(psychsci) |> sample(n) |>
   lapply(\(i) {
+    #i = which(names(psychsci) == "0956797614557697")
     paper <- psychsci[[i]]
 
     report(paper,
@@ -47,7 +48,7 @@ paper <- read(demoxml())
 # example with osf Rmd files and github files:
 # paper <- psychsci[[203]]
 # example with missing data files:
-paper <- psychsci[[221]]
+# paper <- psychsci[[221]]
 # Many R files, some with library in different places.
 # paper <- psychsci[[225]]
 # Best example, with many issues, for paper:

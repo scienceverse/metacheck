@@ -49,12 +49,13 @@ miscitation <- function(paper, db = readRDS(system.file("databases/miscite.Rds",
 
   # report text for each possible traffic light ----
   if (nrow(table) == 0) {
-    report <- "We detected no miscited papers"
+    summary_text <- "We detected no miscited papers"
+    report <- summary_text
   } else {
     to_warn <- xrefs[, c("doi", "warning", "reftext")] |>
       unique()
 
-    report <- "We found citations to papers that are commonly miscited."
+    summary_text <- sprintf("We found %d citation%s to papers that are commonly miscited.", nrow(table), plural(nrow(table)))
 
     for (i in seq_along(to_warn$doi)) {
       warn_doi <- to_warn$doi[[i]]
@@ -68,11 +69,11 @@ miscitation <- function(paper, db = readRDS(system.file("databases/miscite.Rds",
                         sprintf("%i", n_head))
 
       report <- sprintf("%s\n\n**%s**\n\n%s\n\n%s\n\n*%s Instance%s:*\n\n%s",
-                        report, warn_doi,
+                        summary_text, warn_doi,
                         to_warn$reftext[[i]],
                         to_warn$warning[[i]],
                         instance_n,
-                        ifelse(length(all_instances) == 1, "", "s"),
+                        plural(length(all_instances)),
                         paste(">", instances, collapse = "\n\n"))
     }
   }
@@ -82,6 +83,7 @@ miscitation <- function(paper, db = readRDS(system.file("databases/miscite.Rds",
     table = table,
     summary_table = summary_table,
     traffic_light = tl,
-    report = report
+    report = report,
+    summary_text = summary_text
   )
 }

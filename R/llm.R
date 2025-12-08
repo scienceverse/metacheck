@@ -95,13 +95,7 @@ llm <- function(text, query,
   )
 
   # set up progress bar ----
-  if (verbose()) {
-    pb <- progress::progress_bar$new(
-      total = ncalls, clear = FALSE, show_after = 0,
-      format = "Querying LLM [:bar] :current/:total :elapsedfull"
-    )
-    pb$tick(0)
-  }
+  pb <- pb(ncalls, "Querying LLM [:bar] :current/:total :elapsedfull")
 
   # interate over the text ----
   # TODO: check rate limits and pause
@@ -121,10 +115,10 @@ llm <- function(text, query,
         sleep <- response$headers$`retry-after` |>
           as.numeric() |> ceiling()
         msg <- paste0("Request limit exceeded. Retrying in ", sleep, " seconds")
-        if (verbose()) pb$message(msg)
+        pb$message(msg)
         Sys.sleep(sleep)
         msg <- "Querying LLM [:bar] :current/:total :elapsedfull"
-        if (verbose()) pb$message(msg)
+        pb$message(msg)
 
         response <- httr::POST(
           url, config,
@@ -158,7 +152,7 @@ llm <- function(text, query,
       ))
     })
 
-    if (verbose()) pb$tick()
+    pb$tick()
   }
 
   # print final ratelimit values
