@@ -32,7 +32,7 @@ prereg_check <- function(paper, ...) {
     summary_text <- sprintf(
       "We found %d preregistrations.",
       nrow(table))
-    report_table <- scroll_table(links)
+    report_table <- scroll_table(links_ap)
     report_table_samplesize <- scroll_table(table$AP_sample_size)
 
   # summary_table ----
