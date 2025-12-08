@@ -15,274 +15,179 @@
 #' module_run(psychsci[[129]], "reference_check")
 reference_check <- function(paper) {
   # for testing: paper <- psychsci[[109]]
-  refs <- paper$bib
+
+  # create table ----
+  table <- concat_tables(paper, "bib")
 
   # If there are no rows, return immediately
-  if (nrow(refs) == 0) {
-    return(refs)
-  }
-  # Add new columns to refs
-  refs$total_comments <- 0
-  refs$pubpeer_url <- NA_character_
-  refs$users <- NA_character_
-  refs$doi_from_crossref <- 0
-  refs$retraction_watch <- 0
-  refs$replication_exists <- 0
-
-  # How many references of the type 'Article' have a DOI?
-  articles <- subset(refs, bibtype == "Article")
-  articles <- dplyr::mutate(articles, has_doi = !is.na(doi))
-
-  articles_with_doi <- subset(articles, !is.na(doi))
-  articles_without_doi <- subset(articles, is.na(doi))
-
-  print(paste0("Retrieving information for ", nrow(articles), " references."))
-  for (i in seq_len(nrow(articles))) {
-    # Ensure DOI is present
-    if (is.na(articles$doi[i])) {
-      doi <- get_doi(articles$ref[i])   # run only if doi is NA
-      articles$doi_from_crossref[i] <- 1
-      articles$doi[i] <- doi            # replace NA with the new value
-    } else {
-      doi <- articles$doi[i]
-      articles$doi_from_crossref[i] <- 0
-    }
-
-    # Create index mapping from refs$xref_id to rows in articles_with_pubpeer
-    idx <- match(refs$xref_id, articles$xref_id)
-    # Assign matched totals; set non-matches to 0
-    refs$doi_from_crossref <- ifelse(
-      is.na(idx),
-      0L,
-      articles$doi_from_crossref[idx]
+  if (nrow(table) == 0) {
+    norefs <- list(
+      table = table,
+      traffic_light = "na",
+      report = "We found no references",
+      summary_text = "We found no references"
     )
-
-    pubpeer_info <- get_pubpeer_comment(doi)
-
-    # Add pubpeer info to columns
-    if (!is.null(pubpeer_info)) {
-      if (length(pubpeer_info$users) > 0 & any(pubpeer_info$users != "Statcheck ")){
-        articles$total_comments[i] <- pubpeer_info$total_comments
-        articles$pubpeer_url[i] <- pubpeer_info$url
-        articles$users[i] <- paste(pubpeer_info$users, collapse = ", ")
-      }
-    }
+    return(norefs)
   }
-  articles_with_pubpeer <- subset(articles, !is.na(pubpeer_url))
 
-  articles_without_doi <- subset(articles, doi_from_crossref == 1)
+  ## missing DOIs ----
+  articles_without_doi <- table |>
+    subset(bibtype == "Article") |>
+    subset(is.na(doi))
+  n_no_doi <- nrow(articles_without_doi)
 
-  # Keep the original DOI code available to use as label
-  raw_doi <- articles_without_doi[["doi"]]
+  if (n_no_doi > 0) {
+    message("\nLooking up ", n_no_doi, " missing article DOIs")
+    articles_without_doi$crossref_doi <- sapply(articles_without_doi$ref, get_doi)
+    table <- dplyr::left_join(table, articles_without_doi,
+                             by = names(table))
 
-  # Build URL only for non-missing DOIs
-  doi_url <- ifelse(
-    !is.na(raw_doi) & raw_doi != "",
-    paste0("https://doi.org/", raw_doi),
-    NA_character_
-  )
+    updated <- is.na(table$doi) & !is.na(table$crossref_doi)
+    table$doi[updated] <- table$crossref_doi[updated]
+    table$doi_from_crossref <- 0
+    table$doi_from_crossref[updated] <- 1
+    message("Added ", sum(updated), " DOIs from CrossRef")
+  }
 
-  # Build clickable HTML <a> tag (label = DOI), or NA if no URL
-  articles_without_doi[["doi"]] <- ifelse(
-    !is.na(doi_url),
-    paste0('<a href="', doi_url, '" target="_blank">', raw_doi, '</a>'),
-    NA_character_
-  )
+  ## pubpeer ----
+  pp <- pubpeer_comments(table$doi)
+  if (!is.null(pp)) {
+    table$pp_total_comments <- pp$total_comments
+    table$pp_url <- pp$url
+    table$pp_users <- pp$users
+  }
 
-  # Create a reference with DOI in green (only when from Crossref)
-  articles_without_doi[["ref_doi"]] <- ifelse(
-    articles_without_doi[["doi_from_crossref"]] == 1 & !is.na(articles_without_doi[["doi"]]),
-    paste(
-      articles_without_doi[["ref"]],
-      sprintf('<span style="color:green;">%s</span>', articles_without_doi[["doi"]])
-    ),
-    NA_character_
-  )
+  ## retraction watch ----
+  table <- dplyr::left_join(table, rw(), by = 'doi')
 
-  # Create the report string for missing doi
-  if (nrow(articles_without_doi) == 0) {
-    # summary_text ----
-    summary_doi <- "This module only checks references classified as articles. No references to articles with a missing DOI were found."
-    summary_text_doi <- "No references to articles with a missing DOI were found."
-  } else {
-    summary_doi <- sprintf("This module only checks references classified as articles. Out of %d references to articles in the reference list, %d have a DOI. Articles with a missing DOI were (our best guess for the correct DOI is below in green):",
+  ## replications ----
+  fred <- FReD() |>
+    dplyr::select(doi = doi_original,
+                  replication_ref = ref_replication,
+                  replication_doi = doi_replication)
+  table <- dplyr::left_join(table, fred, by = "doi")
+
+  articles <- table[table$bibtype == "Article", ]
+
+  # summary_text ----
+  n_doi <- sum(!is.na(articles$doi))
+  overall_text <- sprintf("This module only checks references classified as articles. Out of %d reference%s to articles in the reference list, %d %s a DOI.",
       nrow(articles),
-      nrow(articles_with_doi))
-    summary_text_doi <- sprintf("Out of %d references to articles %d have a DOI.",
-                           nrow(articles),
-                           nrow(articles_with_doi))
-  }
-  report_table_doi <- scroll_table(articles_without_doi$ref_doi)
-  guidance_doi <- c("DOI's are retrieved from crossref. Only missing DOI's with a match score > 50 are returned to have high enough accuracy.")
-  report_doi <- c(summary_doi, report_table_doi, collapse_section(guidance_doi))
-
-  # PubPeer report
-  if (nrow(articles_with_pubpeer) == 0) {
-    summary_pubpeer <- "No Pubpeer comments were found."
-    summary_text_pubpeer <- "No Pubpeer comments were found."
-    report_table_pubpeer <- ""
-  } else {
-    # Text with green bold count
-    summary_pubpeer <- sprintf(
-      "We found %d references with comments on Pubpeer. You can check out the comments by visiting the URLs below:",
-      nrow(articles_with_pubpeer))
-    summary_text_pubpeer <- sprintf(
-      "We found %d references with comments on Pubpeer.",
-      nrow(articles_with_pubpeer))
-    report_table_pubpeer <- paste0(
-      '<a href="', articles_with_pubpeer$pubpeer_url, '" target="_blank">',
-      articles_with_pubpeer$pubpeer_url,
-      '</a>'
-    )
-    # Create index mapping from refs$xref_id to rows in articles_with_pubpeer
-    idx <- match(refs$xref_id, articles_with_pubpeer$xref_id)
-    # Assign matched totals; set non-matches to 0
-    refs$total_comments <- ifelse(
-      is.na(idx),
-      0L,
-      articles_with_pubpeer$total_comments[idx]
-    )
-  }
-
-  # Guidance text
-  explan_pubpeer <- c(
-    "Pubpeer is a platform for post-publication peer review. We have filtered out Pubpeer comments by 'Statcheck'."
+      plural(nrow(articles)),
+      n_doi,
+      plural(n_doi, "has", "have")
   )
-  # report text
-  report_pubpeer <- c(
-    summary_pubpeer,
-    scroll_table(report_table_pubpeer),
-    collapse_section(explan_pubpeer)
-  ) |> paste(collapse = "\n\n")
 
+  ## missing doi ----
+  n_cr <- sum(articles$doi_from_crossref)
+  missing_summary <- sprintf("We retrieved %d of %d missing DOI%s from crossref.", n_cr, n_no_doi, plural(n_no_doi))
+  missing_text <- sprintf("%s Only missing DOIs with a match score > 50 are returned to have high enough accuracy. Double-check any suggested DOIs and check if the remaining missing DOIs are available.", missing_summary)
+  rows <- articles$doi_from_crossref | is.na(articles$doi)
+  missing_table <- articles[rows, c("doi", "ref")]
+  missing_table$doi <- link(missing_table$doi)
 
-  # Check citations to references
-  FReD_data <- FReD()
-  cited_replications <- FReD_data[FReD_data$doi_original %in% articles_with_doi$doi, ]
+  ## PubPeer ----
+  rows <- articles$pp_total_comments>0 & articles$pp_users != "Statcheck"
+  cols <- c("doi", "ref", "pp_total_comments", "pp_url")
+  pubpeer_table <- articles[rows, cols]
+  pubpeer_table$pp_url <- link(pubpeer_table$pp_url, "link")
+  names(pubpeer_table) <- c("doi", "reference", "comments", "url")
 
-  # FReD report
-  if (nrow(cited_replications) == 0) {
-    summary_FReD <- "No citations to studies in the FReD replication database were found."
-    summary_text_FReD <- "No citations to studies in the FReD replication database were found."
+  n_pp <- nrow(pubpeer_table)
+  pubpeer_summary <- sprintf(
+    "We found %d reference%s with comments on Pubpeer.",
+    n_pp, plural(n_pp))
+
+  if (n_pp == 0) {
+    pubpeer_text <- pubpeer_summary
   } else {
-    summary_FReD <- sprintf(
-      "You have cited %d articles for which replication studies exist, and are listed in the FORRT Replication Database. Check if you are aware of the replication studies, and cite them where appropriate. The articles you cited that have been replicated:",
-      nrow(cited_replications)
-    )
-    summary_text_FReD <- sprintf(
-      "You have cited %d articles for which replication studies exist.",
-      nrow(cited_replications)
-    )
-    # Set to 1 where refs$xref_id is in cited_retractions$xref_id
-    refs$replication_exists[refs$xref_id %in% cited_retractions$xref_id] <- 1
+    pubpeer_text <- sprintf("%s Pubpeer is a platform for post-publication peer review. We have filtered out Pubpeer comments by 'Statcheck'. You can check out the comments by visiting the URLs below:", pubpeer_summary)
   }
 
-  report_table_FReD <- data.frame(
-    Original = cited_replications$ref_original,
-    Replication = cited_replications$ref_replication,
-    stringsAsFactors = FALSE
-  )
-  explan_FReD <- "The FRED replication database aims to keep track of replication studies."
-    report_FReD <- c(
-      summary_FReD,
-      scroll_table(report_table_FReD),
-      collapse_section(explan_FReD)
-    ) |> paste(collapse = "\n\n")
-
-  # Check citations to retractions
-  rw_data <- retractionwatch()
-  cited_retractions <- articles[articles$doi %in% rw_data$doi, ]
-
-  # rw report
-  if (nrow(cited_retractions) == 0) {
-    summary_rw <- "No citations to studies in the retraction watch database were found."
-    summary_text_rw <- "No citations to studies in the retraction watch database were found."
+  ## replications ----
+  rows <- !is.na(articles$replication_doi)
+  cols <- c("doi", "replication_ref", "replication_doi")
+  fred_table <- articles[rows, cols]
+  fred_table$replication_doi <- link(fred_table$replication_doi)
+  if (nrow(fred_table) == 0) {
+    fred_summary <- "No citations to studies in the FReD replication database were found."
+    fred_text <- fred_summary
   } else {
-    summary_rw <- sprintf(
-      "You have cited %d articles in the retraction watch database. Check if you are aware of the retracted studies. The articles you cited that are in the retraction watch database:",
-      nrow(cited_retractions)
+    fred_summary <- sprintf(
+      "You have cited %d article%s for which replication studies exist.",
+      nrow(fred_table),
+      plural(nrow(fred_table))
     )
-    summary_text_rw <- sprintf(
-      "You have cited %d articles in the retraction watch database.",
-      nrow(cited_retractions)
+    fred_text <- sprintf(
+      "%s These replications were listed in the FORRT Replication Database (as of %s). Check if you are aware of the replication studies, and cite them where appropriate.",
+      fred_summary, FReD_date()
     )
-    # Set to 1 where refs$xref_id is in cited_retractions$xref_id
-    refs$retraction_watch[refs$xref_id %in% cited_retractions$xref_id] <- 1
   }
 
-    report_table_rw <- cited_retractions$ref
-    explan_rw <- "The rw database aims to keep track of retractions, corrections, and expressions of concern."
-    report_rw <- c(
-      summary_rw,
-      scroll_table(report_table_rw),
-      collapse_section(explan_rw)
-    ) |> paste(collapse = "\n\n")
+  ## retractions ----
+  rows <- !is.na(articles$retractionwatch)
+  cols <- c("doi", "retractionwatch")
+  rw_table <- articles[rows, cols]
+  rw_table$url <- link(rw_table$doi, "link")
+  if (nrow(rw_table) == 0) {
+    rw_summary <- "No citations to studies in the Retraction Watch database were found."
+    rw_text <- rw_summary
+  } else {
+    rw_summary <- sprintf(
+      "You have cited %d article%s for which entries in the Retraction Watch database  exist.",
+      nrow(rw_table),
+      plural(nrow(rw_table))
+    )
+    rw_text <- sprintf(
+      "%s These articles were listed in the Retraction Watch database (as of %s). Check if you are aware of the issues, and cite them where appropriate.",
+      rw_summary, rw_date()
+    )
+  }
 
   # traffic_light ----
-  tl <- if (length(report_table_doi)|length(report_table_pubpeer)|length(report_table_FReD)|length(report_table_rw)) "info" else "na"
+  tl <- if (length(missing_table) |
+            length(pubpeer_table) |
+            length(fred_table) |
+            length(rw_table)) "info" else "na"
 
-  report <- c(report_doi, report_pubpeer, report_FReD, report_rw)
+  # report ----
+  report <- c(
+    overall_text,
+    "### Missing DOIs",
+    missing_text,
+    scroll_table(missing_table),
+    "### PubPeer Comments",
+    pubpeer_text,
+    scroll_table(pubpeer_table),
+    "### Replication Studies",
+    fred_text,
+    scroll_table(fred_table),
+    "### RetractionWatch",
+    rw_text,
+    scroll_table(rw_table)
+  )
 
-  summary_table <- data.frame(
-    id = paper$id,
-    retraction_watch = sum(refs$retraction_watch == 1, na.rm = TRUE),
-    replication_exists = sum(refs$replication_exists == 1, na.rm = TRUE),
-    doi_missing = sum(refs$doi_from_crossref == 1, na.rm = TRUE),
-    pubpeer_comments = sum(refs$total_comments)
+  # summary_table ----
+  summary_table <- dplyr::summarise(
+    table, .by = "id",
+    retraction_watch = sum(!is.na(retractionwatch)),
+    replications = sum(!is.na(replication_doi)),
+    doi_missing = sum(doi_from_crossref | is.na(doi)),
+    pubpeer_comments = sum(pp_total_comments, na.rm = TRUE)
   )
 
   # return a list ----
   list(
-    table = refs,
+    table = table,
     summary_table = summary_table,
     na_replace = 0,
     traffic_light = tl,
     report = report,
-    summary_text = paste(summary_text_doi, summary_text_pubpeer, summary_text_FReD, summary_text_rw)
+    summary_text = paste(missing_summary,
+                         pubpeer_summary,
+                         fred_summary,
+                         rw_summary)
   )
 }
 
 
-#' Get Pubpeer Comments
-#'
-#' @description
-#' Function that takes a DOI, and retrieves information from pubpeer related to post-publication peer review comments.
-#'
-#' @author  Daniel Lakens (\email{D.Lakens@tue.nl})
-#'
-#' @import httr jsonlite
-#'
-#' @param doi a doi of a paper
-#'
-#' @returns a dataframe with information from pubpeer
-#'
-#' @examples
-#' get_pubpeer_comment("10.1177/0146167211398138")
-
-# Function that takes a DOI, and retrieves information from pubpeer related to post-publication peer review comments.
-get_pubpeer_comment <- function(doi) {
-  url <- "https://pubpeer.com/v3/publications?devkey=PubPeerZotero"
-  body <- list(
-    dois = list(tolower(doi))
-  )
-  response <- httr::POST(
-    url,
-    body = jsonlite::toJSON(body, auto_unbox = TRUE),
-    encode = "raw",
-    httr::add_headers(`Content-Type` = "application/json;charset=UTF-8")
-  )
-  if (status_code(response) == 200) {
-    data <- httr::content(response, as = "parsed", type = "application/json")
-    if (length(data[["feedbacks"]]) > 0) {
-      return(list(
-        total_comments = data[["feedbacks"]][[1]][["total_comments"]],
-        url = data[["feedbacks"]][[1]][["url"]],
-        users = strsplit(data[["feedbacks"]][[1]][["users"]], ",\\s*")[[1]]
-      ))
-    } else {
-      return(NULL)  # No feedback found
-    }
-  } else {
-    return(NULL)  # Request failed
-  }
-}

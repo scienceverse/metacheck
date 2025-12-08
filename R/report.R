@@ -29,38 +29,30 @@ report <- function(paper,
   mod_exists <- sapply(modules, module_find)
 
   # set up progress bar ----
-  if (verbose()) {
-    pb <- progress::progress_bar$new(
-      total = length(modules) + 3,
-      clear = FALSE,
-      show_after = 0,
-      format = ":what [:bar] :current/:total :elapsedfull"
-    )
-    pb$tick(0, tokens = list(what = "Running modules"))
-  }
+  pb <- pb(length(modules) + 3,
+           ":what [:bar] :current/:total :elapsedfull")
+  pb$tick(0, tokens = list(what = "Running modules"))
 
   # run each module ----
   module_output <- lapply(modules, \(module) {
-    if (verbose())
-      pb$tick(tokens = list(what = module))
-      op <- tryCatch(module_run(paper, module),
-             error = function(e) {
-               report_items <- list(
-                 module = module,
-                 title = module,
-                 table = NULL,
-                 report = e$message,
-                 summary_text = "This module failed to run",
-                 traffic_light = "fail"
-               )
+    pb$tick(tokens = list(what = module))
+    op <- tryCatch(module_run(paper, module),
+           error = function(e) {
+             report_items <- list(
+               module = module,
+               title = module,
+               table = NULL,
+               report = e$message,
+               summary_text = "This module failed to run",
+               traffic_light = "fail"
+             )
 
-               return(report_items)
-             })
+             return(report_items)
+           })
   })
 
   # set up report ----
-  if (verbose())
-    pb$tick(tokens = list(what = "Creating report"))
+  pb$tick(tokens = list(what = "Creating report"))
 
   ## read in report template ----
   report_template <- system.file("templates/_report.qmd",
@@ -99,8 +91,7 @@ report <- function(paper,
                        module_reports,
                        sep = "\n\n")
 
-  if (verbose())
-    pb$tick(tokens = list(what = "Rendering Report"))
+  pb$tick(tokens = list(what = "Rendering Report"))
   if (output_format == "qmd") {
     write(report_text, output_file)
   } else {
@@ -125,8 +116,7 @@ report <- function(paper,
     file.rename(temp_output, output_file)
   }
 
-  if (verbose())
-    pb$tick(tokens = list(what = "Report Saved"))
+  pb$tick(tokens = list(what = "Report Saved"))
 
   invisible(output_file)
 }
@@ -309,4 +299,27 @@ collapse_section <- function(text, title = "Learn More",
 #' sprintf("I have %d %s", n, plural(n, "octopus", "octopi"))
 plural <- function(n, singular = "", plural = "s") {
   ifelse(n == 1, singular, plural)
+}
+
+
+#' Make an html link
+#'
+#' @param url the URL to link to
+#' @param text the text to link
+#' @param new_window whether to open in a new window
+#'
+#' @returns string
+#' @export
+#'
+#' @examples
+#' link("https://scienceverse.org")
+link <- function(url, text = url, new_window = TRUE) {
+  nw <- ""
+  text <- gsub("^https?://", "", text)
+  if (new_window) nw <- " target='_blank'"
+  links <- sprintf("<a href='%s'%s>%s</a>",
+          url, nw, text)
+  links[is.na(url)] <- NA
+
+  return(links)
 }

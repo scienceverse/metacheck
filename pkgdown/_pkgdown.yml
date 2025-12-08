@@ -81,6 +81,8 @@ reference:
   - '`scroll_table`'
   - '`collapse_section`'
   - '`plural`'
+  - '`link`'
+  - '`pb`'
 - title: LLM Functions
   desc: ~
   contents:
@@ -134,6 +136,7 @@ reference:
   - '`get_doi`'
   - '`openalex`'
   - '`crossref`'
+  - '`pubpeer_comments`'
   - '`retractionwatch`'
   - '`rw_date`'
   - '`rw_update`'

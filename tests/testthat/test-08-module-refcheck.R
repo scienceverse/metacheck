@@ -15,7 +15,7 @@ test_that("reference_check", {
   expect_equal(mod_output$traffic_light, "info")
   expect_equal(nrow(mod_output$table), 4)
   expect_equal(mod_output$summary_table$retraction_watch, 1)
-  expect_equal(mod_output$summary_table$replication_exists, 1)
+  expect_equal(mod_output$summary_table$replications, 1)
   expect_equal(mod_output$summary_table$doi_missing, 1)
   expect_equal(mod_output$summary_table$pubpeer_comments, 3)
 

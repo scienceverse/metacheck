@@ -165,10 +165,10 @@ test_that("scroll_table", {
                       lc = letters)
   obs <- scroll_table(table)
   expect_true(grepl("```{r}", obs, fixed = TRUE))
-  expect_true(grepl("escape = TRUE", obs, fixed = TRUE))
-
-  obs <- scroll_table(table, escape = FALSE)
   expect_true(grepl("escape = FALSE", obs, fixed = TRUE))
+
+  obs <- scroll_table(table, escape = TRUE)
+  expect_true(grepl("escape = TRUE", obs, fixed = TRUE))
 
   # vector vs unnamed table version
   table <- data.frame(table = LETTERS)
@@ -216,5 +216,54 @@ test_that("collapse_section", {
   expect_true(grepl("callout-warning", obs))
 })
 
+test_that("plural", {
+  expect_true(is.function(metacheck::plural))
 
+  s0 <- plural(0)
+  expect_equal(s0, "s")
+  s1 <- plural(1)
+  expect_equal(s1, "")
+  s2 <- plural(2)
+  expect_equal(s2, "s")
 
+  s0 <- plural(0, "is", "are")
+  expect_equal(s0, "are")
+  s1 <- plural(1, "is", "are")
+  expect_equal(s1, "is")
+  s2 <- plural(2, "is", "are")
+  expect_equal(s2, "are")
+})
+
+test_that("link", {
+  expect_true(is.function(metacheck::link))
+
+  obs <- link("https://google.com")
+  exp <- "<a href='https://google.com' target='_blank'>google.com</a>"
+  expect_equal(obs, exp)
+
+  obs <- link("http://google.com")
+  exp <- "<a href='http://google.com' target='_blank'>google.com</a>"
+  expect_equal(obs, exp)
+
+  obs <- link("https://google.com", "Google")
+  exp <- "<a href='https://google.com' target='_blank'>Google</a>"
+  expect_equal(obs, exp)
+
+  obs <- link("https://google.com", "Google", FALSE)
+  exp <- "<a href='https://google.com'>Google</a>"
+  expect_equal(obs, exp)
+
+  url <- c("https://google.com", "https://scienceverse.org")
+  text <- c("Google", "Scienceverse")
+  obs <- link(url, text, FALSE)
+  exp <- c("<a href='https://google.com'>Google</a>",
+           "<a href='https://scienceverse.org'>Scienceverse</a>")
+  expect_equal(obs, exp)
+
+  url <- c(NA, "https://scienceverse.org")
+  text <- c("Google", "Scienceverse")
+  obs <- link(url, text, FALSE)
+  exp <- c(NA,
+           "<a href='https://scienceverse.org'>Scienceverse</a>")
+  expect_equal(obs, exp)
+})

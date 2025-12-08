@@ -28,7 +28,7 @@ test_that("errors", {
   repo <- "scienceverse/norepo"
   expect_null(github_repo(repo))
   expect_null(github_info(repo))
-  expect_null(github_readme(repo))
+  expect_equal(github_readme(repo), "")
   expect_null(github_languages(repo))
   expect_null(github_files(repo))
 })
@@ -96,8 +96,8 @@ test_that("github_files", {
   skip_if_offline("github.com")
 
   files <- github_files("scienceverse/metacheck")
-  expect_equal(names(files), c("name", "path", "size", "ext", "type"))
-  expect_true("metacheck.Rproj" %in% files$name)
+  expect_equal(names(files), c("name", "path", "download_url", "size", "ext", "type"))
+  expect_true("README.md" %in% files$name)
 
   # set dir
   tests <- github_files("scienceverse/metacheck", "tests")
@@ -119,11 +119,12 @@ test_that("github_files", {
 test_that("github_info", {
   skip_if_offline("github.com")
 
-  info <- github_info("scienceverse/metacheck")
+  repo <- "scienceverse/metacheck"
+  info <- github_info(repo)
 
   # files
-  expect_equal(names(info$files), c("name", "path", "size", "ext", "type"))
-  expect_true("metacheck.Rproj" %in% info$files$name)
+  expect_equal(names(info$files), c("name", "path", "download_url", "size", "ext", "type"))
+  expect_true("README.md" %in% info$files$name)
 
   # readme
   search <- "# metacheck"
@@ -131,5 +132,6 @@ test_that("github_info", {
 
   # languages
   expect_true("R" %in% info$languages$language)
-  expect_equal(names(info$languages), c("language", "bytes"))
+  expect_equal(names(info$languages), c("repo", "language", "bytes"))
+  expect_true(all(repo == info$languages$repo))
 })

@@ -21,7 +21,7 @@ test_that("errors", {
 
 
 test_that("non-Grobid URL is rejected", {
-  skip_if_offline()
+  skip_if_offline("google.com")
 
   filename <- demopdf()
   expect_error(pdf2grobid(filename, grobid_url = "https://google.com"),

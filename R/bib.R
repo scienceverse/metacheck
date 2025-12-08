@@ -205,19 +205,12 @@ bib_add_dois <- function(bib, strict = TRUE) {
   msgs <- character()
 
   ## set up progress bar ----
-  if (verbose()) {
-    pb <- progress::progress_bar$new(
-      total = length(bib$doi), clear = FALSE,
-      format = "Processing bibentry [:bar] :current/:total :elapsedfull"
-    )
-    pb$tick(0)
-    Sys.sleep(0.2)
-    pb$tick(0)
-  }
+  pb <- pb(length(bib$doi),
+           "Processing bibentry [:bar] :current/:total :elapsedfull")
 
   bib$doi <- sapply(seq_along(bib$doi), \(i) {
     # message(i, ": ", substr(df$TITLE[[i]], 1, 60), "...")
-    if (verbose()) pb$tick()
+    pb$tick()
 
     if (!is.na(bib$doi[i])) {
       msgs[[i]] <<- "DOI exists"
