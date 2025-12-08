@@ -47,6 +47,8 @@ reference_check <- function(paper) {
     table$doi_from_crossref <- 0
     table$doi_from_crossref[updated] <- 1
     message("Added ", sum(updated), " DOIs from CrossRef")
+  } else {
+    table$doi_from_crossref <- rep(0, nrow(table))
   }
 
   ## pubpeer ----
@@ -92,6 +94,10 @@ reference_check <- function(paper) {
   pubpeer_table <- articles[rows, cols]
   pubpeer_table$pp_url <- link(pubpeer_table$pp_url, "link")
   names(pubpeer_table) <- c("doi", "reference", "comments", "url")
+  if (all(is.na(pubpeer_table))) {
+    # Keep the same columns, but zero rows
+    pubpeer_table <- pubpeer_table[0, , drop = FALSE]
+  }
 
   n_pp <- nrow(pubpeer_table)
   pubpeer_summary <- sprintf(
