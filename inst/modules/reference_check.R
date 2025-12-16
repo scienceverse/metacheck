@@ -30,8 +30,23 @@ reference_check <- function(paper) {
     return(norefs)
   }
 
+  articles <- table[table$bibtype == "Article", ]
+
+  articles$doi[1:5] <- "10.1234/invalid_test"
+
+  # If there are no article reference, return immediately
+  if (nrow(articles) == 0) {
+    norefs <- list(
+      table = articles,
+      traffic_light = "na",
+      report = "We found no references to articles (others are not checked in this module)",
+      summary_text = "We found no references to articles"
+    )
+    return(norefs)
+  }
+
   ## missing DOIs ----
-  articles_without_doi <- table |>
+  articles_without_doi <- articles |>
     subset(bibtype == "Article") |>
     subset(is.na(doi))
   n_no_doi <- nrow(articles_without_doi)
@@ -39,37 +54,40 @@ reference_check <- function(paper) {
   if (n_no_doi > 0) {
     message("\nLooking up ", n_no_doi, " missing article DOIs")
     articles_without_doi$crossref_doi <- sapply(articles_without_doi$ref, get_doi)
-    table <- dplyr::left_join(table, articles_without_doi,
-                             by = names(table))
+    articles <- dplyr::left_join(articles, articles_without_doi,
+                             by = names(articles))
 
-    updated <- is.na(table$doi) & !is.na(table$crossref_doi)
-    table$doi[updated] <- table$crossref_doi[updated]
-    table$doi_from_crossref <- 0
-    table$doi_from_crossref[updated] <- 1
+    updated <- is.na(articles$doi) & !is.na(articles$crossref_doi)
+    articles$doi[updated] <- articles$crossref_doi[updated]
+    articles$doi_from_crossref <- 0
+    articles$doi_from_crossref[updated] <- 1
     message("Added ", sum(updated), " DOIs from CrossRef")
   } else {
-    table$doi_from_crossref <- rep(0, nrow(table))
+    articles$doi_from_crossref <- rep(0, nrow(articles))
   }
 
   ## pubpeer ----
-  pp <- pubpeer_comments(table$doi)
+  pp <- pubpeer_comments(articles$doi)
   if (!is.null(pp)) {
-    table$pp_total_comments <- pp$total_comments
-    table$pp_url <- pp$url
-    table$pp_users <- pp$users
+    articles$pp_total_comments <- pp$total_comments
+    articles$pp_url <- pp$url
+    articles$pp_users <- pp$users
   }
 
   ## retraction watch ----
-  table <- dplyr::left_join(table, rw(), by = 'doi')
+  articles <- dplyr::left_join(articles, rw(), by = 'doi')
 
   ## replications ----
   fred <- FReD() |>
     dplyr::select(doi = doi_original,
                   replication_ref = ref_replication,
                   replication_doi = doi_replication)
-  table <- dplyr::left_join(table, fred, by = "doi")
+  articles <- dplyr::left_join(articles, fred, by = "doi")
 
-  articles <- table[table$bibtype == "Article", ]
+  ## DOI resolution ----
+  # Check whether DOIs resolve via the DOI resolver. This returns TRUE/FALSE/NA.
+  articles$doi_resolves <- check_doi_resolves(articles$doi)
+
 
   # summary_text ----
   n_doi <- sum(!is.na(articles$doi))
@@ -87,6 +105,27 @@ reference_check <- function(paper) {
   rows <- articles$doi_from_crossref | is.na(articles$doi)
   missing_table <- articles[rows, c("doi", "ref")]
   missing_table$doi <- link(missing_table$doi)
+
+
+  ## DOI resolution ----
+  rows <- which(!is.na(articles$doi) & articles$doi_resolves == FALSE)
+  cols <- c("doi", "ref")
+  doi_table <- articles[rows, cols]
+  doi_table$doi <- link(doi_table$doi)
+  if (nrow(doi_table) == 0) {
+    inconslu
+    doi_summary <- sprintf("All %d DOIs that were present resolved when checked.", n_doi)
+    doi_text <- paste(doi_summary, "Note that this does not guarantee that the DOIs match the references, only that they link to a webpage.")
+  } else {
+    doi_summary <- sprintf(
+      "We found %d reference%s with DOIs that did not resolve when checked.",
+      nrow(doi_table), plural(nrow(doi_table))
+    )
+    doi_text <- sprintf(
+      "%s Check the DOI for accuracy/typos (or check network connectivity). Also, note that this does not guarantee that the DOIs match the references, only that they link to a webpage.",
+      doi_summary
+    )
+  }
 
   ## PubPeer ----
   rows <- articles$pp_total_comments>0 & articles$pp_users != "Statcheck"
@@ -152,6 +191,7 @@ reference_check <- function(paper) {
 
   # traffic_light ----
   tl <- if (length(missing_table) |
+            length(doi_table) |
             length(pubpeer_table) |
             length(fred_table) |
             length(rw_table)) "info" else "na"
@@ -162,6 +202,9 @@ reference_check <- function(paper) {
     "### Missing DOIs",
     missing_text,
     scroll_table(missing_table),
+    "### DOI Resolution",
+    doi_text,
+    scroll_table(doi_table),
     "### PubPeer Comments",
     pubpeer_text,
     scroll_table(pubpeer_table),
@@ -175,25 +218,25 @@ reference_check <- function(paper) {
 
   # summary_table ----
   summary_table <- dplyr::summarise(
-    table, .by = "id",
+    articles, .by = "id",
     retraction_watch = sum(!is.na(retractionwatch)),
     replications = sum(!is.na(replication_doi)),
     doi_missing = sum(doi_from_crossref | is.na(doi)),
+    doi_unresolved = sum(doi_resolves == FALSE, na.rm = TRUE),
     pubpeer_comments = sum(pp_total_comments, na.rm = TRUE)
   )
 
   # return a list ----
   list(
-    table = table,
+    table = articles,
     summary_table = summary_table,
     na_replace = 0,
     traffic_light = tl,
     report = report,
     summary_text = paste(missing_summary,
+                         doi_summary,
                          pubpeer_summary,
                          fred_summary,
                          rw_summary)
   )
 }
-
-
