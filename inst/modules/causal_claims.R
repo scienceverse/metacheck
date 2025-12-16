@@ -39,7 +39,7 @@ causal_claims <- function(paper) {
   }
 
   # report
-  if (causal_title$causal == FALSE) {
+  if (isTRUE(all(causal_title$causal == FALSE))) {
     summary_causal_title <- "No causal claims were observed in the title."
     summary_text_title <- "No causal claims were observed in the title."
     report_causal_title <- ""
@@ -47,8 +47,8 @@ causal_claims <- function(paper) {
     summary_causal_title <- "Causal claims detected in the title: "
     summary_text_title <- "Causal claims detected in the title."
     report_causal_title <- c(
-      summary_causal_title,
-      scroll_table(causal_title[, c("sentence", "cause", "effect")]))
+    summary_causal_title,
+    scroll_table(causal_title[, c("sentence", "cause", "effect")]))
   }
 
   # report

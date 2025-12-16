@@ -32,7 +32,7 @@ prereg_check <- function(paper, ...) {
     summary_text <- sprintf(
       "We found %d preregistrations.",
       nrow(table))
-    report_table <- scroll_table(links)
+    report_table <- scroll_table(links_ap)
     report_table_samplesize <- scroll_table(table$AP_sample_size)
 
   # summary_table ----
@@ -42,10 +42,16 @@ prereg_check <- function(paper, ...) {
   prereg_table <- dplyr::select(table, dplyr::starts_with("AP_"))
   # Transpose the selected data
   prereg_table <- t(prereg_table)
-  colnames(prereg_table) <- c("Answer")
-  }
+
+  # Convert to data.frame and copy rownames to first column
+  prereg_table <- as.data.frame(prereg_table, stringsAsFactors = FALSE)
+  prereg_table <- tibble::rownames_to_column(prereg_table, var = "rowname")
+
+  colnames(prereg_table) <- c("Question", "Answer")
   prereg_table <- scroll_table(prereg_table) |>
     collapse_section("Full preregistration")
+  }
+
 
 
   guidance <- collapse_section(c(
@@ -62,10 +68,10 @@ prereg_check <- function(paper, ...) {
   # Combine into report
   if (nrow(table) == 0) {
     tl <- "na"
-    report <- c(summary, prereg_table)
+    report <- c(summary)
   } else {
     tl <- "info"
-    report <- c(summary, report_table, "#### Preregistered Sample Size", report_table_samplesize, prereg_table, guidance)
+    report <- c(summary, "#### Preregistered Sample Size", report_table_samplesize, prereg_table, guidance)
   }
 
 
