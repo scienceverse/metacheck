@@ -13,7 +13,7 @@ osf_retrieve(osf_url, id_col = 1, recursive = FALSE, find_project = FALSE)
 
 \item{recursive}{whether to retrieve all children}
 
-\item{find_project}{find the top-level project associated with a file (adds 1+ API calls)}
+\item{find_project}{DEPRECATED always TRUE now - find the top-level project associated with a file (adds 1+ API calls)}
 }
 \value{
 a data frame of information

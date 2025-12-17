@@ -109,7 +109,7 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api")) {
 #' @param osf_url an OSF ID or URL, or a table containing them
 #' @param id_col the index or name of the column that contains OSF IDs or URLs, if id is a table
 #' @param recursive whether to retrieve all children
-#' @param find_project find the top-level project associated with a file (adds 1+ API calls)
+#' @param find_project DEPRECATED always TRUE now - find the top-level project associated with a file (adds 1+ API calls)
 #'
 #' @returns a data frame of information
 #' @export
@@ -158,7 +158,7 @@ osf_retrieve <- function(osf_url, id_col = 1,
 
   # iterate over valid IDs
   message("Starting OSF retrieval for ", length(valid_ids),
-          " file", ifelse(length(valid_ids) == 1, "", "s"), "...")
+          " URL", ifelse(length(valid_ids) == 1, "", "s"), "...")
 
   id_info <- vector("list", length(valid_ids))
   too_many <- FALSE
@@ -173,6 +173,9 @@ osf_retrieve <- function(osf_url, id_col = 1,
   info <- id_info |>
     do.call(dplyr::bind_rows, args = _) |>
     dplyr::left_join(ids, by = "osf_id")
+  if (!"project" %in% colnames(info)) {
+    info$project <- rep(NA_character_, nrow(info))
+  }
 
   # reduplicate and add original table info
   by <- stats::setNames("osf_url", id_col_name)
@@ -189,8 +192,7 @@ osf_retrieve <- function(osf_url, id_col = 1,
     while(nrow(children) > 0) {
       node_ids <- children[children$osf_type == "nodes", "osf_id"]
 
-      children <- lapply(node_ids, osf_children) |>
-        do.call(dplyr::bind_rows, args = _)
+      children <- osf_children(node_ids)
 
       child_collector <- dplyr::bind_rows(child_collector, children)
     }
@@ -203,14 +205,19 @@ osf_retrieve <- function(osf_url, id_col = 1,
     }
     node_type <- sapply(node_type, isTRUE)
 
-    folders <- all_nodes[node_type, ]$osf_id |> unique()
+    folders <- all_nodes[node_type, c("osf_id", "project")] |> unique()
 
     file_collector <- data.frame()
-    while(length(folders) > 0) {
-      subfiles <- lapply(folders, osf_files) |>
+    while(nrow(folders) > 0) {
+      subfiles <- mapply(\(f, proj_id) {
+          dat <- osf_files(f)
+          dat$project <- rep(proj_id, nrow(dat))
+          dat
+        }, folders$osf_id, folders$project, SIMPLIFY = FALSE) |>
         do.call(dplyr::bind_rows, args = _)
       if (nrow(subfiles) > 0 && "kind" %in% names(subfiles)) {
-        folders <- subfiles$osf_id[subfiles$kind == "folder"]
+        folders <- subfiles[subfiles$kind == "folder", c("osf_id", "project")]
+        #folders <- folders[!is.na(folders$osf_id), ]
       } else {
         folders <- data.frame()
       }
@@ -219,24 +226,6 @@ osf_retrieve <- function(osf_url, id_col = 1,
 
     data <- list(data, child_collector, file_collector) |>
       do.call(dplyr::bind_rows, args = _)
-  }
-
-  # get top-level project ----
-  if (find_project && "parent" %in% colnames(data)) {
-
-    parents <- data.frame(
-      parent = unique(data$parent) |> stats::na.omit()
-    )
-    parents$project <- sapply(parents$parent, osf_parent_project)
-
-    if (nrow(parents) == 0) {
-      data$project <- NA_character_
-    } else {
-      data <- dplyr::left_join(data, parents, by = "parent")
-    }
-
-    is_project <- sapply(data$osf_type, identical, "nodes") & is.na(data$parent)
-    data$project[is_project] <- data$osf_id[is_project]
   }
 
   message("...OSF retrieval complete!")
@@ -271,11 +260,17 @@ osf_info <- function(osf_id) {
   Sys.sleep(osf_delay())
 
   # check for all osf_types ----
-  osf_types <- c("nodes",
-                 "files",
-                 "preprints",
-                 "registrations",
-                 "users")
+  if (nchar(valid_id) == 5) {
+    osf_types <- "guids"
+  } else {
+    # waterbutler IDs are usually files
+    osf_types <- c("files",
+                   "nodes",
+                   "preprints",
+                   "registrations",
+                   "users")
+  }
+
   for (osf_type in osf_types) {
     warning <- NULL
     content <- tryCatch({
@@ -321,6 +316,7 @@ osf_info <- function(osf_id) {
 
     if (!is.null(content) & is.null(content$errors)) {
       data <- content$data
+      osf_type <- content$data$type
       break
     } else {
       osf_type <- "unknown"
@@ -373,7 +369,8 @@ osf_node_data <- function(data) {
     category = att$category %||% NA_character_,
     registration = att$registration %||% NA,
     preprint = att$preprint %||% NA,
-    parent = data$relationships$parent$data$id %||% NA_character_
+    parent = data$relationships$parent$data$id %||% NA_character_,
+    project = data$relationships$root$data$id %||% NA_character_
   )
 
   return(obj)
@@ -391,9 +388,15 @@ osf_file_data <- function(data) {
 
   att <- data$attributes
 
+  if (is.null(att$guid)) {
+    osf_id <- data$id
+  } else {
+    osf_id <- ifelse(is.na(att$guid), data$id, att$guid)
+  }
+
   obj <- data.frame(
-    #osf_id = ifelse(is.na(att$guid), data$id, att$guid),
-    osf_id = data$id,
+    osf_id = osf_id,
+    #osf_id = data$id,
     name = att$name,
     description = att$description %||% NA_character_,
     osf_type = data$type,
@@ -404,12 +407,22 @@ osf_file_data <- function(data) {
     size = att$size %||% NA_integer_,
     downloads = att$extra$downloads %||% NA_integer_,
     download_url = data$links$download %||% NA_character_,
-    parent = data$relationships$parent_folder$data$id %||%
-      data$relationships$target$data$id %||% NA_character_
+    parent = data$relationships$target$data$id %||%
+             data$relationships$parent_folder$data$id %||%
+             NA_character_,
+    project = data$relationships$root$data$id %||% NA_character_
   )
 
+  # guess file type
   is_file <- obj$kind == "file"
   obj$filetype[is_file] <- filetype(obj$name[is_file])
+
+  folders <- which(obj$kind == "folder")
+  if (length(folders) &&
+      !is.null(data$relationships$root_folder$data$id)) {
+    obj$osf_id[folders] <-
+      data$relationships$root_folder$data$id[folders]
+  }
 
   return(obj)
 }
@@ -468,6 +481,7 @@ osf_preprint_data <- function(data) {
     date_created = att$date_created %||% NA_character_,
     date_modified = att$date_modified %||% NA_character_,
     parent = data$relationships$node$data$id %||% NA_character_,
+    project = data$relationships$root$data$id %||% NA_character_,
     primary_file = data$relationships$primary_file$links$related$href %||% NA_character_
   )
 
@@ -493,7 +507,8 @@ osf_reg_data <- function(data) {
     category = "registration",
     registration = att$registration %||% NA,
     preprint = data$attributes$preprint %||% NA,
-    parent = data$relationships$registered_from$data$id %||% NA_character_
+    parent = data$relationships$registered_from$data$id %||% NA_character_,
+    project = data$relationships$root$data$id %||% NA_character_
   )
 
   return(obj)
@@ -662,9 +677,10 @@ osf_files <- function(osf_id) {
   return(obj)
 }
 
+
 #' List Children of an OSF Component
 #'
-#' @param osf_id an OSF ID
+#' @param osf_id a vector of OSF IDs
 #'
 #' @returns a data frame with child info
 #' @export
@@ -673,14 +689,46 @@ osf_children <- function(osf_id) {
   osf_api <- getOption("metacheck.osf.api")
   node_id <- osf_check_id(osf_id)
 
-  message("* Retrieving children for ", node_id, "...")
+  if (length(node_id) == 0) return(data.frame())
 
-  url <- sprintf("%s/nodes/%s/children/",
-                 osf_api, node_id)
+  message("* Retrieving children for ",
+          paste(node_id, collapse = ", "),
+          "...")
+
+  # url <- sprintf("%s/nodes/%s/children/",
+  #                osf_api, node_id)
+  # data <- osf_get_all_pages(url)
+  # obj <- osf_node_data(data)
+
+  url <- sprintf("%s/nodes/?filter[id]=%s&embed=children",
+                 osf_api, paste(node_id, collapse = ","))
   data <- osf_get_all_pages(url)
-  obj <- osf_node_data(data)
+  children <- do.call(dplyr::bind_rows, data$embeds$children$data)
+  obj <- osf_node_data(children)
 
   return(obj)
+}
+
+#' Get OSF Parent Project
+#'
+#' @param osf_id an OSF ID
+#'
+#' @returns the ID of the parent project
+#' @export
+#' @keywords internal
+osf_parent_project <- function(osf_id) {
+  valid_id <- osf_check_id(osf_id)
+  if (is.na(valid_id)) return(NA_character_)
+
+  # TODO: make this more efficient my just getting the parent
+  obj <- suppressMessages( osf_info(valid_id) )
+
+  if (!is.null(obj$project) && !is.na(obj$project)) return(obj$project)
+  if (is.null(obj$parent) || is.na(obj$parent)) return(osf_id)
+
+  parent <- osf_parent_project(obj$parent)
+
+  return(parent)
 }
 
 
@@ -744,29 +792,6 @@ summarize_contents <- function(contents) {
 
   return(contents)
 }
-
-
-#' Get OSF Parent Project
-#'
-#' @param osf_id an OSF ID
-#'
-#' @returns the ID of the parent project
-#' @export
-#' @keywords internal
-osf_parent_project <- function(osf_id) {
-  valid_id <- osf_check_id(osf_id)
-  if (is.na(valid_id)) return(NA_character_)
-
-  # TODO: make this more efficient my just getting the parent
-  obj <- suppressMessages( osf_info(valid_id) )
-
-  if (is.null(obj$parent) || is.na(obj$parent)) return(osf_id)
-
-  parent <- osf_parent_project(obj$parent)
-
-  return(parent)
-}
-
 
 #' Set the OSF delay
 #'

@@ -1,6 +1,6 @@
 structure(list(url = "https://api.osf.io/v2/nodes/ckjef/files/", 
     status_code = 200L, headers = structure(list(server = "nginx", 
-        date = "Sun, 17 Aug 2025 16:31:41 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
+        date = "Wed, 17 Dec 2025 04:18:24 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
         vary = "Accept-Encoding", vary = "Accept, Cookie, origin", 
         allow = "GET, HEAD, OPTIONS", `x-content-type-options` = "nosniff", 
         `referrer-policy` = "same-origin", `cross-origin-opener-policy` = "same-origin", 
@@ -8,7 +8,7 @@ structure(list(url = "https://api.osf.io/v2/nodes/ckjef/files/",
         expires = "-1", pragma = "no-cache", `content-encoding` = "gzip", 
         via = "1.1 google", `alt-svc` = "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"), class = c("insensitive", 
     "list")), all_headers = list(list(status = 200L, version = "HTTP/2", 
-        headers = structure(list(server = "nginx", date = "Sun, 17 Aug 2025 16:31:41 GMT", 
+        headers = structure(list(server = "nginx", date = "Wed, 17 Dec 2025 04:18:24 GMT", 
             `content-type` = "application/vnd.api+json; charset=utf-8", 
             vary = "Accept-Encoding", vary = "Accept, Cookie, origin", 
             allow = "GET, HEAD, OPTIONS", `x-content-type-options` = "nosniff", 
@@ -116,7 +116,7 @@ structure(list(url = "https://api.osf.io/v2/nodes/ckjef/files/",
     0x31, 0x30, 0x7d, 0x7d, 0x2c, 0x22, 0x6d, 0x65, 0x74, 0x61, 
     0x22, 0x3a, 0x7b, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 
     0x6e, 0x22, 0x3a, 0x22, 0x32, 0x2e, 0x30, 0x22, 0x7d, 0x7d
-    )), date = structure(1755448301, class = c("POSIXct", "POSIXt"
+    )), date = structure(1765945104, class = c("POSIXct", "POSIXt"
     ), tzone = "GMT"), times = c(redirect = 0, namelookup = 0, 
-    connect = 0, pretransfer = 0.000221, starttransfer = 0.517743, 
-    total = 0.517875)), class = "response")
+    connect = 0, pretransfer = 0.000116, starttransfer = 0.380502, 
+    total = 0.380681)), class = "response")
