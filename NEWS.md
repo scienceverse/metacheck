@@ -1,3 +1,8 @@
+# metacheck 0.0.0.9062
+
+* `json_expand()` updated to handle LLM JSON errors more gracefully.
+* You can pass arguments to modules via `report()` now with the new `args` argument. 
+
 # metacheck 0.0.0.9061
 
 * Efficiency improvements to the OSF functions

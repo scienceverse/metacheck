@@ -13,13 +13,14 @@
 #' @import dplyr
 #'
 #' @param paper a paper object or paperlist object
+#' @param demo_arg an example of a passed argument
 #' @param ... further arguments (not used)
 #'
 #' @returns a list with table, summary, traffic light
 #'
 #' @examples
 #' module_run(psychsci, "no_error")
-pvals2 <- function(paper, ...) {
+pvals2 <- function(paper, demo_arg = "", ...) {
   # detailed table of results ----
   pattern <- "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?"
   table <- search_text(paper, pattern, return = "match", "perl" = TRUE)
@@ -36,7 +37,7 @@ pvals2 <- function(paper, ...) {
     summary_table = summary_table,
     na_replace = 0,
     traffic_light = tl,
-    summary_text = "summary text",
+    summary_text = paste0("summary text", demo_arg),
     report = "report text"
   )
 }

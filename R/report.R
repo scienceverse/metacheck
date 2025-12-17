@@ -1,9 +1,17 @@
-#' Create a report
+#' Create a Report
+#'
+#' Run specified modules on a paper and generate a report in quarto (qmd), html, or pdf format.
+#'
+#' Pass arguments to modules in a named list of lists, using the same names as the `modules` argument. You only need to specify modules with arguments.
+#' ```
+#' args <- list(power = list(seed = 8675309))
+#' ```
 #'
 #' @param paper a paper object
 #' @param modules a vector of modules to run (names for built-in modules or paths for custom modules)
 #' @param output_file the name of the output file
 #' @param output_format the format to create the report in
+#' @param args a list of arguments to pass to modules (see Details)
 #'
 #' @return the file path the report is saved to
 #' @export
@@ -17,7 +25,8 @@
 report <- function(paper,
                    modules = c("exact_p", "marginal", "effect_size", "statcheck", "retractionwatch", "ref_consistency"),
                    output_file = paste0(paper$name, "_report.", output_format),
-                   output_format = c("qmd", "html", "pdf")) {
+                   output_format = c("qmd", "html", "pdf"),
+                   args = list()) {
   output_format <- match.arg(output_format)
 
   # check paper has required things
@@ -36,7 +45,11 @@ report <- function(paper,
   # run each module ----
   module_output <- lapply(modules, \(module) {
     pb$tick(tokens = list(what = module))
-    op <- tryCatch(module_run(paper, module),
+    mod_args <- args[[module]] %||% list()
+    mod_args$paper <- paper
+    mod_args$module <- module
+
+    op <- tryCatch(do.call(module_run, mod_args),
            error = function(e) {
              report_items <- list(
                module = module,

@@ -159,6 +159,12 @@ test_that("module_run", {
 
   first_char <- substr(mod_output$table$text, 1, 1)
   expect_true(all(first_char == "p"))
+
+  # with argument
+  mod_output <- module_run(paper, module,
+                           demo_arg = "demo")
+  expect_equal(mod_output$summary_text, "summary textdemo")
+
 })
 
 # test_that("LLM", {

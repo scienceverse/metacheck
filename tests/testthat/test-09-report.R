@@ -55,6 +55,29 @@ test_that("defaults", {
   # browseURL(pdf)
 })
 
+test_that("report pass args", {
+  paper <- demoxml() |> read()
+  modules <- c("exact_p", "modules/no_error.R")
+  tf <- tempfile(fileext = ".qmd")
+
+  args <- list(
+    "modules/no_error.R" = list(demo_arg = "Look for me in the text!",
+                                irrelevant_arg = 1:10)
+  )
+  r <- report(paper, modules, output_file = tf, args = args)
+  # browseURL(r)
+
+  qmd_txt <- readLines(r)
+  find_arg <- grepl(args$`modules/no_error.R`$demo_arg, qmd_txt, fixed = TRUE)
+  expect_true(any(find_arg))
+
+  # make sure exact p doesn't fail
+  exact_runs <- grepl("(#exact-p-values){.red}", qmd_txt, fixed = TRUE)
+  expect_true(any(exact_runs))
+
+  unlink(r)
+})
+
 test_that("detected", {
   skip_on_ci()
   skip_if_not_installed("quarto")
