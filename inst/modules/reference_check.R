@@ -106,7 +106,7 @@ reference_check <- function(paper) {
   rows <- which(!is.na(articles$doi) & articles$doi_resolves == FALSE)
   cols <- c("doi", "ref")
   doi_table <- articles[rows, cols]
-  doi_table$doi <- link(doi_table$doi)
+  doi_table$doi <- doi_table$doi
   if (nrow(doi_table) == 0) {
     doi_summary <- sprintf("All %d DOIs that were present resolved when checked.", n_doi)
     doi_text <- paste(doi_summary, "Note that this does not guarantee that the DOIs match the references, only that they link to a webpage.")
