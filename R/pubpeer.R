@@ -37,9 +37,9 @@ pubpeer_comments <- function(doi) {
 
     if (nrow(pp_fb) == 0) {
       all <- data.frame(doi = tolower(doi),
-                        total_comments = NA,
-                        url = NA,
-                        users = NA)
+                        total_comments = 0,
+                        url = NA_character_,
+                        users = NA_character_)
     } else {
       all <- data.frame(doi = tolower(doi)) |>
         dplyr::left_join(pp_fb, by = "doi")

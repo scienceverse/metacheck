@@ -271,15 +271,18 @@ print.metacheck_module_list <- function(x, ...) {
 #' @keywords internal
 #'
 print.metacheck_module_output <- function(x, ...) {
-  args <- list(...)
-  args$module_output <- x
+  # args <- list(...)
+  # args$module_output <- x
+  #
+  # # set defaults
+  # if (!"header" %in% names(args)) args$header = ""
+  # if (!"maxrows" %in% names(args)) args$maxrows = 20
+  # if (!"trunc_cell" %in% names(args)) args$trunc_cell = 100
+  #
+  # txt <- do.call(module_report, args)
 
-  # set defaults
-  if (!"header" %in% names(args)) args$header = ""
-  if (!"maxrows" %in% names(args)) args$maxrows = 20
-  if (!"trunc_cell" %in% names(args)) args$trunc_cell = 100
+  txt <- sprintf("%s: %s", x$title, x$summary_text)
 
-  txt <- do.call(module_report, args)
   cat(txt)
 }
 

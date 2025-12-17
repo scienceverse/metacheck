@@ -57,17 +57,21 @@ exact_p <- function(paper, ...) {
     report <- "We detected no *p* values."
     summary_text <- report
   } else if (tl == "green") {
-    report <- "All detected *p* values were reported with appropriate precision."
+    report <- sprintf(
+      "We found no imprecise *p* values out of %d detected.",
+      nrow(p)
+    )
     summary_text <- report
   } else {
     module_output <- sprintf(
-      "We found %d imprecise *p* value%s. Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001.",
-      nrow(report_table), ifelse(nrow(report_table) == 1, "", "s")
+      "We found %d imprecise *p* value%s out of %d detected. Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001.",
+      nrow(report_table), plural(nrow(report_table)), nrow(p)
     )
 
-    summary_text <- sprintf("We found %d imprecise *p* value%s.",
+    summary_text <- sprintf("We found %d imprecise *p* value%s out of %d detected.",
                             nrow(report_table),
-                            ifelse(nrow(report_table) == 1, "", "s"))
+                            plural(nrow(report_table)),
+                            nrow(p))
 
     # Guidance text
     guidance <- c(

@@ -10,19 +10,19 @@ modules <- c(
   # "power",
 
   # checked ----
-  "code_check",
-  "all_p_values",
+  # "code_check",
+  # "all_p_values",
   "effect_size",
   "exact_p",
   "marginal",
-#  "prereg_check",
-  "reference_check",
-  "miscitation",
-  "nonsignificant_pvalue",
-  "causal_claims",
-#  "ref_consistency",
-#  "retractionwatch",
-  "statcheck"
+  "prereg_check"
+  # "reference_check",
+  # "miscitation",
+  # "nonsignificant_pvalue",
+  # "causal_claims",
+  # "ref_consistency",
+  # "retractionwatch",
+  # "statcheck"
 )
 
 # generate reports for a sample of n papers
