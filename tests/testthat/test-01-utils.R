@@ -66,7 +66,7 @@ test_that("print.scivrs_paper", {
   paper <- demoxml() |> read()
   op <- capture_output(print(paper))
   op.sv <- capture_output(print.scivrs_paper(paper))
-  expected <- "---------------\nto_err_is_human\n---------------\n\nTo Err is Human: An Empirical Investigation\n\n* Sections: 4\n* Sentences: 27\n* Bibliography: 4\n* X-Refs: 2\n"
+  expected <- "---------------\nto_err_is_human\n---------------\n\nTo Err is Human: An Empirical Investigation\n\n* Sections: 4\n* Sentences: 28\n* Bibliography: 4\n* X-Refs: 2\n"
 
   expect_equal(op, expected)
   expect_equal(op, op.sv)

@@ -51,6 +51,12 @@ report <- function(paper,
            })
   })
 
+  # organise modules ----
+  section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
+  sections <- sapply(module_output, \(mo) mo$section)
+  sections <- factor(sections, section_levels)
+  module_output <- sort_by(module_output, sections)
+
   # set up report ----
   pb$tick(tokens = list(what = "Creating report"))
 
@@ -66,7 +72,7 @@ report <- function(paper,
                      sprintf("DOI: [%s](https://doi.org/%s)", paper$info$doi, paper$info$doi))
   qmd_header <- sprintf(rt_head,
                         paper$info$title,
-                        as.character(packageVersion("metacheck")),
+                        as.character(utils::packageVersion("metacheck")),
                         Sys.Date(),
                         doi_text)
 
@@ -82,7 +88,19 @@ report <- function(paper,
                           paste(summary_list, collapse = "\n"))
 
   ## format module reports ----
-  module_reports <- sapply(module_output, module_report) |>
+  module_reports <- sapply(section_levels, \(sec) {
+    this_section <- sapply(module_output, `[[`, "section") == sec
+    if (!any(this_section)) return(NULL)
+
+    section_op <- module_output[this_section]
+    mr <- sapply(section_op, module_report)
+
+    title <- sprintf("## %s%s Modules",
+                     toupper(substr(sec, 1, 1)),
+                     substr(sec, 2, nchar(sec)))
+    c(title, mr)
+  }) |>
+    unlist() |>
     paste(collapse = "\n\n") |>
     gsub("\\n{3,}", "\n\n", x = _)
 
@@ -137,7 +155,7 @@ report <- function(paper,
 #' op <- module_run(paper, "exact_p")
 #' module_report(op) |> cat()
 module_report <- function(module_output,
-                          header = 2,
+                          header = 3,
                           maxrows = Inf,
                           trunc_cell = Inf) {
 

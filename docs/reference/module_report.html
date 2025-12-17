@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9060</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9061</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,7 +21,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get started</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../report-example.html">Example Report</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -46,7 +47,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">module_report</span><span class="op">(</span><span class="va">module_output</span>, header <span class="op">=</span> <span class="fl">2</span>, maxrows <span class="op">=</span> <span class="cn">Inf</span>, trunc_cell <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">module_report</span><span class="op">(</span><span class="va">module_output</span>, header <span class="op">=</span> <span class="fl">3</span>, maxrows <span class="op">=</span> <span class="cn">Inf</span>, trunc_cell <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -80,9 +81,9 @@
 <span class="r-in"><span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="fu"><a href="read.html">read</a></span><span class="op">(</span><span class="va">filename</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"exact_p"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">module_report</span><span class="op">(</span><span class="va">op</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ## Exact P-Values {.red}</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ### Exact P-Values {.red}</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> We found 1 imprecise *p* value. Reporting *p* values imprecisely (e.g., *p* &lt; .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* &lt; .001.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> We found 1 imprecise *p* value out of 3 detected. Reporting *p* values imprecisely (e.g., *p* &lt; .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* &lt; .001.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ```{r}</span>
@@ -97,7 +98,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> options &lt;- list(dom = "t", ordering = FALSE, columnDefs = cd )</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> # display table</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> DT::datatable(table, options, selection = "none", rownames = FALSE)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ```</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -105,7 +106,9 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> The APA manual states: Report exact *p* values (e.g., *p* = .031) to two or three decimal places. However, report *p* values less than .001 as *p* &lt; .001. However, 2 decimals is too imprecise for many use-cases (e.g., a *p* value meta-analysis), so report *p* values with three digits.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> American Psychological Association. (2020). Publication manual of the American Psychological Association 2020: the official guide to APA style (7th ed.). American Psychological Association.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> American Psychological Association (2020). _Publication manual of the</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> American Psychological Association_, 7 edition. American Psychological</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Association.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> :::</span>
 </code></pre></div>

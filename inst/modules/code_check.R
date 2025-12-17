@@ -3,6 +3,8 @@
 #' @description
 #' Retrieve information r files.
 #'
+#' @keywords results
+#'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
 #'
 #' @import dplyr
@@ -251,16 +253,16 @@ code_check <- function(paper) {
   report <- c(
     "Below, we describe some best coding practices and give the results of automatic evaluation of these practices in the R files below. This check may miss things or produce false positives if your R scripts are less typical.",
     scroll_table(report_table, scroll_above = 5),
-    "### Missing Files",
+    "#### Missing Files",
     report_missingfiles,
     scroll_table(report_table_files_missing, scroll_above = 5),
-    "### Hardcoded Paths",
+    "#### Hardcoded Paths",
     report_hardcoded,
     scroll_table(report_table_hardcoded, scroll_above = 5),
-    "### Libraries",
+    "#### Libraries",
     report_library,
     scroll_table(report_table_library, scroll_above = 5),
-    "### Code Comments",
+    "#### Code Comments",
     report_comments,
     scroll_table(report_table_comments, scroll_above = 5)
   )

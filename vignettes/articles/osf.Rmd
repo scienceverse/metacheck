@@ -2,6 +2,7 @@
 title: "Checking OSF Data Repositories"
 output: rmarkdown::html_vignette
 bibliography: refs_osf.bib
+freeze: true
 vignette: >
   %\VignetteIndexEntry{Checking OSF Data Repositories}
   %\VignetteEngine{knitr::rmarkdown}

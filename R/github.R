@@ -238,12 +238,21 @@ github_languages <- function(repo) {
 
   results <- httr::GET(url, github_config())
   languages <- httr::content(results, "parsed")
-  lang_df <- data.frame(
-    repo = repo,
-    language = names(languages),
-    bytes = unlist(languages),
-    row.names = NULL
-  )
+  if (length(languages)) {
+    lang_df <- data.frame(
+      repo = repo,
+      language = names(languages),
+      bytes = unlist(languages),
+      row.names = NULL
+    )
+  } else {
+    lang_df <- data.frame(
+      repo = repo,
+      language = NA_character_,
+      bytes = NA_real_,
+      row.names = NULL
+    )
+  }
 
   return(lang_df)
 }

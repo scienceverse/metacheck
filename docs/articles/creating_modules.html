@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9060</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9061</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,8 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../report-example.html">Example Report</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -96,7 +97,9 @@ functions in R packages, using roxygen2 for documentation.</p>
 <pre><code><span><span class="co">#' Module Title</span></span>
 <span><span class="co">#'</span></span>
 <span><span class="co">#' @description</span></span>
-<span><span class="co">#' A short description of the module</span></span>
+<span><span class="co">#' A short description of the module.</span></span>
+<span><span class="co">#'</span></span>
+<span><span class="co">#' @keywords general|intro|method|results|discussion|reference</span></span>
 <span><span class="co">#'</span></span>
 <span><span class="co">#' @author Author Name (\email{name@email.com})</span></span>
 <span><span class="co">#'</span></span>
@@ -222,12 +225,20 @@ omit the <code>@description</code> and <code>@details</code> tags and
 rely on paragraph spacing to distinguish description from details.</p>
 </div>
 <div class="section level3">
+<h3 id="keywords">Keywords<a class="anchor" aria-label="anchor" href="#keywords"></a>
+</h3>
+<p>Choose one section category for your module to be displayed under in
+reports.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' @keywords general|intro|method|results|discussion|reference</span></span></code></pre></div>
+</div>
+<div class="section level3">
 <h3 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a>
 </h3>
 <p>Include the module authors so they can get credit! Add a new
 <code>@author</code> tag for each author, and optionally add their email
 address.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' @author Lisa DeBruine (\email{debruine@gmail.com})</span></span>
 <span><span class="co">#' @author Daniel Lakens (\email{lakens@gmail.com})</span></span></code></pre></div>
 </div>
@@ -237,7 +248,7 @@ address.</p>
 <p>Optionally include references that you would want available to users.
 If you are building a module that uses citable resources, please list
 them here.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' @references</span></span>
 <span><span class="co">#' The Retraction Watch Database [Internet].</span></span>
 <span><span class="co">#' New York: The Center for Scientific Integrity. 2018.</span></span>
@@ -249,7 +260,7 @@ them here.</p>
 </h3>
 <p>If you are using packages other than <code>metacheck</code>, add each
 with an <code>@import</code> statement.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' @import dplyr</span></span>
 <span><span class="co">#' @import tidyr</span></span></code></pre></div>
 <p>Technically, you can then use functions from these packages in your
@@ -266,7 +277,7 @@ can optionally be <code>...</code>. This allows the
 <code><a href="../reference/module_run.html">module_run()</a></code> function to pass any arguments, and your code
 can use them by name (e.g.,
 <code>extra_args &lt;- list(...)</code>).</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' @param paper a paper object or paperlist object</span></span>
 <span><span class="co">#' @param ... further arguments (not used)</span></span></code></pre></div>
 </div>
@@ -276,7 +287,7 @@ can use them by name (e.g.,
 <p>It is good practice to explain what your function returns. This is
 usually the default list with table, summary, traffic light, and report
 text, but you can edit this. It’s just a human-readable string.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' @returns a list</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -286,7 +297,7 @@ text, but you can edit this. It’s just a human-readable string.</p>
 <code><a href="../reference/module_run.html">module_run()</a></code> function. Give a paper or list of papers in
 the example so you can demonstrate the purpose of this module and it
 doesn’t take too much time to run the example.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' @examples</span></span>
 <span><span class="co">#' module_run(psychsci, "module_name")</span></span></code></pre></div>
 </div>
@@ -299,7 +310,7 @@ requirement that the first argument be <code>paper</code>. Set
 <code>module_name</code> to your module name, which must be a valid R
 variable name. Your module script should also have the same name, with a
 .R suffix (e.g., <code>module_name.R</code>).</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">module_name</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">paper</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="co"># module code ----</span></span>
 <span>  <span class="co"># create return items ----</span></span>
@@ -326,7 +337,7 @@ need improvement. We do this through “traffic_light” and “report”.</p>
 be shown in a report. The <code><a href="../reference/search_text.html">search_text()</a></code> function below
 creates a table with a row for each sentence that contains to word
 “significant”.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>  <span class="co">## table ----</span></span>
 <span>  <span class="co"># detail your results in a format like the result of search_text()</span></span>
 <span>  <span class="co"># this is stored to use in later modules in a report or pipeline</span></span>
@@ -343,7 +354,7 @@ for paper lists.</p>
 row for each paper in a list, and some columns that summarise the
 results. You can use nested tables if you want some of your cells to
 contain multiple values.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>  <span class="co">## summary_table ----</span></span>
 <span>  <span class="co"># must have id column as the id of each paper, one row per paper</span></span>
 <span>  <span class="co"># and further columns to be added to a master summary table</span></span>
@@ -359,7 +370,7 @@ count of sentences with the word “significant”, you can replace
 <code>NA</code>s with 0.</p>
 <p>If you are returning more than one summary column and have different
 replacement values, use a named list.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">na_replace</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  n_significant <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  paper_type <span class="op">=</span> <span class="st">"unknown"</span></span>
@@ -389,7 +400,7 @@ lights:</p>
 apply to your case. If you don’t include a traffic light, but do include
 a <code>table</code> in the returned list, the following rule will be
 applied for the traffic light.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>  <span class="co">## traffic light ----</span></span>
 <span>  <span class="co"># displayed in reports, possible values: </span></span>
 <span>  <span class="co">#   green: no problems detected</span></span>
@@ -409,7 +420,7 @@ item <code>summary_text</code> provides this text. You will usually want
 to customise the summary text for the traffic light or other aspects of
 the results, such as the number of instances of a practice found and the
 number that might be problematic.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>  <span class="co">## summary_text ----</span></span>
 <span>  <span class="co"># short text to be displayed at the top of reports</span></span>
 <span>  <span class="co"># may be unique for each possible traffic light</span></span>
@@ -428,10 +439,10 @@ number that might be problematic.</p>
 </h3>
 <p>Reports need to explain concepts or give resources for further
 learning. This is often specific to the outcome of a check.</p>
-<p>The <code>report</code> should be a charaacter vector, with one or
+<p>The <code>report</code> should be a character vector, with one or
 more item. Use <a href="https://quarto.org/docs/authoring/markdown-basics.html" class="external-link">quarto /
 markdown</a> for styling text, such as adding links or lists.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>  <span class="co">## report ----</span></span>
 <span>  <span class="co"># longer text to be displayed in the module section</span></span>
 <span>  <span class="co"># use quarto / markdown for styling</span></span>
@@ -457,7 +468,7 @@ sections of text or supplemental tables.</p>
 <p>The function <code><a href="../reference/scroll_table.html">scroll_table()</a></code> generates the R code chunk
 needed to display a scrollable table in a quarto document, which is how
 the reports are created. It will include the contents of the table.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, letter <span class="op">=</span> <span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/scroll_table.html">scroll_table</a></span><span class="op">(</span></span>
@@ -482,7 +493,7 @@ the reports are created. It will include the contents of the table.</p>
 <span><span class="co">#&gt; options &lt;- list(dom = "t", ordering = FALSE, columnDefs = cd , scrollY = 200)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; # display table</span></span>
-<span><span class="co">#&gt; DT::datatable(table, options, selection = "none", rownames = FALSE)</span></span>
+<span><span class="co">#&gt; DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)</span></span>
 <span><span class="co">#&gt; ```</span></span></code></pre>
 </div>
 <div class="section level4">
@@ -490,7 +501,7 @@ the reports are created. It will include the contents of the table.</p>
 </h4>
 <p>The function <code><a href="../reference/collapse_section.html">collapse_section()</a></code> generates the R code
 chunk needed to hide a section in a collapsible box.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">text</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"This is my first *paragraph*:"</span>,</span>
 <span>          <span class="st">"* list item 1"</span>,</span>
 <span>          <span class="st">"* list item 2"</span><span class="op">)</span></span>
@@ -518,7 +529,7 @@ chunk needed to hide a section in a collapsible box.</p>
 <p>Structure the returned values in a list. The names below are reserved
 for specific uses in the report and piped workflow, but you can also
 return other objects for your own purposes.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>  <span class="co"># return a list ----</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    table <span class="op">=</span> <span class="va">table</span>,</span>

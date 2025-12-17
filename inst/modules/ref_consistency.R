@@ -3,6 +3,8 @@
 #' @description
 #' Check if all references are cited and all citations are referenced
 #'
+#' @keywords reference
+#'
 #' @author Lisa DeBruine
 #'
 #' @import dplyr

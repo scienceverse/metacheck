@@ -63,6 +63,15 @@ You can write more detailed help under the tag `@details`, which will be shown w
 
 If you have experience writing R functions with roxygen, you can also omit the `@description` and `@details` tags and rely on paragraph spacing to distinguish description from details.
 
+### Keywords
+
+Choose one section category for your module to be displayed under in reports.
+
+```{r}
+#' @keywords general|intro|method|results|discussion|reference
+```
+
+
 ### Author
 
 Include the module authors so they can get credit! Add a new `@author` tag for each author, and optionally add their email address.
@@ -239,7 +248,7 @@ The reports begin with a summary of each module, showing the traffic light, the 
 
 Reports need to explain concepts or give resources for further learning. This is often specific to the outcome of a check. 
 
-The `report` should be a charaacter vector, with one or more item. Use [quarto / markdown](https://quarto.org/docs/authoring/markdown-basics.html) for styling text, such as adding links or lists.
+The `report` should be a character vector, with one or more item. Use [quarto / markdown](https://quarto.org/docs/authoring/markdown-basics.html) for styling text, such as adding links or lists.
 
 ```{r, eval = FALSE}
   ## report ----

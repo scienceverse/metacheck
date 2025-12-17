@@ -5,6 +5,8 @@
 #'
 #' Here are some details...
 #'
+#' @keywords results
+#'
 #' @author Lisa DeBruine
 #' @author Daniel Lakens
 #'

@@ -3,6 +3,8 @@
 #' @description
 #' Detect t-tests and F-tests with missing effect sizes
 #'
+#' @keywords results
+#'
 #' @author Daniel Lakens
 #' @author Lisa DeBruine
 #'

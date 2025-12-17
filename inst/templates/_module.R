@@ -1,7 +1,9 @@
 #' Module Title
 #'
 #' @description
-#' A short description of the module
+#' A short description of the module.
+#'
+#' @keywords general|intro|method|results|discussion|reference
 #'
 #' @author Author Name (\email{name@email.com})
 #'

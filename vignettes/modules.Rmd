@@ -14,19 +14,91 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, message=FALSE}
+```{r}
+#| label: setup
+#| message: false
 library(metacheck)
 library(dplyr)
 ```
 
-metacheck is designed modularly, so you can add modules to check for anything. It comes with a set of pre-defined modules, and we hope people will share more modules.
+Metacheck is designed modularly, so you can add modules to check for anything. It comes with a set of pre-defined modules, and we hope people will share more modules.
 
 ## Module List
 
 You can see the list of built-in modules with the function below.
 
-```{r, results='asis'}
+```{r}
+#| results: 'asis'
 module_list()
+```
+
+## Module Output
+
+Module designers can include any information in the returned output, but we suggest they structure it in a specific way to facilitate creating reports and summarising many papers in a metascientific workflow. 
+
+So most modules output a list with the following named items: module, title, table, report, traffic_light, summary_text, summary_table, paper. You probably don't need to worry about any of this unless you are designing modules or using metacheck for metascience -- the `report()` function takes care of displaying everything for you when you need to assess a single paper. 
+
+```{r}
+paper <- read(demoxml())
+mo <- module_run(paper, "exact_p")
+```
+
+
+The `module`, `title`, and `summary_text` give brief information. 
+
+```{r}
+mo$module
+mo$title
+mo$summary_text
+```
+### Traffic light
+
+The `traffic_light` helps the reports give a quick visual guide to where there are problems or things to check.
+
+```{r}
+mo$traffic_light
+```
+
+
+🟢 no problems detected;  
+🟡 something to check;  
+🔴 possible problems detected;  
+🔵 informational only;  
+⚪️ not applicable;  
+⚫️ check failed
+
+### Table
+
+The `table` is usually a detailed table in the format returned from `search_text()` or `expand_text()`, containing either text relevant to the module, or a classification of the text. This table can be of use to further modules in a chain, or to metascientific users. 
+
+```{r}
+mo$table
+```
+
+
+### Summary Table
+
+The `summary_table` contains a single row for each paper, and must have an `id` column that matches the paper IDs. It will also have additional columns that summarise the results of the module. This is mainly useful in the metascientific workflow, and this table is appended by each module in a chain.
+
+```{r}
+mo$summary_table
+```
+
+
+### Report
+
+The `report` contains a vector of markdown and R code to be inserted into a report. The display is usually handled by the `module_report()` function inside the `report()` function.
+
+```{r}
+mo$report
+```
+
+### Paper
+
+The `paper` is just the paper argument to `module_run()`. This is mainly used when chaining modules.
+
+```{r}
+mo$paper
 ```
 
 ## Built-in Modules

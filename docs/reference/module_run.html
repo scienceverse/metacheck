@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9060</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9061</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,7 +21,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get started</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../report-example.html">Example Report</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -73,35 +74,7 @@
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">module_run</span><span class="op">(</span><span class="va">psychsci</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="st">"all_p_values"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> We found 6 p-values</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ```{r}</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> #| echo: false</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> # table data</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> table &lt;- structure(list(Text = c("p &lt; .001", "p &lt; .001", "p &lt; .001", "p = .016", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> "p &lt; .001", "p &lt; .001"), Sentence = c("For hit rates (see Fig. 3), a 3 (complexity level: simple, intermediate, complex) × 2 (TMS site: hand, lip) × 2 (video type: hand action, mouth action) analysis of variance (ANOVA) revealed a main effect of complexity level, F(2, 38) = 16.58, p &lt; .001, η p 2 = .47; as complexity level increased, hit rates decreased.", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> "A main effect of video type also occurred, F(1, 19) = 33.56, p &lt; .001, η p 2 = .64; specifically, hit rates were lower for mouth actions than for hand actions.", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> "There was also a significant interaction between complexity level and video type, F(2, 38) = 36.79, p &lt; .001, η p 2 = .67, with hit rates for mouth actions being more dramatically reduced by increasing complexity than those for hand actions.", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> "More important, there was a significant interaction between TMS site and video type, F(1, 19) = 6.98, p = .016, η p 2 = .27.", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> "For response time (RT), a 3 (complexity level) × 2 (TMS site) × 2 (video type) ANOVA revealed a main effect of complexity level, F(2, 38) = 20.82, p &lt; .001, η p 2 = .52, and a significant interaction between complexity level and video type, F(2, 38) = 51.86, p &lt; .001, η p 2 = .73.", </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> "For response time (RT), a 3 (complexity level) × 2 (TMS site) × 2 (video type) ANOVA revealed a main effect of complexity level, F(2, 38) = 20.82, p &lt; .001, η p 2 = .52, and a significant interaction between complexity level and video type, F(2, 38) = 51.86, p &lt; .001, η p 2 = .73."</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> )), row.names = c(NA, -6L), class = c("tbl_df", "tbl", "data.frame"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> # table options</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> cd &lt;- list(list(targets = 0, width = "5em"))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> options &lt;- list(dom = "t", ordering = FALSE, columnDefs = cd , scrollY = 200)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> # display table</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> DT::datatable(table, options, selection = "none", rownames = FALSE)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ```</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> This will catch most comparators like =&lt;&gt;~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact debruine@gmail.com.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List All P-Values: We found 6 p-values</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

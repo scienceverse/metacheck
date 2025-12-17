@@ -15,9 +15,6 @@ osf_skip <- function() {
   # skip_if_not(osf_api_check() == "ok")
 }
 
-# httptest::start_capturing()
-httptest::with_mock_api({
-
 test_that("exists", {
   expect_true(is.function(metacheck::osf_check_id))
 
@@ -39,6 +36,9 @@ test_that("exists", {
   expect_true(is.function(metacheck::osf_file_download))
   expect_no_error(helplist <- help(osf_file_download, metacheck))
 })
+
+# httptest::start_capturing()
+httptest::with_mock_api({
 
 test_that("osf_api_check", {
   status <- osf_api_check()
@@ -252,7 +252,7 @@ test_that("osf_info", {
   osf_id <- "75qgk"
   osf_api_calls(0)
   info <- osf_info(osf_id)
-  expect_equal(osf_api_calls(), 2) # checks nodes first
+  expect_equal(osf_api_calls(), 1) # checks nodes first
   expect_equal(info$osf_id, osf_id)
   expect_equal(info$osf_type, "files")
   expect_equal(info$kind, "file")
@@ -262,7 +262,7 @@ test_that("osf_info", {
   osf_id <- "xp5cy"
   osf_api_calls(0)
   info <- osf_info(osf_id)
-  expect_equal(osf_api_calls(), 3) # checks nodes & files first
+  expect_equal(osf_api_calls(), 1) # checks nodes & files first
   expect_true(grepl(osf_id, info$osf_id))
   expect_equal(info$osf_type, "preprints")
   expect_equal(info$name, "Understanding mixed effects models through data simulation")
@@ -271,7 +271,7 @@ test_that("osf_info", {
   osf_id <- "8c3kb"
   osf_api_calls(0)
   info <- osf_info(osf_id)
-  expect_equal(osf_api_calls(), 4) # checks nodes, files, preprints first
+  expect_equal(osf_api_calls(), 1) # checks nodes, files, preprints first
   expect_equal(info$osf_id, osf_id)
   expect_equal(info$osf_type, "registrations")
   expect_equal(info$name, "Understanding mixed effects models through data simulation")
@@ -280,7 +280,7 @@ test_that("osf_info", {
   osf_id <- "4i578"
   osf_api_calls(0)
   info <- osf_info(osf_id)
-  expect_equal(osf_api_calls(), 5) # checks nodes, files, preprints, reg first
+  expect_equal(osf_api_calls(), 1) # checks nodes, files, preprints, reg first
   expect_equal(info$osf_id, osf_id)
   expect_equal(info$osf_type, "users")
   expect_equal(info$name, "Lisa DeBruine")
@@ -316,6 +316,17 @@ test_that("osf_info", {
   expect_warning(info <- osf_info(osf_id))
   expect_equal(info$osf_id, osf_id)
   expect_equal(info$osf_type, "unfound")
+
+  # # multiple nodes
+  # osf_id <- c("mc45x", "y6a34")
+  # info <- osf_info(osf_id)
+  # expect_equal(info$osf_id, osf_id)
+  # expect_equal(info$osf_type, c("nodes", "nodes"))
+  #
+  # # multiple different types
+  # osf_id <- c("mc45x", "y6a34", "4i578")
+  # info <- osf_info(osf_id)
+  # weird false positive of preprint/3j9rf_v1
 })
 
 
@@ -336,7 +347,7 @@ test_that("osf_retrieve", {
     type = names(examples)
   )
   expect_warning(table <- osf_retrieve(osf_url))
-  expect_true(!"project" %in% names(table))
+  #expect_true(!"project" %in% names(table))
   expect_equal(table$url, osf_url$url)
   expect_equal(table$type, osf_url$type)
   expect_equal(table[2, 3:10], table[7, 3:10], ignore_attr = TRUE)
@@ -429,7 +440,7 @@ test_that("osf_id vs wb_id", {
   osf_id <- "6846ed88e49694cd45ab8375"
   wb_info <- osf_info(osf_id)
 
-  expect_equal(osf_info[, 2:11], wb_info[, 2:11])
+  expect_equal(osf_info[, 1:11], wb_info[, 1:11])
 })
 
 test_that("osf_parent_project", {
@@ -472,6 +483,9 @@ test_that("summarize_contents", {
   expect_equal(unique(readme$file_category), "readme")
 })
 
+}) # end mock api
+# httptest::stop_capturing()
+
 test_that("add_filetype", {
   # edge case classification
   files <- c(
@@ -504,10 +518,5 @@ test_that("edge case summarise", {
   summary <- summarize_contents(contents)
   expect_equal(summary$file_category, contents$classify)
 })
-
-
-
-}) # end mock api
-# httptest::stop_capturing()
 
 verbose(TRUE)

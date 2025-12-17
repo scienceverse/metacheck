@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9060</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9061</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,8 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../report-example.html">Example Report</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -76,9 +77,9 @@ Check for Best Practices in Scientific Articles</h3>
 
     
     
-<div class="section level3">
-<h3 id="the-problem">The Problem<a class="anchor" aria-label="anchor" href="#the-problem"></a>
-</h3>
+<div class="section level2">
+<h2 id="the-problem">The Problem<a class="anchor" aria-label="anchor" href="#the-problem"></a>
+</h2>
 <p>Metascientific research reveals substantial opportunities to improve
 how scientists design studies, report results, and implement open
 science practices. For example, researchers often use invalid and
@@ -98,9 +99,9 @@ adherence, but in practice they have limited impact <span class="citation">(Dext
 be unaware of them, and even when used, evaluating adherence still
 requires considerable expertise.</p>
 </div>
-<div class="section level3">
-<h3 id="a-solution">A Solution<a class="anchor" aria-label="anchor" href="#a-solution"></a>
-</h3>
+<div class="section level2">
+<h2 id="a-solution">A Solution<a class="anchor" aria-label="anchor" href="#a-solution"></a>
+</h2>
 <p>Human factors research suggests that automation, where researchers
 stay in the loop, can offer a partial solution to automatically check if
 best practices are followed. For example, algorithms could detect
@@ -141,9 +142,9 @@ creation of modules should be open to the entire scientific community,
 such that any domain expert who wants to contribute an automated check
 can easily do so.</p>
 </div>
-<div class="section level3">
-<h3 id="metacheck">metacheck<a class="anchor" aria-label="anchor" href="#metacheck"></a>
-</h3>
+<div class="section level2">
+<h2 id="metacheck">metacheck<a class="anchor" aria-label="anchor" href="#metacheck"></a>
+</h2>
 <p><img src="https://scienceverse.github.io/metacheck/logo.png" style="float:right; width: 10em;" fig-alt="metacheck Logo, a green hexagon with PAPAERCHECK in art deco font"></p>
 <p>In this post, we introduce <a href="https://scienceverse.github.io/metacheck/">metacheck</a>, a new
 tool that leverages text search, code, and large language models to
@@ -165,64 +166,59 @@ tailored to the standards and best practices of different scientific
 fields. It can also offer an overarching platform to integrate existing
 tools (e.g., checks for retracted articles, Statcheck, etc).</p>
 </div>
-<div class="callout-note">
-<div class="section level3">
-<h3 id="an-example-of-the-retractionwatch-module">An example of the “retractionwatch” module<a class="anchor" aria-label="anchor" href="#an-example-of-the-retractionwatch-module"></a>
-</h3>
+<div class="section level2 callout-note">
+<h2 id="an-example-of-the-retractionwatch-module">An example of the “retractionwatch” module<a class="anchor" aria-label="anchor" href="#an-example-of-the-retractionwatch-module"></a>
+</h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read.html">read</a></span><span class="op">(</span><span class="fu"><a href="../reference/demoxml.html">demoxml</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">paper</span>, <span class="st">"retractionwatch"</span><span class="op">)</span></span></code></pre></div>
-<p>You cited 1 paper in the Retraction Watch database (as of
-2025-12-04). These may be retracted, have corrections, or expressions of
-concern.</p>
-<p>```{r} #| echo: false</p>
+<p>RetractionWatch: You cited 1 paper in the Retraction Watch
+database</p>
 </div>
-<div class="section level2">
-<h2 id="table-data">table data<a class="anchor" aria-label="anchor" href="#table-data"></a>
-</h2>
-<p>table &lt;- structure(list(doi = “10.1177/0956797614520714”, “RW
-Status” = “Retraction”), class = “data.frame”, row.names = c(NA,
--1L))</p>
-</div>
-<div class="section level2">
-<h2 id="table-options">table options<a class="anchor" aria-label="anchor" href="#table-options"></a>
-</h2>
-<p>cd &lt;- list() options &lt;- list(dom = “t”, ordering = FALSE,
-columnDefs = cd )</p>
-</div>
-<div class="section level2">
-<h2 id="display-table">display table<a class="anchor" aria-label="anchor" href="#display-table"></a>
-</h2>
-<p>DT::datatable(table, options, selection = “none”, rownames =
-FALSE)</p>
-<pre><code>:::
-
-In addition to the initial modules already introduced on the [metacheck website](https://scienceverse.github.io/metacheck/), we will demonstrate metacheck's capabilities through four practical scenarios in an upcoming series of blog posts:
-
-1.  Identifying adherence to the American Psychological Association's Journal Article Reporting Standards (JARS), such as reporting exact *p*-values and including effect sizes alongside their corresponding statistical test results;
-
-2.  Reviewing the content of data repositories, such listing if data and/or code files are shared, and if the repository includes a README file, code book, or data dictionary;
-
-3.  Extracting sample sizes from AsPredicted preregistrations and checking the preregistered sample size for consistency with the final study sample size reported in the manuscript;
-
-4.  Detecting the presence of a priori power analyses and checking if they are fully reported to make them reproducible.
-
-These examples are intended to demonstrate the breadth of practices that can be automatically checked. The automated checks can be performed as part of an individual or metascientific workflow. In the individual workflow, an author or editor can run selected modules on a single paper and receive a report highlighting potential areas for improvement and explanations or links to further resources. In the metascientific workflow, a single module can be run on a batch of hundreds of papers, producing tabular data that can be used to address metascientific questions, such as how prevalent a practice is in a specific field. For the individual workflow our philosophy is that error rates can be higher than in the meta-scientific workflow, as the user will check whether to implement each recommendation or not. For a tool to be used in a metascientific workflow, the module needs to be shown to have low error rates when run on manually coded ground truth files.
-
-
-``` r
-# run the module on 250 open access papers from Psychological Science
-rw &lt;- module_run(psychsci, "retractionwatch")
-
-dplyr::filter(rw$summary_table, rw_Retraction &gt; 0 | rw_Correction &gt; 0)</code></pre>
+<p>In addition to the initial modules already introduced on the <a href="https://scienceverse.github.io/metacheck/">metacheck website</a>,
+we will demonstrate metacheck’s capabilities through four practical
+scenarios in an upcoming series of blog posts:</p>
+<ol style="list-style-type: decimal">
+<li><p>Identifying adherence to the American Psychological Association’s
+Journal Article Reporting Standards (JARS), such as reporting exact
+<em>p</em>-values and including effect sizes alongside their
+corresponding statistical test results;</p></li>
+<li><p>Reviewing the content of data repositories, such listing if data
+and/or code files are shared, and if the repository includes a README
+file, code book, or data dictionary;</p></li>
+<li><p>Extracting sample sizes from AsPredicted preregistrations and
+checking the preregistered sample size for consistency with the final
+study sample size reported in the manuscript;</p></li>
+<li><p>Detecting the presence of a priori power analyses and checking if
+they are fully reported to make them reproducible.</p></li>
+</ol>
+<p>These examples are intended to demonstrate the breadth of practices
+that can be automatically checked. The automated checks can be performed
+as part of an individual or metascientific workflow. In the individual
+workflow, an author or editor can run selected modules on a single paper
+and receive a report highlighting potential areas for improvement and
+explanations or links to further resources. In the metascientific
+workflow, a single module can be run on a batch of hundreds of papers,
+producing tabular data that can be used to address metascientific
+questions, such as how prevalent a practice is in a specific field. For
+the individual workflow our philosophy is that error rates can be higher
+than in the meta-scientific workflow, as the user will check whether to
+implement each recommendation or not. For a tool to be used in a
+metascientific workflow, the module needs to be shown to have low error
+rates when run on manually coded ground truth files.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># run the module on 250 open access papers from Psychological Science</span></span>
+<span><span class="va">rw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span>, <span class="st">"retractionwatch"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">rw</span><span class="op">$</span><span class="va">summary_table</span>, <span class="va">rw_Retraction</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">rw_Correction</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                  id rw_Correction rw_Retraction</span></span>
 <span><span class="co">## 1 09567976221150616             1             0</span></span>
 <span><span class="co">## 2 09567976231194221             1             0</span></span>
 <span><span class="co">## 3 09567976241249183             0             1</span></span>
 <span><span class="co">## 4 09567976241260247             3             0</span></span></code></pre>
-<div class="section level3">
-<h3 id="future-plans">Future Plans<a class="anchor" aria-label="anchor" href="#future-plans"></a>
-</h3>
+<div class="section level2">
+<h2 id="future-plans">Future Plans<a class="anchor" aria-label="anchor" href="#future-plans"></a>
+</h2>
 <p>There are more possible modules than our team can create, and we
 welcome anyone who wants to collaborate with us on building and
 validating new modules. In addition to the modules demonstrated in the
@@ -242,9 +238,9 @@ your own scientific discipline, or explore the use of metacheck for
 metascientific projects, reach out to <a href="mailto:lisa.debruine@glasgow.ac.uk?subject=metacheck">Lisa
 DeBruine</a> or <a href="mailto:d.lakens@tue.nl?subject=metacheck">Daniel Lakens</a>.</p>
 </div>
-<div class="section level3">
-<h3 id="metacheck-team">Metacheck Team<a class="anchor" aria-label="anchor" href="#metacheck-team"></a>
-</h3>
+<div class="section level2">
+<h2 id="metacheck-team">Metacheck Team<a class="anchor" aria-label="anchor" href="#metacheck-team"></a>
+</h2>
 <p>Metacheck is developed by a collaborative team of researchers,
 consisting of (from left to right in the picture below) <a href="https://debruine.github.io" class="external-link">Lisa DeBruine</a> (developer and
 maintainer) and <a href="https://sites.google.com/site/lakens2/Home" class="external-link">Daniël Lakens</a>
@@ -258,9 +254,6 @@ Transparency Check, led by René Bekkers, and funded by a <a href="https://tdcc.
 grant</a> from the Dutch Research Council (NWO). Our funded project
 priorities are described in more detail in our grant proposal, available
 here: <a href="https://osf.io/cpv4d/" class="external-link uri">https://osf.io/cpv4d/</a>.</p>
-</div>
-</div>
-</div>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-aczel2018quantifying" class="csl-entry">
 Aczel, Balazs, Bence Palfi, Aba Szollosi, Marton Kovacs, Barnabas
@@ -319,6 +312,7 @@ Gabrielle Appleton, Myles Axton, Arie Baak, Niklas Blomberg, et al.
 2016. <span>“The <span>FAIR Guiding Principles</span> for Scientific
 Data Management and Stewardship.”</span> <em>Scientific Data</em> 3 (1):
 1–9. <a href="https://doi.org/10.1038/sdata.2016.18" class="external-link">https://doi.org/10.1038/sdata.2016.18</a>.
+</div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

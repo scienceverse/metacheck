@@ -2,13 +2,25 @@
 title: MetaCheck Report
 subtitle: "To Err is Human: An Empirical Investigation"
 metacheck:
-  version: "0.0.0.9060"
-  report-created: "2025-12-05"
+  version: "0.0.0.9061"
+  report-created: "2025-12-17"
 format:
   html:
     theme: flatly
     toc: true
+    toc-title: >
+      <ul>
+        <li class="green">no problems detected;</li>  
+        <li class="yellow">something to check;</li> 
+        <li class="red">possible problems detected;</li>  
+        <li class="info">informational only;</li>  
+        <li class="na">not applicable;</li>  
+        <li class="fail">check failed</li>
+      <ul>
+      <hr/>
+      **Table of Contents**
     toc-location: right
+    toc-expand: 3
     page-layout: full
     title-block-banner: true
     link-external-newwindow: true
@@ -19,6 +31,9 @@ format:
 ---
 
 <style>
+  main h2, main h3 { margin-left: -20px; }
+  main h3 { font-size: 125%; }
+  main h4 { font-size: 110%; }
   .na::before     { content: '⚪️ '; }
   .fail::before   { content: '⚫️ '; }
   .info::before   { content: '🔵 '; }
@@ -28,28 +43,21 @@ format:
   section::before { content: '' !important; }
   .quarto-title-banner { background-color: #327118; }
   th { color: #327118; }
+  table.dataTable, .dataTables_scrollBody { margin: 0.5em 0; }
+  #info { position: absolute; top: 1.5em; right: 1.5em; color: white; }
+  #info a { color: white !important; }
 </style>
 
-:::: {.content-visible when-format="html"}
-::: {.column-margin}
-[MetaCheck](http://www.scienceverse.org/metacheck) version {{< meta metacheck.version >}}<br>
-Report Created: {{< meta metacheck.report-created >}}
-
--------
-
-🟢 no problems detected;  
-🟡 something to check;  
-🔴 possible problems detected;  
-🔵 informational only;  
-⚪️ not applicable;  
-⚫️ check failed
+::: {#info}
+[MetaCheck](http://www.scienceverse.org/metacheck) version {{< meta metacheck.version >}}  
+Report Created: {{< meta metacheck.report-created >}}  
+ <!-- doi, if exists -->
 :::
-::::
 
 
 ## Summary
 
-- [Exact P-Values](#exact-p-values){.red}: We found 1 imprecise *p* value.  
+- [Exact P-Values](#exact-p-values){.red}: We found 1 imprecise *p* value out of 3 detected.  
 - [Marginal Significance](#marginal-significance){.red}: You described 2 effects with terms related to 'marginally significant'.  
 - [Effect Sizes in t-tests and F-tests](#effect-sizes-in-t-tests-and-f-tests){.red}: We found 1 t-test and/or F-test where effect sizes are not reported.  
 - [StatCheck](#statcheck){.red}: 1 possible error in t-tests or F-tests  
@@ -58,9 +66,11 @@ Report Created: {{< meta metacheck.report-created >}}
 
 
 
-## Exact P-Values {.red}
+## Results Modules
 
-We found 1 imprecise *p* value. Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001.
+### Exact P-Values {.red}
+
+We found 1 imprecise *p* value out of 3 detected. Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001.
 
 ```{r}
 #| echo: false
@@ -74,18 +84,20 @@ cd <- list(list(targets = 0, width = "10%"), list(targets = 1, width = "90%"))
 options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
 
 # display table
-DT::datatable(table, options, selection = "none", rownames = FALSE)
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
 ```
 
 ::: {.callout-tip title="Learn More" collapse="true"}
 
 The APA manual states: Report exact *p* values (e.g., *p* = .031) to two or three decimal places. However, report *p* values less than .001 as *p* < .001. However, 2 decimals is too imprecise for many use-cases (e.g., a *p* value meta-analysis), so report *p* values with three digits.
 
-American Psychological Association. (2020). Publication manual of the American Psychological Association 2020: the official guide to APA style (7th ed.). American Psychological Association.
+American Psychological Association (2020). _Publication manual of the
+American Psychological Association_, 7 edition. American Psychological
+Association.
 
 :::
 
-## Marginal Significance {.red}
+### Marginal Significance {.red}
 
 You described effects with terms related to 'marginally significant'. If *p* values above 0.05 are interpreted as an effect, you inflate the alpha level, and increase the Type 1 error rate. If a *p* value is higher than the prespecified alpha level, it should be interpreted as a non-significant result.
 
@@ -93,7 +105,7 @@ You described effects with terms related to 'marginally significant'. If *p* val
 #| echo: false
 
 # table data
-table <- structure(list(section = c("abstract", "results"), text = c("The paper shows examples of (1) open and closed OSF links; (2a) citation of retracted papers, (2b) citations without a doi, (2c) citations with Pubpeer comments, (2d) citations in the FORTT replication database, and (2e) missing/mismatched/incorrect citations and references; (3a) R files with code on GitHub that do not load libraries in one location, (3b) load files that are not shared in the repository, (3c) lack comments, and (3d) have hard-coded files, (4) imprecise reporting of non-significant p-values; (5) tests with and without effect sizes, (6) use of \"marginally significant\" to describe non-significant findings, and (7) retrieving information from preregistrations.", 
+table <- structure(list(section = c("abstract", "results"), text = c("The paper shows examples of (1) open and closed OSF links; (2a) citation of retracted papers, (2b) citations without a doi, (2c) citations with Pubpeer comments, (2d) citations in the FORTT replication database, and (2e) missing/mismatched/incorrect citations and references; (3a) R files with code on GitHub that do not load libraries in one location, (3b) load files that are not shared in the repository, (3c) lack comments, and (3d) have hard-coded files, (4) imprecise reporting of non-significant pvalues; (5) tests with and without effect sizes, (6) use of \"marginally significant\" to describe non-significant findings, and (7) retrieving information from preregistrations.", 
 "On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152."
 )), row.names = c(NA, -2L), class = c("tbl_df", "tbl", "data.frame"
 ))
@@ -103,24 +115,24 @@ cd <- list()
 options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
 
 # display table
-DT::datatable(table, options, selection = "none", rownames = FALSE)
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
 ```
 
 ::: {.callout-tip title="Learn More" collapse="true"}
 
 For metascientific articles demonstrating the rate at which non-significant p-values are interpreted as marginally significant, see:
 
-Olsson-Collentine, A., van Assen, M. A. L. M., & Hartgerink, C. H. J. (2019). The Prevalence of Marginally Significant Results in Psychology Over Time. Psychological Science, 30(4), 576–586. 
+Olsson-Collentine, A., van Assen, M. MAL, Hartgerink &, J. CH (2019).
+“The Prevalence of Marginally Significant Results in Psychology Over
+Time.” _Psychological Science_, *30*, 576-586.
+doi:10.1177/0956797619830326
+<https://doi.org/10.1177/0956797619830326>.
 
-<https://doi.org/10.1177/0956797619830326>
-
-For the list of terms used to identifify marginally significant results, see this blog post by Matthew Hankins:
-
-<https://web.archive.org/web/20251001114321/https://mchankins.wordpress.com/2013/04/21/still-not-significant-2/>
+For the list of terms used to identifify marginally significant results, see this [blog post by Matthew Hankins](https://web.archive.org/web/20251001114321/https://mchankins.wordpress.com/2013/04/21/still-not-significant-2/).
 
 :::
 
-## Effect Sizes in t-tests and F-tests {.red}
+### Effect Sizes in t-tests and F-tests {.red}
 
 We found 1 t-test and/or F-test where effect sizes are not reported. We recommend checking the sentences below, and add any missing effect sizes.
 
@@ -138,7 +150,7 @@ cd <- list()
 options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
 
 # display table
-DT::datatable(table, options, selection = "none", rownames = FALSE)
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
 ```
 
 ::: {.callout-tip title="Learn More" collapse="true"}
@@ -171,12 +183,12 @@ cd <- list()
 options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
 
 # display table
-DT::datatable(table, options, selection = "none", rownames = FALSE)
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
 ```
 
 :::
 
-## StatCheck {.red}
+### StatCheck {.red}
 
 We detected possible errors in test statistics. Note that as the accuracy of statcheck has only been validated for *t*-tests and *F*-tests. As Metacheck only uses validated modules, we only provide statcheck results for *t* tests and *F*-tests.
 
@@ -193,7 +205,7 @@ cd <- list(list(targets = 0, width = "10em"))
 options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
 
 # display table
-DT::datatable(table, options, selection = "none", rownames = FALSE)
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
 ```
 
 ::: {.callout-tip title="Learn More" collapse="true"}
@@ -206,9 +218,11 @@ Nuijten, M. B., & Wicherts, J. (2023). The effectiveness of implementing statche
 
 :::
 
-## RetractionWatch {.yellow}
+## Reference Modules
 
-You cited 1 paper in the Retraction Watch database (as of 2025-12-04). These may be retracted, have corrections, or expressions of concern.
+### RetractionWatch {.yellow}
+
+You cited 1 paper in the Retraction Watch database (as of 2025-12-17). These may be retracted, have corrections, or expressions of concern.
 
  
 ```{r}
@@ -223,10 +237,10 @@ cd <- list()
 options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
 
 # display table
-DT::datatable(table, options, selection = "none", rownames = FALSE)
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
 ```
 
-## Reference Consistency {.red}
+### Reference Consistency {.red}
 
 There are cross-references that are not in the bibliography and/or bibliography entries not cross-referenced in the text
 
@@ -248,6 +262,6 @@ cd <- list()
 options <- list(dom = "t", ordering = FALSE, columnDefs = cd , scrollY = 200)
 
 # display table
-DT::datatable(table, options, selection = "none", rownames = FALSE)
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
 ```
 

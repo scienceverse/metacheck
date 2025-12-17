@@ -146,16 +146,17 @@ test_that("module_report", {
   module_output <- module_run(psychsci[[4]], "exact_p")
 
   report <- module_report(module_output)
-  expect_true(grepl("^## Exact P-Values \\{\\.red\\}", report))
-
-  report <- module_report(module_output, header = 3, maxrows = 20, trunc_cell = 10)
   expect_true(grepl("^### Exact P-Values \\{\\.red\\}", report))
+
+  report <- module_report(module_output, header = 4, maxrows = 20, trunc_cell = 10)
+  expect_true(grepl("^#### Exact P-Values \\{\\.red\\}", report))
 
   report <- module_report(module_output, header = "Custom header")
   expect_true(grepl("^Custom header", report))
 
+  # print.metacheck_module_output
   op <- capture_output(print(module_output))
-  expect_true(grepl("DT::datatable", op))
+  expect_true(grepl("^Exact P-Values", op))
 })
 
 test_that("scroll_table", {

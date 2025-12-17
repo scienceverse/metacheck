@@ -47,7 +47,7 @@ test_that("basics", {
 
   expect_equal(substr(s$info$description, 1, 10), "This paper")
 
-  expect_equal(nrow(s$full_text), 27)
+  expect_equal(nrow(s$full_text), 28)
 
   # check grobid alias
   s2 <- read_grobid(filename)

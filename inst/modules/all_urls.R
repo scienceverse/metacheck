@@ -3,6 +3,8 @@
 #' @description
 #' List all the URLs in the main text.
 #'
+#' @keywords general
+#'
 #' @author Daniel Lakens
 #'
 #' @param paper a paper object or paperlist object

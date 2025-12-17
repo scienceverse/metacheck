@@ -1,3 +1,13 @@
+# metacheck 0.0.0.9061
+
+* Efficiency improvements to the OSF functions
+* Fixed some confusing parts of the articles that changed when the module output report structure changed.
+* Modules are now categorised by section: general, intro, method, results, discussion, reference
+* Reports are organised by section
+* Display improvement in reports
+* Module report improvement (e.g., fixing broken links)
+* New example report on the pkgdown website
+
 # metacheck 0.0.0.9060
 
 * Lots of changes for how reports are formatted
@@ -5,7 +15,6 @@
 * Fixed a bug where some .docx file wouldn't read in (support for Word files is still patchy -- ideally render to PDF)
 * New `pubpeer_comments()` function (now vectorised)
 * Module helpers: `scroll_table()`, `collapse_section()`, `link()`, `plural()`, `pb()`
-
 
 # metacheck 0.0.0.9059
 

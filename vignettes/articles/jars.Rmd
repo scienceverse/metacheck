@@ -28,25 +28,15 @@ The first reporting guideline we will illustrate is to report exact p-values. Th
 Reporting *p* values precisely allows readers to include the test results in *p* value meta-analytic tests, such as p-curve, or z-curve [@simonsohn_p-curve_2014; @bartos_zcurve_2020], and makes it possible the check the internal coherence of the reported result with tools such as Statcheck [@nuijten_prevalencestatisticalreporting_2015]. metacheck has a dedicated module, "exact-p", to identify the presence of imprecise p-values. We can run it on a single paper:
 
 ```{r}
-#| results: asis
-
-library(metacheck)
 res_imprecise <- module_run(psychsci$`0956797617744542`, "exact_p")
 
 res_imprecise
-
 ```
 
-The module only returns the exact *p* values, but the metacheck software has several convenient functions to interact with the information in scientific manuscripts. The `expand_text` function can be used to retrieve text around matches (for example by retrieving the previous and next sentence as well). We can retrieve the full sentence so that users can easily examine whether the reported *p* values should have been precise:
+The module returns the exact *p* values and the full sentence so that users can easily examine whether the reported *p* values should have been precise:
 
 ```{r}
-res_imprecise_expanded <- expand_text(
-  results_table = res_imprecise, 
-  paper = psychsci$`0956797617744542`, 
-  expand_to = "sentence"
-)
-
-unique(res_imprecise_expanded$expanded)
+res_imprecise$table[, c("text", "expanded")]
 ```
 
 Luckily, there are also many papers that follow the JARS guideline and report all *p* values correctly, for example:
@@ -60,13 +50,10 @@ module_run(psychsci$`0956797616665351`, "exact_p")
 A second JARS guideline that can be automatically checked is whether people report effect sizes alongside their test result. Each test (e.g., a *t*-test, *F*-test, etc.) should include the corresponding effect size (e.g., a Cohen's d, or partial eta-squared). Based on a text search that uses regular expressions (regex), we can identify *t*-tests and *F*-tests that are not followed by an effect size, and warn researchers accordingly.
 
 ```{r}
-#| results: asis
-
 module_run(
   paper = psychsci$`0956797616657319`,
   module = "effect_size"
 )
-
 ```
 
 ## Checking Multiple Papers
@@ -74,9 +61,9 @@ module_run(
 You can also run modules for multiple papers at once and get a summary table.
 
 ```{r}
-#| results: asis
+mo <- module_run(psychsci[1:10], "effect_size")
 
-module_run(psychsci[1:10], "effect_size")
+mo$summary_table
 ```
 
 This can be useful for meta-scientific research questions, such as whether there is an increase in the best practice to report effect sizes for *t*-tests over time. In the plot below we have run the module on 1838 published articles in the journal Psychological Science between 2014 and 2024. We can see that where a decade ago, close to half the reported t-tests would not be followed by an effect size, but a decade later, this holds for only around 25% of tests. Perhaps the introduction of a tool like metacheck can reduce this percentage even further (although it does not need to be 0, as we discuss below).
@@ -123,7 +110,8 @@ percentage_missing_per_year <- tests_summary %>%
 ggplot(percentage_missing_per_year, aes(x = year, y = avg_percent_missing)) +
   geom_line(linewidth = 1.2, color = "darkred") +
   geom_point(size = 2, color = "darkred") +
-  scale_x_continuous(breaks = unique(percentage_missing_per_year$year)) +
+  scale_x_continuous(breaks = 2014:2024) +
+  coord_cartesian(ylim = c(0, 100)) +
   labs(title = "Average Percentage of T-tests that are Missing Effect Sizes",
        x = "Year",
        y = "Average % Missing") +
@@ -131,7 +119,7 @@ ggplot(percentage_missing_per_year, aes(x = year, y = avg_percent_missing)) +
 
 ```
 
-![](effect-size-plot.png)
+![](effect-size-plot.png){fig.alt="Plot of average percentage of t-test that are missing effect sizes. The x-axis shows years form 2014 to 2024 and the y-axis shows Average % missing. Theree is a fairly stead downward trend from 60% in 2014 to around 20% by 2021."}
 
 ## Improving the Modules
 

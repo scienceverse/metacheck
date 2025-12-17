@@ -7,7 +7,7 @@
 osf_children(osf_id)
 }
 \arguments{
-\item{osf_id}{an OSF ID}
+\item{osf_id}{a vector of OSF IDs}
 }
 \value{
 a data frame with child info

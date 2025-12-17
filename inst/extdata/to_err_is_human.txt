@@ -11,8 +11,12 @@ Although intentional dishonestly might be a successful way to boost creativity (
 Method and Participants
 
 In this study we examine whether automated checks reduce the amount of errors that researchers make in scientific manuscripts. This study was preregistered at https://osf.io/48ncu and on AsPredicted at https://aspredicted.org/by8i8v.pdf. We randomly assigned 50 scientists to a condition where their manuscript was automatically checked for errors, and 50 scientists to a control condition with a checklist. Scientists had the opportunity to make changes to their manuscript based on the feedback of the tool. We subsequently coded all manuscripts for mistakes, and counted the total number of mistakes. We also measured the expertise of researchers (in years) to explore whether the automated tool would be more useful, the less research experience researchers had. We also asked researchers to rate how useful they found the checklist or app on a scale from 1 (not at all) to 7 (extremely useful). Data and analysis code is available on GitHub from https://github.com/Lakens/to_err_is_human and from https://researchbox.org/4377. Data is also available from https://osf.io/5tbm9 and code is also available from https://osf.io/629bx.
+
+We conducted a sensitivity power analysis to determine that a Cohen's d of 0.50 is the smallest effect size that we could detect with 50 participants in each group and 80% power.
+
+
 Results
- 
+
 Figure 1: The simulated data
 
 Table 1: The average number of mistakes and usefulness score for the control and experimental conditions.
@@ -23,7 +27,7 @@ experimental	9.12	5.06
 
 On average researchers in the experimental (app) condition made fewer mistakes (M = 9.12) than researchers in the control (checklist) condition (M = 10.9), t(97.7) = 2.9, p = 0.005, d = 0.59.
 On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152.
- 
+
 There was no effect of experience on the reduction in errors when using the tool (p > .05), as the correlation was non-significant.
 
 Discussion

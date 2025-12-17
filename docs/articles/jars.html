@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9060</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9061</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,8 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../report-example.html">Example Report</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -94,9 +95,9 @@ R package will have the experience of running R CMD check, which
 automatically checks dozens of requirements that an R package must
 adhere to before it is allowed on CRAN. It should be possible to
 automatically check many of the JARS guidelines in a similar manner.</p>
-<div class="section level3">
-<h3 id="exact-p-values">Exact p-values<a class="anchor" aria-label="anchor" href="#exact-p-values"></a>
-</h3>
+<div class="section level2">
+<h2 id="exact-p-values">Exact p-values<a class="anchor" aria-label="anchor" href="#exact-p-values"></a>
+</h2>
 <p>The first reporting guideline we will illustrate is to report exact
 p-values. The APA Manual states:</p>
 <blockquote>
@@ -112,117 +113,46 @@ internal coherence of the reported result with tools such as Statcheck
 dedicated module, “exact-p”, to identify the presence of imprecise
 p-values. We can run it on a single paper:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/scienceverse/metacheck" class="external-link">metacheck</a></span><span class="op">)</span></span>
-<span><span class="va">res_imprecise</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">$</span><span class="va">`0956797617744542`</span>, <span class="st">"exact_p"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">res_imprecise</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">$</span><span class="va">`0956797617744542`</span>, <span class="st">"exact_p"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res_imprecise</span></span></code></pre></div>
-<p>We found 9 imprecise <em>p</em> values. Reporting <em>p</em> values
-imprecisely (e.g., <em>p</em> &lt; .05) reduces transparency,
-reproducibility, and re-use (e.g., in <em>p</em> value meta-analyses).
-Best practice is to report exact p-values with three decimal places
-(e.g., <em>p</em> = .032) unless <em>p</em> values are smaller than
-0.001, in which case you can use <em>p</em> &lt; .001.</p>
-<p>```{r} #| echo: false</p>
-</div>
-<div class="section level2">
-<h2 id="table-data">table data<a class="anchor" aria-label="anchor" href="#table-data"></a>
-</h2>
-<p>table &lt;- structure(list(“P-Value” = c(“p &gt; .01”, “p &lt; .01”,
-“p &lt; .01”, “p &lt; .01”, “p &lt; .05”, “p &lt; .01”, “p &lt; .01”, “p
-&lt; .01”, “p &lt; .05” ), Sentence = c(“We analyzed SNPs in
-Hardy-Weinberg equilibrium (p &gt; .01).”, “The increase in risk was
-modest: a standard-deviation decrease in the polygenic score was
-associated with a 20% to 30% greater risk of having been cautioned or
-convicted (E-Risk cohort: incidencerate ratio, or IRR = 1.33, 95% CI =
-[1.13, 1.55], p &lt; .01; Dunedin cohort: IRR = 1.21, 95% CI = [1.09,
-1.34], p &lt; .01; Table 1).”, “Effect sizes were similar across the two
-cohorts (Fig. 2) and across sex (males: IRR = 1.25, 95% CI = [1.13,
-1.39], p &lt; .01; females: IRR = 1.30, 95% CI = [1.08, 1.57], p &lt;
-.01, with participants pooled across cohorts).”, “Participants with
-lower polygenic scores for education were more likely to have grown up
-in socioeconomically deprived households (E-Risk cohort: r = .23, 95% CI
-= [.17, .29], p &lt; .01; Dunedin cohort: r = .16, 95% CI = [.09, .22],
-p &lt; .01) and with parents who displayed antisocial behavior (E-Risk
-cohort: r = .06, 95% CI = [.01, .11], p &lt; .05; Dunedin cohort: r =
-.13, 95% CI = [.06, .19], p &lt; .01).”, “Participants with lower
-polygenic scores for education were more likely to have grown up in
-socioeconomically deprived households (E-Risk cohort: r = .23, 95% CI =
-[.17, .29], p &lt; .01; Dunedin cohort: r = .16, 95% CI = [.09, .22], p
-&lt; .01) and with parents who displayed antisocial behavior (E-Risk
-cohort: r = .06, 95% CI = [.01, .11], p &lt; .05; Dunedin cohort: r =
-.13, 95% CI = [.06, .19], p &lt; .01).”, “Participants with lower
-polygenic scores were more likely to leave school with poor educational
-qualifications in both the E-Risk cohort (polychoric r = .21, 95% CI =
-[.13, .28], p &lt; .01) and the Dunedin cohort (polychoric r = .19, 95%
-CI = [.09, .29], p &lt; .01).”, “As children, participants with lower
-polygenic scores for educational attainment exhibited lower cognitive
-ability (E-Risk cohort: r = . in primary school (E-Risk cohort: r = .14,
-95% CI = [.08, .20], p &lt; .01; Dunedin cohort: r = .19, 95% CI = [.12,
-.25], p &lt; .01), and in the Dunedin cohort, more truancy (E-Risk
-cohort: r = .08, 95% CI = [-.05, .20], p = .19; Dunedin cohort: r = .15,
-95% CI = [.03, .28], p &lt; .01).”, “Survival analyses indicated that
-participants with lower education polygenic scores tended to get
-convicted earlier in life (hazard ratio = 1.25, 95% CI = [1.10, 1.42], p
-&lt; .01; Fig. 4a).”, “Results from multinomial regression models
-supported our hypothesis that participants with lower polygenic scores
-would be significantly more likely to belong to the
-life-course-persistent subtype than to the alwayslow-antisocial subtype
-(relative-risk ratio, or RRR = 1.36, 95% CI = [1.07, 1.73], p &lt;
-.05).” )), row.names = c(NA, -9L), class = c(“tbl_df”, “tbl”,
-“data.frame” ))</p>
-</div>
-<div class="section level2">
-<h2 id="table-options">table options<a class="anchor" aria-label="anchor" href="#table-options"></a>
-</h2>
-<p>cd &lt;- list(list(targets = 0, width = “10%”), list(targets = 1,
-width = “90%”)) options &lt;- list(dom = “t”, ordering = FALSE,
-columnDefs = cd , scrollY = 200)</p>
-</div>
-<div class="section level2">
-<h2 id="display-table">display table<a class="anchor" aria-label="anchor" href="#display-table"></a>
-</h2>
-<p>DT::datatable(table, options, selection = “none”, rownames =
-FALSE)</p>
-<pre><code>
-
-::: {.callout-tip title="Learn More" collapse="true"}
-
-The APA manual states: Report exact *p* values (e.g., *p* = .031) to two or three decimal places. However, report *p* values less than .001 as *p* &lt; .001. However, 2 decimals is too imprecise for many use-cases (e.g., a *p* value meta-analysis), so report *p* values with three digits.
-
-American Psychological Association. (2020). Publication manual of the American Psychological Association 2020: the official guide to APA style (7th ed.). American Psychological Association.
-
-:::
-
-The module only returns the exact *p* values, but the metacheck software has several convenient functions to interact with the information in scientific manuscripts. The `expand_text` function can be used to retrieve text around matches (for example by retrieving the previous and next sentence as well). We can retrieve the full sentence so that users can easily examine whether the reported *p* values should have been precise:
-
-
-``` r
-res_imprecise_expanded &lt;- expand_text(
-  results_table = res_imprecise, 
-  paper = psychsci$`0956797617744542`, 
-  expand_to = "sentence"
-)
-
-unique(res_imprecise_expanded$expanded)</code></pre>
-<pre><code><span><span class="co">## [1] "We analyzed SNPs in Hardy-Weinberg equilibrium (p &gt; .01)."                                                                                                                                                                                                                                                                                                                                                                        </span></span>
-<span><span class="co">## [2] "The increase in risk was modest: a standard-deviation decrease in the polygenic score was associated with a 20% to 30% greater risk of having been cautioned or convicted (E-Risk cohort: incidencerate ratio, or IRR = 1.33, 95% CI = [1.13, 1.55], p &lt; .01; Dunedin cohort: IRR = 1.21, 95% CI = [1.09, 1.34], p &lt; .01; Table 1)."                                                                                              </span></span>
-<span><span class="co">## [3] "Effect sizes were similar across the two cohorts (Fig. 2) and across sex (males: IRR = 1.25, 95% CI = [1.13, 1.39], p &lt; .01; females: IRR = 1.30, 95% CI = [1.08, 1.57], p &lt; .01, with participants pooled across cohorts)."                                                                                                                                                                                                      </span></span>
-<span><span class="co">## [4] "Participants with lower polygenic scores for education were more likely to have grown up in socioeconomically deprived households (E-Risk cohort: r = .23, 95% CI = [.17, .29], p &lt; .01; Dunedin cohort: r = .16, 95% CI = [.09, .22], p &lt; .01) and with parents who displayed antisocial behavior (E-Risk cohort: r = .06, 95% CI = [.01, .11], p &lt; .05; Dunedin cohort: r = .13, 95% CI = [.06, .19], p &lt; .01)."                </span></span>
-<span><span class="co">## [5] "Participants with lower polygenic scores were more likely to leave school with poor educational qualifications in both the E-Risk cohort (polychoric r = .21, 95% CI = [.13, .28], p &lt; .01) and the Dunedin cohort (polychoric r = .19, 95% CI = [.09, .29], p &lt; .01)."                                                                                                                                                           </span></span>
-<span><span class="co">## [6] "As children, participants with lower polygenic scores for educational attainment exhibited lower cognitive ability (E-Risk cohort: r = . in primary school (E-Risk cohort: r = .14, 95% CI = [.08, .20], p &lt; .01; Dunedin cohort: r = .19, 95% CI = [.12, .25], p &lt; .01), and in the Dunedin cohort, more truancy (E-Risk cohort: r = .08, 95% CI = [-.05, .20], p = .19; Dunedin cohort: r = .15, 95% CI = [.03, .28], p &lt; .01)."</span></span>
-<span><span class="co">## [7] "Survival analyses indicated that participants with lower education polygenic scores tended to get convicted earlier in life (hazard ratio = 1.25, 95% CI = [1.10, 1.42], p &lt; .01; Fig. 4a)."                                                                                                                                                                                                                                      </span></span>
-<span><span class="co">## [8] "Results from multinomial regression models supported our hypothesis that participants with lower polygenic scores would be significantly more likely to belong to the life-course-persistent subtype than to the alwayslow-antisocial subtype (relative-risk ratio, or RRR = 1.36, 95% CI = [1.07, 1.73], p &lt; .05)."                                                                                                              </span></span>
-<span><span class="co">## [9] "As also hypothesized, participants with lower polygenic scores were not at significantly greater risk of belonging to the childhoodlimited or adolescent-limited subtype, relative to the always-low-antisocial subtype (RRR = 1.13, 95% CI = [0.95, 1.33], p = .16, and RRR = 1.16, 95% CI = [0.97, 1.39], p = .10, respectively)."</span></span></code></pre>
+<pre><code><span><span class="co">## Exact P-Values: We found 9 imprecise *p* values out of 19 detected.</span></span></code></pre>
+<p>The module returns the exact <em>p</em> values and the full sentence
+so that users can easily examine whether the reported <em>p</em> values
+should have been precise:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res_imprecise</span><span class="op">$</span><span class="va">table</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"text"</span>, <span class="st">"expanded"</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 19 × 2</span></span></span>
+<span><span class="co">##    text    expanded                                                             </span></span>
+<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                                </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 1</span> p &gt; .01 We analyzed SNPs in Hardy-Weinberg equilibrium (p &gt; .01).            </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 2</span> p &lt; .01 The increase in risk was modest: a standard-deviation decrease in th…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 3</span> p &lt; .01 The increase in risk was modest: a standard-deviation decrease in th…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> p &lt; .01 Effect sizes were similar across the two cohorts (Fig. 2) and across…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 5</span> p &lt; .01 Effect sizes were similar across the two cohorts (Fig. 2) and across…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 6</span> p &lt; .01 Participants with lower polygenic scores for education were more lik…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span> p &lt; .01 Participants with lower polygenic scores for education were more lik…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 8</span> p &lt; .05 Participants with lower polygenic scores for education were more lik…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 9</span> p &lt; .01 Participants with lower polygenic scores for education were more lik…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span> p &lt; .01 Participants with lower polygenic scores were more likely to leave s…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span> p &lt; .01 Participants with lower polygenic scores were more likely to leave s…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span> p &lt; .01 As children, participants with lower polygenic scores for educationa…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">13</span> p &lt; .01 As children, participants with lower polygenic scores for educationa…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">14</span> p = .19 As children, participants with lower polygenic scores for educationa…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">15</span> p &lt; .01 As children, participants with lower polygenic scores for educationa…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">16</span> p &lt; .01 Survival analyses indicated that participants with lower education p…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">17</span> p &lt; .05 Results from multinomial regression models supported our hypothesis …</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">18</span> p = .16 As also hypothesized, participants with lower polygenic scores were …</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">19</span> p = .10 As also hypothesized, participants with lower polygenic scores were …</span></span></code></pre>
 <p>Luckily, there are also many papers that follow the JARS guideline
 and report all <em>p</em> values correctly, for example:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">$</span><span class="va">`0956797616665351`</span>, <span class="st">"exact_p"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## </span></span>
-<span><span class="co">## </span></span>
-<span><span class="co">## All detected *p* values were reported with appropriate precision.</span></span></code></pre>
-<div class="section level3">
-<h3 id="reporting-standardized-effect-sizes">Reporting standardized effect sizes<a class="anchor" aria-label="anchor" href="#reporting-standardized-effect-sizes"></a>
-</h3>
+<pre><code><span><span class="co">## Exact P-Values: We found no imprecise *p* values out of 8 detected.</span></span></code></pre>
+</div>
+<div class="section level2">
+<h2 id="reporting-standardized-effect-sizes">Reporting standardized effect sizes<a class="anchor" aria-label="anchor" href="#reporting-standardized-effect-sizes"></a>
+</h2>
 <p>A second JARS guideline that can be automatically checked is whether
 people report effect sizes alongside their test result. Each test (e.g.,
 a <em>t</em>-test, <em>F</em>-test, etc.) should include the
@@ -230,384 +160,44 @@ corresponding effect size (e.g., a Cohen’s d, or partial eta-squared).
 Based on a text search that uses regular expressions (regex), we can
 identify <em>t</em>-tests and <em>F</em>-tests that are not followed by
 an effect size, and warn researchers accordingly.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span></span>
 <span>  paper <span class="op">=</span> <span class="va">psychsci</span><span class="op">$</span><span class="va">`0956797616657319`</span>,</span>
 <span>  module <span class="op">=</span> <span class="st">"effect_size"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>We found 7 t-tests and/or F-tests where effect sizes are not
-reported. We recommend checking the sentences below, and add any missing
-effect sizes.</p>
-<p>The following sentences are missing effect sizes</p>
-<p>```{r} #| echo: false</p>
-</div>
+<pre><code><span><span class="co">## Effect Sizes in t-tests and F-tests: We found 7 t-tests and/or F-tests where effect sizes are not reported.</span></span></code></pre>
 </div>
 <div class="section level2">
-<h2 id="table-data-1">table data<a class="anchor" aria-label="anchor" href="#table-data-1"></a>
+<h2 id="checking-multiple-papers">Checking Multiple Papers<a class="anchor" aria-label="anchor" href="#checking-multiple-papers"></a>
 </h2>
-<p>table &lt;- structure(list(c(“Participants were more accurate in
-correctly rejecting pseudowords (M = 98%) than correctly accepting words
-(M = 94%, pooled across nouns and nonnouns), t(25) = 4.99, p &lt; .001,
-but were faster when responding to words relative to pseudowords, t(25)
-= 8.38, p &lt; .001.”, “For nouns, higher accuracies, t(25) = 2.40, p =
-.024, and shorter RTs, t(25) = 9.57, p &lt; .001, were found for the
-familiar uppercase format relative to the unfamiliar lowercase format.”,
-“For nonnouns, higher accuracies, t(25) = 2.13, p = .043, and shorter
-RTs, t(25) = 4.25, p &lt; .001, were found for the familiar lowercase
-format relative to the unfamiliar uppercase format.”, “Paired-samples t
-tests for the pseudoword items showed no significant effect of the case
-format of the initial letter on accuracy, t(25) &lt; 1, p &gt; .250, or
-RTs, t(25) = 1.33, p = .195.”, “Repeated measures 2 (word type: nouns
-vs. nonnouns) × 2 (case format: uppercase vs. lowercase) analyses of
-variance (ANOVAs) for the word items showed an interaction between the
-two factors for both accuracy, F(1, 25) = 7.28, p = .012, and response
-times (RTs), F(1, 25) = 85.67, p &lt; .001.”, “Additional ANOVA findings
-were that nonnouns elicited higher activation than nouns in a cluster
-located in the right angular gyrus (peak: x = 38, y = -56, z = 44; peak
-F(1, 75) = 20.94; cluster extent = 205 voxels) and that words with the
-initial letter in uppercase elicited higher activation than words with
-the initial letter in lowercase in a cluster in the right lingual gyrus
-(peak: x = 12, y = -84, z = -10; peak F(1, 75) = 18.99; cluster extent =
-37 voxels).”, “As in the analysis of the word items, we identified
-higher activation for uppercase compared with lowercase pseudowords in
-the right lingual gyrus (peak: x = 14, y = -84, z = -10; peak F(1, 25) =
-20.24; cluster extent = 127 voxels).” )), names = ““, class
-=”data.frame”, row.names = c(NA, -7L))</p>
-</div>
-<div class="section level2">
-<h2 id="table-options-1">table options<a class="anchor" aria-label="anchor" href="#table-options-1"></a>
-</h2>
-<p>cd &lt;- list() options &lt;- list(dom = “t”, ordering = FALSE,
-columnDefs = cd , scrollY = 200)</p>
-</div>
-<div class="section level2">
-<h2 id="display-table-1">display table<a class="anchor" aria-label="anchor" href="#display-table-1"></a>
-</h2>
-<p>DT::datatable(table, options, selection = “none”, rownames =
-FALSE)</p>
-<pre><code>
-
-::: {.callout-tip title="Learn More" collapse="true"}
-
-For metascientific articles demonstrating that effect sizes are often not reported:
-
-* Peng, C.-Y. J., Chen, L.-T., Chiang, H.-M., &amp; Chiang, Y.-C. (2013). The Impact of APA and AERA Guidelines on Effect Size Reporting. Educational Psychology Review, 25(2), 157–209. doi:[10.1007/s10648-013-9218-2](https://doi.org/10.1007/s10648-013-9218-2).
-
-For educational material on reporting effect sizes:
-
-* [Guide to Effect Sizes and Confidence Intervals](https://matthewbjane.quarto.pub/guide-to-effect-sizes-and-confidence-intervals/)
-
-:::
-
-
-::: {.callout-tip title="All detected and assessed stats" collapse="true"}
-
-```{r}
-#| echo: false
-
-# table data
-table &lt;- structure(list(Sentence = c("Participants were more accurate in correctly rejecting pseudowords (M = 98%) than correctly accepting words (M = 94%, pooled across nouns and nonnouns), t(25) = 4.99, p &lt; .001, but were faster when responding to words relative to pseudowords, t(25) = 8.38, p &lt; .001.", 
-"For nouns, higher accuracies, t(25) = 2.40, p = .024, and shorter RTs, t(25) = 9.57, p &lt; .001, were found for the familiar uppercase format relative to the unfamiliar lowercase format.", 
-"For nonnouns, higher accuracies, t(25) = 2.13, p = .043, and shorter RTs, t(25) = 4.25, p &lt; .001, were found for the familiar lowercase format relative to the unfamiliar uppercase format.", 
-"Paired-samples t tests for the pseudoword items showed no significant effect of the case format of the initial letter on accuracy, t(25) &lt; 1, p &gt; .250, or RTs, t(25) = 1.33, p = .195.", 
-"Repeated measures 2 (word type: nouns vs. nonnouns) × 2 (case format: uppercase vs. lowercase) analyses of variance (ANOVAs) for the word items showed an interaction between the two factors for both accuracy, F(1, 25) = 7.28, p = .012, and response times (RTs), F(1, 25) = 85.67, p &lt; .001.", 
-"Additional ANOVA findings were that nonnouns elicited higher activation than nouns in a cluster located in the right angular gyrus (peak: x = 38, y = -56, z = 44; peak F(1, 75) = 20.94; cluster extent = 205 voxels) and that words with the initial letter in uppercase elicited higher activation than words with the initial letter in lowercase in a cluster in the right lingual gyrus (peak: x = 12, y = -84, z = -10; peak F(1, 75) = 18.99; cluster extent = 37 voxels).", 
-"As in the analysis of the word items, we identified higher activation for uppercase compared with lowercase pseudowords in the right lingual gyrus (peak: x = 14, y = -84, z = -10; peak F(1, 25) = 20.24; cluster extent = 127 voxels)."
-), Section = c("results", "results", "results", "results", "results", 
-"results", "results"), "Effect Size" = c(NA_character_, NA_character_, 
-NA_character_, NA_character_, NA_character_, NA_character_, NA_character_
-), "Reported Test" = c("t(25) = 4.99; t(25) = 8.38", "t(25) = 2.40; t(25) = 9.57", 
-"t(25) = 2.13; t(25) = 4.25", "t(25) = 1.33", "F(1, 25) = 7.28; F(1, 25) = 85.67", 
-"F(1, 75) = 20.94; F(1, 75) = 18.99", "F(1, 25) = 20.24"), "Test Type" = c("t-test", 
-"t-test", "t-test", "t-test", "F-test", "F-test", "F-test")), row.names = c(NA, 
--7L), class = c("tbl_df", "tbl", "data.frame"))
-
-# table options
-cd &lt;- list()
-options &lt;- list(dom = "t", ordering = FALSE, columnDefs = cd , scrollY = 200)
-
-# display table
-DT::datatable(table, options, selection = "none", rownames = FALSE)</code></pre>
-<p>:::</p>
-<div class="section level3">
-<h3 id="checking-multiple-papers">Checking Multiple Papers<a class="anchor" aria-label="anchor" href="#checking-multiple-papers"></a>
-</h3>
 <p>You can also run modules for multiple papers at once and get a
 summary table.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span>, <span class="st">"effect_size"</span><span class="op">)</span></span></code></pre></div>
-<p>We found 17 t-tests and/or F-tests where effect sizes are not
-reported. We recommend checking the sentences below, and add any missing
-effect sizes.</p>
-<p>The following sentences are missing effect sizes</p>
-<p>```{r} #| echo: false</p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="table-data-2">table data<a class="anchor" aria-label="anchor" href="#table-data-2"></a>
-</h2>
-<p>table &lt;- structure(list(c(“This interaction occurred because
-participants in the basic condition had numerically longer fixations
-when categorizing pool scenes (M = 383 ms) compared with participants in
-the subordinate condition (M = 325 ms), t(26) = 1.598, p = .122;
-fixation durations for all other scenes were significant, ts &gt; 2.370,
-ps &lt; .025 (Table 1).”, “There was also a trend for an interaction,
-F(1, 34) = 3.456, p = .072, η p 2 = .092 (Fig. 6), which was due to a
-significant change in subordinate categorization accuracy when basic or
-subordinate diagnostic objects were visible (Ms = .65 and .76,
-respectively), t(17) = 4.134, p = .001, but no significant difference
-during basic categorization (basic diagnostic objects: M = .77 and
-subordinate diagnostic objects: M = .81), t(17) = 1.506, p = .151.”,
-“There was a main effect of stimuli type, F(2.084, 54.188) = 7.080, p =
-.002, η p 2 = .214 (Ms = 1,269, 1,128, 1,273, and 998 ms for classrooms,
-pools, restaurants, and roads, respectively) as well as a trend for an
-interaction, F(3, 78) = 2.596, p = .058, η p 2 = .091, which was due to
-restaurants taking significantly longer to categorize at the subordinate
-level (M = 1,471 ms) than at the basic level (M = 1,075 ms), t(26) =
-3.00, p = .006.”, “There was also a main effect of stimuli type,
-F(1.909, 49.641) = 8.239, p = .001, η p 2 = .241 (Ms = 3.96, 3.21, 3.85,
-and 2.89 for classrooms, pools, restaurants, and roads, respectively),
-and a trend for an interaction, F(3, 78) = 2.637, p = .055, η p 2 =
-.092, which was due to significantly more fixations during subordinate
-than during basic decisions for pools (basic: M = 2.52; subordinate: M =
-3.91), t(26) = 1.901, p = .068, and for restaurants (basic: M = 3.01;
-subordinate: M = 4.69), t(26) = 3.363, p = .002.”, “No main effect of
-saccade amplitude on judgment appeared, F(1, 26) = 1.122, p = .299, η p
-2 = .041, but there was an effect of stimuli type, F(3, 78) = 20.836, p
-&lt; .001, η p 2 = .445 (Ms = 4.06°, 3.33°, 4.31°, and 3.44° for
-classrooms, pools, restaurants, and roads, respectively), and an
-interaction, F(3, 78) = 4.869, p = .004, η p 2 = .158, with restaurants
-having a trend for longer saccades during subordinate categorizations (M
-= 4.62°) than during basic categorizations (M = 3.99°), t(26) = 1.735, p
-= .094.”, “Examining paired comparisons between the pre-and postresponse
-conditions, only preresponse TMS was found to interfere with
-metacognitive efficiency, preresponse: t(34) = 3.12, p = .004;
-postresponse: t(34) = 0.95, p = .35, and when compared with an optimal
-meta-d′/d′ value of 1, only incongruent TMS delivered before the
-response led to suboptimal metacognitive efficiency (95% CI = [0.54,
-0.86]).”, “On average, males had lower self-control scores (M = 29.54)
-than females (M = 33.63), t(6703) = -17.1, p &lt; .0001, which supports
-the rationale for controlling for gender in our models.”, “As expected,
-prior to the intervention (at baseline: Day 0), we confirmed that the
-two groups experienced a similar number of intrusive memories of the
-film in daily life, t(50) = 0.06, p = .95 (Fig. 1a).”, “As expected on
-the basis of previous studies, t tests showed that there were no
-differences between groups on tests of either verbal, t(50) = 0.93, p =
-.36, or visual, t(50) = 1.00, p = .32, recognition memory of the film
-(Table S1 in the Supplemental Material)-this is consistent with the
-possibility that intrusivememory frequency (diary/IPT intrusion score)
-was influenced while leaving recognition memory (for facts and scenes in
-the trauma film) intact.”, “Further, there were no significant
-differences between the no-task control group and the reactivation-only
-group, t(32.23) = 0.22, p = .83, or between the no-task control group
-and the Tetris-only group, t(30.03) = 1.01, p = .32.”, “Further, the
-reactivation-only group, t(68) = 1.00, p = .32, and the Tetris-only
-group, t(68) = 0.36, p = .72, did not differ significantly from the
-no-task control group.”, “The only category of photographs for which the
-loan-request lending rate exceeded the average rate was the "happy"
-photographs, bootstrapped t(2358) = 6.24, p &lt; .001 (Fig. 2c).”, “A
-linear regression indicated that positive-arousal scores of the
-neuroimaging sample, t = 8.37, p &lt; .001, but not negativearousal
-scores of this sample, t = -1.95, p = .055, were associated with
-Internet lending rates.”, “Further, in a combined model that included
-choice, affect, and neural variables from the neuroimaging study, only
-NAcc activity, t = 2.08, p = .035, and positive arousal, t = 16.63, p
-&lt; .001, remained significantly associated with Internet lending rate;
-choice, negative arousal, and activity in other neural regions of
-interest were no longer significantly associated with Internet lending
-rate.”, “First, prior to the intervention (over the first 24 hr after
-viewing the film: Day 0), we confirmed that the four groups experienced
-a similar number of intrusive memories, F(3, 68) = 0.16, p = .92 (Fig.
-4a).”, “Finally, as predicted, there was no significant difference among
-groups on the tests of either visual, F(3, 68) = 1.67, p = .18, or
-verbal, F(3, 68) = 0.85, p = .47, recognition memory of the trauma film
-(see Table S2 in the Supplemental Material).”, “Analysis of variance
-indicated that facial features of the photographs also influenced
-loan-request success in the neuroimaging study, F(3, 76) = 2.86, p =
-.042.” )), names = ““, class =”data.frame”, row.names = c(NA, -17L))</p>
-</div>
-<div class="section level2">
-<h2 id="table-options-2">table options<a class="anchor" aria-label="anchor" href="#table-options-2"></a>
-</h2>
-<p>cd &lt;- list() options &lt;- list(dom = “t”, ordering = FALSE,
-columnDefs = cd , scrollY = 200)</p>
-</div>
-<div class="section level2">
-<h2 id="display-table-2">display table<a class="anchor" aria-label="anchor" href="#display-table-2"></a>
-</h2>
-<p>DT::datatable(table, options, selection = “none”, rownames =
-FALSE)</p>
-<pre><code>
-
-::: {.callout-tip title="Learn More" collapse="true"}
-
-For metascientific articles demonstrating that effect sizes are often not reported:
-
-* Peng, C.-Y. J., Chen, L.-T., Chiang, H.-M., &amp; Chiang, Y.-C. (2013). The Impact of APA and AERA Guidelines on Effect Size Reporting. Educational Psychology Review, 25(2), 157–209. doi:[10.1007/s10648-013-9218-2](https://doi.org/10.1007/s10648-013-9218-2).
-
-For educational material on reporting effect sizes:
-
-* [Guide to Effect Sizes and Confidence Intervals](https://matthewbjane.quarto.pub/guide-to-effect-sizes-and-confidence-intervals/)
-
-:::
-
-
-::: {.callout-tip title="All detected and assessed stats" collapse="true"}
-
-```{r}
-#| echo: false
-
-# table data
-table &lt;- structure(list(Sentence = c("This interaction occurred because participants in the basic condition had numerically longer fixations when categorizing pool scenes (M = 383 ms) compared with participants in the subordinate condition (M = 325 ms), t(26) = 1.598, p = .122; fixation durations for all other scenes were significant, ts &gt; 2.370, ps &lt; .025 (Table 1).", 
-"There was also a trend for an interaction, F(1, 34) = 3.456, p = .072, η p 2 = .092 (Fig. 6), which was due to a significant change in subordinate categorization accuracy when basic or subordinate diagnostic objects were visible (Ms = .65 and .76, respectively), t(17) = 4.134, p = .001, but no significant difference during basic categorization (basic diagnostic objects: M = .77 and subordinate diagnostic objects: M = .81), t(17) = 1.506, p = .151.", 
-"There was a main effect of stimuli type, F(2.084, 54.188) = 7.080, p = .002, η p 2 = .214 (Ms = 1,269, 1,128, 1,273, and 998 ms for classrooms, pools, restaurants, and roads, respectively) as well as a trend for an interaction, F(3, 78) = 2.596, p = .058, η p 2 = .091, which was due to restaurants taking significantly longer to categorize at the subordinate level (M = 1,471 ms) than at the basic level (M = 1,075 ms), t(26) = 3.00, p = .006.", 
-"There was also a main effect of stimuli type, F(1.909, 49.641) = 8.239, p = .001, η p 2 = .241 (Ms = 3.96, 3.21, 3.85, and 2.89 for classrooms, pools, restaurants, and roads, respectively), and a trend for an interaction, F(3, 78) = 2.637, p = .055, η p 2 = .092, which was due to significantly more fixations during subordinate than during basic decisions for pools (basic: M = 2.52; subordinate: M = 3.91), t(26) = 1.901, p = .068, and for restaurants (basic: M = 3.01; subordinate: M = 4.69), t(26) = 3.363, p = .002.", 
-"No main effect of saccade amplitude on judgment appeared, F(1, 26) = 1.122, p = .299, η p 2 = .041, but there was an effect of stimuli type, F(3, 78) = 20.836, p &lt; .001, η p 2 = .445 (Ms = 4.06°, 3.33°, 4.31°, and 3.44° for classrooms, pools, restaurants, and roads, respectively), and an interaction, F(3, 78) = 4.869, p = .004, η p 2 = .158, with restaurants having a trend for longer saccades during subordinate categorizations (M = 4.62°) than during basic categorizations (M = 3.99°), t(26) = 1.735, p = .094.", 
-"Examining paired comparisons between the pre-and postresponse conditions, only preresponse TMS was found to interfere with metacognitive efficiency, preresponse: t(34) = 3.12, p = .004; postresponse: t(34) = 0.95, p = .35, and when compared with an optimal meta-d′/d′ value of 1, only incongruent TMS delivered before the response led to suboptimal metacognitive efficiency (95% CI = [0.54, 0.86]).", 
-"One-sample t tests comparing performance with chance (50%) revealed that participants' performance was significantly above chance, both when distractors were of the valence opposite that of the target, t(28) = 7.30, p &lt; .001, Cohen's d = 1.36 (mean difference = 27.22, 95% confidence interval, CI, of the difference = [19.58, 34.86]), and when distractors were of the same valence as the target, t(28) = 4.05, p &lt; .001, Cohen's d = 0.75 (mean difference = 13.45, 95% CI of the difference = [6.64, 20.26]; see Fig.", 
-"We repeated our analysis including all eight valenced emotions and found that participants' recognition was again significantly better than chance, both when the distractor and target were of opposite valence, t(28) = 8.30, p &lt; .001, Cohen's d = 1.54 (mean difference = 21.37, 95% CI of the difference = [16.09, 26.64]), and when they had the same valence, t(28) = 2.79, p &lt; .01, Cohen's d = 0.52 (mean difference = 6.71, 95% CI of the difference = [1.79, 11.63]; see Fig.", 
-"On average, males had lower self-control scores (M = 29.54) than females (M = 33.63), t(6703) = -17.1, p &lt; .0001, which supports the rationale for controlling for gender in our models.", 
-"As in Study 1, males had lower selfcontrol scores (M = 11.23) on average than females (M = 12.09), t(10105) = -27.7, p &lt; .0001, and better self-control correlated with higher intelligence (r = .39, p &lt; .01) and to a lesser extent with higher parental social class (r = .13, p &lt; .01).", 
-"As expected, prior to the intervention (at baseline: Day 0), we confirmed that the two groups experienced a similar number of intrusive memories of the film in daily life, t(50) = 0.06, p = .95 (Fig. 1a).", 
-"Critically and as predicted, after the intervention (Days 1-7; Fig. 1b), participants in the reactivation-plus-Tetris group overall had fewer intrusive memories in daily life than did those in the control group, t(50) = 4.11, p &lt; .001, d = 1.14.", 
-"Furthermore, a similar pattern was seen on a convergent measure-the frequency of IPT intrusions assessed on Day 7 in the laboratory, t(50) = 3.80, p &lt; .001, d = 1.05 (Fig. 1c).", 
-"As expected on the basis of previous studies, t tests showed that there were no differences between groups on tests of either verbal, t(50) = 0.93, p = .36, or visual, t(50) = 1.00, p = .32, recognition memory of the film (Table S1 in the Supplemental Material)-this is consistent with the possibility that intrusivememory frequency (diary/IPT intrusion score) was influenced while leaving recognition memory (for facts and scenes in the trauma film) intact.", 
-"Planned comparisons demonstrated that relative to the no-task control group, only those in the reactivation-plus-Tetris group, t(22.63) = 2.99, p = .007, d = 1.00, experienced significantly fewer intrusive memories; this finding replicated Experiment 1.", 
-"Critically, as predicted by reconsolidation theory, the reactivationplus-Tetris group had significantly fewer intrusive memories than the Tetris-only group, t(27.96) = 2.52, p = d = 0.84, as well as the reactivation-only group, t(25.68) = 3.32, p = .003, d = 1.11.", 
-"Further, there were no significant differences between the no-task control group and the reactivation-only group, t(32.23) = 0.22, p = .83, or between the no-task control group and the Tetris-only group, t(30.03) = 1.01, p = .32.", 
-"Planned comparisons showed that there was a significantly lower intrusion score in the reactivation-plus-Tetris group compared with the no-task control group, t(68) = 2.92, p = .005, d = 0.97, which replicated the results of Experiment 1.", 
-"Critically, in line with reconsolidation theory, the reactivation-plus-Tetris group also differed significantly from both the reactivation-only group, t(68) = 3.92, p &lt; .001, d = 1.31, and the Tetris-only group, t(68) = 2.56, p = .01, d = 0.85.", 
-"Further, the reactivation-only group, t(68) = 1.00, p = .32, and the Tetris-only group, t(68) = 0.36, p = .72, did not differ significantly from the no-task control group.", 
-"The only category of photographs for which the loan-request lending rate exceeded the average rate was the \"happy\" photographs, bootstrapped t(2358) = 6.24, p &lt; .001 (Fig. 2c).", 
-"Direct pairwise comparisons via bootstrapped t-test analyses indicated that requests with photographs classified as happy were funded at a higher rate than those with photographs classified as sad (the category with the next best lending rate), t(3023) = 2.02, p &lt; .05, β = 0.133, 95% CI = [0.004, 0.263]).", 
-"Bootstrapped pairwise t tests revealed that high-positive-arousal loan requests elicited more lending than high-negative-arousal loan requests, t(48) = 2.54, p = .015, β = 0.12, 95% CI = [0.03, 0.21], and low-positive-arousal loan requests, t(48) = 2.43, p = .020, β = 0.12, 95% CI = [0.02, 0.20] (all other pairwise comparisons were not significant).", 
-"In all three panels, error bars represent 95% confidence intervals. r = .322, 95% CI = [.110, .502], t = 2.96, p &lt; .01.", 
-"A linear regression indicated that positive-arousal scores of the neuroimaging sample, t = 8.37, p &lt; .001, but not negativearousal scores of this sample, t = -1.95, p = .055, were associated with Internet lending rates.", 
-"Bootstrapped correlations also verified that the neuroimaging sample's positive-arousal scores were associated with Internet lending rates, bootstrapped r = .411, 95% CI = [.212, .574], t = 3.94, p &lt; .001.", 
-"Further, in a combined model that included choice, affect, and neural variables from the neuroimaging study, only NAcc activity, t = 2.08, p = .035, and positive arousal, t = 16.63, p &lt; .001, remained significantly associated with Internet lending rate; choice, negative arousal, and activity in other neural regions of interest were no longer significantly associated with Internet lending rate.", 
-"For hit rates (see Fig. 3), a 3 (complexity level: simple, intermediate, complex) × 2 (TMS site: hand, lip) × 2 (video type: hand action, mouth action) analysis of variance (ANOVA) revealed a main effect of complexity level, F(2, 38) = 16.58, p &lt; .001, η p 2 = .47; as complexity level increased, hit rates decreased.", 
-"A main effect of video type also occurred, F(1, 19) = 33.56, p &lt; .001, η p 2 = .64; specifically, hit rates were lower for mouth actions than for hand actions.", 
-"There was also a significant interaction between complexity level and video type, F(2, 38) = 36.79, p &lt; .001, η p 2 = .67, with hit rates for mouth actions being more dramatically reduced by increasing complexity than those for hand actions.", 
-"More important, there was a significant interaction between TMS site and video type, F(1, 19) = 6.98, p = .016, η p 2 = .27.", 
-"For response time (RT), a 3 (complexity level) × 2 (TMS site) × 2 (video type) ANOVA revealed a main effect of complexity level, F(2, 38) = 20.82, p &lt; .001, η p 2 = .52, and a significant interaction between complexity level and video type, F(2, 38) = 51.86, p &lt; .001, η p 2 = .73.", 
-"We found a main effect of judgment on response time (RT); processing was faster in the basic condition (M = 2,305 ms) than in the subordinate condition (M = 3,253 ms), F(1, 26) = 9.277, p = .005, η p 2 = .263.", 
-"There was also a main effect of stimuli type, F(3, 78) = 12.910, p &lt; .001, η p 2 = .332 (Ms = 2,832, 2,709, 3,419, and 2,157 ms for classrooms, pools, restaurants, and roads, respectively), but no interaction between the two factors, F(3, 78) = 1.805, p = .153, η p 2 = .065 (Table 1).", 
-"We found a main effect of judgment on fixation count, with more fixations made during subordinate categorizations (M = 9.72) than during basic categorizations (M = 5.40), F(1, 26) = 17.906, p &lt; .001, η p 2 = .408.", 
-"There was also a main effect of stimuli type, F(3, 78) = 9.558, p &lt; .001, η p 2 = .269 (Ms = 7.76, 7.23, 9.36, and 5.89 for classrooms, pools, restaurants, and roads, respectively), but no interaction, F(3, 78) = 1.201, p = .315, η p 2 = .044 (Table 1).", 
-"There was a main effect of judgment, F(1, 26) = 5.720, p = .024, η p 2 = .180, with basic categorizations having longer saccade latencies (M = 421 ms) than subordinate categorizations (M = 352 ms), but no effect of stimuli type or interaction with judgment (Fs &lt; 1; Table 1).", 
-"There was a main effect of judgment on fixation duration, F(1, 26) = 8.246, p = .008, η p 2 = .241 (basic: M = 381 ms; subordinate: M = 300 ms), a trend for stimuli type, F(3, 78) = 2.242, p = .09, η p 2 = .079 (Ms = 329, 354, 341, and 335 ms for classrooms, pools, restaurants, and roads, respectively), as well as a significant interaction, F(3, 78) = 3.207, p = .028, η p 2 = .110.", 
-"There was no effect of judgment on saccade amplitudes (F &lt; 1); however, as one would expect given the different layouts between the different category groups, there was a main effect of stimuli type, F(3, 78) = 5.882, p = .001, η p 2 = .184 (Ms = 2.75°, 2.31°, 2.72°, and 2.51° for classrooms, pools, restaurants, and roads, respectively; Table 1).", 
-"There was no interaction, F(3, 78) = 1.444, p = .237, η p 2 = .053.", 
-"A three-way mixed-design 2 (judgment: basic, subordinate) × 4 (stimuli type: classroom, pool, restaurant, road) × 5 (ordinal fixation: 1, 2, 3, 4, 5) ANOVA on fixation distance from screen center revealed a critical interaction between judgment and ordinal fixation, F(4, 88) = 3.661, p = .008, η p 2 = .143; this interaction indicates that participants carried out different sampling strategies over the first five fixations depending on the judgment they were assigned to make (Fig.", 
-"For the sake of completeness, there was no main effect of judgment, F(1, 22) = 2.163, p = .156, η p 2 = .090, though there was an effect of stimuli type, F(3, 66) = 4.342, p = .007, η p 2 = .165 (Ms = 3.88°, 3.47°, 3.87°, and 3.52° for classrooms, pools, restaurants, and roads, respectively) as well as of ordinal fixation, F(2.286, 50.288) = 42.240, p &lt; .001, η p 2 = .658 (Ms = 2.55°, 3.28°, 3.86°, 4.26°, and 4.48° from the center for Fixations 1 through 5, respectively).", 
-"There was no interaction between stimuli type and ordinal count (F &lt; 1), no interaction between judgment and stimuli type, F(3, 66) = 2.012, p = .121, η p 2 = .084, and no three-way interaction (F &lt; 1).", 
-"Analyses revealed a main effect of judgment on accuracy, F(1, 34) = 9.339, p = .004, η p 2 = .215 (basic: M = .79; subordinate: M = .71) and a main effect of diagnostic information, F(1, 34) = 15.871, p &lt; .001, η p 2 = .318 (basic: M = .71; subordinate: M = .79).", 
-"There was also a trend for an interaction, F(1, 34) = 3.456, p = .072, η p 2 = .092 (Fig. 6), which was due to a significant change in subordinate categorization accuracy when basic or subordinate diagnostic objects were visible (Ms = .65 and .76, respectively), t(17) = 4.134, p = .001, but no significant difference during basic categorization (basic diagnostic objects: M = .77 and subordinate diagnostic objects: M = .81), t(17) = 1.506, p = .151.", 
-"During these normal viewing conditions, there was a strong trend of judgment on RT, F(1, 26) = 3.568, p = .070, η p 2 = .121, with basic categorization needing less time (1,062 ms) than subordinate categorization (1,272 ms).", 
-"There was a main effect of stimuli type, F(2.084, 54.188) = 7.080, p = .002, η p 2 = .214 (Ms = 1,269, 1,128, 1,273, and 998 ms for classrooms, pools, restaurants, and roads, respectively) as well as a trend for an interaction, F(3, 78) = 2.596, p = .058, η p 2 = .091, which was due to restaurants taking significantly longer to categorize at the subordinate level (M = 1,471 ms) than at the basic level (M = 1,075 ms), t(26) = 3.00, p = .006.", 
-"Fixation counts showed a similar pattern of results, with basic categorization requiring fewer fixations (M = 2.95) than subordinate categorization (M = 4.01), F(1, 26) = 5.391, p = .028, η p 2 = .172.", 
-"There was also a main effect of stimuli type, F(1.909, 49.641) = 8.239, p = .001, η p 2 = .241 (Ms = 3.96, 3.21, 3.85, and 2.89 for classrooms, pools, restaurants, and roads, respectively), and a trend for an interaction, F(3, 78) = 2.637, p = .055, η p 2 = .092, which was due to significantly more fixations during subordinate than during basic decisions for pools (basic: M = 2.52; subordinate: M = 3.91), t(26) = 1.901, p = .068, and for restaurants (basic: M = 3.01; subordinate: M = 4.69), t(26) = 3.363, p = .002.", 
-"For initial saccade latency, there was no main effect of judgment, F(1, 26) = 1.708, p = .203, η p 2 = .062, or stimuli type, nor was there an interaction between the two for initial saccade latency (Fs &lt; 1).", 
-"There was no interaction, F(3, 78) = 1.276, p = .288, η p 2 = .047.", 
-"No main effect of saccade amplitude on judgment appeared, F(1, 26) = 1.122, p = .299, η p 2 = .041, but there was an effect of stimuli type, F(3, 78) = 20.836, p &lt; .001, η p 2 = .445 (Ms = 4.06°, 3.33°, 4.31°, and 3.44° for classrooms, pools, restaurants, and roads, respectively), and an interaction, F(3, 78) = 4.869, p = .004, η p 2 = .158, with restaurants having a trend for longer saccades during subordinate categorizations (M = 4.62°) than during basic categorizations (M = 3.99°), t(26) = 1.735, p = .094.", 
-"Compared with congruent TMS, incongruent TMS was found to significantly reduce meta-d′/d′, F(1, 33) = 5.91, p = .02, η p 2 = .15 (Fig. 4; see also Table S2 in the Supplemental Material).", 
-"This effect held when we analyzed meta-d′ uncorrected by d′, F(1, 33) = 4.60, p = .04, η p 2 = .12.", 
-"However, the absence of a postresponse effect of TMS on meta-d′/d′ should be interpreted with caution, as the Congruence × Time interaction was not significant, F(1, 34) = 2.21, p = .15, η p 2 = .06.", 
-"The effect of TMS congruence on meta-d′/d′ was consistent across experiments-interaction with experiment: F(1, 33) = 0.70, p = .41, η p 2 = .02 (Fig.", 
-"In keeping with an absence of an effect of M1 TMS on confidence, results showed that M1 stimulation had no effect on metacognitive efficiency, F(1, 16) = 0.13, p = .73, η p 2 = .008 (Fig.", 
-"A significant group difference was found in suppression-induced forgetting, as revealed by a significant condition-by-group interaction, F(1, 30) = 7.556, p = .010, η p 2 = .201.", 
-"This interaction was driven by a significant inversion of suppression-induced forgetting in the PTSD group (i.e., better memory performance for suppress items compared with baseline items; M = -5.2%), F(1, 15) = 5.288, p = .036, η p 2 = .261 (Bayes factor favoring the alternative hypothesis = 2.09), in the absence of significant suppression in the control group (M = 3.5%, n.s.).", 
-"Although the PTSD group showed a significant facilitation effect (M = 5.9%), F(1, 15) = 7.525, p = .015, η p 2 = .334, and the control group did not (M = 2.8%, n.s.), there was no significant group difference in facilitation, F(1, 30) = 1.215, p = .279, η p 2 = .039 (Fig. 3a).", 
-"A significant group difference in suppressioninduced forgetting was observed, as indicated by a significant condition-by-group interaction, F(1, 30) = 4.573, p = .041, η p 2 = .132.", 
-"This interaction was driven by significant suppression-induced forgetting in the control group (M = 10.8%), F(1, 15) = 22.123, p &lt; .001, η p 2 = .596, in the absence of significant suppression-induced forgetting in the PTSD group (M = 1.7%), F(1, 15) = 0.297, p = .594, η p 2 = .019.", 
-"As for the two previous measures, a significant group difference in suppression-induced forgetting was observed, established by a significant condition-by-group interaction, F(1, 30) = 14.231, p = .001, η p 2 = .322.", 
-"This interaction was driven once again by a significant suppression effect in the control group (M = 1.19), F(1, 15) = 33.548, p &lt; .001, η p 2 = .691, in the absence of significant suppression in the PTSD group (M = -0.14), F(1, 15) = 0.224, p = .643, η p 2 = .015.", 
-"Although the PTSD group showed a significant facilitation effect (M = 0.68), F(1, 15) = 5.575, p = .032, η p 2 = .271, and the control group showed only a marginally significant effect (M = 0.56), F(1, 15) = 4.368, p = .054, η p 2 = .226, the difference between the groups was not significant, F(1, 30) = 0.100, p = .754, η p 2 = .003 (Fig. 3c).", 
-"Specifically, both groups showed significant suppression-induced forgetting on the gist measure-low group: M = 13%, F(1, 6) = 30.388, p = .001, η p 2 = .835; high group: M = 8%, F(1, 6) = 8.641, p = .026, η p 2 = .590.", 
-"They also showed highly significant suppression-induced forgetting on the details measure-low group: M = 1.35, F(1, 6) = 11.631, p = .014, η p 2 = .660; high group: M = 1.03, F(1, 6) = 27.222, p = .002, η p 2 = .819.", 
-"When we more closely matched depression symptoms by comparing the low-BDI-II PTSD group with the high-BDI-II control group, we observed a marginally significant group-by-condition interaction for the details measure, F(1, 16) = 4.032, p = .062, η p 2 = .201.", 
-"In that analysis, the group difference in suppression-induced forgetting only approached significance, F(1, 30) = 3.869, p = .058, η p 2 = .114.", 
-"First, prior to the intervention (over the first 24 hr after viewing the film: Day 0), we confirmed that the four groups experienced a similar number of intrusive memories, F(3, 68) = 0.16, p = .92 (Fig. 4a).", 
-"Second, and critically, for the 7-day diary postintervention, there was a significant difference between groups in overall intrusion frequency in daily life, F(3, 68) = 3.80, p = .01, η p 2 = .14 (Fig. 4b).", 
-"Third, a similar pattern was seen on a convergent measure-the frequency of IPT intrusions on Day 7 in the laboratory, for which there was an overall significant difference between groups, F(3, 68) = 5.57, p = .002, η p 2 = .20 (Fig. 4c; Day 7).", 
-"Finally, as predicted, there was no significant difference among groups on the tests of either visual, F(3, 68) = 1.67, p = .18, or verbal, F(3, 68) = 0.85, p = .47, recognition memory of the trauma film (see Table S2 in the Supplemental Material).", 
-"Analysis of variance indicated that facial features of the photographs also influenced loan-request success in the neuroimaging study, F(3, 76) = 2.86, p = .042."
-), Section = c("results", "results", "results", "results", "results", 
-"results", "intro", "intro", "results", "results", "results", 
-"results", "results", "results", "results", "results", "results", 
-"results", "results", "results", "results", "results", "results", 
-"results", "results", "results", "results", "results", "results", 
-"results", "results", "results", "results", "results", "results", 
-"results", "results", "results", "results", "results", "results", 
-"results", "results", "results", "results", "results", "results", 
-"results", "results", "results", "results", "results", "results", 
-"results", "results", "results", "results", "results", "results", 
-"results", "results", "results", "results", "results", "results", 
-"results", "results", "results", "results", "results", "results", 
-"results", "results", "results"), "Effect Size" = c(NA, NA, NA, 
-NA, NA, NA, "Cohen's d = 1.36; Cohen's d = 0.75", "Cohen's d = 1.54; Cohen's d = 0.52", 
-NA, "r = .39; r = .13", NA, "d = 1.14", "d = 1.05", NA, "d = 1.00", 
-"d = 0.84; d = 1.11", NA, "d = 0.97", "d = 1.31; d = 0.85", NA, 
-NA, "β = 0.133", "β = 0.12; β = 0.12", "r = .322", NA, "r = .411", 
-NA, "η p 2 = .47", "η p 2 = .64", "η p 2 = .67", "η p 2 = .27", 
-"η p 2 = .52; η p 2 = .73", "η p 2 = .263", "η p 2 = .332; η p 2 = .065", 
-"η p 2 = .408", "η p 2 = .269; η p 2 = .044", "η p 2 = .180", 
-"η p 2 = .241; η p 2 = .079; η p 2 = .110", "F &lt; 1; η p 2 = .184", 
-"η p 2 = .053", "η p 2 = .143", "η p 2 = .090; η p 2 = .165; η p 2 = .658", 
-"F &lt; 1; η p 2 = .084; F &lt; 1", "η p 2 = .215; η p 2 = .318", 
-"η p 2 = .092", "η p 2 = .121", "η p 2 = .214; η p 2 = .091", 
-"η p 2 = .172", "η p 2 = .241; η p 2 = .092", "η p 2 = .062", 
-"η p 2 = .047", "η p 2 = .041; η p 2 = .445; η p 2 = .158", 
-"η p 2 = .15", "η p 2 = .12", "η p 2 = .06", "η p 2 = .02", 
-"η p 2 = .008", "η p 2 = .201", "η p 2 = .261", "η p 2 = .334; η p 2 = .039", 
-"η p 2 = .132", "η p 2 = .596; η p 2 = .019", "η p 2 = .322", 
-"η p 2 = .691; η p 2 = .015", "η p 2 = .271; η p 2 = .226; η p 2 = .003", 
-"η p 2 = .835; η p 2 = .590", "η p 2 = .660; η p 2 = .819", 
-"η p 2 = .201", "η p 2 = .114", NA, "η p 2 = .14", "η p 2 = .20", 
-NA, NA), "Reported Test" = c("t(26) = 1.598", "t(17) = 4.134; t(17) = 1.506", 
-"t(26) = 3.00", "t(26) = 1.901; t(26) = 3.363", "t(26) = 1.735", 
-"t(34) = 3.12; t(34) = 0.95", "t(28) = 7.30; t(28) = 4.05", "t(28) = 8.30; t(28) = 2.79", 
-"t(6703) = -17.1", "t(10105) = -27.7", "t(50) = 0.06", "t(50) = 4.11", 
-"t(50) = 3.80", "t(50) = 0.93; t(50) = 1.00", "t(22.63) = 2.99", 
-"t(27.96) = 2.52; t(25.68) = 3.32", "t(32.23) = 0.22; t(30.03) = 1.01", 
-"t(68) = 2.92", "t(68) = 3.92; t(68) = 2.56", "t(68) = 1.00; t(68) = 0.36", 
-"t(2358) = 6.24", "t(3023) = 2.02", "t(48) = 2.54; t(48) = 2.43", 
-"t = 2.96", "t = 8.37; t = -1.95", "t = 3.94", "t = 2.08; t = 16.63", 
-"F(2, 38) = 16.58", "F(1, 19) = 33.56", "F(2, 38) = 36.79", "F(1, 19) = 6.98", 
-"F(2, 38) = 20.82; F(2, 38) = 51.86", "F(1, 26) = 9.277", "F(3, 78) = 12.910; F(3, 78) = 1.805", 
-"F(1, 26) = 17.906", "F(3, 78) = 9.558; F(3, 78) = 1.201", "F(1, 26) = 5.720", 
-"F(1, 26) = 8.246; F(3, 78) = 2.242; F(3, 78) = 3.207", "F(3, 78) = 5.882", 
-"F(3, 78) = 1.444", "F(4, 88) = 3.661", "F(1, 22) = 2.163; F(3, 66) = 4.342", 
-"F(3, 66) = 2.012", "F(1, 34) = 9.339; F(1, 34) = 15.871", "F(1, 34) = 3.456", 
-"F(1, 26) = 3.568", "F(3, 78) = 2.596", "F(1, 26) = 5.391", "F(3, 78) = 2.637", 
-"F(1, 26) = 1.708", "F(3, 78) = 1.276", "F(1, 26) = 1.122; F(3, 78) = 20.836; F(3, 78) = 4.869", 
-"F(1, 33) = 5.91", "F(1, 33) = 4.60", "F(1, 34) = 2.21", "F(1, 33) = 0.70", 
-"F(1, 16) = 0.13", "F(1, 30) = 7.556", "F(1, 15) = 5.288", "F(1, 15) = 7.525; F(1, 30) = 1.215", 
-"F(1, 30) = 4.573", "F(1, 15) = 22.123; F(1, 15) = 0.297", "F(1, 30) = 14.231", 
-"F(1, 15) = 33.548; F(1, 15) = 0.224", "F(1, 15) = 5.575; F(1, 15) = 4.368; F(1, 30) = 0.100", 
-"F(1, 6) = 30.388; F(1, 6) = 8.641", "F(1, 6) = 11.631; F(1, 6) = 27.222", 
-"F(1, 16) = 4.032", "F(1, 30) = 3.869", "F(3, 68) = 0.16", "F(3, 68) = 3.80", 
-"F(3, 68) = 5.57", "F(3, 68) = 1.67; F(3, 68) = 0.85", "F(3, 76) = 2.86"
-), "Test Type" = c("t-test", "t-test", "t-test", "t-test", "t-test", 
-"t-test", "t-test", "t-test", "t-test", "t-test", "t-test", "t-test", 
-"t-test", "t-test", "t-test", "t-test", "t-test", "t-test", "t-test", 
-"t-test", "t-test", "t-test", "t-test", "t-test", "t-test", "t-test", 
-"t-test", "F-test", "F-test", "F-test", "F-test", "F-test", "F-test", 
-"F-test", "F-test", "F-test", "F-test", "F-test", "F-test", "F-test", 
-"F-test", "F-test", "F-test", "F-test", "F-test", "F-test", "F-test", 
-"F-test", "F-test", "F-test", "F-test", "F-test", "F-test", "F-test", 
-"F-test", "F-test", "F-test", "F-test", "F-test", "F-test", "F-test", 
-"F-test", "F-test", "F-test", "F-test", "F-test", "F-test", "F-test", 
-"F-test", "F-test", "F-test", "F-test", "F-test", "F-test")), row.names = c(NA, 
--74L), class = c("tbl_df", "tbl", "data.frame"))
-
-# table options
-cd &lt;- list()
-options &lt;- list(dom = "t", ordering = FALSE, columnDefs = cd , scrollY = 200)
-
-# display table
-DT::datatable(table, options, selection = "none", rownames = FALSE)</code></pre>
-<p>:::</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/module_run.html">module_run</a></span><span class="op">(</span><span class="va">psychsci</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span>, <span class="st">"effect_size"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">mo</span><span class="op">$</span><span class="va">summary_table</span></span></code></pre></div>
+<pre><code><span><span class="co">##                  id ttests_with_es ttests_without_es Ftests_with_es</span></span>
+<span><span class="co">## 1  0956797613520608              0                 0              5</span></span>
+<span><span class="co">## 2  0956797614522816              0                 5             20</span></span>
+<span><span class="co">## 3  0956797614527830              0                 0              0</span></span>
+<span><span class="co">## 4  0956797614557697              0                 1              5</span></span>
+<span><span class="co">## 5  0956797614560771              2                 0              0</span></span>
+<span><span class="co">## 6  0956797614566469              0                 0              0</span></span>
+<span><span class="co">## 7  0956797615569001              1                 1              0</span></span>
+<span><span class="co">## 8  0956797615569889              0                 0             12</span></span>
+<span><span class="co">## 9  0956797615583071              6                 4              2</span></span>
+<span><span class="co">## 10 0956797615588467              4                 3              0</span></span>
+<span><span class="co">##    Ftests_without_es</span></span>
+<span><span class="co">## 1                  0</span></span>
+<span><span class="co">## 2                  0</span></span>
+<span><span class="co">## 3                  0</span></span>
+<span><span class="co">## 4                  0</span></span>
+<span><span class="co">## 5                  0</span></span>
+<span><span class="co">## 6                  0</span></span>
+<span><span class="co">## 7                  0</span></span>
+<span><span class="co">## 8                  0</span></span>
+<span><span class="co">## 9                  2</span></span>
+<span><span class="co">## 10                 1</span></span></code></pre>
 <p>This can be useful for meta-scientific research questions, such as
 whether there is an increase in the best practice to report effect sizes
 for <em>t</em>-tests over time. In the plot below we have run the module
@@ -628,10 +218,11 @@ Science, and our effect_size module detected 100% of <em>t</em>-tests
 with effect sizes, 99% of <em>t</em>-tests without effect sizes, 99% of
 <em>F</em>-tests with effect sizes, and 100% of <em>F</em>-tests without
 effect sizes. This is accurate enough for meta-scientific research.</p>
-<p><img src="effect-size-plot.png"></p>
-<div class="section level3">
-<h3 id="improving-the-modules">Improving the Modules<a class="anchor" aria-label="anchor" href="#improving-the-modules"></a>
-</h3>
+<p><img src="effect-size-plot.png" fig.alt="Plot of average percentage of t-test that are missing effect sizes. The x-axis shows years form 2014 to 2024 and the y-axis shows Average % missing. Theree is a fairly stead downward trend from 60% in 2014 to around 20% by 2021."></p>
+</div>
+<div class="section level2">
+<h2 id="improving-the-modules">Improving the Modules<a class="anchor" aria-label="anchor" href="#improving-the-modules"></a>
+</h2>
 <p>These two examples are relatively straightforward examples of text
 searches that can identify examples where researchers do not follow
 reporting guidelines. Still, these algorithms can be improved.</p>
@@ -654,9 +245,9 @@ information that should be reported according to the JARS guidelines. If
 you would like to create and/or validate such a module, do reach out. We
 are happy to collaborate.</p>
 </div>
-<div class="section level3">
-<h3 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
-</h3>
+<div class="section level2 unnumbered">
+<h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-appelbaum_journal_2018" class="csl-entry">
 Appelbaum, Mark, Harris Cooper, Rex B. Kline, Evan Mayo-Wilson, Arthur
@@ -680,7 +271,6 @@ Simonsohn, Uri, Leif D. Nelson, and Joseph P. Simmons. 2014.
 <span>“P-Curve: A Key to the File-Drawer.”</span> <em>Journal of
 Experimental Psychology: General</em> 143 (2): 534–47.
 https://doi.org/<a href="https://doi.org/10.1037/a0033242" class="external-link">https://doi.org/10.1037/a0033242</a>.
-</div>
 </div>
 </div>
 </div>

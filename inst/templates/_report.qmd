@@ -8,7 +8,19 @@ format:
   html:
     theme: flatly
     toc: true
+    toc-title: >
+      <ul>
+        <li class="green">no problems detected;</li>  
+        <li class="yellow">something to check;</li> 
+        <li class="red">possible problems detected;</li>  
+        <li class="info">informational only;</li>  
+        <li class="na">not applicable;</li>  
+        <li class="fail">check failed</li>
+      <ul>
+      <hr/>
+      **Table of Contents**
     toc-location: right
+    toc-expand: 3
     page-layout: full
     title-block-banner: true
     link-external-newwindow: true
@@ -19,7 +31,9 @@ format:
 ---
 
 <style>
-  h3 { font-size: 110%; }
+  main h2, main h3 { margin-left: -20px; }
+  main h3 { font-size: 125%; }
+  main h4 { font-size: 110%; }
   .na::before     { content: '⚪️ '; }
   .fail::before   { content: '⚫️ '; }
   .info::before   { content: '🔵 '; }
@@ -30,32 +44,25 @@ format:
   .quarto-title-banner { background-color: #327118; }
   th { color: #327118; }
   table.dataTable, .dataTables_scrollBody { margin: 0.5em 0; }
+  #info { position: absolute; top: 1.5em; right: 1.5em; color: white; }
+  #info a { color: white !important; }
 </style>
 
-:::: {.content-visible when-format="html"}
-::: {.column-margin}
-[MetaCheck](http://www.scienceverse.org/metacheck) version {{< meta metacheck.version >}}<br>
+::: {#info}
+[MetaCheck](http://www.scienceverse.org/metacheck) version {{< meta metacheck.version >}}  
 Report Created: {{< meta metacheck.report-created >}}  
-%s
-
--------
-
-🟢 no problems detected;  
-🟡 something to check;  
-🔴 possible problems detected;  
-🔵 informational only;  
-⚪️ not applicable;  
-⚫️ check failed
+%s <!-- doi, if exists -->
 :::
-::::
 
 ## Demo
 
 Everything below here is for test purposes and removed when using this template to create a report.
 
-## Module A
+## General Modules
 
-### Scroll Tables
+### Module A
+
+#### Scroll Tables
 
 ```{r}
 #| echo: false
@@ -70,13 +77,15 @@ DT::datatable(iris, options, selection = "none", rownames = FALSE)
 ```
 
 
-### Collapsible Sections
+#### Collapsible Sections
 
 `r metacheck::collapse_section("Lorem ipsum...")`
 
-## Module B
+## Intro Modules
 
-### Short Tables
+### Module B
+
+#### Short Tables
 
 A shorter non-scrolling table
 
@@ -90,7 +99,7 @@ DT::datatable(head(iris, 2), options,
               selection = "none", rownames = FALSE)
 ```
 
-### Wide Scroll Tables
+#### Wide Scroll Tables
 
 ```{r}
 #| echo: false

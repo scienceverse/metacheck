@@ -1,0 +1,562 @@
+---
+title: MetaCheck Report
+subtitle: "To Err is Human: An Empirical Investigation"
+metacheck:
+  version: "0.0.0.9061"
+  report-created: "2025-12-17"
+format:
+  html:
+    theme: flatly
+    toc: true
+    toc-title: >
+      <ul>
+        <li class="green">no problems detected;</li>  
+        <li class="yellow">something to check;</li> 
+        <li class="red">possible problems detected;</li>  
+        <li class="info">informational only;</li>  
+        <li class="na">not applicable;</li>  
+        <li class="fail">check failed</li>
+      <ul>
+      <hr/>
+      **Table of Contents**
+    toc-location: right
+    toc-expand: 3
+    page-layout: full
+    title-block-banner: true
+    link-external-newwindow: true
+    embed-resources: true
+    format-links: false
+  pdf: 
+    toc: false
+---
+
+<style>
+  main h2, main h3 { margin-left: -20px; }
+  main h3 { font-size: 125%; }
+  main h4 { font-size: 110%; }
+  .na::before     { content: '⚪️ '; }
+  .fail::before   { content: '⚫️ '; }
+  .info::before   { content: '🔵 '; }
+  .red::before    { content: '🔴 '; }
+  .yellow::before { content: '🟡 '; }
+  .green::before  { content: '🟢 '; }
+  section::before { content: '' !important; }
+  .quarto-title-banner { background-color: #327118; }
+  th { color: #327118; }
+  table.dataTable, .dataTables_scrollBody { margin: 0.5em 0; }
+  #info { position: absolute; top: 1.5em; right: 1.5em; color: white; }
+  #info a { color: white !important; }
+</style>
+
+::: {#info}
+[MetaCheck](http://www.scienceverse.org/metacheck) version {{< meta metacheck.version >}}  
+Report Created: {{< meta metacheck.report-created >}}  
+ <!-- doi, if exists -->
+:::
+
+
+## Summary
+
+- [Causal Claims](#causal-claims){.green}: No causal claims were observed in the title. No causal claims were observed in the abstract.  
+- [Preregistration Check](#preregistration-check){.info}: We found 1 preregistration.  
+- [Power](#power){.red}: You included power analysis, but some essential reporting aspects appear missing.  
+- [Exact P-Values](#exact-p-values){.red}: We found 1 imprecise *p* value out of 3 detected.  
+- [Non-Significant P Value Check](#non-significant-p-value-check){.yellow}: We found 2 non-significant p values that should be checked for appropriate interpretation.  
+- [Marginal Significance](#marginal-significance){.red}: You described 2 effects with terms related to 'marginally significant'.  
+- [Effect Sizes in t-tests and F-tests](#effect-sizes-in-t-tests-and-f-tests){.red}: We found 1 t-test and/or F-test where effect sizes are not reported.  
+- [Code Check](#code-check){.yellow}: Some files loaded in the R scripts were missing in the repository. Hardcoded file paths were found. Libraries were loaded in multiple places. 1 file had no comments.  
+- [StatCheck](#statcheck){.red}: 1 possible error in t-tests or F-tests  
+- [Reference Check](#reference-check){.info}: We retrieved 1 of 1 missing DOI from crossref. We found 1 reference with comments on Pubpeer. You have cited 1 article for which replication studies exist. You have cited 1 article for which entries in the Retraction Watch database  exist.  
+
+
+
+## Intro Modules
+
+### Causal Claims {.green}
+
+Medical journals often have the following instruction in the author guidelines about the use of causal language: <br><br> *Causal language (including use of terms such as effect and efficacy) should be used only for randomized clinical trials. For all other study designs (including meta-analyses of randomized clinical trials), methods and results should be described in terms of association or correlation and should avoid cause-and-effect wording.*
+
+No causal claims were observed in the abstract,
+
+::: {.callout-tip title="Learn More" collapse="true"}
+
+For advice on how to make causal claims, and when not to, see:
+
+Antonakis, J., Bendahan, S., Jacquart, P., & Lalive, R. (2010). On making causal claims: A review and recommendations. The Leadership Quarterly, 21(6), 1086–1120. <a href='https://doi.org/10.1016/j.leaqua.2010.10.010' target='_blank'>https://doi.org/10.1016/j.leaqua.2010.10.010</a>
+
+Grosz, M. P., Rohrer, J. M., & Thoemmes, F. (2020). The Taboo Against Explicit Causal Inference in Nonexperimental Psychology. Perspectives on Psychological Science, 15(5), 1243–1255. <a href='https://doi.org/10.1177/1745691620921521' target='_blank'>https://doi.org/10.1177/1745691620921521</a>
+
+:::
+
+## Method Modules
+
+### Preregistration Check {.info}
+
+We found 1 preregistration from AsPredicted. Meta-scientific research has shown that deviations from preregistrations are often not reported or checked, and that the most common deviations concern the sample size. We recommend manually checking the full preregistration at the link below. If you check one aspect of the preregistration, make it the preregistered sample size.
+
+#### Preregistered Sample Size
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list("We randomly assigned 50 scientists to a condition where their manuscript was automatically checked for errors, and 50 scientists to a control condition with a checklist."), names = "", class = "data.frame", row.names = c(NA, 
+-1L))
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+::: {.callout-tip title="Full preregistration" collapse="true"}
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list(Question = c("AP_title", "AP_authors", "AP_created", 
+"AP_data", "AP_hypotheses", "AP_key_dv", "AP_conditions", "AP_analyses", 
+"AP_outliers", "AP_sample_size", "AP_anything_else", "AP_version"
+), Answer = c("To err is human", "Daniel Lakens (Eindhoven University of Technology) - d.lakens@tue.nl", 
+"2025/11/27 23:20 (PT)", "No, no data have been collected for this study yet.", 
+"Automation can be used to check for errors in scientific manuscripts, and inform authors about possible corrections. In this study we examine the usefulness of metacheck to improve best practices.", 
+"We will code all manuscripts for mistakes, and count the total number of mistakes per manuscript.", 
+"Two conditions. In one, researchers receive automated feedback. In the control condition, they do not receive feedback.", 
+"We will perform an independent t-test on the number of mistakes in each group.", 
+"none are expected.", "We randomly assigned 50 scientists to a condition where their manuscript was automatically checked for errors, and 50 scientists to a control condition with a checklist.", 
+"We also measured the expertise of researchers (in years) to explore whether the automated tool would be more useful, the less research experience researchers had. We also asked researchers to rate how useful they found the checklist or app on a scale from 1 (not at all) to 7 (extremely useful).", 
+"2.00")), class = "data.frame", row.names = c("AP_title", "AP_authors", 
+"AP_created", "AP_data", "AP_hypotheses", "AP_key_dv", "AP_conditions", 
+"AP_analyses", "AP_outliers", "AP_sample_size", "AP_anything_else", 
+"AP_version"))
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd , scrollY = 200)
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+:::
+
+::: {.callout-tip title="Learn More" collapse="true"}
+
+**For metascientific work on preregistration deviations**:
+
+van den Akker, O. R. et al. (2024). The potential of preregistration in psychology: Assessing preregistration producibility and preregistration-study consistency. *Psychological Methods*. DOI: [10.1037/met0000687](https://doi.org/10.1037/met0000687)
+
+**For educational material on reporting deviations from preregistrations**:
+
+Lakens, D. (2024). When and How to Deviate From a Preregistration. *Collabra: Psychology*, 10(1), 117094. DOI: [10.1525/collabra.117094](https://doi.org/10.1525/collabra.117094)
+
+:::
+
+### Power {.red}
+
+You included power analysis, but some essential reporting aspects appear missing.
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list("We conducted a sensitivity power analysis to determine that a Cohen's d of 0.50 is the smallest effect size that we could detect with 50 participants in each group and 80% power."), names = "", class = "data.frame", row.names = c(NA, 
+-1L))
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+Power analyses need to contain the following information to be interpretable: the statistical test, sample size, critical alpha criterion, power level, effect size, and an effect size metric. For example:
+
+> An a priori power analysis for an independent samples t-test, conducted using the pwr.t.test function from pwr (Champely, 2020) with Cohen's d = 0.5 and a critical alpha of p = 0.05, determined that 64 participants are required in each group for 80% power.
+
+## Results Modules
+
+### Exact P-Values {.red}
+
+We found 1 imprecise *p* value out of 3 detected. Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001.
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list("P-Value" = "p > .05", Sentence = "There was no effect of experience on the reduction in errors when using the tool (p > .05), as the correlation was non-significant."), row.names = c(NA, 
+-1L), class = c("tbl_df", "tbl", "data.frame"))
+
+# table options
+cd <- list(list(targets = 0, width = "10%"), list(targets = 1, width = "90%"))
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+::: {.callout-tip title="Learn More" collapse="true"}
+
+The APA manual states: Report exact *p* values (e.g., *p* = .031) to two or three decimal places. However, report *p* values less than .001 as *p* < .001. However, 2 decimals is too imprecise for many use-cases (e.g., a *p* value meta-analysis), so report *p* values with three digits.
+
+American Psychological Association (2020). _Publication manual of the American
+Psychological Association_, 7 edition. American Psychological Association.
+
+:::
+
+### Non-Significant P Value Check {.yellow}
+
+We found 2 non-significant p values that should be checked for appropriate interpretation.
+
+Meta-scientific research has shown nonsignificant p values are commonly misinterpreted. It is incorrect to infer that there is 'no effect', 'no difference', or that groups are 'the same' after p > 0.05.
+
+It is possible that there is a true non-zero effect, but that the study did not detect it. Make sure your inference acknowledges that it is possible that there is a non-zero effect. It is correct to include the effect is 'not significantly' different, although this just restates that p > 0.05.
+
+Metacheck does not yet analyze automatically whether sentences which include non-significant p-values are correct, but we recommend manually checking the sentences below for possible misinterpreted non-significant p values.
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list(Text = c("p = 0.152", "p > .05"), Sentence = c("On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152.", 
+"There was no effect of experience on the reduction in errors when using the tool (p > .05), as the correlation was non-significant."
+)), row.names = c(NA, -2L), class = c("tbl_df", "tbl", "data.frame"
+))
+
+# table options
+cd <- list(list(targets = 0, width = "10%"), list(targets = 1, width = "90%"))
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+::: {.callout-tip title="Learn More" collapse="true"}
+
+For metascientific articles demonstrating the rate of misinterpretations of non-significant results is high, see:
+
+* Aczel, B., Palfi, B., Szollosi, A., Kovacs, M., Szaszi, B., Szecsi, P., Zrubka, M., Gronau, Q. F., van den Bergh, D., & Wagenmakers, E.-J. (2018). Quantifying Support for the Null Hypothesis in Psychology: An Empirical Investigation. *Advances in Methods and Practices in Psychological Science*, 1(3), 357–366. doi: [10.1177/2515245918773742](https://doi.org/10.1177/2515245918773742)
+
+* Murphy, S. L., Merz, R., Reimann, L.-E., &amp; Fernández, A. (2025). Nonsignificance misinterpreted as an effect’s absence in psychology: Prevalence and temporal analyses. *Royal Society Open Science*, 12(3), 242167. doi: [10.1098/rsos.242167](https://doi.org/10.1098/rsos.242167)
+
+For educational material on preventing the misinterpretation of p values, see: [lakens.github.io/statistical_inferences](https://lakens.github.io/statistical_inferences/01-pvalue.html#sec-misconception1).
+
+:::
+
+### Marginal Significance {.red}
+
+You described effects with terms related to 'marginally significant'. If *p* values above 0.05 are interpreted as an effect, you inflate the alpha level, and increase the Type 1 error rate. If a *p* value is higher than the prespecified alpha level, it should be interpreted as a non-significant result.
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list(section = c("abstract", "results"), text = c("The paper shows examples of (1) open and closed OSF links; (2a) citation of retracted papers, (2b) citations without a doi, (2c) citations with Pubpeer comments, (2d) citations in the FORTT replication database, and (2e) missing/mismatched/incorrect citations and references; (3a) R files with code on GitHub that do not load libraries in one location, (3b) load files that are not shared in the repository, (3c) lack comments, and (3d) have hard-coded files, (4) imprecise reporting of non-significant pvalues; (5) tests with and without effect sizes, (6) use of \"marginally significant\" to describe non-significant findings, and (7) retrieving information from preregistrations.", 
+"On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152."
+)), row.names = c(NA, -2L), class = c("tbl_df", "tbl", "data.frame"
+))
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+::: {.callout-tip title="Learn More" collapse="true"}
+
+For metascientific articles demonstrating the rate at which non-significant p-values are interpreted as marginally significant, see:
+
+Olsson-Collentine, A., van Assen, M. MAL, Hartgerink &, J. CH (2019). “The
+Prevalence of Marginally Significant Results in Psychology Over Time.”
+_Psychological Science_, *30*, 576-586. doi:10.1177/0956797619830326
+<https://doi.org/10.1177/0956797619830326>.
+
+For the list of terms used to identifify marginally significant results, see this [blog post by Matthew Hankins](https://web.archive.org/web/20251001114321/https://mchankins.wordpress.com/2013/04/21/still-not-significant-2/).
+
+:::
+
+### Effect Sizes in t-tests and F-tests {.red}
+
+We found 1 t-test and/or F-test where effect sizes are not reported. We recommend checking the sentences below, and add any missing effect sizes.
+
+The following sentences are missing effect sizes
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list("On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152."), names = "", class = "data.frame", row.names = c(NA, 
+-1L))
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+::: {.callout-tip title="Learn More" collapse="true"}
+
+For metascientific articles demonstrating that effect sizes are often not reported:
+
+* Peng, C.-Y. J., Chen, L.-T., Chiang, H.-M., & Chiang, Y.-C. (2013). The Impact of APA and AERA Guidelines on Effect Size Reporting. Educational Psychology Review, 25(2), 157–209. doi:[10.1007/s10648-013-9218-2](https://doi.org/10.1007/s10648-013-9218-2).
+
+For educational material on reporting effect sizes:
+
+* [Guide to Effect Sizes and Confidence Intervals](https://matthewbjane.quarto.pub/guide-to-effect-sizes-and-confidence-intervals/)
+
+:::
+
+::: {.callout-tip title="All detected and assessed stats" collapse="true"}
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list(Sentence = c("On average researchers in the experimental (app) condition made fewer mistakes (M = 9.12) than researchers in the control (checklist) condition (M = 10.9), t(97.7) = 2.9, p = 0.005, d = 0.59.", 
+"On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152."
+), Section = c("method", "results"), "Effect Size" = c("d = 0.59", 
+NA), "Reported Test" = c("t(97.7) = 2.9", "t(97.2) = -1.96"), 
+    "Test Type" = c("t-test", "t-test")), row.names = c(NA, -2L
+), class = c("tbl_df", "tbl", "data.frame"))
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+:::
+
+### Code Check {.yellow}
+
+Below, we describe some best coding practices and give the results of automatic evaluation of these practices in the R files below. This check may miss things or produce false positives if your R scripts are less typical.
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list("R File Name" = c("bad.R", "bad.Rmd", "analysis.R"
+), Download = c("<a href='https://osf.io/download/6935bc117049c887a125cb25/'>download</a>", 
+"<a href='https://osf.io/download/uq347/'>download</a>", "<a href='https://raw.githubusercontent.com/Lakens/to_err_is_human/main/analysis.R'>download</a>"
+)), row.names = c(NA, -3L), class = c("tbl_df", "tbl", "data.frame"
+))
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+#### Missing Files
+
+The scripts load files, but 3 scripts loaded 3 files that could not be automatically identified in the repository. Check if the following files are made available, so that others can reproduce your code, or that the files are missing:
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list("R File names" = c("bad.R", "bad.Rmd", "analysis.R"
+), "Files loaded in R file but missing in repository" = c("example.csv", 
+"example.csv", "file.csv")), row.names = c(NA, -3L), class = c("tbl_df", 
+"tbl", "data.frame"))
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+#### Hardcoded Paths
+
+Best programming practice is to use relative file paths instead of hardcoded file paths (e.g., C://Lakens/files) as these folder names are do not exist on other computers. The following 4 hardcoded file paths were found in 3 R file(s).
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list("R File names" = c("bad.R", "bad.Rmd", "bad.Rmd", 
+"analysis.R"), "Absolute paths found" = c("data <- read_csv(\"C://Lakens/files/example.csv\")", 
+"data <- read_csv(\"C://Lakens/files/example.csv\")", "data2 <- read_csv(\"C://Lakens/files/example2.csv\")", 
+"data_1 <- read.csv(\"C:/path/to/a/file.csv\")")), class = c("tbl_df", 
+"tbl", "data.frame"), row.names = c(NA, -4L))
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+#### Libraries
+
+Best programming practice is to load all required libraries at one place in the code. In 3 R files, libraries were at multiple places in the R files (i.e., with more than 3 lines in between). This was true in the following R files, where libraries were loaded on the following lines:
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list("R File names" = c("bad.R", "bad.Rmd", "analysis.R"
+), "Lines at which libraries are loaded" = c("1, 16", "9, 38", 
+"1, 16")), row.names = c(NA, -3L), class = c("tbl_df", "tbl", 
+"data.frame"))
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+#### Code Comments
+
+Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code. The following 1 file had no comments:
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list("R File names" = c("bad.R", "bad.Rmd", "analysis.R"
+), "Total Lines" = c(19, 45, 19), "Code Lines" = c(13, 30, 13
+), Comments = c(1, 1, 0), "Percent comments" = c("5%", "2%", 
+"0%")), row.names = c(NA, -3L), class = c("tbl_df", "tbl", "data.frame"
+))
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+### StatCheck {.red}
+
+We detected possible errors in test statistics. Note that as the accuracy of statcheck has only been validated for *t*-tests and *F*-tests. As Metacheck only uses validated modules, we only provide statcheck results for *t* tests and *F*-tests.
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list(Text = "t(97.2) = -1.96, p = 0.152", "Recomputed p" = 0.05286, 
+    Section = "results", Sentence = "On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152."), row.names = 2L, class = c("statcheck", 
+"data.frame"))
+
+# table options
+cd <- list(list(targets = 0, width = "10em"))
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+::: {.callout-tip title="Learn More" collapse="true"}
+
+For metascientific research on the validity of statcheck, and it's usefulness to prevent statistical reporting errors, see:<br><br>
+
+Nuijten, M. B., van Assen, M. A. L. M., Hartgerink, C. H. J., Epskamp, S., & Wicherts, J. M. (2017). The Validity of the Tool “statcheck” in Discovering Statistical Reporting Inconsistencies. PsyArXiv. doi: [10.31234/osf.io/tcxaja](https://doi.org/10.31234/osf.io/tcxaja)
+
+Nuijten, M. B., & Wicherts, J. (2023). The effectiveness of implementing statcheck in the peer review process to avoid statistical reporting errors. PsyArXiv. doi: [10.31234/osf.io/bxau9](https://doi.org/10.31234/osf.io/bxau9)
+
+:::
+
+## Reference Modules
+
+### Reference Check {.info}
+
+This module only checks references classified as articles. Out of 4 references to articles in the reference list, 4 have a DOI.
+
+#### Missing DOIs
+
+We retrieved 1 of 1 missing DOI from crossref. Only missing DOIs with a match score > 50 are returned to have high enough accuracy. Double-check any suggested DOIs and check if the remaining missing DOIs are available.
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list(DOI = "<a href='https://doi.org/10.1177/2515245918770963' target='_blank'>10.1177/2515245918770963</a>", 
+    Reference = "Lakens D (2018). “Equivalence testing for psychological research.” _Advances in Methods and Practices in Psychological Science_, *1*, 259-270."), row.names = 4L, class = "data.frame")
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+#### PubPeer Comments
+
+We found 1 reference with comments on Pubpeer. Pubpeer is a platform for post-publication peer review. We have filtered out Pubpeer comments by 'Statcheck'. You can check out the comments by visiting the URLs below:
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list(DOI = "<a href='https://doi.org/10.1177/0956797614520714' target='_blank'>10.1177/0956797614520714</a>", 
+    Reference = "Gino F, Wiltermuth SS (2014). “Evil Genius? How Dishonesty Can Lead to Greater Creativity.” _Psychological Science_, *25*(4), 973-981. doi:10.1177/0956797614520714 <https://doi.org/10.1177/0956797614520714>.", 
+    Comments = 3, "PubPeer Link" = "<a href='https://pubpeer.com/publications/3FA648ECECB88454C91804F09E2E56' target='_blank'>link</a>"), row.names = 2L, class = "data.frame")
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+#### Replication Studies
+
+You have cited 1 article for which replication studies exist. These replications were listed in the FORRT Replication Database (as of 2025-11-24). Check if you are aware of the replication studies, and cite them where appropriate.
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list(DOI = "<a href='https://doi.org/10.1098/rspb.1998.0380' target='_blank'>10.1098/rspb.1998.0380</a>", 
+    "Replication Reference" = "Jones, B. C., Hahn, A. C., Fisher, C. I., Wang, H., Kandrik, M., Han, C., Fasolt, V., Morrison, D., Lee, A. J., Holzleitner, I. J., O’Shea, K. J., Roberts, S. C., Little, A. C., & DeBruine, L. M. (2018). No Compelling Evidence that Preferences for Facial Masculinity Track Changes in Women’s Hormonal Status. Psychological Science, 29(6), 996-1005. https://doi.org/10.1177/0956797618760197", 
+    "Replication DOI" = "<a href='https://doi.org/10.1177/0956797618760197' target='_blank'>10.1177/0956797618760197</a>"), row.names = 1L, class = "data.frame")
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+#### RetractionWatch
+
+You have cited 1 article for which entries in the Retraction Watch database  exist. These articles were listed in the Retraction Watch database (as of 2025-12-17). Check if you are aware of the issues, and cite them where appropriate.
+
+```{r}
+#| echo: false
+
+# table data
+table <- structure(list(DOI = "<a href='https://doi.org/10.1177/0956797614520714' target='_blank'>10.1177/0956797614520714</a>", 
+    Reference = "Gino F, Wiltermuth SS (2014). “Evil Genius? How Dishonesty Can Lead to Greater Creativity.” _Psychological Science_, *25*(4), 973-981. doi:10.1177/0956797614520714 <https://doi.org/10.1177/0956797614520714>.", 
+    "RW Type" = "Retraction"), row.names = 2L, class = "data.frame")
+
+# table options
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, columnDefs = cd )
+
+# display table
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
