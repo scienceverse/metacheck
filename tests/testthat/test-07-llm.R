@@ -203,6 +203,31 @@ test_that("json_expand", {
   expect_equal(expanded$bool, c(TRUE, FALSE, NA, NA, FALSE))
 })
 
+test_that("json_expand nulls", {
+  table <- data.frame(
+    id = 1:9,
+    answer = c(
+      '{"number": 1, "letter": "A", "bool": true}',
+      '{null}',
+      '[]',
+      '[{}]',
+      '{}',
+      'null',
+      '""',
+      '"Hi"',
+      ''
+    )
+  )
+
+  expanded <- json_expand(table)
+  expect_equal(expanded$error[c(1, 3:6)],
+               rep(NA_character_, 5))
+  expect_equal(expanded$error[c(7:8)],
+               rep("not a list", 2))
+  expect_equal(expanded$error[c(2, 9)],
+               rep("parsing error", 2))
+})
+
 
 test_that("json_expand multi-line", {
   table <- data.frame(
