@@ -5,7 +5,7 @@
 * Fixed a bug where some .docx file wouldn't read in (support for Word files is still patchy -- ideally render to PDF)
 * New `pubpeer_comments()` function (now vectorised)
 * Module helpers: `scroll_table()`, `collapse_section()`, `link()`, `plural()`, `pb()`
-
+* Efficiency improvements to the OSF functions
 
 # metacheck 0.0.0.9059
 
