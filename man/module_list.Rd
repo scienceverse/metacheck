@@ -16,5 +16,5 @@ a data frame of modules
 List modules
 }
 \examples{
-module_list()
+mods <- module_list()
 }

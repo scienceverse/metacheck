@@ -3,6 +3,8 @@
 #' @description
 #' Find power analyses and return their components.
 #'
+#' @keywords method
+#'
 #' @author Lisa DeBruine (\email{debruine@gmail.com})
 #' @author Daniel Lakens (\email{lakens@gmail.com})
 #' @author Cristian Mesquida

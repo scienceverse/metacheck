@@ -3,6 +3,8 @@
 #' @description
 #' Check consistency of p-values and test statistics
 #'
+#' @keywords results
+#'
 #' @references
 #' Nuijten M, Epskamp S (2024). _statcheck: Extract Statistics from Articles and
 #' Recompute P-Values_. R package version 1.5.0,

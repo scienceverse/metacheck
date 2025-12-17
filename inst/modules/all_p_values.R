@@ -3,6 +3,8 @@
 #' @description
 #' List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.
 #'
+#' @keywords results
+#'
 #' @details
 #' Note that this will not catch p-values reported like "the p-value is 0.03" because that results in a ton of false positives when papers discuss p-value thresholds. If you need to detect text like that, use `search_text()` function and a custom pattern like "\\bp(-| )?values?\\s+.{1,20}\\s+[0-9\\.]+"
 #'

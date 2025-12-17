@@ -73,7 +73,7 @@ module_run <- function(paper, module, ...) {
     results$traffic_light = ifelse(nrow(results$table), "info", "na")
   }
 
-  results$report <- results$report %||% ""
+  results$report <- results$report %||% results$summary_text %||% ""
 
   # process summary table
   if (!is.null(results$summary_table)) {
@@ -103,6 +103,7 @@ module_run <- function(paper, module, ...) {
   report_items <- list(
     module = module,
     title = info$title,
+    section = info$keywords,
     table = results$table,
     report = results$report,
     traffic_light = results$traffic_light,
@@ -154,7 +155,7 @@ module_find <- function(module) {
 #' @export
 #'
 #' @examples
-#' module_list()
+#' mods <- module_list()
 module_list <- function(module_dir = system.file("modules", package = "metacheck")) {
   files <- list.files(module_dir, "\\.R$",
                       full.names = TRUE,
@@ -173,8 +174,14 @@ module_list <- function(module_dir = system.file("modules", package = "metacheck
     title = sapply(txt, \(x) x[["title"]][[1]]),
     description = sapply(txt, `[[`, "description") |>
       sapply(\(x) x[[1]] %||% ""),
+    section = sapply(txt, `[[`, "keywords"),
     path = files[valid]
   )
+
+  section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
+  display$section <- factor(display$section, section_levels)
+  display <- sort_by(display, list(display$section, display$name))
+
   class(display) <- c("metacheck_module_list", "data.frame")
   rownames(display) <- NULL
 
@@ -258,7 +265,17 @@ module_help <- function(module = NULL) {
 #' @keywords internal
 #'
 print.metacheck_module_list <- function(x, ...) {
-  txt <- paste0("* ", x$name, ": ", x$description, "\n")
+  txt <- sapply(levels(x$section), \(s) {
+    sub <- x[x$section == s, ]
+    if (nrow(sub) == 0) return(NULL)
+    items <- paste0("* ", sub$name, ": ", sub$description, "\n")
+    title <- sprintf("\n*** %s ***\n", toupper(s))
+
+    c(title, items)
+  })
+  txt <- unlist(txt)
+
+  #txt <- paste0("* ", x$name, ": ", x$description, "\n")
   cat("", txt, "\nUse `module_help(\"module_name\")` for help with a specific module\n")
 }
 

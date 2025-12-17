@@ -3,6 +3,8 @@
 #' @description
 #' Retrieve information from preregistrations, make then easier to check.
 #'
+#' @keywords method
+#'
 #' @author Daniel Lakens
 #' @author Lisa DeBruine
 #'

@@ -3,6 +3,8 @@
 #' @description
 #' List all sentences that make causal claims.
 #'
+#' @keywords intro
+#'
 #' @author Daniel Lakens
 #'
 #' @param paper a paper object or paperlist object

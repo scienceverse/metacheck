@@ -42,11 +42,11 @@ articles:
     contents:
         - batch
         # - metascience
-        # - text_model
+        # - articles/text_model
         - modules
         - creating_modules
-        # - validate
-        - github
+        # - articles/validate
+        - articles/github
 
 reference:
 - title: App

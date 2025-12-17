@@ -2,6 +2,11 @@
 
 * Efficiency improvements to the OSF functions
 * Fixed some confusing parts of the articles that changed when the module output report structure changed.
+* Modules are now categorised by section: general, intro, method, results, discussion, reference
+* Reports are organised by section
+* Display improvement in reports
+* Module report improvement (e.g., fixing broken links)
+* New example report on the pkgdown website
 
 # metacheck 0.0.0.9060
 

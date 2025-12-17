@@ -3,6 +3,8 @@
 #' @description
 #' Get data from AsPredicted pre-registrations in a structured way
 #'
+#' @keywords method
+#'
 #' @author Daniel Lakens (\email{lakens@gmail.com})
 #'
 #' @param paper a paper object or paperlist object

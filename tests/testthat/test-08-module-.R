@@ -50,8 +50,11 @@ test_that("errors", {
 test_that("module_list", {
   builtin <- module_list()
   expect_true(is.data.frame(builtin))
-  exp <- c("name", "title", "description", "path")
+  exp <- c("name", "title", "description", "section", "path")
   expect_equal(names(builtin), exp)
+
+  op <- capture_output(print(builtin))
+  expect_true(grepl("*** GENERAL ***", op, fixed = TRUE))
 })
 
 test_that("module_find", {
@@ -73,6 +76,7 @@ test_that("module_find", {
 test_that("module_info", {
   info <- module_info("marginal")
   expect_equal(info$title, "Marginal Significance")
+  expect_equal(info$keywords, "results")
   expect_equal(info$author, "Daniel Lakens")
   expect_equal(info$description, "List all sentences that describe an effect as 'marginally significant'.")
   expect_equal(info$func_name, "marginal")
@@ -137,7 +141,7 @@ test_that("module_template", {
   unlink("modules/demo.R")
 })
 
-test_that("test", {
+test_that("module_run", {
   paper <- demoxml() |> read()
 
   module <- "modules/no_error.R"
@@ -147,6 +151,7 @@ test_that("test", {
   expect_equal(mod_output$module, module)
   expect_equal(mod_output$title, "List All P-Values (Test version)")
   expect_equal(mod_output$traffic_light, "info")
+  expect_equal(mod_output$section, "results")
   expect_equal(mod_output$report, "report text")
   expect_equal(mod_output$summary_text, "summary text")
   expect_equal(mod_output$paper, paper)
@@ -190,6 +195,7 @@ test_that("all_p_values", {
   expect_equal(p$traffic_light, "info")
   expect_equal(nrow(p$table), 3)
   expect_equal(p$module, module)
+  expect_equal(p$section, "results")
 
   # iteration: text modules need no special adaptation
   paper <- psychsci

@@ -83,7 +83,7 @@ FReD_update <- function() {
   # decrease size
   cols <- c("ref_original", "doi_original",
             "ref_replication", "doi_replication")
-  FReD <- distinct(FReD[cols])
+  FReD <- dplyr::distinct(FReD[cols])
 
   attr(FReD, "date") <- Sys.Date()
 

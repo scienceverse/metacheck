@@ -3,7 +3,9 @@
 #' @description
 #' List any p-values reported with insufficient precision (e.g., p < .05 or p = n.s.)
 #'
-#' @author  Lisa DeBruine (\email{lisa.debruin@glasgow.ac.uk}) and Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @keywords results
+#'
+#' @author  Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk}) and Daniel Lakens (\email{D.Lakens@tue.nl})
 #'
 #' @import dplyr
 #'
@@ -74,9 +76,19 @@ exact_p <- function(paper, ...) {
                             nrow(p))
 
     # Guidance text
+    apa <- bibentry(
+      bibtype = "Book",
+      author  = person("American Psychological Association"),
+      year    = 2020,
+      title   = "Publication manual of the American Psychological Association",
+      edition = "7",
+      subtitle = "The official guide to APA style",
+      publisher = "American Psychological Association"
+    )
+
     guidance <- c(
       "The APA manual states: Report exact *p* values (e.g., *p* = .031) to two or three decimal places. However, report *p* values less than .001 as *p* < .001. However, 2 decimals is too imprecise for many use-cases (e.g., a *p* value meta-analysis), so report *p* values with three digits.",
-      "American Psychological Association. (2020). Publication manual of the American Psychological Association 2020: the official guide to APA style (7th ed.). American Psychological Association."
+      format(apa)
     )
 
     # Combine everything into report text

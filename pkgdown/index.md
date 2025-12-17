@@ -47,13 +47,13 @@ Systems Institute
 ([EAISI](https://www.tue.nl/en/research/institutes/eindhoven-artificial-intelligence-systems-institute)).
 
 <style>
-&#10;.people figure { 
+.people figure { 
   width: 23%;
   padding: 0;
   margin: 1% 1% 0 1%;
   float: left; 
 }
-&#10;</style>
+</style>
 
 <div class="people" layout-ncol="4">
 

@@ -43,6 +43,7 @@ Suggests:
     knitr
 Config/testthat/edition: 3
 Imports: 
+    arrow,
     DT,
     dplyr,
     tidyr,

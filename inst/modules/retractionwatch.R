@@ -3,6 +3,8 @@
 #' @description
 #' Flag any cited papers in the RetractionWatch database
 #'
+#' @keywords reference
+#'
 #' @author Lisa DeBruine
 #'
 #' @references

@@ -3,7 +3,9 @@
 #' @description
 #' This module checks references. It warns for missing DOI's, citations in the RetractionWatch database, citations that have comments on pubpeer (excluding Statcheck comments), and citations of original studies for which replication studies exist in the Replication Database.
 #'
-#' @author Lisa DeBruine (\email{lisa.debruin@glasgow.ac.uk}) and Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @keywords reference
+#'
+#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk}) and Daniel Lakens (\email{D.Lakens@tue.nl})
 #'
 #' @import dplyr httr jsonlite
 #'
@@ -69,7 +71,9 @@ reference_check <- function(paper) {
                   replication_doi = doi_replication)
   table <- dplyr::left_join(table, fred, by = "doi")
 
+  ## select only articles and make doi into clickable link
   articles <- table[table$bibtype == "Article", ]
+  articles$doi <- link(paste0("https://doi.org/", articles$doi), articles$doi)
 
   # summary_text ----
   n_doi <- sum(!is.na(articles$doi))
@@ -86,14 +90,14 @@ reference_check <- function(paper) {
   missing_text <- sprintf("%s Only missing DOIs with a match score > 50 are returned to have high enough accuracy. Double-check any suggested DOIs and check if the remaining missing DOIs are available.", missing_summary)
   rows <- articles$doi_from_crossref | is.na(articles$doi)
   missing_table <- articles[rows, c("doi", "ref")]
-  missing_table$doi <- link(missing_table$doi)
+  names(missing_table) <- c("DOI", "Reference")
 
   ## PubPeer ----
   rows <- articles$pp_total_comments>0 & articles$pp_users != "Statcheck"
   cols <- c("doi", "ref", "pp_total_comments", "pp_url")
   pubpeer_table <- articles[rows, cols]
   pubpeer_table$pp_url <- link(pubpeer_table$pp_url, "link")
-  names(pubpeer_table) <- c("doi", "reference", "comments", "url")
+  names(pubpeer_table) <- c("DOI", "Reference", "Comments", "PubPeer Link")
   if (all(is.na(pubpeer_table))) {
     # Keep the same columns, but zero rows
     pubpeer_table <- pubpeer_table[0, , drop = FALSE]
@@ -114,7 +118,9 @@ reference_check <- function(paper) {
   rows <- !is.na(articles$replication_doi)
   cols <- c("doi", "replication_ref", "replication_doi")
   fred_table <- articles[rows, cols]
-  fred_table$replication_doi <- link(fred_table$replication_doi)
+  fred_table$replication_doi <- link(paste0("https://doi.org/", fred_table$replication_doi), fred_table$replication_doi)
+  names(fred_table) <- c("DOI", "Replication Reference", "Replication DOI")
+
   if (nrow(fred_table) == 0) {
     fred_summary <- "No citations to studies in the FReD replication database were found."
     fred_text <- fred_summary
@@ -132,9 +138,10 @@ reference_check <- function(paper) {
 
   ## retractions ----
   rows <- !is.na(articles$retractionwatch)
-  cols <- c("doi", "retractionwatch")
+  cols <- c("doi", "ref", "retractionwatch")
   rw_table <- articles[rows, cols]
-  rw_table$url <- link(rw_table$doi, "link")
+  names(rw_table) <- c("DOI", "Reference", "RW Type")
+
   if (nrow(rw_table) == 0) {
     rw_summary <- "No citations to studies in the Retraction Watch database were found."
     rw_text <- rw_summary
@@ -159,16 +166,16 @@ reference_check <- function(paper) {
   # report ----
   report <- c(
     overall_text,
-    "### Missing DOIs",
+    "#### Missing DOIs",
     missing_text,
     scroll_table(missing_table),
-    "### PubPeer Comments",
+    "#### PubPeer Comments",
     pubpeer_text,
     scroll_table(pubpeer_table),
-    "### Replication Studies",
+    "#### Replication Studies",
     fred_text,
     scroll_table(fred_table),
-    "### RetractionWatch",
+    "#### RetractionWatch",
     rw_text,
     scroll_table(rw_table)
   )

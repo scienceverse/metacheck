@@ -13,7 +13,7 @@ test_that("aspredicted", {
 
   # check reporting
   report <- module_report(mod_output)
-  exp <- "## AsPredicted {.na}\n\nNo AsPredicted links were found."
+  exp <- "### AsPredicted {.na}\n\nNo AsPredicted links were found."
   expect_equal(exp, report)
 
   # httptest::start_capturing()
@@ -34,7 +34,8 @@ test_that("aspredicted", {
     expect_equal(mod_output$summary_table$AP_links, 1)
     expect_equal(mod_output$traffic_light, "info")
     expect_true(grepl(mod_output$table$AP_sample_size[[1]],
-                      mod_output$report, fixed = TRUE))
+                      paste(mod_output$report, collapse = "\n"),
+                      fixed = TRUE))
 
     # check reporting
     report <- module_report(mod_output)
