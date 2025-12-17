@@ -6,23 +6,28 @@ dir.create(dir, showWarnings = FALSE)
 # module_list()
 modules <- c(
   # "all_urls",
-  # "aspredicted",
-  # "power",
+  # "ref_consistency",
+  # "all_p_values",
+
 
   # checked ----
-  # "code_check",
-  # "all_p_values",
-  "effect_size",
+  "causal_claims",
+  "prereg_check",
+  "aspredicted",
+  "power",
+
   "exact_p",
+  "nonsignificant_pvalue",
   "marginal",
-  "prereg_check"
-  # "reference_check",
-  # "miscitation",
-  # "nonsignificant_pvalue",
-  # "causal_claims",
-  # "ref_consistency",
-  # "retractionwatch",
-  # "statcheck"
+  "effect_size",
+
+  "code_check",
+  "statcheck",
+
+  "reference_check",
+  "miscitation",
+  "retractionwatch"
+
 )
 
 # generate reports for a sample of n papers
@@ -54,10 +59,12 @@ paper <- read(demoxml())
 # Best example, with many issues, for paper:
 # paper <- psychsci[[233]]
 
+llm_use(TRUE)
+
 osf_api_calls(0)
 file <- report(paper,
        modules = modules,
-       output_file = paste0(dir, "/", paper$id, ".html"),
-       output_format = "html")
+       output_file = "pkgdown/assets/report-example.qmd",
+       output_format = "qmd")
 osf_api_calls()
 browseURL(file)

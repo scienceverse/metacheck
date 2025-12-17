@@ -19,6 +19,18 @@ template:
     code_font: {google: "Fira Code"}
   params:
     ganalytics: UA-160147578-1
+
+navbar:
+  structure:
+    left: [home, gs, external, reference, articles, news]
+  components:
+    gs:
+      text: Get Started
+      href: articles/metacheck.html
+    external:
+      text: Example Report
+      href: report-example.html
+
 articles:
   - title: "Blog Posts"
     contents:
@@ -28,14 +40,13 @@ articles:
         - articles/aspredicted
   - title: "Articles"
     contents:
-      - report-example
-      - batch
- #     - metascience
- #     - text_model
-      - modules
-      - creating_modules
-  #    - validate
-      - github
+        - batch
+        # - metascience
+        # - text_model
+        - modules
+        - creating_modules
+        # - validate
+        - github
 
 reference:
 - title: App
