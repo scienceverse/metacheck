@@ -8,7 +8,7 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "man/figures/README-",
+  fig.path = "man/figures/",
   out.width = "100%"
 )
 ```
@@ -32,9 +32,42 @@ See [Get Started](articles/metacheck.html) for the basics, [Articles](articles/)
 
 ## The Team
 
-metacheck is developed by a collaborative team of researchers, consisting of (from left to right in the picture below) [Lisa DeBruine](https://debruine.github.io) (developer and maintainer) and [Daniël Lakens](https://sites.google.com/site/lakens2/Home) (developer), [René Bekkers](https://research.vu.nl/en/persons/rene-bekkers) (collaborator and PI of [Transparency Check](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check)), [Cristian Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/) (postdoctoral researcher), and Max Littel and Jakub Werner (research assistants). metacheck was initially developed by Lisa and Daniël in 2024 during Lisa’s visiting professorship at the Eindhoven Artificial Intelligence Systems Institute ([EAISI](https://www.tue.nl/en/research/institutes/eindhoven-artificial-intelligence-systems-institute)). 
+Metacheck is developed by a collaborative team of researchers, consisting of (from left to right in the picture below) [Lisa DeBruine](https://debruine.github.io) (developer and maintainer), 
+[Daniël Lakens](https://sites.google.com/site/lakens2/Home) (developer), 
+[René Bekkers](https://research.vu.nl/en/persons/rene-bekkers) (collaborator and PI of [Transparency Check](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check)), 
+[Cristian Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/) (postdoctoral researcher), 
+and Max Littel, Jakub Werner, Hadeel Khawatmy, and Lavinia Ion (research assistants). 
 
-![](https://scienceverse.github.io/metacheck/articles/team.png){fig-alt="Faces of the team"}
+Metacheck was initially developed by Lisa and Daniël in 2024 during Lisa’s visiting professorship at the Eindhoven Artificial Intelligence Systems Institute ([EAISI](https://www.tue.nl/en/research/institutes/eindhoven-artificial-intelligence-systems-institute)). 
 
+<style>
 
+.people figure { 
+  width: 23%;
+  padding: 0;
+  margin: 1% 1% 0 1%;
+  float: left; 
+}
+
+</style>
+
+::: {.people layout-ncol=4}
+
+![Lisa DeBruine](https://scienceverse.github.io/images/people/debruine.jpg)
+
+![Daniël Lakens](https://scienceverse.github.io/images/people/lakens.jpg)
+
+![Cristian Mesquida](https://scienceverse.github.io/images/people/mesquida.jpg)
+
+![Jakub Werner](https://scienceverse.github.io/images/people/werner.jpg)
+
+![Hadeel Khawatmy](https://scienceverse.github.io/images/people/khawatmy.jpg)
+
+![Lavinia Ion](https://scienceverse.github.io/images/people/ion.jpg)
+
+![René Bekkers](https://scienceverse.github.io/images/people/bekkers.jpg)
+
+![Max Littel](https://scienceverse.github.io/images/people/littel.jpg)
+
+:::
 

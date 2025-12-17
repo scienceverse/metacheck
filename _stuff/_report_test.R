@@ -12,9 +12,9 @@ modules <- c(
   # checked ----
   # "code_check",
   # "all_p_values",
-  # "effect_size",
-  # "exact_p",
-  # "marginal",
+  "effect_size",
+  "exact_p",
+  "marginal",
   "prereg_check"
   # "reference_check",
   # "miscitation",

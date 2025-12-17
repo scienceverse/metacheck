@@ -154,8 +154,9 @@ test_that("module_report", {
   report <- module_report(module_output, header = "Custom header")
   expect_true(grepl("^Custom header", report))
 
+  # print.metacheck_module_output
   op <- capture_output(print(module_output))
-  expect_true(grepl("DT::datatable", op))
+  expect_true(grepl("^Exact P-Values", op))
 })
 
 test_that("scroll_table", {

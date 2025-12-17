@@ -32,20 +32,80 @@ overview.
 
 ## The Team
 
-metacheck is developed by a collaborative team of researchers,
+Metacheck is developed by a collaborative team of researchers,
 consisting of (from left to right in the picture below) [Lisa
-DeBruine](https://debruine.github.io) (developer and maintainer) and
+DeBruine](https://debruine.github.io) (developer and maintainer),
 [Daniël Lakens](https://sites.google.com/site/lakens2/Home) (developer),
 [René Bekkers](https://research.vu.nl/en/persons/rene-bekkers)
 (collaborator and PI of [Transparency
 Check](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check)),
 [Cristian
 Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/)
-(postdoctoral researcher), and Max Littel and Jakub Werner (research
-assistants). metacheck was initially developed by Lisa and Daniël in
-2024 during Lisa’s visiting professorship at the Eindhoven Artificial
-Intelligence Systems Institute
+(postdoctoral researcher), and Max Littel, Jakub Werner, Hadeel
+Khawatmy, and Lavinia Ion (research assistants).
+
+Metacheck was initially developed by Lisa and Daniël in 2024 during
+Lisa’s visiting professorship at the Eindhoven Artificial Intelligence
+Systems Institute
 ([EAISI](https://www.tue.nl/en/research/institutes/eindhoven-artificial-intelligence-systems-institute)).
 
-<img src="https://scienceverse.github.io/metacheck/articles/team.png"
-data-fig-alt="Faces of the team" />
+<style>
+&#10;.people figure { 
+  width: 23%;
+  padding: 0;
+  margin: 1% 1% 0 1%;
+  float: left; 
+}
+&#10;</style>
+
+<div class="people" layout-ncol="4">
+
+<figure>
+<img src="https://scienceverse.github.io/images/people/debruine.jpg"
+alt="Lisa DeBruine" />
+<figcaption aria-hidden="true">Lisa DeBruine</figcaption>
+</figure>
+
+<figure>
+<img src="https://scienceverse.github.io/images/people/lakens.jpg"
+alt="Daniël Lakens" />
+<figcaption aria-hidden="true">Daniël Lakens</figcaption>
+</figure>
+
+<figure>
+<img src="https://scienceverse.github.io/images/people/mesquida.jpg"
+alt="Cristian Mesquida" />
+<figcaption aria-hidden="true">Cristian Mesquida</figcaption>
+</figure>
+
+<figure>
+<img src="https://scienceverse.github.io/images/people/werner.jpg"
+alt="Jakub Werner" />
+<figcaption aria-hidden="true">Jakub Werner</figcaption>
+</figure>
+
+<figure>
+<img src="https://scienceverse.github.io/images/people/khawatmy.jpg"
+alt="Hadeel Khawatmy" />
+<figcaption aria-hidden="true">Hadeel Khawatmy</figcaption>
+</figure>
+
+<figure>
+<img src="https://scienceverse.github.io/images/people/ion.jpg"
+alt="Lavinia Ion" />
+<figcaption aria-hidden="true">Lavinia Ion</figcaption>
+</figure>
+
+<figure>
+<img src="https://scienceverse.github.io/images/people/bekkers.jpg"
+alt="René Bekkers" />
+<figcaption aria-hidden="true">René Bekkers</figcaption>
+</figure>
+
+<figure>
+<img src="https://scienceverse.github.io/images/people/littel.jpg"
+alt="Max Littel" />
+<figcaption aria-hidden="true">Max Littel</figcaption>
+</figure>
+
+</div>
