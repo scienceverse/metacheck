@@ -58,10 +58,15 @@ files <- seq_along(psychsci) |> sample(n) |>
     #i = which(names(psychsci) == "0956797614557697")
     paper <- psychsci[[i]]
 
+    args <- list(
+      reference_check = list(crossref_min_score = 75)
+    )
+
     report(paper,
            modules = modules,
            output_file = paste0(dir, "/", paper$id, ".html"),
-           output_format = "html")
+           output_format = "html",
+           args = args)
   })
 
 # open all files in web browser

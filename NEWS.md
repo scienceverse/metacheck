@@ -2,6 +2,8 @@
 
 * `json_expand()` updated to handle LLM JSON errors more gracefully.
 * You can pass arguments to modules via `report()` now with the new `args` argument. 
+* New `get_prev_outputs()` module helper function
+* Updated the vignettes.
 
 # metacheck 0.0.0.9061
 

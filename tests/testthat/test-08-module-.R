@@ -469,3 +469,26 @@ test_that("chaining modules", {
   expect_equal(x$summary_table$p_values, p$summary_table$p_values)
   expect_equal(x$summary_table$urls, url$summary_table$urls)
 })
+
+test_that("chaining modules on one paper", {
+  paper <- read(demoxml())
+
+  # chained run
+  a <- module_run(paper, "all_p_values")
+  b <- module_run(a, "chained")
+  expect_equal(b$table, a$table[1:2, 1:2])
+
+  # run without chaining
+  c <- module_run(paper, "chained")
+  expect_equal(c$table, data.frame(a = "not from prev"))
+})
+
+test_that("get_prev_outputs", {
+  expect_true(is.function(metacheck::get_prev_outputs))
+  expect_no_error(helplist <- help(get_prev_outputs, metacheck))
+
+  .prev_outputs__ <<- list(mod_1 = list(a = 1, b = 2))
+  expect_equal(1, get_prev_outputs("mod_1", "a"))
+  expect_null(get_prev_outputs("mod_2", "a"))
+  rm(".prev_outputs__", envir = .GlobalEnv)
+})

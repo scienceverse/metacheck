@@ -43,10 +43,12 @@ report <- function(paper,
   pb$tick(0, tokens = list(what = "Running modules"))
 
   # run each module ----
-  module_output <- lapply(modules, \(module) {
+  #module_output <- lapply(modules, \(module) {
+  op <- paper
+  for (module in modules) {
     pb$tick(tokens = list(what = module))
     mod_args <- args[[module]] %||% list()
-    mod_args$paper <- paper
+    mod_args$paper <- op
     mod_args$module <- module
 
     op <- tryCatch(do.call(module_run, mod_args),
@@ -57,12 +59,20 @@ report <- function(paper,
                table = NULL,
                report = e$message,
                summary_text = "This module failed to run",
-               traffic_light = "fail"
+               traffic_light = "fail",
+               paper = op$paper %||% op,
+               prev_outputs = paper$prev_outputs
              )
 
              return(report_items)
            })
-  })
+  }
+
+  # pull module output out
+  module_output <- op$prev_outputs
+  op$prev_outputs <- NULL
+  op$paper <- NULL
+  module_output[[op$module]] <- op
 
   # organise modules ----
   section_levels <- c("general", "intro", "method", "results", "discussion", "reference")

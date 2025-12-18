@@ -94,6 +94,7 @@ reference:
   - '`plural`'
   - '`link`'
   - '`pb`'
+  - '`get_prev_outputs`'
 - title: LLM Functions
   desc: ~
   contents:
