@@ -28,6 +28,7 @@ ref_consistency <- function(paper) {
   missing_bib <- dplyr::anti_join(xrefs, bibs,  by = c("id", "xref_id"))
   missing_bib$missing <- rep("bib", nrow(missing_bib))
   names(missing_bib) <- names(missing_bib) |> sub("text", "ref", x = _)
+  missing_bib$ref <- as.list(missing_bib$ref)
 
   table <- dplyr::bind_rows(missing_refs, missing_bib) |>
     dplyr::arrange(id, xref_id)
@@ -61,7 +62,7 @@ ref_consistency <- function(paper) {
   report_table <- table[, cols]
 
   report_text <- c(report[[tl]],
-                   "This module relies on Grobid correctly parsing the references. There may be some false positives.",
+                   "This module relies on Grobid correctly parsing the references. There are likley to be some false positives.",
                    scroll_table(report_table))
 
   # return

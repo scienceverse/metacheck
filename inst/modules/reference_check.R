@@ -10,12 +10,13 @@
 #' @import dplyr httr jsonlite
 #'
 #' @param paper a paper object or paperlist object
+#' @param crossref_min_score The minimum score to return a DOI match from `get_doi()`
 #'
 #' @returns report text
 #'
 #' @examples
 #' module_run(psychsci[[129]], "reference_check")
-reference_check <- function(paper) {
+reference_check <- function(paper, crossref_min_score = 50) {
   # for testing: paper <- psychsci[[109]]
 
   # create table ----
@@ -40,7 +41,7 @@ reference_check <- function(paper) {
 
   if (n_no_doi > 0) {
     message("\nLooking up ", n_no_doi, " missing article DOIs")
-    articles_without_doi$crossref_doi <- sapply(articles_without_doi$ref, get_doi)
+    articles_without_doi$crossref_doi <- sapply(articles_without_doi$ref, get_doi, min_score = crossref_min_score)
     table <- dplyr::left_join(table, articles_without_doi,
                              by = names(table))
 
@@ -87,7 +88,7 @@ reference_check <- function(paper) {
   ## missing doi ----
   n_cr <- sum(articles$doi_from_crossref)
   missing_summary <- sprintf("We retrieved %d of %d missing DOI%s from crossref.", n_cr, n_no_doi, plural(n_no_doi))
-  missing_text <- sprintf("%s Only missing DOIs with a match score > 50 are returned to have high enough accuracy. Double-check any suggested DOIs and check if the remaining missing DOIs are available.", missing_summary)
+  missing_text <- sprintf("%s Only missing DOIs with a match score > %d are returned to have high enough accuracy. Double-check any suggested DOIs and check if the remaining missing DOIs are available.", missing_summary, crossref_min_score)
   rows <- articles$doi_from_crossref | is.na(articles$doi)
   missing_table <- articles[rows, c("doi", "ref")]
   names(missing_table) <- c("DOI", "Reference")
@@ -118,7 +119,9 @@ reference_check <- function(paper) {
   rows <- !is.na(articles$replication_doi)
   cols <- c("doi", "replication_ref", "replication_doi")
   fred_table <- articles[rows, cols]
-  fred_table$replication_doi <- link(paste0("https://doi.org/", fred_table$replication_doi), fred_table$replication_doi)
+  if(any(rows)) {
+    fred_table$replication_doi <- link(paste0("https://doi.org/", fred_table$replication_doi), fred_table$replication_doi)
+  }
   names(fred_table) <- c("DOI", "Replication Reference", "Replication DOI")
 
   if (nrow(fred_table) == 0) {

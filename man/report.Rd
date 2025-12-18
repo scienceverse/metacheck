@@ -2,14 +2,15 @@
 % Please edit documentation in R/report.R
 \name{report}
 \alias{report}
-\title{Create a report}
+\title{Create a Report}
 \usage{
 report(
   paper,
-  modules = c("exact_p", "marginal", "effect_size", "statcheck", "retractionwatch",
-    "ref_consistency"),
+  modules = c("prereg_check", "power", "exact_p", "nonsig_p", "marginal", "effect_size",
+    "code_check", "statcheck", "reference_check"),
   output_file = paste0(paper$name, "_report.", output_format),
-  output_format = c("qmd", "html", "pdf")
+  output_format = c("qmd", "html", "pdf"),
+  args = list()
 )
 }
 \arguments{
@@ -20,12 +21,20 @@ report(
 \item{output_file}{the name of the output file}
 
 \item{output_format}{the format to create the report in}
+
+\item{args}{a list of arguments to pass to modules (see Details)}
 }
 \value{
 the file path the report is saved to
 }
 \description{
-Create a report
+Run specified modules on a paper and generate a report in quarto (qmd), html, or pdf format.
+}
+\details{
+Pass arguments to modules in a named list of lists, using the same names as the \code{modules} argument. You only need to specify modules with arguments.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{args <- list(power = list(seed = 8675309))
+}\if{html}{\out{</div>}}
 }
 \examples{
 \donttest{

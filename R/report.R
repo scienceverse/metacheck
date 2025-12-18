@@ -1,9 +1,17 @@
-#' Create a report
+#' Create a Report
+#'
+#' Run specified modules on a paper and generate a report in quarto (qmd), html, or pdf format.
+#'
+#' Pass arguments to modules in a named list of lists, using the same names as the `modules` argument. You only need to specify modules with arguments.
+#' ```
+#' args <- list(power = list(seed = 8675309))
+#' ```
 #'
 #' @param paper a paper object
 #' @param modules a vector of modules to run (names for built-in modules or paths for custom modules)
 #' @param output_file the name of the output file
 #' @param output_format the format to create the report in
+#' @param args a list of arguments to pass to modules (see Details)
 #'
 #' @return the file path the report is saved to
 #' @export
@@ -15,9 +23,18 @@
 #' report(paper)
 #' }
 report <- function(paper,
-                   modules = c("exact_p", "marginal", "effect_size", "statcheck", "retractionwatch", "ref_consistency"),
+                   modules = c("prereg_check",
+                               "power",
+                               "exact_p",
+                               "nonsig_p",
+                               "marginal",
+                               "effect_size",
+                               "code_check",
+                               "statcheck",
+                               "reference_check"),
                    output_file = paste0(paper$name, "_report.", output_format),
-                   output_format = c("qmd", "html", "pdf")) {
+                   output_format = c("qmd", "html", "pdf"),
+                   args = list()) {
   output_format <- match.arg(output_format)
 
   # check paper has required things
@@ -34,9 +51,15 @@ report <- function(paper,
   pb$tick(0, tokens = list(what = "Running modules"))
 
   # run each module ----
-  module_output <- lapply(modules, \(module) {
+  #module_output <- lapply(modules, \(module) {
+  op <- paper
+  for (module in modules) {
     pb$tick(tokens = list(what = module))
-    op <- tryCatch(module_run(paper, module),
+    mod_args <- args[[module]] %||% list()
+    mod_args$paper <- op
+    mod_args$module <- module
+
+    op <- tryCatch(do.call(module_run, mod_args),
            error = function(e) {
              report_items <- list(
                module = module,
@@ -44,12 +67,20 @@ report <- function(paper,
                table = NULL,
                report = e$message,
                summary_text = "This module failed to run",
-               traffic_light = "fail"
+               traffic_light = "fail",
+               paper = op$paper %||% op,
+               prev_outputs = paper$prev_outputs
              )
 
              return(report_items)
            })
-  })
+  }
+
+  # pull module output out
+  module_output <- op$prev_outputs
+  op$prev_outputs <- NULL
+  op$paper <- NULL
+  module_output[[op$module]] <- op
 
   # organise modules ----
   section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
@@ -179,165 +210,3 @@ module_report <- function(module_output,
   paste0(c(head, report), collapse = "\n\n")
 }
 
-
-
-#' Make Scroll Table
-#'
-#' A helper function for making module reports.
-#'
-#' See [quarto article layout](https://quarto.org/docs/authoring/article-layout.html) for column options. The most common are "body" (centre column), "page" (span all columns"), and "margin" (only in right margin).
-#'
-#' To set colwidths, use a numeric or character vector. For a numeric vector, numbers greater than 1 wil be interpreted as pixels, less than 1 as percents. Character vectors will be passed as is (e.g., "3em"). If you only want to specify some columns, set the others to NA, like c(200, NA, NA, NA). Vectors shorter than the number of columns will be recycled.
-#'
-#' @param table the data frame to show in a table, or a vector for a list
-#' @param colwidths set column widths as a vector of px (number > 1) or percent (numbers <= 1)
-#' @param scroll_above if the table has more rows than this, scroll
-#' @param height the height of the scroll window
-#' @param escape whether or not to escape the DT (necessary if using raw html)
-#' @param column which quarto column to show tables in
-#'
-#' @returns the markdown R chunk to create this table
-#' @export
-#'
-#' @examples
-#' scroll_table(LETTERS)
-scroll_table <- function(table,
-                         colwidths = "auto",
-                         scroll_above = 2,
-                         height = 200,
-                         escape = FALSE,
-                         column = "body") {
-  # convert vectors to a table
-  if (is.atomic(table)) {
-    table <- data.frame(table)
-    colnames(table) <- ""
-  }
-
-  # return nothing if no table contents
-  if (is.null(table) || nrow(table) == 0 || ncol(table) == 0) {
-    return("")
-  }
-
-  tbl_code <- paste(deparse(table), collapse = "\n")
-
-  scrollY <- ifelse(nrow(table) <= scroll_above, "",
-                    sprintf(", scrollY = %d", height))
-
-  column_loc <- ""
-  if (column != "body") {
-    column_loc <- paste0("#| column: ", column)
-  }
-
-  # columnDef
-  if (length(colwidths) == 1 && colwidths == "auto") {
-    cd_code <- "list()"
-  } else {
-    colwidths <- rep_len(colwidths, ncol(table))
-    cd <- lapply(seq_along(colwidths), \(i) {
-      x <- colwidths[[i]]
-      if (is.na(x)) return(NULL)
-
-      if (is.numeric(x)) {
-        if (x > 1) {
-          x <- paste0(x, "px")
-        } else {
-          x <- paste0(x*100, "%")
-        }
-      }
-      # targets are 0-based
-      list(targets = i-1, width = x)
-    })
-    cd_code <- paste(deparse(cd[!sapply(cd, is.null)]), collapse = "\n")
-  }
-
-  # generate markdown to create the table
-  md <- sprintf('
-```{r}
-#| echo: false
-%s
-# table data
-table <- %s
-
-# table options
-cd <- %s
-options <- list(dom = "t", ordering = FALSE, columnDefs = cd %s)
-
-# display table
-DT::datatable(table, options, selection = "none", rownames = FALSE, escape = %s)
-```
-', column_loc, tbl_code, cd_code, scrollY,
-   ifelse(isTRUE(escape), "TRUE", "FALSE"))
-
-  return(md)
-}
-
-#' Make Collapsible Section
-#'
-#' A helper function for making module reports.
-#'
-#' @param text The text to put in the collapsible section; vectors will be collapse with line breaks between (e.g., into paragraphs)
-#' @param title The title of the collapse header
-#' @param callout the type of quarto callout block
-#' @param collapse whether to collapse the block at the start
-#'
-#' @returns text
-#' @export
-#'
-#' @examples
-#' text <- c("Paragraph 1...", "Paragraph 2...")
-#' collapse_section(text) |> cat()
-collapse_section <- function(text, title = "Learn More",
-                             callout = c("tip", "note", "warning", "important", "caution"),
-                             collapse = TRUE) {
-  fmt <- '::: {.callout-%s title="%s" collapse="%s"}\n\n%s\n\n:::\n'
-
-  sprintf(
-    fmt,
-    match.arg(callout),
-    title,
-    ifelse(collapse, "true", "false"),
-    paste0(text, collapse = "\n\n")
-  )
-}
-
-#' Pluralise
-#'
-#' Helper function for conditional plurals. For example, if you want to return "1 error" or "2 errors", you can use this in a sprintf().
-#'
-#' @param n the number
-#' @param singular the word or ending when n = 1
-#' @param plural the word or ending n != 1
-#'
-#' @returns a string
-#' @export
-#'
-#' @examples
-#' n <- 0:3
-#' sprintf("I have %d friend%s", n, plural(n))
-#' sprintf("I have %d %s", n, plural(n, "octopus", "octopi"))
-plural <- function(n, singular = "", plural = "s") {
-  ifelse(n == 1, singular, plural)
-}
-
-
-#' Make an html link
-#'
-#' @param url the URL to link to
-#' @param text the text to link
-#' @param new_window whether to open in a new window
-#'
-#' @returns string
-#' @export
-#'
-#' @examples
-#' link("https://scienceverse.org")
-link <- function(url, text = url, new_window = TRUE) {
-  nw <- ""
-  text <- gsub("^https?://", "", text)
-  if (new_window) nw <- " target='_blank'"
-  links <- sprintf("<a href='%s'%s>%s</a>",
-          url, nw, text)
-  links[is.na(url)] <- NA
-
-  return(links)
-}

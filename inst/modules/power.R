@@ -12,6 +12,7 @@
 #' @import tidyr
 #'
 #' @param paper a paper object or paperlist object
+#' @param seed a seed for the LLM
 #' @param ... further arguments (not used)
 #'
 #' @returns a list with table, traffic light, and report text

@@ -88,7 +88,7 @@ exact_p <- function(paper, ...) {
 
     guidance <- c(
       "The APA manual states: Report exact *p* values (e.g., *p* = .031) to two or three decimal places. However, report *p* values less than .001 as *p* < .001. However, 2 decimals is too imprecise for many use-cases (e.g., a *p* value meta-analysis), so report *p* values with three digits.",
-      format(apa)
+      format_ref(apa)
     )
 
     # Combine everything into report text

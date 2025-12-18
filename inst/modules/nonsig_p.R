@@ -5,7 +5,8 @@
 #'
 #' @keywords results
 #'
-#' @author  Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk}) and Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
+#' @author Daniel Lakens (\email{D.Lakens@tue.nl})
 #'
 #' @references
 #' # Appelbaum, M., Cooper, H., Kline, R. B., Mayo-Wilson, E., Nezu, A. M., & Rao, S. M. (2018). Journal article reporting standards for quantitative research in psychology: The APA Publications and Communications Board task force report. American Psychologist, 73(1), 3–25. https://doi.org/10.1037/amp0000191
@@ -18,8 +19,8 @@
 #' @returns a list with table, summary, traffic light, and report text
 #'
 #' @examples
-#' module_run(psychsci[[49]], "nonsignificant_pvalue")
-nonsignificant_pvalue <- function(paper) {
+#' module_run(psychsci[[49]], "nonsig_p")
+nonsig_p <- function(paper) {
   # detailed table of results ----
   res_p <- module_run(paper, "all_p_values")
   table <- res_p$table
@@ -65,12 +66,11 @@ nonsignificant_pvalue <- function(paper) {
     "It is possible that there is a true non-zero effect, but that the study did not detect it. Make sure your inference acknowledges that it is possible that there is a non-zero effect. It is correct to include the effect is 'not significantly' different, although this just restates that p > 0.05.",
     "Metacheck does not yet analyze automatically whether sentences which include non-significant p-values are correct, but we recommend manually checking the sentences below for possible misinterpreted non-significant p values.")
 
-
     guidance <- c(
       "For metascientific articles demonstrating the rate of misinterpretations of non-significant results is high, see:",
-      "* Aczel, B., Palfi, B., Szollosi, A., Kovacs, M., Szaszi, B., Szecsi, P., Zrubka, M., Gronau, Q. F., van den Bergh, D., & Wagenmakers, E.-J. (2018). Quantifying Support for the Null Hypothesis in Psychology: An Empirical Investigation. *Advances in Methods and Practices in Psychological Science*, 1(3), 357–366. doi: [10.1177/2515245918773742](https://doi.org/10.1177/2515245918773742)",
-      "* Murphy, S. L., Merz, R., Reimann, L.-E., &amp; Fernández, A. (2025). Nonsignificance misinterpreted as an effect’s absence in psychology: Prevalence and temporal analyses. *Royal Society Open Science*, 12(3), 242167. doi: [10.1098/rsos.242167](https://doi.org/10.1098/rsos.242167)",
-      "For educational material on preventing the misinterpretation of p values, see: [lakens.github.io/statistical_inferences](https://lakens.github.io/statistical_inferences/01-pvalue.html#sec-misconception1)."
+      format_ref(aczel2018),
+      format_ref(murphy2025),
+      "For educational material on preventing the misinterpretation of p values, see [Improving Your Statistical Inferences](https://lakens.github.io/statistical_inferences/01-pvalue.html#sec-misconception1)."
     )
 
     cols <- c("text", "expanded")
@@ -86,7 +86,6 @@ nonsignificant_pvalue <- function(paper) {
     ) |> paste(collapse = "\n\n")
   }
 
-
   # return a list ----
   list(
     summary_table = summary_table,
@@ -97,3 +96,44 @@ nonsignificant_pvalue <- function(paper) {
     summary_text = summary_text
   )
 }
+
+
+aczel2018 <- bibentry(
+  bibtype = "Article",
+  title = "Quantifying Support for the Null Hypothesis in Psychology: An Empirical Investigation",
+  author = c(
+    person("B.", "Aczel"),
+    person("B.", "Palfi"),
+    person("A.", "Szollosi"),
+    person("M.", "Kovacs"),
+    person("B.", "Szaszi"),
+    person("P.", "Szecsi"),
+    person("M.", "Zrubka"),
+    person("Q. F.", "Gronau"),
+    person("D.", "van den Bergh"),
+    person("E.-J.", "Wagenmakers")
+  ),
+  journal = "Advances in Methods and Practices in Psychological Science",
+  year = 2018,
+  volume = 1,
+  number = 3,
+  pages = "357--366",
+  doi = "10.1177/2515245918773742"
+)
+
+murphy2025 <- bibentry(
+  bibtype = "Article",
+  title = "Nonsignificance misinterpreted as an effect’s absence in psychology: Prevalence and temporal analyses",
+  author = c(
+    person("S. L.", "Murphy"),
+    person("R.", "Merz"),
+    person("L.-E.", "Reimann"),
+    person("A.", "Fernández")
+  ),
+  journal = "Royal Society Open Science",
+  year = 2025,
+  volume = 12,
+  number = 3,
+  pages = "242167",
+  doi = "10.1098/rsos.242167"
+)

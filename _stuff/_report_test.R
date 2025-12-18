@@ -7,20 +7,24 @@ llm_use(TRUE)
 # choose modules to run
 # module_list()
 modules <- c(
-  # "all_urls",
-  # "ref_consistency",
-  # "all_p_values",
-  # "miscitation",
-  # "retractionwatch"
+  # superceded ----
+  # "retractionwatch",
   # "aspredicted",
 
+  # helper modules ----
+  # "all_urls",
+  # "all_p_values",
 
-  # checked ----
-  "causal_claims",
+  # under development ----
+  # "causal_claims",
+  # "miscitation",
+  # "ref_consistency",
+
+  # in reports ----
   "prereg_check",
   "power",
   "exact_p",
-  "nonsignificant_pvalue",
+  "nonsig_p",
   "marginal",
   "effect_size",
   "code_check",
@@ -58,10 +62,15 @@ files <- seq_along(psychsci) |> sample(n) |>
     #i = which(names(psychsci) == "0956797614557697")
     paper <- psychsci[[i]]
 
+    args <- list(
+      reference_check = list(crossref_min_score = 75)
+    )
+
     report(paper,
            modules = modules,
            output_file = paste0(dir, "/", paper$id, ".html"),
-           output_format = "html")
+           output_format = "html",
+           args = args)
   })
 
 # open all files in web browser

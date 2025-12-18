@@ -93,7 +93,9 @@ reference:
   - '`collapse_section`'
   - '`plural`'
   - '`link`'
+  - '`format_ref`'
   - '`pb`'
+  - '`get_prev_outputs`'
 - title: LLM Functions
   desc: ~
   contents:

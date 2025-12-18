@@ -14,14 +14,30 @@ module_run <- function(paper, module, ...) {
   info <- module_info(module_path)
 
   # handle metacheck_module_output in pipeline
+  .prev_outputs__ <- list()
   if (inherits(paper, "metacheck_module_output")) {
-    summary_table <- paper$summary_table
-    paper <- paper$paper
+    prev <- paper
+
+    # pull out objects to use later
+    paper <- prev$paper
+    prev$paper <- NULL
+    summary_table <- prev$summary_table
+    prev$summary_table <- NULL
+
+    # get or set up .prev_outputs__
+    .prev_outputs__ <- prev$prev_outputs %||% list()
+    prev$prev_outputs <- NULL
+    .prev_outputs__[[prev$module]] <- prev
   } else if (is_paper_list(paper)) {
     summary_table <- data.frame(id = names(paper))
   } else {
     summary_table <- data.frame(id = paper$id)
   }
+
+  # make previous outputs available to module code
+  # TODO: check if there is a better way
+  assign(".prev_outputs__", .prev_outputs__, .GlobalEnv)
+  on.exit(rm(".prev_outputs__", envir = .GlobalEnv))
 
   # load required libraries
   for (pkg in info[["import"]]) {
@@ -49,7 +65,7 @@ module_run <- function(paper, module, ...) {
   orig_wd <- getwd(); on.exit(setwd(orig_wd))
   dirname(module_path) |> setwd()
 
-  tryCatch(basename(module_path) |>source(local = TRUE),
+  tryCatch(basename(module_path) |> source(local = TRUE),
            error = function(e) {
              stop("The module code has errors: ", e$message)
            })
@@ -109,8 +125,13 @@ module_run <- function(paper, module, ...) {
     traffic_light = results$traffic_light,
     summary_text = results$summary_text,
     summary_table = summary_table,
-    paper = paper
+    paper = paper,
+    prev_outputs = .prev_outputs__
   )
+
+  # add any extra results
+  remaining_results <- setdiff(names(results), names(report_items))
+  report_items[remaining_results] <- results[remaining_results]
 
   class(report_items) <- "metacheck_module_output"
 
@@ -360,4 +381,40 @@ module_template <- function(module_name, path = "./modules") {
   }
 
   invisible(filepath)
+}
+
+#' Get Previous Outputs
+#'
+#' A helper for creating modules. Checks for previous module outputs in a chain and returns the named list item if it exists in any parent environment.
+#'
+#' @param module the name of a previously run module
+#' @param item the name of the list item to extract
+#'
+#' @returns the extracted list item, or NULL if not found
+#' @export
+#'
+#' @examples
+#' # .prev_outputs__ is usually created by `module_run()`
+#' .prev_outputs__ <- list(mod_1 = list(a = 1, b = 2))
+#' f <- function(item) { get_prev_outputs("mod_1", item) }
+#' f("a")
+#' f("d")
+get_prev_outputs <- function(module, item) {
+  obj <- ".prev_outputs__"
+  # exists <- vapply(
+  #   sys.parents(),
+  #   function(i) exists(obj, envir = sys.frame(i)),
+  #   logical(1)
+  # )
+  #
+  # if (!any(exists)) return(NULL)
+  #
+  # i <- which(exists)[[1]]
+  # prev <- get(obj, envir = sys.frame(i))
+
+  if (!exists(obj, envir = .GlobalEnv, inherits = FALSE)) {
+    return(NULL)
+  }
+  prev <- get(obj, envir = .GlobalEnv)
+  prev[[module]][[item]]
 }

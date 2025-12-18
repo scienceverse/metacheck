@@ -345,6 +345,10 @@ json_expand <- function(table, col = "answer") {
         j <- data.frame(error = NA_character_)
       }
 
+      if (is.atomic(j) && is.null(names(j))) {
+        j <- data.frame(error = "not a list")
+      }
+
       # j <- lapply(j, \(x) I(list(x)))
       if (!is.data.frame(j)) {
         j <- lapply(j, paste, collapse = ";")
@@ -354,7 +358,7 @@ json_expand <- function(table, col = "answer") {
       j[] <- lapply(j, as.character)
       j$.temp_id. <- i
 
-      return(j)
+      j
     }, error = \(e) {
       return(data.frame(.temp_id. = i, error = "parsing error"))
     })

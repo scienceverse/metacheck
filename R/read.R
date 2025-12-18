@@ -1028,15 +1028,17 @@ tei_bib <- function(xml) {
     #   xml2::xml_text()
 
     bibs <- lapply(refs, xml2bib)
+    bib_table$ref <- bibs
 
-    bib_table$ref <- bibs |>
+    # pull visible text on error
+    formatted <- bibs |>
       sapply(\(bib) {
         tryCatch(format(bib), error = \(e) { return("")})
       }) |>
       gsub("\\n", " ", x = _)
 
-    # pull visible text on error
-    bib_errors <- which(bib_table$ref == "")
+    bib_errors <- which(formatted == "")
+
     if (length(bib_errors) > 0) {
       bib_table$ref[[bib_errors]] <- refs[[bib_errors]] |>
         xml2::xml_text() |>

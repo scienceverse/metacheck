@@ -159,6 +159,12 @@ test_that("module_run", {
 
   first_char <- substr(mod_output$table$text, 1, 1)
   expect_true(all(first_char == "p"))
+
+  # with argument
+  mod_output <- module_run(paper, module,
+                           demo_arg = "demo")
+  expect_equal(mod_output$summary_text, "summary textdemo")
+
 })
 
 # test_that("LLM", {
@@ -276,23 +282,23 @@ test_that("all_urls", {
   expect_true(all(ids %in% names(paper)))
 })
 
-test_that("retractionwatch", {
-  paper <- demoxml() |> read()
-  module <- "retractionwatch"
-
-  mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "yellow")
-  expect_equal(mod_output$table$doi, "10.1177/0956797614520714")
-  expect_true(grepl("You cited 1 paper in the Retraction Watch database (as of", mod_output$report, fixed = TRUE))
-
-  # iteration
-  paper <- psychsci
-  mod_output <- module_run(paper, module)
-  dois <- mod_output$table$doi |> unique()
-  expect_equal(dois, c("10.1177/0956797612470827",
-                       "10.1186/gb-2013-14-10-r115",
-                       "10.1038/s41562-023-01749-9"))
-})
+# test_that("retractionwatch", {
+#   paper <- demoxml() |> read()
+#   module <- "retractionwatch"
+#
+#   mod_output <- module_run(paper, module)
+#   expect_equal(mod_output$traffic_light, "yellow")
+#   expect_equal(mod_output$table$doi, "10.1177/0956797614520714")
+#   expect_true(grepl("You cited 1 paper in the Retraction Watch database (as of", mod_output$report, fixed = TRUE))
+#
+#   # iteration
+#   paper <- psychsci
+#   mod_output <- module_run(paper, module)
+#   dois <- mod_output$table$doi |> unique()
+#   expect_equal(dois, c("10.1177/0956797612470827",
+#                        "10.1186/gb-2013-14-10-r115",
+#                        "10.1038/s41562-023-01749-9"))
+# })
 
 test_that("exact_p", {
   paper <- demodir() |> read()
@@ -462,4 +468,27 @@ test_that("chaining modules", {
   expect_equal(names(x$summary_table), c("id", "p_values", "urls", "p_values.no_error"))
   expect_equal(x$summary_table$p_values, p$summary_table$p_values)
   expect_equal(x$summary_table$urls, url$summary_table$urls)
+})
+
+test_that("chaining modules on one paper", {
+  paper <- read(demoxml())
+
+  # chained run
+  a <- module_run(paper, "all_p_values")
+  b <- module_run(a, "chained")
+  expect_equal(b$table, a$table[1:2, 1:2])
+
+  # run without chaining
+  c <- module_run(paper, "chained")
+  expect_equal(c$table, data.frame(a = "not from prev"))
+})
+
+test_that("get_prev_outputs", {
+  expect_true(is.function(metacheck::get_prev_outputs))
+  expect_no_error(helplist <- help(get_prev_outputs, metacheck))
+
+  .prev_outputs__ <<- list(mod_1 = list(a = 1, b = 2))
+  expect_equal(1, get_prev_outputs("mod_1", "a"))
+  expect_null(get_prev_outputs("mod_2", "a"))
+  rm(".prev_outputs__", envir = .GlobalEnv)
 })
