@@ -7,20 +7,24 @@ llm_use(TRUE)
 # choose modules to run
 # module_list()
 modules <- c(
-  # "all_urls",
-  # "ref_consistency",
-  # "all_p_values",
-  # "miscitation",
-  # "retractionwatch"
+  # superceded ----
+  # "retractionwatch",
   # "aspredicted",
 
+  # helper modules ----
+  # "all_urls",
+  # "all_p_values",
 
-  # checked ----
-  "causal_claims",
+  # under development ----
+  # "causal_claims",
+  # "miscitation",
+  # "ref_consistency",
+
+  # in reports ----
   "prereg_check",
   "power",
   "exact_p",
-  "nonsignificant_pvalue",
+  "nonsig_p",
   "marginal",
   "effect_size",
   "code_check",

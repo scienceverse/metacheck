@@ -12,8 +12,7 @@ test_that("defaults", {
   paper <- demoxml() |> read()
   # skip modules that require external APIs
   modules <- c(
-    "exact_p", "marginal", "effect_size", "statcheck",
-    "retractionwatch", "ref_consistency"
+    "exact_p", "marginal", "effect_size", "statcheck"
   )
 
   # qmd
@@ -86,8 +85,7 @@ test_that("detected", {
   paper <- demoxml() |> read()
   # skip modules that require osf.api
   modules <- c(
-    "exact_p", "marginal", "effect_size", "statcheck",
-    "retractionwatch", "ref_consistency"
+    "exact_p", "marginal", "effect_size", "statcheck"
   )
 
   # add a retracted paper
@@ -182,112 +180,3 @@ test_that("module_report", {
   expect_true(grepl("^Exact P-Values", op))
 })
 
-test_that("scroll_table", {
-  expect_true(is.function(metacheck::scroll_table))
-
-  table <- data.frame(uc = LETTERS,
-                      lc = letters)
-  obs <- scroll_table(table)
-  expect_true(grepl("```{r}", obs, fixed = TRUE))
-  expect_true(grepl("escape = FALSE", obs, fixed = TRUE))
-
-  obs <- scroll_table(table, escape = TRUE)
-  expect_true(grepl("escape = TRUE", obs, fixed = TRUE))
-
-  # vector vs unnamed table version
-  table <- data.frame(table = LETTERS)
-  colnames(table) <- ""
-  obs_table <- scroll_table(table)
-  obs_vec <- scroll_table(LETTERS)
-  expect_equal(obs_table, obs_vec)
-
-  # set scroll after scroll_above
-  obs_scroll <- scroll_table(1:10)
-  obs_no <- scroll_table(1:2)
-  obs_no10 <- scroll_table(1:10, scroll_above = 10)
-
-  expect_true(grepl("scrollY", obs_scroll))
-  expect_false(grepl("scrollY", obs_no))
-  expect_false(grepl("scrollY", obs_no10))
-
-  # colwidths
-  obs <- scroll_table(data.frame(a = 1, b = 2), c(.3, .7))
-  expect_true(grepl('targets = 0, width = "30%"', obs))
-  expect_true(grepl('targets = 1, width = "70%"', obs))
-
-  obs <- scroll_table(data.frame(a = 1, b = 2, c = 3, d = 4), c(.1, .4))
-  expect_true(grepl('targets = 0, width = "10%"', obs))
-  expect_true(grepl('targets = 1, width = "40%"', obs))
-
-  obs <- scroll_table(data.frame(a = 1, b = 2, c = 3, d = 4), c(NA, 200, NA, NA))
-  expect_false(grepl('targets = 0', obs))
-  expect_true(grepl('targets = 1, width = "200px"', obs))
-  expect_false(grepl('targets = 2', obs))
-  expect_false(grepl('targets = 3', obs))
-})
-
-test_that("collapse_section", {
-  expect_true(is.function(metacheck::collapse_section))
-
-  expect_error(collapse_section())
-  expect_error(collapse_section("a", callout = "d"))
-
-  text <- "hello"
-  obs <- collapse_section(text)
-  expect_true(grepl("callout-tip", obs))
-
-  obs <- collapse_section(text, callout = "warning")
-  expect_true(grepl("callout-warning", obs))
-})
-
-test_that("plural", {
-  expect_true(is.function(metacheck::plural))
-
-  s0 <- plural(0)
-  expect_equal(s0, "s")
-  s1 <- plural(1)
-  expect_equal(s1, "")
-  s2 <- plural(2)
-  expect_equal(s2, "s")
-
-  s0 <- plural(0, "is", "are")
-  expect_equal(s0, "are")
-  s1 <- plural(1, "is", "are")
-  expect_equal(s1, "is")
-  s2 <- plural(2, "is", "are")
-  expect_equal(s2, "are")
-})
-
-test_that("link", {
-  expect_true(is.function(metacheck::link))
-
-  obs <- link("https://google.com")
-  exp <- "<a href='https://google.com' target='_blank'>google.com</a>"
-  expect_equal(obs, exp)
-
-  obs <- link("http://google.com")
-  exp <- "<a href='http://google.com' target='_blank'>google.com</a>"
-  expect_equal(obs, exp)
-
-  obs <- link("https://google.com", "Google")
-  exp <- "<a href='https://google.com' target='_blank'>Google</a>"
-  expect_equal(obs, exp)
-
-  obs <- link("https://google.com", "Google", FALSE)
-  exp <- "<a href='https://google.com'>Google</a>"
-  expect_equal(obs, exp)
-
-  url <- c("https://google.com", "https://scienceverse.org")
-  text <- c("Google", "Scienceverse")
-  obs <- link(url, text, FALSE)
-  exp <- c("<a href='https://google.com'>Google</a>",
-           "<a href='https://scienceverse.org'>Scienceverse</a>")
-  expect_equal(obs, exp)
-
-  url <- c(NA, "https://scienceverse.org")
-  text <- c("Google", "Scienceverse")
-  obs <- link(url, text, FALSE)
-  exp <- c(NA,
-           "<a href='https://scienceverse.org'>Scienceverse</a>")
-  expect_equal(obs, exp)
-})

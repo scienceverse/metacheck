@@ -406,12 +406,15 @@ server <- function(input, output, session) {
   observeEvent(input$report_defaults, {
     debug_msg("report_defaults")
 
-    modules <- c("exact_p",
+    modules <- c("prereg_check",
+                 "power",
+                 "exact_p",
+                 "nonsig_p",
                  "marginal",
                  "effect_size",
-                 "osf_check",
-                 "retractionwatch",
-                 "ref_consistency")
+                 "code_check",
+                 "statcheck",
+                 "reference_check")
 
     update_report_modules(modules)
   })

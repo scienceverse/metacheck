@@ -69,7 +69,8 @@ Imports:
     rappdirs,
     bib2df,
     rcrossref,
-    readxl
+    readxl,
+    bibtex
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
 BugReports: https://github.com/scienceverse/metacheck/issues

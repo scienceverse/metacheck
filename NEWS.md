@@ -4,6 +4,11 @@
 * You can pass arguments to modules via `report()` now with the new `args` argument. 
 * New `get_prev_outputs()` module helper function
 * Updated the vignettes.
+* Modules `aspredicted` and `retractionwatch` are removed, as they are superseded by `prereg_check` and `reference_check`.
+* The module `nonsignificant_pvalue` has changed to `nonsig_p`
+* The default modules in a report have changed. 
+* A new module report helper, `format_ref()` for displaying references in bibentry or bibtex formats
+* The ref column of the bib table in paper objects is now the bibentry for a reference, not just the formatted text. This will allow for more formatting options. 
 
 # metacheck 0.0.0.9061
 

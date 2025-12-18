@@ -282,23 +282,23 @@ test_that("all_urls", {
   expect_true(all(ids %in% names(paper)))
 })
 
-test_that("retractionwatch", {
-  paper <- demoxml() |> read()
-  module <- "retractionwatch"
-
-  mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "yellow")
-  expect_equal(mod_output$table$doi, "10.1177/0956797614520714")
-  expect_true(grepl("You cited 1 paper in the Retraction Watch database (as of", mod_output$report, fixed = TRUE))
-
-  # iteration
-  paper <- psychsci
-  mod_output <- module_run(paper, module)
-  dois <- mod_output$table$doi |> unique()
-  expect_equal(dois, c("10.1177/0956797612470827",
-                       "10.1186/gb-2013-14-10-r115",
-                       "10.1038/s41562-023-01749-9"))
-})
+# test_that("retractionwatch", {
+#   paper <- demoxml() |> read()
+#   module <- "retractionwatch"
+#
+#   mod_output <- module_run(paper, module)
+#   expect_equal(mod_output$traffic_light, "yellow")
+#   expect_equal(mod_output$table$doi, "10.1177/0956797614520714")
+#   expect_true(grepl("You cited 1 paper in the Retraction Watch database (as of", mod_output$report, fixed = TRUE))
+#
+#   # iteration
+#   paper <- psychsci
+#   mod_output <- module_run(paper, module)
+#   dois <- mod_output$table$doi |> unique()
+#   expect_equal(dois, c("10.1177/0956797612470827",
+#                        "10.1186/gb-2013-14-10-r115",
+#                        "10.1038/s41562-023-01749-9"))
+# })
 
 test_that("exact_p", {
   paper <- demodir() |> read()
