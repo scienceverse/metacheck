@@ -34,25 +34,14 @@ reference_check <- function(paper, crossref_min_score = 50) {
   }
 
   ## missing DOIs ----
-  articles_without_doi <- table |>
-    subset(bibtype == "Article") |>
-    subset(is.na(doi))
-  n_no_doi <- nrow(articles_without_doi)
+  missing_dois <- is.na(table$doi)
+  refs <- table$ref[missing_dois]
+  message(sprintf(
+    "\nChecking DOIs with CrossRef for %d reference%s.",
+    length(refs), plural(length(refs))))
 
-  if (n_no_doi > 0) {
-    message("\nLooking up ", n_no_doi, " missing article DOIs")
-    articles_without_doi$crossref_doi <- sapply(articles_without_doi$ref, get_doi, min_score = crossref_min_score)
-    table <- dplyr::left_join(table, articles_without_doi,
-                             by = names(table))
-
-    updated <- is.na(table$doi) & !is.na(table$crossref_doi)
-    table$doi[updated] <- table$crossref_doi[updated]
-    table$doi_from_crossref <- 0
-    table$doi_from_crossref[updated] <- 1
-    message("Added ", sum(updated), " DOIs from CrossRef")
-  } else {
-    table$doi_from_crossref <- rep(0, nrow(table))
-  }
+  table$doi[missing_dois] <- get_doi(refs, crossref_min_score)
+  table$doi_from_crossref <- !is.na(table$doi) & missing_dois
 
   ## pubpeer ----
   pp <- pubpeer_comments(table$doi)
@@ -70,11 +59,12 @@ reference_check <- function(paper, crossref_min_score = 50) {
     dplyr::select(doi = doi_original,
                   replication_ref = ref_replication,
                   replication_doi = doi_replication)
-  table <- dplyr::left_join(table, fred, by = "doi")
+  table <- dplyr::left_join(table, fred, by = 'doi')
 
   ## select only articles and make doi into clickable link
   articles <- table[table$bibtype == "Article", ]
   articles$doi <- link(paste0("https://doi.org/", articles$doi), articles$doi)
+  articles$ref <- format_ref(articles$ref)
 
   # summary_text ----
   n_doi <- sum(!is.na(articles$doi))
@@ -87,7 +77,9 @@ reference_check <- function(paper, crossref_min_score = 50) {
 
   ## missing doi ----
   n_cr <- sum(articles$doi_from_crossref)
-  missing_summary <- sprintf("We retrieved %d of %d missing DOI%s from crossref.", n_cr, n_no_doi, plural(n_no_doi))
+  n_no_doi <- sum(is.na(articles$doi)) + n_cr
+  missing_summary <- sprintf("We retrieved %d of %d missing DOI%s from crossref.",
+                             n_cr, n_no_doi, plural(n_no_doi))
   missing_text <- sprintf("%s Only missing DOIs with a match score > %d are returned to have high enough accuracy. Double-check any suggested DOIs and check if the remaining missing DOIs are available.", missing_summary, crossref_min_score)
   rows <- articles$doi_from_crossref | is.na(articles$doi)
   missing_table <- articles[rows, c("doi", "ref")]

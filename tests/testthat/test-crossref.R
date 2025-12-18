@@ -73,8 +73,6 @@ test_that("openalex", {
   oa <- openalex(doi, select = "is_retracted")
   expect_equal(oa$is_retracted, TRUE)
 })
-}) # end mock api
-# httptest::stop_capturing()
 
 test_that("get_doi", {
   ref <- "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1)."
@@ -86,4 +84,20 @@ test_that("get_doi", {
   ref <- "DeBruine, L. (2027) I haven't written this paper. Journal of Journals."
   doi <- get_doi(ref, min_score = 50)
   expect_equal(doi, NA_character_)
+
+  # from bibentry ref
+  ref <- psychsci[[1]]$bib$ref[[1]]
+  doi <- get_doi(ref)
+  exp <- "10.1093/brain/110.3.747"
+  expect_equal(doi, exp)
+
+  # vectorised
+  ref <- c("Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1).",
+           "DeBruine, L. (2027) I haven't written this paper. Journal of Journals.")
+  doi <- get_doi(ref)
+  exp <- c("10.1080/2833373x.2024.2376046", NA)
+  expect_equal(doi, exp)
 })
+
+}) # end mock api
+# httptest::stop_capturing()

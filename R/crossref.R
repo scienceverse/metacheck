@@ -194,6 +194,18 @@ ref_info <- function(paper) {
 
 # Function to get a doi from crossref by sending the full reference text.
 get_doi <- function(reference, min_score = 50) {
+  if (inherits(reference, "bibentry")) {
+    reference <- format(reference)
+  } else if (length(reference) > 1) {
+    # vectorise
+    pb <- pb(length(reference))
+    dois <- sapply(reference, \(r) {
+      pb$tick()
+      get_doi(r, min_score)
+    }, USE.NAMES = FALSE)
+    return(dois)
+  }
+
   options(crossref_email = email())
   tryCatch({
     res <- rcrossref::cr_works(query = reference, limit = 1)
