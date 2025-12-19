@@ -1,7 +1,9 @@
 #' Code Check
 #'
 #' @description
-#' Retrieve information r files.
+#' Retrieve information from repositories about r files, zip files, and readme.
+#'
+#' @keywords results
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
 #'
