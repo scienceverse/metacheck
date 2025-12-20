@@ -1,7 +1,7 @@
 #' Code Check
 #'
 #' @description
-#' Retrieve information r files.
+#' Retrieve information from repositories about r files, zip files, and readme.
 #'
 #' @keywords results
 #'
@@ -18,29 +18,25 @@
 #' @examples
 #' module_run(psychsci[[233]], "code_check")
 code_check <- function(paper) {
-  # example with osf Rmd files and github files:
-  # paper <- psychsci[[203]]
-  # example with missing data files:
-  # paper <- psychsci[[221]]
-  # Many R files, some with library in different places.
-  # paper <- psychsci[[225]]
-  # Best example, with many issues, for paper:
-  # paper <- psychsci[[233]]
-
-  # find R files ----
-
-  ## search text for URLs ----
+  # example with osf Rmd files and github files: paper <- psychsci[[203]]
+  # example with missing data files: paper <- psychsci[[221]]
+  # Many R files, some with library in different places. paper <- psychsci[[225]]
+  # Best example, with many issues, for paper: paper <- psychsci[[233]]
   osf_links_found <- osf_links(paper)
+  if (nrow(osf_links_found) > 0) {
+    osf_info_retrieved <- suppressWarnings(osf_retrieve(osf_links_found, recursive = TRUE, find_project = TRUE))
+  }
+  # Regex pattern for GitHub URLs (including subpaths)
   github_regex <- "https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*"
-  github_links_found <- search_text(paper, github_regex, return = "match")
-
-  ## no relevant URLs found ----
-  if (nrow(osf_links_found) == 0 && nrow(github_links_found) == 0) {
+  github_found <- search_text(paper, github_regex, return = "match")
+  if (nrow(github_found) > 0) {
+    github_file_list <- github_files(github_found$text, recursive = TRUE)
+  }
+  if (nrow(osf_links_found) == 0 && nrow(github_found) == 0) {
     report <- "No links to the Open Science Framework or Github were found."
     return(list(
       traffic_light = "na",
-      report = report,
-      summary_text = report
+      report = report
     ))
   }
 
@@ -56,49 +52,39 @@ code_check <- function(paper) {
   all_files <- dplyr::bind_rows(osf_files, github_files)
   r_ext <- grepl("\\.(r|rmd|qmd)$", all_files$name, ignore.case = TRUE)
   r_files <- all_files[r_ext, c("name", "download_url")]
+  zip_ext <- grepl("\\.zip$", all_files$name, ignore.case = TRUE)
+  zip_files <- all_files[zip_ext, c("name", "download_url")]
+  readme_files <- grepl("readme|read[_ ]me", all_files$name, ignore.case = TRUE)
+  readme_files <- all_files[readme_files, c("name", "download_url")]
 
   if (nrow(r_files) == 0) {
-    cols <- c("name", "download_url", "osf_id") |>
-      intersect(names(all_files))
-    table <- unique(all_files[!is.na(all_files$download_url), cols])
-
-    n_osf <- nrow(osf_links_found)
-    n_github <- nrow(github_links_found)
-    summary_text <- sprintf("We found %d OSF link%s and %d GitHub link%s, but no R files were found.",
-                            n_osf, plural(n_osf),
-                            n_github, plural(n_github))
-
+    report <- "No R files were found in the repository."
     return(list(
-      table = table,
       traffic_light = "na",
-      report = c(summary_text, scroll_table(table)),
-      summary_text = summary_text
+      report = report
     ))
   }
 
   # Add comments for aspects we will check
-  r_files$hardcoded <- NA
-  r_files$hardcoded_paths <- NA_character_
-  r_files$library_spread <- NA
-  r_files$library_lines <- NA_character_
-  r_files$total_lines <- NA_real_
-  r_files$comment_lines <- NA_real_
-  r_files$code_lines <- NA_real_
-  r_files$percentage_comment <- NA_real_
-  r_files$loaded_files_missing <- NA_real_
-  r_files$loaded_files_missing_names <- NA_real_
+  r_files$comment_lines <- NA
+  r_files$code_lines <- NA
+  r_files$percentage_comment <- NA
+  r_files$library_on_top <- NA
+  r_files$hardcoded_folders <- NA
+  r_files$loaded_files_missing <- NA
+  r_files$library_lines <- NA
+  r_files$absolute_paths <- NA
+  r_files$loaded_files_missing_names <- NA
 
   # Create list of all file names in repository. Will compare loaded files against this list to see if files are loaded, but not shared
-  # TODO: this should be specific to the repo when there are multiple github or OSF repos linked
   files_in_repository <- basename(all_files$name)
+  # Create variable to store missing files
 
   # Lines with data-loading calls
   grepl_load <- "\\b((?:[[:alnum:]_.]+::)?read\\.(?:csv2?|table|delim2?)|(?:[[:alnum:]_.]+::)?readRDS|(?:[[:alnum:]_.]+::)?load|(?:[[:alnum:]_.]+::)?read_(?:csv2?|tsv|delim|rds|lines)|(?:[[:alnum:]_.]+::)?fread|(?:[[:alnum:]_.]+::)?read_(?:xlsx?|excel)|(?:[[:alnum:]_.]+::)?read\\.xlsx|(?:[[:alnum:]_.]+::)?read_(?:dta|sav|sas)|(?:[[:alnum:]_.]+::)?read\\.dta|(?:[[:alnum:]_.]+::)?read_feather|(?:[[:alnum:]_.]+::)?read_parquet|(?:[[:alnum:]_.]+::)?fromJSON|(?:[[:alnum:]_.]+::)?read_yaml|(?:[[:alnum:]_.]+::)?read_xml|(?:[[:alnum:]_.]+::)?read_ods|(?:[[:alnum:]_.]+::)?readtext)\\s*\\(|\\bsource\\s*\\("
 
-
-  # process files ----
-  for (i in seq_along(r_files$name)) {
-    ## Read in the R code ----
+  for (i in 1:nrow(r_files)) {
+    # Read in the R code
     download_link <- r_files$download_url[i]
     con <- url(download_link)
     rfile <- suppressWarnings(readLines(con)) # some files might have incomplete final line, but we ignore this
@@ -113,32 +99,39 @@ code_check <- function(paper) {
     # Exclude lines containing knitr::
     rfile_nc <- grep('knitr::', rfile, invert = TRUE, value = TRUE)
 
-    ## hardcoded ----
-    hardcoded_paths <- grep(
+    # get absolute paths based on grepl
+    absolute_paths <- grep(
       '(?<![A-Za-z0-9_])(["\'])(?:(?!https?://)(?:[A-Za-z]:[\\\\/]|(?:\\\\\\\\|//)[^\\\\/]+[\\\\/]|~[/\\\\]|/(?:Users|home|var|etc|opt|srv|mnt|Volumes|Library|Applications|gpfs|data|tmp|media|root)\\b)[^"\']*)\\1',
       rfile_nc,
       value = TRUE,
       perl = TRUE
     )
 
-    r_files$hardcoded[i] <- length(hardcoded_paths)
-    r_files$hardcoded_paths[i] <- paste(hardcoded_paths, collapse = ", ")
-
-    ## libraries ----
-    library_lines <- grep("^[^#]*\\b(library|require)\\s*\\(", rfile_nc)
-    r_files$library_lines[i] <- paste(library_lines, collapse = ", ")
-
-    # If the libraries are at most 3 lines apart, we consider it OK
-    if (length(library_lines) > 1 && !all(diff(library_lines) < 4)) {
-      r_files$library_spread[i] <- TRUE
-    } else if (length(library_lines) > 0) {
-      r_files$library_spread[i] <- FALSE
+    if (length(absolute_paths) > 0) {
+      r_files$hardcoded_folders[i] <- 1
+      r_files$absolute_paths[i] <- paste(absolute_paths, collapse = ", ")
+    } else {
+      r_files$hardcoded_folders[i] <- 0
+      r_files$absolute_paths[i] <- NA
     }
 
-    # TODO: check this logic for qmd/rmd and blank lines
-    ## code and comments ----
+    # Find lines where libraries are loaded
+    library_lines <- grep("^[^#]*\\b(library|require)\\s*\\(", rfile_nc)
+    # If the libraries are at most 3 lines apart, we consider it OK
+    if (length(library_lines) > 1 && !all(diff(library_lines) < 4)) {
+      r_files$library_on_top[i] <- 1
+      r_files$library_lines[i] <- paste(library_lines, collapse = ", ")
+    } else if (length(library_lines) > 0) {
+      cat("Libraries are loaded in a single block, well done!\n")
+      r_files$library_on_top[i] <- 0
+      r_files$library_lines[i] <- NA
+    } else {
+      cat("No libraries are specified in this script.\n")
+      r_files$library_on_top[i] <- NA
+    }
+
+    # Get statistics about lines of code and comments.
     total_lines <- length(rfile)
-    r_files$total_lines[i] <- total_lines
     # Count comment lines
     comment_lines <- sum(grepl("^\\s*#", rfile))
     r_files$comment_lines[i] <- comment_lines
@@ -149,7 +142,6 @@ code_check <- function(paper) {
     percent_comments <- if (total_lines > 0) (comment_lines / total_lines) else NA
     r_files$percentage_comment[i] <- percent_comments
 
-    ## missing files ----
     # Examine files loaded, but missing in repo
     load_lines <- grep(grepl_load, rfile_nc, value = TRUE, perl = TRUE)
     loaded_file <- unlist(regmatches(load_lines,
@@ -157,88 +149,107 @@ code_check <- function(paper) {
     loaded_file <- gsub("^['\"]|['\"]$", "", loaded_file)
     loaded_file <- basename(loaded_file)
 
-    # TODO: why originally tolower? file names are case sensitive
-    #missing_files <- loaded_file[!tolower(loaded_file) %in% tolower(files_in_repository)]
-    missing_files <- loaded_file[!loaded_file %in% files_in_repository]
-    r_files$loaded_files_missing[i] <- length(missing_files)
-    r_files$loaded_files_missing_names[i] <- paste(missing_files, collapse = ", ")
-  } # end of process files loop over r files
+    missing_files <- loaded_file[!tolower(loaded_file) %in% tolower(files_in_repository)]
 
+    r_files$loaded_files_missing[i] <- if (length(missing_files) == 0) {
+      NA
+    } else {
+      1
+    }
+    r_files$loaded_files_missing_names[i] <- if (length(missing_files) == 0) {
+      NA
+    } else {
+      paste(missing_files, collapse = ", ")
+    }
+  } # end of loop over r files
 
-  # report ----
-  ## library ----
-  library_issue <- r_files$name[which(r_files$library_spread)]
+  # Create the report string
+  library_issue <- r_files$name[which(r_files$library_on_top == 1)]
   if (length(library_issue) == 0) {
     report_library <- "Best programming practice is to load all required libraries at one place in the code. In all R files, all libraries were loaded in one block."
     summary_library <- "All libraries were loaded in one block."
-    report_table_library <- NULL
+    report_table_library <- NA
   } else {
     report_library <- sprintf(
       "Best programming practice is to load all required libraries at one place in the code. In %d R files, libraries were at multiple places in the R files (i.e., with more than 3 lines in between). This was true in the following R files, where libraries were loaded on the following lines:\n\n",
       length(library_issue)  )
     summary_library <- "Libraries were loaded in multiple places."
     issues_library <- paste(sprintf("**%s**", library_issue), collapse = "\n\n")
-    lines_library <- paste(sprintf("**%s**", r_files$library_lines[which(r_files$library_spread == 1)]), collapse = "\n\n")
-    rows <- r_files$library_spread
-    report_table_library <- r_files[rows, c("name", "library_lines"), drop = FALSE]
+    lines_library <- paste(sprintf("**%s**", r_files$library_lines[which(r_files$library_on_top == 1)]), collapse = "\n\n")
+    report_table_library <- r_files_subset <- r_files[!is.na(r_files$library_lines), c("name", "library_lines"), drop = FALSE]
     colnames(report_table_library) <- c("R File names", "Lines at which libraries are loaded")
   }
 
-  ## hardcoded ----
-  hardcoded_issues <- r_files$name[r_files$hardcoded > 0]
+  # Create the report string hardcoded folders
+  hardcoded_issues <- r_files$name[r_files$hardcoded_folders == 1]
   if (length(hardcoded_issues) == 0) {
     report_hardcoded <- "Best programming practice is to use relative file paths instead of hardcoded file paths (e.g., C://Lakens/files) as these folder names are do not exist on other computers. No hardcoded file paths were found in any of the R files."
     summary_hardcoded <- "No hardcoded file paths were found."
-    report_table_hardcoded <- NULL
+    report_table_hardcoded <- NA
   } else {
     report_hardcoded <- sprintf(
-      "Best programming practice is to use relative file paths instead of hardcoded file paths (e.g., C://Lakens/files) as these folder names are do not exist on other computers. The following %d hardcoded file paths were found in %d R file(s).",
-      sum(r_files$hardcoded),
+      "Best programming practice is to use relative file paths instead of hardcoded file paths (e.g., C://Lakens/files) as these folder names are do not exist on other computers. The following hardcoded file paths were found in %d R file(s).",
       length(hardcoded_issues))
     summary_hardcoded <- "Hardcoded file paths were found."
-    report_table_hardcoded <- r_files[!is.na(r_files$hardcoded_paths),
-                                      c("name", "hardcoded_paths"),
-                                      drop = FALSE]
-    report_table_hardcoded <- tidyr::separate_longer_delim(report_table_hardcoded, hardcoded_paths, ", ")
+    report_table_hardcoded <- r_files_subset <- r_files[!is.na(r_files$absolute_paths), c("name", "absolute_paths"), drop = FALSE]
     colnames(report_table_hardcoded) <- c("R File names", "Absolute paths found")
-
   }
 
-  ## comments ----
+  # Create the report string for lack of comments
   comment_issue <- min(r_files$percentage_comment)
   if (comment_issue > 0) {
     report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code. All your code files had comments."
     summary_comments <- "All your code files had comments."
-    report_table_comments <- NULL
+    report_table_comments <- NA
   } else {
-    n_no_comments <- sum(r_files$percentage_comment == 0)
-    report_comments <- sprintf("Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code. The following %d file%s had no comments:",
-                               n_no_comments, plural(n_no_comments)  )
-    summary_comments <- sprintf("%d file%s had no comments.",
-                               n_no_comments, plural(n_no_comments)  )
-    cols <- c("name", "total_lines", "code_lines", "comment_lines", "percentage_comment")
-    report_table_comments <- r_files[!is.na(r_files$percentage_comment), cols, drop = FALSE]
-    report_table_comments$percentage_comment <- sprintf("%d%%", round(100*report_table_comments$percentage_comment))
-    colnames(report_table_comments) <- c("R File names", "Total Lines", "Code Lines", "Comments", "Percent comments")
+    report_comments <- sprintf("Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code. The following %d files had no comments:",
+      sum(r_files$percentage_comment == 0)  )
+    summary_comments <- "Some code files had no comments."
+    report_table_comments <- r_files_subset <- r_files[!is.na(r_files$percentage_comment), c("name", "percentage_comment"), drop = FALSE]
+    colnames(report_table_comments) <- c("R File names", "Percentage of lines that are comments")
   }
 
-  ## missingfiles ----
   # Create the report string for files loaded but not in repository
-  missingfiles_issue <- sum(r_files$loaded_files_missing > 0)
-  if (missingfiles_issue == 0) {
+  missingfiles_issue <- r_files$loaded_files_missing[!is.na(r_files$loaded_files_missing)]
+  if (length(missingfiles_issue) == 0) {
     report_missingfiles <- "All files loaded in the R scripts were present in the repository."
     summary_missingfiles <- "All files loaded in the R scripts were present in the repository."
-    report_table_files_missing <- NULL
+    report_table_files_missing <- NA
   } else {
     report_missingfiles <- sprintf(
-      "The scripts load files, but %d scripts loaded %d files that could not be automatically identified in the repository. Check if the following files are made available, so that others can reproduce your code, or that the files are missing:",
-      missingfiles_issue,
-      sum(r_files$loaded_files_missing)
-    )
+      "The scripts load files, but %d scripts loaded files that could not be automatically identified in the repository. Check if the following files are made available, so that others can reproduce your code, or that the files are missing:",
+      length(missingfiles_issue))
     summary_missingfiles <- "Some files loaded in the R scripts were missing in the repository."
-    rows <- r_files$loaded_files_missing_names != ""
-    report_table_files_missing <- r_files[rows, c("name", "loaded_files_missing_names"), drop = FALSE]
+    report_table_files_missing <- r_files_subset <- r_files[!is.na(r_files$loaded_files_missing_names), c("name", "loaded_files_missing_names"), drop = FALSE]
     colnames(report_table_files_missing) <- c("R File names", "Files loaded in R file but missing in repository")
+  }
+
+  ## readme ----
+  # Create the report string for whether readme is present or not
+  readme_issue <- nrow(readme_files > 0)
+  if (readme_issue == 1) {
+    report_readme <- sprintf(
+      "README files were present in the repository: %s",
+      paste(readme_files$name, collapse = ", ")
+    )
+    summary_readme <- "A README file was present in the repository."
+  } else {
+    report_readme <- "No README file was found. README files are a way to document the contents and structure of a folder, helping users locate the information they need. You can use a README to document changes to a repository, and explain how files are named. Please consider adding a README."
+    summary_readme <- "No README file was found."
+  }
+
+  ## zip files ----
+  # Create the report string for when zip files are present
+  zip_issue <- nrow(zip_files > 0)
+  if (zip_issue == 1) {
+    report_zip <- sprintf(
+      "### ZIP Files \n\nZIP files were present in the repository: %s. We can't examine their content. If the zip file contains data and code files, consider uploading these individually to improve discoverability and re-use.",
+      paste(zip_files$name, collapse = ", ")
+    )
+    summary_zip <- "A zip file was present in the repository."
+  } else {
+    report_zip <- ""
+    summary_zip <- ""
   }
 
   ## set up table of R file links ----
@@ -264,7 +275,10 @@ code_check <- function(paper) {
     scroll_table(report_table_library, scroll_above = 5),
     "#### Code Comments",
     report_comments,
-    scroll_table(report_table_comments, scroll_above = 5)
+    scroll_table(report_table_comments, scroll_above = 5),
+    "#### README",
+    report_readme,
+    report_zip
   )
 
   if (missingfiles_issue == 0 &&
@@ -273,17 +287,17 @@ code_check <- function(paper) {
       length(library_issue) == 0) {
     tl <- "green"
   } else {
-    tl <- "yellow"
+    tl <- "info"
   }
 
-  # summary_table ----
   # Aggregate by project and count number of 1s
+
   summary_table <- data.frame(
     id = paper$id,
-    code_library_spread = sum(r_files$library_spread, na.rm = TRUE),
-    code_hardcoded_paths = sum(r_files$hardcoded, na.rm = TRUE),
-    code_loaded_files_missing = sum(r_files$loaded_files_missing == 1, na.rm = TRUE),
-    code_minimum_comments = min(r_files$percentage_comment, na.rm = TRUE)
+    total_comments = sum(articles$total_comments, na.rm = TRUE),
+    hardcoded_folders = sum(articles$has_doi, na.rm = TRUE),
+    loaded_files_missing = sum(r_files$loaded_files_missing == 1, na.rm = TRUE),
+    minimum_comments = min(r_files$percentage_comment, na.rm = TRUE)
   )
 
   # return a list ----
@@ -296,6 +310,8 @@ code_check <- function(paper) {
     summary_text = paste(summary_missingfiles,
                          summary_hardcoded,
                          summary_library,
-                         summary_comments)
+                         summary_comments,
+                         summary_readme,
+                         summary_zip)
   )
 }
