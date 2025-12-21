@@ -39,6 +39,7 @@ scroll_table <- function(table,
 
   scrollY <- ifelse(nrow(table) <= scroll_above, "",
                     sprintf(", scrollY = %d", height))
+  scrollY <- "" # deprecated scrolling
 
   column_loc <- ""
   if (column != "body") {
@@ -77,12 +78,15 @@ table <- %s
 
 # table options
 cd <- %s
-options <- list(dom = "t", ordering = FALSE, columnDefs = cd %s)
+options <- list(dom = "t%s", ordering = FALSE, pageLength = %d, columnDefs = cd %s)
 
 # display table
 DT::datatable(table, options, selection = "none", rownames = FALSE, escape = %s)
 ```
-', column_loc, tbl_code, cd_code, scrollY,
+', column_loc, tbl_code, cd_code,
+                ifelse(nrow(table) > scroll_above, "p", ""),
+                scroll_above,
+                scrollY,
                 ifelse(isTRUE(escape), "TRUE", "FALSE"))
 
   return(md)
@@ -142,13 +146,19 @@ plural <- function(n, singular = "", plural = "s") {
 #' @param url the URL to link to
 #' @param text the text to link
 #' @param new_window whether to open in a new window
+#' @param type handle common links, like "doi" ()
 #'
 #' @returns string
 #' @export
 #'
 #' @examples
 #' link("https://scienceverse.org")
-link <- function(url, text = url, new_window = TRUE) {
+link <- function(url, text = url, new_window = TRUE, type = "") {
+  if (type == "doi") {
+    url <- gsub("https?://doi.org/", "", url) |>
+      sprintf("https://doi.org/%s", x = _)
+  }
+
   nw <- ""
   text <- gsub("^https?://", "", text)
   if (new_window) nw <- " target='_blank'"
@@ -195,9 +205,9 @@ format_ref <- function(bib) {
     bib <- Reduce(c, bib)
   }
 
-  formatted <- format(bib, style = "md")
+  formatted <- format(bib, style = "html")
 
   # tidy up
-  gsub("\\n", " ", trimws(formatted))
+  gsub("\\n|<p>|</p>", " ", formatted) |> trimws()
 }
 

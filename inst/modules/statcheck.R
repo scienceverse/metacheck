@@ -97,10 +97,10 @@ statcheck <- function(paper, ...) {
     colnames(report_table) <- label_map[cols]
 
     guidance <- c(
-      "For metascientific research on the validity of statcheck, and it's usefulness to prevent statistical reporting errors, see:<br><br>",
-      "Nuijten, M. B., van Assen, M. A. L. M., Hartgerink, C. H. J., Epskamp, S., & Wicherts, J. M. (2017). The Validity of the Tool “statcheck” in Discovering Statistical Reporting Inconsistencies. PsyArXiv. doi: [10.31234/osf.io/tcxaja](https://doi.org/10.31234/osf.io/tcxaja)",
-      "Nuijten, M. B., & Wicherts, J. (2023). The effectiveness of implementing statcheck in the peer review process to avoid statistical reporting errors. PsyArXiv. doi: [10.31234/osf.io/bxau9](https://doi.org/10.31234/osf.io/bxau9)"
-      )
+      "For metascientific research on the validity of statcheck, and it's usefulness to prevent statistical reporting errors, see:",
+      format_ref(Nuijten2017),
+      format_ref(Nuijten2023)
+    )
 
     report <- c(report_text,
                      scroll_table(report_table, colwidths = c("10em", NA, NA, NA)),
@@ -119,3 +119,32 @@ statcheck <- function(paper, ...) {
   )
 }
 
+## references ----
+Nuijten2017 <- bibentry(
+  bibtype = "Misc",
+  title = "The validity of the tool \"statcheck\" in discovering statistical reporting inconsistencies",
+  author = c(
+    person("M. B.", "Nuijten"),
+    person("M. A. L. M.", "van Assen"),
+    person("C. H. J.", "Hartgerink"),
+    person("S.", "Epskamp"),
+    person("J. M.", "Wicherts")
+  ),
+  year = 2017,
+  journal = "PsyArXiv",
+  doi = "10.31234/osf.io/tcxaja",
+  note = "Preprint"
+)
+
+Nuijten2023 <- bibentry(
+  bibtype = "Misc",
+  title = "The effectiveness of implementing statcheck in the peer review process to avoid statistical reporting errors",
+  author = c(
+    person("M. B.", "Nuijten"),
+    person("J.", "Wicherts")
+  ),
+  year = 2023,
+  journal = "PsyArXiv",
+  doi = "10.31234/osf.io/bxau9",
+  note = "Preprint"
+)

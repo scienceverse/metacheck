@@ -68,7 +68,6 @@ Imports:
     anytime,
     rappdirs,
     bib2df,
-    rcrossref,
     readxl,
     bibtex
 VignetteBuilder: knitr

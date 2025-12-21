@@ -22,21 +22,25 @@ code_check <- function(paper) {
   # example with missing data files: paper <- psychsci[[221]]
   # Many R files, some with library in different places. paper <- psychsci[[225]]
   # Best example, with many issues, for paper: paper <- psychsci[[233]]
+
+  # osf_links
   osf_links_found <- osf_links(paper)
   if (nrow(osf_links_found) > 0) {
     osf_info_retrieved <- suppressWarnings(osf_retrieve(osf_links_found, recursive = TRUE, find_project = TRUE))
   }
+
   # Regex pattern for GitHub URLs (including subpaths)
   github_regex <- "https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*"
-  github_found <- search_text(paper, github_regex, return = "match")
-  if (nrow(github_found) > 0) {
-    github_file_list <- github_files(github_found$text, recursive = TRUE)
+  github_links_found <- search_text(paper, github_regex, return = "match")
+  if (nrow(github_links_found) > 0) {
+    github_file_list <- github_files(github_links_found$text, recursive = TRUE)
   }
-  if (nrow(osf_links_found) == 0 && nrow(github_found) == 0) {
-    report <- "No links to the Open Science Framework or Github were found."
+
+  # nolinks found
+  if (nrow(osf_links_found) == 0 && nrow(github_links_found) == 0) {
     return(list(
       traffic_light = "na",
-      report = report
+      summary_text = "No links to the Open Science Framework or Github were found."
     ))
   }
 
@@ -58,10 +62,9 @@ code_check <- function(paper) {
   readme_files <- all_files[readme_files, c("name", "download_url")]
 
   if (nrow(r_files) == 0) {
-    report <- "No R files were found in the repository."
     return(list(
       traffic_light = "na",
-      report = report
+      summary_text  = "No R files were found in the repository."
     ))
   }
 
@@ -180,6 +183,7 @@ code_check <- function(paper) {
     colnames(report_table_library) <- c("R File names", "Lines at which libraries are loaded")
   }
 
+  # hardcoded ----
   # Create the report string hardcoded folders
   hardcoded_issues <- r_files$name[r_files$hardcoded_folders == 1]
   if (length(hardcoded_issues) == 0) {
@@ -195,6 +199,7 @@ code_check <- function(paper) {
     colnames(report_table_hardcoded) <- c("R File names", "Absolute paths found")
   }
 
+  # comments ----
   # Create the report string for lack of comments
   comment_issue <- min(r_files$percentage_comment)
   if (comment_issue > 0) {
@@ -209,6 +214,7 @@ code_check <- function(paper) {
     colnames(report_table_comments) <- c("R File names", "Percentage of lines that are comments")
   }
 
+  # missingfiles ----
   # Create the report string for files loaded but not in repository
   missingfiles_issue <- r_files$loaded_files_missing[!is.na(r_files$loaded_files_missing)]
   if (length(missingfiles_issue) == 0) {
@@ -281,7 +287,7 @@ code_check <- function(paper) {
     report_zip
   )
 
-  if (missingfiles_issue == 0 &&
+  if (length(missingfiles_issue) == 0 &&
       comment_issue > 0 &&
       length(hardcoded_issues) == 0 &&
       length(library_issue) == 0) {
@@ -291,11 +297,11 @@ code_check <- function(paper) {
   }
 
   # Aggregate by project and count number of 1s
-
+  #TODO: make this make sense
   summary_table <- data.frame(
     id = paper$id,
-    total_comments = sum(articles$total_comments, na.rm = TRUE),
-    hardcoded_folders = sum(articles$has_doi, na.rm = TRUE),
+    #total_comments = sum(articles$total_comments, na.rm = TRUE),
+    hardcoded_folders = length(hardcoded_issues),
     loaded_files_missing = sum(r_files$loaded_files_missing == 1, na.rm = TRUE),
     minimum_comments = min(r_files$percentage_comment, na.rm = TRUE)
   )

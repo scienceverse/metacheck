@@ -29,8 +29,13 @@ modules <- c(
   "effect_size",
   "code_check",
   "statcheck",
-  "reference_check"
+  "reference_check",
+  "replications",
+  "retractionwatch",
+  "pubpeer"
 )
+
+modules <- c("replications", "fail", "retractionwatch")
 
 
 # One specific paper
@@ -54,12 +59,11 @@ file <- report(paper,
 osf_api_calls()
 browseURL(file)
 
-
 # generate reports for a sample of n papers
 n <- 1
 files <- seq_along(psychsci) |> sample(n) |>
   lapply(\(i) {
-    #i = which(names(psychsci) == "0956797614557697")
+    #i = which(names(psychsci) == "09567976241239935")
     paper <- psychsci[[i]]
 
     args <- list(

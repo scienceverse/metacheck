@@ -42,7 +42,7 @@ format:
   .green::before  { content: '🟢 '; }
   section::before { content: '' !important; }
   .quarto-title-banner { background-color: #327118; }
-  th { color: #327118; }
+  th { background-color: #327118; color: white; }
   table.dataTable, .dataTables_scrollBody { margin: 0.5em 0; }
   #info { position: absolute; top: 1.5em; right: 1.5em; color: white; }
   #info a { color: white !important; }

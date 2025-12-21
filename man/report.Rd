@@ -7,7 +7,8 @@
 report(
   paper,
   modules = c("prereg_check", "power", "exact_p", "nonsig_p", "marginal", "effect_size",
-    "code_check", "statcheck", "reference_check"),
+    "code_check", "statcheck", "reference_check", "replications", "retractionwatch",
+    "pubpeer"),
   output_file = paste0(paper$name, "_report.", output_format),
   output_format = c("qmd", "html", "pdf"),
   args = list()

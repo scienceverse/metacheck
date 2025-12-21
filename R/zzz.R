@@ -36,7 +36,7 @@
   # check if email is set
   email <- getOption("metacheck.email") %||% ""
 
-  if (!grepl(".+@.+\\..+$", email)) {
+  if (!grepl(".+@.+\\..+$", email) | email == "metacheck@scienceverse.org") {
     mailset <- "\n\u26A0\uFE0F Set an email to use APIs like OpenAlex\nmetacheck::email('your@address.org')\n"
   } else {
     mailset <- paste0(

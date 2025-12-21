@@ -1,13 +1,14 @@
 #' Reference Check
 #'
 #' @description
-#' This module checks references. It warns for missing DOI's, citations in the RetractionWatch database, citations that have comments on pubpeer (excluding Statcheck comments), and citations of original studies for which replication studies exist in the Replication Database.
+#' This module checks references. It warns for missing DOI's and other mismatches with CrossRef.
 #'
 #' @keywords reference
 #'
-#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk}) and Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @author Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
 #'
-#' @import dplyr httr jsonlite
+#' @import dplyr
 #'
 #' @param paper a paper object or paperlist object
 #' @param crossref_min_score The minimum score to return a DOI match from `get_doi()`
@@ -19,13 +20,12 @@
 reference_check <- function(paper, crossref_min_score = 50) {
   # for testing: paper <- psychsci[[109]]
 
-  # create table ----
-  table <- concat_tables(paper, "bib")
+  # table ----
+  bib <- concat_tables(paper, "bib")
 
   # If there are no rows, return immediately
-  if (nrow(table) == 0) {
+  if (nrow(bib) == 0) {
     norefs <- list(
-      table = table,
       traffic_light = "na",
       report = "We found no references",
       summary_text = "We found no references"
@@ -33,156 +33,157 @@ reference_check <- function(paper, crossref_min_score = 50) {
     return(norefs)
   }
 
-  ## missing DOIs ----
-  missing_dois <- is.na(table$doi)
-  refs <- table$ref[missing_dois]
-  message(sprintf(
-    "\nChecking DOIs with CrossRef for %d reference%s.",
-    length(refs), plural(length(refs))))
+  # get DOIs and missing separately
+  missing_dois <- is.na(bib$doi)
+  sprintf("\nChecking %d reference%s with DOIs and %d reference%s without.",
+          sum(!missing_dois),
+          sum(!missing_dois) |> plural(),
+          sum(missing_dois),
+          sum(missing_dois) |> plural()
+  ) |> message()
+  with_doi <- crossref_doi(bib$doi[!missing_dois])
+  without_doi <- crossref_query(bib$ref[missing_dois])
+  order <- c(which(!missing_dois), which(missing_dois))
+  table <- dplyr::bind_rows(with_doi, without_doi) |>
+    sort_by(order)
 
-  table$doi[missing_dois] <- get_doi(refs, crossref_min_score)
-  table$doi_from_crossref <- !is.na(table$doi) & missing_dois
+  #table <- crossref_query(bib$ref)
 
-  ## pubpeer ----
-  pp <- pubpeer_comments(table$doi)
-  if (!is.null(pp)) {
-    table$pp_total_comments <- pp$total_comments
-    table$pp_url <- pp$url
-    table$pp_users <- pp$users
+  table$doi <- NULL
+  table$ref <- format_ref(bib$ref)
+  table$original_doi <- bib$doi
+  table$id <- bib$id
+  table$xref_id <- bib$xref_id
+
+  # missing/mismatched DOIs
+  table$doi_found <- is.na(bib$doi) & !is.na(table$DOI)
+  table$doi_mismatch <- !is.na(bib$doi) & bib$doi != table$DOI
+
+  ## other mismatches ----
+
+  # clean up text to prevent irrelevant mismatches
+  clean <- \(x) {
+    tolower(x) |>
+      gsub("\\s+", " ", x = _) |>
+      gsub("[\u2018\u2019\u201A\u201B]", "'", x = _) |>
+      gsub("[\u201C\u201D\u201E\u201F]", '"', x = _) |>
+      gsub("\\.$", "", x = _)
   }
 
-  ## retraction watch ----
-  table <- dplyr::left_join(table, rw(), by = 'doi')
+  table$title_mismatch <- {
+    bib_title <- clean(bib$title)
+    cr_title <- clean(table$title)
+    pre_bib_title <- strsplit(bib_title, ":") |> sapply(`[[`, 1)
+    pre_cr_title <- strsplit(cr_title, ":") |> sapply(`[[`, 1)
 
-  ## replications ----
-  fred <- FReD() |>
-    dplyr::select(doi = doi_original,
-                  replication_ref = ref_replication,
-                  replication_doi = doi_replication)
-  table <- dplyr::left_join(table, fred, by = 'doi')
-
-  ## select only articles and make doi into clickable link
-  articles <- table[table$bibtype == "Article", ]
-  articles$doi <- link(paste0("https://doi.org/", articles$doi), articles$doi)
-  articles$ref <- format_ref(articles$ref)
-
-  # summary_text ----
-  n_doi <- sum(!is.na(articles$doi))
-  overall_text <- sprintf("This module only checks references classified as articles. Out of %d reference%s to articles in the reference list, %d %s a DOI.",
-      nrow(articles),
-      plural(nrow(articles)),
-      n_doi,
-      plural(n_doi, "has", "have")
-  )
-
-  ## missing doi ----
-  n_cr <- sum(articles$doi_from_crossref)
-  n_no_doi <- sum(is.na(articles$doi)) + n_cr
-  missing_summary <- sprintf("We retrieved %d of %d missing DOI%s from crossref.",
-                             n_cr, n_no_doi, plural(n_no_doi))
-  missing_text <- sprintf("%s Only missing DOIs with a match score > %d are returned to have high enough accuracy. Double-check any suggested DOIs and check if the remaining missing DOIs are available.", missing_summary, crossref_min_score)
-  rows <- articles$doi_from_crossref | is.na(articles$doi)
-  missing_table <- articles[rows, c("doi", "ref")]
-  names(missing_table) <- c("DOI", "Reference")
-
-  ## PubPeer ----
-  rows <- articles$pp_total_comments>0 & articles$pp_users != "Statcheck"
-  cols <- c("doi", "ref", "pp_total_comments", "pp_url")
-  pubpeer_table <- articles[rows, cols]
-  pubpeer_table$pp_url <- link(pubpeer_table$pp_url, "link")
-  names(pubpeer_table) <- c("DOI", "Reference", "Comments", "PubPeer Link")
-  if (all(is.na(pubpeer_table))) {
-    # Keep the same columns, but zero rows
-    pubpeer_table <- pubpeer_table[0, , drop = FALSE]
+    !is.na(bib_title) & !is.na(cr_title) &
+      bib_title != cr_title &
+      pre_bib_title != pre_cr_title
   }
 
-  n_pp <- nrow(pubpeer_table)
-  pubpeer_summary <- sprintf(
-    "We found %d reference%s with comments on Pubpeer.",
-    n_pp, plural(n_pp))
+  table$author_mismatch <- {
+    sapply(seq_along(table$author), \(i) {
+      if (is.null(table$author[[i]]) || nrow(table$author[[i]]) == 0) return(FALSE)
+      cr_auth <- clean(table$author[[i]]$family)
+      bib_auth <- clean(bib$authors[[i]])
+      in_auth <- sapply(cr_auth, grepl, x = bib_auth)
 
-  if (n_pp == 0) {
-    pubpeer_text <- pubpeer_summary
-  } else {
-    pubpeer_text <- sprintf("%s Pubpeer is a platform for post-publication peer review. We have filtered out Pubpeer comments by 'Statcheck'. You can check out the comments by visiting the URLs below:", pubpeer_summary)
+      !all(in_auth)
+    })
   }
 
-  ## replications ----
-  rows <- !is.na(articles$replication_doi)
-  cols <- c("doi", "replication_ref", "replication_doi")
-  fred_table <- articles[rows, cols]
-  if(any(rows)) {
-    fred_table$replication_doi <- link(paste0("https://doi.org/", fred_table$replication_doi), fred_table$replication_doi)
-  }
-  names(fred_table) <- c("DOI", "Replication Reference", "Replication DOI")
-
-  if (nrow(fred_table) == 0) {
-    fred_summary <- "No citations to studies in the FReD replication database were found."
-    fred_text <- fred_summary
-  } else {
-    fred_summary <- sprintf(
-      "You have cited %d article%s for which replication studies exist.",
-      nrow(fred_table),
-      plural(nrow(fred_table))
-    )
-    fred_text <- sprintf(
-      "%s These replications were listed in the FORRT Replication Database (as of %s). Check if you are aware of the replication studies, and cite them where appropriate.",
-      fred_summary, FReD_date()
-    )
-  }
-
-  ## retractions ----
-  rows <- !is.na(articles$retractionwatch)
-  cols <- c("doi", "ref", "retractionwatch")
-  rw_table <- articles[rows, cols]
-  names(rw_table) <- c("DOI", "Reference", "RW Type")
-
-  if (nrow(rw_table) == 0) {
-    rw_summary <- "No citations to studies in the Retraction Watch database were found."
-    rw_text <- rw_summary
-  } else {
-    rw_summary <- sprintf(
-      "You have cited %d article%s for which entries in the Retraction Watch database  exist.",
-      nrow(rw_table),
-      plural(nrow(rw_table))
-    )
-    rw_text <- sprintf(
-      "%s These articles were listed in the Retraction Watch database (as of %s). Check if you are aware of the issues, and cite them where appropriate.",
-      rw_summary, rw_date()
-    )
-  }
 
   # traffic_light ----
-  tl <- if (length(missing_table) |
-            length(pubpeer_table) |
-            length(fred_table) |
-            length(rw_table)) "info" else "na"
-
-  # report ----
-  report <- c(
-    overall_text,
-    "#### Missing DOIs",
-    missing_text,
-    scroll_table(missing_table),
-    "#### PubPeer Comments",
-    pubpeer_text,
-    scroll_table(pubpeer_table),
-    "#### Replication Studies",
-    fred_text,
-    scroll_table(fred_table),
-    "#### RetractionWatch",
-    rw_text,
-    scroll_table(rw_table)
-  )
+  tl <- "green"
+  if (any(table$doi_found) || any(table$doi_mismatch)) {
+    tl <- "yellow"
+  }
 
   # summary_table ----
-  summary_table <- dplyr::summarise(
-    table, .by = "id",
-    retraction_watch = sum(!is.na(retractionwatch)),
-    replications = sum(!is.na(replication_doi)),
-    doi_missing = sum(doi_from_crossref | is.na(doi)),
-    pubpeer_comments = sum(pp_total_comments, na.rm = TRUE)
+  summary_table <- dplyr::summarise(table, .by = id,
+                   refs_checked = sum(!is.na(ref)),
+                   missing_doi = sum(is.na(original_doi)),
+                   doi_found = sum(doi_found),
+                   doi_mismatch = sum(doi_mismatch))
+
+  # summary_text
+  summary_text <- sprintf(
+    "We checked %d reference%s in CrossRef, %d of which had a DOI. We found %d missing DOI%s and %d DOI%s that did not match the original. We could not find matches for %d reference%s.",
+    nrow(table),
+    nrow(table) |> plural(),
+    sum(!is.na(table$original_doi)),
+    sum(table$doi_found, na.rm = TRUE),
+    sum(table$doi_found, na.rm = TRUE) |> plural(),
+    sum(table$doi_mismatch, na.rm = TRUE),
+    sum(table$doi_mismatch, na.rm = TRUE) |> plural(),
+    sum(is.na(table$DOI)),
+    sum(is.na(table$DOI)) |> plural()
   )
+
+  guidance <- "Double check any references listed in the tables below. Many books do not have a DOI or are not listed in CrossRef. Garbled references are usually a result of poor parsing of the paper by grobid; we are working on more accurate alternatives."
+
+  if (tl == "green") guidance <- ""
+
+  # report ----
+
+  ## found table ----
+  found_table <- table[table$doi_found, c("DOI", "ref"), drop = FALSE]
+  if (nrow(found_table)) {
+    found_table$DOI <- link(found_table$DOI, type = "doi")
+    names(found_table) <- c("Found DOI", "Original Reference")
+  }
+
+  ## missing table ----
+  missing_table <- table[is.na(table$DOI), c("ref"), drop = FALSE]
+  if (nrow(missing_table)) {
+    missing_table$type <- bib$bibtype[is.na(table$DOI)]
+    names(missing_table) <- c("Reference not found in CrossRef", "Type")
+  }
+
+  ## doi mismatch table ----
+  mismatch_table <- table[table$doi_mismatch, c("ref","original_doi", "DOI")]
+  if (nrow(mismatch_table)) {
+    mismatch_table$doi <- link(mismatch_table$original_doi, type = "doi")
+    mismatch_table$DOI <- link(mismatch_table$DOI, type = "doi")
+    names(mismatch_table) <- c("Reference", "Original DOI", "CrossRef DOI")
+  }
+
+  ## experimental checks ----
+  title_table <- table[table$title_mismatch, c("ref", "title")]
+  if (nrow(title_table)) {
+    title_table$orig <- bib$title[table$title_mismatch]
+    title_table <- title_table[, c("orig", "title", "ref")]
+    names(title_table) <- c("Original Title", "CrossRef Title", "Reference")
+  }
+
+  author_table <- table[table$author_mismatch, c("ref", "author")]
+  if (nrow(author_table)) {
+    author_table$orig <- bib$authors[table$author_mismatch]
+    author_table$cr <- sapply(author_table$author, \(a) {
+      paste(substr(a$given, 1, 1), a$family, collapse = ", ")
+    })
+    author_table <- author_table[, c("orig", "cr", "ref")]
+    names(author_table) <- c("Original Authors", "CrossRef Authors", "Reference")
+  }
+
+  exp_check <- ""
+  if (nrow(title_table) || nrow(author_table)) {
+    exp <- c(
+      "Title and author mismatches are commonly false positives or minor differences in punctuation.",
+      scroll_table(title_table)
+    )
+    exp_checks <- collapse_section(exp, "Experimental Checks")
+  }
+
+  report <- c(
+    summary_text,
+    guidance,
+    scroll_table(found_table),
+    scroll_table(mismatch_table),
+    scroll_table(missing_table),
+    exp_checks
+  )
+
 
   # return a list ----
   list(
@@ -191,10 +192,7 @@ reference_check <- function(paper, crossref_min_score = 50) {
     na_replace = 0,
     traffic_light = tl,
     report = report,
-    summary_text = paste(missing_summary,
-                         pubpeer_summary,
-                         fred_summary,
-                         rw_summary)
+    summary_text = summary_text
   )
 }
 

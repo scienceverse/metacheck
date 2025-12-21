@@ -4,7 +4,7 @@
 \alias{link}
 \title{Make an html link}
 \usage{
-link(url, text = url, new_window = TRUE)
+link(url, text = url, new_window = TRUE, type = "")
 }
 \arguments{
 \item{url}{the URL to link to}
@@ -12,6 +12,8 @@ link(url, text = url, new_window = TRUE)
 \item{text}{the text to link}
 
 \item{new_window}{whether to open in a new window}
+
+\item{type}{handle common links, like "doi" ()}
 }
 \value{
 string

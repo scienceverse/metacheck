@@ -71,7 +71,8 @@ verbose <- function(verbose = NULL) {
 #' email()
 email <- function(email = NULL) {
   if (is.null(email)) {
-    return(getOption("metacheck.email"))
+    email <- getOption("metacheck.email") %||% "metacheck@scienceverse.org"
+    return(email)
   } else if (is.character(email) && grepl(".+@.+\\..+$", email)) {
     options(metacheck.email = email)
     invisible(getOption("metacheck.email"))

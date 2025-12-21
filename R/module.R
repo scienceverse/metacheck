@@ -353,7 +353,7 @@ print.metacheck_module_help <- function(x, ...) {
 #' Create a Module from a Template
 #'
 #' @param module_name The short name of the module (should contain only letters, numbers, and _)
-#' @param path The path to save the module (defaults to a directory called "modules" in the working directory)
+#' @param path The path of the directory to save the module in (defaults to a directory called "modules" in the working directory)
 #'
 #' @returns the file path (invisibly)
 #' @export
