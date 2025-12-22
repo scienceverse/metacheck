@@ -3,6 +3,15 @@
 #' @description
 #' Retrieve information from repositories about r files, zip files, and readme.
 #'
+#' @details
+#' The Code Check module lists files on the OSF and GitHub based on links in the manuscript, and retrieves R, Rmd, and Qmd files. The module then uses regular expressions to check the code. The regular expression search will detect the number of comments, the lines at which libraries are loaded, attempts to detect absolute paths to files, and lists files that are loaded, and checks if these files are in the repository. It will also check for a readme file in the repository, and will warn it can’t examine the contents of zip files. The module will return suggestions to improve the code if there are no comments, if libraries are loaded in lines further than 4 lines apart, if files that are loaded are not in the repository, and if hardcoded file paths are found.
+#'
+#' The regular expressions can miss information in code files, or falsely detect parts of the code as a fixed file path. Libraries might be loaded in one block, even if there are more than 4 intermittent lines. The package was validated internally on papers published in Psychological Science. There might be valid reasons why some loaded files can’t be shared, but the module can’t evaluate these reasons, and always gives a warning.
+#'
+#' If you want to extend the package to be able to download files from additional data repositories, or perform additional checks on code files, or make the checks work on other types of code files, reach out to the Metacheck development team.
+
+#'
+#'
 #' @keywords results
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
@@ -13,10 +22,7 @@
 #'
 #' @param paper a paper object or paperlist object
 #'
-#' @returns report text
-#'
-#' @examples
-#' module_run(psychsci[[233]], "code_check")
+#' @returns a list
 code_check <- function(paper) {
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
   # example with missing data files: paper <- psychsci[[221]]
@@ -254,8 +260,8 @@ code_check <- function(paper) {
     )
     summary_zip <- "A zip file was present in the repository."
   } else {
-    report_zip <- ""
-    summary_zip <- ""
+    report_zip <- NULL
+    summary_zip <- NULL
   }
 
   ## set up table of R file links ----
@@ -306,6 +312,16 @@ code_check <- function(paper) {
     minimum_comments = min(r_files$percentage_comment, na.rm = TRUE)
   )
 
+  # summary_text ----
+  # make a list
+  summary_text <- c(summary_missingfiles,
+                    summary_hardcoded,
+                    summary_library,
+                    summary_comments,
+                    summary_readme,
+                    summary_zip) |>
+    paste("\n    - ", x = _, collapse = "")
+
   # return a list ----
   list(
     table = r_files,
@@ -313,11 +329,6 @@ code_check <- function(paper) {
     na_replace = 0,
     traffic_light = tl,
     report = report,
-    summary_text = paste(summary_missingfiles,
-                         summary_hardcoded,
-                         summary_library,
-                         summary_comments,
-                         summary_readme,
-                         summary_zip)
+    summary_text = summary_text
   )
 }

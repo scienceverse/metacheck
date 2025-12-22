@@ -56,10 +56,6 @@ aspredicted_retrieve <- function(ap_url, id_col = 1, wait = 1) {
   # handle list of links
   if (is.data.frame(ap_url)) {
     table <- ap_url
-    # Remove blind and old public links
-    table <- table[!grepl("blind|publi", table$text, ignore.case = TRUE), ]
-    # Then remove duplicates
-    table <- dplyr::distinct(table, text, .keep_all = TRUE)
     id_col_name <- colnames(table[id_col])
     raw_urls <- table[[id_col]]
   } else {

@@ -408,16 +408,16 @@ server <- function(input, output, session) {
 
     modules <- c("prereg_check",
                  "power",
-                 "exact_p",
-                 "nonsig_p",
+                 "stat_p_exact",
+                 "stat_p_nonsig",
                  "marginal",
-                 "effect_size",
+                 "stat_effect_size",
                  "code_check",
-                 "statcheck",
-                 "reference_check",
-                 "replications",
-                 "retractionwatch",
-                 "pubpeer")
+                 "stat_check",
+                 "ref_doi_check",
+                 "ref_replication",
+                 "ref_retraction",
+                 "ref_pubpeer")
 
     update_report_modules(modules)
   })
@@ -521,7 +521,7 @@ server <- function(input, output, session) {
 
     addCssClass("mod_title", output$traffic_light)
     mod_table(output$table %||% data.frame())
-    mod_report(output$report %||% "")
+    mod_report(output$summary_text %||% "")
 
   })
 

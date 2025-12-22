@@ -69,7 +69,8 @@ Imports:
     rappdirs,
     bib2df,
     readxl,
-    bibtex
+    bibtex,
+    oddpub
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
 BugReports: https://github.com/scienceverse/metacheck/issues
@@ -78,3 +79,5 @@ Depends:
 LazyData: true
 LazyDataCompression: xz
 Config/Needs/website: rmarkdown
+Remotes:
+  quest-bih/oddpub

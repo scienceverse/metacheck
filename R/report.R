@@ -25,16 +25,16 @@
 report <- function(paper,
                    modules = c("prereg_check",
                                "power",
-                               "exact_p",
-                               "nonsig_p",
-                               "marginal",
-                               "effect_size",
                                "code_check",
-                               "statcheck",
-                               "reference_check",
-                               "replications",
-                               "retractionwatch",
-                               "pubpeer"),
+                               "stat_check",
+                               "stat_p_exact",
+                               "stat_p_nonsig",
+                               "stat_effect_size",
+                               "marginal",
+                               "ref_doi_check",
+                               "ref_replication",
+                               "ref_retraction",
+                               "ref_pubpeer"),
                    output_file = paste0(paper$name, "_report.", output_format),
                    output_format = c("qmd", "html", "pdf"),
                    args = list()) {
@@ -64,6 +64,8 @@ report <- function(paper,
 
     op <- tryCatch(do.call(module_run, mod_args),
            error = function(e) {
+             warning("Error in ", module)
+             prev <- mod_args$paper$prev_outputs
              report_items <- list(
                module = module,
                title = module,
@@ -73,8 +75,9 @@ report <- function(paper,
                summary_table = mod_args$paper$summary_table,
                traffic_light = "fail",
                paper = paper,
-               prev_outputs = mod_args$paper$prev_outputs
+               prev_outputs = prev
              )
+             class(report_items) <- "metacheck_module_output"
 
              return(report_items)
            })
@@ -106,7 +109,7 @@ report <- function(paper,
   doi_text <- ifelse(paper$info$doi == "", "",
                      sprintf("DOI: [%s](https://doi.org/%s)", paper$info$doi, paper$info$doi))
   qmd_header <- sprintf(rt_head,
-                        paper$info$title,
+                        gsub('"', '\\\\"', paper$info$title),
                         as.character(utils::packageVersion("metacheck")),
                         Sys.Date(),
                         doi_text)
@@ -187,7 +190,7 @@ report <- function(paper,
 #' @examples
 #' filename <- demoxml()
 #' paper <- read(filename)
-#' op <- module_run(paper, "exact_p")
+#' op <- module_run(paper, "stat_p_exact")
 #' module_report(op) |> cat()
 module_report <- function(module_output,
                           header = 3,
@@ -211,6 +214,24 @@ module_report <- function(module_output,
   report <- module_output$report %||% module_output$summary_text
   if (all(report == "")) report <- NULL
 
-  paste0(c(head, report), collapse = "\n\n")
+  # how it works
+  info <- module_info(module_output$module)
+
+  a <- info$author |>
+    gsub("\\s*\\(.*email\\{.+\\})", "", x = _)
+  authors <- if (length(a) < 3) {
+    paste(a, collapse = " and ")
+  } else {
+    paste0(paste(a[-n], collapse = ", "), " and ", a[n])
+  }
+  author_ack <- sprintf(
+    "This module was developed by %s",
+    authors
+  )
+
+  hiw <- c(info$description, info$details, author_ack) |>
+    collapse_section("How It Works", callout = "note")
+
+  paste0(c(head, report, hiw), collapse = "\n\n")
 }
 

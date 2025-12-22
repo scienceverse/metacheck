@@ -62,6 +62,18 @@ Report Created: {{< meta metacheck.report-created >}}
 %s <!-- doi, if exists -->
 :::
 
+[Metacheck](https://www.scienceverse.org/metacheck/) is a tool that screens scientific manuscripts and aims to identify potential issues for improvement, thereby guiding researchers towards best practices. Metacheck is developed to help researchers correctly and completely report statistical results, automatically retrieve possible relevant information about citations, and improve how researchers share data, code, and preregistrations.
+
+::: {.callout-tip title="Learn More" collapse="true"}
+
+Metacheck combines existing and new checks in a module-based tool. It mainly relies on text search, retrieving information from external sources through API’s or web-scraping, but it also incorporates tool that use machine learning classifiers or large language models. The use of LLM’s is always optional. The development of Metacheck is guided by our [values statement](https://docs.google.com/document/d/1bbIkgUaiz3fpTXAeTF3h-gsfhqWEBN_n6OBcbFLfXjw/edit?tab=t.0). 
+
+Metacheck often needs to balance false positives against false negatives, and prioritizes preventing false negatives. Like a spelling checker, which often highlights words that are not spelled incorrectly, Metacheck modules will contain false positives. We hope their rate is acceptable, given opportunities for improvement that Metacheck identifies. Modules are currently primarily validated on the psychological literature.
+
+Metacheck is under continuous development. Issues can be submitted [on Github](https://github.com/scienceverse/metacheck/issues), and suggestions for improvement or feedback can be sent to D.Lakens@tue.nl.
+
+:::
+
 ## Demo
 
 ```{r}

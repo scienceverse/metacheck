@@ -3,9 +3,14 @@
 #' @description
 #' This module checks for imprecisely reported p values. If p > .05 is detected, it warns for misinterpretations.
 #'
+#' @details
+#' The nonsignificant p-value check searches for regular expressions that match a predefined pattern. The module identifies all p-values in a manuscript and selects those that are not reported to be smaller than or equal to 0.05. It returns all sentences containing non-significant p-values.
+#'
+#' In the future, the Metacheck team aims to incorporate a machine learning classifier to only return sentences likely to contain misinterpretations. If you want to help to improve the module, reach out to the Metacheck development team.
+#'
+#'
 #' @keywords results
 #'
-#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
 #'
 #' @references
@@ -16,11 +21,8 @@
 #'
 #' @param paper a paper object or paperlist object
 #'
-#' @returns a list with table, summary, traffic light, and report text
-#'
-#' @examples
-#' module_run(psychsci[[49]], "nonsig_p")
-nonsig_p <- function(paper) {
+#' @returns a list
+stat_p_nonsig <- function(paper) {
   # detailed table of results ----
   res_p <- module_run(paper, "all_p_values")
   table <- res_p$table

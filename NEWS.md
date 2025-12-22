@@ -4,6 +4,8 @@
 * `scroll_table()` changed arguments. `height` is removed and `scroll_above` changed to `maxrows`. It not paginates above maxrows (default = 2), rather than scrolling within a fixed height. This is a more accessible solution, since scrolling is hard with touchscreens and it's often hard to copy text in a scroll window. We will continually improve this with further user feedback.
 * Fixed a bunch of small problems with modules and let the report render even with errors 
 * Updated the report template with light and dark themes (set to user preference)
+* The module `reference_check` is split into `ref_doi_check` and `ref_accuracy`.
+* Lots of modules got renamed so they have a consistent format.
 
 # metacheck 0.0.0.9062
 

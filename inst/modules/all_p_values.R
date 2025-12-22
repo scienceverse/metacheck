@@ -10,16 +10,12 @@
 #'
 #' This will catch most comparators like =<>~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.
 #'
-#' @author Lisa DeBruine (debruine@gmail.com)
+#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
 #'
 #' @param paper a paper object or paperlist object
-#' @param ... further arguments (not used)
 #'
 #' @returns a list
-#'
-#' @examples
-#' module_run(psychsci, "all_p_values")
-all_p_values <- function(paper, ...) {
+all_p_values <- function(paper) {
   # set up pattern ----
   operators <- c("=", "<", ">", "~",
                  "\u2248", # ~~

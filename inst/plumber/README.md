@@ -117,7 +117,7 @@ curl -X POST http://localhost:2005/paper/check \
 # Run specific modules
 curl -X POST http://localhost:2005/paper/check \
   -F "file=@paper.xml" \
-  -F "modules=exact_p,statcheck,osf_check"
+  -F "modules=stat_p_exact,stat_check"
 ```
 
 

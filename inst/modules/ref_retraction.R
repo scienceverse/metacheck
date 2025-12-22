@@ -4,7 +4,13 @@
 #' This module checks references and warns for citations in the RetractionWatch Database.
 #'
 #' @details
-#' If you run the reference_check module in a pipeline before this, it will use the enhanced DOI list from that module, otherwise it will only run on references with existing DOIs.
+#' The RetractionWatch Check module compares the reference list against studies in the RetractionWatch database based on the DOI. If a study in the database is found, a reminder is provided that the study was retracted, has an expression of concern, or a correction.
+#'
+#' The module requires that the reference has a DOI. If you run the ref_doi_check module in a pipeline before this, it will use the enhanced DOI list from that module, otherwise it will only run on references with existing DOIs.
+#'
+#' It is possible the authors are already aware that a study was retracted, but the module can't evaluate this.
+#'
+#' The database can be manually updated with the rw_update function. For more information, see https://gitlab.com/crossref/retraction-watch-data.
 #'
 #' @keywords reference
 #'
@@ -16,18 +22,19 @@
 #'
 #' @param paper a paper object or paperlist object
 #'
-#' @returns report text
-#'
-#' @examples
-#' module_run(psychsci[[129]], "retractionwatch")
-retractionwatch <- function(paper) {
+#' @returns a list
+ref_retraction <- function(paper) {
   # for testing: paper <- read(demoxml())
 
   # table ----
-  bib <- concat_tables(paper, "bib")[, c("id", "doi", "ref")]
-  better_doi <- get_prev_outputs("reference_check", "table")
-  if (!is.null(better_doi)) {
-    bib$doi <- better_doi$DOI
+  bib <- concat_tables(paper, "bib")[, c("id", "xref_id", "doi", "ref")]
+  missing_doi <- get_prev_outputs("ref_doi_check", "table")
+  if (!is.null(missing_doi)) {
+    md <- missing_doi[, c("id", "xref_id", "DOI")]
+    bib <- dplyr::left_join(bib, md, by = c("id", "xref_id"))
+    is_missing <- is.na(bib$doi)
+    bib$doi[is_missing] <- bib$DOI[is_missing]
+    bib$DOI <- NULL
   }
 
   # If there are no rows, return immediately

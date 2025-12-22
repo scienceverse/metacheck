@@ -16,40 +16,42 @@ modules <- c(
   # "all_p_values",
 
   # under development ----
-  # "causal_claims",
   # "miscitation",
   # "ref_consistency",
 
   # in reports ----
   "prereg_check",
+  "causal_claims",
+  "open_practices",
   "power",
-  "exact_p",
-  "nonsig_p",
+  "stat_p_exact",
+  "stat_p_nonsig",
   "marginal",
-  "effect_size",
+  "stat_effect_size",
   "code_check",
-  "statcheck",
-  "reference_check",
-  "replications",
-  "retractionwatch",
-  "pubpeer"
+  "stat_check",
+  "ref_doi_check",
+  "ref_accuracy",
+  "ref_replication",
+  "ref_retraction",
+  "ref_pubpeer"
 )
 
-# modules <- c("replications", "fail", "retractionwatch")
+# paper <- psychsci$`0956797621991137`
+# mo <- module_run(paper, "power")
 
-modules <- "nonsig_p"
 
 # generate reports for a sample of n papers
 n <- 1
 output <- "html"
 files <- seq_along(psychsci) |> sample(n) |>
   lapply(\(i) {
-    i = which(names(psychsci) == "0956797621991137")
+    #i = which(names(psychsci) == "09567976221139496")
     paper <- psychsci[[i]]
     print(paper$id)
 
     args <- list(
-      reference_check = list(crossref_min_score = 75)
+      doi_check = list(crossref_min_score = 50)
     )
 
     report(paper,

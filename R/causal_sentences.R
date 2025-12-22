@@ -71,7 +71,18 @@ causal_relations <- function(sentence,
   base   <- "https://lakens-causal-sentences.hf.space"
   prefix <- "gradio_api/call"
   api    <- "/predict"
-  
+
+  # ---- handle empty vectors gracefully ----
+  if (length(sentence) == 0 || all(trimws(sentence) == "")) {
+    empty <- data.frame(
+      sentence = character(0),
+      causal = logical(0),
+      cause = character(0),
+      effect = character(0)
+    )
+    return(empty)
+  }
+
   # ---- Parameter validation (targeted, helpful messages) ----
   if (!is.character(sentence) || length(sentence) < 1L) {
     stop("`sentence` must be a non-empty character vector.")
@@ -94,27 +105,27 @@ causal_relations <- function(sentence,
   if (!is.logical(verbose) || length(verbose) != 1L) {
     stop("`verbose` must be a single logical value (TRUE/FALSE).")
   }
-  
+
   # ---- Helpers ----
   is_json_text <- function(s) {
     is.character(s) && length(s) == 1L && grepl("^[\\[{]", s)
   }
-  
+
   post_enqueue <- function(one_sentence) {
     payload <- list(data = list(one_sentence, rel_mode, rel_threshold, cause_decision))
     body    <- jsonlite::toJSON(payload, auto_unbox = TRUE)
     url_post <- paste0(base, "/", prefix, api)
-    
+
     h_post <- curl::new_handle()
     curl::handle_setheaders(h_post,
                             "Content-Type" = "application/json",
                             "User-Agent"   = "causal_relations/0.1 (R curl/jsonlite)")
     curl::handle_setopt(h_post, postfields = body)
-    
+
     if (verbose) {
       message(sprintf("[POST] %s", url_post))
     }
-    
+
     resp <- curl::curl_fetch_memory(url_post, handle = h_post)
     if (verbose) {
       message(sprintf("[POST] HTTP %s, %s bytes", resp$status_code, length(resp$content)))
@@ -125,7 +136,7 @@ causal_relations <- function(sentence,
         resp$status_code, url_post, rawToChar(resp$content)
       ))
     }
-    
+
     # Sanity: Content-Type is often application/json
     # (not strictly required here because we parse by content)
     j <- jsonlite::fromJSON(rawToChar(resp$content), simplifyVector = TRUE)
@@ -142,17 +153,17 @@ causal_relations <- function(sentence,
     }
     event_id
   }
-  
+
   get_until_complete <- function(event_id) {
     url_get <- paste0(base, "/", prefix, api, "/", event_id)
     complete_payload <- NULL
     buf <- raw(0)
     last_event <- NULL
-    
+
     if (verbose) {
       message(sprintf("[GET/SSE] %s", url_get))
     }
-    
+
     cb <- function(x) {
       buf <<- c(buf, x)
       s <- rawToChar(buf)
@@ -176,16 +187,16 @@ causal_relations <- function(sentence,
       }
       1L  # continue streaming
     }
-    
+
     h_get <- curl::new_handle()
     curl::handle_setopt(h_get,
                         timeout = timeout,
                         # optional: followlocation
                         # followlocation = TRUE
                         useragent = "causal_relations/0.1 (R curl/jsonlite)")
-    
+
     curl::curl_fetch_stream(url_get, cb, handle = h_get)
-    
+
     if (is.null(complete_payload)) {
       stop(sprintf(
         "SSE timed out after %s seconds without `event: complete`.\nURL: %s\nEVENT_ID: %s",
@@ -194,7 +205,7 @@ causal_relations <- function(sentence,
     }
     complete_payload
   }
-  
+
   unwrap_final_json <- function(complete_payload) {
     # Try ["...JSON..."] form first
     decoded <- tryCatch(jsonlite::fromJSON(complete_payload, simplifyVector = TRUE),
@@ -208,7 +219,7 @@ causal_relations <- function(sentence,
     }
     stop("Unexpected SSE payload format; cannot unwrap to final JSON.")
   }
-  
+
   parse_relations_df <- function(final_json_text, original_sentence) {
     x <- jsonlite::fromJSON(final_json_text, simplifyVector = FALSE)
     if (!is.list(x)) {
@@ -256,7 +267,7 @@ causal_relations <- function(sentence,
     }
     df
   }
-  
+
   # ---- Batch: loop over sentences, bind rows ----
   all_rows <- list()
   k <- 1L
@@ -271,7 +282,7 @@ causal_relations <- function(sentence,
     all_rows[[k]] <- df_one
     k <- k + 1L
   }
-  
+
   if (length(all_rows) == 0L) {
     out <- data.frame(
       sentence = character(),
@@ -283,13 +294,13 @@ causal_relations <- function(sentence,
   } else {
     out <- do.call(rbind, all_rows)
   }
-  
+
   # Deterministic ordering: by input order, then cause/effect
   if (nrow(out) > 0L) {
     ord <- order(match(out$sentence, sentence), out$cause, out$effect, na.last = TRUE)
     out <- out[ord, , drop = FALSE]
     rownames(out) <- NULL
   }
-  
+
   out
 }

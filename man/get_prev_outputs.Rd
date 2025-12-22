@@ -4,12 +4,14 @@
 \alias{get_prev_outputs}
 \title{Get Previous Outputs}
 \usage{
-get_prev_outputs(module, item)
+get_prev_outputs(module, item, parent_n = 2)
 }
 \arguments{
 \item{module}{the name of a previously run module}
 
 \item{item}{the name of the list item to extract}
+
+\item{parent_n}{the number of parents to traverse up the chain. Noramlly 2 if you are calling this from a module function, but maybe more if you are calling it from a helper function.}
 }
 \value{
 the extracted list item, or NULL if not found
@@ -18,8 +20,8 @@ the extracted list item, or NULL if not found
 A helper for creating modules. Checks for previous module outputs in a chain and returns the named list item if it exists in any parent environment.
 }
 \examples{
-# .prev_outputs__ is usually created by `module_run()`
-.prev_outputs__ <- list(mod_1 = list(a = 1, b = 2))
+# .__mc__prev_outputs is usually created by `module_run()`
+.__mc__prev_outputs <- list(mod_1 = list(a = 1, b = 2))
 f <- function(item) { get_prev_outputs("mod_1", item) }
 f("a")
 f("d")

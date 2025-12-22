@@ -14,7 +14,7 @@ module_run <- function(paper, module, ...) {
   info <- module_info(module_path)
 
   # handle metacheck_module_output in pipeline
-  .prev_outputs__ <- list()
+  .__mc__prev_outputs <- list()
   if (inherits(paper, "metacheck_module_output")) {
     prev <- paper
 
@@ -24,10 +24,10 @@ module_run <- function(paper, module, ...) {
     summary_table <- prev$summary_table
     prev$summary_table <- NULL
 
-    # get or set up .prev_outputs__
-    .prev_outputs__ <- prev$prev_outputs %||% list()
+    # get or set up .__mc__prev_outputs
+    .__mc__prev_outputs <- prev$prev_outputs %||% list()
     prev$prev_outputs <- NULL
-    .prev_outputs__[[prev$module]] <- prev
+    .__mc__prev_outputs[[prev$module]] <- prev
   } else if (is_paper_list(paper)) {
     summary_table <- data.frame(id = names(paper))
   } else {
@@ -36,8 +36,9 @@ module_run <- function(paper, module, ...) {
 
   # make previous outputs available to module code
   # TODO: check if there is a better way
-  assign(".prev_outputs__", .prev_outputs__, .GlobalEnv)
-  on.exit(rm(".prev_outputs__", envir = .GlobalEnv))
+  # module_env <- new.env()
+  #assign(".__mc__prev_outputs", .__mc__prev_outputs, module_env)
+  #on.exit(rm(".__mc__prev_outputs", envir = module_env))
 
   # load required libraries
   for (pkg in info[["import"]]) {
@@ -92,7 +93,8 @@ module_run <- function(paper, module, ...) {
   results$report <- results$report %||% results$summary_text %||% ""
 
   # process summary table
-  if (!is.null(results$summary_table)) {
+  if (!is.null(results$summary_table) &&
+      "id" %in% names(results$summary_table)) {
     suffix <- module_path |> basename() |>
       sub("\\.(r|R)$", "", x = _,) |>
       paste0(".", x = _)
@@ -126,7 +128,7 @@ module_run <- function(paper, module, ...) {
     summary_text = results$summary_text,
     summary_table = summary_table,
     paper = paper,
-    prev_outputs = .prev_outputs__
+    prev_outputs = .__mc__prev_outputs
   )
 
   # add any extra results
@@ -389,32 +391,19 @@ module_template <- function(module_name, path = "./modules") {
 #'
 #' @param module the name of a previously run module
 #' @param item the name of the list item to extract
+#' @param parent_n the number of parents to traverse up the chain. Noramlly 2 if you are calling this from a module function, but maybe more if you are calling it from a helper function.
 #'
 #' @returns the extracted list item, or NULL if not found
 #' @export
 #'
 #' @examples
-#' # .prev_outputs__ is usually created by `module_run()`
-#' .prev_outputs__ <- list(mod_1 = list(a = 1, b = 2))
+#' # .__mc__prev_outputs is usually created by `module_run()`
+#' .__mc__prev_outputs <- list(mod_1 = list(a = 1, b = 2))
 #' f <- function(item) { get_prev_outputs("mod_1", item) }
 #' f("a")
 #' f("d")
-get_prev_outputs <- function(module, item) {
-  obj <- ".prev_outputs__"
-  # exists <- vapply(
-  #   sys.parents(),
-  #   function(i) exists(obj, envir = sys.frame(i)),
-  #   logical(1)
-  # )
-  #
-  # if (!any(exists)) return(NULL)
-  #
-  # i <- which(exists)[[1]]
-  # prev <- get(obj, envir = sys.frame(i))
-
-  if (!exists(obj, envir = .GlobalEnv, inherits = FALSE)) {
-    return(NULL)
-  }
-  prev <- get(obj, envir = .GlobalEnv)
+get_prev_outputs <- function(module, item, parent_n = 2) {
+  obj <- ".__mc__prev_outputs"
+  prev <- get0(obj, parent.frame(parent_n))
   prev[[module]][[item]]
 }

@@ -1,21 +1,25 @@
 #' Effect Sizes in t-tests and F-tests
 #'
 #' @description
-#' Detect t-tests and F-tests with missing effect sizes
+#' The Effect Size module checks for effect sizes in t-tests and F-tests.
+#'
+#' @details
+#' The Effect Size check searches for regular expressions that match a predefined pattern. The module was validated on APA reported statistical tests, and might miss effect sizes that were reported in other reporting styles. It was validated by the Metacheck team on papers published in Psychological Science.
+#'
+#' If you want to extend the package to detect effect sizes for additional tests, reach out to the Metacheck development team.
 #'
 #' @keywords results
 #'
-#' @author Daniel Lakens
-#' @author Lisa DeBruine
+#' @author Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
 #'
 #' @import dplyr
 #' @import tidyr
 #'
 #' @param paper a paper object or paperlist object
-#' @param ... further arguments (not used)
 #'
-#' @returns a list with table, summary, traffic light, and report text
-effect_size <- function(paper, ...) {
+#' @returns a list
+stat_effect_size <- function(paper) {
   # paper <- psychsci[[9]] # to test
 
   # Narrow down to sentences that could contain stats

@@ -95,7 +95,7 @@ test_that("crossref_query", {
 
   ref <- "DeBruine, L. (2027) I haven't written this paper. Journal of Journals."
   obs <- crossref_query(ref, min_score = 50)
-  expect_equal(obs$doi, NA_character_)
+  expect_equal(obs$DOI, NA_character_)
   expect_equal(obs$ref, ref)
 
   # from bibentry ref

@@ -12,7 +12,7 @@ test_that("defaults", {
   paper <- demoxml() |> read()
   # skip modules that require external APIs
   modules <- c(
-    "exact_p", "marginal", "effect_size", "statcheck"
+    "stat_p_exact", "marginal", "stat_effect_size", "stat_check"
   )
 
   # qmd
@@ -56,7 +56,7 @@ test_that("defaults", {
 
 test_that("report pass args", {
   paper <- demoxml() |> read()
-  modules <- c("exact_p", "modules/no_error.R")
+  modules <- c("stat_p_exact", "modules/no_error.R")
   tf <- tempfile(fileext = ".qmd")
 
   args <- list(
@@ -85,7 +85,7 @@ test_that("detected", {
   paper <- demoxml() |> read()
   # skip modules that require osf.api
   modules <- c(
-    "exact_p", "marginal", "effect_size", "statcheck"
+    "stat_p_exact", "marginal", "stat_effect_size", "stat_check"
   )
 
   # add a retracted paper
@@ -164,7 +164,7 @@ test_that("module_report", {
   expect_error(module_report())
 
   # set up module output
-  module_output <- module_run(psychsci[[4]], "exact_p")
+  module_output <- module_run(psychsci[[4]], "stat_p_exact")
 
   report <- module_report(module_output)
   expect_true(grepl("^### Exact P-Values \\{\\.red\\}", report))
