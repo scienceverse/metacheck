@@ -5,7 +5,7 @@
 #'
 #' @keywords reference
 #'
-#' @author Lisa DeBruine
+#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
 #'
 #' @import dplyr
 #' @importFrom tidyr pivot_wider
@@ -13,10 +13,7 @@
 #' @param paper a paper object or paperlist object
 #' @param ... further arguments (not used)
 #'
-#' @returns a list with table, traffic light, and report text
-#'
-#' @examples
-#' module_run(psychsci, "ref_consistency")
+#' @returns a list
 ref_consistency <- function(paper) {
   # detailed table of results ----
   bibs <- concat_tables(paper, "bib")

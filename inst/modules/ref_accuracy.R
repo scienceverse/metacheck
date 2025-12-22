@@ -1,0 +1,155 @@
+#' Reference Accuracy
+#'
+#' @description
+#' This module checks references for mismatches with CrossRef.
+#'
+#' @keywords reference
+#'
+#' @author Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
+#'
+#' @import dplyr
+#'
+#' @param paper a paper object or paperlist object
+#'
+#' @returns report list
+ref_accuracy <- function(paper) {
+  # for testing: paper <- psychsci[[109]]
+
+  # table ----
+  bib <- concat_tables(paper, "bib")
+
+  # If there are no rows, return immediately
+  if (nrow(bib) == 0) {
+    norefs <- list(
+      traffic_light = "na",
+      summary_text = "We found no references"
+    )
+    return(norefs)
+  }
+
+  # TODO: get prev from ref_check first and don't re-check those
+
+
+  # get papers with DOIs
+  bib <- bib[!is.na(bib$doi), ]
+  table <- crossref_doi(bib$doi)
+
+  table$ref <- format_ref(bib$ref)
+  table$id <- bib$id
+  table$xref_id <- bib$xref_id
+
+  # missing references
+  table$ref_not_found <- !is.na(table$DOI) & is.na(table$type)
+
+  ## other mismatches ----
+
+  # clean up text to prevent irrelevant mismatches
+  clean <- \(x) {
+    tolower(x) |>
+      gsub("\\s+", " ", x = _) |>
+      gsub("[\u2018\u2019\u201A\u201B]", "'", x = _) |>
+      gsub("[\u201C\u201D\u201E\u201F]", '"', x = _) |>
+      gsub("\\.$", "", x = _)
+  }
+
+  table$title_mismatch <- {
+    bib_title <- clean(bib$title)
+    cr_title <- clean(table$title)
+    pre_bib_title <- strsplit(bib_title, ":") |> sapply(`[[`, 1)
+    pre_cr_title <- strsplit(cr_title, ":") |> sapply(`[[`, 1)
+
+    !is.na(bib_title) & !is.na(cr_title) &
+      bib_title != cr_title &
+      pre_bib_title != pre_cr_title
+  }
+
+  table$author_mismatch <- {
+    sapply(seq_along(table$author), \(i) {
+      if (is.null(table$author[[i]]) || nrow(table$author[[i]]) == 0) return(FALSE)
+      cr_auth <- clean(table$author[[i]]$family)
+      bib_auth <- clean(bib$authors[[i]])
+      in_auth <- sapply(cr_auth, grepl, x = bib_auth)
+
+      !all(in_auth)
+    })
+  }
+
+  # remove unchecked, don't do earlier for matching with bib
+  table <- table[!is.na(table$DOI), ]
+
+  # traffic_light ----
+  tl <- "green"
+  if (any(table$ref_not_found) ||
+      any(table$title_mismatch) ||
+      any(table$author_mismatch)) {
+    tl <- "yellow"
+  }
+
+  # summary_table ----
+  summary_table <- dplyr::summarise(table, .by = id,
+                                    refs_checked = sum(!is.na(DOI)),
+                                    refs_not_found = sum(ref_not_found),
+                                    title_mismatch = sum(title_mismatch),
+                                    author_mismatch = sum(author_mismatch)
+                                    )
+
+  # summary_text
+  summary_text <- sprintf(
+    "We checked %d reference%s with DOIs in CrossRef and found  matches for %d.",
+    nrow(table),
+    nrow(table) |> plural(),
+    sum(!table$ref_not_found)
+  )
+
+  guidance <- "Double check any references listed in the tables below. This tool has a high false positive rate. Mismatches may be because of problems with our parsing of references from your PDF (we're working on improving this), incorrect formatting in CrossRef, or minor differences in punctuation."
+
+  if (tl == "green") guidance <- ""
+
+  # report ----
+
+  ## unfound table ----
+  unfound_table <- table[table$ref_not_found, c("ref"), drop = FALSE]
+  names(unfound_table) <- c("Unfound Reference")
+
+  ## title mismatches ----
+  title_table <- table[table$title_mismatch, c("ref", "title")]
+  if (nrow(title_table)) {
+    title_table$orig <- bib$title[table$title_mismatch]
+    title_table <- title_table[, c("orig", "title", "ref")]
+    names(title_table) <- c("Original Title", "CrossRef Title", "Reference")
+  }
+
+  ## author mismatches ----
+  author_table <- table[table$author_mismatch, c("ref", "author")]
+  if (nrow(author_table)) {
+    author_table$orig <- bib$authors[table$author_mismatch]
+    author_table$cr <- sapply(author_table$author, \(a) {
+      paste(substr(a$given, 1, 1), a$family, collapse = ", ")
+    })
+    author_table <- author_table[, c("orig", "cr", "ref")]
+    names(author_table) <- c("Original Authors", "CrossRef Authors", "Reference")
+  }
+
+
+  report <- c(
+    summary_text,
+    guidance,
+    scroll_table(unfound_table, 5),
+    scroll_table(title_table, 5),
+    scroll_table(author_table, 5)
+  )
+
+
+  # return a list ----
+  list(
+    table = table,
+    summary_table = summary_table,
+    na_replace = 0,
+    traffic_light = tl,
+    report = report,
+    summary_text = summary_text
+  )
+}
+
+

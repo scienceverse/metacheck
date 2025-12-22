@@ -1,18 +1,9 @@
-test_that("exists", {
+test_that("aspredicted_links", {
   expect_true(is.function(metacheck::aspredicted_links))
   expect_no_error(helplist <- help(aspredicted_links, metacheck))
-})
 
-test_that("errors", {
   expect_error(aspredicted_links(bad_arg))
-})
 
-httptest::with_mock_api({
-
-verbose(FALSE)
-# httptest::start_capturing()
-
-test_that("aspredicted_links", {
   links <- aspredicted_links(psychsci)
   expect_equal(names(links)[[1]], "text")
   expect_true(all(grepl("^https://aspredicted\\.org", links$text)))
@@ -50,8 +41,12 @@ test_that("aspredicted_links", {
   expect_true(any(grepl("/3kq9y", links$text)))
 })
 
+#httptest::with_mock_api({
+# httptest::start_capturing()
+
 test_that("aspredicted_retrieve", {
   skip_on_covr()
+  skip_if_offline("aspredicted.org")
 
   pdf <- "https://aspredicted.org/ve2qn.pdf"
   blind <- "https://aspredicted.org/blind.php?x=nq4xa3"
@@ -62,12 +57,18 @@ test_that("aspredicted_retrieve", {
   exp_auth <- "This pre-registration is currently anonymous to enable blind peer-review.\nIt has one author."
   expect_equal(info$AP_authors, exp_auth)
 
+  # single pdf
+  info <- aspredicted_retrieve(pdf)
+  expect_equal(info$ap_url, pdf)
+  exp <- "How infants encode unexpected events: a SSVEP study"
+  expect_equal(info$AP_title, exp)
+
   # multiple links in a table
-  # links <- data.frame(link = c(pdf, blind))
-  # time1 <- system.time( info <- aspredicted_retrieve(links)) DANIEL THINKS THESE SHOULD NEVER HAVE WORKED
-  # time3 <- system.time( info <- aspredicted_retrieve(links, wait = 3))
-  # expect_true(time1[["elapsed"]] > 2)
-  # expect_true(time3[["elapsed"]] > 6)
+  ap_url <- data.frame(link = c(pdf, blind))
+  time1 <- system.time( info <- aspredicted_retrieve(ap_url))
+  time3 <- system.time( info <- aspredicted_retrieve(ap_url, wait = 3))
+  expect_true(time1[["elapsed"]] > 2)
+  expect_true(time3[["elapsed"]] > 6)
 })
 
 test_that("aspredicted_info", {
@@ -113,7 +114,7 @@ test_that("aspredicted_info", {
   expect_equal(info$ap_url, blind)
   expect_equal(info$AP_title, title)
   expect_equal(info$AP_authors, authors)
-  expect_equal(info$AP_created, "2021/06/14 - 02:17 AM (PT)")
+  expect_equal(info$AP_created, "2021/06/14 02:17 (PT)")
   expect_equal(info$AP_data, "No, no data have been collected for this study yet.")
   expect_equal(info$AP_hypotheses, hypo)
   expect_equal(info$AP_key_dv, key_dv)
@@ -126,6 +127,4 @@ test_that("aspredicted_info", {
 })
 
 #httptest::stop_capturing()
-verbose(TRUE)
-
-}) # end httptest::with_mock_api
+#}) # end httptest::with_mock_api

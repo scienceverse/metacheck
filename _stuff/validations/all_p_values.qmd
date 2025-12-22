@@ -121,7 +121,7 @@ all_p$table |>
   unique()
 ```
 
-## exact_p
+## stat_p_exact
 
 Run code from module to get full table
 

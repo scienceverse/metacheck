@@ -12,11 +12,8 @@
 #' @param paper a paper object or paperlist object
 #' @param ... further arguments (not used)
 #'
-#' @returns a list with table, summary, traffic light, and report text
-#'
-#' @examples
-#' module_run(psychsci, "exact_p")
-exact_p <- function(paper, ...) {
+#' @returns a list
+stat_p_exact <- function(paper, ...) {
   # table ----
   p <- module_run(paper, "all_p_values")$table
 

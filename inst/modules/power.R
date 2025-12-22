@@ -5,8 +5,8 @@
 #'
 #' @keywords method
 #'
-#' @author Lisa DeBruine (\email{debruine@gmail.com})
-#' @author Daniel Lakens (\email{lakens@gmail.com})
+#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
+#' @author Daniel Lakens (\email{D.Lakens@tue.nl})
 #' @author Cristian Mesquida
 #'
 #' @import tidyr
@@ -15,10 +15,7 @@
 #' @param seed a seed for the LLM
 #' @param ... further arguments (not used)
 #'
-#' @returns a list with table, traffic light, and report text
-#'
-#' @examples
-#' module_run(psychsci, "power")
+#' @returns a list
 power <- function(paper, seed = 8675309) {
   # detailed table of results ----
   table <- paper |>

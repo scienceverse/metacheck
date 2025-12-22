@@ -3,25 +3,27 @@
 #' @description
 #' Aims to identify the presence of random assignment, and lists sentences that make causal claims in title or abstract.
 #'
+#' @details
+#' The Randomization and Causal Claims Check first uses regular expressions to check whether the manuscript contains a statement about randomization to conditions. Subsequently, it sends the title and abstract to a [machine learning classifier developed by Rasoul Norouzi](https://github.com/rasoulnorouzi/causal_relation_miner) that runs on [HuggingFace](https://huggingface.co/spaces/lakens/causal_sentences). Causal statements are identified. Researchers are recommended to double check if causal statements are warranted, especially if no sentences describing randomization were detected.
+#'
+#' The regular expressions can miss statements about randomization, or incorrectly assume there is a sentence describing randomization. The module can’t evaluate if the causal statements that are identified are warranted or not, and it only reminds users to double-check.
+#'
+#' If you want to improve the detection of sentences describing randomization, or otherwise improve the module, reach out to the Metacheck development team.
+#'
+#'
 #' @keywords method
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
 #'
 #' @param paper a paper object or paperlist object
 #'
-#' @returns a list with table, traffic light, and report text
-#'
-#' @examples
-#' paper <- psychsci[[100]]
-#' module_run(paper, "causal_claims")
+#' @returns a list
 causal_claims <- function(paper) {
-  # First we examine if there is random assignment to conditions. In this case, causal claims should be fine.
+  # randomisation ----
 
   random_sentences <- search_text(paper, "random")
 
-  ## Create a subset of random_sentences that matches the INCLUDE regex and does NOT match the EXCLUDE regex.
-
-  ## 1) Define the two patterns (case-insensitive, free-spacing)
+  ## define match patterns ----
   include_re <- "(?ix)(
     \\brandom(?:ly)?\\s+assign(?:ed|ment)\\b
   | \\bassign(?:ed)?\\s+at\\s+random\\b
@@ -64,111 +66,161 @@ causal_claims <- function(paper) {
   | \\bsuccessful\\s+random\\s+assignment\\b
 )"
 
-  ## 2) Compute logical masks (treat NA text as non-matches)
-  inc <- !is.na(random_sentences$text) & grepl(include_re, random_sentences$text, perl = TRUE)
-  exc <- !is.na(random_sentences$text) & grepl(exclude_re, random_sentences$text, perl = TRUE)
-
-  ## 3) Subset rows that are included but not excluded
+  ## get matches ----
+  inc <- grepl(include_re, random_sentences$text, perl = TRUE)
+  exc <- grepl(exclude_re, random_sentences$text, perl = TRUE)
   random_assignment_subset <- random_sentences[ inc & !exc, , drop = FALSE ]
-  "Procedures employed to help minimize potential bias due to nonrandomization
-  (e.g., matching, propensity score matching)"
+
+  ## summary_text for rand ----
+  ## report for rand ----
   if (nrow(random_assignment_subset) == 0) {
-    summary_randomization <- "Metacheck's text matching algorithm did not identify sentences describing randomization. If random assignment was present, please clearly report this (e.g., participants were randomly assigned to...). If this was a non-randomized study, the journal article reporting standards (JARS) ask that you describe the following: \n\nProcedures employed to help minimize potential bias due to nonrandomization (e.g., matching, propensity score matching)."
-    summary_text_randomization <- "No sentences describing randomization were identified."
-  } else {
+    summary_text_randomization <- "We identified no sentences describing randomization."
 
-    summary_randomization <- sprintf(
-      "%s sentences describing randomization were identified. If this was a study that contained random assignment to conditions, the journal article reporting standards (JARS) ask that you describe the following in at least one of the sentences in the table below:\n\n\
-1. Random assignment method: Procedure used to generate the random assignment sequence, including details of any restriction (e.g., blocking, stratification)\n\
-2. Random assignment concealment: Whether sequence was concealed until interventions were assigned\n\
-3. Random assignment implementation: Who generated the assignment sequence, who enrolled participants, who assigned participants to groups",
-      nrow(random_assignment_subset)
+    report_randomization <- c(
+      "Metacheck's text matching algorithm did not identify sentences describing randomization. If random assignment was present, please clearly report this (e.g., participants were randomly assigned to...). If this was a non-randomized study, the journal article reporting standards (JARS) ask that you describe the following:",
+      "- Procedures employed to help minimize potential bias due to nonrandomization (e.g., matching, propensity score matching)."
     )
-    summary_text_randomization <- sprintf("%s sentences describing randomization were identified.", nrow(random_assignment_subset))
+  } else {
+    summary_text_randomization <- sprintf(
+      "We identified %s sentence%s describing randomization.",
+      nrow(random_assignment_subset),
+      nrow(random_assignment_subset) |> plural()
+    )
+
+    report_randomization <- c(
+      summary_text_randomization,
+      scroll_table(random_assignment_subset$text),
+      "If this was a study that contained random assignment to conditions, the journal article reporting standards (JARS) ask that you describe the following:",
+      "1. Random assignment method: Procedure used to generate the random assignment sequence, including details of any restriction (e.g., blocking, stratification)",
+      "2. Random assignment concealment: Whether sequence was concealed until interventions were assigned",
+      "3. Random assignment implementation: Who generated the assignment sequence, who enrolled participants, who assigned participants to groups"
+    )
   }
 
-  report_randomization <- c(summary_randomization,
-                            scroll_table(random_assignment_subset[, c("text")]))
 
-
-  # detailed table of results ----
-  table <- search_text(paper, pattern = ".*", section = "abstract", return = "sentence")
-  # Get the inference
-  causal_classification <- causal_relations(table$text)
-  # And for the title
+  # causal claims ----
+  table <- search_text(paper, pattern = ".*", section = "abstract")
   causal_title <- causal_relations(paper$info$title)
-  # Remove duplicates based on 'sentence' as the inference returns multiple rows per sentence if there are mutiple causal aspects
-  causal_classification <- causal_classification[!duplicated(causal_classification$sentence), ]
-  # Bind the inference back to the id
-  causal_classification <- cbind(table, causal_classification)
-  # Keep only causal sentences
-  causal_classification <- causal_classification[causal_classification$causal == TRUE, ]
+  causal_abstract <- causal_relations(table$text)
 
-  # summary output for paperlists ----
-  if (nrow(causal_classification) == 0) {
-    # Create the data frame directly
-    summary_table <- data.frame(
-      id = table$id[1],
-      causal = 0L,
-      stringsAsFactors = FALSE
-    )
-  } else {
-    summary_table <- dplyr::count(causal_classification, id, name = "causal", .drop = FALSE)
-  }
+  ## summary_table ----
+  summary_table <-  causal_abstract |>
+    dplyr::left_join(table, by = c(sentence = "text")) |>
+    dplyr::summarise(causal = sum(causal), .by = "id")
+  # filter after so join doesn't fail
+  causal_abstract <- dplyr::filter(causal_abstract, causal)
 
-  # report
-  if (isTRUE(all(causal_title$causal == FALSE))) {
-    summary_causal_title <- "No causal claims were observed in the title."
+  ## causal title ----
+  if (!any(causal_title$causal)) {
     summary_text_title <- "No causal claims were observed in the title."
-    report_causal_title <- ""
+    report_causal_title <- summary_text_title
   } else {
-    summary_causal_title <- "Causal claims detected in the title: "
-    summary_text_title <- "Causal claims detected in the title."
+    summary_text_title <- "Causal claims were detected in the title."
     report_causal_title <- c(
-    summary_causal_title,
-    scroll_table(causal_title[, c("sentence", "cause", "effect")]))
+      summary_text_title,
+      scroll_table(causal_title[, c("sentence", "cause", "effect")]), 1)
   }
 
-  # report
-  # If all classifications are false
-  if (isTRUE(all(causal_classification$causal == FALSE))) {
-    summary_causal_abstract <- "No causal claims were observed in the abstract,"
+  ## causal abstract ----
+  if (!any(causal_abstract$causal)) {
     summary_text_abstract <- "No causal claims were observed in the abstract."
+    report_text_causal_abstract <- ""
   } else {
+    summary_text_abstract <- "Causal claims were detected in the abstract."
+
     if (nrow(random_assignment_subset) == 0) {
-      summary_causal_abstract <- "Causal claims detected in the abstract. As no random assignment to conditions was detected in the text, carefully check if the sentences below are warranted, given the study design. If random assignment was present, please clearly report this."
+      report_text_causal_abstract <- "As no random assignment to conditions was detected in the text, carefully check if the sentences below are warranted, given the study design. If random assignment was present, please clearly report this."
     } else {
-    summary_causal_abstract <- "Causal claims detected in the abstract. Random assignment was detected, so these causal claims might be warranted, but it is always prudent to double-check."
+      report_text_causal_abstract <- "Random assignment was detected, so these causal claims might be warranted, but it is always prudent to double-check."
     }
-    summary_text_abstract <- "Causal claims detected in the abstract."
+
   }
   # Create the report. We only select some columns for the printed report
   report_causal_abstract <- c(
-    summary_causal_abstract,
-    scroll_table(causal_classification[, c("sentence", "cause", "effect")])
+    summary_text_abstract,
+    scroll_table(causal_abstract[, c("sentence", "cause", "effect")], 1),
+    report_text_causal_abstract
   )
 
-  report_text = "Journal Article Reporting Standards require details about randomization procedures, or how possible bias due to non-randomization is mitigated. This information is often not reported. Furthermore, researchers sometimes make causal claims that are not warranted, for example because there was no random assignment to conditions. This module checks how (non)randomization is reported, and checks for causal claims in the title and abstract. Researchers are asked to double check whether this information is reported completely and correctly. \n"
+  report_text <- "Journal Article Reporting Standards require details about randomization procedures, or how possible bias due to non-randomization is mitigated. This information is often not reported. Furthermore, researchers sometimes make causal claims that are not warranted, for example because there was no random assignment to conditions. This module checks how (non)randomization is reported, and checks for causal claims in the title and abstract. Researchers are asked to double check whether this information is reported completely and correctly."
 
   guidance <- c(
     "For advice on how to make causal claims, and when not to, see:",
-    "Antonakis, J., Bendahan, S., Jacquart, P., & Lalive, R. (2010). On making causal claims: A review and recommendations. The Leadership Quarterly, 21(6), 1086–1120. <a href='https://doi.org/10.1016/j.leaqua.2010.10.010' target='_blank'>https://doi.org/10.1016/j.leaqua.2010.10.010</a>",
-    "Grosz, M. P., Rohrer, J. M., & Thoemmes, F. (2020). The Taboo Against Explicit Causal Inference in Nonexperimental Psychology. Perspectives on Psychological Science, 15(5), 1243–1255. <a href='https://doi.org/10.1177/1745691620921521' target='_blank'>https://doi.org/10.1177/1745691620921521</a>",
-    "For the APA journal articles reporting standards, see <a href='https://apastyle.apa.org/jars' target='_blank'>https://apastyle.apa.org/jars</a>"
-    )
+    format_ref(Antonakis2010),
+    format_ref(Grosz2020),
+    "For the APA journal articles reporting standards, see <https://apastyle.apa.org/jars>"
+  )
 
-  # determine the traffic light ----
-  tl <- ifelse((isTRUE(all(causal_classification$causal == FALSE)))&(isTRUE(all(causal_title$causal == FALSE))), "green", "info")
+  # traffic light ----
+  if (any(causal_title$causal) | any(causal_abstract$causal)) {
+    if (nrow(random_assignment_subset) == 0) {
+      tl <- "yellow" # causal language without random assignment
+    } else {
+      tl <- "green" # causal language with random assignment
+    }
+  } else {
+    tl <- "green" # no causal language
+  }
 
-  report <- c(report_text, "#### Randomization", report_randomization, "#### Causal Claims", report_causal_title, report_causal_abstract, collapse_section(guidance))
+  # report ----
+  report <- c(report_text,
+              "#### Randomization",
+              report_randomization,
+              "#### Causal Claims",
+              report_causal_title,
+              report_causal_abstract,
+              collapse_section(guidance)
+            )
+
+  # summary_text ----
+  # make a list to show
+  summary_text <- c(summary_text_randomization,
+    summary_text_title,
+    summary_text_abstract) |>
+    paste("\n    - ", x = _, collapse = "")
 
   # return a list ----
   list(
-    table = causal_classification,
+    table = causal_abstract,
     summary_table = summary_table,
     na_replace = 0,
     traffic_light = tl,
     report = report,
-    summary_text = paste(summary_text_randomization, summary_text_title, summary_text_abstract)
+    summary_text = summary_text
   )
 }
+
+# references ----
+
+Antonakis2010 <- bibentry(
+  bibtype = "Article",
+  title   = "On making causal claims: A review and recommendations",
+  author  = c(
+    person("John", "Antonakis"),
+    person("Samuel", "Bendahan"),
+    person("Philippe", "Jacquart"),
+    person("Rafael", "Lalive")
+  ),
+  journal = "The Leadership Quarterly",
+  year    = 2010,
+  volume  = 21,
+  number  = 6,
+  pages   = "1086--1120",
+  doi     = "10.1016/j.leaqua.2010.10.010"
+)
+
+Grosz2020 <- bibentry(
+  bibtype = "Article",
+  title   = "The Taboo Against Explicit Causal Inference in Nonexperimental Psychology",
+  author  = c(
+    person("Martin P.", "Grosz"),
+    person("Julia M.", "Rohrer"),
+    person("Felix", "Thoemmes")
+  ),
+  journal = "Perspectives on Psychological Science",
+  year    = 2020,
+  volume  = 15,
+  number  = 5,
+  pages   = "1243--1255",
+  doi     = "10.1177/1745691620921521"
+)

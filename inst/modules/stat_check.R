@@ -3,6 +3,14 @@
 #' @description
 #' Check consistency of p-values and test statistics
 #'
+#' @details
+#' The Statcheck module runs Statcheck. Statcheck searches for regular expressions that match a predefined pattern, and identifies APA reported statistical tests. More information on the package can be found at <https://github.com/cran/statcheck>. The module only returns Statcheck results for t-tests and F-tests, as these are the only tests which have been validated, see <https://osf.io/preprints/psyarxiv/tcxaj_v1/>.
+#'
+#' Statcheck was developed by Michèle Nuijten and Sascha Epskamp.
+#'
+#' Statcheck considers p = 0.000 an error, as you should report p < 0.001. Furthermore, p < 0.03 is an error if the p-value was 0.031, and one should simply report exact p-values (p = 0.031). Statcheck might miss one-sided tests, and falsely assume the p-value is incorrect. For more information, see [StatCheck](https://statcheck.io/).
+#'
+#'
 #' @keywords results
 #'
 #' @references
@@ -10,16 +18,16 @@
 #' Recompute P-Values_. R package version 1.5.0,
 #' <https://CRAN.R-project.org/package=statcheck>.
 #'
+#' @author Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
+#'
 #' @import dplyr
 #'
 #' @param paper a paper object or paperlist object
 #' @param ... further arguments (not used)
 #'
-#' @returns a list with table, traffic light, and report text
-#'
-#' @examples
-#' module_run(psychsci[[10]], "statcheck")
-statcheck <- function(paper, ...) {
+#' @returns a list
+stat_check <- function(paper, ...) {
   # detailed table of results ----
   stat_table <- metacheck::stats(paper)
 

@@ -24,6 +24,6 @@ Report from module output
 \examples{
 filename <- demoxml()
 paper <- read(filename)
-op <- module_run(paper, "exact_p")
+op <- module_run(paper, "stat_p_exact")
 module_report(op) |> cat()
 }

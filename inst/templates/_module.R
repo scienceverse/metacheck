@@ -3,6 +3,9 @@
 #' @description
 #' A short description of the module.
 #'
+#' @details
+#' This text will show when you use module_info() and in the "How It Works" collapse box after the module report. It can be multiple paragraphs and is styled with markdown.
+#'
 #' @keywords general|intro|method|results|discussion|reference
 #'
 #' @author Author Name (\email{name@email.com})
@@ -15,10 +18,7 @@
 #' @param paper a paper object or paperlist object
 #' @param ... further arguments (not used)
 #'
-#' @returns a list
-#'
-#' @examples
-#' module_run(psychsci, "module_name")
+#' @returns report list
 module_name <- function(paper, ...) {
   # see https://www.scienceverse.org/metacheck/articles/creating_modules.html
 

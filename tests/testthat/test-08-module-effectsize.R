@@ -1,5 +1,5 @@
-test_that("effect_size", {
-  module <- "effect_size"
+test_that("stat_effect_size", {
+  module <- "stat_effect_size"
   mods <- module_list()
   expect_true(module %in% mods$name)
 

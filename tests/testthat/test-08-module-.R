@@ -1,53 +1,7 @@
-test_that("exists", {
-  expect_true(is.function(metacheck::module_run))
-  expect_no_error(helplist <- help(module_run, metacheck))
-
+test_that("module_list", {
   expect_true(is.function(metacheck::module_list))
   expect_no_error(helplist <- help(module_list, metacheck))
 
-  expect_true(is.function(metacheck:::module_find))
-  expect_no_error(helplist <- help(module_find, metacheck))
-
-  expect_true(is.function(metacheck::module_help))
-  expect_no_error(helplist <- help(module_help, metacheck))
-
-  expect_true(is.function(metacheck::module_info))
-  expect_no_error(helplist <- help(module_info, metacheck))
-})
-
-test_that("errors", {
-  paper <- read(demoxml())
-  expect_error( module_run() )
-  expect_error( module_run(paper) )
-
-  expect_error(module_help("bad_arg"),
-               "There were no modules that matched bad_arg")
-  expect_error(module_info("bad_arg"),
-               "There were no modules that matched bad_arg")
-
-  # setwd("tests/testthat/")
-
-  expect_error(module_find("notamodule"),
-               "There were no modules that matched notamodule",
-               fixed = TRUE )
-
-  expect_error( module_run(paper, "notamodule"),
-                "There were no modules that matched notamodule")
-
-  expect_error(module_run(paper, "modules/module-error.R"),
-               "The module code has errors")
-
-  expect_error(module_run(paper, "modules/code-error.R"),
-               "Running the module produced errors")
-
-  expect_error(module_run(paper, "modules/missing-pkg.R"),
-               "notarealpkg")
-
-  expect_error(module_run(paper, "modules/missing-importFrom.R"),
-               "dplyr::notarealfunction")
-})
-
-test_that("module_list", {
   builtin <- module_list()
   expect_true(is.data.frame(builtin))
   exp <- c("name", "title", "description", "section", "path")
@@ -58,7 +12,14 @@ test_that("module_list", {
 })
 
 test_that("module_find", {
+  expect_true(is.function(metacheck:::module_find))
+  expect_no_error(helplist <- help(module_find, metacheck))
+
   expect_error(module_find())
+  expect_error(module_find("notamodule"),
+               "There were no modules that matched notamodule",
+               fixed = TRUE )
+
 
   # find built-in modules
   builtin <- module_list()
@@ -74,16 +35,18 @@ test_that("module_find", {
 })
 
 test_that("module_info", {
+  expect_true(is.function(metacheck::module_info))
+  expect_no_error(helplist <- help(module_info, metacheck))
+
+  expect_error(module_info("bad_arg"),
+               "There were no modules that matched bad_arg")
+
   info <- module_info("marginal")
   expect_equal(info$title, "Marginal Significance")
   expect_equal(info$keywords, "results")
   expect_equal(info$author, "Daniel Lakens")
   expect_equal(info$description, "List all sentences that describe an effect as 'marginally significant'.")
   expect_equal(info$func_name, "marginal")
-
-  example <- 'module_run(psychsci, "marginal")'
-  class(example) <- "rd"
-  expect_equal(info$examples, example)
 
   info <- module_info("modules/no_error.R")
   expect_equal(info$title, "List All P-Values (Test version)")
@@ -97,6 +60,12 @@ test_that("module_info", {
 })
 
 test_that("module_help", {
+  expect_true(is.function(metacheck::module_help))
+  expect_no_error(helplist <- help(module_help, metacheck))
+
+  expect_error(module_help("bad_arg"),
+               "There were no modules that matched bad_arg")
+
   ml <- capture.output(module_list())
   mh <- capture.output(module_help())
   expect_equal(mh, ml)
@@ -107,25 +76,14 @@ test_that("module_help", {
   title <- "Marginal Significance"
   desc <- "List all sentences that describe an effect as 'marginally significant'."
   example <- 'module_run(psychsci, "marginal")'
-  expected <- c(
-    title,
-    "",
-    desc,
-    "",
-    "``` r",
-    example,
-    "```"
-  )
 
   output <- capture.output(help)
-  expect_equal(output, expected)
+  expect_equal(output[[1]], title)
+  expect_equal(output[[3]], desc)
 
   expect_equal(class(help), "metacheck_module_help")
   expect_equal(help$title, title)
   expect_equal(help$description, desc)
-
-  class(example) <- "rd"
-  expect_equal(help$examples, example)
 })
 
 test_that("module_template", {
@@ -142,8 +100,30 @@ test_that("module_template", {
 })
 
 test_that("module_run", {
+  expect_true(is.function(metacheck::module_run))
+  expect_no_error(helplist <- help(module_run, metacheck))
+
   paper <- demoxml() |> read()
 
+  # errors
+  expect_error( module_run() )
+  expect_error( module_run(paper) )
+  expect_error( module_run(paper, "notamodule"),
+                "There were no modules that matched notamodule")
+
+  expect_error(module_run(paper, "modules/module-error.R"),
+               "The module code has errors")
+
+  expect_error(module_run(paper, "modules/code-error.R"),
+               "Running the module produced errors")
+
+  expect_error(module_run(paper, "modules/missing-pkg.R"),
+               "notarealpkg")
+
+  expect_error(module_run(paper, "modules/missing-importFrom.R"),
+               "dplyr::notarealfunction")
+
+  # demo
   module <- "modules/no_error.R"
   mod_output <- module_run(paper, module)
   expected_summary <- data.frame(id = "to_err_is_human", p_values = 3)
@@ -167,32 +147,46 @@ test_that("module_run", {
 
 })
 
-# test_that("LLM", {
-#   skip_on_cran()
-#   skip_if_offline("api.groq.com")
-#
-#   paper <- read(demoxml())
-#   sec <- search_text(paper,
-#                       section = "method",
-#                       return = "section")
-#
-#   model <- "llama-3.3-70b-versatile"
-#   expect_message({
-#     mod_output <- module_run(sec, "llm_summarise",
-#                              model = model,
-#                              seed = 8675309)
-#   })
-#
-#   expect_equal(names(mod_output$table),
-#                c("text", "section", "header", "div", "p",
-#                  "s", "id", "answer", "time", "tokens"))
-#   # expect_equal(mod_output$table$answer, "This study randomly assigned 50 scientists to use an automated error-checking tool and 50 to use a checklist to examine whether automation reduces errors in scientific manuscripts.")
-#
-#   # get attributes
-#   atts <- attr(mod_output$table, "llm")
-#   expect_equal(atts$seed, 8675309)
-#   expect_equal(atts$model, model)
-# })
+test_that("chaining modules - one paper", {
+  paper <- read(demoxml())
+
+  # chained run
+  a <- module_run(paper, "all_p_values")
+  b <- module_run(a, "chained")
+  expect_equal(b$table, a$table[1:2, 1:2])
+
+  # run without chaining
+  c <- module_run(paper, "chained")
+  expect_equal(c$table, data.frame(a = "not from prev"))
+})
+
+test_that("chaining modules - paperlist", {
+  paper <- psychsci[1:50]
+
+  p <- module_run(paper, "all_p_values")
+  url <- module_run(paper, "all_urls")
+
+  x <- paper |>
+    module_run("all_p_values") |>
+    module_run("all_urls") |>
+    module_run("modules/no_error.R")
+
+  expect_equal(names(x$summary_table), c("id", "p_values", "urls", "p_values.no_error"))
+  expect_equal(x$summary_table$p_values, p$summary_table$p_values)
+  expect_equal(x$summary_table$urls, url$summary_table$urls)
+})
+
+
+
+test_that("get_prev_outputs", {
+  expect_true(is.function(metacheck::get_prev_outputs))
+  expect_no_error(helplist <- help(get_prev_outputs, metacheck))
+
+  .__mc__prev_outputs <- list(mod_1 = list(a = 1, b = 2))
+  f <- function(module, item) { get_prev_outputs(module, item, 1) }
+  expect_equal(f("mod_1", "a"), 1)
+  expect_null(f("mod_2", "a"))
+})
 
 test_that("all_p_values", {
   paper <- read(demoxml())
@@ -281,215 +275,3 @@ test_that("all_urls", {
   ids <- mod_output$table$id |> unique()
   expect_true(all(ids %in% names(paper)))
 })
-
-# test_that("retractionwatch", {
-#   paper <- demoxml() |> read()
-#   module <- "retractionwatch"
-#
-#   mod_output <- module_run(paper, module)
-#   expect_equal(mod_output$traffic_light, "yellow")
-#   expect_equal(mod_output$table$doi, "10.1177/0956797614520714")
-#   expect_true(grepl("You cited 1 paper in the Retraction Watch database (as of", mod_output$report, fixed = TRUE))
-#
-#   # iteration
-#   paper <- psychsci
-#   mod_output <- module_run(paper, module)
-#   dois <- mod_output$table$doi |> unique()
-#   expect_equal(dois, c("10.1177/0956797612470827",
-#                        "10.1186/gb-2013-14-10-r115",
-#                        "10.1038/s41562-023-01749-9"))
-# })
-
-test_that("exact_p", {
-  paper <- demodir() |> read()
-  paper <- paper[[1]]
-
-  module <- "exact_p"
-  mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "green")
-  expect_equal(nrow(mod_output$table), 14)
-
-  # add imprecise p-values
-  paper$full_text[1, "text"] <- "Bad p-value example (p < .05)"
-  paper$full_text[2, "text"] <- "Bad p-value example (p<.05)"
-  paper$full_text[3, "text"] <- "Bad p-value example (p < 0.05)"
-  paper$full_text[4, "text"] <- "Bad p-value example; p < .05"
-  paper$full_text[5, "text"] <- "Bad p-value example (p < .005)"
-  paper$full_text[6, "text"] <- "Bad p-value example (p > 0.05)"
-  paper$full_text[7, "text"] <- "Bad p-value example (p > .1)"
-  paper$full_text[8, "text"] <- "Bad p-value example (p = n.s.)"
-  paper$full_text[9, "text"] <- "Bad p-value example; p=ns"
-  paper$full_text[10, "text"] <- "OK p-value example; p < .001"
-  paper$full_text[11, "text"] <- "OK p-value example; p < .0005"
-
-  mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 25)
-
-  # iteration
-  paper <- psychsci
-  mod_output <- module_run(paper, module)
-  lt05 <- grepl("p < .05", mod_output$table$text) |> sum()
-  expect_equal(lt05, 174)
-  expect_equal(mod_output$table$p_comp[[1]], "<")
-  expect_equal(mod_output$table$p_value[[1]], 0.001)
-})
-
-test_that("marginal", {
-  paper <- demodir() |> read()
-  paper <- paper[[1]]
-  module <- "marginal"
-
-  # no relevant text
-  mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "green")
-  expect_equal(nrow(mod_output$table), 0)
-  expect_equal(mod_output$report, "No effects were described with terms related to 'marginally significant'.")
-
-  # add marginal text
-  paper$full_text[1, "text"] <- "This effect was marginally significant."
-  paper$full_text[12, "text"] <- "This effect approached significance."
-
-  mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 2)
-
-  # iteration
-  mod_output <- module_run(psychsci, module)
-  # expect_true(unique(mod_output$table$id) |> length() > 1)
-})
-
-# test_that("sample-size", {
-#   skip("python install is messed up")
-#   skip_on_cran()
-#   model_dir <- system.file("modules/sample-size", package = "metacheck")
-#
-#   if (model_dir == "") {
-#     skip("needs big classifier: sample-size")
-#   }
-#
-#   paper <- demoxml() |> read() |>
-#     search_text(".{30, }", section = "method", return = "sentence")
-#   module <- "sample-size-ml"
-#
-#   mod_output <- module_run(paper, module)
-#   expect_equal(mod_output$traffic_light, "green")
-#   expect_equal(nrow(mod_output$table), 2)
-#   expect_equal(mod_output$module, module)
-# })
-
-test_that("ref_consistency", {
-  paper <- demoxml() |> read()
-  module <- "ref_consistency"
-
-  mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 4)
-  expect_equal(mod_output$module, module)
-
-  # iteration
-  paper <- psychsci[c(23, 25)]
-  mod_output1 <- module_run(paper[[1]], module)
-  mod_output2 <- module_run(paper[[2]], module)
-  mod_output3 <- module_run(paper, module)
-  expect_equal(rbind(mod_output1$table, mod_output2$table),
-               mod_output3$table)
-
-  mod_output1$traffic_light
-  mod_output2$traffic_light
-  mod_output3$traffic_light
-})
-
-test_that("statcheck", {
-  paper <- demoxml() |> read()
-  module <- "statcheck"
-
-  mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 2)
-  expect_equal(mod_output$table$raw[[2]], "t(97.2) = -1.96, p = 0.152")
-  expect_equal(mod_output$module, module)
-
-  # iteration
-  paper <- psychsci[1:2]
-  expect_no_error(
-    mod_output <- module_run(paper, module)
-  )
-})
-
-test_that("miscitation", {
-  paper <- read("problem_xml")
-  module <- "miscitation"
-
-  mod_output <- module_run(paper, module)
-  expect_true("10.1525/collabra.33267" %in% mod_output$table$doi)
-  expect_true("miscite_10.1525/collabra.33267" %in%
-                names(mod_output$summary_table))
-  expect_equal(nrow(mod_output$summary_table),
-               list.files("problem_xml") |> length())
-  expect_equal(mod_output$traffic_light, "yellow")
-
-  ## custom db
-  test_doi <- "10.1038/nrn3475"
-  db <- data.frame(
-    doi = test_doi,
-    reftext = "The full reference (this is a test)",
-    warning = "Lorem ipsum this is a test..."
-  )
-
-  mod_output <- module_run(paper, module, db = db)
-  expect_equal(mod_output$table$doi[[1]], test_doi)
-  expect_equal(mod_output$summary_table$`miscite_10.1038/nrn3475`,
-               c("b11", NA, NA, NA, "b6"))
-
-  ## custom db - doi is in bib but not xref text!
-  test_doi <- "10.1016/j.anbehav.2022.09.006"
-  db <- data.frame(
-    doi = test_doi,
-    reftext = "The full reference (this is a test)",
-    warning = "Lorem ipsum this is a test..."
-  )
-
-  mod_output <- module_run(paper, module, db = db)
-  expect_equal(mod_output$table$doi, test_doi)
-})
-
-test_that("chaining modules", {
-  paper <- psychsci[1:50]
-
-  p <- module_run(paper, "all_p_values")
-  url <- module_run(paper, "all_urls")
-
-  x <- paper |>
-    module_run("all_p_values") |>
-    module_run("all_urls") |>
-    module_run("modules/no_error.R")
-
-  expect_equal(names(x$summary_table), c("id", "p_values", "urls", "p_values.no_error"))
-  expect_equal(x$summary_table$p_values, p$summary_table$p_values)
-  expect_equal(x$summary_table$urls, url$summary_table$urls)
-})
-
-test_that("chaining modules on one paper", {
-  paper <- read(demoxml())
-
-  # chained run
-  a <- module_run(paper, "all_p_values")
-  b <- module_run(a, "chained")
-  expect_equal(b$table, a$table[1:2, 1:2])
-
-  # run without chaining
-  c <- module_run(paper, "chained")
-  expect_equal(c$table, data.frame(a = "not from prev"))
-})
-
-test_that("get_prev_outputs", {
-  expect_true(is.function(metacheck::get_prev_outputs))
-  expect_no_error(helplist <- help(get_prev_outputs, metacheck))
-
-  .prev_outputs__ <<- list(mod_1 = list(a = 1, b = 2))
-  expect_equal(1, get_prev_outputs("mod_1", "a"))
-  expect_null(get_prev_outputs("mod_2", "a"))
-  rm(".prev_outputs__", envir = .GlobalEnv)
-})
-

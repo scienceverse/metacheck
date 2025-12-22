@@ -4,10 +4,18 @@
 #' Retrieve information from preregistrations in a standardised way,
 #' and make them easier to check.
 #'
+#' @details
+#' The Preregistration Check module identifies preregistrations on the OSF and AsPredicted based on links in the manuscript, retrieves the preregistration text, and organizes the information into a template. The module then uses regular expressions to identify text from AsPredicted, and the API to retrieve text from the OSF. The information in the preregistration is returned.
+#'
+#' The module can’t extract information from non-structured preregistration templates (i.e., where the preregistration is uploaded in a single text field) and it can’t retrieve information in preregistrations that are stored as text documents on the OSF.
+#'
+#' If you want to extend the package to be able to download information from other preregistration sites, reach out to the Metacheck development team.
+
+#'
 #' @keywords method
 #'
-#' @author Daniel Lakens
-#' @author Lisa DeBruine
+#' @author Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
 #'
 #' @import dplyr
 #' @import tidyr
@@ -16,7 +24,7 @@
 #'
 #' @param paper a paper object or paperlist object
 #'
-#' @returns a list with table, summary, traffic light, and report text
+#' @returns a list
 prereg_check <- function(paper, ...) {
   # paper <- psychsci[[218]] # to test
   # and paper <- xml[["09567976251396084"]] for multiple aspredicted
@@ -41,8 +49,9 @@ prereg_check <- function(paper, ...) {
   }
 
   ## AsPredicted preregs ----
-  links_ap <- links_ap[!duplicated(links_ap$text), ]
-  table_ap <- aspredicted_retrieve(links_ap, id_col = 1)
+  table_ap <- suppressMessages(
+    aspredicted_retrieve(links_ap$text)
+  )
   ap_schema <- ap_schema(table_ap)
 
   ## OSF prereg ----
@@ -222,15 +231,15 @@ Lakens2024 <- bibentry(
 ap_schema <- function(table_ap) {
   if (nrow(table_ap) == 0) return(data.frame())
 
-  ap_id <- sub("^https://aspredicted\\.org/([^\\.]+)\\.pdf.*$", "\\1", table_ap$text)
-  ap_id <- ifelse(grepl("\\.pdf", table_ap$text),
-                  sub("^https://aspredicted\\.org/([^\\.]+)\\.pdf.*$", "\\1", table_ap$text),
-                  sub("^https://aspredicted\\.org/(.*)$", "\\1", table_ap$text))
+  ap_id <- table_ap$ap_url |>
+    sub("^https://aspredicted\\.org/", "", x = _) |>
+    sub("\\.pdf.*", "", x = _) |>
+    sub("blind\\.php\\?x\\=", "", x = _)
 
   data.frame(
     template_name = "AsPredicted",
     id = ap_id,
-    link = table_ap$text,
+    link = table_ap$ap_url,
     title = table_ap$AP_title,
     date_created = table_ap$AP_created,
     existing_data_explanation = table_ap$AP_data,

@@ -4,7 +4,11 @@
 #' This module checks references and warns for citations that have comments on pubpeer (excluding Statcheck comments).
 #'
 #' @details
-#' If you run the reference_check module in a pipeline before this, it will use the enhanced DOI list from that module, otherwise it will only run on references with existing DOIs.
+#' The PubPeer module uses the PubPeer API to check for each reference that has a DOI whether there are comments on the post-publication peer review platform. If comments are found, a link to the comments is provided. Comments by ‘Statcheck’ on PubPeer are ignored, see https://retractionwatch.com/2016/09/02/heres-why-more-than-50000-psychology-studies-are-about-to-have-pubpeer-entries/.
+#'
+#' The module requires that the reference has a DOI. If you run the doi_check module in a pipeline before this, it will use the enhanced DOI list from that module, otherwise it will only run on references with existing DOIs.
+#'
+#' For more information, see [PubPeer](https://www.pubpeer.com/static/about).
 #'
 #' @keywords reference
 #'
@@ -15,19 +19,19 @@
 #'
 #' @param paper a paper object or paperlist object
 #'
-#' @returns report text
-#'
-#' @examples
-#' module_run(psychsci[[129]], "pubpeer")
-pubpeer <- function(paper) {
+#' @returns a list
+ref_pubpeer <- function(paper) {
   # for testing: paper <- psychsci[[109]]
 
   # create table ----
-  bib <- concat_tables(paper, "bib")[, c("id", "doi", "ref")]
-  better_doi <- get_prev_outputs("reference_check", "table")
-  if (!is.null(better_doi)) {
-    # TODO: change to be safe for bad prev info
-    bib$doi <- better_doi$DOI
+  bib <- concat_tables(paper, "bib")[, c("id", "xref_id", "doi", "ref")]
+  missing_doi <- get_prev_outputs("ref_doi_check", "table")
+  if (!is.null(missing_doi)) {
+    md <- missing_doi[, c("id", "xref_id", "DOI")]
+    bib <- dplyr::left_join(bib, md, by = c("id", "xref_id"))
+    is_missing <- is.na(bib$doi)
+    bib$doi[is_missing] <- bib$DOI[is_missing]
+    bib$DOI <- NULL
   }
 
   # If there are no rows, return immediately

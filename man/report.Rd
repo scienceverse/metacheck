@@ -6,9 +6,9 @@
 \usage{
 report(
   paper,
-  modules = c("prereg_check", "power", "exact_p", "nonsig_p", "marginal", "effect_size",
-    "code_check", "statcheck", "reference_check", "replications", "retractionwatch",
-    "pubpeer"),
+  modules = c("prereg_check", "power", "code_check", "stat_check", "stat_p_exact",
+    "stat_p_nonsig", "stat_effect_size", "marginal", "ref_doi_check", "ref_replication",
+    "ref_retraction", "ref_pubpeer"),
   output_file = paste0(paper$name, "_report.", output_format),
   output_format = c("qmd", "html", "pdf"),
   args = list()

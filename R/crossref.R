@@ -15,11 +15,8 @@
 crossref_doi <- function(doi) {
   if (length(doi) == 0) {
     return(data.frame())
-  }
-
-  if (!online("api.labs.crossref.org")) {
-    message("Crossref is offline")
-    return(data.frame(DOI = doi, error = "offline"))
+  } else if (all(is.na(doi))) {
+    return(data.frame(DOI = doi))
   }
 
   if (is_paper(doi) || is_paper_list(doi)) {
@@ -30,7 +27,7 @@ crossref_doi <- function(doi) {
   if (length(doi) > 1) {
     # vectorise
     pb <- pb(length(doi),
-             format = "Checking References [:bar] :current/:total :elapsedfull")
+             format = "Checking DOIs [:bar] :current/:total :elapsedfull")
     table <- lapply(doi, \(d) {
       pb$tick()
       crossref_doi(d)
@@ -44,6 +41,11 @@ crossref_doi <- function(doi) {
   if (!grepl(pattern, doi, perl = TRUE)){
     message(doi, " is not a well-formed DOI\\n")
     return(data.frame(DOI = doi, error = "malformed"))
+  }
+
+  if (!online("api.labs.crossref.org")) {
+    message("Crossref is offline")
+    return(data.frame(DOI = doi, error = "offline"))
   }
 
   url <- sprintf("https://api.labs.crossref.org/works/%s?mailto=%s",
@@ -147,7 +149,7 @@ crossref_query <- function(ref, min_score = 50, rows = 1) {
 
   if (!online("api.labs.crossref.org")) {
     message("Crossref is offline")
-    return(data.frame(ref = ref, error = "offline"))
+    return(data.frame(ref = ref, DOI = NA, error = "offline"))
   }
 
 
@@ -188,7 +190,7 @@ crossref_query <- function(ref, min_score = 50, rows = 1) {
 
   scores <- sapply(items, `[[`, "score")
   if (length(items) == 0 || all(scores < min_score)) {
-    table <- data.frame(ref = ref, doi = NA_character_)
+    table <- data.frame(ref = ref, DOI = NA_character_)
     return(table)
   } else {
     items <- items[scores >= min_score]

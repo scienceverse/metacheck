@@ -581,10 +581,10 @@
       "en": "all_urls"
     },
     {
-      "en": "Causal Claims"
+      "en": "causal_claims"
     },
     {
-      "en": "causal_claims"
+      "en": "Check PubPeer Comments"
     },
     {
       "en": "Code Check"
@@ -596,16 +596,13 @@
       "en": "div"
     },
     {
+      "en": "DOI Check"
+    },
+    {
       "en": "Effect Sizes in t-tests and F-tests"
     },
     {
-      "en": "effect_size"
-    },
-    {
       "en": "Exact P-Values"
-    },
-    {
-      "en": "exact_p"
     },
     {
       "en": "GROQ API Key"
@@ -617,16 +614,16 @@
       "en": "marginal"
     },
     {
-      "en": "miscitation"
-    },
-    {
       "en": "Miscitation"
     },
     {
       "en": "Non-Significant P Value Check"
     },
     {
-      "en": "nonsig_p"
+      "en": "Open Practices Check"
+    },
+    {
+      "en": "open_practices"
     },
     {
       "en": "power"
@@ -641,16 +638,46 @@
       "en": "Preregistration Check"
     },
     {
+      "en": "Randomization and Causal Claims"
+    },
+    {
+      "en": "ref_accuracy"
+    },
+    {
       "en": "ref_consistency"
     },
     {
-      "en": "Reference Check"
+      "en": "ref_doi_check"
     },
     {
-      "en": "reference_check"
+      "en": "ref_miscitation"
     },
     {
-      "en": "statcheck"
+      "en": "ref_pubpeer"
+    },
+    {
+      "en": "ref_replication"
+    },
+    {
+      "en": "ref_retraction"
+    },
+    {
+      "en": "Reference Accuracy"
+    },
+    {
+      "en": "Replication Check"
+    },
+    {
+      "en": "stat_check"
+    },
+    {
+      "en": "stat_effect_size"
+    },
+    {
+      "en": "stat_p_exact"
+    },
+    {
+      "en": "stat_p_nonsig"
     },
     {
       "en": "StatCheck"
