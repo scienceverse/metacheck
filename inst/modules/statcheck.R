@@ -21,10 +21,7 @@
 #' module_run(psychsci[[10]], "statcheck")
 statcheck <- function(paper, ...) {
   # detailed table of results ----
-  v <- verbose()
-  verbose(FALSE)
   stat_table <- metacheck::stats(paper)
-  verbose(v)
 
   # handle no stats
   if (nrow(stat_table) == 0) {

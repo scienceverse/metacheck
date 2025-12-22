@@ -17,14 +17,17 @@ test_that("scroll_table", {
   obs_vec <- scroll_table(LETTERS)
   expect_equal(obs_table, obs_vec)
 
-  # set scroll after scroll_above
+  # set paginate after maxrows
   obs_scroll <- scroll_table(1:10)
   obs_no <- scroll_table(1:2)
-  obs_no10 <- scroll_table(1:10, scroll_above = 10)
+  obs_no10 <- scroll_table(1:10, maxrows = 10)
 
-  #expect_true(grepl("scrollY", obs_scroll))
-  expect_false(grepl("scrollY", obs_no))
-  expect_false(grepl("scrollY", obs_no10))
+  expect_true(grepl("dom = \"<'top' p>\"", obs_scroll, fixed = TRUE))
+  expect_true(grepl('dom = "t",', obs_no, fixed = TRUE))
+  expect_true(grepl('dom = "t",', obs_no10, fixed = TRUE))
+  expect_true(grepl('pageLength = 2,', obs_scroll, fixed = TRUE))
+  expect_true(grepl('pageLength = 2,', obs_no, fixed = TRUE))
+  expect_true(grepl('pageLength = 10,', obs_no10, fixed = TRUE))
 
   # colwidths
   obs <- scroll_table(data.frame(a = 1, b = 2), c(.3, .7))

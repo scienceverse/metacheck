@@ -125,11 +125,11 @@ code_check <- function(paper) {
       r_files$library_on_top[i] <- 1
       r_files$library_lines[i] <- paste(library_lines, collapse = ", ")
     } else if (length(library_lines) > 0) {
-      cat("Libraries are loaded in a single block, well done!\n")
+      #cat("Libraries are loaded in a single block, well done!\n")
       r_files$library_on_top[i] <- 0
       r_files$library_lines[i] <- NA
     } else {
-      cat("No libraries are specified in this script.\n")
+      #cat("No libraries are specified in this script.\n")
       r_files$library_on_top[i] <- NA
     }
 
@@ -269,19 +269,19 @@ code_check <- function(paper) {
 
   report <- c(
     "Below, we describe some best coding practices and give the results of automatic evaluation of these practices in the R files below. This check may miss things or produce false positives if your R scripts are less typical.",
-    scroll_table(report_table, scroll_above = 5),
+    scroll_table(report_table, maxrows = 5),
     "#### Missing Files",
     report_missingfiles,
-    scroll_table(report_table_files_missing, scroll_above = 5),
+    scroll_table(report_table_files_missing, maxrows = 5),
     "#### Hardcoded Paths",
     report_hardcoded,
-    scroll_table(report_table_hardcoded, scroll_above = 5),
+    scroll_table(report_table_hardcoded, maxrows = 5),
     "#### Libraries",
     report_library,
-    scroll_table(report_table_library, scroll_above = 5),
+    scroll_table(report_table_library, maxrows = 5),
     "#### Code Comments",
     report_comments,
-    scroll_table(report_table_comments, scroll_above = 5),
+    scroll_table(report_table_comments, maxrows = 5),
     "#### README",
     report_readme,
     report_zip

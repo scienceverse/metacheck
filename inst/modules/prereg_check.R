@@ -32,10 +32,9 @@ prereg_check <- function(paper, ...) {
     resp <- list(
       traffic_light = "na",
       summary_text = "No preregistration links were found.",
-      na_replace = 0,
       summary_table = data.frame(
-        id = c(),
-        preregistration = c()
+        id = info_table(paper, c())$id,
+        preregistration = 0
       )
     )
     return(resp)
@@ -61,8 +60,8 @@ prereg_check <- function(paper, ...) {
                              nrow(links_osf), nrow(links_osf) |> plural()),
       na_replace = 0,
       summary_table = data.frame(
-        id = c(),
-        preregistration = c()
+        id = info_table(paper, c())$id,
+        preregistration = 0
       )
     )
     return(resp)
@@ -156,7 +155,7 @@ prereg_check <- function(paper, ...) {
     scroll_table(prereg_link_table),
     report_text,
     scroll_table(samplesize_table),
-    collapse_section(scroll_table(prereg_table, scroll_above = 5),
+    collapse_section(scroll_table(prereg_table, maxrows = 5),
                      "Full Preregistration"),
     collapse_section(guidance)
   )

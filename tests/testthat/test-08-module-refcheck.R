@@ -99,7 +99,7 @@ test_that("chaining", {
   expect_equal(mo3$summary_table$retractionwatch, 1)
 
   mo4 <- module_run(mo3, "pubpeer")
-  expect_equal(mo4$table$total_comments, c(0, 3, 0, 0))
+  expect_equal(mo4$table$total_comments, 3)
   expect_equal(mo4$summary_table$replications, 1)
 })
 

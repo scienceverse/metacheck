@@ -8,8 +8,7 @@
 #'
 #' @param table the data frame to show in a table, or a vector for a list
 #' @param colwidths set column widths as a vector of px (number > 1) or percent (numbers <= 1)
-#' @param scroll_above if the table has more rows than this, scroll
-#' @param height the height of the scroll window
+#' @param maxrows if the table has more rows than this, paginate
 #' @param escape whether or not to escape the DT (necessary if using raw html)
 #' @param column which quarto column to show tables in
 #'
@@ -20,8 +19,7 @@
 #' scroll_table(LETTERS)
 scroll_table <- function(table,
                          colwidths = "auto",
-                         scroll_above = 2,
-                         height = 200,
+                         maxrows = 2,
                          escape = FALSE,
                          column = "body") {
   # convert vectors to a table
@@ -37,10 +35,6 @@ scroll_table <- function(table,
 
   tbl_code <- paste(deparse(table), collapse = "\n")
 
-  scrollY <- ifelse(nrow(table) <= scroll_above, "",
-                    sprintf(", scrollY = %d", height))
-  scrollY <- "" # deprecated scrolling
-
   column_loc <- ""
   if (column != "body") {
     column_loc <- paste0("#| column: ", column)
@@ -50,6 +44,7 @@ scroll_table <- function(table,
   if (length(colwidths) == 1 && colwidths == "auto") {
     cd_code <- "list()"
   } else {
+    # set up column width definitions
     colwidths <- rep_len(colwidths, ncol(table))
     cd <- lapply(seq_along(colwidths), \(i) {
       x <- colwidths[[i]]
@@ -73,21 +68,18 @@ scroll_table <- function(table,
 ```{r}
 #| echo: false
 %s
-# table data
+
+# table data ------------------------------------
 table <- %s
 
-# table options
+# table setup -----------------------------------
 cd <- %s
-options <- list(dom = "t%s", ordering = FALSE, pageLength = %d, columnDefs = cd %s)
-
-# display table
+options <- list(dom = "%s", ordering = FALSE, pageLength = %d, columnDefs = cd)
 DT::datatable(table, options, selection = "none", rownames = FALSE, escape = %s)
 ```
 ', column_loc, tbl_code, cd_code,
-                ifelse(nrow(table) > scroll_above, "p", ""),
-                scroll_above,
-                scrollY,
-                ifelse(isTRUE(escape), "TRUE", "FALSE"))
+   ifelse(nrow(table) > maxrows, "<'top' p>", "t"), maxrows,
+   ifelse(isTRUE(escape), "TRUE", "FALSE"))
 
   return(md)
 }

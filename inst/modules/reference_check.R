@@ -11,7 +11,7 @@
 #' @import dplyr
 #'
 #' @param paper a paper object or paperlist object
-#' @param crossref_min_score The minimum score to return a DOI match from `get_doi()`
+#' @param crossref_min_score The minimum score to return a DOI match from `crossref_query()`
 #'
 #' @returns report text
 #'
@@ -133,19 +133,19 @@ reference_check <- function(paper, crossref_min_score = 50) {
     names(found_table) <- c("Found DOI", "Original Reference")
   }
 
+  ## doi mismatch table ----
+  mismatch_table <- table[table$doi_mismatch, c("ref","original_doi", "DOI")]
+  if (nrow(mismatch_table)) {
+    mismatch_table$original_doi <- link(mismatch_table$original_doi, type = "doi")
+    mismatch_table$DOI <- link(mismatch_table$DOI, type = "doi")
+    names(mismatch_table) <- c("Reference", "Original DOI", "CrossRef DOI")
+  }
+
   ## missing table ----
   missing_table <- table[is.na(table$DOI), c("ref"), drop = FALSE]
   if (nrow(missing_table)) {
     missing_table$type <- bib$bibtype[is.na(table$DOI)]
     names(missing_table) <- c("Reference not found in CrossRef", "Type")
-  }
-
-  ## doi mismatch table ----
-  mismatch_table <- table[table$doi_mismatch, c("ref","original_doi", "DOI")]
-  if (nrow(mismatch_table)) {
-    mismatch_table$doi <- link(mismatch_table$original_doi, type = "doi")
-    mismatch_table$DOI <- link(mismatch_table$DOI, type = "doi")
-    names(mismatch_table) <- c("Reference", "Original DOI", "CrossRef DOI")
   }
 
   ## experimental checks ----

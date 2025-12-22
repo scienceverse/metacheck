@@ -26,6 +26,7 @@ pubpeer <- function(paper) {
   bib <- concat_tables(paper, "bib")[, c("id", "doi", "ref")]
   better_doi <- get_prev_outputs("reference_check", "table")
   if (!is.null(better_doi)) {
+    # TODO: change to be safe for bad prev info
     bib$doi <- better_doi$DOI
   }
 
@@ -41,6 +42,7 @@ pubpeer <- function(paper) {
 
   ## join to  pubpeer ----
   pp <- pubpeer_comments(bib$doi)
+  pp <- pp[pp$total_comments > 0 & pp$users != "Statcheck", ]
   table <- dplyr::inner_join(bib, pp, by = 'doi')
 
   # traffic_light ----
@@ -73,7 +75,7 @@ pubpeer <- function(paper) {
     )
 
     ## report_table ----
-    rows <- !is.na(table$url) & table$users != "Statcheck"
+    rows <- !is.na(table$url)
     cols <- c("ref", "total_comments", "url")
     report_table <- table[rows, cols]
     report_table$ref <- format_ref(report_table$ref)

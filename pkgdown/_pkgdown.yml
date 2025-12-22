@@ -87,7 +87,7 @@ reference:
   - '`module_template`'
   - '`report`'
 - title: Module Helpers
-  desc: ~
+  desc: These functions help module writers make consistently formatted report text.
   contents:
   - '`scroll_table`'
   - '`collapse_section`'
@@ -114,16 +114,10 @@ reference:
   - '`osf_file_download`'
   - '`osf_links`'
   - '`osf_retrieve`'
+  - '`osf_type`'
   - '`osf_get_all_pages`'
   - '`osf_api_calls`'
   - '`osf_preprint_list`'
-- title: AsPredicted/ResearchBox Functions
-  desc: ~
-  contents:
-  - '`aspredicted_links`'
-  - '`aspredicted_retrieve`'
-  - '`rbox_links`'
-  - '`rbox_retrieve`'
 - title: GitHub Functions
   desc: ~
   contents:
@@ -133,6 +127,13 @@ reference:
   - '`github_files`'
   - '`github_readme`'
   - '`github_languages`'
+- title: Archive Functions
+  desc: ~
+  contents:
+  - '`aspredicted_links`'
+  - '`aspredicted_retrieve`'
+  - '`rbox_links`'
+  - '`rbox_retrieve`'
 - title: Integrations
   desc: ~
   contents:
@@ -146,9 +147,9 @@ reference:
   - '`FReD`'
   - '`FReD_update`'
   - '`FReD_date`'
-  - '`get_doi`'
   - '`openalex`'
-  - '`crossref`'
+  - '`crossref_doi`'
+  - '`crossref_query`'
   - '`pubpeer_comments`'
   - '`retractionwatch`'
   - '`rw_date`'
