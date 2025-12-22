@@ -584,6 +584,38 @@ osf_check_id <- function(osf_id) {
   }, USE.NAMES = FALSE)
 }
 
+
+#' Get OSF GUID Type
+#'
+#' @param guid the 5-letter GUID
+#'
+#' @returns the type
+#' @export
+#'
+#' @examples
+#' # osf_type("pngda")
+osf_type <- function(guid) {
+  if (length(guid) > 1) {
+    pb <- pb(total = length(guid),
+             format = "Checking OSF Types [:bar] :current/:total :elapsedfull")
+    types <- sapply(guid, \(g) {
+      pb$tick()
+      osf_type(g)
+    })
+    return(types)
+  }
+
+  osf_api <- getOption("metacheck.osf.api")
+  id <- osf_check_id(guid)
+  url <- sprintf("%s/guids/%s/?resolve=false",
+                 osf_api, id)
+  info <- osf_get_all_pages(url)
+
+  otype <- info$relationships$referent$links$related$meta$type
+
+  otype %||% NA_character_
+}
+
 #' Get All OSF API Query Pages
 #'
 #' OSF API queries only return up to 10 items per page, so this helper functions checks for extra pages and returns all of them

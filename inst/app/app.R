@@ -414,7 +414,10 @@ server <- function(input, output, session) {
                  "effect_size",
                  "code_check",
                  "statcheck",
-                 "reference_check")
+                 "reference_check",
+                 "replications",
+                 "retractionwatch",
+                 "pubpeer")
 
     update_report_modules(modules)
   })

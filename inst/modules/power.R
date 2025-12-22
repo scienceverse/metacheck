@@ -102,7 +102,7 @@ Answer only in valid JSON format, starting and ending with [].'
 
 
   report <- c(summary_text[[tl]],
-              scroll_table(table$expanded, scroll_above = 1),
+              scroll_table(table$expanded, maxrows = 1),
               help_text) |>
     paste(collapse = "\n\n")
 

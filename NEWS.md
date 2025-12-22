@@ -1,3 +1,10 @@
+# metacheck 0.0.0.9063
+
+* `get_doi()` has been removed in favour of `crossref_query()`, to look up crossref info by bibliographic query, and `crossref_doi()`, to look up crossref info by DOI. 
+* `scroll_table()` changed arguments. `height` is removed and `scroll_above` changed to `maxrows`. It not paginates above maxrows (default = 2), rather than scrolling within a fixed height. This is a more accessible solution, since scrolling is hard with touchscreens and it's often hard to copy text in a scroll window. We will continually improve this with further user feedback.
+* Fixed a bunch of small problems with modules and let the report render even with errors 
+* Updated the report template with light and dark themes (set to user preference)
+
 # metacheck 0.0.0.9062
 
 * `json_expand()` updated to handle LLM JSON errors more gracefully.

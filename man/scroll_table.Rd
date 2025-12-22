@@ -7,8 +7,7 @@
 scroll_table(
   table,
   colwidths = "auto",
-  scroll_above = 2,
-  height = 200,
+  maxrows = 2,
   escape = FALSE,
   column = "body"
 )
@@ -18,9 +17,7 @@ scroll_table(
 
 \item{colwidths}{set column widths as a vector of px (number > 1) or percent (numbers <= 1)}
 
-\item{scroll_above}{if the table has more rows than this, scroll}
-
-\item{height}{the height of the scroll window}
+\item{maxrows}{if the table has more rows than this, paginate}
 
 \item{escape}{whether or not to escape the DT (necessary if using raw html)}
 

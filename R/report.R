@@ -31,7 +31,10 @@ report <- function(paper,
                                "effect_size",
                                "code_check",
                                "statcheck",
-                               "reference_check"),
+                               "reference_check",
+                               "replications",
+                               "retractionwatch",
+                               "pubpeer"),
                    output_file = paste0(paper$name, "_report.", output_format),
                    output_format = c("qmd", "html", "pdf"),
                    args = list()) {
@@ -67,9 +70,10 @@ report <- function(paper,
                table = NULL,
                report = e$message,
                summary_text = "This module failed to run",
+               summary_table = mod_args$paper$summary_table,
                traffic_light = "fail",
-               paper = op$paper %||% op,
-               prev_outputs = paper$prev_outputs
+               paper = paper,
+               prev_outputs = mod_args$paper$prev_outputs
              )
 
              return(report_items)
@@ -204,7 +208,7 @@ module_report <- function(module_output,
   }
 
   # set up report
-  report <- module_output$report
+  report <- module_output$report %||% module_output$summary_text
   if (all(report == "")) report <- NULL
 
   paste0(c(head, report), collapse = "\n\n")

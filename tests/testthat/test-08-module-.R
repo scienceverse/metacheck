@@ -492,3 +492,4 @@ test_that("get_prev_outputs", {
   expect_null(get_prev_outputs("mod_2", "a"))
   rm(".prev_outputs__", envir = .GlobalEnv)
 })
+

@@ -1,36 +1,43 @@
 test_that("exists", {
-  expect_true(is.function(metacheck::crossref))
-  expect_no_error(helplist <- help(crossref, metacheck))
+  expect_true(is.function(metacheck::crossref_doi))
+  expect_no_error(helplist <- help(crossref_doi, metacheck))
+
+  expect_true(is.function(metacheck::crossref_query))
+  expect_no_error(helplist <- help(crossref_query, metacheck))
 
   expect_true(is.function(metacheck::openalex))
   expect_no_error(helplist <- help(openalex, metacheck))
 })
 
-test_that("crossref", {
-  skip()
-  skip_if_offline("api.labs.crossref.org")
+# httptest::start_capturing()
+httptest::with_mock_api({
+
+test_that("crossref_doi", {
+  #skip_if_offline("api.labs.crossref.org")
 
   doi <- "10.1177/fake"
-  expect_message(cr <- crossref(doi))
-  expect_equal(cr, list())
+  cr <- crossref_doi(doi)
+  expect_equal(cr$DOI, doi)
+  expect_equal(cr$error, "Not Found")
+  expect_null(cr$author)
 
   # single doi
   doi <- "10.1177/0956797614520714"
-  cr <- crossref(doi)
-  expect_equal(cr$`cr-labs-updates`[[1]]$`update-nature`, "Retraction")
+  cr <- crossref_doi(doi)
+  exp <- "Retracted: Evil Genius? How Dishonesty Can Lead to Greater Creativity"
+  expect_equal(cr$title, exp)
 
   # list of DOIs
   dois <- info_table(psychsci, "doi")
   dois$doi <- gsub("pss\\.", "", dois$doi) |> gsub("sagepub\\.", "", x = _)
   doi <- dois$doi[1:2]
-  cr2 <- crossref(doi)
+  cr2 <- crossref_doi(doi)
+  expect_equal(nrow(cr2), 2)
+  expect_equal(cr2$DOI, doi)
 })
 
-# httptest::start_capturing()
-httptest::with_mock_api({
-test_that("openalex", {
-  email("debruine@gmail.com")
 
+test_that("openalex", {
   doi <- "10.1177/fake"
   # expect_warning(oa <- openalex(doi))  DOES NOT FAIL ON LAKENS
   # expect_equal(oa, list(error = doi))
@@ -74,29 +81,38 @@ test_that("openalex", {
   expect_equal(oa$is_retracted, TRUE)
 })
 
-test_that("get_doi", {
+test_that("crossref_query", {
+  #skip_if_offline("api.labs.crossref.org")
+
   ref <- "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1)."
 
-  doi <- get_doi(ref, min_score = 50)
+  obs <- crossref_query(ref, min_score = 50)
   exp <- "10.1080/2833373x.2024.2376046"
-  expect_equal(doi, exp)
+  expect_equal(obs$DOI, exp)
+  exp <- c("ref", "DOI", "score", "type", "title", "author",
+           "container-title", "volume", "issue", "URL", "year")
+  expect_equal(names(obs), exp)
 
   ref <- "DeBruine, L. (2027) I haven't written this paper. Journal of Journals."
-  doi <- get_doi(ref, min_score = 50)
-  expect_equal(doi, NA_character_)
+  obs <- crossref_query(ref, min_score = 50)
+  expect_equal(obs$doi, NA_character_)
+  expect_equal(obs$ref, ref)
 
   # from bibentry ref
   ref <- psychsci[[1]]$bib$ref[[1]]
-  doi <- get_doi(ref)
+  obs <- crossref_query(ref)
   exp <- "10.1093/brain/110.3.747"
-  expect_equal(doi, exp)
+  expect_equal(obs$DOI, exp)
 
   # vectorised
   ref <- c("Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1).",
            "DeBruine, L. (2027) I haven't written this paper. Journal of Journals.")
-  doi <- get_doi(ref)
+  obs <- crossref_query(ref)
   exp <- c("10.1080/2833373x.2024.2376046", NA)
-  expect_equal(doi, exp)
+  expect_equal(obs$DOI, exp)
+
+  # TODO: lots of terrible bib
+  paper <- psychsci$`0956797620967261`
 })
 
 }) # end mock api

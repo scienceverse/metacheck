@@ -519,4 +519,46 @@ test_that("edge case summarise", {
   expect_equal(summary$file_category, contents$classify)
 })
 
+
+test_that("osf_type", {
+  expect_true(is.function(metacheck::osf_type))
+  expect_no_error(helplist <- help(osf_type, metacheck))
+
+  osf_skip()
+
+  examples <- list(project = "pngda",
+                component = "https://osf.io/6nt4v",
+                private = "ybm3c",
+                file = "osf.io/75qgk",
+                preprint = "xp5cy",
+                user = "4i578",
+                reg = "8c3kb",
+                bad = "xx")
+
+
+  otype <- osf_type(examples$project)
+  expect_equal(otype, "nodes")
+
+  otype <- osf_type(examples$component)
+  expect_equal(otype, "nodes")
+
+  otype <- osf_type(examples$private)
+  expect_equal(otype, "nodes")
+
+  otype <- osf_type(examples$file)
+  expect_equal(otype, "files")
+
+  otype <- osf_type(examples$preprint)
+  expect_equal(otype, "preprints")
+
+  otype <- osf_type(examples$user)
+  expect_equal(otype, "users")
+
+  otype <- osf_type(examples$reg)
+  expect_equal(otype, "registrations")
+
+  expect_warning(otype <- osf_type(examples$bad))
+  expect_equal(otype, NA_character_)
+})
+
 verbose(TRUE)

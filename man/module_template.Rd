@@ -9,7 +9,7 @@ module_template(module_name, path = "./modules")
 \arguments{
 \item{module_name}{The short name of the module (should contain only letters, numbers, and _)}
 
-\item{path}{The path to save the module (defaults to a directory called "modules" in the working directory)}
+\item{path}{The path of the directory to save the module in (defaults to a directory called "modules" in the working directory)}
 }
 \value{
 the file path (invisibly)

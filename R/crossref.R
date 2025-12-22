@@ -1,4 +1,7 @@
-#' Crossref info
+# Valid selects for crossref API are:
+# abstract, URL, resource, member, posted, score, created, degree, update-policy, short-title, license, ISSN, container-title, issued, update-to, issue, prefix, approved, indexed, article-number, clinical-trial-number, accepted, author, group-title, DOI, is-referenced-by-count, updated-by, event, chair, standards-body, original-title, funder, translator, published, archive, published-print, alternative-id, subject, subtitle, published-online, publisher-location, content-domain, reference, title, link, type, publisher, volume, references-count, ISBN, issn-type, assertion, deposited, page, content-created, short-container-title, relation, editor"
+
+#' CrossRef Info from DOI
 #'
 #' @param doi the DOI of the paper to get info for
 #'
@@ -7,12 +10,16 @@
 #' @examples
 #' doi <- "10.7717/peerj.4375"
 #' \dontrun{
-#'  # cr_info <- crossref(doi)
+#'  # cr_info <- crossref_doi(doi)
 #' }
-crossref <- function(doi) {
+crossref_doi <- function(doi) {
+  if (length(doi) == 0) {
+    return(data.frame())
+  }
+
   if (!online("api.labs.crossref.org")) {
     message("Crossref is offline")
-    return(list())
+    return(data.frame(DOI = doi, error = "offline"))
   }
 
   if (is_paper(doi) || is_paper_list(doi)) {
@@ -21,30 +28,202 @@ crossref <- function(doi) {
   }
 
   if (length(doi) > 1) {
-    # iterate over DOIs
-    crossref_list <- lapply(doi, crossref)
-    names(crossref_list) <- doi
-    return(crossref_list)
+    # vectorise
+    pb <- pb(length(doi),
+             format = "Checking References [:bar] :current/:total :elapsedfull")
+    table <- lapply(doi, \(d) {
+      pb$tick()
+      crossref_doi(d)
+    }) |>
+      do.call(dplyr::bind_rows, args = _)
+    return(table)
   }
 
   # check for well-formed DOI
   pattern <- "^10\\.\\d{3,9}\\/[-._;()/:A-Za-z0-9]*[A-Za-z0-9]$"
   if (!grepl(pattern, doi, perl = TRUE)){
     message(doi, " is not a well-formed DOI\\n")
-    return(list())
+    return(data.frame(DOI = doi, error = "malformed"))
   }
 
   url <- sprintf("https://api.labs.crossref.org/works/%s?mailto=%s",
-                 doi, email())
-  j <- jsonlite::read_json(url)
+                 utils::URLencode(doi, reserved = TRUE),
+                 email())
 
-  if (j$status == "ok") {
-    return(j$message)
+  item <- tryCatch({
+    j <- jsonlite::read_json(url)
+    if (j$status != "ok") { stop(j$body$`message-type`) }
+    j$message
+  }, error = function(e) {
+    return(list(DOI = doi, error = e$message))
+  }, warning = function(w) {
+    return(list(DOI = doi, error = w$message))
+  })
+
+  # process item
+  if (length(item$title)) {
+    item$title <- item$title[[1]]
   } else {
-    message(j$body$message)
-    return(list())
+    item$title <- NULL
   }
+
+  if (length(item$`container-title`)) {
+    item$`container-title` <- item$`container-title`[[1]]
+  } else {
+    item$`container-title` <- NULL
+  }
+
+  if (length(item$published$`date-parts`) &
+      length(item$published$`date-parts`[[1]])) {
+    item$year <- item$published$`date-parts`[[1]][[1]]
+  }
+  item$published <- NULL
+
+  authors <- lapply(item$author, \(a) {
+    # handle when parts are missing
+    cols <- c("given", "family", "ORCID")
+    suba <- a[cols]
+    names(suba) <- cols
+    suba
+  }) |> do.call(dplyr::bind_rows, args = _)
+  item$author <- NULL
+
+  select <- c(
+    "DOI",
+    "type",
+    "title",
+    "container-title",
+    "volume",
+    "issue",
+    "page",
+    "URL",
+    "abstract",
+    "year",
+    "error"
+  ) |> intersect(names(item))
+
+  ret <- data.frame(item[select], check.names = FALSE)
+  if (nrow(authors)) ret$author <- list(authors)
+
+  return(ret)
 }
+
+
+
+#' Look up Reference in CrossRef
+#'
+#' @param reference the full text reference of the paper to get info for
+#' @param min_score minimal score that is taken to be a reliable match (default 50)
+#'
+#' @return doi
+#' @export
+#' @examples
+#' ref <- paste(
+#'   "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024).",
+#'   "The benefits of preregistration and Registered Reports.",
+#'   "Evidence-Based Toxicology, 2(1)."
+#' )
+#' \donttest{
+#'   cr <- crossref_query(ref)
+#' }
+crossref_query <- function(ref, min_score = 50, rows = 1) {
+  if (length(ref) == 0) {
+    return(data.frame())
+  }
+
+  if (inherits(ref, "bibentry")) {
+    ref <- format(ref)
+  } else if (length(ref) > 1 | is.list(ref)) {
+    # vectorise
+    pb <- pb(length(ref),
+             format = "Checking References [:bar] :current/:total :elapsedfull")
+    table <- lapply(ref, \(r) {
+      pb$tick()
+      crossref_query(r, min_score)
+    }) |>
+      do.call(dplyr::bind_rows, args = _)
+    return(table)
+  }
+
+  if (!online("api.labs.crossref.org")) {
+    message("Crossref is offline")
+    return(data.frame(ref = ref, error = "offline"))
+  }
+
+
+  select <- c(
+    "DOI",
+    "score",
+    "type",
+    "title",
+    "author",
+    "container-title",
+    "published",
+    "volume",
+    "issue",
+    "page",
+    "URL",
+    "abstract"
+  )
+
+  query <- utils::URLencode(ref, reserved = TRUE)
+
+  url <- sprintf("https://api.crossref.org/works?mailto=%s&rows=%d&sort=score&select=%s&query.bibliographic=%s",
+                 email(),
+                 rows,
+                 paste(select, collapse = ","),
+                 query)
+
+
+  items <- tryCatch({
+    j <- jsonlite::read_json(url)
+    if (j$status != "ok") { stop(j$body$message) }
+    j$message$items
+  }, error = function(e) {
+    return(data.frame(ref = ref, error = e$message))
+  }, warning = function(w) {
+    message(w$message)
+    return(data.frame(ref = ref, error = w$message))
+  })
+
+  scores <- sapply(items, `[[`, "score")
+  if (length(items) == 0 || all(scores < min_score)) {
+    table <- data.frame(ref = ref, doi = NA_character_)
+    return(table)
+  } else {
+    items <- items[scores >= min_score]
+  }
+
+  # parse the response into a table
+  parsed_items <- lapply(items, \(item) {
+    # item <- items[[1]] # for testing
+    item$title <- item$title[[1]]
+    item$`container-title` <- item$`container-title`[[1]]
+    item$year <- item$published$`date-parts`[[1]][[1]]
+    item$published <- NULL
+
+    authors <- lapply(item$author, \(a) {
+      # handle when parts are missing
+      cols <- c("given", "family", "ORCID")
+      suba <- a[cols]
+      names(suba) <- cols
+      suba
+    }) |> do.call(dplyr::bind_rows, args = _)
+    item$author <- NULL
+
+    ret <- data.frame(item, check.names = FALSE)
+    ret$author <- list(authors)
+
+    ret
+  })
+
+  table <- do.call(dplyr::bind_rows, parsed_items)
+  table$ref <- ref
+  rows <- table$score >= min_score
+  cols <- intersect(select, names(table)) |> c("ref", x = _, "year")
+  table[rows, cols]
+}
+
 
 #' Get OpenAlex info for a paper
 #'
@@ -131,11 +310,11 @@ openalex <- function(doi, select = NULL) {
                  doi, email())
 
   info <- tryCatch( suppressWarnings( jsonlite::read_json(url) ),
-                 error = function(e) {
-                   if (verbose())
-                     warning(doi, " not found in OpenAlex", call. = FALSE)
-                   return(list(error = doi))
-                 })
+                    error = function(e) {
+                      if (verbose())
+                        warning(doi, " not found in OpenAlex", call. = FALSE)
+                      return(list(error = doi))
+                    })
 
   if (!is.null(info$abstract_inverted_index)) {
     # convert inverted index to abstract
@@ -163,58 +342,4 @@ openalex <- function(doi, select = NULL) {
   # }
 
   return(info)
-}
-
-ref_info <- function(paper) {
-  info <- sapply(paper$bib$doi, \(doi) {
-    if (doi != "") {
-      openalex(doi)
-    } else {
-      list()
-    }
-  })
-}
-
-#' Get DOI from Reference
-#'
-#' @param reference the full text reference of the paper to get info for
-#' @param min_score minimal score that is taken to be a reliable match (default 50)
-#'
-#' @return doi
-#' @export
-#' @examples
-#' ref <- paste(
-#'   "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024).",
-#'   "The benefits of preregistration and Registered Reports.",
-#'   "Evidence-Based Toxicology, 2(1)."
-#' )
-#' \donttest{
-#'   doi <- get_doi(ref)
-#' }
-
-# Function to get a doi from crossref by sending the full reference text.
-get_doi <- function(reference, min_score = 50) {
-  if (inherits(reference, "bibentry")) {
-    reference <- format(reference)
-  } else if (length(reference) > 1) {
-    # vectorise
-    pb <- pb(length(reference))
-    dois <- sapply(reference, \(r) {
-      pb$tick()
-      get_doi(r, min_score)
-    }, USE.NAMES = FALSE)
-    return(dois)
-  }
-
-  options(crossref_email = email())
-  tryCatch({
-    res <- rcrossref::cr_works(query = reference, limit = 1)
-    if (nrow(res$data) > 0 && as.numeric(res$data$score[1]) > min_score) {
-      return(res$data$doi[1])
-    } else {
-      return(NA_character_)
-    }
-  }, error = function(e) {
-    return(NA_character_)
-  })
 }

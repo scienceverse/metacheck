@@ -6,7 +6,10 @@ metacheck:
   report-created: "%s"
 format:
   html:
-    theme: flatly
+    theme: 
+      light: flatly
+      dark: darkly
+    respect-user-color-scheme: true
     toc: true
     toc-title: >
       <ul>
@@ -22,12 +25,14 @@ format:
     toc-location: right
     toc-expand: 3
     page-layout: full
-    title-block-banner: true
+    title-block-banner: "#327118"
+    title-block-banner-color: "white"
     link-external-newwindow: true
     embed-resources: true
     format-links: false
-  pdf: 
-    toc: false
+execute: 
+  echo: false
+  error: true
 ---
 
 <style>
@@ -41,11 +46,14 @@ format:
   .yellow::before { content: '🟡 '; }
   .green::before  { content: '🟢 '; }
   section::before { content: '' !important; }
-  .quarto-title-banner { background-color: #327118; }
-  th { color: #327118; }
+  th { background-color: #555; color: white; }
   table.dataTable, .dataTables_scrollBody { margin: 0.5em 0; }
-  #info { position: absolute; top: 1.5em; right: 1.5em; color: white; }
+  #info { position: absolute; top: 2.5em; right: 2.5em; color: white; }
   #info a { color: white !important; }
+  .quarto-dark tr.even { background-color: #333; }
+  .quarto-dark tr.odd { background-color: #222; }
+  .quarto-dark div.datatables { color: white; }
+  .quarto-dark table.dataTable { border: 1px solid #555; }
 </style>
 
 ::: {#info}
@@ -56,58 +64,176 @@ Report Created: {{< meta metacheck.report-created >}}
 
 ## Demo
 
-Everything below here is for test purposes and removed when using this template to create a report.
-
-## General Modules
-
-### Module A
-
-#### Scroll Tables
-
 ```{r}
-#| echo: false
-# table options
-
-cd <- list(list(targets = 4, width = "500px"))
-options <- list(dom="t", ordering=FALSE, autoWidth=TRUE,  
-                scrollY=200, columnDefs=cd)
-
-# display table
-DT::datatable(iris, options, selection = "none", rownames = FALSE)
+#| include: false
+library(metacheck)
 ```
 
 
-#### Collapsible Sections
+Everything below here is for test purposes and removed when using this template to create a report.
 
-`r metacheck::collapse_section("Lorem ipsum...")`
+## Styles
 
-## Intro Modules
+### No problems detected {.green} 
 
-### Module B
+Detected evidence of good practice or no evidence of poor practice.
 
-#### Short Tables
+### Something to check {.yellow}
 
-A shorter non-scrolling table
+Detected something you should check.
+
+### Possible problems detected {.red}
+
+A possible poor practice detected.
+
+### Informational only {.info}
+
+Info that isn't necessarily good/questionable/poor practice.
+
+### Not applicable {.na}
+
+This check isn't relevant to this paper.
+
+### Check failed {.fail}
+
+This is usually when something goes wroing and there is an uncaught error in the module.
+
+## Module Helpers
+
+### Scroll Tables {.info}
+
+#### Default Scroll Tables
+
+Create this in your module report code with `scroll_table(table)`.
 
 ```{r}
 #| echo: false
 # table options
-options <- list(dom = "t", ordering = FALSE)
 
-# display table
-DT::datatable(head(iris, 2), options, 
-              selection = "none", rownames = FALSE)
+# table data ------------------------------------
+table <- structure(list(id = 1:5, text = c("Lorem semper tempus libero habitant faucibus cursus venenatis natoque volutpat est ultricies penatibus nisl lacinia.", 
+"Lorem cras bibendum facilisi porta sagittis a convallis fames erat dui netus cubilia.", 
+"Adipiscing auctor litora scelerisque tincidunt ullamcorper volutpat mattis ultrices lectus rutrum.", 
+"Elit nisi cras pharetra etiam semper sollicitudin interdum magnis facilisi.", 
+"Ipsum per platea varius vel condimentum posuere gravida cum laoreet commodo."
+)), class = "data.frame", row.names = c(NA, -5L))
+
+# table setup -----------------------------------
+cd <- list()
+options <- list(dom = "<'top'p>", ordering = FALSE, pageLength = 2, columnDefs = cd)
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+#### Scroll Tables with Vectors
+
+If you pass a character vector instead of a table, it will display without a header `scroll_table(vector)`.
+
+```{r}
+#| echo: false
+# table options
+
+# table data ------------------------------------
+table <- structure(list(c(
+  "Amet accumsan inceptos aliquam cras non commodo sapien vulputate diam odio fermentum magnis ornare tristique.", 
+  "Lorem habitant sem enim libero nostra lacus pharetra aptent rutrum vehicula.",
+  "Ipsum taciti non pharetra morbi bibendum sociis congue risus pellentesque elementum!", 
+  "Elit fringilla penatibus proin diam erat torquent iaculis vestibulum platea dictumst ligula.", 
+  "Amet conubia ultricies arcu consequat mattis auctor metus."
+)), names = "", class = "data.frame", row.names = c(NA, -2L))
+
+# table setup -----------------------------------
+cd <- list()
+options <- list(dom = "<'top' p>", ordering = FALSE, pageLength = 2, columnDefs = cd)
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+```
+
+
+#### Short Tables
+
+If the number of rows is less than `maxrows` there will be no pagination. Set colwidths to have more control over column widths. 
+
+```
+scroll_table(table, colwidths = c(.1, .9), maxrows = 3)
+```
+
+```{r}
+#| echo: false
+
+# table data ------------------------------------
+table <- structure(list(id = 1:3, text = c("Dolor urna mus libero dui consequat quisque sapien nibh curae eros.", 
+"Consectetur hac integer urna pharetra ridiculus penatibus magna magnis nisi ac?", 
+"Adipiscing ultrices imperdiet lectus bibendum massa facilisis suscipit."
+)), class = "data.frame", row.names = c(NA, -3L))
+
+# table setup -----------------------------------
+cd <- list(list(targets = 0, width = "10%"), list(targets = 1, width = "90%"))
+options <- list(dom = "t", ordering = FALSE, pageLength = 3, columnDefs = cd)
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
 ```
 
 #### Wide Scroll Tables
 
+Set the `column` argument to control display location.
+
+```
+scroll_table(table, column = "page")
+```
+
 ```{r}
 #| echo: false
 #| column: page
-# table options
-options <- list(dom = "t", ordering = FALSE , scrollY = 200)
 
-# display table
-DT::datatable(mtcars, options, selection = "none", rownames = FALSE)
+# table data ------------------------------------
+table <- structure(list(id = 1:2, text = c("Ipsum condimentum eu aenean cubilia, sapien ridiculus vestibulum dui, eleifend bibendum. Posuere vel sociosqu curae eget sociis ligula mattis litora tortor, ultricies sem quis auctor nisl pretium feugiat tempor luctus.", 
+"Ipsum aliquam magna diam nam pretium: cum habitant tempor habitasse aenean eleifend pulvinar? Condimentum malesuada eros erat per augue ultrices; platea mi congue egestas litora purus per bibendum, nec duis odio cras?"
+)), class = "data.frame", row.names = c(NA, -2L))
+
+# table setup -----------------------------------
+cd <- list()
+options <- list(dom = "t", ordering = FALSE, pageLength = 2, columnDefs = cd)
+DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
 ```
 
+### Collapsible Sections {.info}
+
+Use `collapse_section()` to enclose a text vector in a coollapsible callout. 
+
+```
+collapse_section(text, 
+                 title = "Learn More", 
+                 callout = c("tip", "note", "warning", "important", "caution"), 
+                 collapse = TRUE)
+```
+
+`collapse_section(text)`
+
+`r metacheck::collapse_section("Here are some more more details...")`
+
+You can change the title, callout type, and set them to default open.
+
+`collapse_section(text, "Help!", "caution", FALSE)`
+
+`r metacheck::collapse_section("Don't do that.", "Caution", "caution", FALSE)`
+
+
+### Format References {.info}
+
+You can use `format_ref()` on a bibentry or bibtext object to consistently format a reference.
+
+```{r}
+#| results: 'asis'
+
+marg_ref <- bibentry(
+  bibtype = "Article",
+  title = "The Prevalence of Marginally Significant Results in Psychology Over Time",
+  author = "Olsson-Collentine, A., van Assen, M. A. L. M., & Hartgerink, C. H. J.",
+  year = "2019",
+  journal = "Psychological Science",
+  volume = 30,
+  issue = 4,
+  pages = "576--586",
+  doi = "10.1177/0956797619830326"
+)
+
+format_ref(marg_ref) |> cat()
+```

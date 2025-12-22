@@ -29,38 +29,24 @@ modules <- c(
   "effect_size",
   "code_check",
   "statcheck",
-  "reference_check"
+  "reference_check",
+  "replications",
+  "retractionwatch",
+  "pubpeer"
 )
 
+# modules <- c("replications", "fail", "retractionwatch")
 
-# One specific paper
-paper <- read(demoxml())
-
-# example with osf Rmd files and github files:
-# paper <- psychsci[[203]]
-# example with missing data files:
-# paper <- psychsci[[221]]
-# Many R files, some with library in different places.
-# paper <- psychsci[[225]]
-# Best example, with many issues, for paper:
-# paper <- psychsci[[233]]
-
-
-osf_api_calls(0)
-file <- report(paper,
-       modules = modules,
-       output_file = "pkgdown/assets/report-example.qmd",
-       output_format = "qmd")
-osf_api_calls()
-browseURL(file)
-
+modules <- "nonsig_p"
 
 # generate reports for a sample of n papers
 n <- 1
+output <- "html"
 files <- seq_along(psychsci) |> sample(n) |>
   lapply(\(i) {
-    #i = which(names(psychsci) == "0956797614557697")
+    i = which(names(psychsci) == "0956797621991137")
     paper <- psychsci[[i]]
+    print(paper$id)
 
     args <- list(
       reference_check = list(crossref_min_score = 75)
@@ -68,8 +54,8 @@ files <- seq_along(psychsci) |> sample(n) |>
 
     report(paper,
            modules = modules,
-           output_file = paste0(dir, "/", paper$id, ".html"),
-           output_format = "html",
+           output_file = paste0(dir, "/", paper$id, ".", output),
+           output_format = output,
            args = args)
   })
 
