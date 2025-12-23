@@ -44,15 +44,15 @@ test_that("module_info", {
   info <- module_info("marginal")
   expect_equal(info$title, "Marginal Significance")
   expect_equal(info$keywords, "results")
-  expect_equal(info$author, "Daniel Lakens")
+  expect_equal(info$author, "Daniel Lakens (\\email{D.Lakens@tue.nl})")
   expect_equal(info$description, "List all sentences that describe an effect as 'marginally significant'.")
   expect_equal(info$func_name, "marginal")
 
   info <- module_info("modules/no_error.R")
-  expect_equal(info$title, "List All P-Values (Test version)")
-  expect_equal(info$description, "List all p-values in the text, returning the matched text (e.g., 'p = 0.04')\nand document location in a table.")
-  expect_equal(info$details, "Here are some details...")
-  expect_equal(info$author, list("Lisa DeBruine", "Daniel Lakens"))
+  expect_equal(info$title, "Demo No Error")
+  expect_equal(info$description, "Demo description")
+  expect_equal(info$details, "Demo details...")
+  expect_equal(info$author, list("Lisa DeBruine (\\email{debruine@gmail.com})", "Daniel Lakens"))
   expect_equal(info$func_name, "pvals2")
   expect_equal(info$param[[1]], list(name = "paper",
                                      description = "a paper object or paperlist object"))
@@ -129,7 +129,7 @@ test_that("module_run", {
   expected_summary <- data.frame(id = "to_err_is_human", p_values = 3)
 
   expect_equal(mod_output$module, module)
-  expect_equal(mod_output$title, "List All P-Values (Test version)")
+  expect_equal(mod_output$title, "Demo No Error")
   expect_equal(mod_output$traffic_light, "info")
   expect_equal(mod_output$section, "results")
   expect_equal(mod_output$report, "report text")
@@ -144,7 +144,6 @@ test_that("module_run", {
   mod_output <- module_run(paper, module,
                            demo_arg = "demo")
   expect_equal(mod_output$summary_text, "summary textdemo")
-
 })
 
 test_that("chaining modules - one paper", {

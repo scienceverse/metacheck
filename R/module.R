@@ -86,8 +86,8 @@ module_run <- function(paper, module, ...) {
   }
 
   # add defaults
-  if (is.null(results$traffic_light) & is.data.frame(results$table)) {
-    results$traffic_light = ifelse(nrow(results$table), "info", "na")
+  if (is.null(results$traffic_light)) {
+    results$traffic_light <- "info"
   }
 
   results$report <- results$report %||% results$summary_text %||% ""
@@ -118,10 +118,15 @@ module_run <- function(paper, module, ...) {
     }
   }
 
+  # fix section if missing or not in list or multiple
+  section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
+  section <- info$keywords[info$keywords %in% section_levels]
+  if (!length(section)) section <- "general"
+
   report_items <- list(
     module = module,
     title = info$title,
-    section = info$keywords,
+    section = section[[1]],
     table = results$table,
     report = results$report,
     traffic_light = results$traffic_light,
@@ -164,7 +169,8 @@ module_find <- function(module) {
   } else if (file.exists(module)) {
     module_path <- module
   } else {
-    stop("There were no modules that matched ", module, "; use module_list() to see a list of built-in modules.")
+    stop("There were no modules that matched ", module,
+         "\nuse module_list() to see a list of built-in modules.", call. = FALSE)
   }
 
   return(module_path)

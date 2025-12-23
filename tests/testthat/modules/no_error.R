@@ -1,13 +1,14 @@
-#' List All P-Values (Test version)
+#' Demo No Error
 #'
-#' List all p-values in the text, returning the matched text (e.g., 'p = 0.04')
-#' and document location in a table.
+#' @description
+#' Demo description
 #'
-#' Here are some details...
+#' @details
+#' Demo details...
 #'
 #' @keywords results
 #'
-#' @author Lisa DeBruine
+#' @author Lisa DeBruine (\email{debruine@gmail.com})
 #' @author Daniel Lakens
 #'
 #' @import dplyr

@@ -1,69 +1,101 @@
-test_that("error", {
+test_that("errors", {
   expect_true(is.function(metacheck::report))
+  expect_no_error(helplist <- help(report, metacheck))
 
-  expect_error(report(1), "The paper argument must be a paper object")
+  paper <- read(demoxml())
+  modules <- "all_p_values"
+  output_file <- tempfile(fileext = ".qmd")
+  output_format <- "qmd"
 
-  paper <- demoxml() |> read()
-  expect_error( paper_report <- report(paper, modules = c("notamodule")),
-                "notamodule")
+  # paper not a paper or paperlist
+  bad_paper <- 1
+  expect_error(report(bad_paper, modules, output_file, output_format),
+               "The paper argument must be a paper object")
+
+  # non-existent module
+  bad_modules <- "notamodule"
+  expect_error(report(paper, bad_modules, output_file, output_format),
+               "notamodule")
+
+  # bad output_file path
+  bad_output_file <- "not/a/path/file.html"
+  expect_error(report(paper, modules, bad_output_file, output_format),
+               "output_file")
+
+  # bad format
+  bad_output_format <- "pdf"
+  expect_error(report(paper, modules, output_file, bad_output_format),
+               "output_format")
+
+  # format case
+  ok_output_format <- "QMD"
+  expect_no_error(save_path <- report(paper, modules, output_file, ok_output_format))
+  expect_equal(save_path, output_file)
 })
 
-test_that("defaults", {
+test_that("rendering error", {
+  # should give a warning and returnt he path to the saved qmd
+  paper <- read(demoxml())
+  modules <- c("bad-report")
+  output_format <- "html"
+
+  # qmd fails to render
+  output_file <- tempfile(fileext = paste0(".", output_format))
+  expect_warning(report_file <- report(paper, modules, output_file, output_format),
+                 "There was an error rendering your report")
+
+  exp <- sub("html$", "qmd", output_file)
+  expect_equal(report_file, exp)
+  # browseURL(report_file)
+
+  unlink(report_file)
+})
+
+test_that("render qmd", {
   paper <- demoxml() |> read()
-  # skip modules that require external APIs
-  modules <- c(
-    "stat_p_exact", "marginal", "stat_effect_size", "stat_check"
-  )
+  modules <- c("stat_p_exact", "marginal")
 
   # qmd
   paper <- psychsci[[94]]
-  qmd <- tempfile(fileext = ".qmd")
-  if (file.exists(qmd)) unlink(qmd)
-  paper_report <- report(paper, modules,
-    output_file = qmd,
-    output_format = "qmd"
-  )
-  expect_equal(paper_report, qmd)
-  expect_true(file.exists(qmd))
-  # rstudioapi::documentOpen(qmd)
+  output_file <- tempfile(fileext = ".qmd")
+  output_format <- "qmd"
+  paper_report <- report(paper, modules, output_file, output_format)
+  expect_equal(paper_report, output_file)
+  expect_true(file.exists(output_file))
+  # browseURL(output_file)
 
+  unlink(output_file)
+})
+
+test_that("render html", {
   skip_if_not_installed("quarto")
   skip_on_cran()
 
-  # html
-  html <- tempfile(fileext = ".html")
-  if (file.exists(html)) unlink(html)
-  paper_report <- report(paper, modules,
-    output_file = html,
-    output_format = "html"
-  )
-  expect_equal(paper_report, html)
-  expect_true(file.exists(html))
+  paper <- demoxml() |> read()
+  modules <- c("stat_p_exact", "marginal")
+  output_file <- tempfile(fileext = ".html")
+  output_format <- "html"
+
+  save_path <- report(paper, modules, output_file, output_format)
+  expect_equal(save_path, output_file)
+  expect_true(file.exists(save_path))
   # browseURL(html)
 
-  # pdf
-  skip("pdf")
-  pdf <- tempfile(fileext = ".pdf")
-  if (file.exists(pdf)) unlink(pdf)
-  paper_report <- report(paper, modules,
-    output_file = pdf,
-    output_format = "pdf"
-  )
-  expect_equal(paper_report, pdf)
-  expect_true(file.exists(pdf))
-  # browseURL(pdf)
+  unlink(save_path)
 })
 
 test_that("report pass args", {
+  # pass arguments to modules from args
   paper <- demoxml() |> read()
   modules <- c("stat_p_exact", "modules/no_error.R")
-  tf <- tempfile(fileext = ".qmd")
+  output_file <- tempfile(fileext = ".qmd")
+  output_format <- "qmd"
 
   args <- list(
     "modules/no_error.R" = list(demo_arg = "Look for me in the text!",
                                 irrelevant_arg = 1:10)
   )
-  r <- report(paper, modules, output_file = tf, args = args)
+  r <- report(paper, modules, output_file, output_format, args = args)
   # browseURL(r)
 
   qmd_txt <- readLines(r)
@@ -144,19 +176,9 @@ test_that("detected", {
   expect_equal(paper_report, html)
   expect_true(file.exists(html))
   # browseURL(html)
-
-  # pdf
-  skip("pdf")
-  pdf <- tempfile(fileext = ".pdf")
-  if (file.exists(pdf)) unlink(pdf)
-  paper_report <- report(paper, modules,
-    output_file = pdf,
-    output_format = "pdf"
-  )
-  expect_equal(paper_report, pdf)
-  expect_true(file.exists(pdf))
-  # browseURL(pdf)
 })
+
+
 
 test_that("module_report", {
   expect_true(is.function(metacheck::module_report))
@@ -169,7 +191,7 @@ test_that("module_report", {
   report <- module_report(module_output)
   expect_true(grepl("^### Exact P-Values \\{\\.red\\}", report))
 
-  report <- module_report(module_output, header = 4, maxrows = 20, trunc_cell = 10)
+  report <- module_report(module_output, header = 4)
   expect_true(grepl("^#### Exact P-Values \\{\\.red\\}", report))
 
   report <- module_report(module_output, header = "Custom header")
@@ -179,4 +201,26 @@ test_that("module_report", {
   op <- capture_output(print(module_output))
   expect_true(grepl("^Exact P-Values", op))
 })
+
+
+test_that("module_report howitworks", {
+  paper <- read(demoxml())
+
+  module <- "no_error"
+  module_output <- module_run(paper, module)
+  rep <- module_report(module_output)
+
+  expect_true(grepl("Lisa DeBruine and Daniel Lakens", rep))
+  expect_true(grepl("^### Demo No Error", rep))
+  expect_true(grepl("Demo description", rep))
+  expect_true(grepl("Demo details...", rep))
+
+  module <- "bad-report"
+  module_output <- module_run(paper, module)
+  rep <- module_report(module_output)
+
+  expect_true(grepl("^### Bad Report \\{\\.info\\}", rep))
+  expect_false(grepl("This module was developed by", rep))
+})
+
 

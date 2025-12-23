@@ -39,12 +39,12 @@ execute:
   main h2, main h3 { margin-left: -20px; }
   main h3 { font-size: 125%; }
   main h4 { font-size: 110%; }
-  .na::before     { content: '⚪️ '; }
-  .fail::before   { content: '⚫️ '; }
-  .info::before   { content: '🔵 '; }
-  .red::before    { content: '🔴 '; }
-  .yellow::before { content: '🟡 '; }
-  .green::before  { content: '🟢 '; }
+  .na::before     { content: '⚪ '; } /* ⚪ */
+  .fail::before   { content: '☠️ '; } /* ⚫️ */
+  .info::before   { content: 'ℹ️ '; } /* 🔵 */
+  .red::before    { content: '⚠️ '; } /* 🔴 */
+  .yellow::before { content: '️🔍 '; } /* 🟡 */
+  .green::before  { content: '✅ '; } /* 🟢 */
   section::before { content: '' !important; }
   th { background-color: #555; color: white; }
   table.dataTable, .dataTables_scrollBody { margin: 0.5em 0; }

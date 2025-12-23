@@ -36,19 +36,32 @@ report <- function(paper,
                                "ref_retraction",
                                "ref_pubpeer"),
                    output_file = paste0(paper$name, "_report.", output_format),
-                   output_format = c("qmd", "html", "pdf"),
+                   output_format = c("html", "qmd"),
                    args = list()) {
-  output_format <- match.arg(output_format)
-
-  # check paper has required things
-  if (!"scivrs_paper" %in% class(paper)) {
-    stop("The paper argument must be a paper object (e.g., created with `read()`)")
+  # error catching ----
+  ## check output format
+  output_format <- tolower(output_format[[1]])
+  if (!output_format %in% c("html", "qmd")) {
+    stop("The output_format must be either 'html' or 'qmd'.",
+         call. = FALSE)
   }
 
-  # check if modules are available ----
+  ## check if the output_file is valid
+  # so the modules don't run then failure
+  tryCatch(suppressWarnings( write("test", output_file) ),
+           error = \(e) {
+             stop("The output_file is not a valid path.", call. = FALSE)
+           })
+
+  ## check paper has required things
+  if (!"scivrs_paper" %in% class(paper)) {
+    stop("The paper argument must be a paper object (e.g., created with `read()`)", .call = FALSE)
+  }
+
+  ## check if modules are available
   mod_exists <- sapply(modules, module_find)
 
-  # set up progress bar ----
+  # set up progress bar
   pb <- pb(length(modules) + 3,
            ":what [:bar] :current/:total :elapsedfull")
   pb$tick(0, tokens = list(what = "Running modules"))
@@ -83,7 +96,7 @@ report <- function(paper,
            })
   }
 
-  # pull module output out
+  # pull last module output out
   module_output <- op$prev_outputs
   op$prev_outputs <- NULL
   op$paper <- NULL
@@ -92,7 +105,7 @@ report <- function(paper,
   # organise modules ----
   section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
   sections <- sapply(module_output, \(mo) mo$section)
-  sections <- factor(sections, section_levels)
+  sections <- factor(sections, section_levels, )
   module_output <- sort_by(module_output, sections)
 
   # set up report ----
@@ -145,11 +158,13 @@ report <- function(paper,
   report_text <- paste(qmd_header,
                        summary_text,
                        module_reports,
+                       "\n", # prevent incomplete final line warnings
                        sep = "\n\n")
 
   pb$tick(tokens = list(what = "Rendering Report"))
   if (output_format == "qmd") {
     write(report_text, output_file)
+    save_path <- output_file
   } else {
     # render report ----
     temp_input <- tempfile(fileext = ".qmd")
@@ -161,28 +176,34 @@ report <- function(paper,
 
     write(report_text, temp_input)
 
-    tryCatch({
+    save_path <- tryCatch({
       quarto::quarto_render(input = temp_input,
                             quiet = TRUE,
                             output_format = output_format)
+      file.rename(temp_output, output_file)
+      output_file
     }, error = function(e) {
-      stop("There was an error rendering your report:\n", e$message)
+      # save the qmd on render error and return its path
+      output_qmd <- output_file |>
+        gsub("\\.html$", "", x = _) |>
+        paste0(".qmd")
+      write(report_text, output_qmd)
+      warning("There was an error rendering your report:\n", e$message,
+              "\n\nSee the following for the quarto file:\n", output_qmd,
+              call. = FALSE)
+      return(output_qmd)
     })
-
-    file.rename(temp_output, output_file)
   }
 
   pb$tick(tokens = list(what = "Report Saved"))
 
-  invisible(output_file)
+  invisible(save_path)
 }
 
 #' Report from module output
 #'
 #' @param module_output the output of a `module_run()`
 #' @param header header level (default 2)
-#' @param maxrows the maximum number of table rows to print
-#' @param trunc_cell truncate any cell to this number of characters
 #'
 #' @return text
 #' @export
@@ -193,9 +214,7 @@ report <- function(paper,
 #' op <- module_run(paper, "stat_p_exact")
 #' module_report(op) |> cat()
 module_report <- function(module_output,
-                          header = 3,
-                          maxrows = Inf,
-                          trunc_cell = Inf) {
+                          header = 3) {
 
   # set up header
   if (is.null(header)) {
@@ -215,22 +234,27 @@ module_report <- function(module_output,
   if (all(report == "")) report <- NULL
 
   # how it works
-  info <- module_info(module_output$module)
+  hiw <- tryCatch({
+    info <- module_info(module_output$module)
 
-  a <- info$author |>
-    gsub("\\s*\\(.*email\\{.+\\})", "", x = _)
-  authors <- if (length(a) < 3) {
-    paste(a, collapse = " and ")
-  } else {
-    paste0(paste(a[-n], collapse = ", "), " and ", a[n])
-  }
-  author_ack <- sprintf(
-    "This module was developed by %s",
-    authors
-  )
+    author_ack <- NULL
+    if (!is.null(info$author)) {
+      a <- info$author |>
+        gsub("\\s*\\(.*email\\{.+\\})", "", x = _)
+      authors <- if (length(a) < 3) {
+        paste(a, collapse = " and ")
+      } else {
+        paste0(paste(a[-n], collapse = ", "), " and ", a[n])
+      }
+      author_ack <- sprintf(
+        "This module was developed by %s",
+        authors
+      )
+    }
 
-  hiw <- c(info$description, info$details, author_ack) |>
-    collapse_section("How It Works", callout = "note")
+    c(info$description, info$details, author_ack) |>
+      collapse_section("How It Works", callout = "note")
+  }, error = \(e) { return(NULL) })
 
   paste0(c(head, report, hiw), collapse = "\n\n")
 }
