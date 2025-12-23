@@ -42,22 +42,14 @@ test_that("basic", {
 
 test_that("plus/minus", {
   paper <- demoxml() |> read()
-  res_tbl <- search_text(paper, "p =", return = "match")
-  expected <- paper$full_text |>
-    dplyr::filter(div == 3,
-                  (p == 1 & s %in% 1:3) | (p == 2 & s %in% 0:2)) |>
-    dplyr::summarise(text = paste(text, collapse = " "),
-                     .by = c("id", "div", "p"))
+  res_tbl <- search_text(paper, "Cohen's", return = "match")
   expanded <- expand_text(res_tbl, paper, plus = 1, minus = 1)
-  # expect_equal(expanded$expanded, expected$text, ignore_attr = TRUE)
+  exp <- "Data is also available from <https://osf.io/5tbm9> and code is also available from <https://osf.io/629bx>. We conducted a sensitivity power analysis to determine that a Cohen's d of 0.50 is the smallest effect size that we could detect with 50 participants in each group and 80% power. On average researchers in the experimental (app) condition made fewer mistakes (M = 9.12) than researchers in the control (checklist) condition (M = 10.9), t(97.7) = 2.9, p = 0.005, d = 0.59."
+  expect_equal(expanded$expanded, exp)
 
-  expected <- paper$full_text |>
-    dplyr::filter(div == 3,
-                  (p == 1 & s %in% 1:2) | (p == 2 & s %in% 0:1)) |>
-    dplyr::summarise(text = paste(text, collapse = " "),
-                     .by = c("id", "div", "p"))
   expanded <- expand_text(res_tbl, paper, plus = 0, minus = 1)
-  # expect_equal(expanded$expanded, expected$text, ignore_attr = TRUE)
+  exp <- "Data is also available from <https://osf.io/5tbm9> and code is also available from <https://osf.io/629bx>. We conducted a sensitivity power analysis to determine that a Cohen's d of 0.50 is the smallest effect size that we could detect with 50 participants in each group and 80% power."
+  expect_equal(expanded$expanded, exp)
 })
 
 test_that("multiple papers", {

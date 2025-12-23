@@ -1,3 +1,4 @@
+verbose(FALSE)
 test_that("types", {
   skip_if_offline("api.test.osf.io")
   reg_ids <- list(

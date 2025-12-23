@@ -1,4 +1,5 @@
 devtools::load_all(".")
+llm_use(TRUE)
 paper <- read(demoxml())
 modules <- c(
   # local only
