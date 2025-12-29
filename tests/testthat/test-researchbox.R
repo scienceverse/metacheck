@@ -13,9 +13,9 @@ test_that("rbox_links", {
   expect_equal(links$text[[1]], "https://researchbox.org/801")
 })
 
-httptest::with_mock_api({
-  verbose(FALSE)
-  # httptest::start_capturing()
+
+# httptest::start_capturing()
+httptest::use_mock_api()
 
 test_that("rbox_info", {
   skip_if_offline("researchbox.org")
@@ -60,7 +60,7 @@ test_that("rbox_retrieve", {
   expect_equal(info$RB_public, public)
 })
 
-#httptest::stop_capturing()
-verbose(TRUE)
 
-}) # end httptest::with_mock_api
+httptest::stop_mocking()
+# httptest::stop_capturing()
+

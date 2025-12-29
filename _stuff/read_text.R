@@ -9,6 +9,8 @@
 #' @examples
 #' paper <- read_text("This is my paper. That's it!")
 read_text <- function(txt, id = "") {
+  text <- NULL
+
   ## check if txt is a text file ----
   if (file.exists(txt)) {
     filename <- txt

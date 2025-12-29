@@ -10,7 +10,7 @@ report(
     "stat_p_nonsig", "stat_effect_size", "marginal", "ref_doi_check", "ref_replication",
     "ref_retraction", "ref_pubpeer"),
   output_file = paste0(paper$name, "_report.", output_format),
-  output_format = c("qmd", "html", "pdf"),
+  output_format = c("html", "qmd"),
   args = list()
 )
 }

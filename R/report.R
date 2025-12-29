@@ -215,6 +215,7 @@ report <- function(paper,
 #' module_report(op) |> cat()
 module_report <- function(module_output,
                           header = 3) {
+  n <- NULL
 
   # set up header
   if (is.null(header)) {

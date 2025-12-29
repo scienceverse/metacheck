@@ -18,26 +18,32 @@ ref_accuracy <- function(paper) {
 
   # table ----
   bib <- concat_tables(paper, "bib")
+  bib <- bib[!is.na(bib$doi), ]
 
   # If there are no rows, return immediately
   if (nrow(bib) == 0) {
     norefs <- list(
       traffic_light = "na",
-      summary_text = "We found no references"
+      summary_text = "We found no references with DOIs"
     )
     return(norefs)
   }
 
-  # TODO: get prev from ref_check first and don't re-check those
-
-
-  # get papers with DOIs
-  bib <- bib[!is.na(bib$doi), ]
+  ## get papers with DOIs ----
   table <- crossref_doi(bib$doi)
-
   table$ref <- format_ref(bib$ref)
   table$id <- bib$id
   table$xref_id <- bib$xref_id
+
+  # deal with crossref errors
+  if ("error" %in% names(table) & all(!is.na(table$error))) {
+    error <- list(
+      traffic_light = "fail",
+      summary_text = "We could not check reference accuracy because of a problem with CrossRef.",
+      table = table
+    )
+    return(error)
+  }
 
   # missing references
   table$ref_not_found <- !is.na(table$DOI) & is.na(table$type)

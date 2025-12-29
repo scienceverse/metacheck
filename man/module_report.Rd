@@ -4,16 +4,12 @@
 \alias{module_report}
 \title{Report from module output}
 \usage{
-module_report(module_output, header = 3, maxrows = Inf, trunc_cell = Inf)
+module_report(module_output, header = 3)
 }
 \arguments{
 \item{module_output}{the output of a \code{module_run()}}
 
 \item{header}{header level (default 2)}
-
-\item{maxrows}{the maximum number of table rows to print}
-
-\item{trunc_cell}{truncate any cell to this number of characters}
 }
 \value{
 text

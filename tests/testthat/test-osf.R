@@ -1,4 +1,3 @@
-verbose(FALSE)
 # options(metacheck.osf.api = "https://api.osf.io/v2/")
 # osf_delay(0)
 
@@ -37,8 +36,83 @@ test_that("exists", {
   expect_no_error(helplist <- help(osf_file_download, metacheck))
 })
 
+test_that("add_filetype", {
+  # edge case classification
+  files <- c(
+    "datarelease.pdf" = "text",    # pdf cannot be data or code
+    "my_r_code.pdf" = "text",
+    "data.sas" = "stats",          # sas is always code
+    "codebook.sas" = "stats",
+    "codebook.pdf" = "text"
+  )
+  ft <- filetype(names(files))
+  expect_equal(ft, files)
+})
+
+test_that("edge case summarise", {
+  # edge case classification
+  # category is from OSF, so can be: analysis, communication, data, hypothesis, instrumentation, methods and measures, procedure, project, software, other, but mostly uncategorized (NA)
+  contents <- dplyr::tribble(
+    ~name,              ~category, ~classify,
+    "datarelease.pdf",  NA,         NA,        # pdf cannot be data or code
+    "data.pdf",         "data",     NA,        # what about qual data?
+    "my_r_code.pdf",    NA,         NA,
+    "readme.xls",       "project",  "data",    # is an xls file always data?
+    "data.sas",         NA,         "code",    # sas is always code
+    "codebook.sas",     NA,         "code",
+    "readme.sas",       NA,         "code",
+    "codebook.pdf",     NA,         "codebook" # not a great format but possible
+  )
+  contents$filetype <- filetype(contents$name)
+
+  summary <- summarize_contents(contents)
+  expect_equal(summary$file_category, contents$classify)
+})
+
+
+test_that("osf_type", {
+  expect_true(is.function(metacheck::osf_type))
+  expect_no_error(helplist <- help(osf_type, metacheck))
+
+  osf_skip()
+
+  examples <- list(project = "pngda",
+                   component = "https://osf.io/6nt4v",
+                   private = "ybm3c",
+                   file = "osf.io/75qgk",
+                   preprint = "xp5cy",
+                   user = "4i578",
+                   reg = "8c3kb",
+                   bad = "xx")
+
+
+  otype <- osf_type(examples$project)
+  expect_equal(otype, "nodes")
+
+  otype <- osf_type(examples$component)
+  expect_equal(otype, "nodes")
+
+  otype <- osf_type(examples$private)
+  expect_equal(otype, "nodes")
+
+  otype <- osf_type(examples$file)
+  expect_equal(otype, "files")
+
+  otype <- osf_type(examples$preprint)
+  expect_equal(otype, "preprints")
+
+  otype <- osf_type(examples$user)
+  expect_equal(otype, "users")
+
+  otype <- osf_type(examples$reg)
+  expect_equal(otype, "registrations")
+
+  expect_warning(otype <- osf_type(examples$bad))
+  expect_equal(otype, NA_character_)
+})
+
 # httptest::start_capturing()
-httptest::with_mock_api({
+httptest::use_mock_api()
 
 test_that("osf_api_check", {
   status <- osf_api_check()
@@ -483,82 +557,6 @@ test_that("summarize_contents", {
   expect_equal(unique(readme$file_category), "readme")
 })
 
-}) # end mock api
+httptest::stop_mocking()
 # httptest::stop_capturing()
 
-test_that("add_filetype", {
-  # edge case classification
-  files <- c(
-    "datarelease.pdf" = "text",    # pdf cannot be data or code
-    "my_r_code.pdf" = "text",
-    "data.sas" = "stats",          # sas is always code
-    "codebook.sas" = "stats",
-    "codebook.pdf" = "text"
-  )
-  ft <- filetype(names(files))
-  expect_equal(ft, files)
-})
-
-test_that("edge case summarise", {
-  # edge case classification
-  # category is from OSF, so can be: analysis, communication, data, hypothesis, instrumentation, methods and measures, procedure, project, software, other, but mostly uncategorized (NA)
-  contents <- dplyr::tribble(
-    ~name,              ~category, ~classify,
-    "datarelease.pdf",  NA,         NA,        # pdf cannot be data or code
-    "data.pdf",         "data",     NA,        # what about qual data?
-    "my_r_code.pdf",    NA,         NA,
-    "readme.xls",       "project",  "data",    # is an xls file always data?
-    "data.sas",         NA,         "code",    # sas is always code
-    "codebook.sas",     NA,         "code",
-    "readme.sas",       NA,         "code",
-    "codebook.pdf",     NA,         "codebook" # not a great format but possible
-  )
-  contents$filetype <- filetype(contents$name)
-
-  summary <- summarize_contents(contents)
-  expect_equal(summary$file_category, contents$classify)
-})
-
-
-test_that("osf_type", {
-  expect_true(is.function(metacheck::osf_type))
-  expect_no_error(helplist <- help(osf_type, metacheck))
-
-  osf_skip()
-
-  examples <- list(project = "pngda",
-                component = "https://osf.io/6nt4v",
-                private = "ybm3c",
-                file = "osf.io/75qgk",
-                preprint = "xp5cy",
-                user = "4i578",
-                reg = "8c3kb",
-                bad = "xx")
-
-
-  otype <- osf_type(examples$project)
-  expect_equal(otype, "nodes")
-
-  otype <- osf_type(examples$component)
-  expect_equal(otype, "nodes")
-
-  otype <- osf_type(examples$private)
-  expect_equal(otype, "nodes")
-
-  otype <- osf_type(examples$file)
-  expect_equal(otype, "files")
-
-  otype <- osf_type(examples$preprint)
-  expect_equal(otype, "preprints")
-
-  otype <- osf_type(examples$user)
-  expect_equal(otype, "users")
-
-  otype <- osf_type(examples$reg)
-  expect_equal(otype, "registrations")
-
-  expect_warning(otype <- osf_type(examples$bad))
-  expect_equal(otype, NA_character_)
-})
-
-verbose(TRUE)

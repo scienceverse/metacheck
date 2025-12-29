@@ -8,7 +8,8 @@ test_that("errors", {
 })
 
 # httptest::start_capturing()
-httptest::with_mock_api({
+
+httptest::use_mock_api()
 
 test_that("defaults", {
   # both with comments
@@ -55,5 +56,5 @@ test_that("defaults", {
   expect_null(pp)
 })
 
-}) # end mock api
+httptest::stop_mocking()
 # httptest::stop_capturing()

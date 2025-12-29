@@ -1,6 +1,6 @@
 test_that("from text file", {
   txt <- "Abstract\n\nThis is a paragraph of text that is in the abstract. This is sentence two of the abstract.\n\nIntroduction\n\nThe first sentence of the introduction. The second sentence of the introduction."
-  filename <- tempfile(fileext = ".txt")
+  filename <- withr::local_tempfile(fileext = ".txt")
   write(txt, filename)
 
   xml <- read_xml(filename)

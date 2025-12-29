@@ -1,4 +1,4 @@
-test_that("code_check", {
+test_that("code_check offline", {
   module <- "code_check"
   mods <- module_list()
   expect_true(module %in% mods$name)
@@ -16,10 +16,12 @@ test_that("code_check", {
   exp <- "No links to the Open Science Framework or Github were found."
   expect_equal(mod_output$summary_text, exp)
   expect_equal(mod_output$report, exp)
+})
 
+test_that("code_check online", {
   skip("Long Tests")
 
-  # no R files text
+  # OSF but no R files text
   paper <- psychsci[[40]]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "na")
@@ -31,6 +33,10 @@ test_that("code_check", {
   expect_true(grepl(exp, mod_output$report[[1]]))
   # expect_true(grepl("https://osf.io/download/3s8gd/",
   #                   mod_output$report[[2]], fixed = TRUE))
+})
+
+test_that("code_check online", {
+  skip("Long Tests")
 
   # relevant text - info
   paper <- read(demoxml())

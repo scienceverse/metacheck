@@ -55,6 +55,10 @@ ref_replication <- function(paper) {
                   replication_doi = doi_replication)
   table <- dplyr::inner_join(bib, fred, by = 'doi')
 
+  ## remove rows that are already cited
+  already_cited <- table$replication_doi %in% bib$doi
+  table <- table[!already_cited, ]
+
   # traffic_light ----
   tl <- if (nrow(table)) "info" else "na"
 

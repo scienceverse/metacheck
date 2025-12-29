@@ -8,9 +8,5 @@
 
 library(testthat)
 suppressPackageStartupMessages(library(metacheck))
-email("debruine@gmail.com")
-verbose(FALSE)
 
 test_check("metacheck")
-
-verbose(TRUE)

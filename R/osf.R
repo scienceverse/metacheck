@@ -437,6 +437,8 @@ osf_file_data <- function(data) {
 #' @examples
 #' filetype("script.R")
 filetype <- function(filename) {
+  .data <- NULL
+
   ext <- data.frame(
     id = seq_along(filename),
     ext = strsplit(filename, "\\.") |>

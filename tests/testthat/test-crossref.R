@@ -1,19 +1,9 @@
-test_that("exists", {
-  expect_true(is.function(metacheck::crossref_doi))
-  expect_no_error(helplist <- help(crossref_doi, metacheck))
-
-  expect_true(is.function(metacheck::crossref_query))
-  expect_no_error(helplist <- help(crossref_query, metacheck))
-
-  expect_true(is.function(metacheck::openalex))
-  expect_no_error(helplist <- help(openalex, metacheck))
-})
-
 # httptest::start_capturing()
-httptest::with_mock_api({
+httptest::use_mock_api()
 
 test_that("crossref_doi", {
-  #skip_if_offline("api.labs.crossref.org")
+  expect_true(is.function(metacheck::crossref_doi))
+  expect_no_error(helplist <- help(crossref_doi, metacheck))
 
   doi <- "10.1177/fake"
   cr <- crossref_doi(doi)
@@ -38,6 +28,9 @@ test_that("crossref_doi", {
 
 
 test_that("openalex", {
+  expect_true(is.function(metacheck::openalex))
+  expect_no_error(helplist <- help(openalex, metacheck))
+
   doi <- "10.1177/fake"
   # expect_warning(oa <- openalex(doi))  DOES NOT FAIL ON LAKENS
   # expect_equal(oa, list(error = doi))
@@ -82,7 +75,8 @@ test_that("openalex", {
 })
 
 test_that("crossref_query", {
-  #skip_if_offline("api.labs.crossref.org")
+  expect_true(is.function(metacheck::crossref_query))
+  expect_no_error(helplist <- help(crossref_query, metacheck))
 
   ref <- "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1)."
 
@@ -115,5 +109,5 @@ test_that("crossref_query", {
   paper <- psychsci$`0956797620967261`
 })
 
-}) # end mock api
+httptest::stop_mocking()
 # httptest::stop_capturing()

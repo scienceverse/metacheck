@@ -22,7 +22,7 @@ test_that("errors", {
 })
 
 test_that("APA", {
-  filename <- "formats/apa.xml"
+  filename <- test_path("fixtures", "formats", "apa.xml")
   paper <- read(filename)
 
   expect_equal(paper$id, "apa")
@@ -62,7 +62,7 @@ test_that("APA", {
 })
 
 test_that("jats-xrefs", {
-  filename <- "formats/apa.xml"
+  filename <- test_path("fixtures", "formats", "apa.xml")
   xml <- read_xml(filename)
   xrefs <- jats_xrefs(xml)
   obs <- dplyr::count(xrefs, type)
@@ -74,7 +74,7 @@ test_that("jats-xrefs", {
 })
 
 test_that("apa-info", {
-  filename <- "formats/apa.xml"
+  filename <- test_path("fixtures", "formats", "apa.xml")
   xml <- read_xml(filename)
   info <- apa_info(xml)
 
@@ -102,7 +102,7 @@ test_that("apa-info", {
 })
 
 test_that("TEI", {
-  filename <- "formats/published.pdf.tei.xml"
+  filename <- test_path("fixtures", "formats", "published.pdf.tei.xml")
   paper <- read(filename)
 
   expect_equal(paper$id, "published.pdf.tei")
@@ -150,7 +150,8 @@ test_that("TEI", {
   # bib problem
   # Error: <connection>:4: '\@' is an unrecognized escape in character string (<text>:1:67)
   # handled by checking format for error s and replacing the formatted bib with the raw text
-  xml <- read_xml("problem_xml/paper_912.xml")
+  filename <- test_path("fixtures", "problem_xml", "paper_912.xml")
+  xml <- read_xml(filename)
   bib <- tei_bib(xml)
   exp <- "Climate change impacts on global food security TWheeler VonBraun J 10.1126/science.1239402\\aftergroup\\futurelet\\@let@token\\egroup Science 341 2013 Wheeler, T., and Von Braun, J. (2013). Climate change impacts on global food security. Science. 341, 508-513. doi: 10.1126/science.1239402"
   expect_equal(bib$ref[[70]], exp)
@@ -163,7 +164,7 @@ test_that("TEI", {
 })
 
 test_that("Cermine", {
-  filename <- "formats/cermine-published.xml"
+  filename <- test_path("fixtures", "formats", "cermine-published.xml")
   paper <- read(filename)
 
   expect_equal(paper$id, "cermine-published")

@@ -248,6 +248,9 @@ module_info <- function(module) {
     info$importFrom <- list(info$importFrom)
   }
 
+  # get argument defaults
+  info$arg_defaults <- roxy[[1]]$call[[3]][[2]]
+
   # get function name
   lines <- readLines(module_path)
   pattern <- "^\\s*([a-zA-Z0-9\\._]+)\\s*(<-|=)\\s*function\\b"
@@ -276,9 +279,10 @@ module_help <- function(module = NULL) {
     return(invisible(NULL))
   }
 
-  info <- module_info(module)
+  help <- module_info(module)
+  help$func_name <- NULL
+  help$module <- module
 
-  help <- info[c("title", "description", "details", "examples")]
   help[sapply(help, is.null)] <- NULL
   class(help) <- "metacheck_module_help"
 
@@ -341,16 +345,29 @@ print.metacheck_module_output <- function(x, ...) {
 #' @keywords internal
 #'
 print.metacheck_module_help <- function(x, ...) {
-  examples <- ""
-  if (!is.null(x$examples)) {
-    examples <- sprintf("``` r\n%s\n```", x$examples)
+  p <- ""
+  if (length(x$arg_defaults) > 1) {
+    params <- x$arg_defaults
+    params$paper <- NULL
+    pd <- paste(names(params), "=", params)
+    p <- paste0(", ", pd, collapse = "")
   }
+  usage <- sprintf("module_run(paper, \"%s\"%s)",
+                     x$module, p)
 
-  sprintf("%s\n\n%s\n\n%s\n\n%s",
-          x$title %||% "{no title}",
-          x$description %||% "{no description}",
-          x$details %||% "",
-          examples) |>
+  # make a list if only 1 param
+  if (!is.null(x$param$name)) x$param <- list(x$param)
+  args <- x$param |>
+    sapply(\(p) paste0("- ", p$name, ": ", p$description, "  ")) |>
+    paste(collapse = "\n")
+
+
+  c(x$title %||% "{no title}",
+    x$description %||% "{no description}",
+    usage,
+    args,
+    x$details %||% "") |>
+    paste(collapse = "\n\n") |>
     gsub("\n{2,}", "\n\n", x = _) |>
     trimws() |>
     cat()

@@ -4,7 +4,7 @@ test_that("errors", {
 
   paper <- read(demoxml())
   modules <- "all_p_values"
-  output_file <- tempfile(fileext = ".qmd")
+  output_file <- withr::local_tempfile(fileext = ".qmd")
   output_format <- "qmd"
 
   # paper not a paper or paperlist
@@ -40,15 +40,13 @@ test_that("rendering error", {
   output_format <- "html"
 
   # qmd fails to render
-  output_file <- tempfile(fileext = paste0(".", output_format))
+  output_file <- withr::local_tempfile(fileext = paste0(".", output_format))
   expect_warning(report_file <- report(paper, modules, output_file, output_format),
                  "There was an error rendering your report")
 
   exp <- sub("html$", "qmd", output_file)
   expect_equal(report_file, exp)
   # browseURL(report_file)
-
-  unlink(report_file)
 })
 
 test_that("render qmd", {
@@ -57,14 +55,12 @@ test_that("render qmd", {
 
   # qmd
   paper <- psychsci[[94]]
-  output_file <- tempfile(fileext = ".qmd")
+  output_file <- withr::local_tempfile(fileext = ".qmd")
   output_format <- "qmd"
   paper_report <- report(paper, modules, output_file, output_format)
   expect_equal(paper_report, output_file)
   expect_true(file.exists(output_file))
   # browseURL(output_file)
-
-  unlink(output_file)
 })
 
 test_that("render html", {
@@ -73,22 +69,20 @@ test_that("render html", {
 
   paper <- demoxml() |> read()
   modules <- c("stat_p_exact", "marginal")
-  output_file <- tempfile(fileext = ".html")
+  output_file <- withr::local_tempfile(fileext = ".html")
   output_format <- "html"
 
   save_path <- report(paper, modules, output_file, output_format)
   expect_equal(save_path, output_file)
   expect_true(file.exists(save_path))
   # browseURL(html)
-
-  unlink(save_path)
 })
 
 test_that("report pass args", {
   # pass arguments to modules from args
   paper <- demoxml() |> read()
   modules <- c("stat_p_exact", "modules/no_error.R")
-  output_file <- tempfile(fileext = ".qmd")
+  output_file <- withr::local_tempfile(fileext = ".qmd")
   output_format <- "qmd"
 
   args <- list(
@@ -105,8 +99,6 @@ test_that("report pass args", {
   # make sure exact p doesn't fail
   exact_runs <- grepl("(#exact-p-values){.red}", qmd_txt, fixed = TRUE)
   expect_true(any(exact_runs))
-
-  unlink(r)
 })
 
 test_that("detected", {
@@ -155,7 +147,7 @@ test_that("detected", {
   paper$full_text[14, "text"] <- "https://osf.io/629bx/"
 
   # qmd
-  qmd <- tempfile(fileext = ".qmd")
+  qmd <- withr::local_tempfile(fileext = ".qmd")
   if (file.exists(qmd)) unlink(qmd)
   paper_report <- report(paper, modules,
     output_file = qmd,
@@ -167,7 +159,7 @@ test_that("detected", {
 
 
   # html
-  html <- tempfile(fileext = ".html")
+  html <- withr::local_tempfile(fileext = ".html")
   if (file.exists(html)) unlink(html)
   paper_report <- report(paper, modules,
     output_file = html,

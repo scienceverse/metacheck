@@ -13,6 +13,8 @@
 #'   bibsearch("Sample Size Justification", "Collabra Psychology")
 #' }
 bibsearch <- function(title, source = NA, authors = NA, strict = TRUE) {
+  relevance_score <- title_match <- source_match <- NULL
+
   if (is.null(email())) {
     stop("You need to set an email with email('your@address.org') to use OpenAlex")
   }

@@ -13,7 +13,6 @@
 #'
 #' @param paper a paper object or paperlist object
 #' @param seed a seed for the LLM
-#' @param ... further arguments (not used)
 #'
 #' @returns a list
 power <- function(paper, seed = 8675309) {
