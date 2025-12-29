@@ -1,7 +1,7 @@
 #' DOI Check
 #'
 #' @description
-#' This module checks references for missing DOIs.
+#' This module checks references for missing DOIs or DOIs with an invalid format.
 #'
 #' @keywords reference
 #'
@@ -21,6 +21,7 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
 
   ## get references ----
   bib <- concat_tables(paper, "bib")
+
   # If there are no rows, return immediately
   if (nrow(bib) == 0) {
     norefs <- list(
@@ -30,22 +31,37 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
     return(norefs)
   }
 
-  ## find missing DOIS ----
-  missing_dois <- is.na(bib$doi)
-  # If there are no missing DOIs, return immediately
-  if (sum(missing_dois) == 0) {
-    nomissing <- list(
+  ## find invalid or missing DOIS ----
+  clean_dois <- doi_clean(bib$doi)
+  missing_dois <- is.na(clean_dois)
+  unclean_dois <- (clean_dois != bib$doi & !missing_dois)
+  valid_dois <- doi_valid_format(clean_dois)
+  invalid_dois <- !valid_dois & !missing_dois
+  dois_to_look_up <- invalid_dois | missing_dois
+
+  doi_count <- list(
+    all = length(bib$doi),
+    valid = sum(valid_dois),
+    invalid = sum(invalid_dois),
+    unclean = sum(unclean_dois),
+    missing = sum(missing_dois),
+    lookup = sum(dois_to_look_up)
+  )
+
+  # If there are no DOIs to look up, return immediately
+  if (doi_count$lookup == 0) {
+    ret <- list(
       traffic_light = "green",
-      summary_text = "We found no missing DOIs"
+      summary_text = "We found no missing or invalid DOIs"
     )
-    return(nomissing)
+    return(ret)
   }
 
   ## get DOIs from crossref ----
-  table <- crossref_query(bib$ref[missing_dois], crossref_min_score)
-  table$ref <- format_ref(bib$ref[missing_dois])
-  table$id <- bib$id[missing_dois]
-  table$xref_id <- bib$xref_id[missing_dois]
+  table <- crossref_query(bib$ref[dois_to_look_up], crossref_min_score)
+  table$ref <- format_ref(bib$ref[dois_to_look_up])
+  table$id <- bib$id[dois_to_look_up]
+  table$xref_id <- bib$xref_id[dois_to_look_up]
 
   # missing/mismatched DOIs
   table$doi_found <- !is.na(table$DOI)
@@ -91,13 +107,11 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
     found_table <- NULL
   }
 
-
   report <- c(
     summary_text,
     guidance,
     scroll_table(found_table)
   )
-
 
   # return a list ----
   list(
