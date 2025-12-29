@@ -1,9 +1,5 @@
-#setwd("tests/testthat/")
-
-
 test_that("defaults", {
-  filename <- system.file("psychsci/0956797620955209.cermine.xml",
-                          package = "metacheck")
+  filename <- test_path("fixtures", "cermine", "0956797620955209.cermine.xml")
   paper <- read(filename)
   title <- "Preregistered Direct Replication of “Sick Body, Vigilant Mind: The Biological Immune System Activates the Behavioral Immune System”"
   abstract <- "^The tendency to attend to and avoid cues to pathogens"
@@ -26,8 +22,7 @@ test_that("defaults", {
 })
 
 test_that("read_xml", {
-  filename <- system.file("extdata/to_err_is_human.cermine.xml",
-                          package = "metacheck")
+  filename <- test_path("fixtures", "cermine", "to_err_is_human.cermine.xml")
   xml <- read_xml(filename)
   expect_s3_class(xml, "xml_document")
 
@@ -38,7 +33,7 @@ test_that("read_xml", {
 })
 
 test_that("nlm_info", {
-  filename <- "cermine_example.xml"
+  filename <- test_path("fixtures", "cermine", "cermine_example.xml")
   xml <- read_xml(filename)
   info <- nlm_info(xml)
 
@@ -124,6 +119,7 @@ test_that("iteration", {
   suppressWarnings(
     s <- read(filename)
   )
+
   skip_on_covr()
   nested_files <- c("extdata/to_err_is_human.cermine",
                     "cermine/eyecolor.cermine",

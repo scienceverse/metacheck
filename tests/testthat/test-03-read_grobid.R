@@ -8,30 +8,32 @@ test_that("error", {
   expect_null(r)
 
   # non-grobid XML
-  filename <- tempfile(fileext = ".xml")
+  filename <- withr::local_tempfile(fileext = ".xml")
   xml2::read_html("<p>Hello</p>") |>
     xml2::write_xml(filename, options = "as_xml")
   expect_no_warning(g1 <- read(filename))
   expect_equal(g1$full_text |> nrow(), 0)
 
   # valid grobid with no text
-  filename <- "examples/notext.xml"
+  filename <- test_path("fixtures", "examples", "notext.xml")
   expect_no_error(notext <- read(filename))
   expect_equal( nrow( search_text(notext) ), 0)
 
   # bad file
-  filename <- "examples/badxml.xml"
+  filename <- test_path("fixtures", "examples", "badxml.xml")
   expect_warning(g2 <- read(filename),
-                 "The file examples/badxml.xml was not valid XML",
+                 "examples/badxml.xml was not valid XML",
                  fixed = TRUE)
   expect_null(g2)
 
   # bib problems
-  expect_no_error(g3 <- read("examples/bib_problem.xml"))
+  filename <- test_path("fixtures", "examples", "bib_problem.xml")
+  expect_no_error(g3 <- read(filename))
 
   # warning on batch import
-  expect_warning(all <- read("examples"),
-                 "The file examples/badxml.xml was not valid XML",
+  filename <- test_path("fixtures", "examples")
+  expect_warning(all <- read(filename),
+                 "examples/badxml.xml was not valid XML",
                  fixed = TRUE)
   expect_equal(length(all), 8)
 })
@@ -75,7 +77,7 @@ test_that("read_xml", {
   expect_true(is.function(read_xml))
 
   # non-grobid XML
-  filename <- tempfile(fileext = ".xml")
+  filename <- withr::local_tempfile(fileext = ".xml")
   xml2::read_html("<p>Hello</p>") |>
     xml2::write_xml(filename, options = "as_xml")
   xml <- read_xml(filename)
@@ -91,7 +93,7 @@ test_that("read_xml", {
 })
 
 test_that("tei_info", {
-  filename <- "examples/0956797613520608.xml"
+  filename <- test_path("fixtures", "examples", "0956797613520608.xml")
   xml <- read_xml(filename)
   info <- tei_info(xml)
 
@@ -115,15 +117,21 @@ test_that("tei_info", {
   expect_equal(info$doi, doi)
   expect_equal(info$received |> as.character(), received)
   expect_equal(info$accepted |> as.character(), accepted)
+})
 
+test_that("tei_info dates", {
   # dates
-  xml <- read_xml("debruine/debruine-child.xml")
+  filename <- test_path("fixtures", "debruine", "debruine-child.xml")
+  xml <- read_xml(filename)
   info <- tei_info(xml)
   expect_equal(info$submission, "Received 2 February 2004; accepted 30 March 2004")
   expect_equal(info$received |> as.character(), "2004-02-02")
   expect_equal(info$accepted |> as.character(), "2004-03-30")
+})
 
-  d <- read("debruine")
+test_that("tei_info batch", {
+  filename <- test_path("fixtures", "debruine")
+  d <- read(filename)
   s <- info_table(d, c("submission", "received", "accepted"))
   exp <- structure(c(12450, 11758, 12474, 12643), class = "Date")
   expect_equal(s$received, exp)
@@ -131,7 +139,8 @@ test_that("tei_info", {
 
 
 test_that("tei_full_text", {
-  xml <- read_xml("examples/0956797613520608.xml")
+  filename <- test_path("fixtures", "examples", "0956797613520608.xml")
+  xml <- read_xml(filename)
   body <- tei_full_text(xml) |> process_full_text()
   sections <- c("abstract", "intro", "method", "results",
                 "discussion", "acknowledgement","funding",
@@ -145,13 +154,15 @@ test_that("tei_full_text", {
 
 test_that("sections", {
   # sections read in correctly
-  xml <- read_xml("examples/10.1002_ece3.11050.xml")
+  filename <- test_path("fixtures", "examples", "10.1002_ece3.11050.xml")
+  xml <- read_xml(filename)
   body <- tei_full_text(xml) |> process_full_text()
   expect_equal(body$section[35:37], rep("method", 3))
 })
 
 test_that("get figures ", {
-  xml <- read_xml("examples/0956797613520608.xml")
+  filename <- test_path("fixtures", "examples", "0956797613520608.xml")
+  xml <- read_xml(filename)
   text <- tei_full_text(xml) |> process_full_text()
   figs <- sum(text$section == "fig")
   tabs <- sum(text$section == "tab")
@@ -165,13 +176,14 @@ test_that("get figures ", {
 # test_that("get tables ", {
 #   expect_true(is.function(get_tables))
 #
-#   filename <- "examples/0956797613520608.xml"
+#   filename <- test_path("fixtures", "examples", "0956797613520608.xml")
 #   xml <- read_xml(filename)
 #   tbls <- get_tables(xml)
 # }
 
 test_that("get notes ", {
-  xml <- read_xml("footnotes/3544548.3580942.xml")
+  filename <- test_path("fixtures", "footnotes", "3544548.3580942.xml")
+  xml <- read_xml(filename)
   text <- tei_full_text(xml) |> process_full_text()
   notes <- sum(text$section == "foot")
   note_ids <- text$div[text$section == "foot"] |> unique()
@@ -179,7 +191,8 @@ test_that("get notes ", {
   expect_equal(notes, 8)
   expect_equal(note_ids, 0:7)
 
-  xml <- read_xml("examples/0956797613520608.xml")
+  filename <- test_path("fixtures", "examples", "0956797613520608.xml")
+  xml <- read_xml(filename)
   text <- tei_full_text(xml) |> process_full_text()
   notes <- sum(text$section == "foot")
 
@@ -188,7 +201,8 @@ test_that("get notes ", {
 
 test_that("tei_refs", {
   # PsychSci
-  filename <- "psychsci/light/0956797618755322.xml"
+  filename <- test_path("fixtures", "psychsci",
+                        "0956797618755322.xml")
   xml<- read_xml(filename)
   xrefs <- tei_xrefs(xml)
   obs <- dplyr::count(xrefs, type)
@@ -202,7 +216,8 @@ test_that("tei_refs", {
   expect_equal(paper$xrefs[1:4], xrefs)
 
   # CHI
-  xml <- read_xml("footnotes/3544548.3580942.xml")
+  filename <- test_path("fixtures", "footnotes", "3544548.3580942.xml")
+  xml <- read_xml(filename)
   refs <- tei_xrefs(xml)
   obs <- dplyr::count(refs, type)
   exp <- dplyr::tibble(
@@ -213,7 +228,8 @@ test_that("tei_refs", {
 })
 
 test_that("tei_authors", {
-  xml <- "examples/0956797613520608.xml" |> read_xml()
+  filename <- test_path("fixtures", "examples", "0956797613520608.xml")
+  xml <- read_xml(filename)
 
   authors <- tei_authors(xml)
   expect_equal(length(authors), 7)
@@ -226,7 +242,8 @@ test_that("tei_authors", {
 })
 
 test_that("xml2bib", {
-  xml <- "examples/0956797613520608.xml" |> read_xml()
+  filename <- test_path("fixtures", "examples", "0956797613520608.xml")
+  xml <- read_xml(filename)
   refs <- xml2::xml_find_all(xml, "//listBibl //biblStruct")
 
   # journal article
@@ -277,11 +294,13 @@ test_that("tei_bib", {
   expect_equal(nrow(bib), 4)
 
   # no raw_references
-  expect_no_error(g <- read("examples/bib2.xml"))
+  filename <- test_path("fixtures", "examples", "bib2.xml")
+  expect_no_error(g <- read(filename))
   expect_equal(g$bib$xref_id, paste0("b", 0:6))
 
   # exclude <bibr> with no type
-  filename <- "psychsci/light/0956797613520608.xml"
+  filename <- test_path("fixtures", "psychsci",
+                        "0956797613520608.xml")
   xml <- read_xml(filename)
   bib <- tei_bib(xml)
 
@@ -290,8 +309,9 @@ test_that("tei_bib", {
 })
 
 test_that("iteration", {
-  expect_error(read("noxml"),
-               "^There are no xml, docx or txt files in the directory noxml")
+  filename <- test_path("fixtures", "noxml")
+  exp <- paste("^There are no xml, docx or txt files in the directory", filename)
+  expect_error(read(filename), exp)
 
   grobid_dir <- demodir()
   s <- read(grobid_dir)
@@ -324,19 +344,23 @@ test_that("iteration", {
   expect_equal(names(s) |> paste0(".xml"), file_list[3:1])
 
   # recursive file search
-  s <- read("nested")
+  filename <- test_path("fixtures", "nested")
+  s <- read(filename)
   expect_s3_class(s, "scivrs_paperlist")
   nested_files <- c("3544548.3580942",
                     "nest/3613904.3642568")
-  expect_equal(s[[1]]$info$filename, "nested/3544548.3580942.xml")
-  expect_equal(s[[2]]$info$filename, "nested/nest/3613904.3642568.xml")
+  exp <- file.path(filename, "3544548.3580942.xml")
+  expect_equal(s[[1]]$info$filename, exp)
+  exp <- file.path(filename, "nest", "3613904.3642568.xml")
+  expect_equal(s[[2]]$info$filename, exp)
   s[[2]]$info$filename
   expect_true(all(nested_files %in% names(s)))
 })
 
 
 test_that("grobid-versions", {
-  filename <- list.files("grobid-test/full", full.names = TRUE)
+  dir <- test_path("fixtures", "grobid-test", "full")
+  filename <- list.files(dir, full.names = TRUE)
 
   # read_xml
   xml <- read_xml(filename[[1]])
@@ -346,7 +370,8 @@ test_that("grobid-versions", {
   paper <- read(filename)
 
   # small
-  sfilename <- list.files("grobid-test/small", full.names = TRUE)
+  dir <- test_path("fixtures", "grobid-test", "small")
+  sfilename <- list.files(dir, full.names = TRUE)
   sxml <- read_xml(sfilename[[1]])
   spaper <- read(sfilename)
 
@@ -452,7 +477,7 @@ test_that("grobid-versions", {
 })
 
 test_that("get_app_info", {
-  filename <- "examples/to_err_is_human.xml"
+  filename <- test_path("fixtures", "examples", "to_err_is_human.xml")
   xml <- read_xml(filename)
   info <- get_app_info(xml)
 
@@ -460,7 +485,7 @@ test_that("get_app_info", {
   expect_equal(info$when, "2025-02-25T18:30+0000")
   expect_equal(info$url, "https://github.com/kermitt2/grobid")
 
-  # filename <- "grobid-test/full/0956797613520608.xml"
+  # filename <- test_path("fixtures", "grobid-test", "full", "0956797613520608.xml"
   # paper <- read(filename)
   # expect_equal(paper$app$version, "0.8.2")
   # expect_equal(paper$app$when, "2025-05-18T17:52+0000")

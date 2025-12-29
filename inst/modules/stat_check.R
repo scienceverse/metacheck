@@ -24,10 +24,9 @@
 #' @import dplyr
 #'
 #' @param paper a paper object or paperlist object
-#' @param ... further arguments (not used)
 #'
 #' @returns a list
-stat_check <- function(paper, ...) {
+stat_check <- function(paper) {
   # detailed table of results ----
   stat_table <- metacheck::stats(paper)
 

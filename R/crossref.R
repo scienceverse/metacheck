@@ -24,6 +24,11 @@ crossref_doi <- function(doi) {
     doi <- info_table(papers, "doi")$doi
   }
 
+  if (!online("api.labs.crossref.org")) {
+    message("Crossref is offline")
+    return(data.frame(DOI = doi, error = "offline"))
+  }
+
   if (length(doi) > 1) {
     # vectorise
     pb <- pb(length(doi),
@@ -41,11 +46,6 @@ crossref_doi <- function(doi) {
   if (!grepl(pattern, doi, perl = TRUE)){
     message(doi, " is not a well-formed DOI\\n")
     return(data.frame(DOI = doi, error = "malformed"))
-  }
-
-  if (!online("api.labs.crossref.org")) {
-    message("Crossref is offline")
-    return(data.frame(DOI = doi, error = "offline"))
   }
 
   url <- sprintf("https://api.labs.crossref.org/works/%s?mailto=%s",
@@ -114,8 +114,9 @@ crossref_doi <- function(doi) {
 
 #' Look up Reference in CrossRef
 #'
-#' @param reference the full text reference of the paper to get info for
+#' @param ref the full text reference of the paper to get info for
 #' @param min_score minimal score that is taken to be a reliable match (default 50)
+#' @param rows the maximum number of rows to return
 #'
 #' @return doi
 #' @export

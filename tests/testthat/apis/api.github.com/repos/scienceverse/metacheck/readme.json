@@ -1,0 +1,18 @@
+{
+    "name": "README.md",
+    "path": "README.md",
+    "sha": "e2ecdbc9742be4e78b2e641b0fc3eed7eaf21c1b",
+    "size": 887,
+    "url": "https://api.github.com/repos/scienceverse/metacheck/contents/README.md?ref=main",
+    "html_url": "https://github.com/scienceverse/metacheck/blob/main/README.md",
+    "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/e2ecdbc9742be4e78b2e641b0fc3eed7eaf21c1b",
+    "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/README.md",
+    "type": "file",
+    "content": "IyBtZXRhY2hlY2sKCjwhLS0gYmFkZ2VzOiBzdGFydCAtLT4KWyFbTGlmZWN5\nY2xlOiBleHBlcmltZW50YWxdKGh0dHBzOi8vaW1nLnNoaWVsZHMuaW8vYmFk\nZ2UvbGlmZWN5Y2xlLWV4cGVyaW1lbnRhbC1vcmFuZ2Uuc3ZnKV0oaHR0cHM6\nLy9saWZlY3ljbGUuci1saWIub3JnL2FydGljbGVzL3N0YWdlcy5odG1sI2V4\ncGVyaW1lbnRhbCkKClshW0NvZGVjb3YgdGVzdCBjb3ZlcmFnZV0oaHR0cHM6\nLy9jb2RlY292LmlvL2doL3NjaWVuY2V2ZXJzZS9tZXRhY2hlY2svZ3JhcGgv\nYmFkZ2Uuc3ZnKV0oaHR0cHM6Ly9hcHAuY29kZWNvdi5pby9naC9zY2llbmNl\ndmVyc2UvbWV0YWNoZWNrKQo8IS0tIGJhZGdlczogZW5kIC0tPgoKVGhlIGdv\nYWwgb2YgbWV0YWNoZWNrIGlzIHRvIGF1dG9tYXRpY2FsbHkgY2hlY2sgcmVz\nZWFyY2ggb3V0cHV0cyBmb3IgYmVzdCBwcmFjdGljZXMuIFlvdSBjYW4gZmlu\nZCBvdXQgbW9yZSBhdCA8aHR0cHM6Ly9zY2llbmNldmVyc2UuZ2l0aHViLmlv\nL21ldGFjaGVjay8+LgoKIyMgSW5zdGFsbGF0aW9uCgpZb3UgY2FuIGluc3Rh\nbGwgdGhlIGRldmVsb3BtZW50IHZlcnNpb24gb2YgbWV0YWNoZWNrIGZyb20g\nW0dpdEh1Yl0oaHR0cHM6Ly9naXRodWIuY29tLykgd2l0aDoKCmBgYCByCiMg\naW5zdGFsbC5wYWNrYWdlcygiZGV2dG9vbHMiKQpkZXZ0b29sczo6aW5zdGFs\nbF9naXRodWIoInNjaWVuY2V2ZXJzZS9tZXRhY2hlY2siKQpgYGAKCiMjIEFQ\nSSAob3B0aW9uYWwpClRvIHJ1biBtZXRhY2hlY2sgYXMgYSBSRVNUIEFQSSBl\naXRoZXIgdXNpbmcgcGx1bWJlciBvciBEb2NrZXIsIHNlZSBbYGluc3QvcGx1\nbWJlci9SRUFETUUubWRgXShpbnN0L3BsdW1iZXIvUkVBRE1FLm1kKSBmb3Ig\naW5zdHJ1Y3Rpb25zIGFuZCBkb2N1bWVudGF0aW9uLgo=\n",
+    "encoding": "base64",
+    "_links": {
+        "self": "https://api.github.com/repos/scienceverse/metacheck/contents/README.md?ref=main",
+        "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/e2ecdbc9742be4e78b2e641b0fc3eed7eaf21c1b",
+        "html": "https://github.com/scienceverse/metacheck/blob/main/README.md"
+    }
+}

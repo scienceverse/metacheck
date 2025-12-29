@@ -1,0 +1,34 @@
+[
+    {
+        "name": ".gitignore",
+        "path": ".github/.gitignore",
+        "sha": "2d19fc766d98a08d9d1437896bfb008a7b15f340",
+        "size": 7,
+        "url": "https://api.github.com/repos/scienceverse/metacheck/contents/.github/.gitignore?ref=main",
+        "html_url": "https://github.com/scienceverse/metacheck/blob/main/.github/.gitignore",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/2d19fc766d98a08d9d1437896bfb008a7b15f340",
+        "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/.gitignore",
+        "type": "file",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/metacheck/contents/.github/.gitignore?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/2d19fc766d98a08d9d1437896bfb008a7b15f340",
+            "html": "https://github.com/scienceverse/metacheck/blob/main/.github/.gitignore"
+        }
+    },
+    {
+        "name": "workflows",
+        "path": ".github/workflows",
+        "sha": "19a95d3b71323a7aaa2fac2d18a34f3d12e99144",
+        "size": 0,
+        "url": "https://api.github.com/repos/scienceverse/metacheck/contents/.github/workflows?ref=main",
+        "html_url": "https://github.com/scienceverse/metacheck/tree/main/.github/workflows",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/19a95d3b71323a7aaa2fac2d18a34f3d12e99144",
+        "download_url": null,
+        "type": "dir",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/metacheck/contents/.github/workflows?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/19a95d3b71323a7aaa2fac2d18a34f3d12e99144",
+            "html": "https://github.com/scienceverse/metacheck/tree/main/.github/workflows"
+        }
+    }
+]

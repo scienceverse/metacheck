@@ -35,6 +35,9 @@ test_that("power, no LLM", {
   expect_equal(mod_output$summary_table$power.complete, rep(NA_integer_, 6))
 })
 
+# httptest::start_capturing()
+httptest::use_mock_api()
+
 test_that("power, with LLM", {
   skip("UNDER DEVELOPMENT")
 
@@ -51,32 +54,27 @@ test_that("power, with LLM", {
   expect_equal(mod_output$summary_table$power.n, 0)
   expect_equal(mod_output$summary_table$power.complete, NA_integer_)
 
-  #httptest::start_capturing()
+  # several power sentences in one paragraph
+  paper <- psychsci[[10]]
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "red")
+  expect_equal(nrow(mod_output$table), 3)
+  expect_equal(mod_output$table$sample, c(13500, 24, 72) |> as.character())
+  expect_equal(nrow(mod_output$summary), 1)
+  expect_equal(mod_output$summary_table$power.n, 3)
+  expect_equal(mod_output$summary_table$power.complete, 2)
 
-  httptest::with_mock_api({
-    wd <- getwd()
-    httptest::.mockPaths(wd)
-
-    # several power sentences in one paragraph
-    paper <- psychsci[[10]]
-    mod_output <- module_run(paper, module)
-    expect_equal(mod_output$traffic_light, "red")
-    expect_equal(nrow(mod_output$table), 3)
-    expect_equal(mod_output$table$sample, c(13500, 24, 72) |> as.character())
-    expect_equal(nrow(mod_output$summary), 1)
-    expect_equal(mod_output$summary_table$power.n, 3)
-    expect_equal(mod_output$summary_table$power.complete, 2)
-
-    # multiple papers
-    paper <- psychsci[10:15]
-    mod_output <- module_run(paper, module)
-    expect_equal(mod_output$traffic_light, "red")
-    expect_equal(nrow(mod_output$table), 5)
-    expect_equal(nrow(mod_output$summary), 6)
-    expect_equal(mod_output$table$complete, c(F, T, T, F, F))
-    expect_equal(mod_output$summary_table$power.n, c(3, 0, 0, 0, 1, 1))
-    expect_equal(mod_output$summary_table$power.complete, c(2, NA, NA, NA, 0, 0))
-  })
-
-  #httptest::stop_capturing()
+  # multiple papers
+  paper <- psychsci[10:15]
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "red")
+  expect_equal(nrow(mod_output$table), 5)
+  expect_equal(nrow(mod_output$summary), 6)
+  expect_equal(mod_output$table$complete, c(F, T, T, F, F))
+  expect_equal(mod_output$summary_table$power.n, c(3, 0, 0, 0, 1, 1))
+  expect_equal(mod_output$summary_table$power.complete, c(2, NA, NA, NA, 0, 0))
 })
+
+httptest::stop_mocking()
+# httptest::stop_capturing()
+

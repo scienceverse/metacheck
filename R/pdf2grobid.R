@@ -24,7 +24,6 @@ pdf2grobid <- function(filename, save_path = ".",
                        consolidate_citations = 0,
                        consolidate_header = 0,
                        consolidate_funders = 0) {
-
   # check if grobid_url is a valid url, before connecting to it
   if (!grepl("^https?://", grobid_url)) {
     stop("grobid_url must be a valid URL, starting with http or https!")

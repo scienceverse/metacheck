@@ -1,5 +1,6 @@
 test_that("scroll_table", {
   expect_true(is.function(metacheck::scroll_table))
+  expect_no_error(helplist <- help(scroll_table, metacheck))
 
   table <- data.frame(uc = LETTERS,
                       lc = letters)
@@ -47,6 +48,7 @@ test_that("scroll_table", {
 
 test_that("collapse_section", {
   expect_true(is.function(metacheck::collapse_section))
+  expect_no_error(helplist <- help(collapse_section, metacheck))
 
   expect_error(collapse_section())
   expect_error(collapse_section("a", callout = "d"))
@@ -61,6 +63,7 @@ test_that("collapse_section", {
 
 test_that("plural", {
   expect_true(is.function(metacheck::plural))
+  expect_no_error(helplist <- help(plural, metacheck))
 
   s0 <- plural(0)
   expect_equal(s0, "s")
@@ -79,6 +82,7 @@ test_that("plural", {
 
 test_that("link", {
   expect_true(is.function(metacheck::link))
+  expect_no_error(helplist <- help(link, metacheck))
 
   obs <- link("https://google.com")
   exp <- "<a href='https://google.com' target='_blank'>google.com</a>"
@@ -113,6 +117,7 @@ test_that("link", {
 
 test_that("format_ref", {
   expect_true(is.function(metacheck::format_ref))
+  expect_no_error(helplist <- help(format_ref, metacheck))
 
   a <- bibentry(
     bibtype = "Article",

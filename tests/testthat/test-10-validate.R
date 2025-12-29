@@ -1,5 +1,3 @@
-#setwd("tests/testthat/")
-
 test_that("exists", {
   expect_true(is.function(metacheck::compare_tables))
   expect_no_error(helplist <- help(compare_tables, metacheck))

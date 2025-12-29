@@ -1,16 +1,14 @@
-test_that("exists", {
+test_that("osf_preprint_list", {
   expect_true(is.function(metacheck::osf_preprint_list))
   expect_no_error(helplist <- help(osf_preprint_list, metacheck))
-})
 
-test_that("errors", {
   expect_error(osf_preprint_list(bad_arg))
 })
 
 # httptest::start_capturing()
-httptest::with_mock_api({
-test_that("defaults", {
+httptest::use_mock_api()
 
+test_that("defaults", {
   pp <- osf_preprint_list()
   expect_equal(nrow(pp), 10)
 
@@ -54,5 +52,5 @@ test_that("defaults", {
   expect_true(all(dates %in% date_modified))
 })
 
-}) # end mock api
+httptest::stop_mocking()
 # httptest::stop_capturing()

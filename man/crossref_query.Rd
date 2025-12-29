@@ -7,9 +7,11 @@
 crossref_query(ref, min_score = 50, rows = 1)
 }
 \arguments{
+\item{ref}{the full text reference of the paper to get info for}
+
 \item{min_score}{minimal score that is taken to be a reliable match (default 50)}
 
-\item{reference}{the full text reference of the paper to get info for}
+\item{rows}{the maximum number of rows to return}
 }
 \value{
 doi

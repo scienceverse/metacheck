@@ -177,6 +177,8 @@ rbox_info <- function(rb_url) {
 #' @export
 #' @keywords internal
 rbox_file_download <- function(rb_url, id_col = 1) {
+  listed <- NULL
+
   message("* Retrieving files from ", rb_url, "...")
 
   # set up return table
