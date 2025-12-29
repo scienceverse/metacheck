@@ -3,6 +3,12 @@
 #' @description
 #' This module checks references for mismatches with CrossRef.
 #'
+#' It only looks up the DOIs originally present in your paper (not those found by ref_doi_check) and returns the bibliographic information.
+#'
+#' We then check that the title from your reference section is the same as the retrieved title (ignoring differences in capitalisation) and that all author last names in your reference section are also in the retrieved author list (we do not check first names or order yet).
+#'
+#' Mismatches may be because of problems with our parsing of references from your PDF (we're working on improving this), incorrect formatting in CrossRef, or minor differences in punctuation.
+#'
 #' @keywords reference
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
@@ -108,7 +114,7 @@ ref_accuracy <- function(paper) {
     sum(!table$ref_not_found)
   )
 
-  guidance <- "Double check any references listed in the tables below. This tool has a high false positive rate. Mismatches may be because of problems with our parsing of references from your PDF (we're working on improving this), incorrect formatting in CrossRef, or minor differences in punctuation."
+  guidance <- "Double check any references listed in the tables below. This tool has a high false positive rate."
 
   if (tl == "green") guidance <- ""
 

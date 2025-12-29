@@ -31,6 +31,7 @@ Other contributors:
 \itemize{
   \item Cristian Mesquida \email{cristianmesquida@gmail.com} (\href{https://orcid.org/0000-0002-1542-8355}{ORCID}) [contributor]
   \item Jakub Werner \email{jakub@jakubwerner.com} (\href{https://orcid.org/0009-0004-0388-0362}{ORCID}) [contributor]
+  \item Lukas Wallrich \email{l.wallrich@bbk.ac.uk} (\href{https://orcid.org/0000-0003-2121-5177}{ORCID}) [contributor]
 }
 
 }
