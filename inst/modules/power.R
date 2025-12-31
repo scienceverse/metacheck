@@ -23,7 +23,7 @@
 #' The regular expressions can miss power analyses, or fail to classify them correctly. The type of power analysis is often difficult to classify, which can easily be solved by explicitly specifying the type of power analysis as 'a-priori', 'sensitivity', or 'post-hoc'. Note that 'post-hoc' or 'observed' power is rarely useful. The LMM can fail to identify information in the paper, and will not have access to information in other paragraphs in the paper than those that contain the word 'power'. This package was validated by the Metacheck team on articles in Psychological Science.
 #'
 #' @examples
-#' module_run(psychsci, "power_02")
+#' module_run(psychsci, "power")
 power <- function(paper, seed = 8675309) {
   # Build the word pattern to detect power analyses
   word_pattern <- paste(
@@ -207,8 +207,8 @@ Rules:
   } else if (nrow(table) > 0) {
     # If not using LMM
     table <- dplyr::mutate(
-      power_paragraphs,
-      type = dplyr::case_when(
+      table,
+      type_of_power_analysis = dplyr::case_when(
         stringr::str_detect(tolower(text), "a[- ]?priori") ~ "apriori",
         stringr::str_detect(tolower(text), "sensitivity") ~ "sensitivity",
         stringr::str_detect(tolower(text), "compromise power") ~ "compromise",
@@ -232,13 +232,16 @@ Rules:
 
     report <- c(report_text,
                 observed_power_text,
-                scroll_table(table[,"text", "type_of_power_analysis"]),
+                scroll_table(table[,c("text", "type_of_power_analysis")]),
                 collapse_section(guidance)) |>
       paste(collapse = "\n\n")
 
   }
   # Need this catch all, also for when LLM classifies sentences as 'none'.
-  if (nrow(table) == 0 || isTRUE(all(llm_power$type_of_power_analysis == "none"))) {
+  if (nrow(table) == 0 ||
+      (exists("llm_power", inherits = TRUE) &&
+       isTRUE(all(llm_power$type_of_power_analysis == "none", na.rm = TRUE)))
+  ) {
     # no power detected
     tl <- "na"
     summary_text <- "No power analyses were detected."
