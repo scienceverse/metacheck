@@ -24,6 +24,7 @@ code_check <- function(paper) {
   # Best example, with many issues, for paper: paper <- psychsci[[233]]
   # ResearchBox and GitHub example (in full xml): paper <- xml[["09567976251333666"]]
   # osf_links
+
   osf_links_found <- osf_links(paper)
 
   if (nrow(osf_links_found) > 0) {
@@ -49,7 +50,7 @@ code_check <- function(paper) {
 
   # no (public) links found
   if ((nrow(osf_links_found) == 0 ||
-       isTRUE(all(osf_info_retrieved$public == FALSE, na.rm = TRUE))) &&
+       isTRUE(all(osf_info_retrieved$public == FALSE, na.rm = FALSE))) &&
       nrow(github_links_found) == 0 &&
       nrow(rb_url) == 0) {
     return(list(
@@ -69,13 +70,14 @@ code_check <- function(paper) {
 
   ## get code files ----
   #TODO: check if find_project should be set -- it takes time and doesn't add anything we're using
-  osf_files <- osf_retrieve(osf_links_found, recursive = TRUE, find_project = FALSE)
+  osf_files_df <- osf_info_retrieved
+
   # Need to set text to character is emtpy to enable merge
-  if (is.logical(osf_files$text)) {
-    osf_files$text <- as.character(osf_files$text)
+  if (is.logical(osf_files_df$text)) {
+    osf_files_df$text <- as.character(osf_files_df$text)
   }
-  if (!"name" %in% colnames(osf_files)) osf_files$name <- NA_character_
-  if (!"download_url" %in% colnames(osf_files)) osf_files$download_url <- NA_character_
+  if (!"name" %in% colnames(osf_files_df)) osf_files_df$name <- NA_character_
+  if (!"download_url" %in% colnames(osf_files_df)) osf_files_df$download_url <- NA_character_
 
   if (nrow(github_links_found) > 0) {
     github_files_df <- github_links_found$text %>%
@@ -93,15 +95,16 @@ code_check <- function(paper) {
     rb_file_list <- rb_url$text %>%
       map(~ rbox_retrieve(.x)) %>%
       bind_rows()
+    # Get a list of all files on researchbox, for example to check if we want to download them
+    rb_files_df <- unlist(rb_file_list$files)
+    # download the files, works for multiple research box links
+    rb_download <- purrr::map_dfr(rb_url$text, ~ rbox_file_download(.x))
+  } else {
+    # empty tibble with correct column types
+    rb_download <- dplyr::tibble(name = character(), file_location = character())
   }
-  # Get a list of all files on researchbox, for example to check if we want to download them
-  rb_files <- unlist(rb_file_list$files)
 
-  # download the files, works for multiple research box links
-  rb_download <- purrr::map_dfr(rb_url$text, ~ rbox_file_download(.x))
-  # Rename file_location column, to enable merge of code files
-
-  all_files <- dplyr::bind_rows(osf_files, github_files_df, rb_download)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_download)
 
   code_ext <- grepl("\\.(r|rmd|qmd|sas|sps|do|ado)$", all_files$name, ignore.case = TRUE)
   code_files <- all_files[code_ext, c("name", "download_url", "file_location")]
@@ -545,3 +548,4 @@ code_check <- function(paper) {
     summary_text = summary_text
   )
 }
+
