@@ -15,10 +15,9 @@
 #'
 #' @param paper a paper object or paperlist object
 #' @param db the miscitation database (data frame with doi, reftext, and warning columns)
-#' @param ... further arguments (not used)
 #'
 #' @returns a list
-ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.Rds", package = "metacheck")), ...) {
+ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.Rds", package = "metacheck"))) {
   # consolidate bib tables and filter to relevant DOI
   bibs <- concat_tables(paper, "bib") |>
     dplyr::select(xref_id, ref, doi, id) |>

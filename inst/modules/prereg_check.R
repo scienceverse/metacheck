@@ -25,7 +25,7 @@
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a list
-prereg_check <- function(paper, ...) {
+prereg_check <- function(paper) {
   # paper <- psychsci[[218]] # to test
   # and paper <- xml[["09567976251396084"]] for multiple aspredicted
   # osf: paper <- xml[["09567976221114055"]]

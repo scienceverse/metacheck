@@ -10,10 +10,9 @@
 #' @import dplyr
 #'
 #' @param paper a paper object or paperlist object
-#' @param ... further arguments (not used)
 #'
 #' @returns a list
-stat_p_exact <- function(paper, ...) {
+stat_p_exact <- function(paper) {
   # table ----
   p <- module_run(paper, "all_p_values")$table
 

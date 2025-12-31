@@ -10,6 +10,8 @@
 #' @examples
 #' # paper <- read_cermine(filename)
 read_cermine <- function(filename) {
+  text <- NULL
+
   # handle list of files or a directory----
   if (length(filename) > 1) {
     # set up progress bar ----

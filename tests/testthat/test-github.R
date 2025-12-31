@@ -1,19 +1,5 @@
-test_that("exists", {
-  expect_true(is.function(metacheck::github_info))
-  expect_no_error(helplist <- help(github_info, metacheck))
-
-  expect_true(is.function(metacheck::github_repo))
-  expect_no_error(helplist <- help(github_repo, metacheck))
-
-  expect_true(is.function(metacheck::github_readme))
-  expect_no_error(helplist <- help(github_readme, metacheck))
-
-  expect_true(is.function(metacheck::github_files))
-  expect_no_error(helplist <- help(github_files, metacheck))
-
-  expect_true(is.function(metacheck::github_config))
-  expect_no_error(helplist <- help(github_config, metacheck))
-})
+# httptest::start_capturing()
+# httptest::use_mock_api()
 
 test_that("errors", {
   expect_error(github_info(bad_arg))
@@ -22,7 +8,6 @@ test_that("errors", {
   expect_error(github_languages(bad_arg))
   expect_error(github_files(bad_arg))
 
-  skip_on_cran()
   skip_if_offline("github.com")
 
   repo <- "scienceverse/norepo"
@@ -33,8 +18,19 @@ test_that("errors", {
   expect_null(github_files(repo))
 })
 
+test_that("github_config", {
+  expect_true(is.function(metacheck::github_config))
+  expect_no_error(helplist <- help(github_config, metacheck))
+
+  h <- github_config()
+  expect_equal(class(h), "request")
+})
+
 test_that("github_repo", {
   skip_if_offline("github.com")
+
+  expect_true(is.function(metacheck::github_repo))
+  expect_no_error(helplist <- help(github_repo, metacheck))
 
   urls <- c(
     "scienceverse/metacheck",
@@ -54,13 +50,11 @@ test_that("github_repo", {
   expect_equal(url, repo, ignore_attr = TRUE)
 })
 
-test_that("github_config", {
-  h <- github_config()
-  expect_equal(class(h), "request")
-})
-
 test_that("github_readme", {
   skip_if_offline("github.com")
+
+  expect_true(is.function(metacheck::github_readme))
+  expect_no_error(helplist <- help(github_readme, metacheck))
 
   readme <- github_readme("scienceverse/metacheck")
   search <- "# metacheck\n\n"
@@ -95,6 +89,9 @@ test_that("github_languages", {
 test_that("github_files", {
   skip_if_offline("github.com")
 
+  expect_true(is.function(metacheck::github_files))
+  expect_no_error(helplist <- help(github_files, metacheck))
+
   files <- github_files("scienceverse/metacheck")
   expect_equal(names(files), c("name", "path", "download_url", "size", "ext", "type"))
   expect_true("README.md" %in% files$name)
@@ -118,6 +115,8 @@ test_that("github_files", {
 
 test_that("github_info", {
   skip_if_offline("github.com")
+  expect_true(is.function(metacheck::github_info))
+  expect_no_error(helplist <- help(github_info, metacheck))
 
   repo <- "scienceverse/metacheck"
   info <- github_info(repo)
@@ -135,3 +134,6 @@ test_that("github_info", {
   expect_equal(names(info$languages), c("repo", "language", "bytes"))
   expect_true(all(repo == info$languages$repo))
 })
+
+# httptest::stop_mocking()
+# httptest::stop_capturing()

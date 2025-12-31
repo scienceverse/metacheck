@@ -116,8 +116,8 @@ test_that("issue 72", {
   obs <- expand_text(results_table, paper, expand_to = "paragraph")
   expect_equal(obs$text[[1]], obs$expanded[[1]])
 
-  # underlying problem in xref creation..
-  filename <- "problem_xml/paper_361.xml"
+  # underlying problem in xref creation
+  filename <- test_path("fixtures", "problem_xml", "paper_361.xml")
   paper <- read(filename)
   text <- search_text(paper, "\\(Lakens, 2022\\;")
   b32 <- paper$xrefs |> dplyr::filter(xref_id == "b32")

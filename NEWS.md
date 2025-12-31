@@ -1,3 +1,9 @@
+# metacheck 0.0.0.9064
+
+* Enhanced module help
+* "ref_replication" module no longer warns about replications if you have cited them.
+* Extensive chenges to clen up tests.
+
 # metacheck 0.0.0.9063
 
 * `get_doi()` has been removed in favour of `crossref_query()`, to look up crossref info by bibliographic query, and `crossref_doi()`, to look up crossref info by DOI. 

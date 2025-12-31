@@ -1,7 +1,7 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.0.0.9063
-Date: 2025-12-22
+Version: 0.0.0.9064
+Date: 2025-12-29
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -22,7 +22,12 @@ Authors@R: c(
            family = "Werner",
            role = c("ctb"),
            email = "jakub@jakubwerner.com",
-           comment = c(ORCID = "0009-0004-0388-0362")))
+           comment = c(ORCID = "0009-0004-0388-0362")),
+  person(  given = "Lukas",
+           family = "Wallrich",
+           role = c("ctb"),
+           email = "l.wallrich@bbk.ac.uk",
+           comment = c(ORCID = "0000-0003-2121-5177")))
 Description: A modular, extendable system for automatically checking research outputs for best practices using text search, R code, and/or (optional) LLM queries.
 License: AGPL (>= 3)
 Encoding: UTF-8
@@ -40,7 +45,8 @@ Suggests:
     testthat (>= 3.0.0),
     waiter,
     rstudioapi,
-    knitr
+    knitr,
+    withr
 Config/testthat/edition: 3
 Imports: 
     arrow,

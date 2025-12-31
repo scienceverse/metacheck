@@ -1,7 +1,5 @@
-verbose(FALSE)
-
-#httptest::start_capturing()
-##httptest::with_mock_api({
+# httptest::start_capturing()
+httptest::use_mock_api()
 
 test_that("ref_doi_check", {
   module <- "ref_doi_check"
@@ -20,7 +18,10 @@ test_that("ref_doi_check", {
   expect_equal(mod_output$traffic_light, "yellow")
   expect_equal(nrow(mod_output$table), 1)
   expect_equal(mod_output$summary_table$refs_checked, 1)
-  expect_equal(mod_output$summary_table$doi_found, 1)
+
+  # if offline, none will be found
+  exp <- ifelse(online(), 1, 0)
+  expect_equal(mod_output$summary_table$doi_found, exp)
 })
 
 test_that("ref_accuracy", {
@@ -37,8 +38,11 @@ test_that("ref_accuracy", {
   # relevant references - info
   paper <- read(demoxml())
   mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "yellow")
+  exp <- ifelse(online("api.labs.crossref.org"), "yellow", "fail")
+  expect_equal(mod_output$traffic_light, exp)
   expect_equal(nrow(mod_output$table), 3)
+
+  skip_if_offline("api.labs.crossref.org")
   expect_equal(mod_output$summary_table$refs_checked, 3)
   expect_equal(mod_output$summary_table$refs_not_found, 1)
   expect_equal(mod_output$summary_table$title_mismatch, 1)
@@ -94,7 +98,6 @@ test_that("ref_pubpeer", {
   expect_equal(mod_output$traffic_light, "na")
   expect_null(mod_output$table)
 
-  skip_if_offline("pubpeer.com")
   # relevant references
   paper <- read(demoxml())
   mod_output <- module_run(paper, module)
@@ -153,14 +156,15 @@ test_that("ref_miscitation", {
   mods <- module_list()
   expect_true(module %in% mods$name)
 
-  paper <- read("problem_xml")
+  filename <- test_path("fixtures", "problem_xml")
+  paper <- read(filename)
 
   mod_output <- module_run(paper, module)
   expect_true("10.1525/collabra.33267" %in% mod_output$table$doi)
   expect_true("miscite_10.1525/collabra.33267" %in%
                 names(mod_output$summary_table))
   expect_equal(nrow(mod_output$summary_table),
-               list.files("problem_xml") |> length())
+               list.files(filename) |> length())
   expect_equal(mod_output$traffic_light, "yellow")
 
   ## custom db
@@ -188,5 +192,5 @@ test_that("ref_miscitation", {
   expect_equal(mod_output$table$doi, test_doi)
 })
 
-#}) # end mock api
-#httptest::stop_capturing()
+httptest::stop_mocking()
+# httptest::stop_capturing()

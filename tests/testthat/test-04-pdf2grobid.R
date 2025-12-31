@@ -1,14 +1,11 @@
-verbose(FALSE)
-
-test_that("exists", {
+test_that("pdf2grobid", {
   expect_true(is.function(metacheck::pdf2grobid))
   expect_no_error(helplist <- help(pdf2grobid, metacheck))
+
+  expect_error(pdf2grobid(bad_arg))
 })
 
-test_that("errors", {
-  expect_error(func(bad_arg))
-
-  # invalid URL
+test_that("invalid URL error", {
   filename <- demoxml()
   expect_error(pdf2grobid(filename, grobid_url = "notawebsite"),
                "grobid_url must be a valid URL, starting with http or https!")
@@ -20,21 +17,22 @@ test_that("errors", {
 })
 
 
-test_that("non-Grobid URL is rejected", {
+test_that("non-Grobid URL rejected", {
   skip_if_offline("google.com")
 
   filename <- demopdf()
-  expect_error(pdf2grobid(filename, grobid_url = "https://google.com"),
-               "GROBID server does not appear up and running on the provided URL. Status: 404")
+  expect_error(pdf2grobid(filename, grobid_url = "https://google.com"))
 })
 
-test_that("missing file", {
-  v <- verbose()
-  verbose(FALSE)
-  on.exit(verbose(v))
+test_that("missing single file errors", {
+  skip_if_offline() # offline error happens before filename error
+
   filename <- "wrongfile.pdf"
   expect_error(pdf2grobid(filename), "wrongfile.pdf does not exist")
+})
 
+test_that("missing batch files just warn", {
+  skip_if_offline() # offline error happens before filename error
   filename <- c("wrongfile.pdf", "wrongfile.pdf")
   expect_warning(x <- pdf2grobid(filename),
                  "2 of 2 files did not convert")
@@ -42,12 +40,6 @@ test_that("missing file", {
   expect_equal(x, exp)
 })
 
-
-# test_that("invalid file type", { needs more thought
-#   skip_on_ci()
-#   # invalid file type
-#   skip_if_offline("localhost")
-#   expect_error(pdf2grobid("no.exist", grobid_url = "localhost"), "does not exist")
 
 grobid_server <- "https://kermitt2-grobid.hf.space"
 #grobid_server <- "http://api.metacheck.app"
@@ -59,26 +51,28 @@ skip_grobid <- function() {
   skip_if_offline(gsub("https?://", "", grobid_server))
 }
 
-#httptest::with_mock_api({
+# TODO: figure out why mock_api isn't wotking
+# returns a different api file each time
+# httptest::start_capturing()
+# httptest::use_mock_api()
 
 test_that("bad PDF", {
   skip_grobid()
 
-  filename <- "problems/xml_with_pdf_extension.pdf"
-  #expect_error(pdf2grobid(filename), "Internal Server Error")
+  filename <- test_path("fixtures", "problems", "xml_with_pdf_extension.pdf")
+  expect_error(pdf2grobid(filename), "Internal Server Error")
 
-  filename <- c("problems/xml_with_pdf_extension.pdf", "wrongfile.pdf")
-  expect_warning(x <- pdf2grobid(filename), "2 of 2 files did not convert")
-  exp <- c("problems/xml_with_pdf_extension.pdf" = NA_character_,
-           "wrongfile.pdf" = NA_character_)
+  filename2 <- c(filename, "wrongfile.pdf")
+  expect_warning( x <- pdf2grobid(filename2), "2 of 2 files did not convert")
+  exp <- c(NA_character_, NA_character_)
+  names(exp) <- filename2
   expect_equal(x, exp)
 })
 
-test_that("makes missing save directory", {
+test_that("makes missing save directory - single", {
   skip_grobid()
 
-  newdir <- file.path(tempdir(), "testnewdir")
-  if (dir.exists(newdir)) unlink(newdir, recursive = TRUE)
+  newdir <- file.path(withr::local_tempdir(), "testnewdir")
 
   # single file, path with uncreated dir
   save_path <- file.path(newdir, "file.xml")
@@ -86,41 +80,42 @@ test_that("makes missing save directory", {
   obs_path <- pdf2grobid(filename, save_path = save_path)
   expect_true(dir.exists(newdir))
   expect_equal(obs_path, save_path)
+})
 
-  # clean up
-  unlink(obs_path)
-  if (dir.exists(newdir)) unlink(newdir, recursive = TRUE)
+test_that("makes missing save directory - multiple", {
+  skip_grobid()
+
+  save_path <- file.path(withr::local_tempdir(), "testnewdir")
 
   # multiple files with uncreated dir
-  save_path <- newdir
-  filename <- list.files("debruine", "pdf", full.names = TRUE)[1:2]
+  f1 <- test_path("fixtures", "debruine")
+  filename <- list.files(f1, "pdf", full.names = TRUE)[1:2]
   obs_path <- pdf2grobid(filename, save_path = save_path)
-  exp_path <- sub("^debruine/", "", filename) |>
+  exp_path <- sub(paste0("^", f1 , "/"), "", filename) |>
     sub("\\.pdf", "\\.xml", x = _) |>
-    file.path(newdir, x = _) |>
+    file.path(save_path, x = _) |>
     setNames(filename)
-  expect_true(dir.exists(newdir))
+  expect_true(dir.exists(save_path))
   expect_equal(obs_path, exp_path)
   expect_true(file.exists(exp_path[[1]]))
   expect_true(file.exists(exp_path[[2]]))
+})
 
-  # clean up
-  unlink(obs_path)
-  if (dir.exists(newdir)) unlink(newdir, recursive = TRUE)
+test_that("makes missing save directory - specific", {
+  skip_grobid()
+
+  newdir <- file.path(withr::local_tempdir(), "testnewdir")
 
   # multiple files with uncreated dir and specific file names (no .xml)
   save_path <- file.path(newdir, c("A", "B"))
-  filename <- list.files("debruine", "pdf", full.names = TRUE)[1:2]
+  dir <- test_path("fixtures", "debruine")
+  filename <- list.files(dir, "pdf", full.names = TRUE)[1:2]
   obs_path <- pdf2grobid(filename, save_path = save_path)
   exp_path <- paste0(save_path, ".xml") |> setNames(filename)
   expect_true(dir.exists(newdir))
   expect_equal(obs_path, exp_path)
   expect_true(file.exists(exp_path[[1]]))
   expect_true(file.exists(exp_path[[2]]))
-
-  # clean up
-  unlink(obs_path)
-  if (dir.exists(newdir)) unlink(newdir, recursive = TRUE)
 })
 
 test_that("defaults", {
@@ -136,11 +131,12 @@ test_that("defaults", {
   expect_true(grepl(first_sentence, body))
   expect_true(grepl(last_sentence, body))
 
-  file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
+  file.remove(list.files(withr::local_tempdir(), "\\.xml", full.names = TRUE))
 
-  # save to tempdir
-  xml_file <- pdf2grobid(filename, tempdir())
-  exp <- file.path(tempdir(), "to_err_is_human.xml")
+  # save to withr::local_tempdir
+  dir <- withr::local_tempdir()
+  xml_file <- pdf2grobid(filename, dir)
+  exp <- file.path(dir, "to_err_is_human.xml")
   expect_equal(xml_file, exp)
   xml2 <- read_xml(xml_file)
 
@@ -204,29 +200,31 @@ test_that("defaults", {
   expect_false(grepl(first_sentence, body))
   expect_true(grepl("^\\s*Results", body))
   expect_false(grepl(last_sentence, body))
-
-  # clean up
-  file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
 })
 
-test_that("batch", {
+test_that("batch - directory", {
   skip_grobid()
 
   grobid_dir <- demodir()
+  save_path <- withr::local_tempdir()
 
-  file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
-  xml_files <- pdf2grobid(grobid_dir, tempdir())
-  actual <- list.files(tempdir(), "\\.xml")
+  xml_files <- pdf2grobid(grobid_dir, save_path)
+  actual <- list.files(save_path, "\\.xml")
   expected <- list.files(grobid_dir, "\\.xml")
   expect_equal(actual, expected)
-  file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
+})
+
+test_that("batch - multiple filenames", {
+  skip_grobid()
+
+  grobid_dir <- demodir()
+  save_path <- withr::local_tempdir()
 
   filenames <- list.files(grobid_dir, ".pdf", full.names = TRUE)
-  xml_files <- pdf2grobid(filenames[2:3], tempdir())
-  actual <- list.files(tempdir(), "\\.xml")
+  xml_files <- pdf2grobid(filenames[2:3], save_path)
+  actual <- list.files(save_path, "\\.xml")
   expected <- list.files(grobid_dir, "\\.xml")[2:3]
   expect_equal(actual, expected)
-  file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
 })
 
 
@@ -235,20 +233,17 @@ test_that("local", {
   skip_if_offline("localhost:8070")
 
   local_url <- "http://localhost:8070"
-
   filename <- demopdf()
-
   xml <- pdf2grobid(filename, NULL, local_url)
   expect_s3_class(xml, "xml_document")
 
-  file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
-  xml_file <- pdf2grobid(filename, tempdir(), local_url)
-  exp <- file.path(tempdir(), "to_err_is_human.xml")
+  save_path <- withr::local_tempdir()
+  xml_file <- pdf2grobid(filename, save_path, local_url)
+  exp <- file.path(save_path, "to_err_is_human.xml")
   expect_equal(xml_file, exp)
 
   xml2 <- read_xml(xml_file)
   expect_equal(xml, xml2)
-  file.remove(list.files(tempdir(), "\\.xml", full.names = TRUE))
 })
 
 
@@ -258,8 +253,8 @@ test_that("local", {
 #   skip_if_offline("localhost:8070")
 #   local_url <- "http://localhost:8070"
 #
-#   t1 <- file.path(tempdir(), "try1")
-#   t2 <- file.path(tempdir(), "try2")
+#   t1 <- file.path(withr::local_tempdir(), "try1")
+#   t2 <- file.path(withr::local_tempdir(), "try2")
 #   dir.create(t1, showWarnings = FALSE)
 #   dir.create(t2, showWarnings = FALSE)
 #   #files <- list.files("pdf/psyarxiv", full.names = TRUE)
@@ -291,6 +286,5 @@ test_that("local", {
 #
 #   })
 
-#}) # end with_mock_api
-
-verbose(TRUE)
+# httptest::stop_mocking()
+# httptest::stop_capturing()

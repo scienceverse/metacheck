@@ -1,7 +1,7 @@
 #' DOI Check
 #'
 #' @description
-#' This module checks references for missing DOIs.
+#' This module checks references for missing DOIs or DOIs with an invalid format.
 #'
 #' @keywords reference
 #'
@@ -18,6 +18,8 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
   # for testing: paper <- psychsci[[109]]
 
   # table ----
+
+  ## get references ----
   bib <- concat_tables(paper, "bib")
 
   # If there are no rows, return immediately
@@ -29,21 +31,48 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
     return(norefs)
   }
 
-  # get DOIs
-  missing_dois <- is.na(bib$doi)
-  table <- crossref_query(bib$ref[missing_dois], crossref_min_score)
+  ## find invalid or missing DOIS ----
+  clean_dois <- doi_clean(bib$doi)
+  missing_dois <- is.na(clean_dois)
+  unclean_dois <- (clean_dois != bib$doi & !missing_dois)
+  valid_dois <- doi_valid_format(clean_dois)
+  invalid_dois <- !valid_dois & !missing_dois
+  dois_to_look_up <- invalid_dois | missing_dois
 
-  table$ref <- format_ref(bib$ref[missing_dois])
-  table$id <- bib$id[missing_dois]
-  table$xref_id <- bib$xref_id[missing_dois]
+  doi_count <- list(
+    all = length(bib$doi),
+    valid = sum(valid_dois),
+    invalid = sum(invalid_dois),
+    unclean = sum(unclean_dois),
+    missing = sum(missing_dois),
+    lookup = sum(dois_to_look_up)
+  )
+
+  # If there are no DOIs to look up, return immediately
+  if (doi_count$lookup == 0) {
+    ret <- list(
+      traffic_light = "green",
+      summary_text = "We found no missing or invalid DOIs"
+    )
+    return(ret)
+  }
+
+  ## get DOIs from crossref ----
+  table <- crossref_query(bib$ref[dois_to_look_up], crossref_min_score)
+  table$ref <- format_ref(bib$ref[dois_to_look_up])
+  table$id <- bib$id[dois_to_look_up]
+  table$xref_id <- bib$xref_id[dois_to_look_up]
 
   # missing/mismatched DOIs
   table$doi_found <- !is.na(table$DOI)
 
   # traffic_light ----
-  tl <- "green"
-  if (any(table$doi_found)) {
-    tl <- "yellow"
+  tl <- "yellow"
+
+  # if no DOIs found beccause of crossref errors
+  crossref_error <- ""
+  if (all(is.na(table$DOI)) & all(!is.na(table$error))) {
+    crossref_error <- "However, there was an error retrieving DOIs from CrossRef, so they may be available if you check manually."
   }
 
   # summary_table ----
@@ -53,11 +82,12 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
 
   # summary_text
   summary_text <- sprintf(
-    "We checked %d reference%s in CrossRef and found %d missing DOI%s",
+    "We checked %d reference%s in CrossRef and found %d missing DOI%s. %s",
     nrow(table),
     nrow(table) |> plural(),
     sum(table$doi_found, na.rm = TRUE),
-    sum(table$doi_found, na.rm = TRUE) |> plural()
+    sum(table$doi_found, na.rm = TRUE) |> plural(),
+    crossref_error
   )
 
   guidance <- "Double check any references listed in the tables below. The match score gives an indication of how good the match was. Many books do not have a DOI or are not listed in CrossRef. Garbled references are usually a result of poor parsing of the paper by grobid; we are working on more accurate alternatives."
@@ -77,13 +107,11 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
     found_table <- NULL
   }
 
-
   report <- c(
     summary_text,
     guidance,
     scroll_table(found_table)
   )
-
 
   # return a list ----
   list(

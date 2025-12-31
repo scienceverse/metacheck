@@ -10,6 +10,8 @@
 #' @examples
 #' # paper <- read(filename)
 read <- function(filename) {
+  text <- NULL
+
   if (length(filename) > 1) {
     # handle list of files or a directory----
 
@@ -541,6 +543,8 @@ apa_full_text <- function(xml) {
 #' @return xrefs table
 #' @keywords internal
 jats_xrefs <- function(xml) {
+  text <- i <- xref_id <- type <- NULL
+
   xrefs <- xml2::xml_find_all(xml, "//xref")
   if (length(xrefs) == 0) {
     return(data.frame(
@@ -965,6 +969,7 @@ tei_full_text <- function(xml) {
 #' @return xrefs table
 #' @keywords internal
 tei_xrefs <- function(xml) {
+  text <- xref_id <- type <- NULL
   xrefs <- xml2::xml_find_all(xml, "//ref")
   if (length(xrefs) == 0) {
     return(data.frame(

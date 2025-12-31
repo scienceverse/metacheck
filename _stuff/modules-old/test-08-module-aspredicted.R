@@ -1,3 +1,6 @@
+# httptest::start_capturing()
+httptest::use_mock_api()
+
 test_that("aspredicted", {
   module <- "aspredicted"
   mods <- module_list()
@@ -16,32 +19,24 @@ test_that("aspredicted", {
   exp <- "### AsPredicted {.na}\n\nNo AsPredicted links were found."
   expect_equal(exp, report)
 
-  # httptest::start_capturing()
+  # contains a link
+  paper <- psychsci$`09567976221082938`
+  mod_output <- module_run(paper, module)
+  expect_equal(nrow(mod_output$table), 1)
+  expect_true("AP_title" %in% names(mod_output$table))
+  expect_true("AP_sample_size" %in% names(mod_output$table))
+  expect_equal(mod_output$summary_table$id, '09567976221082938')
+  expect_equal(mod_output$summary_table$AP_links, 1)
+  expect_equal(mod_output$traffic_light, "info")
+  expect_true(grepl(mod_output$table$AP_sample_size[[1]],
+                    paste(mod_output$report, collapse = "\n"),
+                    fixed = TRUE))
 
-  httptest::with_mock_api({
-    wd <- getwd()
-    httptest::.mockPaths(wd)
-
-    verbose(FALSE)
-
-    # contains a link
-    paper <- psychsci$`09567976221082938`
-    mod_output <- module_run(paper, module)
-    expect_equal(nrow(mod_output$table), 1)
-    expect_true("AP_title" %in% names(mod_output$table))
-    expect_true("AP_sample_size" %in% names(mod_output$table))
-    expect_equal(mod_output$summary_table$id, '09567976221082938')
-    expect_equal(mod_output$summary_table$AP_links, 1)
-    expect_equal(mod_output$traffic_light, "info")
-    expect_true(grepl(mod_output$table$AP_sample_size[[1]],
-                      paste(mod_output$report, collapse = "\n"),
-                      fixed = TRUE))
-
-    # check reporting
-    report <- module_report(mod_output)
-    exp <- "1 AsPredicted link was found and retrieved"
-    expect_true(grepl(exp, report))
-  })
-
-  # httptest::stop_capturing()
+  # check reporting
+  report <- module_report(mod_output)
+  exp <- "1 AsPredicted link was found and retrieved"
+  expect_true(grepl(exp, report))
 })
+
+httptest::stop_mocking()
+# httptest::stop_capturing()

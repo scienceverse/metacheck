@@ -11,7 +11,6 @@
 #' @importFrom tidyr pivot_wider
 #'
 #' @param paper a paper object or paperlist object
-#' @param ... further arguments (not used)
 #'
 #' @returns a list
 ref_consistency <- function(paper) {

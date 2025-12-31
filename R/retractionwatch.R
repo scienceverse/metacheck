@@ -55,6 +55,8 @@ rw_date <- function() {
 #' @export
 #'
 rw_update <- function() {
+  OriginalPaperDOI <- RetractionNature <- doi <- NULL
+
   # download newest RW update
   old_timeout <- getOption("timeout")
   on.exit(options(timeout=old_timeout))

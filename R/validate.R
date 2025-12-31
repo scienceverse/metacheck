@@ -91,6 +91,8 @@ accuracy <- function(expected, observed) {
 compare_tables <- function(expected, observed,
                            match_cols = c("id", "text"),
                            comp_cols = NULL) {
+  .temp_id. <- NULL
+
   # error checking
   if (!all(match_cols %in% colnames(expected)) |
       !all(match_cols %in% colnames(observed))) {

@@ -11,8 +11,8 @@ test_that("errors", {
   expect_error(orcid_person(bad_arg))
 })
 
-httptest::with_mock_api({
-  # httptest::start_capturing()
+# httptest::start_capturing()
+httptest::use_mock_api()
 
 test_that("get_orcid", {
   obs <- get_orcid("DeBruine", "Lisa")
@@ -28,11 +28,9 @@ test_that("get_orcid", {
   obs <- get_orcid("DeBruine", "L. M.")
   expect_equal(obs, exp)
 
-  verbose(FALSE)
-  obs <- get_orcid("DeBruine")
+  suppressMessages( obs <- get_orcid("DeBruine") )
   expect_true(length(obs) > 1)
   expect_true(exp %in% obs)
-  verbose(TRUE)
 })
 
 test_that("orcid_person", {
@@ -45,7 +43,5 @@ test_that("orcid_person", {
   expect_equal(person$email[[1]], c("lisa.debruine@glasgow.ac.uk", "debruine@gmail.com"))
 })
 
-
+httptest::stop_mocking()
 # httptest::stop_capturing()
-
-}) # end httptest::with_mock_api

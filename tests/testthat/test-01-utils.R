@@ -100,23 +100,30 @@ test_that("verbose", {
   expect_equal(verbose("TRUE"), TRUE)
 
   expect_error(verbose("G"))
-  expect_invisible(verbose(TRUE))
+  expect_invisible(verbose(FALSE))
   expect_visible(verbose())
 })
 
 test_that("llm_use", {
-  expect_equal(llm_use(FALSE), FALSE)
-  expect_equal(llm_use(), FALSE)
-  expect_equal(llm_use(TRUE), TRUE)
-  expect_equal(llm_use(), TRUE)
-  expect_equal(llm_use(0), FALSE)
-  expect_equal(llm_use("FALSE"), FALSE)
-  expect_equal(llm_use(1), TRUE)
-  expect_equal(llm_use("TRUE"), TRUE)
+  expect_true(is.function(metacheck::llm_use))
+  expect_no_error(helplist <- help(llm_use, metacheck))
 
   expect_error(llm_use("G"))
   expect_invisible(llm_use(TRUE))
   expect_visible(llm_use())
+
+  expect_equal(llm_use(FALSE), FALSE)
+  expect_equal(llm_use(), FALSE)
+  expect_equal(llm_use(TRUE), TRUE)
+  expect_equal(getOption("metacheck.llm.use"), TRUE)
+  expect_equal(llm_use(0), FALSE)
+  expect_equal(llm_use("FALSE"), FALSE)
+
+  # llm_use() only true if online & API
+  llm_use(1)
+  expect_equal(getOption("metacheck.llm.use"), TRUE)
+  llm_use("TRUE")
+  expect_equal(getOption("metacheck.llm.use"), TRUE)
 })
 
 test_that("email", {
