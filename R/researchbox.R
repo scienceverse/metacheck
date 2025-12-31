@@ -59,7 +59,7 @@ rbox_retrieve <- function(rb_url, id_col = 1) {
   valid_ids <- unique(ids$rb_url)
 
   if (length(valid_ids) == 0) {
-    message("No valid AsPredicted links")
+    message("No valid ResearchBox links")
     return(table)
   }
 
@@ -101,7 +101,6 @@ rbox_retrieve <- function(rb_url, id_col = 1) {
 #' @keywords internal
 rbox_info <- function(rb_url) {
   message("* Retrieving info from ", rb_url, "...")
-
   # set up return table
   obj <- data.frame(
     rb_url = rb_url
@@ -134,12 +133,12 @@ rbox_info <- function(rb_url) {
   # get file list
   file_names <- xml2::xml_find_all(html, "//p [@class='file_name']") |>
     xml2::xml_text()
-  filedesc <- xml2::xml_find_all(html, "//p [@class='preview_link']") |>
-    xml2::xml_text()
-  filedesc <- filedesc[filedesc!=""]
+  # filedesc <- xml2::xml_find_all(html, "//p [@class='preview_link']") |> # blocked out, seems gone after website redesign?
+  #   xml2::xml_text()
+  # filedesc <- filedesc[filedesc!=""]
   file_list <- data.frame(
-    name = file_names,
-    description = filedesc
+    name = file_names
+    # description = filedesc
   )
   obj$files <- list(file_list)
 
@@ -222,8 +221,8 @@ rbox_file_download <- function(rb_url, id_col = 1) {
 
   # Create dataframe
   return(data.frame(
-    text = rep(rb_url[[1]], length(listed)),
-    name = listed,
+    text = rep(rb_url[[1]], length(files)),
+    name = files,
     file_location = file_locations,
     stringsAsFactors = FALSE
   ))

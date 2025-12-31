@@ -4,11 +4,11 @@
 #' This module incorporates ODDPub into metacheck. ODDPub is a text mining algorithm that detects which publications disseminated Open Data or Open Code together with the publication.
 #'
 #' @details
-#' The Open Practices Check runs Open Data Detection in Publications (ODDPub). ODDPub searches for regular expressions that match a predefined pattern, and identifies sentences describing open practices such as code and data sharing. More information on the package can be found at <https://github.com/quest-bih/oddpub>. The module only returns whether open data and code is found (the original package offers more fine-grained results). The tool was validated in the biomedical literature, see <https://osf.io/yv5rx/>.
+#' The Open Practices Check runs Open Data Detection in Publications (ODDPub). ODDPub searches for text expressions that indicate that an article shared Open Data or Open Code together with the publication. More information on the package can be found at <https://github.com/quest-bih/oddpub>. The module only returns whether open data and code is found (the original package offers more fine-grained results). The tool was validated in the biomedical literature, see <https://osf.io/yv5rx/>.
 #'
 #' ODDPub was developed by Nico Riedel, Vladislav Nachev, Miriam Kip, and Evgeny Bobrov at the QUEST Center for Transforming Biomedical Research, Berlin Institute of Health.
 #'
-#' It might miss open data and code declarations when the words used in the manuscript are not in the pattern that ODDPub searches for.
+#' It might miss open data and code declarations when the words used in the manuscript are not in the pattern that ODDPub searches for, or when the repositories are not in the ODDpub code (e.g., ResearchBox).
 #'
 #'
 #' @keywords general
@@ -81,19 +81,28 @@ open_practices <- function(paper) {
 
   # report ----
   if (nrow(open_data_results) == 1) {
+    # Oddpub can return the same info multiple times, reduce text
+    open_data_statement <- strsplit(open_data_results$open_data_statements, ";")[[1]]
+    open_data_statement <- trimws(open_data_statement)
+    open_data_statement <- unique(open_data_statement)
+
+    open_code_statement <- strsplit(open_data_results$open_code_statements, ";")[[1]]
+    open_code_statement <- trimws(open_code_statement)
+    open_code_statement <- unique(open_code_statement)
+
     data_sentence <- ifelse(
       open_data_results$is_open_data & nzchar(open_data_results$open_data_statements),
       paste0('Data was openly shared for this article, based on the sentence "',
-             open_data_results$open_data_statements, '".'),
+             open_data_statement, '".'),
       ifelse(open_data_results$is_open_data,
              "Data was openly shared for this article.",
-             "Data was not openly shared for this article. which could be because there is no data related to this article. If there is data, please consider sharing it in a repository.")
+             "Data was not openly shared for this article. which could be because there is no data related to this article, or the repository is not reconized by ODDPub. If there is data, please consider sharing it in a repository.")
     )
 
     code_sentence <- ifelse(
       open_data_results$is_open_code & nzchar(open_data_results$open_code_statements),
       paste0('Code was openly shared for this article, based on the sentence "',
-             open_data_results$open_code_statements, '".'),
+             open_code_statement, '".'),
       ifelse(open_data_results$is_open_code,
              "Code was openly shared for this article.",
              "Code was not openly shared for this article, which could be because there is no code related to this article. If there is code, please consider sharing it in a repository, and run metacheck again to benefit from the automated code check. ")
@@ -104,7 +113,7 @@ open_practices <- function(paper) {
   }
 
   guidance <- c(
-    "Data and code sharing was determined using ODDPub, a text mining algorithm.",
+    "Data and code sharing was determined using ODDPub. ODDPub searches for text expressions that indicate that an article shared Open Data or Open Code together with the publication.  More information on the package can be found at <https://github.com/quest-bih/oddpub>. The module only returns whether open data and code is found (the original package offers more fine-grained results). The tool was validated in the biomedical literature, see <https://osf.io/yv5rx/>.",
     bibentry(
       bibtype = "Article",
       author = c(
