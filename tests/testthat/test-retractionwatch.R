@@ -20,9 +20,7 @@ test_that("defaults", {
 })
 
 test_that("update", {
-  skip("long process")
-  skip_on_cran()
-  skip_on_covr()
+  skip_if_quick()
   skip_if_offline("api.labs.crossref.org")
 
   path <- rw_update()

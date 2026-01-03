@@ -1,19 +1,6 @@
 # options(metacheck.osf.api = "https://api.osf.io/v2/")
 # osf_delay(0)
 
-# skip if requires OSF API
-osf_skip <- function() {
-  return(NULL) # do not skip with httptest set up
-
-  # skip("Skip OSF") # skips all tests that require API
-  #
-  # # skips tests if contraindicated
-  # skip_if_offline()
-  # skip_on_cran()
-  # skip_on_covr()
-  # skip_if_not(osf_api_check() == "ok")
-}
-
 test_that("exists", {
   expect_true(is.function(metacheck::osf_check_id))
 
@@ -74,7 +61,7 @@ test_that("osf_type", {
   expect_true(is.function(metacheck::osf_type))
   expect_no_error(helplist <- help(osf_type, metacheck))
 
-  osf_skip()
+  skip_osf()
 
   examples <- list(project = "pngda",
                    component = "https://osf.io/6nt4v",
@@ -144,7 +131,7 @@ test_that("osf_links", {
 })
 
 test_that("osf_check_id", {
-  osf_skip()
+  skip_osf()
 
   # check vo links
   info <- osf_info("t9j8e")
@@ -238,7 +225,7 @@ test_that("osf_check_id", {
 })
 
 test_that("osf_get_all_pages", {
-  osf_skip()
+  skip_osf()
 
   osf_api <- getOption("metacheck.osf.api")
 
@@ -272,7 +259,7 @@ test_that("osf_get_all_pages", {
 })
 
 test_that("osf_files", {
-  osf_skip()
+  skip_osf()
 
   osf_id <- "pngda"
   data <- osf_files(osf_id)
@@ -289,7 +276,7 @@ test_that("osf_files", {
 })
 
 test_that("osf_children", {
-  osf_skip()
+  skip_osf()
 
   osf_id <- "pngda"
   data <- osf_children(osf_id)
@@ -301,7 +288,7 @@ test_that("osf_children", {
 })
 
 test_that("osf_info", {
-  osf_skip()
+  skip_osf()
 
   # project
   osf_id <- "pngda"
@@ -405,7 +392,7 @@ test_that("osf_info", {
 
 
 test_that("osf_retrieve", {
-  osf_skip()
+  skip_osf()
 
   examples <- c(project = "pngda",
                 component = "https://osf.io/6nt4v",
@@ -486,7 +473,7 @@ test_that("osf_retrieve", {
 })
 
 test_that("osf_retrieve recursive", {
-  osf_skip()
+  skip_osf()
 
   # folders can only have wb IDs,
   # files only have wb IDs until someone looks at them on the web
@@ -506,7 +493,7 @@ test_that("osf_retrieve recursive", {
 })
 
 test_that("osf_id vs wb_id", {
-  osf_skip()
+  skip_osf()
 
   osf_id <- "k6gbt"
   osf_info <- osf_info(osf_id)
@@ -518,7 +505,7 @@ test_that("osf_id vs wb_id", {
 })
 
 test_that("osf_parent_project", {
-  osf_skip()
+  skip_osf()
 
   # has parent project
   osf_id <- "yt32c"
@@ -546,7 +533,7 @@ test_that("summarize_contents", {
   summary <- summarize_contents(data.frame())
   expect_equal(nrow(summary), 0)
 
-  osf_skip()
+  skip_osf()
 
   osf_id <- "pngda"
   contents <- osf_retrieve(osf_id, recursive = TRUE)

@@ -20,21 +20,23 @@ modules <- c(
   # "ref_consistency",
 
   # in reports ----
-  "prereg_check",
-  "causal_claims",
-  "open_practices",
-  "power",
-  "stat_p_exact",
-  "stat_p_nonsig",
-  "marginal",
-  "stat_effect_size",
-  "code_check",
-  "stat_check",
-  "ref_doi_check",
-  "ref_accuracy",
-  "ref_replication",
-  "ref_retraction",
-  "ref_pubpeer"
+  # "prereg_check",
+  # "causal_claims",
+  # "open_practices",
+  "funding_check",
+  "coi_check",
+  "power"
+  # "stat_p_exact",
+  # "stat_p_nonsig",
+  # "marginal",
+  # "stat_effect_size",
+  # "code_check",
+  # "stat_check",
+  # "ref_doi_check",
+  # "ref_accuracy",
+  # "ref_replication",
+  # "ref_retraction",
+  # "ref_pubpeer"
 )
 
 # paper <- psychsci$`0956797621991137`
@@ -46,7 +48,7 @@ n <- 1
 output <- "html"
 files <- seq_along(psychsci) |> sample(n) |>
   lapply(\(i) {
-    #i = which(names(psychsci) == "09567976221139496")
+    #i = which(names(psychsci) == "09567976231158570")
     paper <- psychsci[[i]]
     print(paper$id)
 

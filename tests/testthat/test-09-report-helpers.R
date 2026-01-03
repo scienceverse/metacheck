@@ -6,10 +6,12 @@ test_that("scroll_table", {
                       lc = letters)
   obs <- scroll_table(table)
   expect_true(grepl("```{r}", obs, fixed = TRUE))
-  expect_true(grepl("escape = FALSE", obs, fixed = TRUE))
+  exp <- "metacheck::report_table(table, \"auto\", 2, FALSE)"
+  expect_true(grepl(exp, obs, fixed = TRUE))
 
   obs <- scroll_table(table, escape = TRUE)
-  expect_true(grepl("escape = TRUE", obs, fixed = TRUE))
+  exp <- "metacheck::report_table(table, \"auto\", 2, TRUE)"
+  expect_true(grepl(exp, obs, fixed = TRUE))
 
   # vector vs unnamed table version
   table <- data.frame(table = LETTERS)
@@ -19,32 +21,74 @@ test_that("scroll_table", {
   expect_equal(obs_table, obs_vec)
 
   # set paginate after maxrows
-  obs_scroll <- scroll_table(1:10)
-  obs_no <- scroll_table(1:2)
-  obs_no10 <- scroll_table(1:10, maxrows = 10)
-
-  expect_true(grepl("dom = \"<'top' p>\"", obs_scroll, fixed = TRUE))
-  expect_true(grepl('dom = "t",', obs_no, fixed = TRUE))
-  expect_true(grepl('dom = "t",', obs_no10, fixed = TRUE))
-  expect_true(grepl('pageLength = 2,', obs_scroll, fixed = TRUE))
-  expect_true(grepl('pageLength = 2,', obs_no, fixed = TRUE))
-  expect_true(grepl('pageLength = 10,', obs_no10, fixed = TRUE))
+  obs_2 <- scroll_table(1:10)
+  obs_10 <- scroll_table(1:10, maxrows = 10)
+  exp_2 <- "metacheck::report_table(table, \"auto\", 2, FALSE)"
+  exp_10 <- "metacheck::report_table(table, \"auto\", 10, FALSE)"
+  expect_true(grepl(exp_2, obs_2, fixed = TRUE))
+  expect_true(grepl(exp_10, obs_10, fixed = TRUE))
 
   # colwidths
   obs <- scroll_table(data.frame(a = 1, b = 2), c(.3, .7))
-  expect_true(grepl('targets = 0, width = "30%"', obs))
-  expect_true(grepl('targets = 1, width = "70%"', obs))
+  exp <- "metacheck::report_table(table, c(0.3, 0.7), 2, FALSE)"
+  expect_true(grepl(exp, obs, fixed = TRUE))
 
   obs <- scroll_table(data.frame(a = 1, b = 2, c = 3, d = 4), c(.1, .4))
-  expect_true(grepl('targets = 0, width = "10%"', obs))
-  expect_true(grepl('targets = 1, width = "40%"', obs))
+  exp <- "metacheck::report_table(table, c(0.1, 0.4), 2, FALSE)"
+  expect_true(grepl(exp, obs, fixed = TRUE))
 
-  obs <- scroll_table(data.frame(a = 1, b = 2, c = 3, d = 4), c(NA, 200, NA, NA))
-  expect_false(grepl('targets = 0', obs))
-  expect_true(grepl('targets = 1, width = "200px"', obs))
-  expect_false(grepl('targets = 2', obs))
-  expect_false(grepl('targets = 3', obs))
+  obs <- scroll_table(data.frame(a = 1, b = 2, c = 3, d = 4),
+                      c(NA, 200, NA, NA))
+  exp <- "metacheck::report_table(table, c(NA, 200, NA, NA), 2, FALSE)"
+  expect_true(grepl(exp, obs, fixed = TRUE))
 })
+
+test_that("report_table", {
+  expect_true(is.function(metacheck::report_table))
+  expect_no_error(helplist <- help(report_table, metacheck))
+
+  expect_error(report_table(bad_arg))
+
+  # one row
+  table <- data.frame(a = 1, b = 2, c = 3, d = 4)
+  obs <- report_table(table)
+  expect_s3_class(obs, "datatables")
+  expect_equal(obs$x$data, table)
+  expect_equal(obs$x$options$pageLength, 2)
+  expect_equal(obs$x$options$dom, "t")
+
+  # 10 rows, show 2
+  table <- data.frame(a = 1:10, b = 21:30)
+  obs <- report_table(table)
+  expect_equal(obs$x$data, table)
+  expect_equal(obs$x$options$pageLength, 2)
+  expect_equal(obs$x$options$dom, "<'top' p>")
+
+  # 10 rows, show 10
+  table <- data.frame(a = 1:10, b = 21:30)
+  obs <- report_table(table, maxrows = 10)
+  expect_equal(obs$x$data, table)
+  expect_equal(obs$x$options$pageLength, 10)
+  expect_equal(obs$x$options$dom, "t")
+
+  # colwidths
+  table <- data.frame(a = 1:10, b = 21:30)
+  obs <- report_table(table, c(.5, .5))
+  expect_equal(obs$x$options$columnDefs[[1]]$width, "50%")
+  expect_equal(obs$x$options$columnDefs[[2]]$width, "50%")
+
+  table <- data.frame(a = 1:10, b = 21:30)
+  obs <- report_table(table, c(20, 50))
+  expect_equal(obs$x$options$columnDefs[[1]]$width, "20px")
+  expect_equal(obs$x$options$columnDefs[[2]]$width, "50px")
+
+  table <- data.frame(a = 1:10, b = 21:30)
+  colwidths <- c(NA, "4em")
+  obs <- report_table(table, colwidths)
+  expect_equal(obs$x$options$columnDefs[[1]]$targets, 1)
+  expect_equal(obs$x$options$columnDefs[[1]]$width, "4em")
+})
+
 
 test_that("collapse_section", {
   expect_true(is.function(metacheck::collapse_section))

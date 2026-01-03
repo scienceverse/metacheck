@@ -3,6 +3,7 @@
 #' @description
 #' This module checks references for mismatches with CrossRef.
 #'
+#' @details
 #' It only looks up the DOIs originally present in your paper (not those found by ref_doi_check) and returns the bibliographic information.
 #'
 #' We then check that the title from your reference section is the same as the retrieved title (ignoring differences in capitalisation) and that all author last names in your reference section are also in the retrieved author list (we do not check first names or order yet).

@@ -36,7 +36,8 @@ code_check <- function(paper) {
   github_links_found <- search_text(paper, github_regex, return = "match")
   # remove duplicates
   github_links_found <- github_links_found[!duplicated(github_links_found$text), ]
-  # Below needs to be made to work for multiple URLS! And I need to remove duplicates
+  # Below needs to be made to work for multiple URLS!
+  # And I need to remove duplicates
   if (nrow(github_links_found) > 0) {
     github_file_list <- github_links_found$text %>%
       map(~ github_files(.x, recursive = TRUE)) %>%

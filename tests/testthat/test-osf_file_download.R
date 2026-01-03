@@ -1,22 +1,11 @@
 # options(metacheck.osf.api = "https://api.osf.io/v2/")
 # osf_delay(0)
 
-# skip if requires OSF API
-osf_skip <- function() {
-  skip("Skip OSF") # skips all tests that require API
-
-  # skips tests if contraindicated
-  skip_if_offline()
-  skip_on_cran()
-  skip_on_covr()
-  skip_if_not(osf_api_check() == "ok")
-}
-
 test_that("osf_file_download", {
   expect_warning(x <- osf_file_download("notanid"))
   expect_null(x)
 
-  osf_skip()
+  skip_osf()
 
   osf_id <- "6nt4v" # processed data - 1 file
   node_name <- "Processed Data"
@@ -126,7 +115,7 @@ test_that("osf_file_download", {
 })
 
 test_that("osf_file_download github", {
-  osf_skip()
+  skip_osf()
 
   osf_id <- "mc45x"
   dl <- osf_file_download(osf_id, withr::local_tempdir())
@@ -143,7 +132,7 @@ test_that("osf_file_download github", {
 })
 
 test_that("osf_file_download long", {
-  osf_skip()
+  skip_osf()
 
   osf_id <- "j3gcx" # raw data - nesting and duplicates
 
@@ -171,7 +160,7 @@ test_that("osf_file_download long", {
 })
 
 test_that("osf_file_download ignore_folder_structure", {
-  osf_skip()
+  skip_osf()
 
   # https://github.com/scienceverse/metacheck/issues/100
   osf_id <- c("mjrpy")
@@ -191,7 +180,7 @@ test_that("osf_file_download ignore_folder_structure", {
 })
 
 test_that("osf_file_download issue 99", {
-  osf_skip()
+  skip_osf()
 
   # https://github.com/scienceverse/metacheck/issues/99
   osf_id <- c("msfcn")

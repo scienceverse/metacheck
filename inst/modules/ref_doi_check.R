@@ -3,6 +3,12 @@
 #' @description
 #' This module checks references for missing DOIs or DOIs with an invalid format.
 #'
+#' @details
+#' This module works by identifying references that do not have a DOI or have a DOI that does not have a valid format. It then looks up these references by title, author and journal or book title in CrossRef. A DOI match is returned for the reference with the highest match above the `crossref_min_score` (default of 50).
+#'
+#' Carefully check the returned results, as problems with reference import can lead to false positives.
+#'
+#'
 #' @keywords reference
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})

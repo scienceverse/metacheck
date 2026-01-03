@@ -154,8 +154,8 @@ llm <- function(text, query,
     pb$tick()
   }
 
-  # print final ratelimit values
-  if (verbose()) {
+  # print final ratelimit values - turned off for now
+  if (FALSE & verbose()) {
     sprintf("You have %s of %s requests left (reset in %s) and %s of %s tokens left (reset in %s).",
             response$headers$`x-ratelimit-remaining-requests`,
             response$headers$`x-ratelimit-limit-requests`,

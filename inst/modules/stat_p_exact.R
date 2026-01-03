@@ -3,6 +3,12 @@
 #' @description
 #' List any p-values reported with insufficient precision (e.g., p < .05 or p = n.s.)
 #'
+#' @details
+#' This module uses regular expressions to identify p-values. It will flag any values reported as p > ? or p < numbers greater than .001.
+#'
+#' We try to exclude figure and table notes like "* p < .05", but may not succeed at excluding all false positives.
+#'
+#'
 #' @keywords results
 #'
 #' @author  Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk}) and Daniel Lakens (\email{D.Lakens@tue.nl})

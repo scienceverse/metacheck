@@ -9,6 +9,8 @@ modules <- c(
   "stat_effect_size",
   "stat_check",
   "open_practices",
+  "coi_check",
+  "funding_check",
   # need external services
   "prereg_check",
   "causal_claims",

@@ -3,6 +3,9 @@
 #' @description
 #' List all the URLs in the main text.
 #'
+#' @details
+#' Checks for valid URLs using a regular expression.
+#'
 #' @keywords general
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})

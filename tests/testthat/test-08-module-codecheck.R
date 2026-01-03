@@ -19,7 +19,7 @@ test_that("code_check offline", {
 })
 
 test_that("code_check online", {
-  skip("Long Tests")
+  skip_if_quick()
 
   # OSF but no R files text
   paper <- psychsci[[40]]
@@ -36,7 +36,7 @@ test_that("code_check online", {
 })
 
 test_that("code_check online", {
-  skip("Long Tests")
+  skip_if_quick()
 
   # relevant text - info
   paper <- read(demoxml())

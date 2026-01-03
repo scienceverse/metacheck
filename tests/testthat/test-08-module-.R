@@ -7,8 +7,13 @@ test_that("module_list", {
   exp <- c("name", "title", "description", "section", "path")
   expect_equal(names(builtin), exp)
 
+  # print format
   op <- capture_output(print(builtin))
   expect_true(grepl("*** GENERAL ***", op, fixed = TRUE))
+
+  # check all names and titles are unique
+  expect_equal(builtin$name, unique(builtin$name))
+  expect_equal(builtin$title, unique(builtin$title))
 })
 
 test_that("module_find", {
@@ -93,7 +98,7 @@ test_that("module_help", {
   output <- capture.output(help)
   usage <- "module_run(paper, \"ref_doi_check\", crossref_min_score = 50)"
   def1 <- "- paper: a paper object or paperlist object  "
-  def2 <- "- crossref_min_score: The minimum score to return a DOI match from `crossref_query()`"
+  def2 <- "- crossref_min_score: The minimum score to return a DOI match from `crossref_query()`  "
   expect_equal(output[[5]], usage)
   expect_equal(output[[7]], def1)
   expect_equal(output[[8]], def2)
@@ -198,6 +203,22 @@ test_that("get_prev_outputs", {
   f <- function(module, item) { get_prev_outputs(module, item, 1) }
   expect_equal(f("mod_1", "a"), 1)
   expect_null(f("mod_2", "a"))
+})
+
+test_that("all builtin modules have essential components", {
+  modules <- module_list()$name
+  section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
+
+  # expect some content in roxygen header
+  for (module in modules) {
+    message(module)
+    info <- module_info(module)
+    expect_true(nzchar(info$title))
+    expect_true(nzchar(info$description))
+    expect_true(nzchar(info$details))
+
+    expect_in(info$keywords[[1]], section_levels)
+  }
 })
 
 test_that("all_p_values", {
