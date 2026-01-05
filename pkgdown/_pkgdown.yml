@@ -139,6 +139,7 @@ reference:
   desc: ~
   contents:
   - '`github_config`'
+  - '`github_links`'
   - '`github_repo`'
   - '`github_info`'
   - '`github_files`'

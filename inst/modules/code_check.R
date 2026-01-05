@@ -32,8 +32,7 @@ code_check <- function(paper) {
 
   ## GitHub ----
   # Regex pattern for GitHub URLs (including subpaths)
-  github_regex <- "(https://)?github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*"
-  github_links_found <- search_text(paper, github_regex, return = "match")
+  github_links_found <- github_links(paper)
   github_urls <- unique(github_links_found$text)
 
   ## ResearchBox ----

@@ -7,16 +7,18 @@
 pytacheck(
   file_path,
   api_url = "https://api.metacheck.app/get-paper-metadata/",
-  api_key = "66808e327dc79d135ba18e051673d906"
+  api_key = Sys.getenv("PYTACHECK_API")
 )
 }
 \arguments{
+\item{file_path}{Path to the PDF file}
+
 \item{api_url}{Base URL of the API}
 
-\item{filename}{Path to the PDF file}
+\item{api_key}{Key to access pytacheck}
 }
 \value{
-A paper object
+A list of parsed information
 }
 \description{
 Process a paper using the Pytacheck API

@@ -175,7 +175,7 @@ pdf2grobid <- function(filename, save_path = ".",
 
 #' Process a paper using the Pytacheck API
 #'
-#' @param filename Path to the PDF file
+#' @param file_path Path to the PDF file
 #' @param api_url Base URL of the API
 #' @param api_key Key to access pytacheck
 #'
@@ -240,7 +240,7 @@ pytacheck <- function(file_path,
           skip <- FALSE
           tryCatch(
             {
-              tbl <- arrrow::read_ipc_stream(stream)
+              tbl <- arrow::read_ipc_stream(stream)
               if (is.null(tbl)) {
                 break
               }

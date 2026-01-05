@@ -236,9 +236,18 @@ crossref_doi <- function(doi, select = c("DOI",
 
 #' Look up Reference in CrossRef
 #'
-#' @param ref the full text reference of the paper to get info for
+#' @details
+#' The argument `ref` can take many formats.  Crossref queries only look for authors, title, and container-title (e.g., journal or book), but extra infomration doesn't seem to hurt.
+#'
+#' - be a text reference or fragment
+#' - a bibentry object (authors, ttle and container will be extracted)
+#' - a vector of text or bibentry objects
+#' - a paper object (the ref colum of the bib table will be extracted)
+#'
+#'
+#' @param ref the full text reference of the paper to get info for, see Details
 #' @param min_score minimal score that is taken to be a reliable match (default 50)
-#' @param rows the maximum number of rows to return
+#' @param rows the maximum number of rows to return per reference (default 1)
 #'
 #' @return doi
 #' @export
@@ -252,6 +261,12 @@ crossref_doi <- function(doi, select = c("DOI",
 #'   cr <- crossref_query(ref)
 #' }
 crossref_query <- function(ref, min_score = 50, rows = 1) {
+  if (is_paper(ref)) {
+    # pull the whole reference list
+    paper <- ref
+    ref <- paper$bib$ref
+  }
+
   if (length(ref) == 0) {
     return(data.frame())
   }
@@ -270,7 +285,13 @@ crossref_query <- function(ref, min_score = 50, rows = 1) {
              format = "Checking References [:bar] :current/:total :elapsedfull")
     table <- lapply(ref, \(r) {
       pb$tick()
-      crossref_query(r, min_score)
+      tryCatch( crossref_query(r, min_score),
+                error = \(e) {
+                  error_tbl <- data.frame(ref = ref,
+                                          DOI = NA_character_,
+                                          error = e$message)
+                  return(error_tbl)
+                } )
     }) |>
       do.call(dplyr::bind_rows, args = _)
     return(table)

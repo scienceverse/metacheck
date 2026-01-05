@@ -1,3 +1,35 @@
+#' Find GitHub Links in Papers
+#'
+#' GitHub links can be in PDFs in several ways.
+#'
+#' @param paper a paper object or paperlist object
+#'
+#' @returns a table with the GitHub url in the first (text) column
+#' @export
+#'
+#' @examples
+#' github_links(psychsci)
+github_links <- function(paper) {
+  # strip punctuation off the end of sentences to avoid wierd matches
+  strip_text <- search_text(paper, ".*[^\\.$]", return = "match", perl = TRUE)
+
+  # search for github URLS
+  github_regex <- "(?:https?://)?github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*"
+  found_gh <- search_text(strip_text, github_regex, return = "match", perl = TRUE)
+
+  # find github repos referenced only by org/repo
+  # like "See our github repo at scienceverse/metacheck"
+  no_github_regex <- "[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\\.git)?"
+  other_gh <- search_text(strip_text, "github") |>
+    search_text(github_regex, exclude = TRUE, perl = TRUE) |>
+    search_text("github.io", exclude = TRUE) |>
+    search_text(no_github_regex, return = "match", perl = TRUE)
+
+  all_gh <- dplyr::bind_rows(found_gh, other_gh)
+
+  return(all_gh)
+}
+
 #' Get GitHub Repo Info
 #'
 #' @param repo The URL of the repository (in the format "username/repo" or "https://github.com/username/repo")

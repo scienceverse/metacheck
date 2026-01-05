@@ -7,17 +7,26 @@
 crossref_query(ref, min_score = 50, rows = 1)
 }
 \arguments{
-\item{ref}{the full text reference of the paper to get info for}
+\item{ref}{the full text reference of the paper to get info for, see Details}
 
 \item{min_score}{minimal score that is taken to be a reliable match (default 50)}
 
-\item{rows}{the maximum number of rows to return}
+\item{rows}{the maximum number of rows to return per reference (default 1)}
 }
 \value{
 doi
 }
 \description{
 Look up Reference in CrossRef
+}
+\details{
+The argument \code{ref} can take many formats.  Crossref queries only look for authors, title, and container-title (e.g., journal or book), but extra infomration doesn't seem to hurt.
+\itemize{
+\item be a text reference or fragment
+\item a bibentry object (authors, ttle and container will be extracted)
+\item a vector of text or bibentry objects
+\item a paper object (the ref colum of the bib table will be extracted)
+}
 }
 \examples{
 ref <- paste(

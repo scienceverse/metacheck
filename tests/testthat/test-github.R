@@ -18,6 +18,39 @@ test_that("errors", {
   expect_null(github_files(repo))
 })
 
+test_that("github_links", {
+  expect_true(is.function(metacheck::github_links))
+  expect_no_error(helplist <- help(github_links, metacheck))
+
+  expect_error(github_links(bad_arg))
+
+  paper <- paper()
+  paper$full_text <- data.frame(
+    id = paper$id,
+    text = c("No https:  github.com/a/b1",
+             "Oops: http://github.com/a/b2/",
+             "It's at https://github.com/a/b3/.",
+             "check out https://github.com/a/b4.git",
+             "I named it https://github.com/a/b5/file. which is dumb.",
+             "markdown: [GitHub](https://github.com/a/b6)",
+             "md: <https://github.com/a/b7>",
+             "html: <a href=\"https://github.com/a/b8\"",
+             "The github repo is a/b9")
+  )
+  obs <- github_links(paper)
+  exp <- c("github.com/a/b1",
+           "http://github.com/a/b2",
+           "https://github.com/a/b3",
+           "https://github.com/a/b4.git",
+           "https://github.com/a/b5/file.",
+           "https://github.com/a/b6",
+           "https://github.com/a/b7",
+           "https://github.com/a/b8",
+           "a/b9")
+  expect_setequal(obs$text, exp)
+})
+
+
 test_that("github_config", {
   expect_true(is.function(metacheck::github_config))
   expect_no_error(helplist <- help(github_config, metacheck))

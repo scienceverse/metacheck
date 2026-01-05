@@ -1,3 +1,10 @@
+# metacheck 0.0.0.9065
+
+* New `github_links()` function to find github references in a paper.
+* `code_check` module very much improved - checks SAS and STATA code in OSF, resaerchbox, and github repos.
+* `power` module much improved
+* New modules: `coi_check`, `funding_check`
+
 # metacheck 0.0.0.9064
 
 * Enhanced module help
