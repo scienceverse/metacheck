@@ -59,7 +59,7 @@ rbox_retrieve <- function(rb_url, id_col = 1) {
   valid_ids <- unique(ids$rb_url)
 
   if (length(valid_ids) == 0) {
-    message("No valid AsPredicted links")
+    message("No valid ResearchBox links")
     return(table)
   }
 
@@ -101,7 +101,6 @@ rbox_retrieve <- function(rb_url, id_col = 1) {
 #' @keywords internal
 rbox_info <- function(rb_url) {
   message("* Retrieving info from ", rb_url, "...")
-
   # set up return table
   obj <- data.frame(
     rb_url = rb_url
@@ -134,12 +133,12 @@ rbox_info <- function(rb_url) {
   # get file list
   file_names <- xml2::xml_find_all(html, "//p [@class='file_name']") |>
     xml2::xml_text()
-  filedesc <- xml2::xml_find_all(html, "//p [@class='preview_link']") |>
-    xml2::xml_text()
-  filedesc <- filedesc[filedesc!=""]
+  # filedesc <- xml2::xml_find_all(html, "//p [@class='preview_link']") |> # blocked out, seems gone after website redesign?
+  #   xml2::xml_text()
+  # filedesc <- filedesc[filedesc!=""]
   file_list <- data.frame(
-    name = file_names,
-    description = filedesc
+    name = file_names
+    # description = filedesc
   )
   obj$files <- list(file_list)
 
@@ -171,41 +170,54 @@ rbox_info <- function(rb_url) {
 
 #' Retrieve files from ResearchBox by URL
 #'
-#' @param rb_url a ResearchBox URL
+#' @param rb_url a vector of ResearchBox URLs
 #'
 #' @returns a data frame of information
 #' @export
 #' @keywords internal
-rbox_file_download <- function(rb_url, id_col = 1) {
+rbox_file_download <- function(rb_url) {
   listed <- NULL
+
+  # vectorise
+  if (length(rb_url) > 1) {
+    unique_rb <- unique(rb_url) |> setdiff(NA)
+
+    file_lists <- lapply(unique_rb, rbox_file_download)
+    info <- do.call(dplyr::bind_rows, args = file_lists)
+    orig <- data.frame(rb_url = rb_url)
+    df <- dplyr::left_join(orig, info, by = "rb_url")
+
+    return(df)
+  }
 
   message("* Retrieving files from ", rb_url, "...")
 
-  # set up return table
-  obj <- data.frame(
-    rb_url = rb_url
-  )
-
-  # Cross-platform: download a ZIP to a temp dir, unzip, and list files
+  # Download a ZIP to a temp dir
   tmp_dir <- file.path(tempdir(), paste0("rbx_", as.integer(Sys.time())))
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
-  # 2) Create a path for the ZIP file
-  zip_path <- file.path(tmp_dir, basename(rb_url[[id_col]]))
+  # Create a path for the ZIP file
+  zip_path <- file.path(tmp_dir, basename(rb_url))
   if (!grepl("\\.zip$", zip_path, ignore.case = TRUE)) {
     zip_path <- file.path(tmp_dir, "archive.zip")
   }
 
-  # 3) Download (use binary mode on Windows)
+  # download (use binary mode on Windows)
   message("Downloading to: ", zip_path)
-  url_researchbox <- paste0("https://s3.wasabisys.com/zipballs.researchbox.org/ResearchBox_",sub("^https://researchbox.org/", "", rb_url[[id_col]]),".zip")
-  utils::download.file(url_researchbox, destfile = zip_path, mode = "wb", quiet = TRUE)
+  url_researchbox <- paste0(
+    "https://s3.wasabisys.com/zipballs.researchbox.org/ResearchBox_",
+    sub("^https://researchbox.org/", "", rb_url),
+    ".zip")
+  utils::download.file(url_researchbox,
+                       destfile = zip_path,
+                       mode = "wb",
+                       quiet = TRUE)
 
   if (!file.exists(zip_path) || file.size(zip_path) == 0) {
     stop("Download failed or resulted in an empty file: ", zip_path)
   }
 
-  # 4) Unzip into a subfolder
+  # unzip into a subfolder
   out_dir <- file.path(tmp_dir, "unzipped")
   dir.create(out_dir, showWarnings = FALSE)
 
@@ -216,15 +228,16 @@ rbox_file_download <- function(rb_url, id_col = 1) {
     stop("Unzip produced no files. The archive might be corrupt.")
   }
 
-  # 5) List files (recursively) and return
+  # list files (recursively) and return
   files <- list.files(out_dir, recursive = TRUE, full.names = FALSE)
   file_locations <- list.files(out_dir, recursive = TRUE, full.names = TRUE)
 
   # Create dataframe
-  return(data.frame(
-    text = rep(rb_url[[1]], length(listed)),
-    name = listed,
-    file_location = file_locations,
-    stringsAsFactors = FALSE
-  ))
+  rb_file_info <- data.frame(
+    rb_url = rep(rb_url, length(files)),
+    name = files,
+    file_location = file_locations
+  )
+
+  return(rb_file_info)
 }

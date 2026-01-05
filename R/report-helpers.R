@@ -40,9 +40,47 @@ scroll_table <- function(table,
     column_loc <- paste0("#| column: ", column)
   }
 
-  # columnDef
+  colwidths_code <- paste(deparse(colwidths), collapse = "\n")
+
+  # generate markdown to create the table
+  md <- sprintf('
+```{r}
+#| echo: false
+%s
+
+# table data --------------------------------------
+table <- %s
+
+# display table -----------------------------------
+metacheck::report_table(table, %s, %s, %s)
+```
+', column_loc,
+   tbl_code,
+   colwidths_code,
+   maxrows,
+   ifelse(isTRUE(escape), "TRUE", "FALSE"))
+
+  return(md)
+}
+
+#' Display a Table in a Report
+#'
+#' A function to display tables in reports.
+#'
+#' @param table the data frame to show in a table, or a vector for a list
+#' @param colwidths set column widths as a vector of px (number > 1) or percent (numbers <= 1)
+#' @param maxrows if the table has more rows than this, paginate
+#' @param escape whether or not to escape the DT (necessary if using raw html)
+#'
+#' @returns the datatable
+#' @export
+#'
+#' @examples
+#' report_table(iris)
+report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE) {
+  # set up columnDef
   if (length(colwidths) == 1 && colwidths == "auto") {
-    cd_code <- "list()"
+    cd_code <- list()
   } else {
     # set up column width definitions
     colwidths <- rep_len(colwidths, ncol(table))
@@ -60,28 +98,21 @@ scroll_table <- function(table,
       # targets are 0-based
       list(targets = i-1, width = x)
     })
-    cd_code <- paste(deparse(cd[!sapply(cd, is.null)]), collapse = "\n")
+    cd_code <- cd[!sapply(cd, is.null)]
   }
 
-  # generate markdown to create the table
-  md <- sprintf('
-```{r}
-#| echo: false
-%s
+  # set up options
+  dom <- ifelse(nrow(table) > maxrows, "<'top' p>", "t")
+  options <- list(dom = dom,
+                  ordering = FALSE,
+                  pageLength = maxrows,
+                  columnDefs = cd_code)
 
-# table data ------------------------------------
-table <- %s
-
-# table setup -----------------------------------
-cd <- %s
-options <- list(dom = "%s", ordering = FALSE, pageLength = %d, columnDefs = cd)
-DT::datatable(table, options, selection = "none", rownames = FALSE, escape = %s)
-```
-', column_loc, tbl_code, cd_code,
-   ifelse(nrow(table) > maxrows, "<'top' p>", "t"), maxrows,
-   ifelse(isTRUE(escape), "TRUE", "FALSE"))
-
-  return(md)
+  DT::datatable(table,
+                options,
+                selection = "none",
+                rownames = FALSE,
+                escape = escape)
 }
 
 #' Make Collapsible Section

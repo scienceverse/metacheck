@@ -11,13 +11,15 @@ search_text(
   return = c("sentence", "paragraph", "div", "section", "match", "id"),
   ignore.case = TRUE,
   fixed = FALSE,
-  perl = FALSE
+  perl = FALSE,
+  exclude = FALSE,
+  search_header = FALSE
 )
 }
 \arguments{
 \item{paper}{a paper object or a list of paper objects}
 
-\item{pattern}{the regex pattern to search for}
+\item{pattern}{the regex pattern to search for, if a vector with length > 1, the patterns will be searched separately and combined}
 
 \item{section}{the section(s) to search in}
 
@@ -28,6 +30,10 @@ search_text(
 \item{fixed}{logical. If TRUE, pattern is a string to be matched as is. Overrides all conflicting arguments.}
 
 \item{perl}{logical. Should Perl-compatible regexps be used?}
+
+\item{exclude}{should matches be included or excluded}
+
+\item{search_header}{also search the header}
 }
 \value{
 a data frame of matches

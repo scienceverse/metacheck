@@ -3,12 +3,14 @@
 #' Search the text of a paper or list of paper objects. Also works on the table results of a `search_text()` call.
 #'
 #' @param paper a paper object or a list of paper objects
-#' @param pattern the regex pattern to search for
+#' @param pattern the regex pattern to search for, if a vector with length > 1, the patterns will be searched separately and combined
 #' @param section the section(s) to search in
 #' @param return the kind of text to return, the full sentence, paragraph, div, or section that the text is in, or just the (regex) match, or all body text for a paper (id)
 #' @param ignore.case whether to ignore case when text searching
 #' @param fixed logical. If TRUE, pattern is a string to be matched as is. Overrides all conflicting arguments.
 #' @param perl logical. Should Perl-compatible regexps be used?
+#' @param exclude should matches be included or excluded
+#' @param search_header also search the header
 #'
 #' @return a data frame of matches
 #' @export
@@ -18,19 +20,41 @@
 #' paper <- read(filename)
 #'
 #' search_text(paper, "p\\s*(=|<)\\s*[0-9\\.]+", return = "match")
-search_text <- function(paper, pattern = ".*", section = NULL,
+search_text <- function(paper, pattern = ".*",
+                        section = NULL,
                         return = c("sentence", "paragraph", "div",  "section", "match", "id"),
                         ignore.case = TRUE,
-                        fixed = FALSE, perl = FALSE) {
+                        fixed = FALSE,
+                        perl = FALSE,
+                        exclude = FALSE,
+                        search_header = FALSE) {
   return <- match.arg(return)
   text <- NULL # hack to stop cmdcheck warning :(
+
+  # iterate and combine if multiple patterns ----
+  if (length(pattern) > 1) {
+    matches <- lapply(pattern, \(p) {
+      search_text(paper, p, section, return, ignore.case, fixed, perl, exclude, search_header)
+    })
+
+    if (exclude) {
+      # identify entries in all returned tables
+      tbl <- do.call(dplyr::intersect, args = matches) |> unique()
+    } else {
+      # combine all returned tables and exclude duplicates
+      tbl <- do.call(dplyr::bind_rows, args = matches) |> unique()
+    }
+
+    return(tbl)
+  }
 
   # test pattern for errors (TODO: deal with warnings + errors)
   test_pattern <- tryCatch(
     grep(pattern, "test", ignore.case = ignore.case,
          perl = perl, fixed = fixed),
     error = function(e) {
-      stop("Check the pattern argument:\n", e$message, call. = FALSE)
+      stop("Check the pattern argument in '", pattern, "':\n",
+           e$message, call. = FALSE)
     })
 
   if (is.data.frame(paper)) {
@@ -44,24 +68,38 @@ search_text <- function(paper, pattern = ".*", section = NULL,
   } else {
     stop("The paper argument doesn't seem to be a scivrs_paper object or a list of paper objects")
   }
+
   # make sure
   required_cols <- c("text", "section", "header", "div", "p", "s", "id")
   missing_cols <- setdiff(required_cols, names(full_text))
   full_text[missing_cols] <- NA
 
-  # filter full text----
+  # filter full text by section ----
   section_filter <- seq_along(full_text$section)
   if (!is.null(section))
     section_filter <- full_text$section %in% section
   ft <- full_text[section_filter, ]
 
-  # get all rows with a match----
+  # get all rows with a text match ----
   match_rows <- tryCatch(
-    grep(pattern, ft$text, ignore.case = ignore.case,
+    grepl(pattern, ft$text, ignore.case = ignore.case,
          perl = perl, fixed = fixed),
     error = function(e) { stop(e) },
     warning = function(w) {}
   )
+
+  # add all rows with a header match ----
+  if (search_header) {
+    header_match_rows <- tryCatch(
+      grepl(pattern, ft$header, ignore.case = ignore.case,
+            perl = perl, fixed = fixed),
+      error = function(e) { stop(e) },
+      warning = function(w) {}
+    )
+    match_rows <- match_rows | header_match_rows
+  }
+
+  if (exclude) match_rows <- !match_rows
   ft_match <- ft[match_rows, ]
 
   # add back the other parts----
@@ -130,3 +168,5 @@ search_text <- function(paper, pattern = ".*", section = NULL,
 
   return(ft_match_unique)
 }
+
+

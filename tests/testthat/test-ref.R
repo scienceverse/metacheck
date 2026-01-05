@@ -272,6 +272,16 @@ test_that("crossref_query", {
   exp <- c("10.1080/2833373x.2024.2376046", NA)
   expect_equal(obs$DOI, exp)
 
+  # paper object as ref
+  ref <- read(demoxml())
+  obs <- crossref_query(ref)
+  exp <- c("10.1098/rspb.1998.0380",
+           "10.1177/0956797614520714",
+           NA,
+           "10.1177/2515245918770963"
+  )
+  expect_equal(obs$DOI, exp)
+
   # problem with encoded ( and )
   ref <- "Levi DM, Klein SA, Aitsebaomo AP, Mon-Williams M, Tresilian JR, Strang NC, Kochhar P, Wann JP (1985. 1998).\n“Improving vision: Neural compensation for optical defocus.” _Proceedings of the Royal Society B:\nBiological Sciences_, *25*, 71-77. doi:10.1016/0042-6989(85)90207\n<https://doi.org/10.1016/0042-6989(85)90207>."
   obs <- crossref_query(ref)
@@ -279,7 +289,9 @@ test_that("crossref_query", {
   expect_equal(obs$DOI, exp)
 
   # TODO: lots of terrible bib
+  skip_if_quick()
   paper <- psychsci$`0956797620967261`
+  obs <- crossref_query(paper$bib$ref)
 })
 
 

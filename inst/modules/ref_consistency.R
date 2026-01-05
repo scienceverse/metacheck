@@ -3,6 +3,9 @@
 #' @description
 #' Check if all references are cited and all citations are referenced
 #'
+#' @details
+#' This module is currently under development and should not be relied on until we have increased the accuracy of the reference labeling while importing papers. It has a high false-positive rate because grobid (the PDF-importing tool) tends to miss some references and falsely identify some text as citations.
+#'
 #' @keywords reference
 #'
 #' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})

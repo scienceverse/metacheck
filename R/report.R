@@ -24,6 +24,8 @@
 #' }
 report <- function(paper,
                    modules = c("prereg_check",
+                               "funding_check",
+                               "coi_check",
                                "power",
                                "code_check",
                                "stat_check",
@@ -245,6 +247,7 @@ module_report <- function(module_output,
       authors <- if (length(a) < 3) {
         paste(a, collapse = " and ")
       } else {
+        n <- length(a)
         paste0(paste(a[-n], collapse = ", "), " and ", a[n])
       }
       author_ack <- sprintf(

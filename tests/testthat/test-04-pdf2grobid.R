@@ -249,7 +249,7 @@ test_that("local", {
 
 # test_that("grobid consistency", {
 #   # docker run --rm --init --ulimit core=0 -p 8070:8070 lfoppno/grobid:0.8.1
-#   skip("Very long")
+#   skip_if_quick()
 #   skip_if_offline("localhost:8070")
 #   local_url <- "http://localhost:8070"
 #

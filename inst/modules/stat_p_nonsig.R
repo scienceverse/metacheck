@@ -24,8 +24,7 @@
 #' @returns a list
 stat_p_nonsig <- function(paper) {
   # detailed table of results ----
-  res_p <- module_run(paper, "all_p_values")
-  table <- res_p$table
+  table <- extract_p_values(paper)
 
   # Specify conditions for a significant result
   cond <- !is.na(table$p_value) &

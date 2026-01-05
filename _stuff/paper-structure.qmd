@@ -1,0 +1,140 @@
+---
+title: Paper Object Structures
+format: html
+embed-resources: true
+toc: true
+theme: 
+  dark: darkly
+  light: flatly
+---
+
+A paper object is a list of tables describing a paper in a structured way.
+
+A paper should consist of these tables:
+
+- info 
+- authors 
+- sentences 
+- sections 
+- xrefs 
+- bib 
+- links 
+- tables 
+- figures 
+
+A paperlist is simply a list of paper objects. It should be easy to subset the paperlist, so probably best to keep the info for each paper in its own paper object, not in tables that are shared between papers.
+
+## Info
+
+General information about a paper, such as you would find in a crossref listing. And also information about the pytacheck parsing.
+
+- id (string)
+- title (string)
+- keywords (string vector)
+- doi (string)
+- file_hash (string)
+- input_format (factor) pdf, text, html, md, etc.
+- file_name (string) original name before sending to api
+- created_at (datetime)
+- updated_at (datetime)
+- pytacheck_version (string)
+
+The `id` should be user supplied >> the DOI >> the filename.
+`updated-at` should be modified any time metacheck changes something.
+
+## Authors
+
+Information about each author, in the paper order. Patterned after `person()` class. Use `given` for org names like "R Core Team".
+
+The `role` is a string vector, using either the CRediT taxonomy (use the 3-letter abbreviations below) or [MARC relators](https://www.loc.gov/marc/relators/relaterm.html) 
+
+```{r}
+metacheck::credit_roles("abbr")
+```
+
+- author_id (integer)
+- given (string vector)
+- family (string)
+- email (string)
+- role (string vector) 
+- orcid (string) short form
+- affiliation (string)
+- corresponding (T/F)
+
+## Sentences
+
+Each sentence in the paper, excluding title, headings, and references. Include figure and table captions, and footnotes. Use markdown for formatting.
+
+- text (string)
+- sentence_id (integer)
+- paragraph_id (integer)
+- section_id (integer)
+
+## Sections
+
+The headings in the paper. The abstract and start of the intro often don't have headings, but should start new sections. Each figure, table, and footnote is its own section. 
+
+- section_id (integer)
+- header (string)
+- level (integer)
+- section_type (factor) 
+  - abstract
+  - intro
+  - method
+  - results
+  - discussion
+  - endnote (author notes, acknowledgements, etc.)
+  - footnote
+  - figure
+  - table
+  - supplemental
+
+
+## Xrefs
+
+Cross references. This links items in the bibliography, footnotes, tables, and figures to sentences that reference them.
+
+Footnotes are kept in the sentences table, so their xref_id is the sentence_id of that footnote. 
+
+- xref_id (integer) 
+- xref_type (factor) bib, tbl, fig, foot
+- contents (string) 
+- sentence_id (integer)
+
+## Bib
+
+The bibliography, or reference section. It is important to have the text exactly as written in the original (to detect errors), a parsed version of this, and (if possible and efficient) a parsed corrected version.
+
+The parsed version should be a bibentry, which is easy to make if the info is in bibtex format.
+
+- bib_id (integer)
+- bib_text (string)
+- original (bibentry)
+- corrected (bibentry)
+
+## Links
+
+All external links in the document text, figure captions, and table captions (exclude references). Link text can be NA if the url is the link text.
+
+- url (string)
+- link_text (string)
+- sentence_id (integer)
+
+## Tables
+
+Each table is given a unique section_id in the sections table and a unique tbl_id to reference it in the xrefs table. The title is in sections:header and the caption is in sentences.
+
+- tbl_id (integer)
+- section_id (integer)
+- html (string)
+
+## Figures
+
+Each figure is given a unique section_id in the sections table and a unique fig_id to reference it in the xrefs table. The title is in sections:header and the caption is in sentences.
+
+Including images is a future task.
+
+- fig_id (integer)
+- section_id (integer)
+- image (file path or embedded)
+

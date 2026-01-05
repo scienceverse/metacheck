@@ -4,10 +4,10 @@
 \alias{rbox_file_download}
 \title{Retrieve files from ResearchBox by URL}
 \usage{
-rbox_file_download(rb_url, id_col = 1)
+rbox_file_download(rb_url)
 }
 \arguments{
-\item{rb_url}{a ResearchBox URL}
+\item{rb_url}{a vector of ResearchBox URLs}
 }
 \value{
 a data frame of information

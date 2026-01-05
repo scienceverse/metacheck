@@ -34,12 +34,6 @@ module_run <- function(paper, module, ...) {
     summary_table <- data.frame(id = paper$id)
   }
 
-  # make previous outputs available to module code
-  # TODO: check if there is a better way
-  # module_env <- new.env()
-  #assign(".__mc__prev_outputs", .__mc__prev_outputs, module_env)
-  #on.exit(rm(".__mc__prev_outputs", envir = module_env))
-
   # load required libraries
   for (pkg in info[["import"]]) {
     if (!require(pkg, quietly = TRUE,
@@ -203,7 +197,8 @@ module_list <- function(module_dir = system.file("modules", package = "metacheck
     title = sapply(txt, \(x) x[["title"]][[1]]),
     description = sapply(txt, `[[`, "description") |>
       sapply(\(x) x[[1]] %||% ""),
-    section = sapply(txt, `[[`, "keywords"),
+    section = sapply(txt, `[[`, "keywords")  |>
+      sapply(\(x) x[[1]] %||% "general"),
     path = files[valid]
   )
 

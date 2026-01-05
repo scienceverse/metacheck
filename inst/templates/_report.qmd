@@ -54,6 +54,8 @@ execute:
   .quarto-dark tr.odd { background-color: #222; }
   .quarto-dark div.datatables { color: white; }
   .quarto-dark table.dataTable { border: 1px solid #555; }
+  table strong { color: red; }
+  .quarto-dark table strong { color: yellow; }
 </style>
 
 ::: {#info}

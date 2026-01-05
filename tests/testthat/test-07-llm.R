@@ -93,8 +93,8 @@ test_that("llm_use FALSE", {
 # httptest::use_mock_api()
 
 test_that("llm_use TRUE", {
+  skip_llm()
   llm_use(TRUE)
-  skip_if_offline("api.groq.com")
 
   text <- c("hello", "number", "ten", 12)
   query <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
@@ -125,6 +125,7 @@ test_that("llm_use TRUE", {
 })
 
 test_that("sample size", {
+  skip_llm()
   skip_if_offline("api.groq.com")
 
   papers <- read(demodir())

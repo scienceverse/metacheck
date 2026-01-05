@@ -7,8 +7,13 @@ test_that("module_list", {
   exp <- c("name", "title", "description", "section", "path")
   expect_equal(names(builtin), exp)
 
+  # print format
   op <- capture_output(print(builtin))
   expect_true(grepl("*** GENERAL ***", op, fixed = TRUE))
+
+  # check all names and titles are unique
+  expect_equal(builtin$name, unique(builtin$name))
+  expect_equal(builtin$title, unique(builtin$title))
 })
 
 test_that("module_find", {
@@ -93,7 +98,7 @@ test_that("module_help", {
   output <- capture.output(help)
   usage <- "module_run(paper, \"ref_doi_check\", crossref_min_score = 50)"
   def1 <- "- paper: a paper object or paperlist object  "
-  def2 <- "- crossref_min_score: The minimum score to return a DOI match from `crossref_query()`"
+  def2 <- "- crossref_min_score: The minimum score to return a DOI match from `crossref_query()`  "
   expect_equal(output[[5]], usage)
   expect_equal(output[[7]], def1)
   expect_equal(output[[8]], def2)
@@ -200,77 +205,20 @@ test_that("get_prev_outputs", {
   expect_null(f("mod_2", "a"))
 })
 
-test_that("all_p_values", {
-  paper <- read(demoxml())
-  module <- "all_p_values"
-  p <- module_run(paper, module)
-  expect_equal(p$traffic_light, "info")
-  expect_equal(nrow(p$table), 3)
-  expect_equal(p$module, module)
-  expect_equal(p$section, "results")
+test_that("all builtin modules have essential components", {
+  modules <- module_list()$name
+  section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
 
-  # iteration: text modules need no special adaptation
-  paper <- psychsci
-  expect_no_error( mod_output <- module_run(paper, module) )
-  expect_equal(nrow(mod_output$table), 4832)
+  # expect some content in roxygen header
+  for (module in modules) {
+    message(module)
+    info <- module_info(module)
+    expect_true(nzchar(info$title))
+    expect_true(nzchar(info$description))
+    expect_true(nzchar(info$details))
 
-  # check problem with minus sign at end
-  minus <- mod_output$table$text[grep("-$", mod_output$table$text)]
-  e <- mod_output$table$text[grep("e", mod_output$table$text)]
-
-  expect_equal(length(minus), 0)
-  expect_equal(length(e), 9L)
-
-  # specific values
-  expected <- c(
-    "p=.05",
-    "p\n=\n.05",
-    "p = .05",
-    "p < .05",
-    "p > .05",
-    "p <= .05",
-    "p >= .05",
-    "p == .05",
-    "p << .05",
-    "p >> .05",
-    "p ≤ .05",
-    "p ≥ .05",
-    "p ≪ .05",
-    "p ≫ .05",
-    "p ≠ .05",
-    "p-value = .05",
-    "pvalue = .05",
-    "p = 0.05",
-    "p = 0.05",
-    "p = 0.5e-1",
-    "p = n.s.",
-    "p = ns",
-    "p = 5.0x10^-2",
-    "p = 5.0 x 10^-2",
-    "p = 5.0 x 10 ^ -2",
-    "p = 5.0 * 10 ^ -2",
-    "p = 5.0e-2",
-    "p = 5.0 e-2",
-    "p = 5.0 e -2"
-  )
-  not <- c(
-    "up = 0.05",
-    "p = stuff",
-    "p = -0.05",
-    "p less than 0.05",
-    "p = 12.05"
-  )
-
-  paper <- data.frame(
-    id = 1,
-    text = c(expected, not),
-    expected = rep(c(T, F), c(length(expected), length(not)))
-  )
-  mod_output <- module_run(paper, module)
-  expect_true(!"" %in% mod_output$table$p_comp)
-  expect_equal(mod_output$table$p_value[1:20], rep(0.05, 20))
-  expect_equal(mod_output$table$p_value[21:22], rep(NA_real_, 2))
-  expect_equal(mod_output$table$p_value[23:29], rep(0.05, 7))
+    expect_in(info$keywords[[1]], section_levels)
+  }
 })
 
 test_that("all_urls", {

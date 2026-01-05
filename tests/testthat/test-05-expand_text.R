@@ -69,6 +69,7 @@ test_that("multiple papers", {
 
 test_that("module output", {
   paper <- demoxml() |> read()
+
   module_res <- module_run(paper, "all_p_values")
   expected <- module_res$table |>
     dplyr::left_join(paper$full_text, by = c("div", "p", "s")) |>

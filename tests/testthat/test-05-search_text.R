@@ -121,4 +121,72 @@ test_that("odd errors", {
   expect_equal(nrow(x), 0)
 })
 
+test_that("exclude", {
+  paper <- paper()
+  text <- c("Apple and Banana",
+            "Just an apple.",
+            "Bananas only here.",
+            "Mango smoothie.")
+  paper$full_text <- data.frame(text = text, id = paper$id)
 
+  pattern <- c("mango")
+  x <- search_text(paper, pattern, exclude = TRUE)
+  expect_equal(x$text, text[1:3])
+
+  pattern <- c("apple")
+  x <- search_text(paper, pattern, exclude = TRUE)
+  expect_equal(x$text, text[3:4])
+})
+
+test_that("multiple patterns", {
+  paper <- paper()
+  text <- c("Apple and Banana",
+    "Just an apple.",
+    "Bananas only here.",
+    "Mango smoothie.")
+  paper$full_text <- data.frame(text = text, id = paper$id)
+
+  pattern <- c("apple", "banana")
+  x <- search_text(paper, pattern)
+  expect_equal(x$text, text[1:3])
+
+  pattern <- c("apple", "montana")
+  x <- search_text(paper, pattern)
+  expect_equal(x$text, text[1:2])
+
+  pattern <- c("banana")
+  x <- search_text(paper, pattern)
+  expect_equal(x$text, text[c(1, 3)])
+
+  pattern <- c("apple", "banana")
+  x <- search_text(paper, pattern, exclude = TRUE)
+  expect_equal(x$text, text[4])
+})
+
+test_that("search_header", {
+  paper <- paper()
+  text <- c("Apple and Banana",
+            "Just an apple.",
+            "Bananas only here.",
+            "Mango smoothie.")
+  header <- c("Fruit", "Fruit", "Fruit", "No Apples here")
+  paper$full_text <- data.frame(text = text,
+                                header = header,
+                                id = paper$id)
+
+  pattern <- c("apple")
+  x <- search_text(paper, pattern, search_header = TRUE)
+  expect_equal(x$text, text[c(1, 2, 4)])
+
+  pattern <- c("here")
+  x <- search_text(paper, pattern, search_header = TRUE)
+  expect_equal(x$text, text[3:4])
+
+  pattern <- c("No")
+  x <- search_text(paper, pattern, search_header = TRUE)
+  expect_equal(x$text, text[4])
+
+  pattern <- c("No")
+  x <- search_text(paper, pattern, exclude = TRUE, search_header = TRUE)
+  expect_equal(x$text, text[1:3])
+})
