@@ -125,6 +125,7 @@ test_that("llm_use TRUE", {
 })
 
 test_that("sample size", {
+  skip_llm()
   skip_if_offline("api.groq.com")
 
   papers <- read(demodir())

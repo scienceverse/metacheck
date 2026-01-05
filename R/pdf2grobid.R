@@ -177,37 +177,100 @@ pdf2grobid <- function(filename, save_path = ".",
 #'
 #' @param filename Path to the PDF file
 #' @param api_url Base URL of the API
+#' @param api_key Key to access pytacheck
 #'
-#' @return A Tibble containing the processed data (id, filename, grobid_xml, ocr_markdown, etc.)
+#' @return A list of parsed information
 #' @export
 #' @keywords internal
-pytacheck <- function(filename, api_url = "http://api.metacheck.app") {
-  # prepare request
-  req <- httr2::request(api_url) |>
-    httr2::req_url_path("/process/") |>
-    httr2::req_body_multipart(
-      file = curl::form_file(filename),
-      use_grobid = "true",
-      use_ocr = "true"
+pytacheck <- function(file_path,
+                      api_url = "https://api.metacheck.app/get-paper-metadata/",
+                      api_key = Sys.getenv("PYTACHECK_API")) {
+  message("Requesting ...\n")
+
+  # Make the POST request
+  response <- httr::POST(
+    api_url,
+    httr::add_headers(`X-API-Key` = api_key),
+    body = list(
+      file = httr::upload_file(file_path),
+      replace_metadata = "true"
+      # Optional: extract only specific pages (0-indexed)
+      # start_page = 0,
+      # end_page = 5
+    ),
+    encode = "multipart"
+  )
+
+  # Check if the request was successful
+  if (httr::status_code(response) == 200) {
+    # The response content is an Arrow stream
+    arrow_stream <- httr::content(response, as = "raw")
+
+    # Write to a temporary file to ensure stable reading
+    tmp_file <- tempfile(fileext = ".arrow")
+    writeBin(arrow_stream, tmp_file)
+
+    data <- list()
+
+    # Read the Arrow stream (Version 3.0 with 8 tables)
+    message("Reading main tables...\n")
+    tryCatch(
+      {
+        # Use Arrow's ReadableFile for more robust sequential reading
+        stream <- arrow::ReadableFile$create(tmp_file)
+        on.exit(stream$close())
+
+        tables <- c("sentences", "links", "tables",
+                    "sections", "authors", "references",
+                    "citations", "info")
+
+        for (table in tables) {
+          data[[table]] <- as.data.frame(arrow::read_ipc_stream(stream))
+        }
+
+        # Read any remaining tables (dynamic tables)
+        data$extra <- list()
+        message("Reading dynamic tables...\n")
+
+        while (TRUE) {
+          # Try to read next table
+          # We need a way to check for EOF cleanly or catch error
+          # arrow::read_ipc_stream throws error on EOF usually or returns empty?
+          # A safer way with ReadableFile is to try/catch
+          skip <- FALSE
+          tryCatch(
+            {
+              tbl <- arrrow::read_ipc_stream(stream)
+              if (is.null(tbl)) {
+                break
+              }
+              data$extra[[length(data$extra) + 1]] <- as.data.frame(tbl)
+              message(sprintf("  Read dynamic table %d (Rows: %d)\n",
+                              length(data$extra), nrow(tbl)))
+            },
+            error = function(e) {
+              # Assume EOF or end of stream if error matches specific message, otherwise print
+              # But for now, we just break on error assuming EOS
+              skip <<- TRUE
+            }
+          )
+          if (skip) break
+        }
+
+        message("Successfully retrieved and parsed metadata.\n")
+      },
+      error = function(e) {
+        message("Error parsing Arrow stream:", e$message, "\n")
+      },
+      finally = {
+        if (file.exists(tmp_file)) unlink(tmp_file)
+      }
     )
-
-  tryCatch({ resp <- httr2::req_perform(req) },
-           error = \(e) {
-             stop("There is an error with the server: ",
-                  e$message, call. = FALSE)
-           })
-
-  # process response
-  content_type <- httr2::resp_header(resp, "content-type")
-
-  if (grepl("application/vnd.apache.arrow.stream", content_type)) {
-    # It's an Arrow stream
-    buffer <- httr2::resp_body_raw(resp)
-    reader <- arrow::RecordBatchStreamReader$create(buffer)
-    table <- reader$read_table()
-    return(dplyr::as_tibble(table))
   } else {
-    # It's JSON (likely an error or fallback)
-    return(httr2::resp_body_json(resp))
+    stop("Request failed with status code: ",
+         httr::status_code(response), "\n",
+         httr::content(response, as = "text"))
   }
+
+  data
 }

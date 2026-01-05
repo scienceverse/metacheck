@@ -23,14 +23,14 @@ modules <- c(
   # "prereg_check",
   # "causal_claims",
   # "open_practices",
-  "funding_check",
-  "coi_check",
-  "power"
+  # "funding_check",
+  # "coi_check",
+  # "power",
   # "stat_p_exact",
   # "stat_p_nonsig",
   # "marginal",
   # "stat_effect_size",
-  # "code_check",
+  "code_check"
   # "stat_check",
   # "ref_doi_check",
   # "ref_accuracy",
@@ -48,7 +48,7 @@ n <- 1
 output <- "html"
 files <- seq_along(psychsci) |> sample(n) |>
   lapply(\(i) {
-    #i = which(names(psychsci) == "09567976231158570")
+    #i = which(names(psychsci) == "0956797615583071")
     paper <- psychsci[[i]]
     print(paper$id)
 

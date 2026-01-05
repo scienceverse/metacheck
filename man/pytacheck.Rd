@@ -4,15 +4,19 @@
 \alias{pytacheck}
 \title{Process a paper using the Pytacheck API}
 \usage{
-pytacheck(filename, api_url = "http://api.metacheck.app")
+pytacheck(
+  file_path,
+  api_url = "https://api.metacheck.app/get-paper-metadata/",
+  api_key = "66808e327dc79d135ba18e051673d906"
+)
 }
 \arguments{
-\item{filename}{Path to the PDF file}
-
 \item{api_url}{Base URL of the API}
+
+\item{filename}{Path to the PDF file}
 }
 \value{
-A Tibble containing the processed data (id, filename, grobid_xml, ocr_markdown, etc.)
+A paper object
 }
 \description{
 Process a paper using the Pytacheck API

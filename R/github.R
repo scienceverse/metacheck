@@ -113,12 +113,24 @@ github_readme <- function(repo) {
 #' }
 github_files <- function(repo, dir = "",
                          recursive = FALSE) {
-  repo <- github_repo(repo)
-  if (is.null(repo)) return(NULL)
+  # vectorise
+  if (length(repo) > 1) {
+    unique_repos <- unique(repo) |> setdiff(NA)
+
+    file_lists <- lapply(unique_repos, github_files, recursive = recursive)
+    info <- do.call(dplyr::bind_rows, args = file_lists)
+    orig <- data.frame(repo = repo)
+    df <- dplyr::left_join(orig, info, by = "repo")
+
+    return(df)
+  }
+
+  clean_repo <- github_repo(repo)
+  if (is.null(clean_repo)) return(NULL)
 
   url <- sprintf(
     "https://api.github.com/repos/%s/contents/%s",
-    repo,
+    clean_repo,
     dir
   ) |> utils::URLencode()
 
@@ -142,6 +154,8 @@ github_files <- function(repo, dir = "",
 
   files <- lapply(contents, \(file) {
     data.frame(
+      repo = repo,
+      clean_repo = clean_repo,
       name = file$name,
       path = file$path,
       download_url = ifelse(is.null(file$download_url), NA, file$download_url),

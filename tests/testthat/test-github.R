@@ -92,9 +92,19 @@ test_that("github_files", {
   expect_true(is.function(metacheck::github_files))
   expect_no_error(helplist <- help(github_files, metacheck))
 
-  files <- github_files("scienceverse/metacheck")
-  expect_equal(names(files), c("name", "path", "download_url", "size", "ext", "type"))
+  # repo name already clean
+  repo <- "scienceverse/metacheck"
+  files <- github_files(repo)
+  expect_equal(names(files), c("repo", "clean_repo", "name", "path", "download_url", "size", "ext", "type"))
   expect_true("README.md" %in% files$name)
+  expect_in(files$repo, repo)
+  expect_in(files$clean_repo, repo)
+
+  # repo name not clean
+  repo <- "https://scienceverse/metacheck"
+  files <- github_files(repo)
+  expect_in(files$repo, repo)
+  expect_in(files$clean_repo, "scienceverse/metacheck")
 
   # set dir
   tests <- github_files("scienceverse/metacheck", "tests")
@@ -111,6 +121,12 @@ test_that("github_files", {
   expect_true(nrow(files_f) < nrow(files_t))
   expect_true("pkgdown.yaml" %in% files_t$name)
   expect_false("pkgdown.yaml" %in% files_f$name)
+
+  # vectorised
+  repo <- c("scienceverse/metacheck", "scienceverse/demo")
+  files <- github_files(repo)
+  expect_in(files$repo, repo)
+  expect_in(files$clean_repo, repo)
 })
 
 test_that("github_info", {
@@ -122,7 +138,8 @@ test_that("github_info", {
   info <- github_info(repo)
 
   # files
-  expect_equal(names(info$files), c("name", "path", "download_url", "size", "ext", "type"))
+  exp <- c("repo", "clean_repo", "name", "path", "download_url", "size", "ext", "type")
+  expect_equal(names(info$files), exp)
   expect_true("README.md" %in% info$files$name)
 
   # readme
