@@ -90,6 +90,7 @@ reference:
   desc: These functions help module writers make consistently formatted report text.
   contents:
   - '`scroll_table`'
+  - '`report_table`'
   - '`collapse_section`'
   - '`plural`'
   - '`link`'
@@ -175,6 +176,8 @@ reference:
   desc: ~
   contents:
   - '`verbose`'
+  - '`extract_p_values`'
+  - '`extract_urls`'
   - '`stats`'
   - '`emojis`'
 

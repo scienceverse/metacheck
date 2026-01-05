@@ -16,39 +16,8 @@
 #'
 #' @returns a list
 all_p_values <- function(paper) {
-  # set up pattern ----
-  operators <- c("=", "<", ">", "~",
-                 "\u2248", # ~~
-                 "\u2260", # !=
-                 "\u2264", # <=
-                 "\u2265", # >=
-                 "\u226A", # <<
-                 "\u226B" # >>
-  ) |> paste(collapse = "")
-
-  pattern <- paste0(
-    "\\bp-?(value)?\\s*", # ways to write p
-    "[", operators, "]{1,2}\\s*", # 1-2 operators
-    "(n\\.?s\\.?|\\d?\\.\\d+)",# ns or valid numbers
-    "\\s*(e\\s*-\\d+)?", # also match scientific notation
-    "(\\s*[x\\*]\\s*10\\s*\\^\\s*-\\d+)?"
-  )
-
-  # table ----
-  p <- search_text(paper, pattern, return = "match",
-                       perl = TRUE, ignore.case = FALSE)
-
-  # get operator
-  pattern <- paste0("[", operators, "]{1,2}")
-  matches <- gregexpr(pattern, p$text, perl = TRUE)
-  p$p_comp <- regmatches(p$text, matches) |> sapply(`[[`, 1)
-
-  # get value
-  s <- strsplit(p$text, paste0("\\s*[", operators, "]{1,2}\\s*"))
-  pvals <- sapply(s, \(x) x[[2]]) |>
-    gsub("\\s", "", x = _) |>
-    gsub("[x*]10\\^", "e", x = _)
-  p$p_value <- suppressWarnings(as.numeric(pvals))
+  # is its own function now
+  p <- extract_p_values(paper)
 
   # summary_table ----
   summary_table <- dplyr::count(p, id, name = "p_values")

@@ -22,7 +22,7 @@ modules <- c(
   # in reports ----
   # "prereg_check",
   # "causal_claims",
-  # "open_practices",
+  "open_practices"
   # "funding_check",
   # "coi_check",
   # "power",
@@ -30,7 +30,7 @@ modules <- c(
   # "stat_p_nonsig",
   # "marginal",
   # "stat_effect_size",
-  "code_check"
+  # "code_check",
   # "stat_check",
   # "ref_doi_check",
   # "ref_accuracy",

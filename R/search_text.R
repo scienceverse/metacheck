@@ -168,3 +168,5 @@ search_text <- function(paper, pattern = ".*",
 
   return(ft_match_unique)
 }
+
+

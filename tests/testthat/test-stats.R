@@ -59,3 +59,4 @@ test_that("error", {
   expect_no_error( stats <- stats(paper) )
 
 })
+

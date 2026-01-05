@@ -20,7 +20,7 @@
 #' @returns a list
 stat_p_exact <- function(paper) {
   # table ----
-  p <- module_run(paper, "all_p_values")$table
+  p <- extract_p_values(paper)
 
   # Expand the sentences so the full sentence can be seen
   p <- expand_text(
