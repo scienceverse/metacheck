@@ -12,7 +12,7 @@ format:
     respect-user-color-scheme: true
     toc: true
     toc-title: >
-      <ul>
+      <ul class="emoji-key">
         <li class="green">no problems detected;</li>  
         <li class="yellow">something to check;</li> 
         <li class="red">possible problems detected;</li>  
@@ -37,8 +37,13 @@ execute:
 
 <style>
   main h2, main h3 { margin-left: -20px; }
+  main h2 { font-size: 150%; 
+            background-color: #327118; 
+            color: white; 
+            padding: 0.5em; 1em; }
   main h3 { font-size: 125%; }
   main h4 { font-size: 110%; }
+  .emoji-key li { margin-bottom: 0.5em; }
   .na::before     { content: '⚪ '; } /* ⚪ */
   .fail::before   { content: '☠️ '; } /* ⚫️ */
   .info::before   { content: 'ℹ️ '; } /* 🔵 */

@@ -16,3 +16,4 @@
 ^vignettes/.quarto$
 codecov.yml
 ^inst/plumber$
+^inst/templates/*.html
