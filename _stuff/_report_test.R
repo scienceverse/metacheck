@@ -2,7 +2,7 @@
 dir <- "_stuff/report-demo"
 dir.create(dir, showWarnings = FALSE)
 
-llm_use(TRUE)
+llm_use(FALSE)
 
 # choose modules to run
 # module_list()
@@ -20,23 +20,23 @@ modules <- c(
   # "ref_consistency",
 
   # in reports ----
-  # "prereg_check",
-  # "causal_claims",
-  "open_practices"
-  # "funding_check",
-  # "coi_check",
-  # "power",
-  # "stat_p_exact",
-  # "stat_p_nonsig",
-  # "marginal",
-  # "stat_effect_size",
+  "prereg_check",
+  "causal_claims",
+  "open_practices",
+  "funding_check",
+  "coi_check",
+  "power",
+  "stat_p_exact",
+  "stat_p_nonsig",
+  "marginal",
+  "stat_effect_size",
   # "code_check",
-  # "stat_check",
+  "stat_check",
   # "ref_doi_check",
   # "ref_accuracy",
-  # "ref_replication",
-  # "ref_retraction",
-  # "ref_pubpeer"
+  "ref_replication",
+  "ref_retraction",
+  "ref_pubpeer"
 )
 
 # paper <- psychsci$`0956797621991137`

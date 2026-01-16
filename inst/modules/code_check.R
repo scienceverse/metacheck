@@ -418,7 +418,7 @@ code_check <- function(paper) {
     summary_readme,
     summary_zip
   ) |>
-    paste("\n    - ", x = _, collapse = "")
+    paste("\n- ", x = _, collapse = "")
 
   # table ----
   table <- code_files

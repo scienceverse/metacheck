@@ -1,6 +1,7 @@
 ---
 title: MetaCheck Report
 subtitle: "%s"
+author: "%s"
 metacheck:
   version: "%s"
   report-created: "%s"
@@ -13,43 +14,38 @@ format:
     toc: true
     toc-title: >
       <ul class="emoji-key">
-        <li class="green">no problems detected;</li>  
-        <li class="yellow">something to check;</li> 
-        <li class="red">possible problems detected;</li>  
-        <li class="info">informational only;</li>  
-        <li class="na">not applicable;</li>  
-        <li class="fail">check failed</li>
+        <li class="green">✅️ no problems detected;</li>  
+        <li class="yellow">🔍 something to check;</li> 
+        <li class="red">⚠️ possible problems detected;</li>  
+        <li class="info">ℹ️ informational only;</li>  
+        <li class="na">⚪️ not applicable;</li>  
+        <li class="fail">☠️ check failed</li>
       <ul>
       <hr/>
       **Table of Contents**
     toc-location: right
     toc-expand: 3
     page-layout: full
-    title-block-banner: "#327118"
+    title-block-banner: "#15342A"    #"#327118"
     title-block-banner-color: "white"
     link-external-newwindow: true
     embed-resources: true
     format-links: false
+    smooth-scroll: true
 execute: 
   echo: false
   error: true
 ---
 
 <style>
+  #TOC * { border-left: none; }
+  #TOC > ul { border-left: 1px solid #15342A; }
+  #TOC > ul > li > ul > li { text-indent: -1.2em; margin-left: 1.2em; }
   main h2, main h3 { margin-left: -20px; }
-  main h2 { font-size: 150%; 
-            background-color: #327118; 
-            color: white; 
-            padding: 0.5em; 1em; }
+  main h2 { font-size: 150%; font-face: italics; }
   main h3 { font-size: 125%; }
   main h4 { font-size: 110%; }
   .emoji-key li { margin-bottom: 0.5em; }
-  .na::before     { content: '⚪ '; } /* ⚪ */
-  .fail::before   { content: '☠️ '; } /* ⚫️ */
-  .info::before   { content: 'ℹ️ '; } /* 🔵 */
-  .red::before    { content: '⚠️ '; } /* 🔴 */
-  .yellow::before { content: '️🔍 '; } /* 🟡 */
-  .green::before  { content: '✅ '; } /* 🟢 */
   section::before { content: '' !important; }
   th { background-color: #555; color: white; }
   table.dataTable, .dataTables_scrollBody { margin: 0.5em 0; }
@@ -61,6 +57,8 @@ execute:
   .quarto-dark table.dataTable { border: 1px solid #555; }
   table strong { color: red; }
   .quarto-dark table strong { color: yellow; }
+  summary { color: #333; }
+  .quarto-dark summary { color: #CCC; }
 </style>
 
 ::: {#info}
@@ -81,99 +79,32 @@ Metacheck is under continuous development. Issues can be submitted [on Github](h
 
 :::
 
-## Demo
+<!-- Demo -->
+
+Everything below here is for test purposes and removed when using this template to create a report.
 
 ```{r}
 #| include: false
 library(metacheck)
 ```
 
+## Summary
 
-Everything below here is for test purposes and removed when using this template to create a report.
+- ✅️ [No problems detected](#module-1){.green} Detected evidence of good practice or no evidence of poor practice.
+- 🔍 [Something to check](#module-2){.yellow}: Detected something you should check.
+- ⚠️ [Possible problems detected](#module-3){.red}: A possible poor practice detected.
+- ℹ️ [Informational only](#module-4){.info}: Info that isn't necessarily good/questionable/poor practice.
+- ⚪️ [Not applicable](#module-5){.na}: This check isn't relevant to this paper.
+- ☠️ [Check failed](#module-6){.fail}: This is usually when something goes wroing and there is an uncaught error in the module.
 
-## Styles
+## General Modules
 
-### No problems detected {.green} 
+### ✅ Module 1 {.green}
 
-Detected evidence of good practice or no evidence of poor practice.
-
-### Something to check {.yellow}
-
-Detected something you should check.
-
-### Possible problems detected {.red}
-
-A possible poor practice detected.
-
-### Informational only {.info}
-
-Info that isn't necessarily good/questionable/poor practice.
-
-### Not applicable {.na}
-
-This check isn't relevant to this paper.
-
-### Check failed {.fail}
-
-This is usually when something goes wroing and there is an uncaught error in the module.
-
-## Module Helpers
-
-### Scroll Tables {.info}
-
-#### Default Scroll Tables
-
-Create this in your module report code with `scroll_table(table)`.
-
-```{r}
-#| echo: false
-# table options
-
-# table data ------------------------------------
-table <- structure(list(id = 1:5, text = c("Lorem semper tempus libero habitant faucibus cursus venenatis natoque volutpat est ultricies penatibus nisl lacinia.", 
-"Lorem cras bibendum facilisi porta sagittis a convallis fames erat dui netus cubilia.", 
-"Adipiscing auctor litora scelerisque tincidunt ullamcorper volutpat mattis ultrices lectus rutrum.", 
-"Elit nisi cras pharetra etiam semper sollicitudin interdum magnis facilisi.", 
-"Ipsum per platea varius vel condimentum posuere gravida cum laoreet commodo."
-)), class = "data.frame", row.names = c(NA, -5L))
-
-# table setup -----------------------------------
-cd <- list()
-options <- list(dom = "<'top'p>", ordering = FALSE, pageLength = 2, columnDefs = cd)
-DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
-```
-
-#### Scroll Tables with Vectors
-
-If you pass a character vector instead of a table, it will display without a header `scroll_table(vector)`.
-
-```{r}
-#| echo: false
-# table options
-
-# table data ------------------------------------
-table <- structure(list(c(
-  "Amet accumsan inceptos aliquam cras non commodo sapien vulputate diam odio fermentum magnis ornare tristique.", 
-  "Lorem habitant sem enim libero nostra lacus pharetra aptent rutrum vehicula.",
-  "Ipsum taciti non pharetra morbi bibendum sociis congue risus pellentesque elementum!", 
-  "Elit fringilla penatibus proin diam erat torquent iaculis vestibulum platea dictumst ligula.", 
-  "Amet conubia ultricies arcu consequat mattis auctor metus."
-)), names = "", class = "data.frame", row.names = c(NA, -2L))
-
-# table setup -----------------------------------
-cd <- list()
-options <- list(dom = "<'top' p>", ordering = FALSE, pageLength = 2, columnDefs = cd)
-DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
-```
-
-
-#### Short Tables
-
-If the number of rows is less than `maxrows` there will be no pagination. Set colwidths to have more control over column widths. 
-
-```
-scroll_table(table, colwidths = c(.1, .9), maxrows = 3)
-```
+<details>
+  <summary>View feedback</summary>
+  <div>
+Adipiscing massa leo neque cubilia, volutpat, curae aptent scelerisque, eget quam placerat. Vitae inceptos himenaeos gravida semper viverra platea. Lacus ac congue facilisis urna pharetra ornare fermentum commodo, senectus fames dictumst magna tempor.
 
 ```{r}
 #| echo: false
@@ -184,60 +115,9 @@ table <- structure(list(id = 1:3, text = c("Dolor urna mus libero dui consequat 
 "Adipiscing ultrices imperdiet lectus bibendum massa facilisis suscipit."
 )), class = "data.frame", row.names = c(NA, -3L))
 
-# table setup -----------------------------------
-cd <- list(list(targets = 0, width = "10%"), list(targets = 1, width = "90%"))
-options <- list(dom = "t", ordering = FALSE, pageLength = 3, columnDefs = cd)
-DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
+# display table -----------------------------------
+metacheck::report_table(table, c(.1, .9), 3, FALSE)
 ```
-
-#### Wide Scroll Tables
-
-Set the `column` argument to control display location.
-
-```
-scroll_table(table, column = "page")
-```
-
-```{r}
-#| echo: false
-#| column: page
-
-# table data ------------------------------------
-table <- structure(list(id = 1:2, text = c("Ipsum condimentum eu aenean cubilia, sapien ridiculus vestibulum dui, eleifend bibendum. Posuere vel sociosqu curae eget sociis ligula mattis litora tortor, ultricies sem quis auctor nisl pretium feugiat tempor luctus.", 
-"Ipsum aliquam magna diam nam pretium: cum habitant tempor habitasse aenean eleifend pulvinar? Condimentum malesuada eros erat per augue ultrices; platea mi congue egestas litora purus per bibendum, nec duis odio cras?"
-)), class = "data.frame", row.names = c(NA, -2L))
-
-# table setup -----------------------------------
-cd <- list()
-options <- list(dom = "t", ordering = FALSE, pageLength = 2, columnDefs = cd)
-DT::datatable(table, options, selection = "none", rownames = FALSE, escape = FALSE)
-```
-
-### Collapsible Sections {.info}
-
-Use `collapse_section()` to enclose a text vector in a coollapsible callout. 
-
-```
-collapse_section(text, 
-                 title = "Learn More", 
-                 callout = c("tip", "note", "warning", "important", "caution"), 
-                 collapse = TRUE)
-```
-
-`collapse_section(text)`
-
-`r metacheck::collapse_section("Here are some more more details...")`
-
-You can change the title, callout type, and set them to default open.
-
-`collapse_section(text, "Help!", "caution", FALSE)`
-
-`r metacheck::collapse_section("Don't do that.", "Caution", "caution", FALSE)`
-
-
-### Format References {.info}
-
-You can use `format_ref()` on a bibentry or bibtext object to consistently format a reference.
 
 ```{r}
 #| results: 'asis'
@@ -256,3 +136,133 @@ marg_ref <- bibentry(
 
 format_ref(marg_ref) |> cat()
 ```
+
+`r collapse_section("Ipsum porta diam cursus quam viverra consequat?")`
+
+  </div>
+</details>
+
+### 🔍 Module 2 {#module-2 .yellow}
+
+<details>
+  <summary>View feedback</summary>
+  <div>
+
+Elit potenti aliquet, pulvinar est nascetur felis cubilia vel scelerisque dapibus mus conubia. Ut laoreet taciti morbi cum.
+
+```{r}
+#| echo: false
+
+# table data ------------------------------------
+table <- structure(list(c(
+  "Amet accumsan inceptos aliquam cras non commodo sapien vulputate diam odio fermentum magnis ornare tristique.", 
+  "Lorem habitant sem enim libero nostra lacus pharetra aptent rutrum vehicula.",
+  "Ipsum taciti non pharetra morbi bibendum sociis congue risus pellentesque elementum!", 
+  "Elit fringilla penatibus proin diam erat torquent iaculis vestibulum platea dictumst ligula.", 
+  "Amet conubia ultricies arcu consequat mattis auctor metus."
+)), names = "", class = "data.frame", row.names = c(NA, -2L))
+
+# display table -----------------------------------
+metacheck::report_table(table, "auto", 2, FALSE)
+```
+
+`r collapse_section("Ipsum porta diam cursus quam viverra consequat?")`
+
+  </div>
+</details>
+
+### ⚠️ Module 3 {#module-3 .red}
+
+<details>
+  <summary>View feedback</summary>
+  <div>
+  
+Ipsum in magnis proin ligula nisi parturient, morbi sagittis dis tellus. Pretium ante mauris nulla ac, fusce sollicitudin feugiat semper fermentum massa? Ullamcorper a tellus, pulvinar augue montes molestie proin quis molestie tortor. Habitant conubia cursus conubia, odio duis, pharetra, ad magnis pretium. Sem montes nullam vitae faucibus nunc pulvinar ultrices dignissim risus imperdiet eros fames viverra semper.
+
+Elit porta mattis, inceptos euismod massa enim aenean ullamcorper netus odio nunc. Molestie arcu montes at nisl eget sed.
+
+Ipsum viverra quam nunc ullamcorper congue aptent molestie vivamus per quam cursus parturient? Quam montes euismod pellentesque magnis torquent magna, iaculis mollis suspendisse? Semper ut primis auctor a tempus duis libero sociosqu fringilla. Phasellus neque vitae fusce tincidunt velit sapien – sodales eleifend orci nisl. Blandit platea nullam quisque, donec tempor curabitur posuere cursus? Platea vivamus malesuada, risus habitant ultrices conubia semper dui proin nibh.
+
+```{r}
+#| echo: false
+# table data ------------------------------------
+table <- structure(list(id = 1:5, text = c("Lorem semper tempus libero habitant faucibus cursus venenatis natoque volutpat est ultricies penatibus nisl lacinia.", 
+"Lorem cras bibendum facilisi porta sagittis a convallis fames erat dui netus cubilia.", 
+"Adipiscing auctor litora scelerisque tincidunt ullamcorper volutpat mattis ultrices lectus rutrum.", 
+"Elit nisi cras pharetra etiam semper sollicitudin interdum magnis facilisi.", 
+"Ipsum per platea varius vel condimentum posuere gravida cum laoreet commodo."
+)), class = "data.frame", row.names = c(NA, -5L))
+
+# display table -----------------------------------
+metacheck::report_table(table, "auto", 2, FALSE)
+```
+
+`r collapse_section("Ipsum porta diam cursus quam viverra consequat?")`
+
+  </div>
+</details>
+
+## Introduction Modules
+
+### ℹ️ Module 4 {#module-4 .info}
+
+<details>
+  <summary>View feedback</summary>
+  <div>
+    
+`r collapse_section("Ipsum porta diam cursus quam viverra consequat?")`
+
+  </div>
+</details>
+
+## Methods Modules
+
+### ⚪️ Module 5 {#module-5 .na}
+
+<details>
+  <summary>View feedback</summary>
+  <div>
+    
+`r collapse_section("Ipsum porta diam cursus quam viverra consequat?")`
+
+  </div>
+</details>
+
+## Results Modules
+
+### ☠️ Module 6 {#module-6 .fail}
+
+<details>
+  <summary>View feedback</summary>
+  <div>
+  
+`r collapse_section("Ipsum porta diam cursus quam viverra consequat?")`
+
+  </div>
+</details>
+
+## Discussion Modules
+
+### ℹ️ Module 7 Has a Long Name {#module-7 .info}
+
+<details>
+  <summary>View feedback</summary>
+  <div>
+  
+`r collapse_section("Ipsum porta diam cursus quam viverra consequat?")`
+
+  </div>
+</details>
+
+## References Modules
+
+### ℹ️ Module 8 Has an Even Longer Name {#module-8 .info}
+
+<details>
+  <summary>View feedback</summary>
+  <div>
+  
+`r collapse_section("Ipsum porta diam cursus quam viverra consequat?")`
+
+  </div>
+</details>

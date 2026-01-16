@@ -32,7 +32,7 @@ ref_consistency <- function(paper) {
   table <- dplyr::bind_rows(missing_refs, missing_bib) |>
     dplyr::arrange(id, xref_id)
 
-  # summary output for paperlists ----
+  # summary_table ----
   nbibs <- dplyr::count(bibs, id, name = "n_bib")
   nxrefs <- dplyr::count(xrefs, id, name = "n_xrefs")
   nmiss <- dplyr::count(table, id, missing) |>
@@ -43,14 +43,14 @@ ref_consistency <- function(paper) {
     dplyr::left_join(nxrefs, by = "id") |>
     dplyr::left_join(nmiss, by = "id")
 
-  # determine the traffic light ----
+  # traffic light ----
   tl <- dplyr::case_when(
     nrow(bibs) == 0 ~ "na",
     nrow(missing_bib) || nrow(missing_refs) ~ "red",
     .default = "green"
   )
 
-  # report text for each possible traffic light ----
+  # report ----
   report <- c(
     red = "There are cross-references that are not in the bibliography and/or bibliography entries not cross-referenced in the text",
     green = "All cross-references were in the bibliography and bibliography entries were cross-referenced in the text",

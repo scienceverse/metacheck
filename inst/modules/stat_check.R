@@ -107,9 +107,8 @@ stat_check <- function(paper) {
     )
 
     report <- c(report_text,
-                     scroll_table(report_table, colwidths = c("10em", NA, NA, NA)),
-                     collapse_section(guidance)) |>
-      paste(collapse = "\n\n")
+                scroll_table(report_table, colwidths = c("10em", NA, NA, NA)),
+                collapse_section(guidance))
   }
 
   # return a list ----

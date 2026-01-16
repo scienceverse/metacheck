@@ -177,7 +177,7 @@ causal_claims <- function(paper) {
   summary_text <- c(summary_text_randomization,
     summary_text_title,
     summary_text_abstract) |>
-    paste("\n    - ", x = _, collapse = "")
+    paste("\n- ", x = _, collapse = "")
 
   # return a list ----
   list(

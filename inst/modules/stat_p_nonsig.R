@@ -42,15 +42,16 @@ stat_p_nonsig <- function(paper) {
     expand_to = c("sentence")
   )
 
-  # summary output for paperlists ----
+  # summary_table ----
   # must have id column as the id of each paper, one row per paper
   # further columns to be added to a master summary table
   summary_table <- dplyr::summarise(table,
-      n_significant = sum(significance == "significant", na.rm = TRUE),
-      n_nonsignificant = sum(significance == "nonsignificant", na.rm = TRUE),
-      .by = id
-    )
-  # determine the traffic light ----
+    n_significant = sum(significance == "significant", na.rm = TRUE),
+    n_nonsignificant = sum(significance == "nonsignificant", na.rm = TRUE),
+    .by = id
+  )
+
+  # traffic light ----
   # possible values: na, info, red, yellow, green, fail
   tl <- if (sum(summary_table$n_nonsignificant) > 0) "yellow" else "green"
 
@@ -80,7 +81,6 @@ stat_p_nonsig <- function(paper) {
 
     # report text
     report <- c(
-      summary_text,
       explanation,
       scroll_table(report_table, colwidths = c(.1, .9)),
       collapse_section(guidance)

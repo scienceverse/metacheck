@@ -219,7 +219,6 @@ power <- function(paper, seed = 8675309) {
 
     # report ----
     report <- c(
-      summary_text,
       report_text,
       scroll_table(info_table, maxrows = 5),
       observed_power_text,
