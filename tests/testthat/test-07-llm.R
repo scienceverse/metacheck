@@ -107,21 +107,12 @@ test_that("llm_use TRUE", {
 
   # duplicates should only generate 1 query
   text <- c("A", "A", 1, 1)
-  query <- "Is this a letter? Answer only 'TRUE' or 'FALSE'"
+  query <- "Is this a letter A-Z? Answer only 'TRUE' or 'FALSE'"
   is_letter <- llm(text, query, seed = 12345)
 
   expect_equal(is_letter$text, text)
   expect_equal(is_letter$answer[[1]], is_letter$answer[[2]])
   expect_equal(is_letter$answer[[3]], is_letter$answer[[4]])
-
-  expect_equal(is_letter$time[[2]], 0)
-  expect_equal(is_letter$time[[4]], 0)
-  expect_equal(is_letter$tokens[[2]], 0)
-  expect_equal(is_letter$tokens[[4]], 0)
-  expect_true(is_letter$time[[1]] > 0)
-  expect_true(is_letter$time[[3]] > 0)
-  expect_true(is_letter$tokens[[1]] > 0)
-  expect_true(is_letter$tokens[[3]] > 0)
 })
 
 test_that("sample size", {
@@ -145,7 +136,7 @@ test_that("sample size", {
   ## text vector
   text_vector <- text$text[text$id == text$id[[1]]]
   res2 <- llm(text_vector, query, seed = 8675309)
-  expect_equal(names(res2), c("text", "answer", "time", "tokens"))
+  expect_in(names(res2), c("text", "answer"))
   expect_equal(res2$answer[[1]], res$answer[[1]])
 })
 
@@ -190,3 +181,15 @@ test_that("llm_model_list", {
 
 #httptest::stop_mocking()
 # httptest::stop_capturing()
+
+test_that("gemini", {
+  skip_llm()
+  llm_use(TRUE)
+
+  text <- LETTERS[1:5]
+  query <- "Is this a vowel? Answer only 'TRUE' or 'FALSE'."
+  model <- "gemini"
+  obs <- llm(text, query, model = model)
+  expect_equal(unclass(obs$answer),
+               as.character(c(T, F, F, F, T)))
+})

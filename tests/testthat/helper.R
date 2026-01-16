@@ -34,10 +34,10 @@ skip_if_quick <- function() {
 }
 
 # expect pattern in x
-expect_grepl <- function(pattern, x, 
-                         ignore.case = TRUE, 
-                         perl = FALSE, 
-                         fixed = FALSE, 
+expect_grepl <- function(pattern, x,
+                         ignore.case = TRUE,
+                         perl = FALSE,
+                         fixed = FALSE,
                          useBytes = FALSE) {
   obs <- grepl(pattern, x, ignore.case, perl, fixed, useBytes)
   expect_true(all(obs))

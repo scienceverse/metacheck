@@ -90,8 +90,11 @@ power <- function(paper, seed = 8675309) {
       json_expand() |>
       dplyr::rowwise() |>
       dplyr::mutate(complete = !any(dplyr::across(dplyr::any_of(llm_cols), is.na))) |>
-      dplyr::ungroup() |>
-      dplyr::filter(power_type != "none")
+      dplyr::ungroup()
+
+    if ("power_type" %in% names(table)) {
+      table <- dplyr::filter(table, power_type != "none")
+    }
 
     # check for NAs in LLM columns
     has_na <- dplyr::select(table, dplyr::any_of(llm_cols)) |>

@@ -34,6 +34,8 @@ json_expand <- function(table, col = "answer") {
   expanded <- lapply(seq_along(to_expand), \(i) {
     tryCatch({
       json <- gsub('"null"', "null", to_expand[[i]])
+      json <- gsub('^```json\\s*\\n', "", json)
+      json <- gsub('\\n```\\s*$', "", json)
       j <- jsonlite::fromJSON(json)
       if (length(j) == 0) {
         j <- data.frame(error = NA_character_)

@@ -11,7 +11,7 @@
 #' @param text The text to send to the LLM (vector of strings, or data frame with the text in a column)
 #' @param query The query to ask of the LLM
 #' @param text_col The name of the text column if text is a data frame
-#' @param model the LLM model name (see `llm_model_list()`)
+#' @param model the LLM model name (see `llm_model_list()` for groq models, or use "gemini")
 #' @param maxTokens The maximum integer of completion tokens returned per query
 #' @param temperature Controls randomness in responses. Lower values make responses more deterministic. Recommended range: 0.5-0.7 to prevent repetitions or incoherent outputs; valued between 0 inclusive and 2 exclusive
 #' @param top_p Nucleus sampling threshold (between 0 and 1); usually alter this or temperature, but not both
@@ -35,7 +35,7 @@ llm <- function(text, query,
                 temperature = 0.5,
                 top_p = 0.95,
                 seed = sample(1000000:9999999, 1),
-                API_KEY = Sys.getenv("GROQ_API_KEY")) {
+                API_KEY = NULL) {
   ## error detection ----
   if (!is.numeric(temperature)) {
     stop("The argument `temperature` must be a positive number")
@@ -63,35 +63,52 @@ llm <- function(text, query,
     stop("This would make ", ncalls, " calls to the LLM, but your maximum number of calls is set to ", llm_max_calls(), ". Use `llm_max_calls()` to change this.", call. = FALSE)
   }
 
-  if (!llm_use(API_KEY = API_KEY))
-    stop("Set llm_use(TRUE) to use LLM functions")
+  # get API key
+  if (is.null(API_KEY)) {
+    apis <- list(
+      groq = Sys.getenv("GROQ_API_KEY"),
+      gemini = Sys.getenv("GEMINI_API_KEY"),
+      google = Sys.getenv("GOOGLE_API_KEY")
+    )
+    API_KEY <- apis$groq
+    if (model == "gemini") API_KEY <- apis$gemini
+    if (API_KEY == "") API_KEY <- apis$google
+  }
 
-  models <- llm_model_list(API_KEY)
-  if (!model %in% models$id) {
-    stop("The model '", model, "' is not available, see `llm_model_list()`")
+  if (!llm_use(API_KEY = API_KEY)) {
+    stop("Set llm_use(TRUE) to use LLM functions")
+  }
+
+  # check valid groq model
+  if (model != "gemini") {
+    models <- llm_model_list(API_KEY)
+    if (!model %in% models$id) {
+      stop("The model '", model, "' is not available, see `llm_model_list()`")
+    }
   }
 
   # Set up the llm ----
   responses <- replicate(length(unique_text), list(), simplify = FALSE)
   # setup
-  url <- "https://api.groq.com/openai/v1/chat/completions"
-
-  messages <- list(list(role = "system", content = query),
-                   list(role = "user", content = ""))
-
-  bodylist <- list(messages = messages,
-                   model = model[1],
-                   temperature = as.numeric(temperature[1]),
-                   max_completion_tokens = as.integer(maxTokens[1]),
-                   top_p = top_p[1],
-                   seed = seed,
-                   stream = FALSE,
-                   stop = NULL)
-
-  config <- httr::add_headers(
-    Authorization = paste("Bearer", API_KEY),
-    `Content-Type` = "application/json"
+  params <- ellmer::params(
+    temperature = as.numeric(temperature[1]),
+    top_p = top_p[1],
+    max_tokens = as.integer(maxTokens[1]),
+    seed = seed
   )
+
+  if (model == "gemini") {
+    chat <- ellmer::chat_google_gemini(
+      system_prompt = query,
+      params = params
+    )
+  } else {
+    chat <- ellmer::chat_groq(
+      system_prompt = query,
+      model = model,
+      params = params
+    )
+  }
 
   # set up progress bar ----
   pb <- pb(ncalls, "Querying LLM [:bar] :current/:total :elapsedfull")
@@ -100,52 +117,15 @@ llm <- function(text, query,
   # TODO: check rate limits and pause
   # https://console.groq.com/docs/rate-limits
   for (i in seq_along(unique_text)) {
-    bodylist$messages[[2]]$content <- unique_text[i]
-
     responses[[i]] <- tryCatch({
-
-      response <- httr::POST(
-        url, config,
-        body = bodylist,
-        encode = "json")
-
-      if (response$status_code == 429) {
-        # request limit exceeded
-        sleep <- response$headers$`retry-after` |>
-          as.numeric() |> ceiling()
-        msg <- paste0("Request limit exceeded. Retrying in ", sleep, " seconds")
-        pb$message(msg)
-        Sys.sleep(sleep)
-        msg <- "Querying LLM [:bar] :current/:total :elapsedfull"
-        pb$message(msg)
-
-        response <- httr::POST(
-          url, config,
-          body = bodylist,
-          encode = "json")
-      }
-
-      content <- httr::content(response)
-
-      if (!response$status_code %in% 200:299) {
-        # TODO: better error messages
-        stop(content$error$type, "/",
-             content$error$code, "\n\n",
-             content$error$message)
-      }
-
-      answer <- content$choices[[1]]$message$content |> trimws()
+      answer <- chat$chat(unique_text[i], echo = FALSE)
 
       list(
-        answer = answer,
-        time = content$usage$total_time,
-        tokens = content$usage$total_tokens
+        answer = trimws(answer)
       )
     }, error = function(e) {
       return(list(
         answer = NA,
-        time = NA,
-        tokens = NA,
         error = TRUE,
         error_msg = e$message
       ))
@@ -154,32 +134,16 @@ llm <- function(text, query,
     pb$tick()
   }
 
-  # print final ratelimit values - turned off for now
-  if (FALSE & verbose()) {
-    sprintf("You have %s of %s requests left (reset in %s) and %s of %s tokens left (reset in %s).",
-            response$headers$`x-ratelimit-remaining-requests`,
-            response$headers$`x-ratelimit-limit-requests`,
-            response$headers$`x-ratelimit-reset-requests`,
-            response$headers$`x-ratelimit-remaining-tokens`,
-            response$headers$`x-ratelimit-limit-tokens`,
-            response$headers$`x-ratelimit-reset-tokens`) |>
-      message()
-  }
-
   # add responses to the return df ----
   response_df <- do.call(dplyr::bind_rows, responses)
   response_df[text_col] <- unique_text
-  time <- tokens <- NULL  # ugh cmdcheck
-  answer_df <- dplyr::left_join(text, response_df, by = text_col) |>
-    # set time and tokens to 0 if duplicate text
-    dplyr::mutate(time = ifelse(dplyr::row_number() == 1, time, 0),
-                  tokens = ifelse(dplyr::row_number() == 1, tokens, 0),
-                  .by = dplyr::all_of(text_col))
+  answer_df <- dplyr::left_join(text, response_df, by = text_col)
 
   # add metadata about the query ----
   class(answer_df) <- c("metacheck_llm", "data.frame")
-  attr(answer_df, "llm") <- bodylist
-  attr(answer_df, "llm")$messages[[2]]$content <- ""
+  attr(answer_df, "llm") <- c(list(query = query,
+                                   model = model),
+                              params)
 
   # warn about errors ----
   error_indices <- isTRUE(answer_df$error)
@@ -211,6 +175,7 @@ llm <- function(text, query,
 #'   llm_model_list()
 #' }
 llm_model_list <- function(API_KEY = Sys.getenv("GROQ_API_KEY")) {
+
   url <- "https://api.groq.com/openai/v1/models"
   config <- httr::add_headers(
     Authorization = paste("Bearer", API_KEY)
@@ -327,17 +292,17 @@ llm_use <- function(llm_use = NULL,
     use <- getOption("metacheck.llm.use")
     if (!use) return(FALSE)
 
-    # check if API KEY set
-    if (API_KEY == "") {
-      message("Set the environment variable GROQ_API_KEY to use LLMs")
-      return(FALSE)
-    }
-
-    # check if api online
-    if (!online("api.groq.com")) {
-      message("api.groq.com is not available")
-      return(FALSE)
-    }
+    # # check if API KEY set
+    # if (API_KEY == "") {
+    #   message("Set the environment variable GROQ_API_KEY to use LLMs")
+    #   return(FALSE)
+    # }
+    #
+    # # check if api online
+    # if (!online("api.groq.com")) {
+    #   message("api.groq.com is not available")
+    #   return(FALSE)
+    # }
 
     return(TRUE)
   } else if (as.logical(llm_use) %in% c(TRUE, FALSE)) {
