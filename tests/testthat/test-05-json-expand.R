@@ -74,3 +74,33 @@ test_that("json_expand multi-line", {
   expect_equal(expanded[, 3:5], exp)
 })
 
+test_that("json_expand remove ```json", {
+  table <- data.frame(
+    id = 1:3,
+    answer = c(
+      '```json
+      [
+        {"number": 1, "letter": "A", "bool": true},
+        {"number": 2, "letter": "B", "bool": null}
+      ]
+      ```',
+      'Some gibber
+      ```json
+      [{"number": 3, "letter": "C", "bool": false}]
+      ```
+      more gibber',
+      '```json
+      ```'
+    )
+  )
+
+  exp <- data.frame(
+    number = c(1L, 2L, 3L, NA),
+    letter = c("A", "B", "C", NA),
+    bool = c(TRUE, NA, FALSE, NA)
+  )
+
+  expanded <- json_expand(table)
+
+  expect_equal(expanded[, 3:5], exp)
+})
