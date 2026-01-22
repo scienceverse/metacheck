@@ -1,6 +1,9 @@
 # metacheck 0.0.0.9066
 
-* `lmm()` allows you to set the model as "gemini" to use google gemini LLM (must have GOOGLE_API_KEY or GEMINI_API_KEY set in your renviron)
+* `lmm()` allows you to set the model to any provider or provider/model supported by ellmer (must have appropriate *****_API_KEY set in your Renviron)
+* `lmm()` arguments have changed to align with `ellmer::chat()` arguments
+* `lmm_models()` now returns models from all platforms for which you have a valid API key set
+* The power module uses a new prompt that utilises a JSON schema for power
 * Updated report styles
 
 # metacheck 0.0.0.9065

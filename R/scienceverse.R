@@ -79,7 +79,7 @@ author <- function(surname, given = "", orcid = NULL, roles = c(), ...) {
 #'
 print.scivrs_authors <- function(x, ...) {
   names <- sapply(x, \(x) utils::capture.output(print.scivrs_author(x)))
-  last <- tail(names, 1)
+  last <- utils::tail(names, 1)
   first <- setdiff(names, last)
   if (length(first)) first <- paste(first, collapse = ", ")
   txt <- c(first, last) |> paste(collapse = " & ")

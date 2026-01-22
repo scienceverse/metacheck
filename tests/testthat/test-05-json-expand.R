@@ -49,6 +49,25 @@ test_that("json_expand nulls", {
                rep("parsing error", 2))
 })
 
+test_that("json_expand name conflict", {
+  table <- data.frame(
+    id = 1:5,
+    number = 1:5,
+    answer = c(
+      '{"number": 1, "letter": "A", "bool": true}',
+      '{"number": 2, "letter": "B", "bool": "FALSE"}',
+      '{"number": 3, "letter": "", "bool": null}',
+      'oh no, the LLM misunderstood',
+      '{"number": 5, "letter": ["E", "F"], "bool": false}'
+    )
+  )
+
+  expanded <- json_expand(table)
+  expect_contains(names(expanded), c("number", "number.json"))
+
+  expanded <- json_expand(table, suffix = c("_orig", "_x"))
+  expect_contains(names(expanded), c("number_orig", "number_x"))
+})
 
 test_that("json_expand multi-line", {
   table <- data.frame(

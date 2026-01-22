@@ -9,14 +9,10 @@
 #' See <https://console.groq.com/docs> for more information
 #'
 #' @param text The text to send to the LLM (vector of strings, or data frame with the text in a column)
-#' @param query The query to ask of the LLM
+#' @param system_prompt A system prompt to set the behavior of the assistant
 #' @param text_col The name of the text column if text is a data frame
-#' @param model the LLM model name (see `llm_model_list()` for groq models, or use "gemini")
-#' @param maxTokens The maximum integer of completion tokens returned per query
-#' @param temperature Controls randomness in responses. Lower values make responses more deterministic. Recommended range: 0.5-0.7 to prevent repetitions or incoherent outputs; valued between 0 inclusive and 2 exclusive
-#' @param top_p Nucleus sampling threshold (between 0 and 1); usually alter this or temperature, but not both
-#' @param seed Set for reproducible responses
-#' @param API_KEY your API key for the LLM
+#' @param model the LLM model name (see `llm_model_list()`) in the format "provider" or "provider/model"
+#' @param params a named list to pass to `ellmer::params()`
 #'
 #' @return a list of results
 #'
@@ -24,29 +20,17 @@
 #' @examples
 #' \dontrun{
 #'   text <- c("hello", "number", "ten", 12)
-#'   query <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
-#'   is_number <- llm(text, query)
+#'   system_prompt <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
+#'   is_number <- llm(text, system_prompt)
 #'   is_number
 #' }
-llm <- function(text, query,
+llm <- function(text, system_prompt,
                 text_col = "text",
                 model = llm_model(),
-                maxTokens = 1024,
-                temperature = 0.5,
-                top_p = 0.95,
-                seed = sample(1000000:9999999, 1),
-                API_KEY = NULL) {
+                params = list()) {
   ## error detection ----
-  if (!is.numeric(temperature)) {
-    stop("The argument `temperature` must be a positive number")
-  } else if (temperature < 0 | temperature > 2) {
-    stop("The argument `temperature` must be between 0.0 and 2.0")
-  }
-
-  if (!is.numeric(top_p)) {
-    stop("The argument `top_p` must be a positive number")
-  } else if (top_p < 0 | top_p > 1) {
-    stop("The argument `top_p` must be between 0.0 and 1.0")
+  if (!llm_use()) {
+    stop("Set llm_use(TRUE) to use LLM functions")
   }
 
   # make a data frame if text is a vector
@@ -58,64 +42,37 @@ llm <- function(text, query,
   # set up answer data frame to return ----
   unique_text <- unique(text[[text_col]])
   ncalls <- length(unique_text)
+  responses <- replicate(ncalls, list(), simplify = FALSE)
+
   if (ncalls == 0) stop("No calls to the LLM")
   if (ncalls > llm_max_calls()) {
     stop("This would make ", ncalls, " calls to the LLM, but your maximum number of calls is set to ", llm_max_calls(), ". Use `llm_max_calls()` to change this.", call. = FALSE)
   }
 
-  # get API key
-  if (is.null(API_KEY)) {
-    apis <- list(
-      groq = Sys.getenv("GROQ_API_KEY"),
-      gemini = Sys.getenv("GEMINI_API_KEY"),
-      google = Sys.getenv("GOOGLE_API_KEY")
-    )
-    API_KEY <- apis$groq
-    if (model == "gemini") API_KEY <- apis$gemini
-    if (API_KEY == "") API_KEY <- apis$google
-  }
-
-  if (!llm_use(API_KEY = API_KEY)) {
-    stop("Set llm_use(TRUE) to use LLM functions")
-  }
-
-  # check valid groq model
-  if (model != "gemini") {
-    models <- llm_model_list(API_KEY)
-    if (!model %in% models$id) {
-      stop("The model '", model, "' is not available, see `llm_model_list()`")
-    }
-  }
-
   # Set up the llm ----
-  responses <- replicate(length(unique_text), list(), simplify = FALSE)
-  # setup
-  params <- ellmer::params(
-    temperature = as.numeric(temperature[1]),
-    top_p = top_p[1],
-    max_tokens = as.integer(maxTokens[1]),
-    seed = seed
-  )
+  tryCatch({
+    params <- do.call(ellmer::params, params)
+  }, error = \(e) {
+    stop("Misspecified params argument:\n", e$message, call. = FALSE)
+  })
 
-  if (model == "gemini") {
-    chat <- ellmer::chat_google_gemini(
-      system_prompt = query,
+  tryCatch({
+    chat <- ellmer::chat(
+      name = model,
+      system_prompt = system_prompt,
       params = params
     )
-  } else {
-    chat <- ellmer::chat_groq(
-      system_prompt = query,
-      model = model,
-      params = params
-    )
-  }
+  }, error = \(e) {
+    stop("Error setting up LLM:\n", e$message, call. = FALSE)
+  })
 
   # set up progress bar ----
   pb <- pb(ncalls, "Querying LLM [:bar] :current/:total :elapsedfull")
 
-  # interate over the text ----
-  # TODO: check rate limits and pause
-  # https://console.groq.com/docs/rate-limits
+  # iterate over the text ----
+  # this works better than ellmer parallel functions for now because
+  # it keeps the relationship between unique_text index and
+  # response index where responses return have 0+ items
   for (i in seq_along(unique_text)) {
     responses[[i]] <- tryCatch({
       answer <- chat$chat(unique_text[i], echo = FALSE)
@@ -139,9 +96,9 @@ llm <- function(text, query,
   response_df[text_col] <- unique_text
   answer_df <- dplyr::left_join(text, response_df, by = text_col)
 
-  # add metadata about the query ----
+  # add metadata about the system_prompt ----
   class(answer_df) <- c("metacheck_llm", "data.frame")
-  attr(answer_df, "llm") <- c(list(query = query,
+  attr(answer_df, "llm") <- c(list(system_prompt = system_prompt,
                                    model = model),
                               params)
 
@@ -161,21 +118,72 @@ llm <- function(text, query,
   return(answer_df)
 }
 
-#' List Available LLM Models
+#' List LLM Models
 #'
-#' Returns a list of available models in groq, excluding whisper and vision models (for audio and images) and sorting by creation date. See <https://console.groq.com/docs/models> for more information.
+#' List available LLM models for the specified platform.
 #'
-#' @param API_KEY groq API key from <https://console.groq.com/keys>
+#' For platforms other than groq, returns the value from the corresponding ellmer::models_platform function.
+#'
+#' @param platform The platform. If NULL, checks all platforms for which you have a valid API_KEY.
 #'
 #' @returns a data frame of models and info
 #' @export
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   llm_model_list()
 #' }
-llm_model_list <- function(API_KEY = Sys.getenv("GROQ_API_KEY")) {
+llm_model_list <- function(platform = NULL) {
+  # get all ellmer models_* functions
+  ef <- utils::getNamespaceExports("ellmer") |>
+    grep("models_.+", x = _, value = TRUE)
+  names(ef) <- gsub("models_", "", ef)
+  funcs <- lapply(ef, \(x) getFromNamespace(x, "ellmer"))
+  # ellmer doesn't have a groq model function, so use ours
+  funcs$groq <- models_groq
 
+  # if null, return all available platforms
+  if (is.null(platform)) platform <- names(funcs)
+
+  # error if any invalid platforms
+  invalid <- setdiff(platform, names(funcs))
+  if (length(invalid) > 0) {
+    stop("Invalid platforms: ", paste(invalid, collapse = ", "))
+  }
+
+  # get models and ignore errors, add platform name
+  models <- lapply(platform, \(p) {
+    tryCatch({
+      model_func <- funcs[[p]]
+      m <- model_func()
+      cols <- c("platform", names(m))
+      m$platform <- p
+
+      m
+    }, error = \(e) {})
+  })
+
+  # reorder columns
+  all_models <- dplyr::bind_rows(models)
+  if (nrow(all_models)) {
+    start <- c("platform", "id")
+    end <- setdiff(names(all_models), start)
+    all_models <- all_models[, c(start, end)]
+  }
+
+  return(all_models)
+}
+
+#' Get Groq Models
+#'
+#' Returns a list of available models in groq, excluding whisper and vision models (for audio and images) See <https://console.groq.com/docs/models> for more information.
+#'
+#' @returns a table of model info
+#' @export
+#'
+#' @keywords internal
+models_groq <- function() {
+  API_KEY <- Sys.getenv("GROQ_API_KEY")
   url <- "https://api.groq.com/openai/v1/models"
   config <- httr::add_headers(
     Authorization = paste("Bearer", API_KEY)
@@ -189,11 +197,11 @@ llm_model_list <- function(API_KEY = Sys.getenv("GROQ_API_KEY")) {
                     httr::content(response)$data) |>
     data.frame()
 
+  models$created_at <- as.POSIXct(models$created) |> format("%Y-%m-%d") |> as.Date()
   rows <- models$active & !grepl("whisper|vision", models$id)
-  cols <- c("id", "owned_by", "created", "context_window")
+  cols <- names(models) |> setdiff(c("active", "created"))
   active <- models[rows, cols]
-  #active <- sort_by(active, rev(active$created))
-  active$created <- as.POSIXct(active$created) |> format("%Y-%m-%d")
+
   return(active)
 }
 

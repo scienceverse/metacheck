@@ -6,34 +6,22 @@
 \usage{
 llm(
   text,
-  query,
+  system_prompt,
   text_col = "text",
   model = llm_model(),
-  maxTokens = 1024,
-  temperature = 0.5,
-  top_p = 0.95,
-  seed = sample(1e+06:9999999, 1),
-  API_KEY = Sys.getenv("GROQ_API_KEY")
+  params = list()
 )
 }
 \arguments{
 \item{text}{The text to send to the LLM (vector of strings, or data frame with the text in a column)}
 
-\item{query}{The query to ask of the LLM}
+\item{system_prompt}{A system prompt to set the behavior of the assistant}
 
 \item{text_col}{The name of the text column if text is a data frame}
 
-\item{model}{the LLM model name (see \code{llm_model_list()})}
+\item{model}{the LLM model name (see \code{llm_model_list()}) in the format "provider" or "provider/model"}
 
-\item{maxTokens}{The maximum integer of completion tokens returned per query}
-
-\item{temperature}{Controls randomness in responses. Lower values make responses more deterministic. Recommended range: 0.5-0.7 to prevent repetitions or incoherent outputs; valued between 0 inclusive and 2 exclusive}
-
-\item{top_p}{Nucleus sampling threshold (between 0 and 1); usually alter this or temperature, but not both}
-
-\item{seed}{Set for reproducible responses}
-
-\item{API_KEY}{your API key for the LLM}
+\item{params}{a named list to pass to \code{ellmer::params()}}
 }
 \value{
 a list of results
@@ -51,8 +39,8 @@ See \url{https://console.groq.com/docs} for more information
 \examples{
 \dontrun{
   text <- c("hello", "number", "ten", 12)
-  query <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
-  is_number <- llm(text, query)
+  system_prompt <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
+  is_number <- llm(text, system_prompt)
   is_number
 }
 }

@@ -11,7 +11,7 @@ module_run(paper, module, ...)
 
 \item{module}{the name of a module or path to a module to run on this object}
 
-\item{...}{further arguments to the module (e.g., arguments for the \code{llm()} function like \code{seed}); these will override any arguments in the module}
+\item{...}{further arguments to the module (e.g., arguments for the \code{llm()} function like \code{params}); these will override any arguments in the module}
 }
 \value{
 a list of the returned table and report text

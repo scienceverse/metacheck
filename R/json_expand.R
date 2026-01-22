@@ -4,6 +4,7 @@
 #'
 #' @param table the table with a column to expand
 #' @param col the name or index of the column to expand (defaults to "answer" or the first column)
+#' @param suffix the suffix for the extracted columns if they conflict with names in the table
 #'
 #' @returns the table plus the expanded columns
 #' @export
@@ -22,7 +23,7 @@
 #'
 #' expanded <- json_expand(table, "answer")
 #' expanded
-json_expand <- function(table, col = "answer") {
+json_expand <- function(table, col = "answer", suffix = c("", ".json")) {
   # handle non-table input
   if (is.vector(table)) table <- data.frame(json = table)
   if (is.null(table[[col]])) col <- 1
@@ -73,7 +74,7 @@ json_expand <- function(table, col = "answer") {
   }
 
   # add expanded to table
-  joined_tbl <- dplyr::left_join(table, expanded, by = ".temp_id.")
+  joined_tbl <- dplyr::left_join(table, expanded, by = ".temp_id.", suffix = suffix)
   joined_tbl$.temp_id. <- NULL
 
   return(joined_tbl)

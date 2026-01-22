@@ -329,12 +329,12 @@ code_check <- function(paper) {
     summary_comments <- "All your code files had comments."
 
   } else {
-    report_comments <- sprintf("Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code). The following %d files had no comments:",
-                               sum(code_files$percentage_comment == 0, na.rm = TRUE))
+    report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code)."
     summary_comments <- "Some code files had no comments."
     cols <- c("name", "language", "percentage_comment")
     rows <- !is.na(code_files$percentage_comment)
     report_table_comments <- code_files[rows, cols, drop = FALSE]
+    report_table_comments$percentage_comment <- sprintf("%.0f%%", report_table_comments$percentage_comment * 100)
     colnames(report_table_comments) <- c("Code File name", "Language",
                                          "Percentage of lines that are comments")
   }

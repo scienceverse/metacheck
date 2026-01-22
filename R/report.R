@@ -17,7 +17,7 @@
 #' @export
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' filename <- demoxml()
 #' paper <- read(filename)
 #' report(paper)

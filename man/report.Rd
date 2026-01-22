@@ -38,7 +38,7 @@ Pass arguments to modules in a named list of lists, using the same names as the 
 }\if{html}{\out{</div>}}
 }
 \examples{
-\donttest{
+\dontrun{
 filename <- demoxml()
 paper <- read(filename)
 report(paper)

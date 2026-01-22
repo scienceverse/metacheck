@@ -2,21 +2,24 @@
 % Please edit documentation in R/llm.R
 \name{llm_model_list}
 \alias{llm_model_list}
-\title{List Available LLM Models}
+\title{List LLM Models}
 \usage{
-llm_model_list(API_KEY = Sys.getenv("GROQ_API_KEY"))
+llm_model_list(platform = NULL)
 }
 \arguments{
-\item{API_KEY}{groq API key from \url{https://console.groq.com/keys}}
+\item{platform}{The platform. If NULL, checks all platforms for which you have a valid API_KEY.}
 }
 \value{
 a data frame of models and info
 }
 \description{
-Returns a list of available models in groq, excluding whisper and vision models (for audio and images) and sorting by creation date. See \url{https://console.groq.com/docs/models} for more information.
+List available LLM models for the specified platform.
+}
+\details{
+For platforms other than groq, returns the value from the corresponding ellmer::models_platform function.
 }
 \examples{
-\donttest{
+\dontrun{
   llm_model_list()
 }
 }

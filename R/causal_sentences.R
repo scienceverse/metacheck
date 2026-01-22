@@ -41,7 +41,7 @@
 #' https://huggingface.co/rasoultilburg/SocioCausaNet
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   # Single sentence
 #'   df1 <- causal_relations("Smoking causes cancer")
 #'   print(df1)

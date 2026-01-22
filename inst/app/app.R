@@ -590,8 +590,7 @@ server <- function(input, output, session) {
     } else {
       subtext <- search_text(text, return = input$llm_group_by)
       res <- llm(text = subtext,
-                      query = input$llm_query,
-                      API_KEY = input$llm_api)
+                 system_prompt = input$llm_query)
       #
       # n <- nrow(groups)
       # res <- vector("list", n)
