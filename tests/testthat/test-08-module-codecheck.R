@@ -30,7 +30,7 @@ test_that("OSF no files", {
   paper$full_text <- data.frame(text = "https://osf.io/y6a34", id = paper$id)
   mod_output <- module_run(paper, module)
 
-  expect_equal(mod_output$traffic_light, "na")
+  expect_equal(mod_output$traffic_light, "yellow")
   exp <- data.frame(id = paper$id,
                     hardcoded_folders = NA,
                     loaded_files_missing = NA,
@@ -38,9 +38,48 @@ test_that("OSF no files", {
                     readme_missing = NA,
                     zip_files_present = NA)
   expect_equal(mod_output$summary_table, exp)
-  exp <- "We found no R, SAS, SPSS, or Stata code files "
+  exp <- "no files "
   expect_true(grepl(exp, mod_output$summary_text))
   expect_true(grepl(exp, mod_output$report[[1]]))
+})
+
+test_that("no code files", {
+  skip_osf()
+
+  module <- "code_check"
+  paper <- paper()
+  paper$full_text <- data.frame(
+    text = c("https://osf.io/m4nbv"),
+    id = paper$id
+  )
+  mod_output <- module_run(paper, module)
+
+  expect_true(grepl("We found 0 R", mod_output$summary_text))
+  exp <- data.frame(id = paper$id,
+                    hardcoded_folders = NA,
+                    loaded_files_missing = NA,
+                    minimum_comments = NA,
+                    readme_missing = 0,
+                    zip_files_present = 1)
+  expect_equal(mod_output$summary_table, exp)
+})
+
+test_that("OSF", {
+  skip_osf()
+
+  module <- "code_check"
+  paper <- paper()
+  paper$full_text <- data.frame(
+    text = c("https://osf.io/629bx"),
+    id = paper$id
+  )
+  mod_output <- module_run(paper, module)
+
+  expect_equal(mod_output$summary_table$hardcoded_folders, 2)
+  expect_equal(mod_output$summary_table$loaded_files_missing, 0)
+  expect_equal(mod_output$summary_table$minimum_comments, 1/45)
+  expect_equal(mod_output$summary_table$readme_missing, 1)
+  expect_equal(mod_output$summary_table$zip_files_present, 0)
 })
 
 test_that("OSF, github and rb", {

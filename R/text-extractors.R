@@ -2,7 +2,7 @@
 #'
 #' Get a table of URLs from a paper or paperlist. Matches urls that start with http or doi:
 #'
-#' @param paper
+#' @param paper a paper object or paperlist object
 #'
 #' @returns a table
 #' @export

@@ -80,18 +80,27 @@ power <- function(paper, seed = 8675309) {
   if (nrow(potential_power) > 0 && llm_use()) {
     ## use LLM ----
 
-    # power_query defined below function
-    llm_results <- llm(potential_power,
-                       power_query,
+    # define system prompt from JSON schema
+    preface <- "Identify and classify power analyses from exerpts of scientific manuscripts. Use null when information is missing, do not invent values. Only use 'other' if a value not in the enumerated options can be identified. There may be no power analysis in the text, or more than one. Return an array of objects as defined by the JSON schema below, bracketed by ```json and ```."
+    # schema also defined below
+    schema <- readLines("https://scienceverse.org/schema/power.json") |>
+      paste(collapse = "\n")
+    system_prompt <- paste(preface, schema, sep = "\n\n")
+
+    llm_results <- llm(text = potential_power,
+                       system_prompt = system_prompt,
                        text_col = "text",
-                       seed = seed)
+                       params= list(seed = seed))
 
     table <- llm_results |>
-      json_expand() |>
+      json_expand(suffix = c("", ".power")) |>
       dplyr::rowwise() |>
       dplyr::mutate(complete = !any(dplyr::across(dplyr::any_of(llm_cols), is.na))) |>
-      dplyr::ungroup() |>
-      dplyr::filter(power_type != "none")
+      dplyr::ungroup()
+
+    if ("power_type" %in% names(table)) {
+      table <- dplyr::filter(table, power_type != "none")
+    }
 
     # check for NAs in LLM columns
     has_na <- dplyr::select(table, dplyr::any_of(llm_cols)) |>
@@ -219,7 +228,6 @@ power <- function(paper, seed = 8675309) {
 
     # report ----
     report <- c(
-      summary_text,
       report_text,
       scroll_table(info_table, maxrows = 5),
       observed_power_text,
@@ -239,85 +247,128 @@ power <- function(paper, seed = 8675309) {
   )
 }
 
-# power query ----
+# schema ----
 
-power_query <- r"(
-An a priori power analysis is used to calculate the required sample size to achieve a desired level of statistical power given an effect size, statistical test, and alpha level.
-A sensitivity analysis is used to estimate, given a sample size, which effect sizes a design has sufficient power (e.g., 80% or 90%) to detect, given a statistical test and alpha level.
-A post hoc power analysis (also referred to as observed power, or retrospective power) uses an empirically observed effect size, and computes the achieved power for that empirically observed effect size, given a statistical test and alpha level. Note that post-hoc power is [rarely useful to report](https://lakens.github.io/statistical_inferences/08-samplesizejustification.html#sec-posthocpower).
+schema <- r"({
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scienceverse.org/schema/power.json",
+  "title": "Power Analyses",
+  "description": "A power analysis.",
+  "type": "object",
+  "properties": {
+    "text": {
+      "description": "The specific text that contains all of the information used to determine this object's properties.",
+      "type": ["string", "null"]
+    },
 
-If the paragraph DOES describe one or more power analyses, extract ONLY the following information and return it as JSON, use this exact schema:
+    "power_type": {
+      "description": "The type of power analysis. An 'apriori' power analysis is used to calculate the required sample size to achieve a desired level of statistical power given an effect size, statistical test, and alpha level. A 'sensitivity' analysis is used to estimate, given a sample size, which effect sizes a design has sufficient power (e.g., 80% or 90%) to detect, given a statistical test and alpha level. A 'posthoc' power analysis (also referred to as observed power, or retrospective power) uses an empirically observed effect size, and computes the achieved power for that empirically observed effect size, given a statistical test and alpha level.",
+      "type": ["string", "null"],
+      "enum": ["apriori", "sensitivity", "posthoc", null]
+    },
 
-Here is an example of input text:
+    "statistical_test": {
+      "description": "The statistical test used. Use null if unclear.",
+      "type": ["string", "null"],
+      "enum": [
+        "paired t-test",
+        "unpaired t-test",
+        "one-sample t-test",
+        "1-way ANOVA",
+        "2-way ANOVA",
+        "3-way ANOVA",
+        "MANOVA",
+        "regression",
+        "chi-square",
+        "correlation",
+        "other",
+        null
+      ]
+    },
 
-An a priori power analysis was conducted to estimate the sample size required to achieve 80% power to detect a Cohen's d of 0.2 using an unpaired t-test at an alpha level of 0.05. This required a total sample size of 300 participants. A second a priori power analysis was conducted to estimate the required sample size for a secondary outcome. To achieve 80% power to detect a Cohen's f of 0.1 using a one-way ANOVA, a sample size of 350 was required. The a priori power analyses were conducted with G*Power.
+    "statistical_test_other": {
+      "description": "Free-text description if statistical_test is 'other', otherwise null.",
+      "type": ["string", "null"]
+    },
 
-Here is an example of the returned output:
+    "sample_size": {
+      "description": "The sample size determined by or used in the power analysis. Give the total number if this is expressed as number per group.",
+      "type": ["number", "null"],
+      "minimum": 0
+    },
 
-[ {
-  "power_type": "apriori",
-  "statistical_test": "unpaired t-test",
-  "sample_size": 300,
-  "alpha_level": 0.05,
-  "power": 0.8,
-  "effect_size": 0.2,
-  "effect_size_metric": "Cohen's d",
-  "software": "G*Power"
- },
- {
-  "power_type": "apriori",
-  "statistical_test": "one-way ANOVA",
-  "sample_size": 350,
-  "alpha_level": null,
-  "power": 0.8,
-  "effect_size": 0.1,
-  "effect_size_metric": "Cohen's f",
-  "software": "G*Power"
- }
-]
+    "alpha_level": {
+      "description": "The alpha threshold used to determine significance.",
+      "type": ["number", "null"],
+      "exclusiveMinimum": 0,
+      "maximum": 1
+    },
 
-Rules:
-- If one or more power analyes, return an array of JSON objects.
-- If there are no power analyses reported, return:
+    "power": {
+      "description" : "The statistical power, expressed as a number between 0 and 1.",
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1
+    },
 
-[{"power_type": "none"}]
+    "effect_size": {
+      "description": "The numeric effect size used in or determined from the power analysis.",
+      "type": ["number", "null"]
+    },
 
-- Do NOT guess values, if any information is missing or unclear, return null (unquoted).
-- Use only the exact labels listed below for "power_type", "statistical_test", "efect_size_metric" and "software". All labels are case-sensitive.
-- For "power_type": Use ONLY these exact strings:
-  - "apriori"
-  - "sensitivity"
-  - "posthoc"
-- Do NOT classify "power_type" as apriori if the text only reports achieved power for an existing sample size.
-- For "statistical_test": Use ONLY these exact strings. Choose the closest match or "null" if unclear/unsupported. Ignore one-sided vs. two-sided. If ANOVA is used, specify one-way, two-way, or three-way.
-  - "paired t-test"
-  - "unpaired t-test"
-  - "one-sample t-test"
-  - "one-way ANOVA"
-  - "two-way ANOVA"
-  - "MANOVA"
-  - "regression"
-  - "chi-square"
-  - "correlation"
-  - "other"
-- For "effects_size_metric": Use ONLY these exact strings. Use "unstandardised" for raw/non-standardized effects (e.g., means, proportions).
-  - "Cohen's d"
-  - "Hedges' g"
-  - "Cohen's f"
-  - "partial eta squared"
-  - "eta squared"
-  - "unstandardised"
-- For "software": Use ONLY these exact strings.
-  - "G*Power"
-  - "Superpower"
-  - "Pangea"
-  - "Morepower"
-  - "PASS"
-  - "pwr"
-  - "simr"
-  - "PowerUpR"
-  - "simulation"
-  - "InteractionPoweR"
-  - "pwrss"
-  - "other"
-)"
+    "effect_size_metric": {
+      "description": "The effect size metric. Use 'unstandardised' for raw/non-standardized effects.",
+      "type": ["string", "null"],
+      "enum": [
+        "Cohen's d",
+        "Hedges' g",
+        "Cohen's f",
+        "partial eta squared",
+        "eta squared",
+        "unstandardised",
+        "other",
+        null
+      ]
+    },
+
+    "effect_size_metric_other": {
+      "description": "Free-text description if effect_size_metric is 'other', otherwise null.",
+      "type": ["string", "null"]
+    },
+
+    "software": {
+      "description": "The software used to conduct the power analysis.",
+      "type": ["string", "null"],
+      "enum": [
+        "G*Power",
+        "Superpower",
+        "Pangea",
+        "Morepower",
+        "PASS",
+        "pwr",
+        "simr",
+        "PowerUpR",
+        "simulation",
+        "InteractionPoweR",
+        "pwrss",
+        "other",
+        null
+      ]
+    }
+  },
+
+  "required": [
+    "power_type",
+    "statistical_test",
+    "statistical_test_other",
+    "sample_size",
+    "alpha_level",
+    "power",
+    "effect_size",
+    "effect_size_metric",
+    "effect_size_metric_other",
+    "software"
+  ],
+
+  "additionalProperties": false
+})"

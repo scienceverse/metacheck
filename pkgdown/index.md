@@ -38,8 +38,12 @@ DeBruine](https://debruine.github.io) (developer and maintainer),
 Check](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check)),
 [Cristian
 Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/)
-(postdoctoral researcher), and Max Littel, Jakub Werner, Hadeel
-Khawatmy, and Lavinia Ion (research assistants).
+(postdoctoral researcher), and [Max
+Littel](https://nl.linkedin.com/in/max-littel-a0620a233/nl), [Jakub
+Werner](https://nl.linkedin.com/in/jakubwerner), [Hadeel
+Khawatmy](https://nl.linkedin.com/in/hadeel-khawatmy-a720021a2), and
+[Lavinia Ion](https://nl.linkedin.com/in/lavinia-i-05275636b) (research
+assistants).
 
 Metacheck was initially developed by Lisa and Daniël in 2024 during
 Lisa’s visiting professorship at the Eindhoven Artificial Intelligence

@@ -3,30 +3,26 @@ test_that("llm", {
   expect_true(is.function(metacheck::llm))
   expect_no_error(helplist <- help(llm, metacheck))
 
-  expect_error(llm(seed = 8675309))
-  expect_error(llm("hi", seed = 8675309))
+  llm_use(TRUE)
 
-  # temperature
-  expect_error(llm("hi", "repeat this", temperature = "a",seed = 8675309),
-               "The argument `temperature` must be a positive number",
-               fixed = TRUE)
-  expect_error(llm("hi", "repeat this", temperature = -3, seed = 8675309),
-               "The argument `temperature` must be between 0.0 and 2.0",
-               fixed = TRUE)
-  expect_error(llm("hi", "repeat this", temperature = 2.1, seed = 8675309),
-               "The argument `temperature` must be between 0.0 and 2.0",
-               fixed = TRUE)
+  expect_error(llm())
+  expect_error(llm("hi"))
 
   # top_p
-  expect_error(llm("hi", "repeat this", top_p = "a", seed = 8675309),
-               "The argument `top_p` must be a positive number",
+  params <-  list(top_p = "a")
+  expect_error(llm("hi", "repeat this", params = params),
+               "`top_p` must be a number",
                fixed = TRUE)
-  expect_error(llm("hi", "repeat this", top_p = -3, seed = 8675309),
-               "The argument `top_p` must be between 0.0 and 1.0",
+  params <- list(top_p = -3)
+  expect_error(llm("hi", "repeat this", params = params),
+               "`top_p` must be a number",
                fixed = TRUE)
-  expect_error(llm("hi", "repeat this", top_p = 2.1, seed = 8675309),
-               "The argument `top_p` must be between 0.0 and 1.0",
+
+  llm_use(FALSE)
+  expect_error(llm("hi", "repeat this", model = "groq"),
+               "llm_use(TRUE)",
                fixed = TRUE)
+
 })
 
 
@@ -39,7 +35,7 @@ test_that("llm_model", {
   expect_error(llm_model(T))
   expect_equal(orig_model, llm_model())
 
-  model <- "llama-3.1-8b-instant"
+  model <- "groq/llama-3.1-8b-instant"
   llm_model(model)
   expect_equal(llm_model(), model)
 
@@ -70,7 +66,8 @@ test_that("llm_max_calls", {
     text = 1:20,
     id = 1:20
   )
-  expect_error(llm(text, "summarise", seed = 8675309),
+  llm_use(TRUE)
+  expect_error(llm(text, "summarise"),
                "This would make 20 calls to the LLM")
 
   # return to original value
@@ -78,14 +75,6 @@ test_that("llm_max_calls", {
   expect_equal(llm_max_calls(), n)
 })
 
-
-test_that("llm_use FALSE", {
-  # error on llm_use() == FALSE
-  llm_use(FALSE)
-  text <- c("hello", "number", "ten", 12)
-  query <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
-  expect_error(is_number <- llm(text, query, seed = 1), "llm_use")
-})
 
 # tests that require api.groq.com
 
@@ -95,85 +84,49 @@ test_that("llm_use FALSE", {
 test_that("llm_use TRUE", {
   skip_llm()
   llm_use(TRUE)
+  llm_model("groq")
 
   text <- c("hello", "number", "ten", 12)
-  query <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
-  is_number <- llm(text, query, seed = 8675309)
+  system_prompt <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
+  is_number <- llm(text, system_prompt)
   expect_equal(is_number$text, text)
   expect_equal(is_number$answer[[1]], "FALSE")
   expect_equal(is_number$answer[[4]], "TRUE")
 
-  expect_error(llm("hi", "repeat this", model = "not a model", seed = 8675309), "not available")
+  expect_error(llm("hi", "repeat this", model = "not a model"),
+               "Can't find provider")
 
-  # duplicates should only generate 1 query
+  # duplicates should only generate 1 system_prompt
   text <- c("A", "A", 1, 1)
-  query <- "Is this a letter? Answer only 'TRUE' or 'FALSE'"
-  is_letter <- llm(text, query, seed = 12345)
+  system_prompt <- "Is this a letter A-Z? Answer only 'TRUE' or 'FALSE'"
+  is_letter <- llm(text, system_prompt)
 
   expect_equal(is_letter$text, text)
   expect_equal(is_letter$answer[[1]], is_letter$answer[[2]])
   expect_equal(is_letter$answer[[3]], is_letter$answer[[4]])
-
-  expect_equal(is_letter$time[[2]], 0)
-  expect_equal(is_letter$time[[4]], 0)
-  expect_equal(is_letter$tokens[[2]], 0)
-  expect_equal(is_letter$tokens[[4]], 0)
-  expect_true(is_letter$time[[1]] > 0)
-  expect_true(is_letter$time[[3]] > 0)
-  expect_true(is_letter$tokens[[1]] > 0)
-  expect_true(is_letter$tokens[[3]] > 0)
 })
 
 test_that("sample size", {
   skip_llm()
-  skip_if_offline("api.groq.com")
+  llm_use(TRUE)
+  llm_model("groq")
 
   papers <- read(demodir())
   text <- search_text(papers, section = "method", return = "section")
-  query <- "What is the sample size of this study (e.g., the number of participants tested?
+  system_prompt <- "What is the sample size of this study (e.g., the number of participants tested?
 
   Please give your answer exactly like this: 'XXX (XX men, XX women)', with the total number first, then any subsets in parentheses. If there is not enough information to answer, answer 'NA'"
 
-  # needs seed to work with httptest
-  res <- llm(text, query, seed = 8675309)
+  res <- llm(text, system_prompt)
 
   expect_equal(res$text, text$text)
   expect_equal(res$id, c("eyecolor", "incest"))
-  # expect_equal(res$answer[[1]], "300 (150 men, 150 women)")
-  # expect_equal(res$answer[[2]], "1998 (666 men, 1332 women)")
 
   ## text vector
   text_vector <- text$text[text$id == text$id[[1]]]
-  res2 <- llm(text_vector, query, seed = 8675309)
-  expect_equal(names(res2), c("text", "answer", "time", "tokens"))
+  res2 <- llm(text_vector, system_prompt)
+  expect_in(names(res2), c("text", "answer"))
   expect_equal(res2$answer[[1]], res$answer[[1]])
-})
-
-#test_that("exceeds tokens", {
-  ## big text (new model has a much bigger limit)
-  # text <- psychsci[7] |> search_text(return = "id")
-  # # nchar(text$text)
-  # query <- "Respond with the exact text"
-  # expect_message(
-  #   expect_warning(
-  #     answer <- llm(text, query),
-  #     "tokens/rate_limit_exceeded", fixed = TRUE),
-  #   "requests left", fixed = TRUE)
-#})
-
-test_that("rate limiting", {
-  skip("Rate limiting test")
-  skip_if_offline("api.groq.com")
-
-  text <- c(LETTERS, 0:7)
-  query <- "Respond with the exact text"
-
-  # rate limited at 30 RPM - probably more now
-  llm_max_calls(40)
-  answer <- llm(text, query, seed = 1)
-  expect_true(all(!is.na(answer$answer)))
-
-  llm_max_calls(30)
 })
 
 
@@ -181,12 +134,43 @@ test_that("llm_model_list", {
   expect_true(is.function(metacheck::llm_model_list))
   expect_no_error(helplist <- help(llm_model_list, metacheck))
 
-  skip_if_offline("api.groq.com")
+  expect_error(llm_model_list("notamodel"), "Invalid platform")
 
-  models <- llm_model_list()
-  expect_equal(names(models), c("id", "owned_by", "created", "context_window"))
-  expect_true(llm_model() %in% models$id)
+  skip_llm()
+
+  models <- llm_model_list("groq")
+  expect_contains(names(models), c("platform", "id", "created_at"))
+
+  groq_models <- models_groq()
+  expect_contains(names(groq_models), c("id", "created_at"))
+  expect_false("platform" %in% names(groq_models))
+  expect_true(inherits(groq_models$created_at, "Date"))
+
+  all <- llm_model_list()
+  expect_gt(unique(all$platform) |> length(), 1)
+  expect_contains(all$id, groq_models$id)
 })
 
-#httptest::stop_mocking()
-# httptest::stop_capturing()
+test_that("gemini", {
+  skip_llm()
+  llm_use(TRUE)
+
+  text <- LETTERS[1:2]
+  system_prompt <- "Is this a vowel? Answer only 'TRUE' or 'FALSE'."
+  model <- "google_gemini"
+  obs <- llm(text, system_prompt, model = model)
+  expect_equal(unclass(obs$answer),
+               as.character(c(T, F)))
+})
+
+test_that("openai", {
+  skip_llm()
+  llm_use(TRUE)
+
+  text <- LETTERS[1:2]
+  system_prompt <- "Is this a vowel? Answer only 'TRUE' or 'FALSE'."
+  model <- "openai"
+  obs <- llm(text, system_prompt, model = model)
+  expect_equal(unclass(obs$answer),
+               as.character(c(T, F)))
+})

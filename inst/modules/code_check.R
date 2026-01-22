@@ -122,8 +122,8 @@ code_check <- function(paper) {
   readme_files <- all_files[readme_files, ]
   summary_code <-  sprintf(
     "We found %d R, SAS, SPSS, or Stata code file%s in the %d searched %s.",
-    length(code_files),
-    plural(length(code_files)),
+    nrow(code_files),
+    plural(nrow(code_files)),
     length(all_repos),
     plural(length(all_repos), "repository", "repositories")
   )
@@ -169,7 +169,7 @@ code_check <- function(paper) {
 
   # no relevant code files found ----
   if (nrow(code_files) == 0) {
-    if (nrow(all_files)) {
+    if (nrow(all_files) == 0) {
       # no files at all
       tl <- "yellow"
       summary_text <- sprintf(
@@ -177,15 +177,13 @@ code_check <- function(paper) {
         plural(length(all_repos), "y", "ies"),
         paste(all_repos, collapse = ", ")
       )
-      readme_missing <- length(missing_readmes)
-      zip_files_present <- nrow(zip_files)
+      readme_missing <- NA
+      zip_files_present <- NA
     } else {
       tl <- "na"
       summary_text <- c(summary_code, summary_readme, summary_zip) |>
-        paste("    - ", x = _, collapse = "\n") |>
-        paste0("\n", x = _)
-      readme_missing <- NA
-      zip_files_present <- NA
+        paste("\n- ", x = _, collapse = "")
+      zip_files_present <- nrow(zip_files)
     }
 
 
@@ -303,7 +301,7 @@ code_check <- function(paper) {
     summary_library <- "Libraries/imports were loaded in multiple places."
     issues_library <- paste(sprintf("**%s**", library_issue), collapse = "\n\n")
     lines_library <- paste(sprintf("**%s**", code_files$library_lines[which(code_files$library_on_top == 1)]), collapse = "\n\n")
-    report_table_library <- code_files_subset <- code_files[!is.na(code_files$library_lines), c("name", "language", "library_lines"), drop = FALSE]
+    report_table_library  <- code_files[!is.na(code_files$library_lines), c("name", "language", "library_lines"), drop = FALSE]
     colnames(report_table_library) <- c("Code File name", "Language", "Lines at which libraries/imports are loaded")
   }
 
@@ -319,22 +317,26 @@ code_check <- function(paper) {
       length(hardcoded_issues)
     )
     summary_hardcoded <- "Hardcoded file paths were found."
-    report_table_hardcoded <- code_files_subset <- code_files[!is.na(code_files$absolute_paths), c("name", "language", "absolute_paths"), drop = FALSE]
+    report_table_hardcoded <- code_files[!is.na(code_files$absolute_paths), c("name", "language", "absolute_paths"), drop = FALSE]
     colnames(report_table_hardcoded) <- c("Code File name", "Language", "Absolute paths found")
   }
 
   ## Comments ----
   comment_issue <- min(code_files$percentage_comment, na.rm = TRUE)
+  report_table_comments <- NULL
   if (is.finite(comment_issue) && comment_issue > 0) {
     report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code). All your code files had comments."
     summary_comments <- "All your code files had comments."
-    report_table_comments <- NULL
+
   } else {
-    report_comments <- sprintf("Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code). The following %d files had no comments:",
-                               sum(code_files$percentage_comment == 0, na.rm = TRUE))
+    report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code)."
     summary_comments <- "Some code files had no comments."
-    report_table_comments <- code_files_subset <- code_files[!is.na(code_files$percentage_comment), c("name", "language", "percentage_comment"), drop = FALSE]
-    colnames(report_table_comments) <- c("Code File name", "Language", "Percentage of lines that are comments")
+    cols <- c("name", "language", "percentage_comment")
+    rows <- !is.na(code_files$percentage_comment)
+    report_table_comments <- code_files[rows, cols, drop = FALSE]
+    report_table_comments$percentage_comment <- sprintf("%.0f%%", report_table_comments$percentage_comment * 100)
+    colnames(report_table_comments) <- c("Code File name", "Language",
+                                         "Percentage of lines that are comments")
   }
 
   ## Missing files ----
@@ -418,7 +420,7 @@ code_check <- function(paper) {
     summary_readme,
     summary_zip
   ) |>
-    paste("\n    - ", x = _, collapse = "")
+    paste("\n- ", x = _, collapse = "")
 
   # table ----
   table <- code_files

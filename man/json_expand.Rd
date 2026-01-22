@@ -4,12 +4,14 @@
 \alias{json_expand}
 \title{Expand a JSON column}
 \usage{
-json_expand(table, col = "answer")
+json_expand(table, col = "answer", suffix = c("", ".json"))
 }
 \arguments{
 \item{table}{the table with a column to expand}
 
 \item{col}{the name or index of the column to expand (defaults to "answer" or the first column)}
+
+\item{suffix}{the suffix for the extracted columns if they conflict with names in the table}
 }
 \value{
 the table plus the expanded columns

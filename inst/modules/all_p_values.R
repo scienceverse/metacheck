@@ -36,7 +36,7 @@ all_p_values <- function(paper) {
   names(report_table) <- c("Text", "Sentence")
   report_table_code <- scroll_table(report_table, colwidths = c("5em", NA))
   explan <- "This will catch most comparators like =<>~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact debruine@gmail.com."
-  report <- c(summary_text, report_table_code, explan)
+  report <- c(report_table_code, explan)
 
   # return a list ----
   list(

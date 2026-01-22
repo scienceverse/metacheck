@@ -160,17 +160,13 @@ stat_effect_size <- function(paper) {
     report <- "All detected t-tests and F-tests had an effect size reported in the same sentence."
     summary_text <- report
   } else {
-    module_output <- sprintf(
-      "We found %1$d t-test%2$s and/or F-test%2$s where effect sizes are not reported. We recommend checking the sentences below, and add any missing effect sizes.",
-      nrow(table_missing),
-      ifelse(nrow(table_missing) == 1, "", "s")
-    )
-
     summary_text <- sprintf(
       "We found %1$d t-test%2$s and/or F-test%2$s where effect sizes are not reported.",
       nrow(table_missing),
       ifelse(nrow(table_missing) == 1, "", "s")
     )
+
+    report_text <- "We recommend checking the sentences below, and add any missing effect sizes."
 
     guidance <- c(
       "For metascientific articles demonstrating that effect sizes are often not reported:",
@@ -189,8 +185,7 @@ stat_effect_size <- function(paper) {
 
     # structure the report in order
     report <- c(
-      module_output,
-      "The following sentences are missing effect sizes",
+      report_text,
       scroll_table(table_missing$text),
       collapse_section(guidance),
       detail_table

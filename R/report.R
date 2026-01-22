@@ -17,7 +17,7 @@
 #' @export
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' filename <- demoxml()
 #' paper <- read(filename)
 #' report(paper)
@@ -107,8 +107,13 @@ report <- function(paper,
   # organise modules ----
   section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
   sections <- sapply(module_output, \(mo) mo$section)
-  sections <- factor(sections, section_levels, )
-  module_output <- sort_by(module_output, sections)
+  sections <- factor(sections, section_levels)
+  tl_levels <- c("red", "yellow", "green", "info", "na", "fail")
+  tls <- sapply(module_output, \(mo) mo$traffic_light %||% "info")
+  tls <- factor(tls, tl_levels)
+  # this seems hacky, but I can't figure out how to sort by 2 vectors
+  mod_order <- xtfrm(sections)*10 + xtfrm(tls)
+  module_output <- sort_by(module_output, mod_order)
 
   # set up report ----
   pb$tick(tokens = list(what = "Creating report"))
@@ -117,25 +122,35 @@ report <- function(paper,
   report_template <- system.file("templates/_report.qmd",
                                  package = "metacheck")
   rt <- readLines(report_template)
-  cut_after <- which(rt == "## Demo") - 1
+  cut_after <- which(rt == "<!-- Demo -->") - 1
   rt_head <- paste(rt[1:cut_after], collapse = "\n")
   # turn real % to %%, leave %s, %d, %f, %i
   rt_head <- gsub("\\%(?![sdfi])", "%%", rt_head, perl = TRUE)
   doi_text <- ifelse(paper$info$doi == "", "",
                      sprintf("DOI: [%s](https://doi.org/%s)", paper$info$doi, paper$info$doi))
+  author_text <- utils::capture.output(print.scivrs_authors(paper$authors))
+  if (length(author_text) == 0) author_text <- ""
   qmd_header <- sprintf(rt_head,
                         gsub('"', '\\\\"', paper$info$title),
+                        author_text,
                         as.character(utils::packageVersion("metacheck")),
                         Sys.Date(),
                         doi_text)
 
   ## generate summary section ----
   summary_list <- sapply(module_output, \(x) {
-    sprintf("- [%s](#%s){.%s}: %s  ",
+    tl <- paste0("tl_", x$traffic_light %||% "info")
+    summary_text <- x$summary_text %||% ""
+    # indent 4 if first line is \n (probably a list)
+    if (nzchar(summary_text) && substr(summary_text, 1, 1) == "\n") {
+      summary_text <- gsub("\n", "\n    ", summary_text)
+    }
+    sprintf("- %s [%s](#%s){.%s}: %s  ",
+            emojis[[tl]],
             x$title,
             gsub("\\s", "-", tolower(x$title)),
             x$traffic_light %||% "info",
-            x$summary_text %||% "")
+            summary_text)
   })
   summary_text <- sprintf("## Summary\n\n%s\n\n",
                           paste(summary_list, collapse = "\n"))
@@ -220,14 +235,19 @@ module_report <- function(module_output,
   n <- NULL
 
   # set up header
+  tl <- module_output$traffic_light %||% "info"
+  tl_symbol <- emojis[[paste0("tl_", tl)]]
   if (is.null(header)) {
     head <- ""
   } else if (header == 0) {
-    head <- module_output$title
+    head <- sprintf("%s %s", tl_symbol, module_output$title)
   } else if (header %in% 1:6) {
-    head <- rep("#", header) |> paste(collapse = "") |>
-      paste0(" ", module_output$title,
-             " {.", module_output$traffic_light, "}")
+    head <- sprintf("%s %s %s {#%s .%s}",
+                    rep("#", header) |> paste(collapse = ""),
+                    tl_symbol,
+                    module_output$title,
+                    gsub(" ", "-", tolower(module_output$title)),
+                    tl)
   } else {
     head <- header
   }
@@ -240,26 +260,34 @@ module_report <- function(module_output,
   hiw <- tryCatch({
     info <- module_info(module_output$module)
 
-    author_ack <- NULL
-    if (!is.null(info$author)) {
-      a <- info$author |>
-        gsub("\\s*\\(.*email\\{.+\\})", "", x = _)
-      authors <- if (length(a) < 3) {
-        paste(a, collapse = " and ")
-      } else {
-        n <- length(a)
-        paste0(paste(a[-n], collapse = ", "), " and ", a[n])
+    author_ack <- tryCatch({
+      if (!is.null(info$author)) {
+        a <- info$author |>
+          gsub("\\s*\\(.*email\\{.+\\})", "", x = _)
+        authors <- if (length(a) < 3) {
+          paste(a, collapse = " and ")
+        } else {
+          n <- length(a)
+          paste0(paste(a[-n], collapse = ", "), " and ", a[n])
+        }
+        sprintf("This module was developed by %s", authors)
       }
-      author_ack <- sprintf(
-        "This module was developed by %s",
-        authors
-      )
-    }
+    })
 
     c(info$description, info$details, author_ack) |>
       collapse_section("How It Works", callout = "note")
-  }, error = \(e) { return(NULL) })
+    }, error = \(e) { return(NULL) })
 
-  paste0(c(head, report, hiw), collapse = "\n\n")
+  # create collapsible boxes around substantial reports (> 300 char)
+  pre <- paste(module_output$summary_text,
+               "<details><summary>View detailed feedback</summary><div>",
+               sep = "\n\n")
+  post <- "</div></details>"
+  if (is.null(report) ||
+      all(module_output$summary_text == report) ||
+      paste(report, collapse = "\n\n") |> nchar() < 300) {
+    pre <- post <- NULL
+  }
+
+  paste0(c(head, pre, report, post, hiw), collapse = "\n\n")
 }
-

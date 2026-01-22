@@ -1,7 +1,7 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.0.0.9065
-Date: 2025-01-05
+Version: 0.0.0.9066
+Date: 2025-01-22
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -49,6 +49,7 @@ Suggests:
     withr
 Config/testthat/edition: 3
 Imports: 
+    ellmer,
     arrow,
     DT,
     dplyr,

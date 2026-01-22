@@ -68,8 +68,8 @@ ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.R
                         sprintf("%i of %i", n_head, n_all),
                         sprintf("%i", n_head))
 
-      report <- sprintf("%s\n\n**%s**\n\n%s\n\n%s\n\n*%s Instance%s:*\n\n%s",
-                        summary_text, warn_doi,
+      report <- sprintf("**%s**\n\n%s\n\n%s\n\n*%s Instance%s:*\n\n%s",
+                        warn_doi,
                         to_warn$reftext[[i]],
                         to_warn$warning[[i]],
                         instance_n,

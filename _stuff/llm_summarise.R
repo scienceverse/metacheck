@@ -6,7 +6,7 @@
 #' @author Lisa DeBruine
 #'
 #' @param paper a paper object or paperlist object
-#' @param ... optional arguments to `llm()`, like model or seed
+#' @param ... optional arguments to `llm()`, like model or params
 #'
 #' @returns a list with table, traffic light, and report text
 #'

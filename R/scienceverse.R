@@ -69,6 +69,37 @@ author <- function(surname, given = "", orcid = NULL, roles = c(), ...) {
   a
 }
 
+#' Print Author List
+#'
+#' @param x The scivrs_authors list
+#' @param ... Additional parameters for print
+#'
+#' @export
+#' @keywords internal
+#'
+print.scivrs_authors <- function(x, ...) {
+  names <- sapply(x, \(x) utils::capture.output(print.scivrs_author(x)))
+  last <- utils::tail(names, 1)
+  first <- setdiff(names, last)
+  if (length(first)) first <- paste(first, collapse = ", ")
+  txt <- c(first, last) |> paste(collapse = " & ")
+  cat(txt)
+}
+
+
+#' Print Author
+#'
+#' @param x The scivrs_author item
+#' @param ... Additional parameters for print
+#'
+#' @export
+#' @keywords internal
+#'
+print.scivrs_author <- function(x, ...) {
+  txt <- paste(x$name$given, x$name$surname)
+  cat(txt)
+}
+
 #' CRediT Roles
 #'
 #' @param display Whether to display the category names, explanations, or abbreviations

@@ -53,7 +53,7 @@ If a sentence has \strong{no relations}, the output includes one row with \code{
 sentences with \strong{multiple relations}, the function returns one row per relation.
 }
 \examples{
-\donttest{
+\dontrun{
   # Single sentence
   df1 <- causal_relations("Smoking causes cancer")
   print(df1)

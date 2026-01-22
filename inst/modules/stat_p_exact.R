@@ -67,15 +67,12 @@ stat_p_exact <- function(paper) {
     )
     summary_text <- report
   } else {
-    module_output <- sprintf(
-      "We found %d imprecise *p* value%s out of %d detected. Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001.",
-      nrow(report_table), plural(nrow(report_table)), nrow(p)
-    )
-
     summary_text <- sprintf("We found %d imprecise *p* value%s out of %d detected.",
                             nrow(report_table),
                             plural(nrow(report_table)),
                             nrow(p))
+
+    report_text <- "Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001."
 
     # Guidance text
     apa <- bibentry(
@@ -94,7 +91,7 @@ stat_p_exact <- function(paper) {
     )
 
     # Combine everything into report text
-    report <- c(module_output,
+    report <- c(report_text,
                 scroll_table(report_table, colwidths = c(.1, .9)),
                 collapse_section(guidance))
   }

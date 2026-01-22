@@ -5,7 +5,7 @@
 \alias{emojis}
 \title{Emojis}
 \format{
-An object of class \code{list} of length 26.
+An object of class \code{list} of length 32.
 }
 \usage{
 emojis

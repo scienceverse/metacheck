@@ -3,7 +3,7 @@ test_that(".onLoad", {
     metacheck.verbose = TRUE,
     metacheck.llm_max_calls = 30L,
     metacheck.llm.use = FALSE,
-    metacheck.llm.model = "llama-3.3-70b-versatile",
+    metacheck.llm.model = "groq",
     metacheck.osf.delay = 0,
     metacheck.osf.api = "https://api.osf.io/v2",
     metacheck.osf.api.calls = 0

@@ -49,6 +49,25 @@ test_that("json_expand nulls", {
                rep("parsing error", 2))
 })
 
+test_that("json_expand name conflict", {
+  table <- data.frame(
+    id = 1:5,
+    number = 1:5,
+    answer = c(
+      '{"number": 1, "letter": "A", "bool": true}',
+      '{"number": 2, "letter": "B", "bool": "FALSE"}',
+      '{"number": 3, "letter": "", "bool": null}',
+      'oh no, the LLM misunderstood',
+      '{"number": 5, "letter": ["E", "F"], "bool": false}'
+    )
+  )
+
+  expanded <- json_expand(table)
+  expect_contains(names(expanded), c("number", "number.json"))
+
+  expanded <- json_expand(table, suffix = c("_orig", "_x"))
+  expect_contains(names(expanded), c("number_orig", "number_x"))
+})
 
 test_that("json_expand multi-line", {
   table <- data.frame(
@@ -74,3 +93,33 @@ test_that("json_expand multi-line", {
   expect_equal(expanded[, 3:5], exp)
 })
 
+test_that("json_expand remove ```json", {
+  table <- data.frame(
+    id = 1:3,
+    answer = c(
+      '```json
+      [
+        {"number": 1, "letter": "A", "bool": true},
+        {"number": 2, "letter": "B", "bool": null}
+      ]
+      ```',
+      'Some gibber
+      ```json
+      [{"number": 3, "letter": "C", "bool": false}]
+      ```
+      more gibber',
+      '```json
+      ```'
+    )
+  )
+
+  exp <- data.frame(
+    number = c(1L, 2L, 3L, NA),
+    letter = c("A", "B", "C", NA),
+    bool = c(TRUE, NA, FALSE, NA)
+  )
+
+  expanded <- json_expand(table)
+
+  expect_equal(expanded[, 3:5], exp)
+})

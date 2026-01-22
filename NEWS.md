@@ -1,10 +1,18 @@
+# metacheck 0.0.0.9066
+
+* `lmm()` allows you to set the model to any provider or provider/model supported by ellmer (must have appropriate *****_API_KEY set in your Renviron)
+* `lmm()` arguments have changed to align with `ellmer::chat()` arguments
+* `lmm_models()` now returns models from all platforms for which you have a valid API key set
+* The power module uses a new prompt that utilises a JSON schema for power
+* Updated report styles
+
 # metacheck 0.0.0.9065
 
 * New `github_links()` function to find github references in a paper.
 * `code_check` module very much improved - checks SAS and STATA code in OSF, researchbox, and github repos.
 * `power` module much improved
 * New modules: `coi_check`, `funding_check`
-* New functions `extract_p_values()` and `extract_urls()`, so now no need to use `all_p_values` and `all_urls` modules to geth their tables. These modules remain because they are used in demos, but may be deprecataed soon. 
+* New functions `extract_p_values()` and `extract_urls()`, so now no need to use `all_p_values` and `all_urls` modules to get their tables. These modules remain because they are used in demos, but may be deprecated soon. 
 
 # metacheck 0.0.0.9064
 

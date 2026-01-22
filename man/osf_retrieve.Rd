@@ -22,7 +22,7 @@ a data frame of information
 Retrieve info from the OSF by ID
 }
 \examples{
-\donttest{
+\dontrun{
   # get info on one OSF node
   osf_retrieve("pngda")
 

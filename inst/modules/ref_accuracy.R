@@ -146,7 +146,6 @@ ref_accuracy <- function(paper) {
 
 
   report <- c(
-    summary_text,
     guidance,
     scroll_table(unfound_table, 5),
     scroll_table(title_table, 5),

@@ -9,7 +9,7 @@ httptest::.mockPaths("apis")
 
 # adjust to run LLM tests where wanted
 skip_llm <- function() {
-  skip("LLM")
+  #skip("LLM")
 
   # skips tests if contraindicated
   skip_on_cran()
@@ -31,4 +31,14 @@ skip_osf <- function() {
 # skip when running quick checks
 skip_if_quick <- function() {
   skip("Too long")
+}
+
+# expect pattern in x
+expect_grepl <- function(pattern, x,
+                         ignore.case = TRUE,
+                         perl = FALSE,
+                         fixed = FALSE,
+                         useBytes = FALSE) {
+  obs <- grepl(pattern, x, ignore.case, perl, fixed, useBytes)
+  expect_true(all(obs))
 }

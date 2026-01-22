@@ -30,7 +30,7 @@ file <- report(paper, modules,
 # manually check
 # browseURL(file)
 
-# automatically generate html and PDF
+# automatically generate html
 quarto::quarto_render(file, output_format = "html")
 file.copy(file, "docs/report-example.qmd", overwrite = TRUE)
 file.copy("pkgdown/assets/report-example.html", "docs/report-example.html", overwrite = TRUE)

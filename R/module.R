@@ -2,7 +2,7 @@
 #'
 #' @param paper a paper object or a list of paper objects
 #' @param module the name of a module or path to a module to run on this object
-#' @param ... further arguments to the module (e.g., arguments for the `llm()` function like `seed`); these will override any arguments in the module
+#' @param ... further arguments to the module (e.g., arguments for the `llm()` function like `params`); these will override any arguments in the module
 #'
 #' @return a list of the returned table and report text
 #' @export

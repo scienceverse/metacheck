@@ -7,7 +7,7 @@
 extract_urls(paper)
 }
 \arguments{
-\item{paper}{}
+\item{paper}{a paper object or paperlist object}
 }
 \value{
 a table

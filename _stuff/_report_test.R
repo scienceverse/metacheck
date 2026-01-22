@@ -3,6 +3,8 @@ dir <- "_stuff/report-demo"
 dir.create(dir, showWarnings = FALSE)
 
 llm_use(TRUE)
+llm_model("gemini")
+llm_model("llama-3.3-70b-versatile")
 
 # choose modules to run
 # module_list()
@@ -22,18 +24,18 @@ modules <- c(
   # in reports ----
   # "prereg_check",
   # "causal_claims",
-  "open_practices"
+  # "open_practices",
   # "funding_check",
   # "coi_check",
-  # "power",
+  "power"
   # "stat_p_exact",
   # "stat_p_nonsig",
   # "marginal",
   # "stat_effect_size",
-  # "code_check",
+  # # "code_check",
   # "stat_check",
-  # "ref_doi_check",
-  # "ref_accuracy",
+  # # "ref_doi_check",
+  # # "ref_accuracy",
   # "ref_replication",
   # "ref_retraction",
   # "ref_pubpeer"
@@ -49,7 +51,8 @@ output <- "html"
 files <- seq_along(psychsci) |> sample(n) |>
   lapply(\(i) {
     #i = which(names(psychsci) == "0956797615583071")
-    paper <- psychsci[[i]]
+    #paper <- psychsci[[i]]
+    paper <- read(demoxml())
     print(paper$id)
 
     args <- list(

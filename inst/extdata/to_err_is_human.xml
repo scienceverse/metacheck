@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
  xmlns:xlink="http://www.w3.org/1999/xlink">
 	<teiHeader xml:lang="en">
@@ -19,7 +19,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 							<persName><forename type="first">Daniel</forename><surname>Lakens</surname></persName>
 						</author>
 						<author>
-							<persName><forename type="first">Lisa</forename><surname>Debruine</surname></persName>
+							<persName><forename type="first">Lisa</forename><surname>DeBruine</surname></persName>
 						</author>
 						<title level="a" type="main">To Err is Human: An Empirical Investigation</title>
 					</analytic>

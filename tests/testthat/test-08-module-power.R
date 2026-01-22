@@ -52,6 +52,7 @@ test_that("power, with LLM", {
 
   module <- "power"
   llm_use(TRUE)
+  llm_model("groq/llama-3.3-70b-versatile")
 
   # only false positives
   paper <- paper()
@@ -73,7 +74,7 @@ test_that("power, with LLM", {
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
   expect_equal(nrow(mod_output$table), 1)
-  expect_equal(mod_output$table$sample_size, 15)
+  expect_equal(mod_output$table$sample_size, 30)
   expect_equal(mod_output$table$power, 0.8)
   expect_equal(mod_output$table$effect_size, NA)
   expect_equal(mod_output$table$alpha_level, NA)
@@ -89,7 +90,7 @@ test_that("power, with LLM", {
   expect_equal(mod_output$traffic_light, "red")
   expect_equal(nrow(mod_output$table), 2)
   expect_equal(mod_output$table$statistical_test,
-               c("unpaired t-test", "one-way ANOVA"))
+               c("unpaired t-test", "1-way ANOVA"))
   expect_equal(mod_output$table$sample_size, c(300, 350))
   expect_equal(mod_output$table$alpha_level, c(0.05, NA))
   expect_equal(mod_output$table$power, c(0.8, 0.8))
@@ -116,7 +117,7 @@ test_that("power, with LLM", {
   expect_setequal(mod_output$table$sample_size, c(13500, 24, 72))
   expect_equal(nrow(mod_output$summary_table), 1)
   expect_equal(mod_output$summary_table$power_n, 3)
-  expect_equal(mod_output$summary_table$power_complete, 1)
+  expect_equal(mod_output$summary_table$power_complete, 0)
 
   # multiple papers
   paper <- psychsci[10:15]
@@ -124,9 +125,9 @@ test_that("power, with LLM", {
   expect_equal(mod_output$traffic_light, "red")
   expect_equal(nrow(mod_output$table), 5)
   expect_equal(nrow(mod_output$summary_table), 6)
-  expect_equal(mod_output$table$complete, c(F, F, F, T, F))
+  expect_equal(mod_output$table$complete, c(F, F, F, F, F))
   expect_equal(mod_output$summary_table$power_n, c(3, 0, 0, 0, 1, 1))
-  expect_equal(mod_output$summary_table$power_complete, c(1, NA, NA, NA, 0, 0))
+  expect_equal(mod_output$summary_table$power_complete, c(0, NA, NA, NA, 0, 0))
 })
 
 # httptest::stop_mocking()

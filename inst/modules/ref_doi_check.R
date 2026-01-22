@@ -114,7 +114,6 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
   }
 
   report <- c(
-    summary_text,
     guidance,
     scroll_table(found_table)
   )

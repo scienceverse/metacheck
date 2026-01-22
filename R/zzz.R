@@ -8,10 +8,40 @@
 #' @keywords internal
 .onLoad <- function(libname, pkgname) {
   op <- options()
+
+  # check available API keys and set default LLM provider
+  api_keys <- c(
+    # most common?
+    groq = Sys.getenv("GROQ_API_KEY"),
+    openai = Sys.getenv("OPENAI_API_KEY"),
+    google_gemini = Sys.getenv("GEMINI_API_KEY"),
+    google_gemini = Sys.getenv("GOOGLE_API_KEY"),
+    # others alphabetically
+    anthropic = Sys.getenv("ANTHROPIC_API_KEY"),
+    cloudflare = Sys.getenv("CLOUDFLARE_API_KEY"),
+    deepseek = Sys.getenv("DEEPSEEK_API_KEY"),
+    huggingface = Sys.getenv("HUGGINGFACE_API_KEY"),
+    mistral = Sys.getenv("MISTRAL_API_KEY"),
+    ollama = Sys.getenv("OLLAMA_API_KEY"),
+    openrouter = Sys.getenv("OPENROUTER_API_KEY"),
+    perplexity = Sys.getenv("PERPLEXITY_API_KEY"),
+    portkey = Sys.getenv("PORTKEY_API_KEY"),
+    # No API KEYS
+    azure_openai = Sys.getenv("AZURE_OPENAI_ENDPOINT"),
+    databricks = Sys.getenv("DATABRICKS_HOST"),
+    github = Sys.getenv("GITHUB_PAT")
+  )
+  api_keys <- api_keys[api_keys != ""]
+  if (length(api_keys)) {
+    llm_model <- names(api_keys)[[1]]
+  } else {
+    llm_model <- NULL
+  }
+
   op.pkg <- list(
     metacheck.verbose = TRUE,
     metacheck.llm_max_calls = 30L,
-    metacheck.llm.model = "llama-3.3-70b-versatile",
+    metacheck.llm.model = llm_model,
     metacheck.llm.use = FALSE,
     metacheck.osf.delay = 0,
     metacheck.osf.api = "https://api.osf.io/v2",
