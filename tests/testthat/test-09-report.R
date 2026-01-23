@@ -51,6 +51,17 @@ test_that("rendering error", {
   # browseURL(report_file)
 })
 
+test_that("report return list", {
+  paper <- demoxml() |> read()
+  modules <- c("stat_p_exact", "marginal")
+  output_file <- withr::local_tempfile(fileext = ".qmd")
+  output_format <- "qmd"
+  paper_report <- report(paper, modules, output_file, output_format)
+  expect_equal(names(paper_report), modules)
+  expect_s3_class(paper_report[[1]], "metacheck_module_output")
+  expect_equal(paper_report$stat_p_exact$module, "stat_p_exact")
+})
+
 test_that("render qmd", {
   paper <- demoxml() |> read()
   modules <- c("stat_p_exact", "marginal")
