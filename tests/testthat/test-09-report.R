@@ -29,7 +29,8 @@ test_that("errors", {
 
   # format case
   ok_output_format <- "QMD"
-  expect_no_error(save_path <- report(paper, modules, output_file, ok_output_format))
+  expect_no_error(rep <- report(paper, modules, output_file, ok_output_format))
+  save_path <- attr(rep, "save_path")
   expect_equal(save_path, output_file)
 })
 
@@ -41,11 +42,12 @@ test_that("rendering error", {
 
   # qmd fails to render
   output_file <- withr::local_tempfile(fileext = paste0(".", output_format))
-  expect_warning(report_file <- report(paper, modules, output_file, output_format),
+  expect_warning(rep<- report(paper, modules, output_file, output_format),
                  "There was an error rendering your report")
 
   exp <- sub("html$", "qmd", output_file)
-  expect_equal(report_file, exp)
+  save_path <- attr(rep, "save_path")
+  expect_equal(save_path, exp)
   # browseURL(report_file)
 })
 
@@ -58,7 +60,8 @@ test_that("render qmd", {
   output_file <- withr::local_tempfile(fileext = ".qmd")
   output_format <- "qmd"
   paper_report <- report(paper, modules, output_file, output_format)
-  expect_equal(paper_report, output_file)
+  save_path <- attr(paper_report, "save_path")
+  expect_equal(save_path, output_file)
   expect_true(file.exists(output_file))
   # browseURL(output_file)
 })
@@ -72,8 +75,8 @@ test_that("render html", {
   output_file <- withr::local_tempfile(fileext = ".html")
   output_format <- "html"
 
-  save_path <- report(paper, modules, output_file, output_format)
-  #expect_equal(save_path, output_file)
+  paper_report <- report(paper, modules, output_file, output_format)
+  save_path <- attr(paper_report, "save_path")
   expect_true(file.exists(save_path))
   # browseURL(html)
 })
@@ -90,9 +93,10 @@ test_that("report pass args", {
                                 irrelevant_arg = 1:10)
   )
   r <- report(paper, modules, output_file, output_format, args = args)
+  save_path <- attr(r, "save_path")
   # browseURL(r)
 
-  qmd_txt <- readLines(r)
+  qmd_txt <- readLines(save_path)
   find_arg <- grepl(args$`modules/no_error.R`$demo_arg, qmd_txt, fixed = TRUE)
   expect_true(any(find_arg))
 
@@ -153,7 +157,8 @@ test_that("detected", {
                          output_file = qmd,
                          output_format = "qmd"
   )
-  expect_equal(paper_report, qmd)
+  save_path <- attr(paper_report, "save_path")
+  expect_equal(save_path, qmd)
   expect_true(file.exists(qmd))
   # rstudioapi::documentOpen(qmd)
 
