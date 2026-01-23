@@ -19,11 +19,12 @@ doi_count <- list(
 # look up cleaned and valid DOIs ----
 doi <- clean_dois[valid_dois]
 
+# this code checks the first 1000 references ----
 # subset <- 1:1000
 # unresolved_dois <- !doi_resolves(doi[subset])
 # doi[subset][unresolved_dois] |> dput()
 
-# unresolvable DOIs from first 1000 refs checked
+# unresolvable DOIs from first 1000 refs checked ----
 unres <- c("10.1037/0033-2909.115", # imported as written
            "10.1146/annurevclinpsy-032210-104544", # imported as written,
                                                    # line break but no - between annurev and clinpsy
@@ -80,7 +81,7 @@ cr <- crossref_query(df$ref)
 df$cr_doi <- cr$DOI
 df$cr_title <- cr$title
 
-# they all seem to be badly parsed, manaully review
+# they all seem to be badly parsed, manually review
 i = 1
 df$doi[[i]]
 df$cr_doi[[i]]
@@ -111,4 +112,5 @@ paste0("data-raw/psychsci/pdf/", invalid$paper_id[[2]], ".pdf") |>
 
 
 # check title/author mismatches ----
+
 

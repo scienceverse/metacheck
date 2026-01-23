@@ -214,7 +214,8 @@ report <- function(paper,
 
   pb$tick(tokens = list(what = "Report Saved"))
 
-  invisible(save_path)
+  attr(module_output, "save_path") <- save_path
+  invisible(module_output)
 }
 
 #' Report from module output

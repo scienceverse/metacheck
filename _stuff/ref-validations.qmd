@@ -1,0 +1,43 @@
+---
+title: "Ref Module Validations"
+format: 
+  html:
+    df-print: paged
+---
+
+```{r}
+# devtools::install_github("scienceverse/metacheck")
+library(metacheck)
+```
+
+Define paper
+
+```{r}
+paper <- read(demoxml())
+```
+
+Get DOI check
+
+```{r}
+doi_mod <- module_run(paper, "ref_doi_check")
+doi_table <- doi_mod$table
+```
+```{r}
+
+```
+
+
+Get accuracy check
+
+```{r}
+accuracy_mod <- module_run(paper, "ref_accuracy")
+accuracy_table <- accuracy_mod$table
+```
+
+
+```{r}
+accuracy_table |> dplyr::select(xref_id:author_mismatch)
+```
+
+
+

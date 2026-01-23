@@ -32,7 +32,7 @@ A helper function for making module reports.
 \details{
 See \href{https://quarto.org/docs/authoring/article-layout.html}{quarto article layout} for column options. The most common are "body" (centre column), "page" (span all columns"), and "margin" (only in right margin).
 
-To set colwidths, use a numeric or character vector. For a numeric vector, numbers greater than 1 wil be interpreted as pixels, less than 1 as percents. Character vectors will be passed as is (e.g., "3em"). If you only want to specify some columns, set the others to NA, like c(200, NA, NA, NA). Vectors shorter than the number of columns will be recycled.
+To set colwidths, use a numeric or character vector. For a numeric vector, numbers greater than 1 will be interpreted as pixels, less than 1 as percents. Character vectors will be passed as is (e.g., "3em"). If you only want to specify some columns, set the others to NA, like c(200, NA, 200, NA).
 }
 \examples{
 scroll_table(LETTERS)
