@@ -135,7 +135,7 @@ llm <- function(text, system_prompt,
 #' }
 llm_model_list <- function(platform = NULL) {
   # get all ellmer models_* functions
-  ef <- utils::getNamespaceExports("ellmer") |>
+  ef <- getNamespaceExports("ellmer") |>
     grep("models_.+", x = _, value = TRUE)
   names(ef) <- gsub("models_", "", ef)
   funcs <- lapply(ef, \(x) getFromNamespace(x, "ellmer"))
