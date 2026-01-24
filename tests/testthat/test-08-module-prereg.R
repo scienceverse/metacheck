@@ -1,4 +1,4 @@
-# httptest::start_capturing()
+#httptest::start_capturing()
 httptest::use_mock_api()
 
 test_that("multiple prereg", {
@@ -57,6 +57,18 @@ test_that("osf_pr_31", {
   expect_equal(mo$table$id, guid)
 })
 
+test_that("osf_pre", {
+  paper <- paper()
+  paper$full_text <- data.frame(text = "")
+
+  guid <- "dr42m"
+  paper$full_text$text[[1]] <- paste0("https://osf.io/", guid)
+  mo <- module_run(paper, "prereg_check")
+  expect_equal(nrow(mo$table), 1)
+  expect_equal(mo$table$template_name, "OSF-Standard Pre-Data Collection Registration")
+  expect_equal(mo$table$id, guid)
+})
+
 test_that("prap", {
   paper <- paper()
   paper$full_text <- data.frame(text = "")
@@ -82,4 +94,4 @@ test_that("rrbrandt", {
 })
 
 httptest::stop_mocking()
-# httptest::stop_capturing()
+#httptest::stop_capturing()

@@ -138,7 +138,7 @@ llm_model_list <- function(platform = NULL) {
   ef <- getNamespaceExports("ellmer") |>
     grep("models_.+", x = _, value = TRUE)
   names(ef) <- gsub("models_", "", ef)
-  funcs <- lapply(ef, \(x) getFromNamespace(x, "ellmer"))
+  funcs <- lapply(ef, \(x) utils::getFromNamespace(x, "ellmer"))
   # ellmer doesn't have a groq model function, so use ours
   funcs$groq <- models_groq
 

@@ -121,9 +121,11 @@ prereg_check <- function(paper) {
                           nrow(prereg_info), nrow(prereg_info) |> plural())
 
   # report ----
+  has_sample_size <- "sample_size" %in% names(prereg_info)
   report_text <- sprintf(
-    "Meta-scientific research has shown that deviations from preregistrations are often not reported or checked, and that the most common deviations concern the sample size. We recommend manually checking the full preregistration at the link%s below, and have provided the preregistered sample size.",
-    nrow(prereg_info) |> plural())
+    "Meta-scientific research has shown that deviations from preregistrations are often not reported or checked, and that the most common deviations concern the sample size. We recommend manually checking the full preregistration at the link%s below%s.",
+    nrow(prereg_info) |> plural(),
+    ifelse(has_sample_size, ", and have provided the preregistered sample size", ""))
 
   prereg_link_table <- data.frame(
     id = link(prereg_info$link, prereg_info$id),
@@ -131,7 +133,11 @@ prereg_check <- function(paper) {
     template = prereg_info$template_name
   )
 
-  samplesize_table <- prereg_info[, c("id", "sample_size")]
+  if (has_sample_size) {
+    samplesize_table <- prereg_info[, c("id", "sample_size")]
+  } else {
+    samplesize_table <- NULL
+  }
 
   ## summary output for paperlists ----
   summary_table <- dplyr::count(prereg_info, id,
@@ -153,7 +159,7 @@ prereg_check <- function(paper) {
 
   ## guidance ----
   guidance <- c(
-    "For metascientific articles demonstrating the rate of deviationsfrom preregistrations, see:",
+    "For metascientific articles demonstrating the rate of deviations from preregistrations, see:",
     format_ref(vandenAkker2024),
     "For educational material on how to report deviations from preregistrations, see:",
     format_ref(Lakens2024)
@@ -299,7 +305,7 @@ osfpre <- function(info) {
   c(common, extra)
 }
 
-## Open-Ended Registration----
+## Open-Ended Registration ----
 oer <- function(info) {
   ra <- info$attributes
   prereg_answers <- ra$registration_responses

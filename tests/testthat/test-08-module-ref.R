@@ -1,4 +1,4 @@
-# httptest::start_capturing()
+#httptest::start_capturing()
 httptest::use_mock_api()
 
 test_that("ref_doi_check", {
@@ -193,4 +193,4 @@ test_that("ref_miscitation", {
 })
 
 httptest::stop_mocking()
-# httptest::stop_capturing()
+#httptest::stop_capturing()
