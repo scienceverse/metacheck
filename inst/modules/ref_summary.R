@@ -57,11 +57,10 @@ ref_summary <- function(paper, ...) {
   table <- paper$bib
   table$ref <- format_ref(table$ref)
 
-  ## doi_check and accuracy -----
-  doi_acc <- dplyr::bind_rows(tables$doi_check, tables$accuracy)
-  if (!is.null(doi_acc) && nrow(doi_acc) > 0) {
-    cols <- setdiff(names(doi_acc), "ref")
-    tbl <- doi_acc[, cols]
+  ## accuracy -----
+  if (!is.null(tables$accuracy) && nrow(tables$accuracy) > 0) {
+    cols <- setdiff(names(tables$accuracy), c("ref", "orig_title", "orig_authors"))
+    tbl <- tables$accuracy[, cols]
     not_id <- !names(tbl) %in% c("id", "xref_id")
     names(tbl)[not_id] <- paste0("crossref_", names(tbl)[not_id])
     table <- dplyr::left_join(table, tbl, by = c("id", "xref_id"))
@@ -89,7 +88,6 @@ ref_summary <- function(paper, ...) {
     tbl <- tables$retraction[, cols]
     table <- dplyr::left_join(table, tbl, by = c("id", "xref_id"))
   }
-
 
   ## traffic light ----
   tl <- "info"

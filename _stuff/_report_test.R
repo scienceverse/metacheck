@@ -36,9 +36,9 @@ modules <- c(
   # "stat_check",
   "ref_doi_check",
   "ref_accuracy",
-  "ref_replication",
-  "ref_retraction",
-  "ref_pubpeer",
+  # "ref_replication",
+  # "ref_retraction",
+  # "ref_pubpeer",
   "ref_summary"
 )
 
@@ -53,7 +53,7 @@ files <- seq_along(psychsci) |> sample(n) |>
   lapply(\(i) {
     #i = which(names(psychsci) == "0956797615583071")
     paper <- psychsci[[i]]
-    #paper <- read(demoxml())
+    paper <- read(demoxml())
     print(paper$id)
 
     args <- list(

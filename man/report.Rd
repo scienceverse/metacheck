@@ -9,13 +9,13 @@ report(
   modules = c("prereg_check", "funding_check", "coi_check", "power", "code_check",
     "stat_check", "stat_p_exact", "stat_p_nonsig", "stat_effect_size", "marginal",
     "ref_doi_check", "ref_replication", "ref_retraction", "ref_pubpeer", "ref_summary"),
-  output_file = paste0(paper$name, "_report.", output_format),
+  output_file = paste0(paper$id, "_report.", output_format),
   output_format = c("html", "qmd"),
   args = list()
 )
 }
 \arguments{
-\item{paper}{a paper object}
+\item{paper}{a paper object or a paperlist object}
 
 \item{modules}{a vector of modules to run (names for built-in modules or paths for custom modules)}
 

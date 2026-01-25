@@ -14,9 +14,9 @@ format:
     toc: true
     toc-title: >
       <ul class="emoji-key">
-        <li class="green">✅️ no problems detected;</li>  
+        <li class="red">⚠️ possible problems detected;</li> 
         <li class="yellow">🔍 something to check;</li> 
-        <li class="red">⚠️ possible problems detected;</li>  
+        <li class="green">✅️ no problems detected;</li>  
         <li class="info">ℹ️ informational only;</li>  
         <li class="na">⚪️ not applicable;</li>  
         <li class="fail">☠️ check failed</li>

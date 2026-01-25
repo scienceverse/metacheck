@@ -49,6 +49,17 @@ test_that("ref_accuracy", {
   expect_equal(mod_output$summary_table$author_mismatch, 0)
 })
 
+test_that("ref_doi_check + ref_accuracy", {
+  skip_if_offline("api.labs.crossref.org")
+
+  paper <- read(demoxml())
+  mod_output <- paper |>
+    module_run("ref_doi_check") |>
+    module_run("ref_accuracy")
+
+  expect_equal(nrow(mod_output$table), nrow(paper$bib))
+})
+
 
 test_that("ref_replication", {
   module <- "ref_replication"

@@ -4,7 +4,13 @@
 \alias{crossref_query}
 \title{Look up Reference in CrossRef}
 \usage{
-crossref_query(ref, min_score = 50, rows = 1)
+crossref_query(
+  ref,
+  min_score = 50,
+  rows = 1,
+  select = c("DOI", "score", "type", "title", "author", "container-title", "published",
+    "volume", "issue", "page", "URL", "abstract")
+)
 }
 \arguments{
 \item{ref}{the full text reference of the paper to get info for, see Details}
@@ -12,6 +18,8 @@ crossref_query(ref, min_score = 50, rows = 1)
 \item{min_score}{minimal score that is taken to be a reliable match (default 50)}
 
 \item{rows}{the maximum number of rows to return per reference (default 1)}
+
+\item{select}{what fields to select from the crossref API}
 }
 \value{
 doi
@@ -20,12 +28,12 @@ doi
 Look up Reference in CrossRef
 }
 \details{
-The argument \code{ref} can take many formats.  Crossref queries only look for authors, title, and container-title (e.g., journal or book), but extra infomration doesn't seem to hurt.
+The argument \code{ref} can take many formats.  Crossref queries only look for authors, title, and container-title (e.g., journal or book), but extra information doesn't seem to hurt.
 \itemize{
 \item be a text reference or fragment
-\item a bibentry object (authors, ttle and container will be extracted)
+\item a bibentry object (authors, title and container will be extracted)
 \item a vector of text or bibentry objects
-\item a paper object (the ref colum of the bib table will be extracted)
+\item a paper object (the ref column of the bib table will be extracted)
 }
 }
 \examples{

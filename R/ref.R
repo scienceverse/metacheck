@@ -237,17 +237,17 @@ crossref_doi <- function(doi, select = c("DOI",
 #' Look up Reference in CrossRef
 #'
 #' @details
-#' The argument `ref` can take many formats.  Crossref queries only look for authors, title, and container-title (e.g., journal or book), but extra infomration doesn't seem to hurt.
+#' The argument `ref` can take many formats.  Crossref queries only look for authors, title, and container-title (e.g., journal or book), but extra information doesn't seem to hurt.
 #'
 #' - be a text reference or fragment
-#' - a bibentry object (authors, ttle and container will be extracted)
+#' - a bibentry object (authors, title and container will be extracted)
 #' - a vector of text or bibentry objects
-#' - a paper object (the ref colum of the bib table will be extracted)
-#'
+#' - a paper object (the ref column of the bib table will be extracted)
 #'
 #' @param ref the full text reference of the paper to get info for, see Details
 #' @param min_score minimal score that is taken to be a reliable match (default 50)
 #' @param rows the maximum number of rows to return per reference (default 1)
+#' @param select what fields to select from the crossref API
 #'
 #' @return doi
 #' @export
@@ -260,7 +260,20 @@ crossref_doi <- function(doi, select = c("DOI",
 #' \donttest{
 #'   cr <- crossref_query(ref)
 #' }
-crossref_query <- function(ref, min_score = 50, rows = 1) {
+crossref_query <- function(ref, min_score = 50, rows = 1,
+                           select = c("DOI",
+                                      "score",
+                                      "type",
+                                      "title",
+                                      "author",
+                                      "container-title",
+                                      "published",
+                                      "volume",
+                                      "issue",
+                                      "page",
+                                      "URL",
+                                      "abstract"
+                                    )) {
   if (is_paper(ref)) {
     # pull the whole reference list
     paper <- ref
@@ -302,22 +315,6 @@ crossref_query <- function(ref, min_score = 50, rows = 1) {
     return(data.frame(ref = ref, DOI = NA, error = "offline"))
   }
 
-
-  select <- c(
-    "DOI",
-    "score",
-    "type",
-    "title",
-    "author",
-    "container-title",
-    "published",
-    "volume",
-    "issue",
-    "page",
-    "URL",
-    "abstract"
-  )
-
   query <- utils::URLencode(ref, reserved = TRUE) |>
     # fix problems with crossref's Lucene / Solr-style query parser
     gsub("%28", "(", x = _) |>
@@ -326,7 +323,7 @@ crossref_query <- function(ref, min_score = 50, rows = 1) {
   url <- sprintf("https://api.crossref.org/works?mailto=%s&rows=%d&sort=score&select=%s&query.bibliographic=%s",
                  email(),
                  rows,
-                 paste(select, collapse = ","),
+                 c(select, "score") |> unique() |> paste(collapse = ","),
                  query)
 
 
@@ -349,7 +346,7 @@ crossref_query <- function(ref, min_score = 50, rows = 1) {
     items <- items[scores >= min_score]
   }
 
-  # parse the response into a table
+  # parse the response into a table (works even if cols missing)
   parsed_items <- lapply(items, \(item) {
     # item <- items[[1]] # for testing
     item$title <- item$title[[1]]
@@ -375,7 +372,8 @@ crossref_query <- function(ref, min_score = 50, rows = 1) {
   table <- do.call(dplyr::bind_rows, parsed_items)
   table$ref <- ref
   rows <- table$score >= min_score
-  cols <- intersect(select, names(table)) |> c("ref", x = _, "year")
+  cols <- c("ref", select, "year") |>
+    intersect(names(table))
   table[rows, cols]
 }
 

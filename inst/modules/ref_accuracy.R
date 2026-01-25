@@ -4,9 +4,9 @@
 #' This module checks references for mismatches with CrossRef.
 #'
 #' @details
-#' It only looks up the DOIs originally present in your paper (not those found by ref_doi_check) and returns the bibliographic information.
+#' It looks up the DOIs originally present in your paper (not those found by ref_doi_check) and returns the bibliographic information.
 #'
-#' We then check that the title from your reference section is the same as the retrieved title (ignoring differences in capitalisation) and that all author last names in your reference section are also in the retrieved author list (we do not check first names or order yet).
+#' We then check that the title from your reference section is the same as the retrieved title (ignoring differences in capitalisation) and that all author last names in your reference section are also in the retrieved author list (we do not check first names or order yet). This check is done for all references with crossref entries, including those found by ref_doi_check, if it was previously run.
 #'
 #' Mismatches may be because of problems with our parsing of references from your PDF (we're working on improving this), incorrect formatting in CrossRef, or minor differences in punctuation.
 #'
@@ -24,8 +24,8 @@ ref_accuracy <- function(paper) {
   # for testing: paper <- psychsci[[109]]
 
   # table ----
-  bib <- concat_tables(paper, "bib")
-  bib <- bib[!is.na(bib$doi), ]
+  all_bib <- concat_tables(paper, "bib")
+  bib <- all_bib[!is.na(all_bib$doi), ]
 
   # If there are no rows, return immediately
   if (nrow(bib) == 0) {
@@ -52,10 +52,20 @@ ref_accuracy <- function(paper) {
     return(error)
   }
 
+  # add in missing DOI is there
+  missing_doi <- get_prev_outputs("ref_doi_check", "table")
+  # missing_doi <- module_run(paper, "ref_doi_check")$table
+  table <- dplyr::bind_rows(table, missing_doi)
+
   # missing references
   table$ref_not_found <- !is.na(table$DOI) & is.na(table$type)
 
   ## other mismatches ----
+  aut_title <- dplyr::select(all_bib,
+                             id, xref_id,
+                             orig_authors = authors,
+                             orig_title = title)
+  table <- dplyr::left_join(table, aut_title, by = c("id", "xref_id"))
 
   # clean up text to prevent irrelevant mismatches
   clean <- \(x) {
@@ -67,7 +77,7 @@ ref_accuracy <- function(paper) {
   }
 
   table$title_mismatch <- {
-    bib_title <- clean(bib$title)
+    bib_title <- clean(table$orig_title)
     cr_title <- clean(table$title)
     pre_bib_title <- strsplit(bib_title, ":") |> sapply(`[[`, 1)
     pre_cr_title <- strsplit(cr_title, ":") |> sapply(`[[`, 1)
@@ -81,7 +91,7 @@ ref_accuracy <- function(paper) {
     sapply(seq_along(table$author), \(i) {
       if (is.null(table$author[[i]]) || nrow(table$author[[i]]) == 0) return(FALSE)
       cr_auth <- clean(table$author[[i]]$family)
-      bib_auth <- clean(bib$authors[[i]])
+      bib_auth <- clean(table$orig_authors[[i]])
       in_auth <- sapply(cr_auth, grepl, x = bib_auth)
 
       !all(in_auth)
@@ -126,24 +136,18 @@ ref_accuracy <- function(paper) {
   names(unfound_table) <- c("Unfound Reference")
 
   ## title mismatches ----
-  title_table <- table[table$title_mismatch, c("ref", "title")]
-  if (nrow(title_table)) {
-    title_table$orig <- bib$title[table$title_mismatch]
-    title_table <- title_table[, c("orig", "title", "ref")]
-    names(title_table) <- c("Original Title", "CrossRef Title", "Reference")
-  }
+  title_table <- table[table$title_mismatch, c("orig_title", "title", "ref")]
+  names(title_table) <- c("Original Title", "CrossRef Title", "Reference")
 
   ## author mismatches ----
-  author_table <- table[table$author_mismatch, c("ref", "author")]
+  author_table <- table[table$author_mismatch, c("orig_authors", "author", "ref")]
   if (nrow(author_table)) {
-    author_table$orig <- bib$authors[table$author_mismatch]
     author_table$cr <- sapply(author_table$author, \(a) {
       paste(substr(a$given, 1, 1), a$family, collapse = ", ")
     })
-    author_table <- author_table[, c("orig", "cr", "ref")]
+    author_table <- author_table[, c("orig_authors", "cr", "ref")]
     names(author_table) <- c("Original Authors", "CrossRef Authors", "Reference")
   }
-
 
   report <- c(
     guidance,
@@ -151,7 +155,6 @@ ref_accuracy <- function(paper) {
     scroll_table(title_table, 5),
     scroll_table(author_table, 5)
   )
-
 
   # return a list ----
   list(
