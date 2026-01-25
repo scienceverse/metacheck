@@ -16,7 +16,7 @@
 #'     '{"number": "1", "letter": "A", "bool": true}',
 #'     '{"number": "2", "letter": "B", "bool": "FALSE"}',
 #'     '{"number": "3", "letter": "", "bool": null}',
-#'     'oh no, the LLM misunderstood',
+#'     "oh no, the LLM misunderstood",
 #'     '{"number": "5", "letter": ["E", "F"], "bool": false}'
 #'   )
 #' )
@@ -33,32 +33,35 @@ json_expand <- function(table, col = "answer", suffix = c("", ".json")) {
   # expand JSON text
   to_expand <- table[[col]]
   expanded <- lapply(seq_along(to_expand), \(i) {
-    tryCatch({
-      json <- gsub('"null"', "null", to_expand[[i]])
-      json <- gsub('.*```json\\s*\\n', "", json)
-      json <- gsub('\\n\\s*```.*', "", json)
-      j <- jsonlite::fromJSON(json)
-      if (length(j) == 0) {
-        j <- data.frame(error = NA_character_)
+    tryCatch(
+      {
+        json <- gsub('"null"', "null", to_expand[[i]])
+        json <- gsub(".*```json\\s*\\n", "", json)
+        json <- gsub("\\n\\s*```.*", "", json)
+        j <- jsonlite::fromJSON(json)
+        if (length(j) == 0) {
+          j <- data.frame(error = NA_character_)
+        }
+
+        if (is.atomic(j) && is.null(names(j))) {
+          j <- data.frame(error = "not a list")
+        }
+
+        # j <- lapply(j, \(x) I(list(x)))
+        if (!is.data.frame(j)) {
+          j <- lapply(j, paste, collapse = ";")
+        }
+
+        # make all character to avoid bind conflicts
+        j[] <- lapply(j, as.character)
+        j$.temp_id. <- i
+
+        j
+      },
+      error = \(e) {
+        return(data.frame(.temp_id. = i, error = "parsing error"))
       }
-
-      if (is.atomic(j) && is.null(names(j))) {
-        j <- data.frame(error = "not a list")
-      }
-
-      # j <- lapply(j, \(x) I(list(x)))
-      if (!is.data.frame(j)) {
-        j <- lapply(j, paste, collapse = ";")
-      }
-
-      # make all character to avoid bind conflicts
-      j[] <- lapply(j, as.character)
-      j$.temp_id. <- i
-
-      j
-    }, error = \(e) {
-      return(data.frame(.temp_id. = i, error = "parsing error"))
-    })
+    )
   }) |>
     do.call(dplyr::bind_rows, args = _)
 

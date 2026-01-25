@@ -22,7 +22,7 @@
 #' search_text(paper, "p\\s*(=|<)\\s*[0-9\\.]+", return = "match")
 search_text <- function(paper, pattern = ".*",
                         section = NULL,
-                        return = c("sentence", "paragraph", "div",  "section", "match", "id"),
+                        return = c("sentence", "paragraph", "div", "section", "match", "id"),
                         ignore.case = TRUE,
                         fixed = FALSE,
                         perl = FALSE,
@@ -50,12 +50,17 @@ search_text <- function(paper, pattern = ".*",
 
   # test pattern for errors (TODO: deal with warnings + errors)
   test_pattern <- tryCatch(
-    grep(pattern, "test", ignore.case = ignore.case,
-         perl = perl, fixed = fixed),
+    grep(pattern, "test",
+      ignore.case = ignore.case,
+      perl = perl, fixed = fixed
+    ),
     error = function(e) {
       stop("Check the pattern argument in '", pattern, "':\n",
-           e$message, call. = FALSE)
-    })
+        e$message,
+        call. = FALSE
+      )
+    }
+  )
 
   if (is.data.frame(paper)) {
     full_text <- paper
@@ -76,24 +81,33 @@ search_text <- function(paper, pattern = ".*",
 
   # filter full text by section ----
   section_filter <- seq_along(full_text$section)
-  if (!is.null(section))
+  if (!is.null(section)) {
     section_filter <- full_text$section %in% section
+  }
   ft <- full_text[section_filter, ]
 
   # get all rows with a text match ----
   match_rows <- tryCatch(
-    grepl(pattern, ft$text, ignore.case = ignore.case,
-         perl = perl, fixed = fixed),
-    error = function(e) { stop(e) },
+    grepl(pattern, ft$text,
+      ignore.case = ignore.case,
+      perl = perl, fixed = fixed
+    ),
+    error = function(e) {
+      stop(e)
+    },
     warning = function(w) {}
   )
 
   # add all rows with a header match ----
   if (search_header) {
     header_match_rows <- tryCatch(
-      grepl(pattern, ft$header, ignore.case = ignore.case,
-            perl = perl, fixed = fixed),
-      error = function(e) { stop(e) },
+      grepl(pattern, ft$header,
+        ignore.case = ignore.case,
+        perl = perl, fixed = fixed
+      ),
+      error = function(e) {
+        stop(e)
+      },
       warning = function(w) {}
     )
     match_rows <- match_rows | header_match_rows
@@ -110,8 +124,9 @@ search_text <- function(paper, pattern = ".*",
   } else if (return == "match") {
     ft_match_all <- ft_match
     matches <- gregexpr(pattern, ft_match$text,
-                        ignore.case = ignore.case,
-                        perl = perl, fixed = fixed)
+      ignore.case = ignore.case,
+      perl = perl, fixed = fixed
+    )
     ft_match_all$text <- regmatches(ft_match$text, matches)
     text_lens <- sapply(ft_match_all$text, length)
     rowrep <- rep(seq_along(text_lens), text_lens)
@@ -122,8 +137,10 @@ search_text <- function(paper, pattern = ".*",
   } else {
     # recombine paragraphs first
     pgroups <- c("section", "header", "div", "p", "id")
-    ft_p <- dplyr::summarise(ft, text = paste(text, collapse = " "),
-                             .by = dplyr::all_of(pgroups))
+    ft_p <- dplyr::summarise(ft,
+      text = paste(text, collapse = " "),
+      .by = dplyr::all_of(pgroups)
+    )
 
     if (return == "paragraph") {
       groups <- c("section", "header", "div", "p", "id")
@@ -136,8 +153,10 @@ search_text <- function(paper, pattern = ".*",
     }
 
     ft_match_all <- dplyr::semi_join(ft_p, ft_match, by = groups) |>
-      dplyr::summarise(text = paste(text, collapse = paragraph_marker),
-                       .by = dplyr::all_of(groups))
+      dplyr::summarise(
+        text = paste(text, collapse = paragraph_marker),
+        .by = dplyr::all_of(groups)
+      )
   }
 
   all_cols <- names(ft)
@@ -152,7 +171,7 @@ search_text <- function(paper, pattern = ".*",
     missing_cols <- setdiff(all_cols, names(ft_match_all))
     for (mc in missing_cols) {
       ft_match_all[[mc]] <- NA
-      #ft_match_all[[mc]] <- methods::as(ft_match_all[[mc]], typeof(ft[[mc]]))
+      # ft_match_all[[mc]] <- methods::as(ft_match_all[[mc]], typeof(ft[[mc]]))
     }
     ft_match_all <- ft_match_all[, all_cols]
   } else {
@@ -168,5 +187,3 @@ search_text <- function(paper, pattern = ".*",
 
   return(ft_match_unique)
 }
-
-

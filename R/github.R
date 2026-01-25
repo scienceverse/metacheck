@@ -40,11 +40,13 @@ github_links <- function(paper) {
 #'
 #' @examples
 #' \donttest{
-#'   github_info("scienceverse/metacheck")
+#' github_info("scienceverse/metacheck")
 #' }
 github_info <- function(repo, recursive = FALSE) {
   repo <- github_repo(repo)
-  if (is.null(repo)) return(NULL)
+  if (is.null(repo)) {
+    return(NULL)
+  }
 
   readme <- github_readme(repo)
   languages <- github_languages(repo)
@@ -70,7 +72,9 @@ github_info <- function(repo, recursive = FALSE) {
 #' github_repo("https://github.com/scienceverse/metacheck/")
 #' github_repo("https://github.com/scienceverse/metacheck.git")
 github_repo <- function(repo) {
-  if (length(repo) == 0) return(NULL)
+  if (length(repo) == 0) {
+    return(NULL)
+  }
 
   if (length(repo) > 1) {
     res <- sapply(repo, github_repo)
@@ -79,7 +83,9 @@ github_repo <- function(repo) {
 
   # get repo name ----
   match <- regexec("(?<=^|/)([a-z0-9-])+/([a-z0-9\\._-])+(?=\\.git|/|$)",
-                   repo, perl = TRUE, ignore.case = TRUE)
+    repo,
+    perl = TRUE, ignore.case = TRUE
+  )
 
   simple_repo <- regmatches(repo, match)[[1]][[1]] |>
     sub("\\.git$", "", x = _)
@@ -103,7 +109,7 @@ github_repo <- function(repo) {
 #'
 #' @examples
 #' \donttest{
-#'   github_readme("scienceverse/metacheck")
+#' github_readme("scienceverse/metacheck")
 #' }
 github_readme <- function(repo) {
   if (length(repo) > 1) {
@@ -112,7 +118,9 @@ github_readme <- function(repo) {
   }
 
   repo <- github_repo(repo)
-  if (is.null(repo)) return("")
+  if (is.null(repo)) {
+    return("")
+  }
 
   readme_url <- sprintf(
     "https://api.github.com/repos/%s/readme",
@@ -121,7 +129,7 @@ github_readme <- function(repo) {
 
   results <- httr::GET(readme_url, github_config())
   if (results$status_code == 200) {
-    content <-  httr::content(results, "parsed")
+    content <- httr::content(results, "parsed")
     readme <- base64enc::base64decode(content$content) |> rawToChar()
   } else {
     readme <- ""
@@ -141,7 +149,7 @@ github_readme <- function(repo) {
 #'
 #' @examples
 #' \donttest{
-#'   github_files("scienceverse/metacheck")
+#' github_files("scienceverse/metacheck")
 #' }
 github_files <- function(repo, dir = "",
                          recursive = FALSE) {
@@ -158,7 +166,9 @@ github_files <- function(repo, dir = "",
   }
 
   clean_repo <- github_repo(repo)
-  if (is.null(clean_repo)) return(NULL)
+  if (is.null(clean_repo)) {
+    return(NULL)
+  }
 
   url <- sprintf(
     "https://api.github.com/repos/%s/contents/%s",
@@ -168,7 +178,7 @@ github_files <- function(repo, dir = "",
 
   response <- httr::GET(url, github_config())
   headers <- httr::headers(response)
-  contents <-  httr::content(response, "parsed")
+  contents <- httr::content(response, "parsed")
 
   if (response$status_code != 200) {
     if (as.integer(headers$`x-ratelimit-remaining`) == 0) {
@@ -204,9 +214,12 @@ github_files <- function(repo, dir = "",
   files <- sort_by(files, files$path)
   files$ext <- strsplit(files$name, "\\.") |>
     sapply(\(x) {
-      if (length(x) < 2) return("")
+      if (length(x) < 2) {
+        return("")
+      }
       x[[length(x)]]
-    }) |> tolower()
+    }) |>
+    tolower()
   files <- dplyr::left_join(files, metacheck::file_types, by = "ext")
   files$type[is.na(files$type)] <- files$ft[is.na(files$type)]
   files$ft <- NULL
@@ -265,7 +278,7 @@ github_config <- function() {
 #'
 #' @examples
 #' \donttest{
-#'   github_languages("scienceverse/metacheck")
+#' github_languages("scienceverse/metacheck")
 #' }
 github_languages <- function(repo) {
   if (length(repo) > 1) {
@@ -275,7 +288,9 @@ github_languages <- function(repo) {
   }
 
   repo <- github_repo(repo)
-  if (is.null(repo)) return(NULL)
+  if (is.null(repo)) {
+    return(NULL)
+  }
 
   url <- sprintf(
     "https://api.github.com/repos/%s/languages",

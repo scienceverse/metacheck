@@ -10,12 +10,13 @@
 #' @examples
 #' info_table(psychsci[1:10])
 info_table <- function(paper,
-                       info = c("filename",
-                                "title",
-                                "keywords",
-                                "doi"),
-                       path = c("relative", "absolute")
-                       ) {
+                       info = c(
+                         "filename",
+                         "title",
+                         "keywords",
+                         "doi"
+                       ),
+                       path = c("relative", "absolute")) {
   if (is_paper(paper)) {
     one_paper <- paper
     paper <- list(one_paper)
@@ -53,7 +54,9 @@ info_table <- function(paper,
   if ("filename" %in% info) {
     df$filename <- normalizePath(df$filename, mustWork = FALSE)
     if (match.arg(path) == "relative") {
-      wd <- getwd() |> normalizePath() |> paste0("/")
+      wd <- getwd() |>
+        normalizePath() |>
+        paste0("/")
       df$filename <- gsub(wd, "", df$filename, fixed = TRUE)
     }
   }

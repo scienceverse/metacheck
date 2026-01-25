@@ -15,9 +15,9 @@ distinctive_words <- function(text, classification,
                               stop_words = c(),
                               numbers = c("any", "specific", "remove"),
                               stem_language = "porter",
-                              min_total = length(text)/10) {
+                              min_total = length(text) / 10) {
   word <- n_0 <- n_1 <- freq_0 <- freq_1 <-
-    total <- difference <- NULL  # ugh cmdcheck
+    total <- difference <- NULL # ugh cmdcheck
 
   ground_truth <- data.frame(
     text = text,
@@ -58,9 +58,11 @@ distinctive_words <- function(text, classification,
   # select important words ----
   word_importance <- word_frequencies |>
     dplyr::count(classification, word, sort = TRUE) |>
-    tidyr::pivot_wider(names_from = classification,
-                values_from = n,
-                values_fill = 0)
+    tidyr::pivot_wider(
+      names_from = classification,
+      values_from = n,
+      values_fill = 0
+    )
 
   class_cats <- names(word_importance)[2:3]
 
@@ -68,17 +70,19 @@ distinctive_words <- function(text, classification,
     stats::setNames(c("word", "n_0", "n_1")) |>
     dplyr::mutate(
       total = n_0 + n_1,
-      freq_0 = n_0/sum(classification == class_cats[1]),
-      freq_1 = n_1/sum(classification == class_cats[2]),
+      freq_0 = n_0 / sum(classification == class_cats[1]),
+      freq_1 = n_1 / sum(classification == class_cats[2]),
       difference = abs(freq_0 - freq_1)
     ) |>
     dplyr::filter(total >= min_total) |>
     dplyr::arrange(dplyr::desc(difference)) |>
-    stats::setNames(c("word",
-                      paste0("n_", class_cats),
-                      "total",
-                      paste0("freq_", class_cats),
-                      "difference"))
+    stats::setNames(c(
+      "word",
+      paste0("n_", class_cats),
+      "total",
+      paste0("freq_", class_cats),
+      "difference"
+    ))
 
   # Return top N most distinctive words
   return(utils::head(word_importance, n))
@@ -102,7 +106,7 @@ text_features <- function(text, words,
                           has_symbol = c(has_equals = "="),
                           stem_language = "porter",
                           values = c("presence", "count")) {
-  word <- id <- n <- NULL  # ugh cmdcheck
+  word <- id <- n <- NULL # ugh cmdcheck
 
   if (is.data.frame(words)) {
     words <- words$word
@@ -137,9 +141,11 @@ text_features <- function(text, words,
   }
 
   word_features <- word_features |>
-    tidyr::pivot_wider(names_from = word,
-                       values_from = n,
-                       values_fill = 0)
+    tidyr::pivot_wider(
+      names_from = word,
+      values_from = n,
+      values_fill = 0
+    )
 
   missing_words <- setdiff(words, names(word_features))
   for (w in missing_words) {
@@ -167,17 +173,16 @@ text_features <- function(text, words,
   }
 
   if (length(has_symbol) > 0 &&
-      names(has_symbol) |> is.null()) {
+    names(has_symbol) |> is.null()) {
     names(has_symbol) <- paste0("has_", has_symbol)
   }
 
   for (i in seq_along(has_symbol)) {
     name <- names(has_symbol)[[i]]
     symbol <- has_symbol[[i]]
-    basic_features[[name]] = grepl(symbol, text, fixed = TRUE) |> as.numeric()
+    basic_features[[name]] <- grepl(symbol, text, fixed = TRUE) |> as.numeric()
   }
 
   # Combine all features
   cbind(basic_features, word_features)
 }
-

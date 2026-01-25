@@ -42,24 +42,24 @@
 #'
 #' @examples
 #' \dontrun{
-#'   # Single sentence
-#'   df1 <- causal_relations("Smoking causes cancer")
-#'   print(df1)
+#' # Single sentence
+#' df1 <- causal_relations("Smoking causes cancer")
+#' print(df1)
 #'
-#'   # Multiple sentences (batch)
-#'   df2 <- causal_relations(c("Insomnia causes depression.", "Rain leads to flooding."))
-#'   print(df2)
+#' # Multiple sentences (batch)
+#' df2 <- causal_relations(c("Insomnia causes depression.", "Rain leads to flooding."))
+#' print(df2)
 #'
-#'   # Custom parameters and verbose diagnostics
-#'   df3 <- causal_relations(
-#'     sentence = "Stress increases blood pressure.",
-#'     rel_mode = "auto",
-#'     rel_threshold = 0.4,
-#'     cause_decision = "cls+span",
-#'     timeout = 10,
-#'     verbose = TRUE
-#'   )
-#'   print(df3)
+#' # Custom parameters and verbose diagnostics
+#' df3 <- causal_relations(
+#'   sentence = "Stress increases blood pressure.",
+#'   rel_mode = "auto",
+#'   rel_threshold = 0.4,
+#'   cause_decision = "cls+span",
+#'   timeout = 10,
+#'   verbose = TRUE
+#' )
+#' print(df3)
 #' }
 causal_relations <- function(sentence,
                              rel_mode = "auto",
@@ -68,9 +68,9 @@ causal_relations <- function(sentence,
                              timeout = 10,
                              verbose = FALSE) {
   # ---- Configuration (from API Recorder) ----
-  base   <- "https://lakens-causal-sentences.hf.space"
+  base <- "https://lakens-causal-sentences.hf.space"
   prefix <- "gradio_api/call"
-  api    <- "/predict"
+  api <- "/predict"
 
   # ---- handle empty vectors gracefully ----
   if (length(sentence) == 0 || all(trimws(sentence) == "")) {
@@ -113,13 +113,14 @@ causal_relations <- function(sentence,
 
   post_enqueue <- function(one_sentence) {
     payload <- list(data = list(one_sentence, rel_mode, rel_threshold, cause_decision))
-    body    <- jsonlite::toJSON(payload, auto_unbox = TRUE)
+    body <- jsonlite::toJSON(payload, auto_unbox = TRUE)
     url_post <- paste0(base, "/", prefix, api)
 
     h_post <- curl::new_handle()
     curl::handle_setheaders(h_post,
-                            "Content-Type" = "application/json",
-                            "User-Agent"   = "causal_relations/0.1 (R curl/jsonlite)")
+      "Content-Type" = "application/json",
+      "User-Agent"   = "causal_relations/0.1 (R curl/jsonlite)"
+    )
     curl::handle_setopt(h_post, postfields = body)
 
     if (verbose) {
@@ -143,7 +144,7 @@ causal_relations <- function(sentence,
     event_id <- NULL
     if (!is.null(j$event_id)) event_id <- j$event_id
     if (is.null(event_id) && !is.null(j$EVENT_ID)) event_id <- j$EVENT_ID
-    if (is.null(event_id) && !is.null(j$id))       event_id <- j$id
+    if (is.null(event_id) && !is.null(j$id)) event_id <- j$id
     if (is.null(event_id) && !is.null(j$event) && !is.null(j$event$id)) event_id <- j$event$id
     if (is.null(event_id)) {
       stop(sprintf(
@@ -180,20 +181,21 @@ causal_relations <- function(sentence,
             if (!is.null(last_event) && identical(last_event, "complete")) {
               complete_payload <<- payload_line
               if (verbose) message("[SSE] received complete payload")
-              return(0L)  # stop streaming
+              return(0L) # stop streaming
             }
           }
         }
       }
-      1L  # continue streaming
+      1L # continue streaming
     }
 
     h_get <- curl::new_handle()
     curl::handle_setopt(h_get,
-                        timeout = timeout,
-                        # optional: followlocation
-                        # followlocation = TRUE
-                        useragent = "causal_relations/0.1 (R curl/jsonlite)")
+      timeout = timeout,
+      # optional: followlocation
+      # followlocation = TRUE
+      useragent = "causal_relations/0.1 (R curl/jsonlite)"
+    )
 
     curl::curl_fetch_stream(url_get, cb, handle = h_get)
 
@@ -209,7 +211,8 @@ causal_relations <- function(sentence,
   unwrap_final_json <- function(complete_payload) {
     # Try ["...JSON..."] form first
     decoded <- tryCatch(jsonlite::fromJSON(complete_payload, simplifyVector = TRUE),
-                        error = function(e) NULL)
+      error = function(e) NULL
+    )
     if (is.character(decoded) && length(decoded) >= 1L && is_json_text(decoded[[1]])) {
       return(decoded[[1]])
     }
@@ -226,28 +229,28 @@ causal_relations <- function(sentence,
       stop("Final payload is not a JSON array.")
     }
     rows <- list()
-    idx  <- 1L
+    idx <- 1L
     for (item in x) {
       causal_flag <- isTRUE(item$causal)
       rels <- item$relations
       if (is.null(rels) || length(rels) == 0L) {
         rows[[idx]] <- data.frame(
           sentence = as.character(original_sentence),
-          causal   = as.logical(causal_flag),
-          cause    = NA_character_,
-          effect   = NA_character_,
+          causal = as.logical(causal_flag),
+          cause = NA_character_,
+          effect = NA_character_,
           stringsAsFactors = FALSE
         )
         idx <- idx + 1L
       } else {
         for (r in rels) {
-          cause_val  <- if (!is.null(r$cause))  as.character(r$cause)  else NA_character_
+          cause_val <- if (!is.null(r$cause)) as.character(r$cause) else NA_character_
           effect_val <- if (!is.null(r$effect)) as.character(r$effect) else NA_character_
           rows[[idx]] <- data.frame(
             sentence = as.character(original_sentence),
-            causal   = as.logical(causal_flag),
-            cause    = cause_val,
-            effect   = effect_val,
+            causal = as.logical(causal_flag),
+            cause = cause_val,
+            effect = effect_val,
             stringsAsFactors = FALSE
           )
           idx <- idx + 1L
@@ -257,9 +260,9 @@ causal_relations <- function(sentence,
     if (length(rows) == 0L) {
       df <- data.frame(
         sentence = character(),
-        causal   = logical(),
-        cause    = character(),
-        effect   = character(),
+        causal = logical(),
+        cause = character(),
+        effect = character(),
         stringsAsFactors = FALSE
       )
     } else {
@@ -277,7 +280,7 @@ causal_relations <- function(sentence,
     }
     event_id <- post_enqueue(one_sentence)
     complete_payload <- get_until_complete(event_id)
-    final_json_text  <- unwrap_final_json(complete_payload)
+    final_json_text <- unwrap_final_json(complete_payload)
     df_one <- parse_relations_df(final_json_text, original_sentence = one_sentence)
     all_rows[[k]] <- df_one
     k <- k + 1L
@@ -286,9 +289,9 @@ causal_relations <- function(sentence,
   if (length(all_rows) == 0L) {
     out <- data.frame(
       sentence = character(),
-      causal   = logical(),
-      cause    = character(),
-      effect   = character(),
+      causal = logical(),
+      cause = character(),
+      effect = character(),
       stringsAsFactors = FALSE
     )
   } else {

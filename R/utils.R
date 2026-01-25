@@ -28,12 +28,13 @@ if (exists("%||%", envir = baseenv())) {
 #' @return TRUE
 #' @keywords internal
 #'
-message <- function (..., domain = NULL, appendLF = TRUE) {
+message <- function(..., domain = NULL, appendLF = TRUE) {
   if (verbose()) {
     if (interactive()) {
       # not in knitr environment
       base::message("\033[32m", ..., "\033[39m",
-                    domain = domain, appendLF = appendLF)
+        domain = domain, appendLF = appendLF
+      )
     } else {
       base::message(..., domain = domain, appendLF = appendLF)
     }
@@ -137,7 +138,9 @@ concat_tables <- function(papers, name_path) {
 #' @export
 #' @keywords internal
 is_paper <- function(paper) {
-  if (!is.list(paper)) return(FALSE)
+  if (!is.list(paper)) {
+    return(FALSE)
+  }
   is_paper <- inherits(paper, "scivrs_paper")
 
   return(is_paper)
@@ -151,14 +154,17 @@ is_paper <- function(paper) {
 #' @export
 #' @keywords internal
 is_paper_list <- function(paper) {
-  if (!is.list(paper)) return(FALSE)
+  if (!is.list(paper)) {
+    return(FALSE)
+  }
 
   is_paper <- sapply(paper, inherits, what = "scivrs_paper")
-  if (all(is_paper)) return(TRUE)
+  if (all(is_paper)) {
+    return(TRUE)
+  }
 
   return(FALSE)
 }
-
 
 
 #' Print Paper Object
@@ -170,14 +176,16 @@ is_paper_list <- function(paper) {
 #' @keywords internal
 #'
 print.scivrs_paper <- function(x, ...) {
-  underline <- rep("-", nchar(x$id)) |> paste(collapse="")
-  txt <- sprintf("%s\n%s\n%s\n\n%s\n\n* Sections: %d\n* Sentences: %d\n* Bibliography: %d\n* X-Refs: %d\n\n",
-                 underline, x$id, underline,
-                 x$info$title %||% "{No title}",
-                 max(c(0, x$full_text$div)),
-                 nrow(x$full_text),
-                 nrow(x$bib),
-                 nrow(x$xrefs))
+  underline <- rep("-", nchar(x$id)) |> paste(collapse = "")
+  txt <- sprintf(
+    "%s\n%s\n%s\n\n%s\n\n* Sections: %d\n* Sentences: %d\n* Bibliography: %d\n* X-Refs: %d\n\n",
+    underline, x$id, underline,
+    x$info$title %||% "{No title}",
+    max(c(0, x$full_text$div)),
+    nrow(x$full_text),
+    nrow(x$bib),
+    nrow(x$xrefs)
+  )
 
   cat(txt)
 }
@@ -203,11 +211,9 @@ print.scivrs_paperlist <- function(x, ...) {
 #'
 #' @export
 #' @keywords internal
-`[.scivrs_paperlist` <- function(x, ..., drop=TRUE) {
+`[.scivrs_paperlist` <- function(x, ..., drop = TRUE) {
   paperlist(NextMethod())
 }
-
-
 
 
 #' Get demo PDF file
@@ -218,7 +224,7 @@ print.scivrs_paperlist <- function(x, ...) {
 #' @examples
 #' demopdf()
 demopdf <- function() {
-  grobid_dir <- system.file("extdata", package="metacheck")
+  grobid_dir <- system.file("extdata", package = "metacheck")
   pattern <- "to_err_is_human\\.pdf$"
   file <- list.files(grobid_dir, pattern, full.names = TRUE)
   return(file)
@@ -232,7 +238,7 @@ demopdf <- function() {
 #' @examples
 #' demoxml()
 demoxml <- function() {
-  grobid_dir <- system.file("extdata", package="metacheck")
+  grobid_dir <- system.file("extdata", package = "metacheck")
   pattern <- "to_err_is_human\\.xml$"
   file <- list.files(grobid_dir, pattern, full.names = TRUE)
   return(file)
@@ -246,7 +252,7 @@ demoxml <- function() {
 #' @examples
 #' demodir()
 demodir <- function() {
-  grobid_dir <- system.file("grobid", package="metacheck")
+  grobid_dir <- system.file("grobid", package = "metacheck")
   return(grobid_dir)
 }
 
@@ -280,8 +286,12 @@ pb <- function(total, format = "[:bar] :percent") {
   } else {
     # dummy functions so we don't have to call if (verbose())
     pb <- list(
-      tick = function(...) { invisible() },
-      message = function(...) { invisible() }
+      tick = function(...) {
+        invisible()
+      },
+      message = function(...) {
+        invisible()
+      }
     )
   }
 

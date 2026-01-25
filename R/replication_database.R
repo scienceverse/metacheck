@@ -28,7 +28,9 @@ FReD <- function() {
     ext_FReD <- readRDS(ext)
     ext_date <- attr(ext_FReD, "date")
     int_date <- attr(int_FReD, "date")
-    if (ext_date > int_date) return(ext_FReD)
+    if (ext_date > int_date) {
+      return(ext_FReD)
+    }
   }
 
   return(int_FReD)
@@ -55,13 +57,15 @@ FReD_date <- function() {
 FReD_update <- function() {
   # download newest FReD update
   old_timeout <- getOption("timeout")
-  on.exit(options(timeout=old_timeout))
-  options(timeout=300)
+  on.exit(options(timeout = old_timeout))
+  options(timeout = 300)
 
   tmp <- tempfile()
-  suppressMessages(osf_file_download(osf_id = "z5u9b",
-                    download_to = tmp,
-                    ignore_folder_structure = TRUE))
+  suppressMessages(osf_file_download(
+    osf_id = "z5u9b",
+    download_to = tmp,
+    ignore_folder_structure = TRUE
+  ))
   on.exit(unlink(tmp))
 
   file <- list.files(tmp, "\\.xls", full.names = TRUE)
@@ -71,7 +75,7 @@ FReD_update <- function() {
   )
   # Remove first 2 rows
   FReD <- FReD[-c(1, 2), ]
-# Remove all rows without doi for original study and replication and decrease size
+  # Remove all rows without doi for original study and replication and decrease size
   rows <- FReD$doi_original != "" &
     !is.na(FReD$doi_original) &
     FReD$doi_replication != "" &
@@ -79,10 +83,12 @@ FReD_update <- function() {
   cols <- c("ref_original", "doi_original", "ref_replication", "doi_replication")
   FReD <- unique(FReD[rows, cols])
   FReD <- FReD[FReD$doi_original != "" & !is.na(FReD$doi_original) &
-                 FReD$doi_replication != "" & !is.na(FReD$doi_replication), ]
+    FReD$doi_replication != "" & !is.na(FReD$doi_replication), ]
   # decrease size
-  cols <- c("ref_original", "doi_original",
-            "ref_replication", "doi_replication")
+  cols <- c(
+    "ref_original", "doi_original",
+    "ref_replication", "doi_replication"
+  )
   FReD <- dplyr::distinct(FReD[cols])
 
   attr(FReD, "date") <- Sys.Date()

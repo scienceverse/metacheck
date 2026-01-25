@@ -19,10 +19,10 @@
 #' @export
 #' @examples
 #' \dontrun{
-#'   text <- c("hello", "number", "ten", 12)
-#'   system_prompt <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
-#'   is_number <- llm(text, system_prompt)
-#'   is_number
+#' text <- c("hello", "number", "ten", 12)
+#' system_prompt <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
+#' is_number <- llm(text, system_prompt)
+#' is_number
 #' }
 llm <- function(text, system_prompt,
                 text_col = "text",
@@ -50,21 +50,27 @@ llm <- function(text, system_prompt,
   }
 
   # Set up the llm ----
-  tryCatch({
-    params <- do.call(ellmer::params, params)
-  }, error = \(e) {
-    stop("Misspecified params argument:\n", e$message, call. = FALSE)
-  })
+  tryCatch(
+    {
+      params <- do.call(ellmer::params, params)
+    },
+    error = \(e) {
+      stop("Misspecified params argument:\n", e$message, call. = FALSE)
+    }
+  )
 
-  tryCatch({
-    chat <- ellmer::chat(
-      name = model,
-      system_prompt = system_prompt,
-      params = params
-    )
-  }, error = \(e) {
-    stop("Error setting up LLM:\n", e$message, call. = FALSE)
-  })
+  tryCatch(
+    {
+      chat <- ellmer::chat(
+        name = model,
+        system_prompt = system_prompt,
+        params = params
+      )
+    },
+    error = \(e) {
+      stop("Error setting up LLM:\n", e$message, call. = FALSE)
+    }
+  )
 
   # set up progress bar ----
   pb <- pb(ncalls, "Querying LLM [:bar] :current/:total :elapsedfull")
@@ -74,19 +80,22 @@ llm <- function(text, system_prompt,
   # it keeps the relationship between unique_text index and
   # response index where responses return have 0+ items
   for (i in seq_along(unique_text)) {
-    responses[[i]] <- tryCatch({
-      answer <- chat$chat(unique_text[i], echo = FALSE)
+    responses[[i]] <- tryCatch(
+      {
+        answer <- chat$chat(unique_text[i], echo = FALSE)
 
-      list(
-        answer = trimws(answer)
-      )
-    }, error = function(e) {
-      return(list(
-        answer = NA,
-        error = TRUE,
-        error_msg = e$message
-      ))
-    })
+        list(
+          answer = trimws(answer)
+        )
+      },
+      error = function(e) {
+        return(list(
+          answer = NA,
+          error = TRUE,
+          error_msg = e$message
+        ))
+      }
+    )
 
     pb$tick()
   }
@@ -98,9 +107,13 @@ llm <- function(text, system_prompt,
 
   # add metadata about the system_prompt ----
   class(answer_df) <- c("metacheck_llm", "data.frame")
-  attr(answer_df, "llm") <- c(list(system_prompt = system_prompt,
-                                   model = model),
-                              params)
+  attr(answer_df, "llm") <- c(
+    list(
+      system_prompt = system_prompt,
+      model = model
+    ),
+    params
+  )
 
   # warn about errors ----
   error_indices <- isTRUE(answer_df$error)
@@ -131,7 +144,7 @@ llm <- function(text, system_prompt,
 #'
 #' @examples
 #' \dontrun{
-#'   llm_model_list()
+#' llm_model_list()
 #' }
 llm_model_list <- function(platform = NULL) {
   # get all ellmer models_* functions
@@ -153,20 +166,23 @@ llm_model_list <- function(platform = NULL) {
 
   # get models and ignore errors, add platform name
   models <- lapply(platform, \(p) {
-    tryCatch({
-      # skip if google api key isn't set, otherwise it requests login
-      if (p %in% c("google_gemini", "google_vertex") &&
+    tryCatch(
+      {
+        # skip if google api key isn't set, otherwise it requests login
+        if (p %in% c("google_gemini", "google_vertex") &&
           Sys.getenv("GOOGLE_API_KEY") == "") {
-        return(NULL)
-      }
+          return(NULL)
+        }
 
-      model_func <- funcs[[p]]
-      m <- model_func()
-      cols <- c("platform", names(m))
-      m$platform <- p
+        model_func <- funcs[[p]]
+        m <- model_func()
+        cols <- c("platform", names(m))
+        m$platform <- p
 
-      m
-    }, error = \(e) {})
+        m
+      },
+      error = \(e) {}
+    )
   })
 
   # reorder columns
@@ -197,13 +213,18 @@ models_groq <- function() {
 
   response <- httr::GET(
     url, config,
-    encode = "json")
+    encode = "json"
+  )
 
-  models <- do.call(dplyr::bind_rows,
-                    httr::content(response)$data) |>
+  models <- do.call(
+    dplyr::bind_rows,
+    httr::content(response)$data
+  ) |>
     data.frame()
 
-  models$created_at <- as.POSIXct(models$created) |> format("%Y-%m-%d") |> as.Date()
+  models$created_at <- as.POSIXct(models$created) |>
+    format("%Y-%m-%d") |>
+    as.Date()
   rows <- models$active & !grepl("whisper|vision", models$id)
   cols <- names(models) |> setdiff(c("active", "created"))
   active <- models[rows, cols]
@@ -219,7 +240,9 @@ models_groq <- function() {
 #' @export
 #'
 llm_max_calls <- function(n = NULL) {
-  if (is.null(n)) return(getOption("metacheck.llm_max_calls"))
+  if (is.null(n)) {
+    return(getOption("metacheck.llm_max_calls"))
+  }
   if (!is.numeric(n)) stop("n must be a number")
 
   n <- as.integer(n)
@@ -281,9 +304,6 @@ llm_model <- function(model = NULL) {
 # }
 
 
-
-
-
 #' Set or get metacheck LLM use
 #'
 #' Mainly for use in optional LLM workflows in modules, also checks if the GROQ API key is set and returns false if it isn't.
@@ -304,7 +324,9 @@ llm_use <- function(llm_use = NULL,
                     API_KEY = Sys.getenv("GROQ_API_KEY")) {
   if (is.null(llm_use)) {
     use <- getOption("metacheck.llm.use")
-    if (!use) return(FALSE)
+    if (!use) {
+      return(FALSE)
+    }
 
     # # check if API KEY set
     # if (API_KEY == "") {

@@ -12,7 +12,10 @@
 #' doi_clean("doi:10.1038/nphys1170")
 #' doi_clean("DOI: 10.1038/nphys1170")
 doi_clean <- function(doi) {
-  doi <- doi |> unlist() |> as.character() |> trimws()
+  doi <- doi |>
+    unlist() |>
+    as.character() |>
+    trimws()
 
   # remove prefixes
   doi <- sub("^https?://(dx\\.)?doi\\.org/", "", doi, ignore.case = TRUE)
@@ -72,7 +75,6 @@ doi_valid_format <- function(doi) {
 #' doi_resolves("10.1038/nphys1170") # Expected: TRUE
 #' doi_resolves("10.1234/invalid.doi") # Expected: FALSE
 #' }
-
 doi_resolves <- function(doi, timeout = 10) {
   doi <- doi_clean(doi)
 
@@ -83,8 +85,12 @@ doi_resolves <- function(doi, timeout = 10) {
   }
 
   # check DOI is well-formed
-  if (is.na(doi) || !nzchar(doi)) return(NA)
-  if (!doi_valid_format(doi)) return(FALSE)
+  if (is.na(doi) || !nzchar(doi)) {
+    return(NA)
+  }
+  if (!doi_valid_format(doi)) {
+    return(FALSE)
+  }
 
   # check doi.org API
   url <- paste0(
@@ -101,17 +107,29 @@ doi_resolves <- function(doi, timeout = 10) {
     error = function(e) e
   )
 
-  if (inherits(resp, "error")) return(NA)
+  if (inherits(resp, "error")) {
+    return(NA)
+  }
 
   body <- tryCatch(httr2::resp_body_json(resp), error = function(e) NULL)
   code <- body$responseCode
-  if (is.null(code) || length(code) != 1L) return(NA)
+  if (is.null(code) || length(code) != 1L) {
+    return(NA)
+  }
 
   # https://www.doi.org/doi-handbook/HTML/rest-api-response-format.html
-  if (code == 1L) return(TRUE)   # handle found AND has URL
-  if (code == 100L) return(FALSE) # handle not found
-  if (code == 2L) return(NA)     # internal error
-  if (code == 200L) return(FALSE) # handle exists but no URL of requested type
+  if (code == 1L) {
+    return(TRUE)
+  } # handle found AND has URL
+  if (code == 100L) {
+    return(FALSE)
+  } # handle not found
+  if (code == 2L) {
+    return(NA)
+  } # internal error
+  if (code == 200L) {
+    return(FALSE)
+  } # handle exists but no URL of requested type
 
   NA
 }
@@ -132,19 +150,21 @@ doi_resolves <- function(doi, timeout = 10) {
 #' @examples
 #' doi <- "10.7717/peerj.4375"
 #' \dontrun{
-#'  # cr_info <- crossref_doi(doi)
+#' # cr_info <- crossref_doi(doi)
 #' }
-crossref_doi <- function(doi, select = c("DOI",
-                                         "type",
-                                         "title",
-                                         "container-title",
-                                         "volume",
-                                         "issue",
-                                         "page",
-                                         "URL",
-                                         "abstract",
-                                         "year",
-                                         "error")) {
+crossref_doi <- function(doi, select = c(
+                           "DOI",
+                           "type",
+                           "title",
+                           "container-title",
+                           "volume",
+                           "issue",
+                           "page",
+                           "URL",
+                           "abstract",
+                           "year",
+                           "error"
+                         )) {
   if (length(doi) == 0) {
     return(data.frame())
   } else if (all(is.na(doi))) {
@@ -164,7 +184,8 @@ crossref_doi <- function(doi, select = c("DOI",
   ## vectorise ----
   if (length(doi) > 1) {
     pb <- pb(length(doi),
-             format = "Checking DOIs [:bar] :current/:total :elapsedfull")
+      format = "Checking DOIs [:bar] :current/:total :elapsedfull"
+    )
     table <- lapply(doi, \(d) {
       pb$tick()
       crossref_doi(d)
@@ -177,24 +198,32 @@ crossref_doi <- function(doi, select = c("DOI",
   doi <- doi_clean(doi)
 
   # check for well-formed DOI
-  if (!doi_valid_format(doi)){
+  if (!doi_valid_format(doi)) {
     message(doi, " is not a well-formed DOI\\n")
     return(data.frame(DOI = doi, error = "malformed"))
   }
 
-  url <- sprintf("https://api.labs.crossref.org/works/%s?mailto=%s",
-                 utils::URLencode(doi, reserved = TRUE),
-                 email())
+  url <- sprintf(
+    "https://api.labs.crossref.org/works/%s?mailto=%s",
+    utils::URLencode(doi, reserved = TRUE),
+    email()
+  )
 
-  item <- tryCatch({
-    j <- jsonlite::read_json(url)
-    if (j$status != "ok") { stop(j$body$`message-type`) }
-    j$message
-  }, error = function(e) {
-    return(list(DOI = doi, error = e$message))
-  }, warning = function(w) {
-    return(list(DOI = doi, error = w$message))
-  })
+  item <- tryCatch(
+    {
+      j <- jsonlite::read_json(url)
+      if (j$status != "ok") {
+        stop(j$body$`message-type`)
+      }
+      j$message
+    },
+    error = function(e) {
+      return(list(DOI = doi, error = e$message))
+    },
+    warning = function(w) {
+      return(list(DOI = doi, error = w$message))
+    }
+  )
 
   # process item
   if (length(item$title)) {
@@ -210,7 +239,7 @@ crossref_doi <- function(doi, select = c("DOI",
   }
 
   if (length(item$published$`date-parts`) &
-      length(item$published$`date-parts`[[1]])) {
+    length(item$published$`date-parts`[[1]])) {
     item$year <- item$published$`date-parts`[[1]][[1]]
   }
   item$published <- NULL
@@ -231,7 +260,6 @@ crossref_doi <- function(doi, select = c("DOI",
 
   return(ret)
 }
-
 
 
 #' Look up Reference in CrossRef
@@ -258,22 +286,23 @@ crossref_doi <- function(doi, select = c("DOI",
 #'   "Evidence-Based Toxicology, 2(1)."
 #' )
 #' \donttest{
-#'   cr <- crossref_query(ref)
+#' cr <- crossref_query(ref)
 #' }
 crossref_query <- function(ref, min_score = 50, rows = 1,
-                           select = c("DOI",
-                                      "score",
-                                      "type",
-                                      "title",
-                                      "author",
-                                      "container-title",
-                                      "published",
-                                      "volume",
-                                      "issue",
-                                      "page",
-                                      "URL",
-                                      "abstract"
-                                    )) {
+                           select = c(
+                             "DOI",
+                             "score",
+                             "type",
+                             "title",
+                             "author",
+                             "container-title",
+                             "published",
+                             "volume",
+                             "issue",
+                             "page",
+                             "URL",
+                             "abstract"
+                           )) {
   if (is_paper(ref)) {
     # pull the whole reference list
     paper <- ref
@@ -288,23 +317,27 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
     # TODO: take advantage of query.title, query.author, query.container-title
     title <- ref$title
     author <- ref$author
-    container <- ref$journal %||%ref$booktitle
+    container <- ref$journal %||% ref$booktitle
 
     ref <- paste(author, collapse = ", ") |>
       paste(title, container, sep = "; ")
   } else if (length(ref) > 1 | is.list(ref)) {
     # vectorise
     pb <- pb(length(ref),
-             format = "Checking References [:bar] :current/:total :elapsedfull")
+      format = "Checking References [:bar] :current/:total :elapsedfull"
+    )
     table <- lapply(ref, \(r) {
       pb$tick()
-      tryCatch( crossref_query(r, min_score),
-                error = \(e) {
-                  error_tbl <- data.frame(ref = ref,
-                                          DOI = NA_character_,
-                                          error = e$message)
-                  return(error_tbl)
-                } )
+      tryCatch(crossref_query(r, min_score),
+        error = \(e) {
+          error_tbl <- data.frame(
+            ref = ref,
+            DOI = NA_character_,
+            error = e$message
+          )
+          return(error_tbl)
+        }
+      )
     }) |>
       do.call(dplyr::bind_rows, args = _)
     return(table)
@@ -320,23 +353,31 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
     gsub("%28", "(", x = _) |>
     gsub("%29", ")", x = _)
 
-  url <- sprintf("https://api.crossref.org/works?mailto=%s&rows=%d&sort=score&select=%s&query.bibliographic=%s",
-                 email(),
-                 rows,
-                 c(select, "score") |> unique() |> paste(collapse = ","),
-                 query)
+  url <- sprintf(
+    "https://api.crossref.org/works?mailto=%s&rows=%d&sort=score&select=%s&query.bibliographic=%s",
+    email(),
+    rows,
+    c(select, "score") |> unique() |> paste(collapse = ","),
+    query
+  )
 
 
-  items <- tryCatch({
-    j <- jsonlite::read_json(url)
-    if (j$status != "ok") { stop(j$body$message) }
-    j$message$items
-  }, error = function(e) {
-    return(data.frame(ref = ref, error = e$message))
-  }, warning = function(w) {
-    message(w$message)
-    return(data.frame(ref = ref, error = w$message))
-  })
+  items <- tryCatch(
+    {
+      j <- jsonlite::read_json(url)
+      if (j$status != "ok") {
+        stop(j$body$message)
+      }
+      j$message$items
+    },
+    error = function(e) {
+      return(data.frame(ref = ref, error = e$message))
+    },
+    warning = function(w) {
+      message(w$message)
+      return(data.frame(ref = ref, error = w$message))
+    }
+  )
 
   scores <- sapply(items, `[[`, "score")
   if (length(items) == 0 || all(scores < min_score)) {
@@ -448,8 +489,8 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
 #' @examples
 #' doi <- "10.7717/peerj.4375"
 #' \donttest{
-#'   oa_info <- openalex_doi(doi)
-#'   oa_info <- openalex_doi(doi, "title")
+#' oa_info <- openalex_doi(doi)
+#' oa_info <- openalex_doi(doi, "title")
 #' }
 openalex_doi <- function(doi, select = NULL) {
   # handle papers, paperlists, and vectors of multiple dois
@@ -472,7 +513,8 @@ openalex_doi <- function(doi, select = NULL) {
   ## vectorise ----
   if (length(doi) > 1) {
     pb <- pb(length(doi),
-             format = "Checking DOIs [:bar] :current/:total :elapsedfull")
+      format = "Checking DOIs [:bar] :current/:total :elapsedfull"
+    )
     oa <- lapply(doi, \(d) {
       pb$tick()
       openalex_doi(d)
@@ -483,20 +525,24 @@ openalex_doi <- function(doi, select = NULL) {
   ## single DOI checks ----
   doi <- doi_clean(doi)
 
-  if (!doi_valid_format(doi)){
+  if (!doi_valid_format(doi)) {
     message(doi, " is not a well-formed DOI\\n")
     return(list(DOI = doi, error = "malformed"))
   }
 
-  url <- sprintf("https://api.openalex.org/works/https://doi.org/%s?mailto=%s",
-                 doi, email())
+  url <- sprintf(
+    "https://api.openalex.org/works/https://doi.org/%s?mailto=%s",
+    doi, email()
+  )
 
-  info <- tryCatch( suppressWarnings( jsonlite::read_json(url) ),
-                    error = function(e) {
-                      if (verbose())
-                        warning(doi, " not found in OpenAlex", call. = FALSE)
-                      return(data.frame(DOI = doi, error = "not found"))
-                    })
+  info <- tryCatch(suppressWarnings(jsonlite::read_json(url)),
+    error = function(e) {
+      if (verbose()) {
+        warning(doi, " not found in OpenAlex", call. = FALSE)
+      }
+      return(data.frame(DOI = doi, error = "not found"))
+    }
+  )
   # convert inverted index to abstract
   if (!is.null(info$abstract_inverted_index)) {
     aii <- info$abstract_inverted_index
@@ -521,7 +567,7 @@ openalex_doi <- function(doi, select = NULL) {
 #'
 #' @examples
 #' \dontrun{
-#'   openalex_query("Sample Size Justification", "Collabra Psychology")
+#' openalex_query("Sample Size Justification", "Collabra Psychology")
 #' }
 openalex_query <- function(title, source = NA, authors = NA, strict = TRUE) {
   relevance_score <- title_match <- source_match <- NULL
@@ -551,11 +597,18 @@ openalex_query <- function(title, source = NA, authors = NA, strict = TRUE) {
   )
 
   j <- tryCatch(jsonlite::read_json(url),
-                error = \(e) { "error" },
-                warning = \(w) {
-                  if (grepl("Couldn't resolve host name",
-                            w$message)) return("offline")
-                })
+    error = \(e) {
+      "error"
+    },
+    warning = \(w) {
+      if (grepl(
+        "Couldn't resolve host name",
+        w$message
+      )) {
+        return("offline")
+      }
+    }
+  )
 
   if (is.character(j)) {
     if (j == "offline") {
@@ -587,7 +640,8 @@ openalex_query <- function(title, source = NA, authors = NA, strict = TRUE) {
       paste(collapse = "; ")
     res$authorships <- NULL
     res <- unlist(res)
-  }) |> do.call(dplyr::bind_rows, args = _) |>
+  }) |>
+    do.call(dplyr::bind_rows, args = _) |>
     dplyr::arrange(dplyr::desc(relevance_score))
 
   required_cols <- c("display_name", "source")
@@ -606,23 +660,31 @@ openalex_query <- function(title, source = NA, authors = NA, strict = TRUE) {
     return(matches)
   } else if (nrow(matches) > 1) {
     message("multiple title/source matches")
-    if (strict) return(NULL)
+    if (strict) {
+      return(NULL)
+    }
     return(matches[1, ])
   }
 
   matches <- dplyr::filter(info, title_match)
   if (nrow(matches) == 1) {
     message("matches title, not source")
-    if (strict) return(NULL)
+    if (strict) {
+      return(NULL)
+    }
     return(matches[1, ])
   } else if (nrow(matches) > 1) {
     message("multiple title matches, no source match")
-    if (strict) return(NULL)
+    if (strict) {
+      return(NULL)
+    }
     return(matches[1, ])
   }
 
   message("no title/journal exact matches")
-  if (strict) return(NULL)
+  if (strict) {
+    return(NULL)
+  }
   return(info[1, ])
 }
 
@@ -671,10 +733,12 @@ bibtex_add_dois <- function(bibfile,
 
     withCallingHandlers(
       expr = {
-        info <- openalex_query(title = df$TITLE[[i]],
-                          source = df$JOURNAL[[i]],
-                          authors = df$AUTHOR[[i]],
-                          strict = strict)
+        info <- openalex_query(
+          title = df$TITLE[[i]],
+          source = df$JOURNAL[[i]],
+          authors = df$AUTHOR[[i]],
+          strict = strict
+        )
       },
       message = function(m) {
         msgs[[i]] <<- conditionMessage(m) |>
@@ -684,7 +748,9 @@ bibtex_add_dois <- function(bibfile,
       }
     )
 
-    if (is.null(info)) return(NA_character_)
+    if (is.null(info)) {
+      return(NA_character_)
+    }
 
     shortdoi <- sub("https://", "", info$doi, fixed = TRUE) |>
       sub("doi.org/", "", x = _, fixed = TRUE)
@@ -720,8 +786,10 @@ bib_add_dois <- function(bib, strict = TRUE) {
   msgs <- character()
 
   ## set up progress bar ----
-  pb <- pb(length(bib$doi),
-           "Processing bibentry [:bar] :current/:total :elapsedfull")
+  pb <- pb(
+    length(bib$doi),
+    "Processing bibentry [:bar] :current/:total :elapsedfull"
+  )
 
   bib$doi <- sapply(seq_along(bib$doi), \(i) {
     # message(i, ": ", substr(df$TITLE[[i]], 1, 60), "...")
@@ -734,10 +802,12 @@ bib_add_dois <- function(bib, strict = TRUE) {
 
     withCallingHandlers(
       expr = {
-        info <- openalex_query(title = bib$title[[i]],
-                          source = bib$journal[[i]],
-                          authors = bib$authors[[i]],
-                          strict = strict)
+        info <- openalex_query(
+          title = bib$title[[i]],
+          source = bib$journal[[i]],
+          authors = bib$authors[[i]],
+          strict = strict
+        )
       },
       message = function(m) {
         msgs[[i]] <<- conditionMessage(m) |>
@@ -747,7 +817,9 @@ bib_add_dois <- function(bib, strict = TRUE) {
       }
     )
 
-    if (is.null(info) || !"doi" %in% names(info)) return(NA_character_)
+    if (is.null(info) || !"doi" %in% names(info)) {
+      return(NA_character_)
+    }
 
     shortdoi <- sub("https://", "", info$doi, fixed = TRUE) |>
       sub("doi.org/", "", x = _, fixed = TRUE)
@@ -763,6 +835,3 @@ bib_add_dois <- function(bib, strict = TRUE) {
 
   return(bib)
 }
-
-
-

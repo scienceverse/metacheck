@@ -14,7 +14,6 @@
 add_author <- function(study, surname, given = "",
                        orcid = NULL,
                        roles = c(), ...) {
-
   idx <- get_idx(study, section = "authors")
 
   study$authors[[idx]] <- author(surname, given, orcid, roles, ...)
@@ -43,14 +42,18 @@ author <- function(surname, given = "", orcid = NULL, roles = c(), ...) {
 
   chk_roles <- names(roles)
 
-  if (is.null(chk_roles)) { chk_roles <- roles }
+  if (is.null(chk_roles)) {
+    chk_roles <- roles
+  }
   bad_roles <- chk_roles[!(chk_roles %in% role_names)]
   if (length(bad_roles)) {
     # check for abbreviations
     bad_roles <- bad_roles[!(bad_roles %in% credit_roles("abbr"))]
     if (length(bad_roles)) {
-      stop("These roles do not exist in the CRediT taxonomy: ",
-           paste(bad_roles, collapse = ", "), "\n  See http://credit.casrai.org/")
+      stop(
+        "These roles do not exist in the CRediT taxonomy: ",
+        paste(bad_roles, collapse = ", "), "\n  See http://credit.casrai.org/"
+      )
     }
     # convert to correct names
     chk_roles <- role_names[credit_roles("abbr") %in% chk_roles]
@@ -184,20 +187,21 @@ check_orcid <- function(orcid) {
   }
 
   total <- 0
-  for (i in 1:(nchar(baseDigits)-1)) {
+  for (i in 1:(nchar(baseDigits) - 1)) {
     digit <- substr(baseDigits, i, i) |> as.integer()
     total <- (total + digit) * 2
   }
-  remainder <- total %% 11;
-  result <- (12 - remainder) %% 11;
+  remainder <- total %% 11
+  result <- (12 - remainder) %% 11
   result <- ifelse(result == 10, "X", result)
 
   if (result == substr(baseDigits, 16, 16)) {
     paste(substr(baseDigits, 1, 4),
-          substr(baseDigits, 5, 8),
-          substr(baseDigits, 9, 12),
-          substr(baseDigits, 13, 16),
-          sep = "-")
+      substr(baseDigits, 5, 8),
+      substr(baseDigits, 9, 12),
+      substr(baseDigits, 13, 16),
+      sep = "-"
+    )
   } else {
     if (verbose()) {
       warning("The ORCiD ", orcid, " is not valid.")
@@ -205,7 +209,6 @@ check_orcid <- function(orcid) {
     return(FALSE)
   }
 }
-
 
 
 #' Get ORCiD from Name
@@ -218,7 +221,7 @@ check_orcid <- function(orcid) {
 #'
 #' @examples
 #' \donttest{
-#'   get_orcid("DeBruine", "Lisa")
+#' get_orcid("DeBruine", "Lisa")
 #' }
 get_orcid <- function(family, given = "*") {
   if (is.null(family) || trimws(family) == "") {
@@ -324,19 +327,23 @@ get_idx <- function(study, id = NULL, section = "hypotheses") {
 #'
 #' @examples
 #' \donttest{
-#'   orcids <- c("0000-0002-0247-239X", "0000-0002-7523-5539")
-#'   orcid_person(orcids)
+#' orcids <- c("0000-0002-0247-239X", "0000-0002-7523-5539")
+#' orcid_person(orcids)
 #' }
 orcid_person <- function(orcid) {
   details <- lapply(orcid, \(x) {
     path <- file.path("https://pub.orcid.org/v3.0", x, "person")
 
-    xml <- tryCatch({
-      url <- suppressWarnings(url(path, "rb"))
-      on.exit(close(url))
-      xml2::read_xml(url)
-    },
-    error = function(e) { e$message })
+    xml <- tryCatch(
+      {
+        url <- suppressWarnings(url(path, "rb"))
+        on.exit(close(url))
+        xml2::read_xml(url)
+      },
+      error = function(e) {
+        e$message
+      }
+    )
 
     if (is.character(xml)) {
       return(data.frame(
@@ -347,9 +354,9 @@ orcid_person <- function(orcid) {
 
     list(
       orcid = x,
-     # name  = xml_find(xml, "//personal-details:credit-name", ";"),
+      # name  = xml_find(xml, "//personal-details:credit-name", ";"),
       given = xml_find(xml, "//personal-details:given-names", " "),
-      family =  xml_find(xml, "//personal-details:family-name", " "),
+      family = xml_find(xml, "//personal-details:family-name", " "),
       email = xml_find(xml, "//email:email //email:email") |> list(),
       country = xml_find(xml, "//address:country", ";"),
       keywords = xml_find(xml, "//keyword:content") |> list(),

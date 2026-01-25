@@ -21,9 +21,12 @@ aspredicted_links <- function(paper) {
 
   # fix space stuff
   found_ap$text <- gsub(RGX_ASPREDICTED, "/aspredicted\\.org",
-                        x = found_ap$text)
+    x = found_ap$text
+  )
   found_ap$text <- gsub("blind\\.php\\s*\\?\\s*x\\s*=\\s*",
-                        "blind\\.php\\?x=", x = found_ap$text)
+    "blind\\.php\\?x=",
+    x = found_ap$text
+  )
 
   # match up to ">"
   match_ap <- search_text(found_ap, "/aspredicted\\.org[^\\>]+", return = "match")
@@ -79,15 +82,17 @@ aspredicted_retrieve <- function(ap_url, id_col = 1, wait = 1) {
   }
 
   # iterate over valid IDs
-  message("Starting AsPredicted retrieval for ",
-          length(valid_ids), " file",
-          ifelse(length(valid_ids) == 1, "", "s"),"...")
+  message(
+    "Starting AsPredicted retrieval for ",
+    length(valid_ids), " file",
+    ifelse(length(valid_ids) == 1, "", "s"), "..."
+  )
 
   id_info <- vector("list", length(valid_ids))
-  i = 0
+  i <- 0
   captcha <- FALSE
   while (!captcha & i < length(valid_ids)) {
-    i = i + 1
+    i <- i + 1
     ap <- aspredicted_info(valid_ids[[i]])
     if (identical(ap$error, "captcha")) captcha <- TRUE
     id_info[[i]] <- ap
@@ -100,8 +105,10 @@ aspredicted_retrieve <- function(ap_url, id_col = 1, wait = 1) {
 
   # reduplicate and add original table info
   by <- stats::setNames("ap_url", id_col_name)
-  data <- dplyr::left_join(table, info, by = by,
-                           suffix = c("", ".ap"))
+  data <- dplyr::left_join(table, info,
+    by = by,
+    suffix = c("", ".ap")
+  )
 
   message("...AsPredicted retrieval complete!")
 
@@ -137,7 +144,7 @@ aspredicted_info <- function(ap_url) {
     xml2::read_html()
 
   body <- xml2::xml_find_all(html, "//body") |>
-    rvest::html_text2() #xml2::xml_text()
+    rvest::html_text2() # xml2::xml_text()
 
   if (grepl("CLICK after solving captcha", body, fixed = TRUE)) {
     warning("Log in to AsPredicted to bypass the CAPTCHA", call. = FALSE)
@@ -166,13 +173,15 @@ aspredicted_info <- function(ap_url) {
 
 
   for (i in 1:11) {
-    obj[[names(sections)[i]]] <- tryCatch({
-      after <- strsplit(body, sections[[i]], fixed = TRUE)[[1]][[2]]
-      answer <- strsplit(after, sections[[i + 1]], fixed = TRUE)[[1]][[1]]
-      trimws(answer)
-    }, error = \(e) return(NA_character_))
+    obj[[names(sections)[i]]] <- tryCatch(
+      {
+        after <- strsplit(body, sections[[i]], fixed = TRUE)[[1]][[2]]
+        answer <- strsplit(after, sections[[i + 1]], fixed = TRUE)[[1]][[1]]
+        trimws(answer)
+      },
+      error = \(e) return(NA_character_)
+    )
   }
 
   return(obj)
 }
-

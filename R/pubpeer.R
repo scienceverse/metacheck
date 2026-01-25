@@ -8,8 +8,10 @@
 #' @export
 #'
 #' @examples
-#' doi <- c("10.1038/s41598-025-24662-9",
-#'           "10.1177/0146167211398138")
+#' doi <- c(
+#'   "10.1038/s41598-025-24662-9",
+#'   "10.1177/0146167211398138"
+#' )
 #' pubpeer_comments(doi)
 pubpeer_comments <- function(doi) {
   url <- "https://pubpeer.com/v3/publications?devkey=PubPeerZotero"
@@ -36,10 +38,12 @@ pubpeer_comments <- function(doi) {
       do.call(dplyr::bind_rows, args = _)
 
     if (nrow(pp_fb) == 0) {
-      all <- data.frame(doi = tolower(doi),
-                        total_comments = 0,
-                        url = NA_character_,
-                        users = NA_character_)
+      all <- data.frame(
+        doi = tolower(doi),
+        total_comments = 0,
+        url = NA_character_,
+        users = NA_character_
+      )
     } else {
       all <- data.frame(doi = tolower(doi)) |>
         dplyr::left_join(pp_fb, by = "doi")
@@ -49,6 +53,6 @@ pubpeer_comments <- function(doi) {
 
     return(all)
   } else {
-    return(NULL)  # Request failed
+    return(NULL) # Request failed
   }
 }

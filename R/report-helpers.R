@@ -43,7 +43,8 @@ scroll_table <- function(table,
   colwidths_code <- paste(deparse(colwidths), collapse = "\n")
 
   # generate markdown to create the table
-  md <- sprintf('
+  md <- sprintf(
+    "
 ```{r}
 #| echo: false
 %s
@@ -54,11 +55,12 @@ table <- %s
 # display table -----------------------------------
 metacheck::report_table(table, %s, %s, %s)
 ```
-', column_loc,
-   tbl_code,
-   colwidths_code,
-   maxrows,
-   ifelse(isTRUE(escape), "TRUE", "FALSE"))
+", column_loc,
+    tbl_code,
+    colwidths_code,
+    maxrows,
+    ifelse(isTRUE(escape), "TRUE", "FALSE")
+  )
 
   return(md)
 }
@@ -86,17 +88,19 @@ report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE)
     # colwidths <- rep_len(colwidths, ncol(table))
     cd <- lapply(seq_along(colwidths), \(i) {
       x <- colwidths[[i]]
-      if (is.na(x)) return(NULL)
+      if (is.na(x)) {
+        return(NULL)
+      }
 
       if (is.numeric(x)) {
         if (x > 1) {
           x <- paste0(x, "px")
         } else {
-          x <- paste0(x*100, "%")
+          x <- paste0(x * 100, "%")
         }
       }
       # targets are 0-based
-      list(targets = i-1, width = x)
+      list(targets = i - 1, width = x)
     })
     cd_code <- cd[!sapply(cd, is.null)]
   }
@@ -106,17 +110,20 @@ report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE)
 
   # set up options
   dom <- ifelse(nrow(table) > maxrows, "<'top' p>", "t")
-  options <- list(dom = dom,
-                  autoWidth = TRUE,
-                  ordering = FALSE,
-                  pageLength = maxrows,
-                  columnDefs = cd_code)
+  options <- list(
+    dom = dom,
+    autoWidth = TRUE,
+    ordering = FALSE,
+    pageLength = maxrows,
+    columnDefs = cd_code
+  )
 
   DT::datatable(table,
-                options,
-                selection = "none",
-                rownames = FALSE,
-                escape = escape)
+    options,
+    selection = "none",
+    rownames = FALSE,
+    escape = escape
+  )
 }
 
 #' Make Collapsible Section
@@ -189,8 +196,10 @@ link <- function(url, text = url, new_window = TRUE, type = "") {
   nw <- ""
   text <- gsub("^https?://", "", text)
   if (new_window) nw <- " target='_blank'"
-  links <- sprintf("<a href='%s'%s>%s</a>",
-                   url, nw, text)
+  links <- sprintf(
+    "<a href='%s'%s>%s</a>",
+    url, nw, text
+  )
   links[is.na(url)] <- NA
 
   return(links)
@@ -224,7 +233,10 @@ format_ref <- function(bib) {
     tmpfile <- tempfile(fileext = ".bib")
     writeLines(bib, tmpfile)
     bib <- tryCatch(bibtex::read.bib(tmpfile),
-                    error = \(e) { return(bib) })
+      error = \(e) {
+        return(bib)
+      }
+    )
   }
 
   # handle list of bibentries
@@ -237,4 +249,3 @@ format_ref <- function(bib) {
   # tidy up
   gsub("\\n|<p>|</p>", " ", formatted) |> trimws()
 }
-
