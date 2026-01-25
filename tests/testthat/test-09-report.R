@@ -29,24 +29,74 @@ test_that("errors", {
 
   # format case
   ok_output_format <- "QMD"
-  expect_no_error(save_path <- report(paper, modules, output_file, ok_output_format))
+  expect_no_error(rep <- report(paper, modules, output_file, ok_output_format))
+  save_path <- attr(rep, "save_path")
   expect_equal(save_path, output_file)
 })
 
 test_that("rendering error", {
-  # should give a warning and returnt he path to the saved qmd
+  # should give a warning and return the path to the saved qmd
   paper <- read(demoxml())
   modules <- c("bad-report")
   output_format <- "html"
 
   # qmd fails to render
   output_file <- withr::local_tempfile(fileext = paste0(".", output_format))
-  expect_warning(report_file <- report(paper, modules, output_file, output_format),
+  expect_warning(rep<- report(paper, modules, output_file, output_format),
                  "There was an error rendering your report")
 
   exp <- sub("html$", "qmd", output_file)
-  expect_equal(report_file, exp)
+  save_path <- attr(rep, "save_path")
+  expect_equal(save_path, exp)
   # browseURL(report_file)
+})
+
+test_that("report return list", {
+  paper <- demoxml() |> read()
+  modules <- c("stat_p_exact", "marginal")
+  output_file <- withr::local_tempfile(fileext = ".qmd")
+  output_format <- "qmd"
+  paper_report <- report(paper, modules, output_file, output_format)
+  expect_equal(names(paper_report), modules)
+  expect_s3_class(paper_report[[1]], "metacheck_module_output")
+  expect_equal(paper_report$stat_p_exact$module, "stat_p_exact")
+})
+
+test_that("report paperlist", {
+  paper <- psychsci[1:2]
+  modules <- c("stat_p_exact", "marginal")
+  output_file <- withr::local_tempfile(pattern = "_", fileext = ".qmd")
+  output_format <- "qmd"
+  paper_report <- report(paper, modules, output_file, output_format)
+  expect_equal(length(paper_report), 2)
+  expect_equal(names(paper_report), names(paper))
+  expect_equal(names(paper_report[[1]]), modules)
+  expect_equal(names(paper_report[[2]]), modules)
+  sp1 <- attr(paper_report[[1]], "save_path")
+  expect_true(file.exists(sp1))
+  sp2 <- attr(paper_report[[2]], "save_path")
+  expect_true(file.exists(sp2))
+  sp <- attr(paper_report, "save_path")
+  expect_equal(names(sp), names(paper))
+  expect_equal(sp[[1]], sp1)
+  expect_equal(sp[[2]], sp2)
+
+  output_file1 <- withr::local_tempfile(fileext = ".qmd")
+  output_file2 <- withr::local_tempfile(fileext = ".qmd")
+  pr1 <- report(paper[1], modules, output_file1, output_format)
+  pr2 <- report(paper[[2]], modules, output_file2, output_format)
+  expect_true(file.exists(output_file1))
+  expect_true(file.exists(output_file2))
+
+  expect_equal(paper_report[[1]], pr1, ignore_attr = TRUE)
+  expect_equal(paper_report[[2]], pr2, ignore_attr = TRUE)
+
+  # vector of output_files
+  output_file <- c(withr::local_tempfile(fileext = ".qmd"),
+                   withr::local_tempfile(fileext = ".qmd"))
+  paper_report <- report(paper, modules, output_file, output_format)
+  expect_true(file.exists(output_file[[1]]))
+  expect_true(file.exists(output_file[[2]]))
 })
 
 test_that("render qmd", {
@@ -58,7 +108,8 @@ test_that("render qmd", {
   output_file <- withr::local_tempfile(fileext = ".qmd")
   output_format <- "qmd"
   paper_report <- report(paper, modules, output_file, output_format)
-  expect_equal(paper_report, output_file)
+  save_path <- attr(paper_report, "save_path")
+  expect_equal(save_path, output_file)
   expect_true(file.exists(output_file))
   # browseURL(output_file)
 })
@@ -72,8 +123,8 @@ test_that("render html", {
   output_file <- withr::local_tempfile(fileext = ".html")
   output_format <- "html"
 
-  save_path <- report(paper, modules, output_file, output_format)
-  #expect_equal(save_path, output_file)
+  paper_report <- report(paper, modules, output_file, output_format)
+  save_path <- attr(paper_report, "save_path")
   expect_true(file.exists(save_path))
   # browseURL(html)
 })
@@ -90,9 +141,10 @@ test_that("report pass args", {
                                 irrelevant_arg = 1:10)
   )
   r <- report(paper, modules, output_file, output_format, args = args)
+  save_path <- attr(r, "save_path")
   # browseURL(r)
 
-  qmd_txt <- readLines(r)
+  qmd_txt <- readLines(save_path)
   find_arg <- grepl(args$`modules/no_error.R`$demo_arg, qmd_txt, fixed = TRUE)
   expect_true(any(find_arg))
 
@@ -153,7 +205,8 @@ test_that("detected", {
                          output_file = qmd,
                          output_format = "qmd"
   )
-  expect_equal(paper_report, qmd)
+  save_path <- attr(paper_report, "save_path")
+  expect_equal(save_path, qmd)
   expect_true(file.exists(qmd))
   # rstudioapi::documentOpen(qmd)
 
@@ -216,5 +269,29 @@ test_that("module_report howitworks", {
 })
 
 
+test_that("report_module_run", {
+  expect_true(is.function(metacheck::report_module_run))
+  expect_no_error(helplist <- help(report_module_run, metacheck))
 
+  paper <- read(demoxml())
+  modules <- "all_p_values"
+  mo <- report_module_run(paper, modules)
+  expect_equal(names(mo), modules)
 
+  modules <- c("stat_p_nonsig", "stat_p_exact")
+  mo <- report_module_run(paper, modules)
+  expect_setequal(names(mo), modules)
+})
+
+test_that("report_qmd", {
+  expect_true(is.function(metacheck::report_qmd))
+  expect_no_error(helplist <- help(report_qmd, metacheck))
+
+  paper <- read(demoxml())
+  modules <- "stat_p_nonsig"
+  mo <- report_module_run(paper, modules)
+  report_text <- report_qmd(mo, paper)
+  expect_true(grepl("MetaCheck Report", report_text))
+  expect_true(grepl(paper$info$title, report_text))
+  expect_true(grepl("Non-Significant P Value Check", report_text, fixed = TRUE))
+})

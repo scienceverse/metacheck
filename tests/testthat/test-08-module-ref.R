@@ -1,4 +1,4 @@
-# httptest::start_capturing()
+#httptest::start_capturing()
 httptest::use_mock_api()
 
 test_that("ref_doi_check", {
@@ -47,6 +47,17 @@ test_that("ref_accuracy", {
   expect_equal(mod_output$summary_table$refs_not_found, 1)
   expect_equal(mod_output$summary_table$title_mismatch, 1)
   expect_equal(mod_output$summary_table$author_mismatch, 0)
+})
+
+test_that("ref_doi_check + ref_accuracy", {
+  skip_if_offline("api.labs.crossref.org")
+
+  paper <- read(demoxml())
+  mod_output <- paper |>
+    module_run("ref_doi_check") |>
+    module_run("ref_accuracy")
+
+  expect_equal(nrow(mod_output$table), nrow(paper$bib))
 })
 
 
@@ -193,4 +204,4 @@ test_that("ref_miscitation", {
 })
 
 httptest::stop_mocking()
-# httptest::stop_capturing()
+#httptest::stop_capturing()

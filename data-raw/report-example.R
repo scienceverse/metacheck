@@ -21,12 +21,14 @@ modules <- c(
   "ref_accuracy",
   "ref_replication",
   "ref_retraction",
-  "ref_pubpeer"
+  "ref_pubpeer",
+  "ref_summary"
 )
-file <- report(paper, modules,
+op <- report(paper, modules,
                output_file = "pkgdown/assets/report-example.qmd",
                output_format = "qmd")
 
+file <- attr(op, "save_path")
 # manually check
 # browseURL(file)
 

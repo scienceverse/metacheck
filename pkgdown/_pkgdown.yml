@@ -86,6 +86,8 @@ reference:
   - '`module_report`'
   - '`module_template`'
   - '`report`'
+  - '`report_module_run`'
+  - '`report_qmd`'
 - title: Module Helpers
   desc: These functions help module writers make consistently formatted report text.
   contents:

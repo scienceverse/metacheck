@@ -138,7 +138,7 @@ llm_model_list <- function(platform = NULL) {
   ef <- getNamespaceExports("ellmer") |>
     grep("models_.+", x = _, value = TRUE)
   names(ef) <- gsub("models_", "", ef)
-  funcs <- lapply(ef, \(x) getFromNamespace(x, "ellmer"))
+  funcs <- lapply(ef, \(x) utils::getFromNamespace(x, "ellmer"))
   # ellmer doesn't have a groq model function, so use ours
   funcs$groq <- models_groq
 
@@ -154,6 +154,12 @@ llm_model_list <- function(platform = NULL) {
   # get models and ignore errors, add platform name
   models <- lapply(platform, \(p) {
     tryCatch({
+      # skip if google api key isn't set, otherwise it requests login
+      if (p %in% c("google_gemini", "google_vertex") &&
+          Sys.getenv("GOOGLE_API_KEY") == "") {
+        return(NULL)
+      }
+
       model_func <- funcs[[p]]
       m <- model_func()
       cols <- c("platform", names(m))

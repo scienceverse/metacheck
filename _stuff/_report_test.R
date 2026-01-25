@@ -4,7 +4,7 @@ dir.create(dir, showWarnings = FALSE)
 
 llm_use(TRUE)
 llm_model("gemini")
-llm_model("llama-3.3-70b-versatile")
+llm_model("groq/llama-3.3-70b-versatile")
 
 # choose modules to run
 # module_list()
@@ -27,18 +27,19 @@ modules <- c(
   # "open_practices",
   # "funding_check",
   # "coi_check",
-  "power"
+  # "power",
   # "stat_p_exact",
   # "stat_p_nonsig",
   # "marginal",
   # "stat_effect_size",
   # # "code_check",
   # "stat_check",
-  # # "ref_doi_check",
-  # # "ref_accuracy",
+  "ref_doi_check",
+  "ref_accuracy",
   # "ref_replication",
   # "ref_retraction",
-  # "ref_pubpeer"
+  # "ref_pubpeer",
+  "ref_summary"
 )
 
 # paper <- psychsci$`0956797621991137`
@@ -47,11 +48,11 @@ modules <- c(
 
 # generate reports for a sample of n papers
 n <- 1
-output <- "html"
+output <- "qmd"
 files <- seq_along(psychsci) |> sample(n) |>
   lapply(\(i) {
     #i = which(names(psychsci) == "0956797615583071")
-    #paper <- psychsci[[i]]
+    paper <- psychsci[[i]]
     paper <- read(demoxml())
     print(paper$id)
 
@@ -59,11 +60,13 @@ files <- seq_along(psychsci) |> sample(n) |>
       doi_check = list(crossref_min_score = 50)
     )
 
-    report(paper,
+    rep <- report(paper,
            modules = modules,
            output_file = paste0(dir, "/", paper$id, ".", output),
            output_format = output,
            args = args)
+
+    attr(rep, "save_path")
   })
 
 # open all files in web browser

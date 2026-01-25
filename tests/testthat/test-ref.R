@@ -259,6 +259,15 @@ test_that("crossref_query", {
   expect_equal(obs$DOI, NA_character_)
   expect_equal(obs$ref, ref)
 
+  # select
+  ref <- "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1)."
+  obs <- crossref_query(ref, select = c("DOI"))
+  expect_equal(names(obs), c("ref", "DOI"))
+
+  ref <- "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1)."
+  obs <- crossref_query(ref, select = c("score", "title"))
+  expect_equal(names(obs), c("ref", "score", "title"))
+
   # from bibentry ref
   ref <- psychsci[[1]]$bib$ref[[1]]
   obs <- crossref_query(ref)

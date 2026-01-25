@@ -7,7 +7,7 @@
 #' args <- list(power = list(seed = 8675309))
 #' ```
 #'
-#' @param paper a paper object
+#' @param paper a paper object or a paperlist object
 #' @param modules a vector of modules to run (names for built-in modules or paths for custom modules)
 #' @param output_file the name of the output file
 #' @param output_format the format to create the report in
@@ -36,8 +36,9 @@ report <- function(paper,
                                "ref_doi_check",
                                "ref_replication",
                                "ref_retraction",
-                               "ref_pubpeer"),
-                   output_file = paste0(paper$name, "_report.", output_format),
+                               "ref_pubpeer",
+                               "ref_summary"),
+                   output_file = paste0(paper$id, "_report.", output_format),
                    output_format = c("html", "qmd"),
                    args = list()) {
   # error catching ----
@@ -46,6 +47,40 @@ report <- function(paper,
   if (!output_format %in% c("html", "qmd")) {
     stop("The output_format must be either 'html' or 'qmd'.",
          call. = FALSE)
+  }
+
+  ## check if modules are available
+  mod_exists <- sapply(modules, module_find)
+
+  # vectorise over papers ----
+  if (is_paper_list(paper) && length(paper) == 1) {
+    # treat length-1 paperlist like 1 paper
+    paper <- paper[[1]]
+  } else if (is_paper_list(paper)) {
+    ## set up progress bar ----
+    pb <- pb(length(paper),
+             ":what [:bar] :current/:total :elapsedfull")
+    pb$tick(0, tokens = list(what = "Creating reports"))
+
+    if (length(output_file) != length(paper)) {
+      bn <- paste0(names(paper), x = basename(output_file[[1]]))
+      output_file <- dirname(output_file[[1]]) |> file.path(bn)
+    }
+
+    reports <- mapply(\(x, of) {
+      r <- tryCatch(report(x, modules, of, output_format, args),
+                     error = \(e) {
+                       warning("Error in ", x$id, ":\n", e$message,
+                               call. = FALSE)
+                       return(NULL)
+                     })
+      pb$tick(tokens = list(what = x$id))
+      r
+    }, x = paper, of = output_file, SIMPLIFY = FALSE)
+
+    attr(reports, "save_path") <- sapply(reports, attr, "save_path")
+
+    return(invisible(reports))
   }
 
   ## check if the output_file is valid
@@ -60,125 +95,12 @@ report <- function(paper,
     stop("The paper argument must be a paper object (e.g., created with `read()`)", .call = FALSE)
   }
 
-  ## check if modules are available
-  mod_exists <- sapply(modules, module_find)
-
-  # set up progress bar
-  pb <- pb(length(modules) + 3,
-           ":what [:bar] :current/:total :elapsedfull")
-  pb$tick(0, tokens = list(what = "Running modules"))
-
-  # run each module ----
-  #module_output <- lapply(modules, \(module) {
-  op <- paper
-  for (module in modules) {
-    pb$tick(tokens = list(what = module))
-    mod_args <- args[[module]] %||% list()
-    mod_args$paper <- op
-    mod_args$module <- module
-
-    op <- tryCatch(do.call(module_run, mod_args),
-           error = function(e) {
-             warning("Error in ", module)
-             prev <- mod_args$paper$prev_outputs
-             report_items <- list(
-               module = module,
-               title = module,
-               table = NULL,
-               report = e$message,
-               summary_text = "This module failed to run",
-               summary_table = mod_args$paper$summary_table,
-               traffic_light = "fail",
-               paper = paper,
-               prev_outputs = prev
-             )
-             class(report_items) <- "metacheck_module_output"
-
-             return(report_items)
-           })
-  }
-
-  # pull last module output out
-  module_output <- op$prev_outputs
-  op$prev_outputs <- NULL
-  op$paper <- NULL
-  module_output[[op$module]] <- op
-
-  # organise modules ----
-  section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
-  sections <- sapply(module_output, \(mo) mo$section)
-  sections <- factor(sections, section_levels)
-  tl_levels <- c("red", "yellow", "green", "info", "na", "fail")
-  tls <- sapply(module_output, \(mo) mo$traffic_light %||% "info")
-  tls <- factor(tls, tl_levels)
-  # this seems hacky, but I can't figure out how to sort by 2 vectors
-  mod_order <- xtfrm(sections)*10 + xtfrm(tls)
-  module_output <- sort_by(module_output, mod_order)
+  # run modules ----
+  module_output <- report_module_run(paper, modules, args)
 
   # set up report ----
-  pb$tick(tokens = list(what = "Creating report"))
+  report_text <- report_qmd(module_output, paper)
 
-  ## read in report template ----
-  report_template <- system.file("templates/_report.qmd",
-                                 package = "metacheck")
-  rt <- readLines(report_template)
-  cut_after <- which(rt == "<!-- Demo -->") - 1
-  rt_head <- paste(rt[1:cut_after], collapse = "\n")
-  # turn real % to %%, leave %s, %d, %f, %i
-  rt_head <- gsub("\\%(?![sdfi])", "%%", rt_head, perl = TRUE)
-  doi_text <- ifelse(paper$info$doi == "", "",
-                     sprintf("DOI: [%s](https://doi.org/%s)", paper$info$doi, paper$info$doi))
-  author_text <- utils::capture.output(print.scivrs_authors(paper$authors))
-  if (length(author_text) == 0) author_text <- ""
-  qmd_header <- sprintf(rt_head,
-                        gsub('"', '\\\\"', paper$info$title),
-                        author_text,
-                        as.character(utils::packageVersion("metacheck")),
-                        Sys.Date(),
-                        doi_text)
-
-  ## generate summary section ----
-  summary_list <- sapply(module_output, \(x) {
-    tl <- paste0("tl_", x$traffic_light %||% "info")
-    summary_text <- x$summary_text %||% ""
-    # indent 4 if first line is \n (probably a list)
-    if (nzchar(summary_text) && substr(summary_text, 1, 1) == "\n") {
-      summary_text <- gsub("\n", "\n    ", summary_text)
-    }
-    sprintf("- %s [%s](#%s){.%s}: %s  ",
-            emojis[[tl]],
-            x$title,
-            gsub("\\s", "-", tolower(x$title)),
-            x$traffic_light %||% "info",
-            summary_text)
-  })
-  summary_text <- sprintf("## Summary\n\n%s\n\n",
-                          paste(summary_list, collapse = "\n"))
-
-  ## format module reports ----
-  module_reports <- sapply(section_levels, \(sec) {
-    this_section <- sapply(module_output, `[[`, "section") == sec
-    if (!any(this_section)) return(NULL)
-
-    section_op <- module_output[this_section]
-    mr <- sapply(section_op, module_report)
-
-    title <- sprintf("## %s%s Modules",
-                     toupper(substr(sec, 1, 1)),
-                     substr(sec, 2, nchar(sec)))
-    c(title, mr)
-  }) |>
-    unlist() |>
-    paste(collapse = "\n\n") |>
-    gsub("\\n{3,}", "\n\n", x = _)
-
-  report_text <- paste(qmd_header,
-                       summary_text,
-                       module_reports,
-                       "\n", # prevent incomplete final line warnings
-                       sep = "\n\n")
-
-  pb$tick(tokens = list(what = "Rendering Report"))
   if (output_format == "qmd") {
     write(report_text, output_file)
     save_path <- output_file
@@ -212,9 +134,161 @@ report <- function(paper,
     })
   }
 
-  pb$tick(tokens = list(what = "Report Saved"))
+  attr(module_output, "save_path") <- save_path
 
-  invisible(save_path)
+  invisible(module_output)
+}
+
+#' Run modules for a report
+#'
+#' Runs modules in order on the paper and orders by section and traffic light.
+#'
+#' Pass arguments to modules in a named list of lists, using the same names as the `modules` argument. You only need to specify modules with arguments.
+#' ```
+#' args <- list(power = list(seed = 8675309))
+#' ```
+#'
+#' @param paper a paper object
+#' @param modules a vector of modules to run
+#' @param args optional list of arguments to pass to modules
+#'
+#' @returns a list of module outputs
+#' @export
+#'
+#' @examples
+#' paper <- read(demoxml())
+#' modules <- c("stat_p_exact", "stat_p_nonsig")
+#' module_output <- report_module_run(paper, modules)
+report_module_run <- function(paper, modules, args = list()) {
+  # set up progress bar
+  pb <- pb(length(modules),
+           ":what [:bar] :current/:total :elapsedfull")
+  pb$tick(0, tokens = list(what = "Running modules"))
+
+  # run each module ----
+  #module_output <- lapply(modules, \(module) {
+  op <- paper
+  for (module in modules) {
+    pb$tick(tokens = list(what = module))
+    mod_args <- args[[module]] %||% list()
+    mod_args$paper <- op
+    mod_args$module <- module
+
+    op <- tryCatch(do.call(module_run, mod_args),
+                   error = function(e) {
+                     warning("Error in ", module)
+                     prev <- mod_args$paper$prev_outputs
+                     report_items <- list(
+                       module = module,
+                       title = module,
+                       table = NULL,
+                       report = e$message,
+                       summary_text = "This module failed to run",
+                       summary_table = mod_args$paper$summary_table,
+                       traffic_light = "fail",
+                       paper = paper,
+                       prev_outputs = prev
+                     )
+                     class(report_items) <- "metacheck_module_output"
+
+                     return(report_items)
+                   })
+  }
+
+  # pull last module output out
+  module_output <- op$prev_outputs
+  op$prev_outputs <- NULL
+  op$paper <- NULL
+  module_output[[op$module]] <- op
+
+  # organise modules ----
+  section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
+  sections <- sapply(module_output, \(mo) mo$section)
+  sections <- factor(sections, section_levels)
+  tl_levels <- c("red", "yellow", "green", "info", "na", "fail")
+  tls <- sapply(module_output, \(mo) mo$traffic_light %||% "info")
+  tls <- factor(tls, tl_levels)
+  # this seems hacky, but I can't figure out how to sort by 2 vectors
+  mod_order <- xtfrm(sections)*10 + xtfrm(tls)
+  module_output <- sort_by(module_output, mod_order)
+
+  return(module_output)
+}
+
+#' Create Report from Module Output
+#'
+#' @param module_output a list of module output (usually from `report_module_run()`)
+#' @param paper a paper object
+#'
+#' @returns report text
+#' @export
+report_qmd <- function(module_output, paper = list()) {
+  ## read in report template ----
+  report_template <- system.file("templates/_report.qmd",
+                                 package = "metacheck")
+  rt <- readLines(report_template)
+  cut_after <- which(rt == "<!-- Demo -->") - 1
+  rt_head <- paste(rt[1:cut_after], collapse = "\n")
+  # turn real % to %%, leave %s, %d, %f, %i
+  rt_head <- gsub("\\%(?![sdfi])", "%%", rt_head, perl = TRUE)
+  subtitle <- gsub('"', '\\\\"', paper$info$title %||% "")
+  doi_text <- ifelse((paper$info$doi %||% "") == "", "",
+                     sprintf("DOI: [%s](https://doi.org/%s)", paper$info$doi, paper$info$doi))
+  author_text <- utils::capture.output(print.scivrs_authors(paper$authors))
+  if (length(author_text) == 0) author_text <- ""
+  qmd_header <- sprintf(rt_head,
+                        subtitle,
+                        author_text,
+                        as.character(utils::packageVersion("metacheck")),
+                        Sys.Date(),
+                        doi_text)
+
+  ## generate summary section ----
+  summary_list <- sapply(module_output, \(x) {
+    tl <- paste0("tl_", x$traffic_light %||% "info")
+    summary_text <- x$summary_text %||% ""
+    # indent 4 if first line is \n (probably a list)
+    if (nzchar(summary_text) && substr(summary_text, 1, 1) == "\n") {
+      summary_text <- gsub("\n", "\n    ", summary_text)
+    }
+    sprintf("- %s [%s](#%s){.%s}: %s  ",
+            emojis[[tl]],
+            x$title,
+            gsub("\\s", "-", tolower(x$title)),
+            x$traffic_light %||% "info",
+            summary_text)
+  })
+  summary_text <- sprintf("## Summary\n\n%s\n\n",
+                          paste(summary_list, collapse = "\n"))
+
+  ## format module reports ----
+  section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
+
+  module_reports <- sapply(section_levels, \(sec) {
+    this_section <- sapply(module_output, `[[`, "section") == sec
+    # remove fail and na from main report section
+    valid_tl <- !sapply(module_output, `[[`, "traffic_light") %in% c("na", "fail")
+    if (!any(this_section & valid_tl)) return(NULL)
+
+    section_op <- module_output[this_section & valid_tl]
+    mr <- sapply(section_op, module_report)
+
+    title <- sprintf("## %s%s Modules",
+                     toupper(substr(sec, 1, 1)),
+                     substr(sec, 2, nchar(sec)))
+    c(title, mr)
+  }) |>
+    unlist() |>
+    paste(collapse = "\n\n") |>
+    gsub("\\n{3,}", "\n\n", x = _)
+
+  report_text <- paste(qmd_header,
+                       summary_text,
+                       module_reports,
+                       "\n", # prevent incomplete final line warnings
+                       sep = "\n\n")
+
+  return(report_text)
 }
 
 #' Report from module output
@@ -291,3 +365,5 @@ module_report <- function(module_output,
 
   paste0(c(head, pre, report, post, hiw), collapse = "\n\n")
 }
+
+

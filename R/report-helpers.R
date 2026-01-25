@@ -4,7 +4,7 @@
 #'
 #' See [quarto article layout](https://quarto.org/docs/authoring/article-layout.html) for column options. The most common are "body" (centre column), "page" (span all columns"), and "margin" (only in right margin).
 #'
-#' To set colwidths, use a numeric or character vector. For a numeric vector, numbers greater than 1 wil be interpreted as pixels, less than 1 as percents. Character vectors will be passed as is (e.g., "3em"). If you only want to specify some columns, set the others to NA, like c(200, NA, NA, NA). Vectors shorter than the number of columns will be recycled.
+#' To set colwidths, use a numeric or character vector. For a numeric vector, numbers greater than 1 will be interpreted as pixels, less than 1 as percents. Character vectors will be passed as is (e.g., "3em"). If you only want to specify some columns, set the others to NA, like c(200, NA, 200, NA).
 #'
 #' @param table the data frame to show in a table, or a vector for a list
 #' @param colwidths set column widths as a vector of px (number > 1) or percent (numbers <= 1)
@@ -83,7 +83,7 @@ report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE)
     cd_code <- list()
   } else {
     # set up column width definitions
-    colwidths <- rep_len(colwidths, ncol(table))
+    # colwidths <- rep_len(colwidths, ncol(table))
     cd <- lapply(seq_along(colwidths), \(i) {
       x <- colwidths[[i]]
       if (is.na(x)) return(NULL)
@@ -101,9 +101,13 @@ report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE)
     cd_code <- cd[!sapply(cd, is.null)]
   }
 
+  # let col names break at _
+  names(table) <- gsub("_", "_<wbr>", names(table))
+
   # set up options
   dom <- ifelse(nrow(table) > maxrows, "<'top' p>", "t")
   options <- list(dom = dom,
+                  autoWidth = TRUE,
                   ordering = FALSE,
                   pageLength = maxrows,
                   columnDefs = cd_code)

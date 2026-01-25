@@ -4,8 +4,8 @@
 email("metacheck@scienceverse.org")
 
 httptest::.mockPaths(NULL)
-httptest::.mockPaths("tests/testthat/apis")
-httptest::.mockPaths("apis")
+apis <- normalizePath("apis")
+httptest::.mockPaths(apis)
 
 # adjust to run LLM tests where wanted
 skip_llm <- function() {
