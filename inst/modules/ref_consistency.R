@@ -24,7 +24,7 @@ ref_consistency <- function(paper) {
 
   missing_refs <- dplyr::anti_join(bibs, xrefs, by = c("id", "xref_id"))
   missing_refs$missing <- rep("xrefs", nrow(missing_refs))
-  missing_bib <- dplyr::anti_join(xrefs, bibs,  by = c("id", "xref_id"))
+  missing_bib <- dplyr::anti_join(xrefs, bibs, by = c("id", "xref_id"))
   missing_bib$missing <- rep("bib", nrow(missing_bib))
   names(missing_bib) <- names(missing_bib) |> sub("text", "ref", x = _)
   missing_bib$ref <- as.list(missing_bib$ref)
@@ -36,8 +36,10 @@ ref_consistency <- function(paper) {
   nbibs <- dplyr::count(bibs, id, name = "n_bib")
   nxrefs <- dplyr::count(xrefs, id, name = "n_xrefs")
   nmiss <- dplyr::count(table, id, missing) |>
-    tidyr::pivot_wider(names_from = missing, names_prefix = "missing_",
-                       values_from = n, values_fill = 0)
+    tidyr::pivot_wider(
+      names_from = missing, names_prefix = "missing_",
+      values_from = n, values_fill = 0
+    )
   summary_table <- info_table(paper, c()) |>
     dplyr::left_join(nbibs, by = "id") |>
     dplyr::left_join(nxrefs, by = "id") |>
@@ -60,9 +62,11 @@ ref_consistency <- function(paper) {
   cols <- c("xref_id", "ref", "missing")
   report_table <- table[, cols]
 
-  report_text <- c(report[[tl]],
-                   "This module relies on Grobid correctly parsing the references. There are likley to be some false positives.",
-                   scroll_table(report_table))
+  report_text <- c(
+    report[[tl]],
+    "This module relies on Grobid correctly parsing the references. There are likley to be some false positives.",
+    scroll_table(report_table)
+  )
 
   # return
   list(

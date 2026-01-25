@@ -41,9 +41,8 @@ code_check <- function(paper) {
 
   ## no links found ----
   if (length(osf_urls) == 0 &&
-      length(github_urls) == 0 &&
-      length(rb_urls) == 0) {
-
+    length(github_urls) == 0 &&
+    length(rb_urls) == 0) {
     summary_text <- "We found no links to the Open Science Framework, Github, or ResearchBox."
 
     info <- list(
@@ -120,7 +119,7 @@ code_check <- function(paper) {
   zip_files <- all_files[zip_ext, , drop = FALSE]
   readme_files <- grepl("readme|read[_ ]me", all_files$name, ignore.case = TRUE)
   readme_files <- all_files[readme_files, ]
-  summary_code <-  sprintf(
+  summary_code <- sprintf(
     "We found %d R, SAS, SPSS, or Stata code file%s in the %d searched %s.",
     nrow(code_files),
     plural(nrow(code_files)),
@@ -132,13 +131,15 @@ code_check <- function(paper) {
   readme_issue <- unique(all_files$source) |>
     setdiff(readme_files$source)
 
-  summary_readme <- sprintf("We found %d README file%s and %d source%s without READMEs%s%s.",
-                            nrow(readme_files),
-                            plural(nrow(readme_files)),
-                            length(readme_issue),
-                            plural(length(readme_issue)),
-                            ifelse(length(readme_issue), ": ", ""),
-                            paste(readme_issue, collapse = ", "))
+  summary_readme <- sprintf(
+    "We found %d README file%s and %d source%s without READMEs%s%s.",
+    nrow(readme_files),
+    plural(nrow(readme_files)),
+    length(readme_issue),
+    plural(length(readme_issue)),
+    ifelse(length(readme_issue), ": ", ""),
+    paste(readme_issue, collapse = ", ")
+  )
 
   if (is.null(readme_issue)) {
     report_readme <- NULL
@@ -157,9 +158,10 @@ code_check <- function(paper) {
       "### ZIP Files \n\nZIP files were present in the repository: %s. We can't examine their content. If the zip file contains data and code files, consider uploading these individually to improve discoverability and re-use.",
       paste(zip_files$name, collapse = ", ")
     )
-    summary_zip <- sprintf("We found %d ZIP file%s.",
-                           length(zip_issue),
-                           plural(length(zip_issue))
+    summary_zip <- sprintf(
+      "We found %d ZIP file%s.",
+      length(zip_issue),
+      plural(length(zip_issue))
     )
   } else {
     summary_zip <- NULL
@@ -214,72 +216,75 @@ code_check <- function(paper) {
 
   # --- Process each code file ---
   collected <- lapply(seq_len(nrow(code_files)), \(i) {
-    tryCatch({
-      collector <- list()
-      # access via URL if not local
-      if (!is.na(code_files$file_location[i])) {
-        con <- file(code_files$file_location[i], "r")
-      } else {
-        con <- url(code_files$download_url[i])
+    tryCatch(
+      {
+        collector <- list()
+        # access via URL if not local
+        if (!is.na(code_files$file_location[i])) {
+          con <- file(code_files$file_location[i], "r")
+        } else {
+          con <- url(code_files$download_url[i])
+        }
+
+        # read in files
+        file_lines <- readLines(con, warn = FALSE)
+        close(con)
+
+
+        # Convert to UTF-8, replacing invalid characters
+        file_lines <- iconv(file_lines, from = "UTF-8", to = "UTF-8", sub = "byte")
+        # Remove any NA entries resulting from failed conversions
+        file_lines <- file_lines[!is.na(file_lines)]
+
+        # detect language (function below)
+        lang <- detect_lang(code_files$name[i])
+        collector$language <- lang
+
+        # Create a comment-less version, per language
+        file_nc <- remove_comments(file_lines, lang)
+
+        # get absolute paths based on grepl (on non-comment lines)
+        absolute_paths <- grep(absolute_path_pattern, file_nc, value = TRUE, perl = TRUE)
+        if (length(absolute_paths) > 0) {
+          collector$hardcoded_folders <- 1
+          collector$absolute_paths <- paste(absolute_paths, collapse = ", ")
+        } else {
+          collector$hardcoded_folders <- 0
+          collector$absolute_paths <- NA
+        }
+
+        # Find lines where libraries/imports/includes are loaded  (function below)
+        library_lines <- get_library_lines(file_nc, lang)
+
+        # If the import statements are at most 3 lines apart, we consider it OK
+        if (length(library_lines) > 1 && !all(diff(library_lines) < 4)) {
+          collector$library_on_top <- 1
+          collector$library_lines <- paste(library_lines, collapse = ", ")
+        } else if (length(library_lines) > 0) {
+          collector$library_on_top <- 0
+          collector$library_lines <- NA
+        } else {
+          collector$library_on_top <- NA
+        }
+
+        # Get statistics about lines of code and comments  (function below)
+        line_stats <- get_line_stats(file_lines, lang)
+        collector$comment_lines <- line_stats$comment_lines
+        collector$code_lines <- line_stats$code_lines
+        collector$percentage_comment <- line_stats$percent_comments
+
+        # missing loaded files  (function below)
+        missing_files <- get_missing_files(file_nc, lang, files_in_repository)
+        collector$loaded_files_missing <- length(missing_files) > 0
+        collector$loaded_files_missing_names <- paste(missing_files, collapse = ", ")
+
+        return(collector)
+      },
+      error = \(e) {
+        collector <- list(error = e$message)
+        return(collector)
       }
-
-      # read in files
-      file_lines <- readLines(con, warn = FALSE)
-      close(con)
-
-
-      # Convert to UTF-8, replacing invalid characters
-      file_lines <- iconv(file_lines, from = "UTF-8", to = "UTF-8", sub = "byte")
-      # Remove any NA entries resulting from failed conversions
-      file_lines <- file_lines[!is.na(file_lines)]
-
-      # detect language (function below)
-      lang <- detect_lang(code_files$name[i])
-      collector$language <- lang
-
-      # Create a comment-less version, per language
-      file_nc <- remove_comments(file_lines, lang)
-
-      # get absolute paths based on grepl (on non-comment lines)
-      absolute_paths <- grep(absolute_path_pattern, file_nc, value = TRUE, perl = TRUE)
-      if (length(absolute_paths) > 0) {
-        collector$hardcoded_folders <- 1
-        collector$absolute_paths <- paste(absolute_paths, collapse = ", ")
-      } else {
-        collector$hardcoded_folders <- 0
-        collector$absolute_paths <- NA
-      }
-
-      # Find lines where libraries/imports/includes are loaded  (function below)
-      library_lines <- get_library_lines(file_nc, lang)
-
-      # If the import statements are at most 3 lines apart, we consider it OK
-      if (length(library_lines) > 1 && !all(diff(library_lines) < 4)) {
-        collector$library_on_top <- 1
-        collector$library_lines <- paste(library_lines, collapse = ", ")
-      } else if (length(library_lines) > 0) {
-        collector$library_on_top <- 0
-        collector$library_lines <- NA
-      } else {
-        collector$library_on_top <- NA
-      }
-
-      # Get statistics about lines of code and comments  (function below)
-      line_stats <- get_line_stats(file_lines, lang)
-      collector$comment_lines <- line_stats$comment_lines
-      collector$code_lines <- line_stats$code_lines
-      collector$percentage_comment <- line_stats$percent_comments
-
-      # missing loaded files  (function below)
-      missing_files <- get_missing_files(file_nc, lang, files_in_repository)
-      collector$loaded_files_missing <- length(missing_files) > 0
-      collector$loaded_files_missing_names <- paste(missing_files, collapse = ", ")
-
-      return(collector)
-    }, error = \(e) {
-      collector <- list(error = e$message)
-      return(collector)
-    })
+    )
   }) # end of loop over code files
 
   code_check <- do.call(dplyr::bind_rows, collected)
@@ -301,7 +306,7 @@ code_check <- function(paper) {
     summary_library <- "Libraries/imports were loaded in multiple places."
     issues_library <- paste(sprintf("**%s**", library_issue), collapse = "\n\n")
     lines_library <- paste(sprintf("**%s**", code_files$library_lines[which(code_files$library_on_top == 1)]), collapse = "\n\n")
-    report_table_library  <- code_files[!is.na(code_files$library_lines), c("name", "language", "library_lines"), drop = FALSE]
+    report_table_library <- code_files[!is.na(code_files$library_lines), c("name", "language", "library_lines"), drop = FALSE]
     colnames(report_table_library) <- c("Code File name", "Language", "Lines at which libraries/imports are loaded")
   }
 
@@ -327,7 +332,6 @@ code_check <- function(paper) {
   if (is.finite(comment_issue) && comment_issue > 0) {
     report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code). All your code files had comments."
     summary_comments <- "All your code files had comments."
-
   } else {
     report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code)."
     summary_comments <- "Some code files had no comments."
@@ -335,8 +339,10 @@ code_check <- function(paper) {
     rows <- !is.na(code_files$percentage_comment)
     report_table_comments <- code_files[rows, cols, drop = FALSE]
     report_table_comments$percentage_comment <- sprintf("%.0f%%", report_table_comments$percentage_comment * 100)
-    colnames(report_table_comments) <- c("Code File name", "Language",
-                                         "Percentage of lines that are comments")
+    colnames(report_table_comments) <- c(
+      "Code File name", "Language",
+      "Percentage of lines that are comments"
+    )
   }
 
   ## Missing files ----
@@ -390,11 +396,11 @@ code_check <- function(paper) {
   # traffic_light ----
   # green only if no issues across all code files
   if (length(missingfiles_issue) == 0 &&
-      is.finite(comment_issue) && comment_issue > 0 &&
-      length(hardcoded_issues) == 0 &&
-      length(library_issue) == 0 &&
-      length(zip_issue) == 0 &&
-      length(readme_issue) == 0) {
+    is.finite(comment_issue) && comment_issue > 0 &&
+    length(hardcoded_issues) == 0 &&
+    length(library_issue) == 0 &&
+    length(zip_issue) == 0 &&
+    length(readme_issue) == 0) {
     tl <- "green"
   } else {
     tl <- "yellow"
@@ -442,24 +448,32 @@ code_check <- function(paper) {
 # Helper: detect language by extension
 detect_lang <- function(fname) {
   lname <- tolower(fname)
-  if (grepl("\\.(r|rmd|qmd)$", lname)) return("R")
-  if (grepl("\\.sas$", lname)) return("SAS")
-  if (grepl("\\.sps$", lname)) return("SPSS")
-  if (grepl("\\.(do|ado)$", lname)) return("Stata")
+  if (grepl("\\.(r|rmd|qmd)$", lname)) {
+    return("R")
+  }
+  if (grepl("\\.sas$", lname)) {
+    return("SAS")
+  }
+  if (grepl("\\.sps$", lname)) {
+    return("SPSS")
+  }
+  if (grepl("\\.(do|ado)$", lname)) {
+    return("Stata")
+  }
   return(NA_character_)
 }
 
 remove_comments <- function(file_lines, lang) {
   if (lang == "R") {
-    file_nc <- grep('^(\\s*$|\\s*#|```\\s*\\{r)', file_lines, invert = TRUE, value = TRUE)
-    file_nc <- grep('knitr::', file_nc, invert = TRUE, value = TRUE)
+    file_nc <- grep("^(\\s*$|\\s*#|```\\s*\\{r)", file_lines, invert = TRUE, value = TRUE)
+    file_nc <- grep("knitr::", file_nc, invert = TRUE, value = TRUE)
   } else if (lang == "SAS") {
     in_block <- FALSE
     tmp <- character(0)
     for (ln in seq_along(file_lines)) {
       L <- file_lines[ln]
       starts_block <- grepl("/\\*", L)
-      ends_block   <- grepl("\\*/", L)
+      ends_block <- grepl("\\*/", L)
       if (!in_block && starts_block) in_block <- TRUE
       line_comment <- grepl("^\\s*\\*.*;\\s*$", L)
       if (!in_block && !line_comment) tmp <- c(tmp, L)
@@ -472,7 +486,7 @@ remove_comments <- function(file_lines, lang) {
     for (ln in seq_along(file_lines)) {
       L <- file_lines[ln]
       starts_block <- grepl("/\\*", L)
-      ends_block   <- grepl("\\*/", L)
+      ends_block <- grepl("\\*/", L)
       if (!in_block && starts_block) in_block <- TRUE
       line_comment <- grepl("^\\s*\\*", L)
       if (!in_block && !line_comment) tmp <- c(tmp, L)
@@ -485,7 +499,7 @@ remove_comments <- function(file_lines, lang) {
     for (ln in seq_along(file_lines)) {
       L <- file_lines[ln]
       starts_block <- grepl("/\\*", L)
-      ends_block   <- grepl("\\*/", L)
+      ends_block <- grepl("\\*/", L)
       if (!in_block && starts_block) in_block <- TRUE
       line_comment <- grepl("^\\s*\\*", L)
       if (!in_block && !line_comment) {
@@ -515,7 +529,7 @@ get_line_stats <- function(file_lines, lang) {
     for (ln in seq_along(file_lines)) {
       L <- file_lines[ln]
       starts_block <- grepl("/\\*", L)
-      ends_block   <- grepl("\\*/", L)
+      ends_block <- grepl("\\*/", L)
       if (!in_block && starts_block) in_block <- TRUE
       line_comment <- grepl("^\\s*\\*.*;\\s*$", L)
       is_comment_line[ln] <- in_block || line_comment
@@ -529,7 +543,7 @@ get_line_stats <- function(file_lines, lang) {
     for (ln in seq_along(file_lines)) {
       L <- file_lines[ln]
       starts_block <- grepl("/\\*", L)
-      ends_block   <- grepl("\\*/", L)
+      ends_block <- grepl("\\*/", L)
       if (!in_block && starts_block) in_block <- TRUE
       line_comment <- grepl("^\\s*\\*", L)
       is_comment_line[ln] <- in_block || line_comment
@@ -543,7 +557,7 @@ get_line_stats <- function(file_lines, lang) {
     for (ln in seq_along(file_lines)) {
       L <- file_lines[ln]
       starts_block <- grepl("/\\*", L)
-      ends_block   <- grepl("\\*/", L)
+      ends_block <- grepl("\\*/", L)
       if (!in_block && starts_block) in_block <- TRUE
       line_comment <- grepl("^\\s*\\*", L)
       # treat lines containing only comments as comments (// may be EOL)
@@ -578,7 +592,9 @@ get_library_lines <- function(file_nc, lang) {
   )
 
   import_regex <- lang_import_regex[[lang]]
-  if (is.null(import_regex)) return(integer(0))
+  if (is.null(import_regex)) {
+    return(integer(0))
+  }
   lines <- grep(import_regex, file_nc, perl = TRUE)
 
   return(lines)
@@ -587,7 +603,7 @@ get_library_lines <- function(file_nc, lang) {
 get_missing_files <- function(file_nc, lang, files_in_repository) {
   # Examine files loaded, but missing in repo
   lang_load_regex <- list(
-    R     = c(
+    R = c(
       "read\\.(csv2?|table|delim2?)",
       "read\\.xlsx",
       "read\\.dta",
@@ -605,8 +621,8 @@ get_missing_files <- function(file_nc, lang, files_in_repository) {
     ) |>
       paste(collapse = "|") |>
       paste0("\\b(", x = _, ")\\s*\\("),
-    SAS   = "\\b(proc\\s+import|infile|datafile\\s*=|libname)\\b",
-    SPSS  = "\\b(GET\\s+FILE|GET\\s+DATA|DATA\\s+LIST|SAVE)\\b",
+    SAS = "\\b(proc\\s+import|infile|datafile\\s*=|libname)\\b",
+    SPSS = "\\b(GET\\s+FILE|GET\\s+DATA|DATA\\s+LIST|SAVE)\\b",
     Stata = "\\b(use|import\\s+delimited|insheet|merge|append)\\b"
   )
   grepl_load <- lang_load_regex[[lang]]

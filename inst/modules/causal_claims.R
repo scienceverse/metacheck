@@ -69,7 +69,7 @@ causal_claims <- function(paper) {
   ## get matches ----
   inc <- grepl(include_re, random_sentences$text, perl = TRUE)
   exc <- grepl(exclude_re, random_sentences$text, perl = TRUE)
-  random_assignment_subset <- random_sentences[ inc & !exc, , drop = FALSE ]
+  random_assignment_subset <- random_sentences[inc & !exc, , drop = FALSE]
 
   ## summary_text for rand ----
   ## report for rand ----
@@ -104,7 +104,7 @@ causal_claims <- function(paper) {
   causal_abstract <- causal_relations(table$text)
 
   ## summary_table ----
-  summary_table <-  causal_abstract |>
+  summary_table <- causal_abstract |>
     dplyr::left_join(table, by = c(sentence = "text")) |>
     dplyr::summarise(causal = sum(causal), .by = "id")
   # filter after so join doesn't fail
@@ -118,7 +118,8 @@ causal_claims <- function(paper) {
     summary_text_title <- "Causal claims were detected in the title."
     report_causal_title <- c(
       summary_text_title,
-      scroll_table(causal_title[, c("sentence", "cause", "effect")]), 1)
+      scroll_table(causal_title[, c("sentence", "cause", "effect")]), 1
+    )
   }
 
   ## causal abstract ----
@@ -133,7 +134,6 @@ causal_claims <- function(paper) {
     } else {
       report_text_causal_abstract <- "Random assignment was detected, so these causal claims might be warranted, but it is always prudent to double-check."
     }
-
   }
   # Create the report. We only select some columns for the printed report
   report_causal_abstract <- c(
@@ -163,20 +163,23 @@ causal_claims <- function(paper) {
   }
 
   # report ----
-  report <- c(report_text,
-              "#### Randomization",
-              report_randomization,
-              "#### Causal Claims",
-              report_causal_title,
-              report_causal_abstract,
-              collapse_section(guidance)
-            )
+  report <- c(
+    report_text,
+    "#### Randomization",
+    report_randomization,
+    "#### Causal Claims",
+    report_causal_title,
+    report_causal_abstract,
+    collapse_section(guidance)
+  )
 
   # summary_text ----
   # make a list to show
-  summary_text <- c(summary_text_randomization,
+  summary_text <- c(
+    summary_text_randomization,
     summary_text_title,
-    summary_text_abstract) |>
+    summary_text_abstract
+  ) |>
     paste("\n- ", x = _, collapse = "")
 
   # return a list ----
@@ -194,33 +197,33 @@ causal_claims <- function(paper) {
 
 Antonakis2010 <- bibentry(
   bibtype = "Article",
-  title   = "On making causal claims: A review and recommendations",
-  author  = c(
+  title = "On making causal claims: A review and recommendations",
+  author = c(
     person("John", "Antonakis"),
     person("Samuel", "Bendahan"),
     person("Philippe", "Jacquart"),
     person("Rafael", "Lalive")
   ),
   journal = "The Leadership Quarterly",
-  year    = 2010,
-  volume  = 21,
-  number  = 6,
-  pages   = "1086--1120",
-  doi     = "10.1016/j.leaqua.2010.10.010"
+  year = 2010,
+  volume = 21,
+  number = 6,
+  pages = "1086--1120",
+  doi = "10.1016/j.leaqua.2010.10.010"
 )
 
 Grosz2020 <- bibentry(
   bibtype = "Article",
-  title   = "The Taboo Against Explicit Causal Inference in Nonexperimental Psychology",
-  author  = c(
+  title = "The Taboo Against Explicit Causal Inference in Nonexperimental Psychology",
+  author = c(
     person("Martin P.", "Grosz"),
     person("Julia M.", "Rohrer"),
     person("Felix", "Thoemmes")
   ),
   journal = "Perspectives on Psychological Science",
-  year    = 2020,
-  volume  = 15,
-  number  = 5,
-  pages   = "1243--1255",
-  doi     = "10.1177/1745691620921521"
+  year = 2020,
+  volume = 15,
+  number = 5,
+  pages = "1243--1255",
+  doi = "10.1177/1745691620921521"
 )

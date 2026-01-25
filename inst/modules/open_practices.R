@@ -57,7 +57,6 @@ open_practices <- function(paper) {
     data_category = open_data_category,
     data_das = is_open_data_das,
     das = das,
-
     code_open = is_open_code,
     code_statements = open_code_statements,
     code_reuse = is_code_reuse,
@@ -68,10 +67,18 @@ open_practices <- function(paper) {
 
   # Oddpub can return the same info multiple times, reduce text
   table$data_statements <- strsplit(table$data_statements, ";") |>
-    sapply(\(x) { trimws(x) |> unique() |> paste(collapse = "\n\n") })
+    sapply(\(x) {
+      trimws(x) |>
+        unique() |>
+        paste(collapse = "\n\n")
+    })
 
   table$code_statements <- strsplit(table$code_statements, ";") |>
-    sapply(\(x) { trimws(x) |> unique() |> paste(collapse = "\n\n") })
+    sapply(\(x) {
+      trimws(x) |>
+        unique() |>
+        paste(collapse = "\n\n")
+    })
 
   # traffic_light ----
   # summary_text ----
@@ -80,23 +87,23 @@ open_practices <- function(paper) {
     # summary for a paperlist
     summary_text <- sprintf(
       "%d papers shared both data and code, %d only data, %d only code, and %d neither.",
-      sum( table$data_open &  table$code_open),
-      sum( table$data_open & !table$code_open),
-      sum(!table$data_open &  table$code_open),
+      sum(table$data_open & table$code_open),
+      sum(table$data_open & !table$code_open),
+      sum(!table$data_open & table$code_open),
       sum(!table$data_open & !table$code_open)
     )
   } else {
     # summary for a single paper
     if (table$data_open == TRUE &
-        table$code_open == TRUE) {
+      table$code_open == TRUE) {
       summary_text <- "Shared data and code detected."
       tl <- "green"
     } else if (table$data_open == TRUE &
-               table$code_open == FALSE) {
+      table$code_open == FALSE) {
       summary_text <- "Shared data detected."
       tl <- "yellow"
     } else if (table$data_open == FALSE &
-               table$code_open == TRUE){
+      table$code_open == TRUE) {
       summary_text <- "Shared code detected."
       tl <- "yellow"
     } else {
@@ -119,7 +126,8 @@ open_practices <- function(paper) {
     } else if (nzchar(table$data_statements)) {
       data_report <- sprintf(
         "Data was openly shared for this article, based on the following text:\n\n> %s",
-        gsub("\n\n", "\n\n> ", table$data_statements))
+        gsub("\n\n", "\n\n> ", table$data_statements)
+      )
     } else {
       data_report <- "Data was openly shared for this article."
     }
@@ -130,7 +138,8 @@ open_practices <- function(paper) {
     } else if (nzchar(table$code_statements)) {
       code_report <- sprintf(
         "Code was openly shared for this article, based on the following text:\n\n> %s",
-        gsub("\n\n", "\n\n> ", table$code_statements))
+        gsub("\n\n", "\n\n> ", table$code_statements)
+      )
     } else {
       code_report <- "Code was openly shared for this article."
     }
@@ -155,9 +164,11 @@ open_practices <- function(paper) {
     ) |> format_ref()
   )
 
-  report <- c(data_report,
-              code_report)
-              #collapse_section(guidance))
+  report <- c(
+    data_report,
+    code_report
+  )
+  # collapse_section(guidance))
 
   # return a list ----
   list(

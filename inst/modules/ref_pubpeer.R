@@ -47,22 +47,25 @@ ref_pubpeer <- function(paper) {
   ## join to  pubpeer ----
   pp <- pubpeer_comments(bib$doi)
   pp <- pp[pp$total_comments > 0 & pp$users != "Statcheck", ]
-  table <- dplyr::inner_join(bib, pp, by = 'doi')
+  table <- dplyr::inner_join(bib, pp, by = "doi")
 
   # traffic_light ----
   tl <- if (nrow(table)) "info" else "na"
 
   # summary_table ----
   summary_table <- dplyr::summarise(
-    table, .by = "id",
+    table,
+    .by = "id",
     pubpeer_comments = sum(total_comments, na.rm = TRUE)
   )
 
   # summary_text & report ----
   if (nrow(table) == 0) {
     summary_text <- "No references with comments in PubPeer were found."
-    report <- sprintf("We checked %d references with DOIs. %s",
-                      sum(!is.na(bib$doi)), summary_text)
+    report <- sprintf(
+      "We checked %d references with DOIs. %s",
+      sum(!is.na(bib$doi)), summary_text
+    )
   } else {
     ## summary_text ----
     n <- sum(table$total_comments > 0, na.rm = TRUE)
@@ -100,5 +103,3 @@ ref_pubpeer <- function(paper) {
     summary_text = summary_text
   )
 }
-
-

@@ -27,7 +27,7 @@ ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.R
   # consolidate xrefs, filter, and expand
   xrefs <- concat_tables(paper, "xrefs") |>
     dplyr::right_join(bibs, by = c("xref_id", "id")) |>
-    #expand_text(paper, expand_to = "paragraph")
+    # expand_text(paper, expand_to = "paragraph")
     unique()
 
   # detailed table of results ----
@@ -38,8 +38,10 @@ ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.R
   summary_table <- table |>
     dplyr::count(id, xref_id, doi) |>
     dplyr::select(-n) |>
-    tidyr::pivot_wider(names_from = doi, values_from = xref_id,
-                       names_prefix = "miscite_")
+    tidyr::pivot_wider(
+      names_from = doi, values_from = xref_id,
+      names_prefix = "miscite_"
+    )
 
   # determine the traffic light ----
   tl <- dplyr::case_when(
@@ -65,16 +67,19 @@ ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.R
       n_head <- length(instances)
       n_all <- length(all_instances)
       instance_n <- ifelse(n_head < n_all,
-                        sprintf("%i of %i", n_head, n_all),
-                        sprintf("%i", n_head))
+        sprintf("%i of %i", n_head, n_all),
+        sprintf("%i", n_head)
+      )
 
-      report <- sprintf("**%s**\n\n%s\n\n%s\n\n*%s Instance%s:*\n\n%s",
-                        warn_doi,
-                        to_warn$reftext[[i]],
-                        to_warn$warning[[i]],
-                        instance_n,
-                        plural(length(all_instances)),
-                        paste(">", instances, collapse = "\n\n"))
+      report <- sprintf(
+        "**%s**\n\n%s\n\n%s\n\n*%s Instance%s:*\n\n%s",
+        warn_doi,
+        to_warn$reftext[[i]],
+        to_warn$warning[[i]],
+        instance_n,
+        plural(length(all_instances)),
+        paste(">", instances, collapse = "\n\n")
+      )
     }
   }
 

@@ -93,8 +93,10 @@ ref_summary <- function(paper, ...) {
   tl <- "info"
 
   ## summary_text ----
-  summary_text <- sprintf("Summary information provided for %d reference%s",
-                          nrow(table), plural(nrow(table)))
+  summary_text <- sprintf(
+    "Summary information provided for %d reference%s",
+    nrow(table), plural(nrow(table))
+  )
 
   ## report ----
   cols <- grep("^(crossref_DOI|pubpeer_.*|replication_.*|retractionwatch|.*doi_found|.*ref_not_found|.*_mismatch)$", names(table), value = TRUE)

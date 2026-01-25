@@ -48,22 +48,25 @@ ref_retraction <- function(paper) {
   }
 
   ## join to rw table
-  table <- dplyr::inner_join(bib, rw(), by = 'doi')
+  table <- dplyr::inner_join(bib, rw(), by = "doi")
 
   # traffic_light ----
   tl <- if (nrow(table)) "info" else "na"
 
   # summary_table ----
   summary_table <- dplyr::summarise(
-    table, .by = "id",
+    table,
+    .by = "id",
     retractionwatch = sum(!is.na(retractionwatch)),
   )
 
   # summary_text & report ----
   if (nrow(table) == 0) {
     summary_text <- "No citations to articles in the RetractionWatch database were found."
-    report <- sprintf("We checked %d references with DOIs. %s",
-                      sum(!is.na(bib$doi)), summary_text)
+    report <- sprintf(
+      "We checked %d references with DOIs. %s",
+      sum(!is.na(bib$doi)), summary_text
+    )
   } else {
     ## sumary_text ----
     summary_text <- sprintf(
@@ -98,5 +101,3 @@ ref_retraction <- function(paper) {
     summary_text = summary_text
   )
 }
-
-
