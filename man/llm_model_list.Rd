@@ -20,6 +20,6 @@ For platforms other than groq, returns the value from the corresponding ellmer::
 }
 \examples{
 \dontrun{
-  llm_model_list()
+llm_model_list()
 }
 }

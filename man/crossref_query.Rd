@@ -43,6 +43,6 @@ ref <- paste(
   "Evidence-Based Toxicology, 2(1)."
 )
 \donttest{
-  cr <- crossref_query(ref)
+cr <- crossref_query(ref)
 }
 }

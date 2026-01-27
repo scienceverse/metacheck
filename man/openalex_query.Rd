@@ -23,6 +23,6 @@ Look up a reference in OpenAlex
 }
 \examples{
 \dontrun{
-  openalex_query("Sample Size Justification", "Collabra Psychology")
+openalex_query("Sample Size Justification", "Collabra Psychology")
 }
 }

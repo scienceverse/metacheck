@@ -38,9 +38,9 @@ See \url{https://console.groq.com/docs} for more information
 }
 \examples{
 \dontrun{
-  text <- c("hello", "number", "ten", 12)
-  system_prompt <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
-  is_number <- llm(text, system_prompt)
-  is_number
+text <- c("hello", "number", "ten", 12)
+system_prompt <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
+is_number <- llm(text, system_prompt)
+is_number
 }
 }

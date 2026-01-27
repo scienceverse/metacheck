@@ -78,7 +78,7 @@ Root-level fields for the select argument:
 \examples{
 doi <- "10.7717/peerj.4375"
 \donttest{
-  oa_info <- openalex_doi(doi)
-  oa_info <- openalex_doi(doi, "title")
+oa_info <- openalex_doi(doi)
+oa_info <- openalex_doi(doi, "title")
 }
 }

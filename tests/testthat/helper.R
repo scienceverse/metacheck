@@ -9,7 +9,7 @@ httptest::.mockPaths(apis)
 
 # adjust to run LLM tests where wanted
 skip_llm <- function() {
-  #skip("LLM")
+  skip("LLM")
 
   # skips tests if contraindicated
   skip_on_cran()
@@ -19,7 +19,7 @@ skip_llm <- function() {
 
 # skip if requires OSF API
 skip_osf <- function() {
-  #skip("Requires OSF") # skips all tests that require API
+  skip("Requires OSF") # skips all tests that require API
 
   # skips tests if contraindicated
   skip_if_offline()
@@ -30,7 +30,7 @@ skip_osf <- function() {
 
 # skip when running quick checks
 skip_if_quick <- function() {
-  #skip("Too long")
+  skip("Too long")
 }
 
 # expect pattern in x

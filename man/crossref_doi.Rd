@@ -27,6 +27,6 @@ abstract, URL, resource, member, posted, score, created, degree, update-policy, 
 \examples{
 doi <- "10.7717/peerj.4375"
 \dontrun{
- # cr_info <- crossref_doi(doi)
+# cr_info <- crossref_doi(doi)
 }
 }

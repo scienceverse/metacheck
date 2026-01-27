@@ -39,6 +39,6 @@ You can limit downloads to only files under a specific size (defaults to 10MB) a
 }
 \examples{
 \donttest{
-  osf_file_download("6nt4v")
+osf_file_download("6nt4v")
 }
 }
