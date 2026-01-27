@@ -55,9 +55,13 @@ osf_links <- function(paper) {
   all_osf <- dplyr::left_join(found_osf, found_vo,
     by = names(found_osf)
   )
-  all_osf$text <- ifelse(is.na(all_osf$expanded),
-    all_osf$text, all_osf$expanded
-  )
+  if (nrow(all_osf) > 0) {
+    all_osf$text <- ifelse(
+      is.na(all_osf$expanded),
+      all_osf$text,
+      all_osf$expanded
+    )
+  }
   all_osf$expanded <- NULL
 
   return(all_osf)

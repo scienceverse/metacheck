@@ -60,10 +60,10 @@ test_that("github_config", {
 })
 
 test_that("github_repo", {
-  skip_if_offline("github.com")
-
   expect_true(is.function(metacheck::github_repo))
   expect_no_error(helplist <- help(github_repo, metacheck))
+
+  skip_if_offline("github.com")
 
   urls <- c(
     "scienceverse/metacheck",
@@ -81,6 +81,16 @@ test_that("github_repo", {
   url <- c("scienceverse/metacheck", "scienceverse/faux")
   repo <- github_repo(url)
   expect_equal(url, repo, ignore_attr = TRUE)
+
+  # vectorised multiple
+  url <- c("scienceverse/metacheck",
+           "scienceverse/faux",
+           "scienceverse/metacheck.git")
+  repo <- github_repo(url)
+  exp <- c("scienceverse/metacheck" = "scienceverse/metacheck",
+           "scienceverse/faux" = "scienceverse/faux",
+           "scienceverse/metacheck.git" = "scienceverse/metacheck")
+  expect_equal(exp, repo)
 })
 
 test_that("github_readme", {

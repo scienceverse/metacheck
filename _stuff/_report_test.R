@@ -32,14 +32,15 @@ modules <- c(
   # "stat_p_nonsig",
   # "marginal",
   # "stat_effect_size",
-  # # "code_check",
+  "repo_check",
+  "code_check"
   # "stat_check",
-  "ref_doi_check",
-  "ref_accuracy",
+  # "ref_doi_check",
+  # "ref_accuracy",
   # "ref_replication",
   # "ref_retraction",
   # "ref_pubpeer",
-  "ref_summary"
+  # "ref_summary"
 )
 
 # paper <- psychsci$`0956797621991137`
@@ -48,26 +49,23 @@ modules <- c(
 
 # generate reports for a sample of n papers
 n <- 1
-output <- "qmd"
-files <- seq_along(psychsci) |> sample(n) |>
-  lapply(\(i) {
-    #i = which(names(psychsci) == "0956797615583071")
-    paper <- psychsci[[i]]
-    paper <- read(demoxml())
-    print(paper$id)
+output <- "html"
+paper <- sample(psychsci, n)
+#paper <- psychsci$`09567976241260247` # has two different links to same repo
+# paper <- read(demoxml())
+args <- list(
+  doi_check = list(crossref_min_score = 50)
+)
 
-    args <- list(
-      doi_check = list(crossref_min_score = 50)
-    )
+rep <- report(
+  paper,
+  modules = modules,
+  output_file = paste0(dir, "/_.", output),
+  output_format = output,
+  args = args
+)
 
-    rep <- report(paper,
-           modules = modules,
-           output_file = paste0(dir, "/", paper$id, ".", output),
-           output_format = output,
-           args = args)
-
-    attr(rep, "save_path")
-  })
+files <- attr(rep, "save_path")
 
 # open all files in web browser
 sapply(files, browseURL)

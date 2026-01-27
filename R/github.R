@@ -10,19 +10,21 @@
 #' @examples
 #' github_links(psychsci)
 github_links <- function(paper) {
-  # strip punctuation off the end of sentences to avoid wierd matches
+  # strip punctuation off the end of sentences to avoid weird matches
   strip_text <- search_text(paper, ".*[^\\.$]", return = "match", perl = TRUE)
 
   # search for github URLS
   github_regex <- "(?:https?://)?github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*"
   found_gh <- search_text(strip_text, github_regex, return = "match", perl = TRUE)
 
-  # find github repos referenced only by org/repo
+  # find github repos referenced only by org/repo near github (+-10 words)
   # like "See our github repo at scienceverse/metacheck"
+  plusminus <- "(?:\\b\\w+\\b\\W+){0,10}\\bgithub(\\.com)?\\b(?:\\W+\\b\\w+\\b){0,10}"
   no_github_regex <- "[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\\.git)?"
   other_gh <- search_text(strip_text, "github") |>
     search_text(github_regex, exclude = TRUE, perl = TRUE) |>
     search_text("github.io", exclude = TRUE) |>
+    search_text(plusminus, return = "match") |>
     search_text(no_github_regex, return = "match", perl = TRUE)
 
   all_gh <- dplyr::bind_rows(found_gh, other_gh)
@@ -86,9 +88,13 @@ github_repo <- function(repo) {
     repo,
     perl = TRUE, ignore.case = TRUE
   )
+  thematch <- regmatches(repo, match)
 
-  simple_repo <- regmatches(repo, match)[[1]][[1]] |>
-    sub("\\.git$", "", x = _)
+  if (length(thematch) == 0 || length(thematch[[1]]) == 0) {
+    return(NULL)
+  }
+
+  simple_repo <- sub("\\.git$", "", x = thematch[[1]][[1]])
 
   url <- paste0("https://github.com/", simple_repo)
   head <- httr::HEAD(url)

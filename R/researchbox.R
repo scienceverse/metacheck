@@ -223,7 +223,8 @@ rbox_file_download <- function(rb_url) {
   )
 
   if (!file.exists(zip_path) || file.size(zip_path) == 0) {
-    stop("Download failed or resulted in an empty file: ", zip_path)
+    warning("Download failed or resulted in an empty file: ", zip_path)
+    return(NULL)
   }
 
   # unzip into a subfolder
@@ -234,18 +235,36 @@ rbox_file_download <- function(rb_url) {
   unzipped_files <- utils::unzip(zip_path, exdir = out_dir)
 
   if (length(unzipped_files) == 0) {
-    stop("Unzip produced no files. The archive might be corrupt.")
+    warning("Unzip produced no files. The archive might be corrupt.")
+    return(NULL)
   }
 
   # list files (recursively) and return
   files <- list.files(out_dir, recursive = TRUE, full.names = FALSE)
   file_locations <- list.files(out_dir, recursive = TRUE, full.names = TRUE)
+  file_info <- file.info(file_locations)
 
   # Create dataframe
   rb_file_info <- data.frame(
     rb_url = rep(rb_url, length(files)),
     name = files,
-    file_location = file_locations
+    file_location = file_locations,
+    size = file_info$size,
+    isdir = file_info$isdir
+  )
+
+  rb_file_info$ext <- strsplit(rb_file_info$name, "\\.") |>
+    sapply(\(x) {
+      if (length(x) < 2) {
+        return("")
+      }
+      x[[length(x)]]
+    }) |>
+    tolower()
+  rb_file_info <- dplyr::left_join(
+    rb_file_info,
+    metacheck::file_types,
+    by = "ext"
   )
 
   return(rb_file_info)

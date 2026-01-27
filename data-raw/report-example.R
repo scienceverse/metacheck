@@ -15,6 +15,7 @@ modules <- c(
   "prereg_check",
   "causal_claims",
   "power",
+  "repo_check",
   "code_check",
   # use ref_doi_check
   "ref_doi_check",
