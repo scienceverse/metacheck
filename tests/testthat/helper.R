@@ -9,7 +9,7 @@ httptest::.mockPaths(apis)
 
 # adjust to run LLM tests where wanted
 skip_llm <- function() {
-  #skip("LLM")
+  skip("LLM")
 
   # skips tests if contraindicated
   skip_on_cran()

@@ -19,6 +19,6 @@ Get ORCiD from Name
 }
 \examples{
 \donttest{
-  get_orcid("DeBruine", "Lisa")
+get_orcid("DeBruine", "Lisa")
 }
 }

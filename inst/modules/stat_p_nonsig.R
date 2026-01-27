@@ -61,12 +61,14 @@ stat_p_nonsig <- function(paper) {
   } else {
     summary_text <- sprintf(
       "We found %d non-significant p value%s that should be checked for appropriate interpretation.",
-      nrow(table), ifelse(nrow(table)==1, "", "s")
+      nrow(table), ifelse(nrow(table) == 1, "", "s")
     )
 
-    explanation <- c("Meta-scientific research has shown nonsignificant p values are commonly misinterpreted. It is incorrect to infer that there is 'no effect', 'no difference', or that groups are 'the same' after p > 0.05.",
-    "It is possible that there is a true non-zero effect, but that the study did not detect it. Make sure your inference acknowledges that it is possible that there is a non-zero effect. It is correct to include the effect is 'not significantly' different, although this just restates that p > 0.05.",
-    "Metacheck does not yet analyze automatically whether sentences which include non-significant p-values are correct, but we recommend manually checking the sentences below for possible misinterpreted non-significant p values.")
+    explanation <- c(
+      "Meta-scientific research has shown nonsignificant p values are commonly misinterpreted. It is incorrect to infer that there is 'no effect', 'no difference', or that groups are 'the same' after p > 0.05.",
+      "It is possible that there is a true non-zero effect, but that the study did not detect it. Make sure your inference acknowledges that it is possible that there is a non-zero effect. It is correct to include the effect is 'not significantly' different, although this just restates that p > 0.05.",
+      "Metacheck does not yet analyze automatically whether sentences which include non-significant p-values are correct, but we recommend manually checking the sentences below for possible misinterpreted non-significant p values."
+    )
 
     guidance <- c(
       "For metascientific articles demonstrating the rate of misinterpretations of non-significant results is high, see:",

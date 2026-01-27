@@ -73,7 +73,9 @@ paperlist <- function(..., merge_duplicates = TRUE) {
 
   if (merge_duplicates) {
     # check for duplicate IDs
-    dupes <- names(paperlist) |> duplicated() |> which()
+    dupes <- names(paperlist) |>
+      duplicated() |>
+      which()
     for (d in rev(dupes)) {
       dupe <- paperlist[names(paperlist) == names(paperlist)[d]]
       if (identical(unname(dupe[-length(dupe)]), unname(dupe[-1]))) {

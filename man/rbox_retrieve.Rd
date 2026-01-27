@@ -19,7 +19,7 @@ Retrieve info from ResearchBox by URL
 }
 \examples{
 \dontrun{
-  # get info on one OSF node
-  rbox_retrieve("https://researchbox.org/801")
+# get info on one OSF node
+rbox_retrieve("https://researchbox.org/801")
 }
 }

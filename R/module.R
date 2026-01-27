@@ -36,9 +36,11 @@ module_run <- function(paper, module, ...) {
 
   # load required libraries
   for (pkg in info[["import"]]) {
-    if (!require(pkg, quietly = TRUE,
-                 warn.conflicts = FALSE,
-                 character.only = TRUE)) {
+    if (!require(pkg,
+      quietly = TRUE,
+      warn.conflicts = FALSE,
+      character.only = TRUE
+    )) {
       stop("The '", pkg, "' package is required but not installed.")
     }
   }
@@ -46,24 +48,30 @@ module_run <- function(paper, module, ...) {
   # loading required functions
   for (pkg in info[["importFrom"]]) {
     for (arg in pkg[-1]) {
-      if (!require(pkg[[1]], quietly = TRUE,
-                   warn.conflicts = FALSE,
-                   character.only = TRUE,
-                   include.only = arg) ||
-          !exists(arg)) {
-        stop("The function '", pkg[[1]], "::", arg,
-             "' is required but not installed.")
+      if (!require(pkg[[1]],
+        quietly = TRUE,
+        warn.conflicts = FALSE,
+        character.only = TRUE,
+        include.only = arg
+      ) ||
+        !exists(arg)) {
+        stop(
+          "The function '", pkg[[1]], "::", arg,
+          "' is required but not installed."
+        )
       }
     }
   }
 
-  orig_wd <- getwd(); on.exit(setwd(orig_wd))
+  orig_wd <- getwd()
+  on.exit(setwd(orig_wd))
   dirname(module_path) |> setwd()
 
   tryCatch(basename(module_path) |> source(local = TRUE),
-           error = function(e) {
-             stop("The module code has errors: ", e$message)
-           })
+    error = function(e) {
+      stop("The module code has errors: ", e$message)
+    }
+  )
 
   if (list(...) |> length()) {
     code <- sprintf("%s(paper, ...)", info$func_name)
@@ -71,9 +79,10 @@ module_run <- function(paper, module, ...) {
     code <- sprintf("%s(paper)", info$func_name)
   }
   results <- tryCatch(eval(parse(text = code)),
-                      error = function(e) {
-                        stop("Running the module produced errors: ", e$message)
-                      })
+    error = function(e) {
+      stop("Running the module produced errors: ", e$message)
+    }
+  )
 
   if (is.data.frame(results)) {
     results <- list(table = results)
@@ -88,14 +97,17 @@ module_run <- function(paper, module, ...) {
 
   # process summary table
   if (!is.null(results$summary_table) &&
-      "id" %in% names(results$summary_table)) {
-    suffix <- module_path |> basename() |>
-      sub("\\.(r|R)$", "", x = _,) |>
+    "id" %in% names(results$summary_table)) {
+    suffix <- module_path |>
+      basename() |>
+      sub("\\.(r|R)$", "", x = _, ) |>
       paste0(".", x = _)
 
     summary_table <- summary_table |>
-      dplyr::left_join(results$summary_table, by = "id",
-                       suffix = c("", suffix))
+      dplyr::left_join(results$summary_table,
+        by = "id",
+        suffix = c("", suffix)
+      )
 
     if (!is.null(results$na_replace)) {
       # replace NAs
@@ -151,8 +163,9 @@ module_find <- function(module) {
     list.dirs() |>
     c(".", "modules") # also search working directory and any directory called modules
   module_paths <- sapply(module_libs, list.files,
-                         pattern = "\\.R$",
-                         full.names = TRUE) |>
+    pattern = "\\.R$",
+    full.names = TRUE
+  ) |>
     unlist(use.names = FALSE)
 
   module_names <- basename(module_paths) |> sub("\\.R$", "", x = _)
@@ -164,7 +177,9 @@ module_find <- function(module) {
     module_path <- module
   } else {
     stop("There were no modules that matched ", module,
-         "\nuse module_list() to see a list of built-in modules.", call. = FALSE)
+      "\nuse module_list() to see a list of built-in modules.",
+      call. = FALSE
+    )
   }
 
   return(module_path)
@@ -181,8 +196,9 @@ module_find <- function(module) {
 #' mods <- module_list()
 module_list <- function(module_dir = system.file("modules", package = "metacheck")) {
   files <- list.files(module_dir, "\\.R$",
-                      full.names = TRUE,
-                      recursive = TRUE)
+    full.names = TRUE,
+    recursive = TRUE
+  )
   txt <- lapply(files, \(mod) tryCatch(
     module_info(mod),
     error = \(e) {}
@@ -197,7 +213,7 @@ module_list <- function(module_dir = system.file("modules", package = "metacheck
     title = sapply(txt, \(x) x[["title"]][[1]]),
     description = sapply(txt, `[[`, "description") |>
       sapply(\(x) x[[1]] %||% ""),
-    section = sapply(txt, `[[`, "keywords")  |>
+    section = sapply(txt, `[[`, "keywords") |>
       sapply(\(x) x[[1]] %||% "general"),
     path = files[valid]
   )
@@ -223,11 +239,14 @@ module_list <- function(module_dir = system.file("modules", package = "metacheck
 #' module_info("all_p_values")
 module_info <- function(module) {
   module_path <- module_find(module)
-  tryCatch({
-    roxy <- roxygen2::parse_file(module_path, env = NULL)
-  }, error = function(e) {
-    stop("The module code has errors: ", e$message)
-  })
+  tryCatch(
+    {
+      roxy <- roxygen2::parse_file(module_path, env = NULL)
+    },
+    error = function(e) {
+      stop("The module code has errors: ", e$message)
+    }
+  )
 
   tags <- roxy[[1]]$tags
   vals <- lapply(tags, \(x) x$val)
@@ -295,7 +314,9 @@ module_help <- function(module = NULL) {
 print.metacheck_module_list <- function(x, ...) {
   txt <- sapply(levels(x$section), \(s) {
     sub <- x[x$section == s, ]
-    if (nrow(sub) == 0) return(NULL)
+    if (nrow(sub) == 0) {
+      return(NULL)
+    }
     items <- paste0("* ", sub$name, ": ", sub$description, "\n")
     title <- sprintf("\n*** %s ***\n", toupper(s))
 
@@ -303,7 +324,7 @@ print.metacheck_module_list <- function(x, ...) {
   })
   txt <- unlist(txt)
 
-  #txt <- paste0("* ", x$name, ": ", x$description, "\n")
+  # txt <- paste0("* ", x$name, ": ", x$description, "\n")
   cat("", txt, "\nUse `module_help(\"module_name\")` for help with a specific module\n")
 }
 
@@ -347,8 +368,10 @@ print.metacheck_module_help <- function(x, ...) {
     pd <- paste(names(params), "=", params)
     p <- paste0(", ", pd, collapse = "")
   }
-  usage <- sprintf("module_run(paper, \"%s\"%s)",
-                     x$module, p)
+  usage <- sprintf(
+    "module_run(paper, \"%s\"%s)",
+    x$module, p
+  )
 
   # make a list if only 1 param
   if (!is.null(x$param$name)) x$param <- list(x$param)
@@ -357,17 +380,18 @@ print.metacheck_module_help <- function(x, ...) {
     paste(collapse = "\n")
 
 
-  c(x$title %||% "{no title}",
+  c(
+    x$title %||% "{no title}",
     x$description %||% "{no description}",
     usage,
     args,
-    x$details %||% "") |>
+    x$details %||% ""
+  ) |>
     paste(collapse = "\n\n") |>
     gsub("\n{2,}", "\n\n", x = _) |>
     trimws() |>
     cat()
 }
-
 
 
 #' Create a Module from a Template
@@ -395,8 +419,8 @@ module_template <- function(module_name, path = "./modules") {
   }
 
   if (interactive() &
-      requireNamespace("rstudioapi", quietly = TRUE) &
-      rstudioapi::isAvailable()) {
+    requireNamespace("rstudioapi", quietly = TRUE) &
+    rstudioapi::isAvailable()) {
     rstudioapi::documentOpen(filepath)
   }
 
@@ -417,7 +441,9 @@ module_template <- function(module_name, path = "./modules") {
 #' @examples
 #' # .__mc__prev_outputs is usually created by `module_run()`
 #' .__mc__prev_outputs <- list(mod_1 = list(a = 1, b = 2))
-#' f <- function(item) { get_prev_outputs("mod_1", item) }
+#' f <- function(item) {
+#'   get_prev_outputs("mod_1", item)
+#' }
 #' f("a")
 #' f("d")
 get_prev_outputs <- function(module, item, parent_n = 2) {

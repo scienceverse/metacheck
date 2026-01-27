@@ -11,7 +11,9 @@
 #' @returns A study object created or edited by the app
 #'
 #' @examples
-#' \dontrun{ s <- metacheck_app() }
+#' \dontrun{
+#' s <- metacheck_app()
+#' }
 #'
 metacheck_app <- function(study = NULL, quiet = FALSE, ...) {
   # check study
@@ -20,18 +22,22 @@ metacheck_app <- function(study = NULL, quiet = FALSE, ...) {
   }
 
   # check required packages
-  pckgs <- c("shiny", "shinydashboard", "shinyjs",
-             "shiny.i18n", "DT", "waiter")
+  pckgs <- c(
+    "shiny", "shinydashboard", "shinyjs",
+    "shiny.i18n", "DT", "waiter"
+  )
   names(pckgs) <- pckgs
   req_pckgs <- sapply(pckgs, requireNamespace, quietly = TRUE)
 
   if (all(req_pckgs)) {
     .GlobalEnv$.app.study. <- study
-    on.exit(rm(".app.study.", envir=.GlobalEnv))
+    on.exit(rm(".app.study.", envir = .GlobalEnv))
 
     shiny::runApp(appDir = system.file("app", package = "metacheck"), quiet = quiet, ...) |> invisible()
   } else {
-    warning("You need to install the following packages to run the app: ",
-            paste(names(req_pckgs[!req_pckgs]), collapse = ", "))
+    warning(
+      "You need to install the following packages to run the app: ",
+      paste(names(req_pckgs[!req_pckgs]), collapse = ", ")
+    )
   }
 }

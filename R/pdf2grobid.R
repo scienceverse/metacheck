@@ -18,7 +18,7 @@
 #'
 pdf2grobid <- function(filename, save_path = ".",
                        grobid_url = "https://kermitt2-grobid.hf.space",
-                       #grobid_url = "http://api.metacheck.app",
+                       # grobid_url = "http://api.metacheck.app",
                        start = -1,
                        end = -1,
                        consolidate_citations = 0,
@@ -33,12 +33,15 @@ pdf2grobid <- function(filename, save_path = ".",
     # test if the server is up using the isalive endpoint, instead of sitedown
     service_status_url <- httr::modify_url(grobid_url, path = "/api/isalive")
 
-    resp <- tryCatch({
-      httr::GET(service_status_url)
+    resp <- tryCatch(
+      {
+        httr::GET(service_status_url)
       },
       error = function(e) {
-        stop("Connection to the GROBID server failed!",
-             "Please check your connection or the URL: ", grobid_url)
+        stop(
+          "Connection to the GROBID server failed!",
+          "Please check your connection or the URL: ", grobid_url
+        )
       }
     )
 
@@ -60,8 +63,10 @@ pdf2grobid <- function(filename, save_path = ".",
     }
 
     # set up progress bar ----
-    pb <- pb(length(filename),
-             "Processing PDFs [:bar] :current/:total :elapsedfull")
+    pb <- pb(
+      length(filename),
+      "Processing PDFs [:bar] :current/:total :elapsedfull"
+    )
 
     xmls <- mapply(\(pdf, sp) {
       args <- list(
@@ -75,15 +80,20 @@ pdf2grobid <- function(filename, save_path = ".",
         consolidate_funders = consolidate_funders
       )
       xml <- tryCatch(do.call(pdf2grobid, args),
-                      error = function(e) { return(e$message) })
+        error = function(e) {
+          return(e$message)
+        }
+      )
       pb$tick()
       xml
     }, pdf = filename, sp = save_path)
 
     errors <- !file.exists(xmls)
     if (any(errors)) {
-      warning(sum(errors), " of ", length(xmls), " files did not convert: \n",
-              paste0(" * ", filename[errors], ": ", xmls[errors], collapse = "\n"))
+      warning(
+        sum(errors), " of ", length(xmls), " files did not convert: \n",
+        paste0(" * ", filename[errors], ": ", xmls[errors], collapse = "\n")
+      )
       xmls[errors] <- NA_character_
     }
 
@@ -220,9 +230,11 @@ pytacheck <- function(file_path,
         stream <- arrow::ReadableFile$create(tmp_file)
         on.exit(stream$close())
 
-        tables <- c("sentences", "links", "tables",
-                    "sections", "authors", "references",
-                    "citations", "info")
+        tables <- c(
+          "sentences", "links", "tables",
+          "sections", "authors", "references",
+          "citations", "info"
+        )
 
         for (table in tables) {
           data[[table]] <- as.data.frame(arrow::read_ipc_stream(stream))
@@ -245,8 +257,10 @@ pytacheck <- function(file_path,
                 break
               }
               data$extra[[length(data$extra) + 1]] <- as.data.frame(tbl)
-              message(sprintf("  Read dynamic table %d (Rows: %d)\n",
-                              length(data$extra), nrow(tbl)))
+              message(sprintf(
+                "  Read dynamic table %d (Rows: %d)\n",
+                length(data$extra), nrow(tbl)
+              ))
             },
             error = function(e) {
               # Assume EOF or end of stream if error matches specific message, otherwise print
@@ -267,9 +281,11 @@ pytacheck <- function(file_path,
       }
     )
   } else {
-    stop("Request failed with status code: ",
-         httr::status_code(response), "\n",
-         httr::content(response, as = "text"))
+    stop(
+      "Request failed with status code: ",
+      httr::status_code(response), "\n",
+      httr::content(response, as = "text")
+    )
   }
 
   data

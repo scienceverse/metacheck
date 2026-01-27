@@ -26,9 +26,11 @@ all_p_values <- function(paper) {
   tl <- if (nrow(p)) "info" else "na"
 
   # summary_text ----
-  summary_text <- sprintf("We found %d p-value%s",
-                    nrow(p),
-                    ifelse(nrow(p) == 1, "", "s"))
+  summary_text <- sprintf(
+    "We found %d p-value%s",
+    nrow(p),
+    ifelse(nrow(p) == 1, "", "s")
+  )
 
   # report ----
   cols <- c("text", "expanded")

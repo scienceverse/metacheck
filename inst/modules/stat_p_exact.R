@@ -50,7 +50,7 @@ stat_p_exact <- function(paper) {
   # traffic light ----
   if (nrow(p) == 0) {
     tl <- "na"
-  } else if(nrow(report_table) == 0) {
+  } else if (nrow(report_table) == 0) {
     tl <- "green"
   } else {
     tl <- "red"
@@ -67,19 +67,21 @@ stat_p_exact <- function(paper) {
     )
     summary_text <- report
   } else {
-    summary_text <- sprintf("We found %d imprecise *p* value%s out of %d detected.",
-                            nrow(report_table),
-                            plural(nrow(report_table)),
-                            nrow(p))
+    summary_text <- sprintf(
+      "We found %d imprecise *p* value%s out of %d detected.",
+      nrow(report_table),
+      plural(nrow(report_table)),
+      nrow(p)
+    )
 
     report_text <- "Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001."
 
     # Guidance text
     apa <- bibentry(
       bibtype = "Book",
-      author  = person("American Psychological Association"),
-      year    = 2020,
-      title   = "Publication manual of the American Psychological Association",
+      author = person("American Psychological Association"),
+      year = 2020,
+      title = "Publication manual of the American Psychological Association",
       edition = "7",
       subtitle = "The official guide to APA style",
       publisher = "American Psychological Association"
@@ -91,9 +93,11 @@ stat_p_exact <- function(paper) {
     )
 
     # Combine everything into report text
-    report <- c(report_text,
-                scroll_table(report_table, colwidths = c(.1, .9)),
-                collapse_section(guidance))
+    report <- c(
+      report_text,
+      scroll_table(report_table, colwidths = c(.1, .9)),
+      collapse_section(guidance)
+    )
   }
 
   # ---- Return list ----

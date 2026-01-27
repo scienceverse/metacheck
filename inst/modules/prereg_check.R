@@ -65,8 +65,10 @@ prereg_check <- function(paper) {
   if (length(reg_ids) == 0 & nrow(table_ap) == 0) {
     resp <- list(
       traffic_light = "na",
-      summary_text = sprintf("We found %d OSF link%s, but no registrations.",
-                             nrow(links_osf), nrow(links_osf) |> plural()),
+      summary_text = sprintf(
+        "We found %d OSF link%s, but no registrations.",
+        nrow(links_osf), nrow(links_osf) |> plural()
+      ),
       na_replace = 0,
       summary_table = data.frame(
         id = info_table(paper, c())$id,
@@ -77,8 +79,10 @@ prereg_check <- function(paper) {
   }
 
   ## get reg info from OSF ----
-  url <- sprintf("https://api.osf.io/v2/registrations/?filter[id]=%s",
-                 paste(reg_ids, collapse = ","))
+  url <- sprintf(
+    "https://api.osf.io/v2/registrations/?filter[id]=%s",
+    paste(reg_ids, collapse = ",")
+  )
   reg_info <- osf_get_all_pages(url)
 
   osf_schemas <- lapply(seq_along(reg_info$id), \(i) {
@@ -89,7 +93,7 @@ prereg_check <- function(paper) {
     if (info$attributes$withdrawn) {
       withdrawn(info)
     } else if (template == "OSF Preregistration" &&
-               !is.null(osf31) && !is.na(osf31)) {
+      !is.null(osf31) && !is.na(osf31)) {
       osf_pr_31(info)
     } else if (template == "OSF Preregistration") {
       osf_pr_28(info)
@@ -117,15 +121,18 @@ prereg_check <- function(paper) {
   tl <- "info"
 
   # summary_text ----
-  summary_text <- sprintf("We found %d preregistration%s.",
-                          nrow(prereg_info), nrow(prereg_info) |> plural())
+  summary_text <- sprintf(
+    "We found %d preregistration%s.",
+    nrow(prereg_info), nrow(prereg_info) |> plural()
+  )
 
   # report ----
   has_sample_size <- "sample_size" %in% names(prereg_info)
   report_text <- sprintf(
     "Meta-scientific research has shown that deviations from preregistrations are often not reported or checked, and that the most common deviations concern the sample size. We recommend manually checking the full preregistration at the link%s below%s.",
     nrow(prereg_info) |> plural(),
-    ifelse(has_sample_size, ", and have provided the preregistered sample size", ""))
+    ifelse(has_sample_size, ", and have provided the preregistered sample size", "")
+  )
 
   prereg_link_table <- data.frame(
     id = link(prereg_info$link, prereg_info$id),
@@ -141,20 +148,23 @@ prereg_check <- function(paper) {
 
   ## summary output for paperlists ----
   summary_table <- dplyr::count(prereg_info, id,
-                                name = "preregistration",
-                                .drop = FALSE)
+    name = "preregistration",
+    .drop = FALSE
+  )
 
   ## prereg table ----
   # Remove columns where all values are NA
   prereg_table <- prereg_info[
     , colSums(!is.na(prereg_info)) > 0
-  ] |> t() |> as.data.frame()
+  ] |>
+    t() |>
+    as.data.frame()
 
   # Add row names as a proper column (first column)
   prereg_table <- cbind(Field = rownames(prereg_table), prereg_table)
 
   # Rename columns "Preregistration 1", "Preregistration 2", ...
-  n_prereg <- ncol(prereg_table) - 1  # subtract the 'Field' column
+  n_prereg <- ncol(prereg_table) - 1 # subtract the 'Field' column
   colnames(prereg_table)[-1] <- paste0("Preregistration ", seq_len(n_prereg))
 
   ## guidance ----
@@ -170,8 +180,10 @@ prereg_check <- function(paper) {
     scroll_table(prereg_link_table),
     report_text,
     scroll_table(samplesize_table),
-    collapse_section(scroll_table(prereg_table, maxrows = 5),
-                     "Full Preregistration"),
+    collapse_section(
+      scroll_table(prereg_table, maxrows = 5),
+      "Full Preregistration"
+    ),
     collapse_section(guidance)
   )
 
@@ -188,7 +200,7 @@ prereg_check <- function(paper) {
 
 # referelnces
 
-vandenAkker2024 <-  bibentry(
+vandenAkker2024 <- bibentry(
   bibtype = "Article",
   title = "The potential of preregistration in psychology: Assessing preregistration producibility and preregistration-study consistency",
   author = c(
@@ -235,7 +247,9 @@ Lakens2024 <- bibentry(
 ## AsPredicted Schema
 
 ap_schema <- function(table_ap) {
-  if (nrow(table_ap) == 0) return(data.frame())
+  if (nrow(table_ap) == 0) {
+    return(data.frame())
+  }
 
   ap_id <- table_ap$ap_url |>
     sub("^https://aspredicted\\.org/", "", x = _) |>
@@ -335,8 +349,10 @@ prap <- function(info) {
     statistical_tests = prereg_answers$analyses,
     outliers_and_exclusions = prereg_answers$outliers,
     sample_size = prereg_answers$sample,
-    study_type = paste(c(prereg_answers$study_type,
-                         prereg_answers$study_type_other), collapse = " "),
+    study_type = paste(c(
+      prereg_answers$study_type,
+      prereg_answers$study_type_other
+    ), collapse = " "),
     additional_comments = prereg_answers$other
   )
 
@@ -357,8 +373,10 @@ osf_pr_31 <- function(info) {
     description = prereg_answers$q3,
     research_questions = prereg_answers$q4,
     study_type = prereg_answers$q5,
-    blinding = paste(c(prereg_answers$q6,
-                       prereg_answers$q7), collapse = " "),
+    blinding = paste(c(
+      prereg_answers$q6,
+      prereg_answers$q7
+    ), collapse = " "),
     study_design_overview = prereg_answers$q8.question,
     randomization = prereg_answers$q9,
     data_collection_started = prereg_answers$q10,
@@ -375,7 +393,7 @@ osf_pr_31 <- function(info) {
     inference_criteria = prereg_answers$q21,
     data_exclusion_criteria = prereg_answers$q22,
     outliers_and_exclusions = prereg_answers$q23,
-    exploratory_analyses  = prereg_answers$q24,
+    exploratory_analyses = prereg_answers$q24,
     additional_comments = prereg_answers$q25
   )
 
@@ -391,12 +409,14 @@ osf_pr_28 <- function(info) {
 
   extra <- list(
     description = prereg_answers$q2,
-    #research_questions = prereg_answers$q3,
+    # research_questions = prereg_answers$q3,
     study_type = prereg_answers$q3,
-    blinding = paste(c(prereg_answers$q4,
-                       prereg_answers$q5), collapse = " "),
+    blinding = paste(c(
+      prereg_answers$q4,
+      prereg_answers$q5
+    ), collapse = " "),
     study_design_overview = prereg_answers$q6.question,
-    #randomization = prereg_answers$q9,
+    # randomization = prereg_answers$q9,
     data_collection_started = prereg_answers$q8,
     existing_data_explanation = prereg_answers$q9,
     data_collection_procedures = prereg_answers$q10.question,
@@ -407,11 +427,11 @@ osf_pr_28 <- function(info) {
     design_dependent_variables = prereg_answers$q15.question,
     indices = prereg_answers$q16.question,
     statistical_tests = prereg_answers$q17.question,
-    #statistical_tests = prereg_answers$q20,
+    # statistical_tests = prereg_answers$q20,
     inference_criteria = prereg_answers$q19,
     data_exclusion_criteria = prereg_answers$q20,
     outliers_and_exclusions = prereg_answers$q21,
-    exploratory_analyses  = prereg_answers$q22,
+    exploratory_analyses = prereg_answers$q22,
     additional_comments = prereg_answers$q23
   )
 
@@ -424,8 +444,8 @@ prc <- function(info) {
   prereg_answers <- ra$registration_responses
 
   blinding <- {
-    x <- unlist(prereg_answers$q15, use.names = FALSE);
-    if (length(x)==0) NA_character_ else paste(x, collapse = " ")
+    x <- unlist(prereg_answers$q15, use.names = FALSE)
+    if (length(x) == 0) NA_character_ else paste(x, collapse = " ")
   }
 
   common <- common_osf(info)
@@ -467,113 +487,165 @@ prsp <- function(info) {
 
   extra <- list(
     research_questions =
-      paste(c(prereg_answers$`description-hypothesis.question1a`,
-              prereg_answers$`84-5`), collapse = " "),
+      paste(c(
+        prereg_answers$`description-hypothesis.question1a`,
+        prereg_answers$`84-5`
+      ), collapse = " "),
     hypotheses_interactions =
-      paste(c(prereg_answers$`description-hypothesis.question2a`,
-              prereg_answers$`84-7`), collapse = " "),
+      paste(c(
+        prereg_answers$`description-hypothesis.question2a`,
+        prereg_answers$`84-7`
+      ), collapse = " "),
     manipulation_checks =
-      paste(c(prereg_answers$`description-hypothesis.question3a`,
-              prereg_answers$`84-9`), collapse = " "),
+      paste(c(
+        prereg_answers$`description-hypothesis.question3a`,
+        prereg_answers$`84-9`
+      ), collapse = " "),
     theoretical_rationale =
-      paste(c(prereg_answers$`recommended-hypothesis.question5a`,
-              prereg_answers$`recommended-hypothesis.question6a`,
-              prereg_answers$`84-14`, prereg_answers$`84-16`), collapse = " "),
+      paste(c(
+        prereg_answers$`recommended-hypothesis.question5a`,
+        prereg_answers$`recommended-hypothesis.question6a`,
+        prereg_answers$`84-14`, prereg_answers$`84-16`
+      ), collapse = " "),
     design_independent_variables =
-      paste(c(prereg_answers$`description-methods.design.question2a`,
-              prereg_answers$`84-23`), collapse = " "),
+      paste(c(
+        prereg_answers$`description-methods.design.question2a`,
+        prereg_answers$`84-23`
+      ), collapse = " "),
     design_dependent_variables =
-      paste(c(prereg_answers$`description-methods.design.question2b`,
-              prereg_answers$`84-25`), collapse = " "),
+      paste(c(
+        prereg_answers$`description-methods.design.question2b`,
+        prereg_answers$`84-25`
+      ), collapse = " "),
     design_covariates_moderators =
       prereg_answers$`description-methods.design.question3b`,
     data_exclusion_criteria =
-      paste(c(prereg_answers$`description-methods.planned-sample.question4b`,
-              prereg_answers$`84-30`), collapse = " "),
+      paste(c(
+        prereg_answers$`description-methods.planned-sample.question4b`,
+        prereg_answers$`84-30`
+      ), collapse = " "),
     data_collection_procedures =
-      paste(c(prereg_answers$`description-methods.planned-sample.question5b`,
-              prereg_answers$`description-methods.procedure.question10b`,
-              prereg_answers$`84-32`, prereg_answers$`84-44`,
-              prereg_answers$`84-47`, prereg_answers$`84-49`),
-              collapse = " "),
+      paste(
+        c(
+          prereg_answers$`description-methods.planned-sample.question5b`,
+          prereg_answers$`description-methods.procedure.question10b`,
+          prereg_answers$`84-32`, prereg_answers$`84-44`,
+          prereg_answers$`84-47`, prereg_answers$`84-49`
+        ),
+        collapse = " "
+      ),
     sample_size =
-      paste(c(prereg_answers$`description-methods.planned-sample.question6b`,
-              prereg_answers$`84-34`, prereg_answers$`84-36`), collapse = " "),
+      paste(c(
+        prereg_answers$`description-methods.planned-sample.question6b`,
+        prereg_answers$`84-34`, prereg_answers$`84-36`
+      ), collapse = " "),
     stopping_rule =
-      paste(c(prereg_answers$`description-methods.planned-sample.question7b`,
-              prereg_answers$`84-38`), collapse = " "),
+      paste(c(
+        prereg_answers$`description-methods.planned-sample.question7b`,
+        prereg_answers$`84-38`
+      ), collapse = " "),
     outliers_and_exclusions =
-      paste(c(prereg_answers$`description-methods.exclusion-criteria.question8b`,
-              prereg_answers$`84-41`), collapse = " "),
+      paste(c(
+        prereg_answers$`description-methods.exclusion-criteria.question8b`,
+        prereg_answers$`84-41`
+      ), collapse = " "),
     fail_safe_exclusion_levels = prereg_answers$`recommended-methods.procedure.question9b`,
     indices =
-      paste(c(prereg_answers$`confirmatory-analyses-first.first.question1c`,
-              prereg_answers$`confirmatory-analyses-second.second.question1c`,
-              prereg_answers$`confirmatory-analyses-third.third.question1c`,
-              prereg_answers$`confirmatory-analyses-fourth.fourth.question1c`,
-              prereg_answers$`confirmatory-analyses-further.further.question1c`,
-              prereg_answers$`84-56`, prereg_answers$`84-68`,
-              prereg_answers$`84-80`, prereg_answers$`84-92`), collapse = " "),
+      paste(c(
+        prereg_answers$`confirmatory-analyses-first.first.question1c`,
+        prereg_answers$`confirmatory-analyses-second.second.question1c`,
+        prereg_answers$`confirmatory-analyses-third.third.question1c`,
+        prereg_answers$`confirmatory-analyses-fourth.fourth.question1c`,
+        prereg_answers$`confirmatory-analyses-further.further.question1c`,
+        prereg_answers$`84-56`, prereg_answers$`84-68`,
+        prereg_answers$`84-80`, prereg_answers$`84-92`
+      ), collapse = " "),
     statistical_tests =
-      paste(c(prereg_answers$`confirmatory-analyses-first.first.question2c`,
-              prereg_answers$`confirmatory-analyses-second.second.question2c`,
-              prereg_answers$`confirmatory-analyses-third.third.question2c`,
-              prereg_answers$`confirmatory-analyses-fourth.fourth.question2c`,
-              prereg_answers$`confirmatory-analyses-further.further.question2c`,
-              prereg_answers$`84-58`, prereg_answers$`84-70`,
-              prereg_answers$`84-82`, prereg_answers$`84-94`,
-              prereg_answers$`84-126`), collapse = " "),
+      paste(c(
+        prereg_answers$`confirmatory-analyses-first.first.question2c`,
+        prereg_answers$`confirmatory-analyses-second.second.question2c`,
+        prereg_answers$`confirmatory-analyses-third.third.question2c`,
+        prereg_answers$`confirmatory-analyses-fourth.fourth.question2c`,
+        prereg_answers$`confirmatory-analyses-further.further.question2c`,
+        prereg_answers$`84-58`, prereg_answers$`84-70`,
+        prereg_answers$`84-82`, prereg_answers$`84-94`,
+        prereg_answers$`84-126`
+      ), collapse = " "),
     rationale_covariate =
-      paste(c(prereg_answers$`confirmatory-analyses-first.first.question3c`,
-              prereg_answers$`confirmatory-analyses-second.second.question3c`,
-              prereg_answers$`confirmatory-analyses-third.third.question3c`,
-              prereg_answers$`confirmatory-analyses-fourth.fourth.question3c`,
-              prereg_answers$`confirmatory-analyses-further.further.question3c`,
-              prereg_answers$`84-62`, prereg_answers$`84-74`,
-              prereg_answers$`84-84`, prereg_answers$`84-96`), collapse = " "),
+      paste(c(
+        prereg_answers$`confirmatory-analyses-first.first.question3c`,
+        prereg_answers$`confirmatory-analyses-second.second.question3c`,
+        prereg_answers$`confirmatory-analyses-third.third.question3c`,
+        prereg_answers$`confirmatory-analyses-fourth.fourth.question3c`,
+        prereg_answers$`confirmatory-analyses-further.further.question3c`,
+        prereg_answers$`84-62`, prereg_answers$`84-74`,
+        prereg_answers$`84-84`, prereg_answers$`84-96`
+      ), collapse = " "),
     variables_roles_in_analyses =
-      paste(c(prereg_answers$`confirmatory-analyses-first.first.question4c`,
-              prereg_answers$`confirmatory-analyses-second.second.question4c`,
-              prereg_answers$`confirmatory-analyses-third.third.question4c`,
-              prereg_answers$`confirmatory-analyses-fourth.fourth.question4c`,
-              prereg_answers$`confirmatory-analyses-further.further.question4c`,
-              prereg_answers$`84-60`, prereg_answers$`84-72`,
-              prereg_answers$`84-86`, prereg_answers$`84-98`), collapse = " "),
+      paste(c(
+        prereg_answers$`confirmatory-analyses-first.first.question4c`,
+        prereg_answers$`confirmatory-analyses-second.second.question4c`,
+        prereg_answers$`confirmatory-analyses-third.third.question4c`,
+        prereg_answers$`confirmatory-analyses-fourth.fourth.question4c`,
+        prereg_answers$`confirmatory-analyses-further.further.question4c`,
+        prereg_answers$`84-60`, prereg_answers$`84-72`,
+        prereg_answers$`84-86`, prereg_answers$`84-98`
+      ), collapse = " "),
     inference_criteria =
-      paste(c(prereg_answers$`confirmatory-analyses-first.first.question5c`,
-              prereg_answers$`confirmatory-analyses-second.second.question5c`,
-              prereg_answers$`confirmatory-analyses-third.third.question5c`,
-              prereg_answers$`confirmatory-analyses-fourth.fourth.question5c`,
-              prereg_answers$`confirmatory-analyses-further.further.question5c`,
-              prereg_answers$`84-64`, prereg_answers$`84-76`,
-              prereg_answers$`84-88`, prereg_answers$`84-100`), collapse = " "),
+      paste(c(
+        prereg_answers$`confirmatory-analyses-first.first.question5c`,
+        prereg_answers$`confirmatory-analyses-second.second.question5c`,
+        prereg_answers$`confirmatory-analyses-third.third.question5c`,
+        prereg_answers$`confirmatory-analyses-fourth.fourth.question5c`,
+        prereg_answers$`confirmatory-analyses-further.further.question5c`,
+        prereg_answers$`84-64`, prereg_answers$`84-76`,
+        prereg_answers$`84-88`, prereg_answers$`84-100`
+      ), collapse = " "),
     multiple_testing_correction =
-      paste(c(prereg_answers$`recommended-analysis.specify.question6c`,
-              prereg_answers$`84-116`), collapse = " "),
+      paste(c(
+        prereg_answers$`recommended-analysis.specify.question6c`,
+        prereg_answers$`84-116`
+      ), collapse = " "),
     missing_data_handling =
-      paste(c(prereg_answers$`recommended-analysis.specify.question7c`,
-              prereg_answers$`84-118`), collapse = " "),
+      paste(c(
+        prereg_answers$`recommended-analysis.specify.question7c`,
+        prereg_answers$`84-118`
+      ), collapse = " "),
     reliability_criteria =
-      paste(c(prereg_answers$`recommended-analysis.specify.question8c`,
-              prereg_answers$`84-120`), collapse = " "),
+      paste(c(
+        prereg_answers$`recommended-analysis.specify.question8c`,
+        prereg_answers$`84-120`
+      ), collapse = " "),
     transformations =
-      paste(c(prereg_answers$`recommended-analysis.specify.question9c`,
-              prereg_answers$`84-122`), collapse = " "),
+      paste(c(
+        prereg_answers$`recommended-analysis.specify.question9c`,
+        prereg_answers$`84-122`
+      ), collapse = " "),
     assumptions_and_contingencies =
-      paste(c(prereg_answers$`recommended-analysis.specify.question10c`,
-              prereg_answers$`84-124`), collapse = " "),
+      paste(c(
+        prereg_answers$`recommended-analysis.specify.question10c`,
+        prereg_answers$`84-124`
+      ), collapse = " "),
     data_collection_started =
-      paste(c(prereg_answers$`datacompletion`,
-              prereg_answers$`84-130`), collapse = " "),
+      paste(c(
+        prereg_answers$`datacompletion`,
+        prereg_answers$`84-130`
+      ), collapse = " "),
     data_looked =
-      paste(c(prereg_answers$`looked`,
-              prereg_answers$`84-134`), collapse = " "),
+      paste(c(
+        prereg_answers$`looked`,
+        prereg_answers$`84-134`
+      ), collapse = " "),
     project_dates_start_end =
-      paste(c(prereg_answers$`dataCollectionDates`,
-              prereg_answers$`84-138`), collapse = " "),
+      paste(c(
+        prereg_answers$`dataCollectionDates`,
+        prereg_answers$`84-138`
+      ), collapse = " "),
     additional_comments =
-      paste(c(prereg_answers$`additionalComments`,
-              prereg_answers$`84-140`), collapse = " ")
+      paste(c(
+        prereg_answers$`additionalComments`,
+        prereg_answers$`84-140`
+      ), collapse = " ")
   )
 
   c(common, extra)
@@ -599,8 +671,10 @@ rrbrandt <- function(info) {
     original_materials_available = prereg_answers$item10,
     assumptions_and_contingencies = prereg_answers$item11,
     data_collection_location = prereg_answers$item12,
-    blinding = paste(prereg_answers$item13,
-                     prereg_answers$item14),
+    blinding = paste(
+      prereg_answers$item13,
+      prereg_answers$item14
+    ),
     sample_size = prereg_answers$item15,
     sample_size_rationale = prereg_answers$item16,
     instruction_similarities = prereg_answers$item17,
@@ -610,16 +684,17 @@ rrbrandt <- function(info) {
     location_similarities = prereg_answers$item21,
     remuneration_similarities = prereg_answers$item22,
     participant_similarities = prereg_answers$item23,
-    differences_influencing_effects = paste(prereg_answers$item24,
-                                            prereg_answers$item25),
-    data_exclusion_criteria  = prereg_answers$item26,
+    differences_influencing_effects = paste(
+      prereg_answers$item24,
+      prereg_answers$item25
+    ),
+    data_exclusion_criteria = prereg_answers$item26,
     statistical_tests = prereg_answers$item27,
     inference_criteria = prereg_answers$item28
   )
 
   c(common, extra)
 }
-
 
 
 # prereg schema ----
@@ -638,7 +713,6 @@ prereg_schema <- data.frame(
   theoretical_rationale = NA_character_,
   additional_comments = NA_character_,
   project_dates_start_end = NA_character_,
-
   study_type = NA_character_,
   study_design_overview = NA_character_,
   design_independent_variables = NA_character_,
@@ -649,7 +723,6 @@ prereg_schema <- data.frame(
   manipulated_variables = NA_character_,
   measured_variables = NA_character_,
   indices = NA_character_,
-
   existing_data = NA_character_,
   existing_data_explanation = NA_character_,
   data_collection_procedures = NA_character_,
@@ -660,7 +733,6 @@ prereg_schema <- data.frame(
   sample_size_rationale = NA_character_,
   stopping_rule = NA_character_,
   fail_safe_exclusion_levels = NA_character_,
-
   statistical_tests = NA_character_,
   additional_analyses = NA_character_,
   transformations = NA_character_,
@@ -670,12 +742,10 @@ prereg_schema <- data.frame(
   variables_roles_in_analyses = NA_character_,
   rationale_covariate = NA_character_,
   reliability_criteria = NA_character_,
-
   data_exclusion_criteria = NA_character_,
   outliers_and_exclusions = NA_character_,
   missing_data_handling = NA_character_,
   exploratory_analyses = NA_character_,
-
   replication_description = NA_character_,
   replication_importance = NA_character_,
   effect_size_original = NA_character_,
@@ -694,11 +764,8 @@ prereg_schema <- data.frame(
   remuneration_similarities = NA_character_,
   participant_similarities = NA_character_,
   differences_influencing_effects = NA_character_,
-
   date_modified = NA_character_,
   date_registered = NA_character_,
   embargo_end_date = NA_character_,
   ia_url = NA_character_
 )
-
-

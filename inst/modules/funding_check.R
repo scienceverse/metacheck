@@ -61,9 +61,11 @@ funding_check <- function(paper) {
     search_text(pattern_study) |>
     # merge the text by section/id
     search_text(return = "section") |>
-    dplyr::filter(!any(section %in% likely_section) |
-                    section %in% likely_section,
-                  .by = id)
+    dplyr::filter(
+      !any(section %in% likely_section) |
+        section %in% likely_section,
+      .by = id
+    )
 
   # summary_table ----
   summary_table <- dplyr::summarise(table, funding_found = TRUE, .by = id)
@@ -74,8 +76,10 @@ funding_check <- function(paper) {
   # report ----
   # summary_text ----
   if (tl == "green") {
-    report <- c("The following funding statement was detected:",
-                scroll_table(table$text))
+    report <- c(
+      "The following funding statement was detected:",
+      scroll_table(table$text)
+    )
     summary_text <- "A funding statement was detected."
   } else if (tl == "red") {
     report <- "No funding statement was detected. Consider adding one."
@@ -94,48 +98,46 @@ funding_check <- function(paper) {
 }
 
 
-
 rtransparent_funding <- function(paper) {
-
   index <- integer()
   disclosure <- integer()
   diff <- integer()
 
   # Index sets (any)
   index_any <- list()
-  index_any[["support_1"]]    <- get_support_1(paper$full_text$text)
+  index_any[["support_1"]] <- get_support_1(paper$full_text$text)
   # index_any[["support_2"]] <- get_support_2(paragraphs_pruned)
-  index_any[["support_3"]]    <- get_support_3(paper$full_text$text)
-  index_any[["support_4"]]    <- get_support_4(paper$full_text$text)
-  index_any[["support_5"]]    <- get_support_5(paper$full_text$text)
-  index_any[["support_6"]]    <- get_support_6(paper$full_text$text)
-  index_any[["support_7"]]    <- get_support_7(paper$full_text$text)
-  index_any[["support_8"]]    <- get_support_8(paper$full_text$text)
-  index_any[["support_9"]]    <- get_support_9(paper$full_text$text)
-  index_any[["support_10"]]   <- get_support_10(paper$full_text$text)
-  index_any[["developed_1"]]  <- get_developed_1(paper$full_text$text)
-  index_any[["received_1"]]   <- get_received_1(paper$full_text$text)
-  index_any[["received_2"]]   <- get_received_2(paper$full_text$text)
-  index_any[["recipient_1"]]  <- get_recipient_1(paper$full_text$text)
-  index_any[["authors_1"]]    <- get_authors_1(paper$full_text$text)
-  index_any[["authors_2"]]    <- get_authors_2(paper$full_text$text)
-  index_any[["thank_1"]]      <- get_thank_1(paper$full_text$text)
-  index_any[["thank_2"]]      <- get_thank_2(paper$full_text$text)
-  index_any[["fund_1"]]       <- get_fund_1(paper$full_text$text)
-  index_any[["fund_2"]]       <- get_fund_2(paper$full_text$text)
-  index_any[["fund_3"]]       <- get_fund_3(paper$full_text$text)
-  index_any[["supported_1"]]  <- get_supported_1(paper$full_text$text)
-  index_any[["financial_1"]]  <- get_financial_1(paper$full_text$text)
-  index_any[["financial_2"]]  <- get_financial_2(paper$full_text$text)
-  index_any[["financial_3"]]  <- get_financial_3(paper$full_text$text)
-  index_any[["grant_1"]]      <- get_grant_1(paper$full_text$text)
-  index_any[["french_1"]]     <- get_french_1(paper$full_text$text)
-  index_any[["common_1"]]     <- get_common_1(paper$full_text$text)
-  index_any[["common_2"]]     <- get_common_2(paper$full_text$text)
-  index_any[["common_3"]]     <- get_common_3(paper$full_text$text)
-  index_any[["common_4"]]     <- get_common_4(paper$full_text$text)
-  index_any[["common_5"]]     <- get_common_5(paper$full_text$text)
-  index_any[["acknow_1"]]     <- get_acknow_1(paper$full_text$text)
+  index_any[["support_3"]] <- get_support_3(paper$full_text$text)
+  index_any[["support_4"]] <- get_support_4(paper$full_text$text)
+  index_any[["support_5"]] <- get_support_5(paper$full_text$text)
+  index_any[["support_6"]] <- get_support_6(paper$full_text$text)
+  index_any[["support_7"]] <- get_support_7(paper$full_text$text)
+  index_any[["support_8"]] <- get_support_8(paper$full_text$text)
+  index_any[["support_9"]] <- get_support_9(paper$full_text$text)
+  index_any[["support_10"]] <- get_support_10(paper$full_text$text)
+  index_any[["developed_1"]] <- get_developed_1(paper$full_text$text)
+  index_any[["received_1"]] <- get_received_1(paper$full_text$text)
+  index_any[["received_2"]] <- get_received_2(paper$full_text$text)
+  index_any[["recipient_1"]] <- get_recipient_1(paper$full_text$text)
+  index_any[["authors_1"]] <- get_authors_1(paper$full_text$text)
+  index_any[["authors_2"]] <- get_authors_2(paper$full_text$text)
+  index_any[["thank_1"]] <- get_thank_1(paper$full_text$text)
+  index_any[["thank_2"]] <- get_thank_2(paper$full_text$text)
+  index_any[["fund_1"]] <- get_fund_1(paper$full_text$text)
+  index_any[["fund_2"]] <- get_fund_2(paper$full_text$text)
+  index_any[["fund_3"]] <- get_fund_3(paper$full_text$text)
+  index_any[["supported_1"]] <- get_supported_1(paper$full_text$text)
+  index_any[["financial_1"]] <- get_financial_1(paper$full_text$text)
+  index_any[["financial_2"]] <- get_financial_2(paper$full_text$text)
+  index_any[["financial_3"]] <- get_financial_3(paper$full_text$text)
+  index_any[["grant_1"]] <- get_grant_1(paper$full_text$text)
+  index_any[["french_1"]] <- get_french_1(paper$full_text$text)
+  index_any[["common_1"]] <- get_common_1(paper$full_text$text)
+  index_any[["common_2"]] <- get_common_2(paper$full_text$text)
+  index_any[["common_3"]] <- get_common_3(paper$full_text$text)
+  index_any[["common_4"]] <- get_common_4(paper$full_text$text)
+  index_any[["common_5"]] <- get_common_5(paper$full_text$text)
+  index_any[["acknow_1"]] <- get_acknow_1(paper$full_text$text)
   index_any[["disclosure_1"]] <- get_disclosure_1(paper$full_text$text)
   index_any[["disclosure_2"]] <- get_disclosure_2(paper$full_text$text)
 
@@ -159,7 +161,7 @@ rtransparent_funding <- function(paper) {
         diff <- to - from
       }
       if (diff <= 100) {
-        index_fund[["fund"]]    <- get_fund_acknow(paper$full_text$text[from:to])
+        index_fund[["fund"]] <- get_fund_acknow(paper$full_text$text[from:to])
         index_fund[["project"]] <- get_project_acknow(paper$full_text$text[from:to])
         adjusted <- unlist(index_fund) + (from - 1)
         index <- adjusted
@@ -172,7 +174,7 @@ rtransparent_funding <- function(paper) {
   funding_text <- paste(paper$full_text$text[index], collapse = " ")
 
   # Summaries of index sets (lengths)
-  index_any  <- purrr::map(index_any,  length)
+  index_any <- purrr::map(index_any, length)
   index_fund <- purrr::map(index_fund, length)
 
   id <- paper$id
@@ -182,7 +184,7 @@ rtransparent_funding <- function(paper) {
 
   # Normalize the index lists to data frames with the same row count as results
   index_any_df <- if (length(index_any) == 0L) {
-    summary_table[, FALSE]  # 0-column data frame with nrow(results) rows
+    summary_table[, FALSE] # 0-column data frame with nrow(results) rows
   } else {
     as.data.frame(index_any, check.names = FALSE)
   }
@@ -201,8 +203,10 @@ rtransparent_funding <- function(paper) {
 
   # report ----
   if (tl == "green") {
-    report <- sprintf("The following funding statement was detected: \n%s",
-                      funding_text)
+    report <- sprintf(
+      "The following funding statement was detected: \n%s",
+      funding_text
+    )
     summary_text <- "A funding statement was detected"
   } else if (tl == "red") {
     report <- "No funding statement was detected. Consider adding one."
@@ -221,7 +225,6 @@ rtransparent_funding <- function(paper) {
 }
 
 
-
 # -------------------------------
 # Utilities
 # -------------------------------
@@ -230,11 +233,13 @@ rtransparent_funding <- function(paper) {
 .syn_cache <- new.env(parent = emptyenv())
 
 .create_synonyms <- function() {
-  if (!is.null(.syn_cache$syn)) return(.syn_cache$syn)
+  if (!is.null(.syn_cache$syn)) {
+    return(.syn_cache$syn)
+  }
 
   synonyms <- list()
 
-  synonyms[["txt"]] <- "[a-zA-Z0-9\\s,()\\[\\]/:-]*"  # order matters
+  synonyms[["txt"]] <- "[a-zA-Z0-9\\s,()\\[\\]/:-]*" # order matters
 
   synonyms[["This"]] <- c("This", "These", "The", "Our", "All")
   synonyms[["This_singular"]] <- c("This", "The", "Our")
@@ -583,15 +588,15 @@ obliterate_fullstop_1 <- function(article) {
   stopifnot(is.character(article))
   patterns <- c(
     "([A-Z])(\\.)\\s*([A-Z])(\\.)\\s*([A-Z])(\\.)" = "\\1 \\3 \\5",
-    "([A-Z])(\\.)\\s*([A-Z])(\\.)"                     = "\\1 \\3",
-    "(\\s[A-Z])(\\.) ([A-Z][a-z]+)"                      = "\\1 \\3",
-    "\\.\\s*([a-z0-9])"                                   = " \\1",
-    "\\.([A-Z])"                                          = " \\1",
-    "\\.\\s*([A-Z]+[0-9])"                               = " \\1",
-    "\\.([^\\s0-9\\[])"                                 = "\\1",
-    "\\.\\s+(\\()"                                      = " \\1",
-    "([0-9])\\.([0-9])"                                   = "\\1\\2",
-    "\\.(\\s*[[:punct:]])"                              = "\\1"
+    "([A-Z])(\\.)\\s*([A-Z])(\\.)" = "\\1 \\3",
+    "(\\s[A-Z])(\\.) ([A-Z][a-z]+)" = "\\1 \\3",
+    "\\.\\s*([a-z0-9])" = " \\1",
+    "\\.([A-Z])" = " \\1",
+    "\\.\\s*([A-Z]+[0-9])" = " \\1",
+    "\\.([^\\s0-9\\[])" = "\\1",
+    "\\.\\s+(\\()" = " \\1",
+    "([0-9])\\.([0-9])" = "\\1\\2",
+    "\\.(\\s*[[:punct:]])" = "\\1"
   )
   return(stringr::str_replace_all(article, patterns))
 }
@@ -760,7 +765,9 @@ get_support_1 <- function(article) {
 
   singular <- paste(this_research, was_funded_by, sep = synonyms$txt)
   singular_idx <- grep(singular, article, perl = TRUE)
-  if (length(singular_idx) > 0) return(singular_idx)
+  if (length(singular_idx) > 0) {
+    return(singular_idx)
+  }
 
   words <- c("These", "researches", "are", "funded_funding", "by")
   parts <- lapply(synonyms[words], .bound, location = "end")
@@ -777,7 +784,9 @@ get_support_2 <- function(article) {
   parts <- lapply(parts, .encase)
   pattern <- paste(unlist(parts), collapse = synonyms$txt)
   idx <- grep(pattern, article, perl = TRUE)
-  if (length(idx) > 0) return(idx)
+  if (length(idx) > 0) {
+    return(idx)
+  }
 
   words <- c("funded", "these", "researches")
   parts <- lapply(synonyms[words], .bound, location = "end")
@@ -1310,14 +1319,14 @@ negate_disclosure_2 <- function(article) {
 
   Disclosure <- .encase(Disclosure_synonyms)
   disclosure <- .encase(disclosure_synonyms)
-  disclose   <- .encase(disclose_synonyms)
+  disclose <- .encase(disclose_synonyms)
   no <- .encase(synonyms$No)
   no_1 <- "(no|not have any)"
   no_2 <- "(nil|nothing)"
 
   regex_1 <- .encase(paste(Disclosure, no))
   regex_2 <- .encase(paste(Disclosure, paste(no_1, disclosure), sep = synonyms$txt))
-  regex_3 <- .encase(paste(Disclosure, paste(no_2, disclose),   sep = synonyms$txt))
+  regex_3 <- .encase(paste(Disclosure, paste(no_2, disclose), sep = synonyms$txt))
 
   regex <- paste(regex_1, regex_2, regex_3, sep = "|")
   return(grepl(regex, article, perl = TRUE))

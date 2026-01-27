@@ -82,9 +82,11 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
   }
 
   # summary_table ----
-  summary_table <- dplyr::summarise(table, .by = id,
-                   refs_checked = sum(!is.na(ref)),
-                   doi_found = sum(doi_found))
+  summary_table <- dplyr::summarise(table,
+    .by = id,
+    refs_checked = sum(!is.na(ref)),
+    doi_found = sum(doi_found)
+  )
 
   # summary_text
   summary_text <- sprintf(
@@ -128,5 +130,3 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
     summary_text = summary_text
   )
 }
-
-

@@ -30,11 +30,11 @@ osf_links <- function(paper) {
   OSF_RGX <- "\\bosf\\s*\\.\\s*io\\s*/\\s*[a-z0-9]{5}\\s*/?\\s*\\??\\b"
   found_osf <- search_text(paper, OSF_RGX, return = "match")
 
-  #get ? links (often in next sentence)
+  # get ? links (often in next sentence)
   VO_RGX <- paste0(
     "\\bosf\\s*\\.\\s*io\\s*/", # osf.io
     "\\s*[a-z0-9]{5}", # 5-letter code
-    "\\s*/\\s*\\?\\s*view_only\\s*=\\s*[0-9a-f]+" #vo-link
+    "\\s*/\\s*\\?\\s*view_only\\s*=\\s*[0-9a-f]+" # vo-link
   )
 
   has_quest <- grepl("\\?", found_osf$text)
@@ -53,9 +53,15 @@ osf_links <- function(paper) {
 
   # combine
   all_osf <- dplyr::left_join(found_osf, found_vo,
-                              by = names(found_osf))
-  all_osf$text = ifelse(is.na(all_osf$expanded),
-                        all_osf$text, all_osf$expanded)
+    by = names(found_osf)
+  )
+  if (nrow(all_osf) > 0) {
+    all_osf$text <- ifelse(
+      is.na(all_osf$expanded),
+      all_osf$text,
+      all_osf$expanded
+    )
+  }
   all_osf$expanded <- NULL
 
   return(all_osf)
@@ -115,19 +121,21 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api")) {
 #' @export
 #' @examples
 #' \dontrun{
-#'   # get info on one OSF node
-#'   osf_retrieve("pngda")
+#' # get info on one OSF node
+#' osf_retrieve("pngda")
 #'
-#'   # also get child nodes and files, and parent project
-#'   osf_retrieve("https://osf.io/6nt4v", TRUE, TRUE)
+#' # also get child nodes and files, and parent project
+#' osf_retrieve("https://osf.io/6nt4v", TRUE, TRUE)
 #' }
 osf_retrieve <- function(osf_url, id_col = 1,
                          recursive = FALSE,
                          find_project = FALSE) {
   api_check <- osf_api_check()
   if (api_check != "ok") {
-    stop("The OSF API seems to be having a problem: ", api_check,
-        "\nCheck ", getOption("metacheck.osf.api"))
+    stop(
+      "The OSF API seems to be having a problem: ", api_check,
+      "\nCheck ", getOption("metacheck.osf.api")
+    )
   }
 
   # handle list of links
@@ -138,7 +146,8 @@ osf_retrieve <- function(osf_url, id_col = 1,
   } else {
     id_col_name <- "osf_url"
     raw_osf_urls <- unique(osf_url) |>
-      stats::na.omit() |> as.character()
+      stats::na.omit() |>
+      as.character()
     table <- data.frame(osf_url = raw_osf_urls)
   }
 
@@ -157,14 +166,16 @@ osf_retrieve <- function(osf_url, id_col = 1,
   }
 
   # iterate over valid IDs
-  message("Starting OSF retrieval for ", length(valid_ids),
-          " URL", ifelse(length(valid_ids) == 1, "", "s"), "...")
+  message(
+    "Starting OSF retrieval for ", length(valid_ids),
+    " URL", ifelse(length(valid_ids) == 1, "", "s"), "..."
+  )
 
   id_info <- vector("list", length(valid_ids))
   too_many <- FALSE
-  i = 0
+  i <- 0
   while (!too_many & i < length(valid_ids)) {
-    i = i + 1
+    i <- i + 1
     oi <- osf_info(valid_ids[[i]])
     if ("too many requests" %in% oi$osf_type) too_many <- TRUE
     id_info[[i]] <- oi
@@ -179,8 +190,10 @@ osf_retrieve <- function(osf_url, id_col = 1,
 
   # reduplicate and add original table info
   by <- stats::setNames("osf_url", id_col_name)
-  data <- dplyr::left_join(table, info, by = by,
-                           suffix = c("", ".osf"))
+  data <- dplyr::left_join(table, info,
+    by = by,
+    suffix = c("", ".osf")
+  )
 
   if (isTRUE(recursive)) {
     message("...Main retrieval complete")
@@ -189,7 +202,7 @@ osf_retrieve <- function(osf_url, id_col = 1,
     children <- info
     child_collector <- data.frame()
 
-    while(nrow(children) > 0) {
+    while (nrow(children) > 0) {
       node_ids <- children[children$osf_type == "nodes", "osf_id"]
 
       children <- osf_children(node_ids)
@@ -201,23 +214,23 @@ osf_retrieve <- function(osf_url, id_col = 1,
     all_nodes <- dplyr::bind_rows(info, child_collector)
     node_type <- all_nodes$osf_type == "nodes"
     if ("kind" %in% names(all_nodes)) {
-      node_type <-  node_type | all_nodes$kind == "folder"
+      node_type <- node_type | all_nodes$kind == "folder"
     }
     node_type <- sapply(node_type, isTRUE)
 
     folders <- all_nodes[node_type, c("osf_id", "project")] |> unique()
 
     file_collector <- data.frame()
-    while(nrow(folders) > 0) {
+    while (nrow(folders) > 0) {
       subfiles <- mapply(\(f, proj_id) {
-          dat <- osf_files(f)
-          dat$project <- rep(proj_id, nrow(dat))
-          dat
-        }, folders$osf_id, folders$project, SIMPLIFY = FALSE) |>
+        dat <- osf_files(f)
+        dat$project <- rep(proj_id, nrow(dat))
+        dat
+      }, folders$osf_id, folders$project, SIMPLIFY = FALSE) |>
         do.call(dplyr::bind_rows, args = _)
       if (nrow(subfiles) > 0 && "kind" %in% names(subfiles)) {
         folders <- subfiles[subfiles$kind == "folder", c("osf_id", "project")]
-        #folders <- folders[!is.na(folders$osf_id), ]
+        # folders <- folders[!is.na(folders$osf_id), ]
       } else {
         folders <- data.frame()
       }
@@ -264,43 +277,50 @@ osf_info <- function(osf_id) {
     osf_types <- "guids"
   } else {
     # waterbutler IDs are usually files
-    osf_types <- c("files",
-                   "nodes",
-                   "preprints",
-                   "registrations",
-                   "users")
+    osf_types <- c(
+      "files",
+      "nodes",
+      "preprints",
+      "registrations",
+      "users"
+    )
   }
 
   for (osf_type in osf_types) {
     warning <- NULL
-    content <- tryCatch({
-      url <- sprintf("%s/%s/%s", osf_api, osf_type, valid_id)
-      node_get <- httr::GET(url, osf_headers())
-      osf_api_calls_inc()
-      if (node_get$status_code == 200) {
-        jsonlite::fromJSON(rawToChar(node_get$content))
-      } else if (node_get$status_code == 404) {
-        NULL
-      } else {
-        warning <- dplyr::case_match(
-          node_get$status_code,
-          200 ~ "ok",
-          204 ~ "no content",
-          400 ~ "bad request",
-          401 ~ "unauthorized",
-          403 ~ "forbidden",
-          404 ~ "not found",
-          405 ~ "method not allowed",
-          409 ~ "conflict",
-          410 ~ "gone",
-          429 ~ "too many requests",
-          500:599 ~ "server error",
-          .default = paste("error", node_get$status_code)
-        )
+    content <- tryCatch(
+      {
+        url <- sprintf("%s/%s/%s", osf_api, osf_type, valid_id)
+        node_get <- httr::GET(url, osf_headers())
+        osf_api_calls_inc()
+        if (node_get$status_code == 200) {
+          jsonlite::fromJSON(rawToChar(node_get$content))
+        } else if (node_get$status_code == 404) {
+          NULL
+        } else {
+          warning <- dplyr::case_match(
+            node_get$status_code,
+            200 ~ "ok",
+            204 ~ "no content",
+            400 ~ "bad request",
+            401 ~ "unauthorized",
+            403 ~ "forbidden",
+            404 ~ "not found",
+            405 ~ "method not allowed",
+            409 ~ "conflict",
+            410 ~ "gone",
+            429 ~ "too many requests",
+            500:599 ~ "server error",
+            .default = paste("error", node_get$status_code)
+          )
 
-        NULL
+          NULL
+        }
+      },
+      error = function(e) {
+        return(NULL)
       }
-    }, error = function(e) return(NULL) )
+    )
 
     # deal with warnings ----
     if (identical(warning, "unauthorized")) {
@@ -324,11 +344,21 @@ osf_info <- function(osf_id) {
   }
 
   # handle data ----
-  if (osf_type == "nodes") return(osf_node_data(data))
-  if (osf_type == "files") return (osf_file_data(data))
-  if (osf_type == "preprints") return(osf_preprint_data(data))
-  if (osf_type == "registrations") return(osf_reg_data(data))
-  if (osf_type == "users") return(osf_user_data(data))
+  if (osf_type == "nodes") {
+    return(osf_node_data(data))
+  }
+  if (osf_type == "files") {
+    return(osf_file_data(data))
+  }
+  if (osf_type == "preprints") {
+    return(osf_preprint_data(data))
+  }
+  if (osf_type == "registrations") {
+    return(osf_reg_data(data))
+  }
+  if (osf_type == "users") {
+    return(osf_user_data(data))
+  }
 
   if (osf_type == "too many requests") {
     warning("Too many requests", call. = FALSE)
@@ -356,7 +386,9 @@ osf_info <- function(osf_id) {
 #' @export
 #' @keywords internal
 osf_node_data <- function(data) {
-  if (is.null(data) | length(data) == 0) return(data.frame())
+  if (is.null(data) | length(data) == 0) {
+    return(data.frame())
+  }
 
   att <- data$attributes
 
@@ -384,7 +416,9 @@ osf_node_data <- function(data) {
 #' @export
 #' @keywords internal
 osf_file_data <- function(data) {
-  if (is.null(data) | length(data) == 0) return(data.frame())
+  if (is.null(data) | length(data) == 0) {
+    return(data.frame())
+  }
 
   att <- data$attributes
 
@@ -396,7 +430,7 @@ osf_file_data <- function(data) {
 
   obj <- data.frame(
     osf_id = osf_id,
-    #osf_id = data$id,
+    # osf_id = data$id,
     name = att$name,
     description = att$description %||% NA_character_,
     osf_type = data$type,
@@ -408,8 +442,8 @@ osf_file_data <- function(data) {
     downloads = att$extra$downloads %||% NA_integer_,
     download_url = data$links$download %||% NA_character_,
     parent = data$relationships$target$data$id %||%
-             data$relationships$parent_folder$data$id %||%
-             NA_character_,
+      data$relationships$parent_folder$data$id %||%
+      NA_character_,
     project = data$relationships$root$data$id %||% NA_character_
   )
 
@@ -419,7 +453,7 @@ osf_file_data <- function(data) {
 
   folders <- which(obj$kind == "folder")
   if (length(folders) &&
-      !is.null(data$relationships$root_folder$data$id)) {
+    !is.null(data$relationships$root_folder$data$id)) {
     obj$osf_id[folders] <-
       data$relationships$root_folder$data$id[folders]
   }
@@ -448,8 +482,10 @@ filetype <- function(filename) {
 
   add_types <- ext |>
     dplyr::left_join(metacheck::file_types, by = "ext") |>
-    dplyr::summarise(type = paste(.data$type, collapse = ";"),
-                     .by = c("id", "ext"))
+    dplyr::summarise(
+      type = paste(.data$type, collapse = ";"),
+      .by = c("id", "ext")
+    )
 
   filetype <- add_types$type
   names(filetype) <- filename
@@ -465,7 +501,9 @@ filetype <- function(filename) {
 #' @export
 #' @keywords internal
 osf_preprint_data <- function(data) {
-  if (is.null(data) | length(data) == 0) return(data.frame())
+  if (is.null(data) | length(data) == 0) {
+    return(data.frame())
+  }
 
   att <- data$attributes
 
@@ -473,7 +511,7 @@ osf_preprint_data <- function(data) {
     osf_id = data$id,
     name = att$title,
     description = att$description %||% NA_character_,
-    #tags = sapply(att$tags, paste, collapse = ";"),
+    # tags = sapply(att$tags, paste, collapse = ";"),
     osf_type = data$type,
     provider = data$relationships$provider$data$id,
     public = att$public %||% NA,
@@ -498,7 +536,9 @@ osf_preprint_data <- function(data) {
 #' @export
 #' @keywords internal
 osf_reg_data <- function(data) {
-  if (is.null(data) | length(data) == 0) return(data.frame())
+  if (is.null(data) | length(data) == 0) {
+    return(data.frame())
+  }
 
   att <- data$attributes
 
@@ -524,7 +564,9 @@ osf_reg_data <- function(data) {
 #' @export
 #' @keywords internal
 osf_user_data <- function(data) {
-  if (is.null(data) | length(data) == 0) return(data.frame())
+  if (is.null(data) | length(data) == 0) {
+    return(data.frame())
+  }
 
   att <- data$attributes
 
@@ -560,29 +602,40 @@ osf_check_id <- function(osf_id) {
     tolower()
 
   sapply(clean_id, \(id) {
-    tryCatch({
-      path <- httr::parse_url(id)$path |>
-        fs::path_split() |>
-        sapply(utils::tail, 1)
+    tryCatch(
+      {
+        path <- httr::parse_url(id)$path |>
+          fs::path_split() |>
+          sapply(utils::tail, 1)
 
-      # All OSF IDs are 5 or 24 characters
-      if (grepl("^[a-z0-9]{5}(_v\\d+)?$", path)) return(path)
-      if (nchar(path) == 24) return(path)
+        # All OSF IDs are 5 or 24 characters
+        if (grepl("^[a-z0-9]{5}(_v\\d+)?$", path)) {
+          return(path)
+        }
+        if (nchar(path) == 24) {
+          return(path)
+        }
 
-      stop()
-    },
-    error = \(e) {
-      # try to extract 5-char ID
-      m <- gregexpr("(?<=osf\\.io/)[a-z0-9]{5}(_v\\d+)?[?/]?",
-                    id, perl = TRUE)
-      id5 <- regmatches(id, m) |> sub("[?/]$", "", x = _)
-      if (nchar(id5) %in% c(5, 8, 9)) return(id5)
+        stop()
+      },
+      error = \(e) {
+        # try to extract 5-char ID
+        m <- gregexpr("(?<=osf\\.io/)[a-z0-9]{5}(_v\\d+)?[?/]?",
+          id,
+          perl = TRUE
+        )
+        id5 <- regmatches(id, m) |> sub("[?/]$", "", x = _)
+        if (nchar(id5) %in% c(5, 8, 9)) {
+          return(id5)
+        }
 
-      # else...
-      warning(id, " is not a valid OSF ID",
-              call. = FALSE, immediate. = FALSE)
-      return(NA_character_)
-    })
+        # else...
+        warning(id, " is not a valid OSF ID",
+          call. = FALSE, immediate. = FALSE
+        )
+        return(NA_character_)
+      }
+    )
   }, USE.NAMES = FALSE)
 }
 
@@ -598,8 +651,10 @@ osf_check_id <- function(osf_id) {
 #' # osf_type("pngda")
 osf_type <- function(guid) {
   if (length(guid) > 1) {
-    pb <- pb(total = length(guid),
-             format = "Checking OSF Types [:bar] :current/:total :elapsedfull")
+    pb <- pb(
+      total = length(guid),
+      format = "Checking OSF Types [:bar] :current/:total :elapsedfull"
+    )
     types <- sapply(guid, \(g) {
       pb$tick()
       osf_type(g)
@@ -609,8 +664,10 @@ osf_type <- function(guid) {
 
   osf_api <- getOption("metacheck.osf.api")
   id <- osf_check_id(guid)
-  url <- sprintf("%s/guids/%s/?resolve=false",
-                 osf_api, id)
+  url <- sprintf(
+    "%s/guids/%s/?resolve=false",
+    osf_api, id
+  )
   info <- osf_get_all_pages(url)
 
   otype <- info$relationships$referent$links$related$meta$type
@@ -637,11 +694,16 @@ osf_type <- function(guid) {
 osf_get_all_pages <- function(url, page_end = Inf) {
   Sys.sleep(osf_delay())
 
-  content <- tryCatch({
-    node_get <- httr::GET(url, osf_headers())
-    osf_api_calls_inc()
-    jsonlite::fromJSON(rawToChar(node_get$content))
-  }, error = function(e) return(NULL))
+  content <- tryCatch(
+    {
+      node_get <- httr::GET(url, osf_headers())
+      osf_api_calls_inc()
+      jsonlite::fromJSON(rawToChar(node_get$content))
+    },
+    error = function(e) {
+      return(NULL)
+    }
+  )
 
   next_url <- content$links$`next`
   last_url <- content$links$last
@@ -723,19 +785,25 @@ osf_children <- function(osf_id) {
   osf_api <- getOption("metacheck.osf.api")
   node_id <- osf_check_id(osf_id)
 
-  if (length(node_id) == 0) return(data.frame())
+  if (length(node_id) == 0) {
+    return(data.frame())
+  }
 
-  message("* Retrieving children for ",
-          paste(node_id, collapse = ", "),
-          "...")
+  message(
+    "* Retrieving children for ",
+    paste(node_id, collapse = ", "),
+    "..."
+  )
 
   # url <- sprintf("%s/nodes/%s/children/",
   #                osf_api, node_id)
   # data <- osf_get_all_pages(url)
   # obj <- osf_node_data(data)
 
-  url <- sprintf("%s/nodes/?filter[id]=%s&embed=children",
-                 osf_api, paste(node_id, collapse = ","))
+  url <- sprintf(
+    "%s/nodes/?filter[id]=%s&embed=children",
+    osf_api, paste(node_id, collapse = ",")
+  )
   data <- osf_get_all_pages(url)
   children <- do.call(dplyr::bind_rows, data$embeds$children$data)
   obj <- osf_node_data(children)
@@ -752,13 +820,19 @@ osf_children <- function(osf_id) {
 #' @keywords internal
 osf_parent_project <- function(osf_id) {
   valid_id <- osf_check_id(osf_id)
-  if (is.na(valid_id)) return(NA_character_)
+  if (is.na(valid_id)) {
+    return(NA_character_)
+  }
 
   # TODO: make this more efficient my just getting the parent
-  obj <- suppressMessages( osf_info(valid_id) )
+  obj <- suppressMessages(osf_info(valid_id))
 
-  if (!is.null(obj$project) && !is.na(obj$project)) return(obj$project)
-  if (is.null(obj$parent) || is.na(obj$parent)) return(osf_id)
+  if (!is.null(obj$project) && !is.na(obj$project)) {
+    return(obj$project)
+  }
+  if (is.null(obj$parent) || is.na(obj$parent)) {
+    return(osf_id)
+  }
 
   parent <- osf_parent_project(obj$parent)
 
@@ -900,7 +974,7 @@ osf_api_calls <- function(calls = NULL) {
 #'
 #' @examples
 #' \donttest{
-#'   osf_file_download("6nt4v")
+#' osf_file_download("6nt4v")
 #' }
 osf_file_download <- function(osf_id,
                               download_to = ".",
@@ -909,30 +983,45 @@ osf_file_download <- function(osf_id,
                               max_folder_length = Inf,
                               ignore_folder_structure = FALSE) {
   ## error checking ----
-  osf_id <- osf_check_id(osf_id) |> stats::na.omit() |> unique()
-  if (length(osf_id) == 0) return(NULL)
+  osf_id <- osf_check_id(osf_id) |>
+    stats::na.omit() |>
+    unique()
+  if (length(osf_id) == 0) {
+    return(NULL)
+  }
 
   ## iterate ----
   if (length(osf_id) > 1) {
-    message("Starting downloads for ", length(osf_id),
-            " OSF projects...\n")
+    message(
+      "Starting downloads for ", length(osf_id),
+      " OSF projects...\n"
+    )
     dl <- lapply(osf_id, function(x) {
-      tryCatch({
-        osf_file_download(x,
-                          download_to,
-                          max_file_size,
-                          max_download_size,
-                          max_folder_length,
-                          ignore_folder_structure)
-      }, error = function(e) {
-        warning(x, " resulted in an error:\n  ",
-                e$message, "\n")
-      })
+      tryCatch(
+        {
+          osf_file_download(
+            x,
+            download_to,
+            max_file_size,
+            max_download_size,
+            max_folder_length,
+            ignore_folder_structure
+          )
+        },
+        error = function(e) {
+          warning(
+            x, " resulted in an error:\n  ",
+            e$message, "\n"
+          )
+        }
+      )
     }) |>
       do.call(dplyr::bind_rows, args = _)
-    message("...Completed downloads for ", length(osf_id),
-            " OSF projects")
-    #names(dl) <- osf_id
+    message(
+      "...Completed downloads for ", length(osf_id),
+      " OSF projects"
+    )
+    # names(dl) <- osf_id
     return(dl)
   }
 
@@ -952,11 +1041,13 @@ osf_file_download <- function(osf_id,
 
   ## restrict file size ----
   if (!is.null(max_file_size) && max_file_size > 0) {
-    too_big_files <- which(files$size > max_file_size*1024*1024)
+    too_big_files <- which(files$size > max_file_size * 1024 * 1024)
     if (length(too_big_files) > 0) {
       for (i in too_big_files) {
-        message("- omitting ", files$name[[i]],
-                " (", round(files$size[[i]]/1024/1024, 1), "MB)")
+        message(
+          "- omitting ", files$name[[i]],
+          " (", round(files$size[[i]] / 1024 / 1024, 1), "MB)"
+        )
       }
 
       files <- files[-too_big_files, ]
@@ -964,11 +1055,13 @@ osf_file_download <- function(osf_id,
   }
 
   ## restrict total download size ----
-  while (sum(files$size, na.rm = TRUE) > max_download_size*1024*1024) {
+  while (sum(files$size, na.rm = TRUE) > max_download_size * 1024 * 1024) {
     max_file <- which(files$size == max(files$size, na.rm = TRUE))
 
-    message("- omitting ", files$name[[max_file]],
-            " (", round(files$size[[max_file]]/1024/1024, 1), "MB)")
+    message(
+      "- omitting ", files$name[[max_file]],
+      " (", round(files$size[[max_file]] / 1024 / 1024, 1), "MB)"
+    )
 
     files <- files[-max_file, ]
   }
@@ -979,9 +1072,9 @@ osf_file_download <- function(osf_id,
   if (dir.exists(download_to)) {
     download_to <- file.path(download_to, osf_id)
   }
-  i = 0
+  i <- 0
   while (dir.exists(download_to)) {
-    i = i + 1
+    i <- i + 1
     download_to <- download_to |>
       sub("_\\d+$", "", x = _) |>
       paste0("_", i)
@@ -995,17 +1088,22 @@ osf_file_download <- function(osf_id,
     dir.create(temppath)
 
     files_to_download <- which(files$kind == "file")
-    pb <- pb(total = length(files_to_download),
-             format = "Downloading files [:bar] :current/:total :elapsedfull")
+    pb <- pb(
+      total = length(files_to_download),
+      format = "Downloading files [:bar] :current/:total :elapsedfull"
+    )
 
     for (i in files_to_download) {
-      tryCatch({
-        write_loc <- file.path(temppath, files$osf_id[[i]]) |>
-          httr::write_disk(overwrite = TRUE)
-        response <- httr::GET(files$download_url[[i]], write_loc)
+      tryCatch(
+        {
+          write_loc <- file.path(temppath, files$osf_id[[i]]) |>
+            httr::write_disk(overwrite = TRUE)
+          response <- httr::GET(files$download_url[[i]], write_loc)
 
-        # TODO: deal with errors
-      }, error = \(e) {})
+          # TODO: deal with errors
+        },
+        error = \(e) {}
+      )
       pb$tick()
     }
 
@@ -1014,13 +1112,13 @@ osf_file_download <- function(osf_id,
     if (isTRUE(ignore_folder_structure)) {
       files$path <- fs::path_sanitize(files$name)
 
-      while(duplicated(files$path) |> any()) {
+      while (duplicated(files$path) |> any()) {
         # get all duplicated paths
         d <- which(files$path %in% files$path[duplicated(files$path)])
 
         dupes <- files$path[d]
         parents <- files$parent[d]
-        ext <-  fs::path_ext(dupes)
+        ext <- fs::path_ext(dupes)
         ext[ext != ""] <- paste0(".", ext[ext != ""])
         base <- fs::path_ext_remove(dupes)
         files$path[d] <- paste0(base, "_", parents, ext)
@@ -1087,8 +1185,10 @@ osf_file_download <- function(osf_id,
 
   ## set up return table ----
   contents$folder <- basename(download_to)
-  ret <- contents[contents$kind %in% "file",
-                  c("folder", "osf_id", "name", "filetype", "size", "downloads")]
+  ret <- contents[
+    contents$kind %in% "file",
+    c("folder", "osf_id", "name", "filetype", "size", "downloads")
+  ]
 
   if (length(files_to_copy) > 0) {
     copied <- files[files_to_copy, c("osf_id", "path")]
@@ -1115,16 +1215,16 @@ osf_file_download <- function(osf_id,
 #' @export
 #' @examples
 #' \donttest{
-#'   dc <- c("2025-09-01", "2025-10-01")
-#'   pp <- osf_preprint_list("psyarxiv", date_created = dc)
-#'   files <- pp$primary_file
+#' dc <- c("2025-09-01", "2025-10-01")
+#' pp <- osf_preprint_list("psyarxiv", date_created = dc)
+#' files <- pp$primary_file
 #' }
 osf_preprint_list <- function(provider = NULL,
-                  date_created = NULL,
-                  date_modified = NULL,
-                  #is_published = NULL, # can only access own unpublished works
-                  page_start = 1,
-                  page_end = page_start) {
+                              date_created = NULL,
+                              date_modified = NULL,
+                              # is_published = NULL, # can only access own unpublished works
+                              page_start = 1,
+                              page_end = page_start) {
   filters <- paste0("page=", page_start)
 
   if (!is.null(provider)) {

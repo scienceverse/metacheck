@@ -87,10 +87,12 @@ power <- function(paper, seed = 8675309) {
       paste(collapse = "\n")
     system_prompt <- paste(preface, schema, sep = "\n\n")
 
-    llm_results <- llm(text = potential_power,
-                       system_prompt = system_prompt,
-                       text_col = "text",
-                       params= list(seed = seed))
+    llm_results <- llm(
+      text = potential_power,
+      system_prompt = system_prompt,
+      text_col = "text",
+      params = list(seed = seed)
+    )
 
     table <- llm_results |>
       json_expand(suffix = c("", ".power")) |>
@@ -104,7 +106,8 @@ power <- function(paper, seed = 8675309) {
 
     # check for NAs in LLM columns
     has_na <- dplyr::select(table, dplyr::any_of(llm_cols)) |>
-      is.na() |> apply(2, any)
+      is.na() |>
+      apply(2, any)
 
     if (nrow(table) == 0) {
       # do nothing -- handle later
@@ -165,9 +168,11 @@ power <- function(paper, seed = 8675309) {
     summary_text <- "No power analyses were detected."
     report <- c(summary_text, collapse_section(guidance))
 
-    summary_table <- data.frame(id = NA_character_,
-                                power_n = NA_integer_,
-                                power_complete = NA_integer_)
+    summary_table <- data.frame(
+      id = NA_character_,
+      power_n = NA_integer_,
+      power_complete = NA_integer_
+    )
   } else {
     ## power detected ----
     # check for observed power and add text/type
@@ -184,7 +189,8 @@ power <- function(paper, seed = 8675309) {
     text_table <- table |>
       dplyr::summarise(
         power_id = paste(power_id, collapse = ";"),
-        .by = text) |>
+        .by = text
+      ) |>
       dplyr::select(power_id, text)
 
     if (nrow(table) == 1) {
@@ -212,7 +218,7 @@ power <- function(paper, seed = 8675309) {
     summary_text <- sprintf(
       "We detected %d potential power %s.",
       nrow(table),
-      plural(nrow(table), "analysis","analyses")
+      plural(nrow(table), "analysis", "analyses")
     )
 
     # summary_table ----
@@ -222,7 +228,9 @@ power <- function(paper, seed = 8675309) {
       power_complete = sum(complete),
       # exclude power_type
       dplyr::across(dplyr::any_of(llm_cols[-1]),
-                    \(x) sum(!is.na(x)), .names = "power_{.col}"),
+        \(x) sum(!is.na(x)),
+        .names = "power_{.col}"
+      ),
       .by = id
     )
 

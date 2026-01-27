@@ -32,8 +32,8 @@ rbox_links <- function(paper) {
 #' @export
 #' @examples
 #' \dontrun{
-#'   # get info on one OSF node
-#'   rbox_retrieve("https://researchbox.org/801")
+#' # get info on one OSF node
+#' rbox_retrieve("https://researchbox.org/801")
 #' }
 rbox_retrieve <- function(rb_url, id_col = 1) {
   if (!online("researchbox.org")) {
@@ -64,15 +64,17 @@ rbox_retrieve <- function(rb_url, id_col = 1) {
   }
 
   # iterate over valid IDs
-  message("Starting ResearchBox retrieval for ",
-          length(valid_ids), " file",
-          ifelse(length(valid_ids) == 1, "", "s"),"...")
+  message(
+    "Starting ResearchBox retrieval for ",
+    length(valid_ids), " file",
+    ifelse(length(valid_ids) == 1, "", "s"), "..."
+  )
 
   id_info <- vector("list", length(valid_ids))
-  i = 0
+  i <- 0
   error <- FALSE
   while (!error & i < length(valid_ids)) {
-    i = i + 1
+    i <- i + 1
     info <- rbox_info(valid_ids[[i]])
     if ("error" %in% names(info)) error <- TRUE
     id_info[[i]] <- info
@@ -84,8 +86,10 @@ rbox_retrieve <- function(rb_url, id_col = 1) {
 
   # reduplicate and add original table info
   by <- stats::setNames("rb_url", id_col_name)
-  data <- dplyr::left_join(table, info, by = by,
-                           suffix = c("", ".rb"))
+  data <- dplyr::left_join(table, info,
+    by = by,
+    suffix = c("", ".rb")
+  )
 
   message("...ResearchBox retrieval complete!")
 
@@ -144,7 +148,7 @@ rbox_info <- function(rb_url) {
 
   # get info from bottom table
   body <- xml2::xml_find_all(html, "//body") |>
-    rvest::html_text2() #xml2::xml_text()
+    rvest::html_text2() # xml2::xml_text()
 
   # section borders
   sections <- c(
@@ -157,11 +161,14 @@ rbox_info <- function(rb_url) {
   )
 
   for (i in 1:5) {
-    obj[[names(sections)[i]]] <- tryCatch({
-      after <- strsplit(body, sections[[i]], fixed = TRUE)[[1]][[2]]
-      answer <- strsplit(after, sections[[i + 1]], fixed = TRUE)[[1]][[1]]
-      trimws(answer)
-    }, error = \(e) return(NA_character_))
+    obj[[names(sections)[i]]] <- tryCatch(
+      {
+        after <- strsplit(body, sections[[i]], fixed = TRUE)[[1]][[2]]
+        answer <- strsplit(after, sections[[i + 1]], fixed = TRUE)[[1]][[1]]
+        trimws(answer)
+      },
+      error = \(e) return(NA_character_)
+    )
   }
 
   return(obj)
@@ -207,14 +214,17 @@ rbox_file_download <- function(rb_url) {
   url_researchbox <- paste0(
     "https://s3.wasabisys.com/zipballs.researchbox.org/ResearchBox_",
     sub("^https://researchbox.org/", "", rb_url),
-    ".zip")
+    ".zip"
+  )
   utils::download.file(url_researchbox,
-                       destfile = zip_path,
-                       mode = "wb",
-                       quiet = TRUE)
+    destfile = zip_path,
+    mode = "wb",
+    quiet = TRUE
+  )
 
   if (!file.exists(zip_path) || file.size(zip_path) == 0) {
-    stop("Download failed or resulted in an empty file: ", zip_path)
+    warning("Download failed or resulted in an empty file: ", zip_path)
+    return(NULL)
   }
 
   # unzip into a subfolder
@@ -225,18 +235,36 @@ rbox_file_download <- function(rb_url) {
   unzipped_files <- utils::unzip(zip_path, exdir = out_dir)
 
   if (length(unzipped_files) == 0) {
-    stop("Unzip produced no files. The archive might be corrupt.")
+    warning("Unzip produced no files. The archive might be corrupt.")
+    return(NULL)
   }
 
   # list files (recursively) and return
   files <- list.files(out_dir, recursive = TRUE, full.names = FALSE)
   file_locations <- list.files(out_dir, recursive = TRUE, full.names = TRUE)
+  file_info <- file.info(file_locations)
 
   # Create dataframe
   rb_file_info <- data.frame(
     rb_url = rep(rb_url, length(files)),
     name = files,
-    file_location = file_locations
+    file_location = file_locations,
+    size = file_info$size,
+    isdir = file_info$isdir
+  )
+
+  rb_file_info$ext <- strsplit(rb_file_info$name, "\\.") |>
+    sapply(\(x) {
+      if (length(x) < 2) {
+        return("")
+      }
+      x[[length(x)]]
+    }) |>
+    tolower()
+  rb_file_info <- dplyr::left_join(
+    rb_file_info,
+    metacheck::file_types,
+    by = "ext"
   )
 
   return(rb_file_info)

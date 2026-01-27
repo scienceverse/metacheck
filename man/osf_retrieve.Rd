@@ -23,10 +23,10 @@ Retrieve info from the OSF by ID
 }
 \examples{
 \dontrun{
-  # get info on one OSF node
-  osf_retrieve("pngda")
+# get info on one OSF node
+osf_retrieve("pngda")
 
-  # also get child nodes and files, and parent project
-  osf_retrieve("https://osf.io/6nt4v", TRUE, TRUE)
+# also get child nodes and files, and parent project
+osf_retrieve("https://osf.io/6nt4v", TRUE, TRUE)
 }
 }

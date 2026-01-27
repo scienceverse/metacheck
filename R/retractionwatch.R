@@ -26,7 +26,9 @@ retractionwatch <- function() {
     ext_rw <- readRDS(ext)
     ext_date <- attr(ext_rw, "date")
     int_date <- attr(int_rw, "date")
-    if (ext_date > int_date) return(ext_rw)
+    if (ext_date > int_date) {
+      return(ext_rw)
+    }
   }
 
   return(int_rw)
@@ -59,8 +61,8 @@ rw_update <- function() {
 
   # download newest RW update
   old_timeout <- getOption("timeout")
-  on.exit(options(timeout=old_timeout))
-  options(timeout=300)
+  on.exit(options(timeout = old_timeout))
+  options(timeout = 300)
 
   tmp <- tempfile(fileext = ".csv")
   url <- paste0("https://api.labs.crossref.org/data/retractionwatch?", email())
@@ -71,8 +73,9 @@ rw_update <- function() {
   retractionwatch <- utils::read.csv(tmp) |>
     dplyr::select(
       doi = OriginalPaperDOI,
-      #pmid = OriginalPaperPubMedID,
-      retractionwatch = RetractionNature) |>
+      # pmid = OriginalPaperPubMedID,
+      retractionwatch = RetractionNature
+    ) |>
     dplyr::filter(doi != "unavailable") |>
     dplyr::summarise(retractionwatch = unique(retractionwatch) |> paste(collapse = ";"), .by = doi)
 

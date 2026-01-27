@@ -6,9 +6,10 @@
 \usage{
 report(
   paper,
-  modules = c("prereg_check", "funding_check", "coi_check", "power", "code_check",
-    "stat_check", "stat_p_exact", "stat_p_nonsig", "stat_effect_size", "marginal",
-    "ref_doi_check", "ref_replication", "ref_retraction", "ref_pubpeer", "ref_summary"),
+  modules = c("prereg_check", "funding_check", "coi_check", "power", "repo_check",
+    "code_check", "stat_check", "stat_p_exact", "stat_p_nonsig", "stat_effect_size",
+    "marginal", "ref_doi_check", "ref_replication", "ref_retraction", "ref_pubpeer",
+    "ref_summary"),
   output_file = paste0(paper$id, "_report.", output_format),
   output_format = c("html", "qmd"),
   args = list()

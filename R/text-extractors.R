@@ -37,25 +37,28 @@ extract_urls <- function(paper) {
 #' p_values <- extract_p_values(paper)
 extract_p_values <- function(paper) {
   # set up pattern
-  operators <- c("=", "<", ">", "~",
-                 "\u2248", # ~~
-                 "\u2260", # !=
-                 "\u2264", # <=
-                 "\u2265", # >=
-                 "\u226A", # <<
-                 "\u226B" # >>
+  operators <- c(
+    "=", "<", ">", "~",
+    "\u2248", # ~~
+    "\u2260", # !=
+    "\u2264", # <=
+    "\u2265", # >=
+    "\u226A", # <<
+    "\u226B" # >>
   ) |> paste(collapse = "")
 
   pattern <- paste0(
     "\\bp-?(value)?\\s*", # ways to write p
     "[", operators, "]{1,2}\\s*", # 1-2 operators
-    "(n\\.?s\\.?|\\d?\\.\\d+)",# ns or valid numbers
+    "(n\\.?s\\.?|\\d?\\.\\d+)", # ns or valid numbers
     "\\s*(e\\s*-\\d+)?", # also match scientific notation
     "(\\s*[x\\*]\\s*10\\s*\\^\\s*-\\d+)?"
   )
 
-  p <- search_text(paper, pattern, return = "match",
-                   perl = TRUE, ignore.case = FALSE)
+  p <- search_text(paper, pattern,
+    return = "match",
+    perl = TRUE, ignore.case = FALSE
+  )
 
   # get operator
   pattern <- paste0("[", operators, "]{1,2}")

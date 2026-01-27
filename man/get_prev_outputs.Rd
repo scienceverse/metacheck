@@ -22,7 +22,9 @@ A helper for creating modules. Checks for previous module outputs in a chain and
 \examples{
 # .__mc__prev_outputs is usually created by `module_run()`
 .__mc__prev_outputs <- list(mod_1 = list(a = 1, b = 2))
-f <- function(item) { get_prev_outputs("mod_1", item) }
+f <- function(item) {
+  get_prev_outputs("mod_1", item)
+}
 f("a")
 f("d")
 }

@@ -50,10 +50,12 @@ ref_replication <- function(paper) {
 
   ## join to fred table
   fred <- FReD() |>
-    dplyr::select(doi = doi_original,
-                  replication_ref = ref_replication,
-                  replication_doi = doi_replication)
-  table <- dplyr::inner_join(bib, fred, by = 'doi')
+    dplyr::select(
+      doi = doi_original,
+      replication_ref = ref_replication,
+      replication_doi = doi_replication
+    )
+  table <- dplyr::inner_join(bib, fred, by = "doi")
 
   ## remove rows that are already cited
   already_cited <- table$replication_doi %in% bib$doi
@@ -64,15 +66,18 @@ ref_replication <- function(paper) {
 
   # summary_table ----
   summary_table <- dplyr::summarise(
-    table, .by = "id",
+    table,
+    .by = "id",
     replications = sum(!is.na(replication_doi)),
   )
 
   # summary_text & report ----
   if (nrow(table) == 0) {
     summary_text <- "No citations to articles in the FReD replication database were found."
-    report <- sprintf("We checked %d references with DOIs. %s",
-                      sum(!is.na(bib$doi)), summary_text)
+    report <- sprintf(
+      "We checked %d references with DOIs. %s",
+      sum(!is.na(bib$doi)), summary_text
+    )
   } else {
     ## sumary_text ----
     summary_text <- sprintf(
@@ -91,14 +96,15 @@ ref_replication <- function(paper) {
     ## report_table ----
     report_table <- table[, c("ref", "replication_ref")]
     report_table$ref <- format_ref(report_table$ref)
-    report_table$replication_ref <- sprintf("%s %s",
+    report_table$replication_ref <- sprintf(
+      "%s %s",
       table$replication_ref,
       link(table$replication_doi, type = "doi")
     )
     names(report_table) <- c("Reference", "Replication Reference")
 
     ## report ----
-    report <- c(report_text, scroll_table(report_table, colwidths = c(.5,.5)))
+    report <- c(report_text, scroll_table(report_table, colwidths = c(.5, .5)))
   }
 
   # return a list ----
@@ -111,5 +117,3 @@ ref_replication <- function(paper) {
     summary_text = summary_text
   )
 }
-
-

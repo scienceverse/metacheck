@@ -62,9 +62,10 @@ ref_accuracy <- function(paper) {
 
   ## other mismatches ----
   aut_title <- dplyr::select(all_bib,
-                             id, xref_id,
-                             orig_authors = authors,
-                             orig_title = title)
+    id, xref_id,
+    orig_authors = authors,
+    orig_title = title
+  )
   table <- dplyr::left_join(table, aut_title, by = c("id", "xref_id"))
 
   # clean up text to prevent irrelevant mismatches
@@ -89,7 +90,9 @@ ref_accuracy <- function(paper) {
 
   table$author_mismatch <- {
     sapply(seq_along(table$author), \(i) {
-      if (is.null(table$author[[i]]) || nrow(table$author[[i]]) == 0) return(FALSE)
+      if (is.null(table$author[[i]]) || nrow(table$author[[i]]) == 0) {
+        return(FALSE)
+      }
       cr_auth <- clean(table$author[[i]]$family)
       bib_auth <- clean(table$orig_authors[[i]])
       in_auth <- sapply(cr_auth, grepl, x = bib_auth)
@@ -104,18 +107,19 @@ ref_accuracy <- function(paper) {
   # traffic_light ----
   tl <- "green"
   if (any(table$ref_not_found) ||
-      any(table$title_mismatch) ||
-      any(table$author_mismatch)) {
+    any(table$title_mismatch) ||
+    any(table$author_mismatch)) {
     tl <- "yellow"
   }
 
   # summary_table ----
-  summary_table <- dplyr::summarise(table, .by = id,
-                                    refs_checked = sum(!is.na(DOI)),
-                                    refs_not_found = sum(ref_not_found),
-                                    title_mismatch = sum(title_mismatch),
-                                    author_mismatch = sum(author_mismatch)
-                                    )
+  summary_table <- dplyr::summarise(table,
+    .by = id,
+    refs_checked = sum(!is.na(DOI)),
+    refs_not_found = sum(ref_not_found),
+    title_mismatch = sum(title_mismatch),
+    author_mismatch = sum(author_mismatch)
+  )
 
   # summary_text
   summary_text <- sprintf(
@@ -166,5 +170,3 @@ ref_accuracy <- function(paper) {
     summary_text = summary_text
   )
 }
-
-

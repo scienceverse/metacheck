@@ -26,12 +26,16 @@ coi_check <- function(paper) {
   # table ----
 
   ## get potential COI statements ----
-  pattern_main <- c("\\binterest?s\\b",
-                    "\\bCOI\\b")
-  pattern_inc <- c("conflict",
-                   "compet",
-                   "disclosure",
-                   "declaration")
+  pattern_main <- c(
+    "\\binterest?s\\b",
+    "\\bCOI\\b"
+  )
+  pattern_inc <- c(
+    "conflict",
+    "compet",
+    "disclosure",
+    "declaration"
+  )
   # definitely exclude
   pattern_exc <- c("financial disclosure")
 
@@ -73,10 +77,6 @@ coi_check <- function(paper) {
 }
 
 
-
-
-
-
 # function adapted from rtransparent
 # the function above is inspired by this, but this is too specififc
 # and assumes a different text structure than ours (lines, not)
@@ -94,13 +94,13 @@ rtransparent_coi <- function(paper) {
   declare <- "declaration of interest"
   dual <- "duality of interest"
 
-  is_conflict = agrep(conflict, splitted, ignore.case = T)
-  is_conflicts = agrep(conflicts, splitted, ignore.case = T)
-  is_competing = agrep(competing, splitted, ignore.case = T)
-  is_disclosure = agrep(disclosure, splitted, ignore.case = T)
-  is_finance = agrep(finance, splitted, ignore.case = T)
-  is_declare = agrep(declare, splitted, ignore.case = T)
-  is_dual = agrep(dual, splitted, ignore.case = T)
+  is_conflict <- agrep(conflict, splitted, ignore.case = T)
+  is_conflicts <- agrep(conflicts, splitted, ignore.case = T)
+  is_competing <- agrep(competing, splitted, ignore.case = T)
+  is_disclosure <- agrep(disclosure, splitted, ignore.case = T)
+  is_finance <- agrep(finance, splitted, ignore.case = T)
+  is_declare <- agrep(declare, splitted, ignore.case = T)
+  is_dual <- agrep(dual, splitted, ignore.case = T)
 
   # Exclude financial disclosures
   if (length(is_disclosure) > 0) {
@@ -146,23 +146,25 @@ rtransparent_coi <- function(paper) {
   if (length(index) > 1) {
     a <- grep(vals, splitted[index], ignore.case = T)
 
-    if (length(a) > 0) {  # only do this if a hit was found
+    if (length(a) > 0) { # only do this if a hit was found
       index <- index[index >= index[min(a)]]
     }
   }
 
   # If in point form, sections are missed when they do not include the keywords.
   if (length(index) > 1 & any(diff(index) > 1)) {
-    if (max(index) - min(index) < 10) {  # Safeguard
+    if (max(index) - min(index) < 10) { # Safeguard
       index <- seq(min(index), max(index), 1)
     }
   }
 
-  coi_text <- splitted[index] %>% unlist %>% paste(., collapse = " ")
+  coi_text <- splitted[index] %>%
+    unlist() %>%
+    paste(., collapse = " ")
 
   # Identify text that may have been  missed because it was in a new line
   if (length(index) == 1) {
-    no_stop_words <- gsub(" of ", " ", coi_text,  ignore.case = T)
+    no_stop_words <- gsub(" of ", " ", coi_text, ignore.case = T)
     if (length(strsplit(no_stop_words, " ")[[1]]) < 4) {
       if (!grepl("no", splitted[index], ignore.case = T)) {
         if (nchar(splitted[index + 1]) == 0) {
@@ -187,7 +189,6 @@ rtransparent_coi <- function(paper) {
   # then false positive
   # I am doing this after the above b/c things like Disclosure/n None. would not be captured otherwise
   if (length(is_disclosure) > 0 & length(the_conflicts) == 0) {
-
     # Capital D
     is_capital <- grepl("Disclos|DISCLOS", coi_text)
     # Mention of conflict/competing
@@ -214,8 +215,8 @@ rtransparent_coi <- function(paper) {
 
   # Remove preceding text that is not relevant
   coi_text <-
-    gsub(  # lazy match to stop at first occurrence of a word
-      "^.*?(Disclosure.*conflict.*$)|^.*?(Disclosure.*compet.*$)|^.*?(Declaration of Conflict.*$)|^.*?(Declaration of Interest.*$)|^.*?(Potential conflict.{0,1} of interest.*$)|^.*?(Conflict.*$)|^.*?(Competing.*$)",  # disclosure may refer to financial disclosures
+    gsub( # lazy match to stop at first occurrence of a word
+      "^.*?(Disclosure.*conflict.*$)|^.*?(Disclosure.*compet.*$)|^.*?(Declaration of Conflict.*$)|^.*?(Declaration of Interest.*$)|^.*?(Potential conflict.{0,1} of interest.*$)|^.*?(Conflict.*$)|^.*?(Competing.*$)", # disclosure may refer to financial disclosures
       "\\1\\2\\3\\4\\5\\6\\7",
       coi_text,
       fixed = F
@@ -225,7 +226,7 @@ rtransparent_coi <- function(paper) {
   if (grepl("disclosure", coi_text, ignore.case = T)) {
     val <- "^.*conflict.*disclosure.*$|^.*compet.*disclosure.*$"
     if (!grepl(val, coi_text, ignore.case = T)) {
-      coi_text <- gsub( "^.*?(Disclosure.*$)", "\\1", coi_text, fixed = F)
+      coi_text <- gsub("^.*?(Disclosure.*$)", "\\1", coi_text, fixed = F)
     }
   }
 
@@ -291,8 +292,10 @@ rtransparent_coi <- function(paper) {
 
   # report ----
   if (tl == "green") {
-    report <- sprintf("The following conflict of interest statement was detected: \n%s",
-                      coi_text)
+    report <- sprintf(
+      "The following conflict of interest statement was detected: \n%s",
+      coi_text
+    )
     summary_text <- "A conflict of interest statement was detected"
   } else if (tl == "red") {
     report <- "No conflict of interest statement was detected. Consider adding one."
@@ -309,5 +312,3 @@ rtransparent_coi <- function(paper) {
     report = report
   )
 }
-
-

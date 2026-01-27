@@ -48,14 +48,18 @@ expand_text <- function(results_table,
   if (expand_to == "sentence") {
     by <- by[1:5]
     full_text <- ft |>
-      dplyr::summarise(expanded = paste(text, collapse = " "),
-                       .by = dplyr::all_of(by))
+      dplyr::summarise(
+        expanded = paste(text, collapse = " "),
+        .by = dplyr::all_of(by)
+      )
   } else {
     # collapse sentences within paragraphs separated by spaces
     by <- by[1:4]
     full_text_p <- ft |>
-      dplyr::summarise(expanded = paste(text, collapse = " "),
-                       .by = dplyr::all_of(by))
+      dplyr::summarise(
+        expanded = paste(text, collapse = " "),
+        .by = dplyr::all_of(by)
+      )
 
     if (expand_to == "div") {
       # collapse paragraphs within divs separated by line breaks
@@ -66,8 +70,10 @@ expand_text <- function(results_table,
     }
 
     full_text <- full_text_p |>
-      dplyr::summarise(expanded = paste(expanded, collapse = "\n\n"),
-                       .by = dplyr::all_of(by))
+      dplyr::summarise(
+        expanded = paste(expanded, collapse = "\n\n"),
+        .by = dplyr::all_of(by)
+      )
   }
 
   # expand sentences ----
@@ -86,8 +92,10 @@ expand_text <- function(results_table,
         unique() |>
         dplyr::left_join(full_text, by = c("id", "section", "div", "p", "expanded_s" = "s")) |>
         dplyr::filter(!is.na(expanded)) |>
-        dplyr::summarise(expanded = paste(expanded, collapse = " "),
-                         .by = dplyr::all_of(c("id", "section", "div", "p", "s")))
+        dplyr::summarise(
+          expanded = paste(expanded, collapse = " "),
+          .by = dplyr::all_of(c("id", "section", "div", "p", "s"))
+        )
     }
   }
 
@@ -97,8 +105,9 @@ expand_text <- function(results_table,
 
   # if expanded doesn't match anything, at least return the text
   expanded_table$expanded <- ifelse(is.na(expanded_table$expanded),
-                                    expanded_table$text,
-                                    expanded_table$expanded)
+    expanded_table$text,
+    expanded_table$expanded
+  )
 
   return(expanded_table)
 }

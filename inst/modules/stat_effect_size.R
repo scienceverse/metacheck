@@ -59,18 +59,25 @@ stat_effect_size <- function(paper) {
 
   by <- c("id", "section", "div", "p", "s")
   text_found_es <- search_text(text_found_test, es_regex,
-                               return = "match", perl = FALSE) |>
-    dplyr::summarise(es = paste(text, collapse = "; "),
-                     .by = dplyr::all_of(by))
+    return = "match", perl = FALSE
+  ) |>
+    dplyr::summarise(
+      es = paste(text, collapse = "; "),
+      .by = dplyr::all_of(by)
+    )
 
   ## add exact text ----
-  test_match <- search_text(text_found_test, test_regex, return = "match",
-                            perl = TRUE, ignore.case = FALSE) |>
-    dplyr::summarise(test_text = paste(text, collapse = "; "),
-                     .by = dplyr::all_of(by))
+  test_match <- search_text(text_found_test, test_regex,
+    return = "match",
+    perl = TRUE, ignore.case = FALSE
+  ) |>
+    dplyr::summarise(
+      test_text = paste(text, collapse = "; "),
+      .by = dplyr::all_of(by)
+    )
   t_table <- text_found_test |>
     dplyr::left_join(text_found_es, by = by) |>
-    dplyr::left_join(test_match,by = by)
+    dplyr::left_join(test_match, by = by)
   t_table$test <- "t-test"
 
   # F-tests -----
@@ -114,18 +121,25 @@ stat_effect_size <- function(paper) {
   )
 
   text_found_es <- search_text(text_found_test, es_regex,
-                               return = "match", perl = FALSE) |>
-    dplyr::summarise(es = paste(text, collapse = "; "),
-                     .by = dplyr::all_of(by))
+    return = "match", perl = FALSE
+  ) |>
+    dplyr::summarise(
+      es = paste(text, collapse = "; "),
+      .by = dplyr::all_of(by)
+    )
 
   ## add exact text ----
-  test_match <- search_text(text_found_test, test_regex, return = "match",
-                            perl = TRUE, ignore.case = FALSE) |>
-    dplyr::summarise(test_text = paste(text, collapse = "; "),
-                     .by = dplyr::all_of(by))
+  test_match <- search_text(text_found_test, test_regex,
+    return = "match",
+    perl = TRUE, ignore.case = FALSE
+  ) |>
+    dplyr::summarise(
+      test_text = paste(text, collapse = "; "),
+      .by = dplyr::all_of(by)
+    )
   f_table <- text_found_test |>
     dplyr::left_join(text_found_es, by = by) |>
-    dplyr::left_join(test_match,by = by)
+    dplyr::left_join(test_match, by = by)
   f_table$test <- "F-test"
 
   # combine tests ----
@@ -139,7 +153,8 @@ stat_effect_size <- function(paper) {
       ttests_without_es = sum(test == "t-test" & is.na(es)),
       Ftests_with_es = sum(test == "F-test" & !is.na(es)),
       Ftests_without_es = sum(test == "F-test" & is.na(es)),
-      .by = dplyr::all_of(c("id")))
+      .by = dplyr::all_of(c("id"))
+    )
 
   # traffic light ----
   total_n <- nrow(table_missing)
@@ -177,7 +192,7 @@ stat_effect_size <- function(paper) {
 
     # select cols for the report table
     cols <- c("text", "section", "es", "test_text", "test")
-    report_table <- table[, cols, drop=FALSE]
+    report_table <- table[, cols, drop = FALSE]
     colnames(report_table) <- c("Sentence", "Section", "Effect Size", "Reported Test", "Test Type")
     # wrap in a collapsible
     detail_table <- scroll_table(report_table) |>

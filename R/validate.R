@@ -48,13 +48,13 @@ accuracy <- function(expected, observed) {
   # Adjust for extreme values (avoid infinite z-scores)
   hit_rate <- ifelse(hit_rate == 1, 1 - 0.5 / (hit + miss), hit_rate)
   hit_rate <- ifelse(hit_rate == 0, 0.5 / (hit + miss), hit_rate)
-  fa_rate  <- ifelse(fa_rate  == 1, 1 - 0.5 / (fa + cr), fa_rate)
-  fa_rate  <- ifelse(fa_rate  == 0, 0.5 / (fa + cr), fa_rate)
+  fa_rate <- ifelse(fa_rate == 1, 1 - 0.5 / (fa + cr), fa_rate)
+  fa_rate <- ifelse(fa_rate == 0, 0.5 / (fa + cr), fa_rate)
 
   # Compute d-prime and beta
   d_prime <- stats::qnorm(hit_rate) - stats::qnorm(fa_rate)
   beta <- exp((stats::qnorm(fa_rate)^2 -
-               stats::qnorm(hit_rate)^2) / 2)
+    stats::qnorm(hit_rate)^2) / 2)
 
   # return accuracy measures
   measures <- list(
@@ -62,7 +62,7 @@ accuracy <- function(expected, observed) {
     misses = miss,
     false_alarms = fa,
     correct_rejections = cr,
-    accuracy = (hit + cr)/(hit+cr+fa+miss),
+    accuracy = (hit + cr) / (hit + cr + fa + miss),
     sensitivity = hit_rate,
     specificity = fa_rate,
     d_prime = d_prime,
@@ -95,7 +95,7 @@ compare_tables <- function(expected, observed,
 
   # error checking
   if (!all(match_cols %in% colnames(expected)) |
-      !all(match_cols %in% colnames(observed))) {
+    !all(match_cols %in% colnames(observed))) {
     stop("All match_cols need to be in both expected and observed tables.")
   }
 
@@ -106,7 +106,7 @@ compare_tables <- function(expected, observed,
       setdiff(match_cols)
   } else {
     if (!all(comp_cols %in% colnames(expected)) |
-        !all(comp_cols %in% colnames(observed))) {
+      !all(comp_cols %in% colnames(observed))) {
       stop("All comp_cols need to be in both expected and observed tables.")
     }
   }
@@ -114,12 +114,16 @@ compare_tables <- function(expected, observed,
   # assume repeat columns are in same order in exp and obs
   # add temp ID for matching multi-row returns
   exp <- expected |>
-    dplyr::mutate(.temp_id. = dplyr::row_number(),
-                  .by = dplyr::all_of(match_cols))
+    dplyr::mutate(
+      .temp_id. = dplyr::row_number(),
+      .by = dplyr::all_of(match_cols)
+    )
 
   obs <- observed |>
-    dplyr::mutate(.temp_id. = dplyr::row_number(),
-                  .by = dplyr::all_of(match_cols))
+    dplyr::mutate(
+      .temp_id. = dplyr::row_number(),
+      .by = dplyr::all_of(match_cols)
+    )
 
   join_cols <- c(match_cols, ".temp_id.")
 
@@ -133,9 +137,9 @@ compare_tables <- function(expected, observed,
   obs2$obs <- TRUE
 
   v_tbl <- dplyr::full_join(exp2, obs2, by = join_cols)
-  v_tbl$exp       <- sapply(v_tbl$exp, isTRUE)
-  v_tbl$obs       <- sapply(v_tbl$obs, isTRUE)
-  v_tbl$true_pos  <- v_tbl$exp & v_tbl$obs
+  v_tbl$exp <- sapply(v_tbl$exp, isTRUE)
+  v_tbl$obs <- sapply(v_tbl$obs, isTRUE)
+  v_tbl$true_pos <- v_tbl$exp & v_tbl$obs
   v_tbl$false_pos <- v_tbl$obs & !v_tbl$exp
   v_tbl$false_neg <- v_tbl$exp & !v_tbl$obs
 
@@ -145,8 +149,9 @@ compare_tables <- function(expected, observed,
   ## classification ----
   if (length(comp_cols)) {
     comp_results <- dplyr::full_join(exp, obs,
-                                     by = join_cols,
-                                     suffix = c(".exp", ".obs"))
+      by = join_cols,
+      suffix = c(".exp", ".obs")
+    )
 
     # check for matches
     obs_match <- comp_results[paste0(comp_cols, ".obs")]

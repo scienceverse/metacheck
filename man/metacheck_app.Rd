@@ -20,6 +20,8 @@ A study object created or edited by the app
 Create a meta-study file interactively in a shiny app that runs locally in RStudio or your web browser (recommended). It does not connect to the web at all, so your data are completely private.
 }
 \examples{
-\dontrun{ s <- metacheck_app() }
+\dontrun{
+s <- metacheck_app()
+}
 
 }

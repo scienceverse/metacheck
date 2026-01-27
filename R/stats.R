@@ -16,7 +16,9 @@ stats <- function(text, ...) {
 
 
   n <- nrow(text)
-  if (n == 0) return(data.frame())
+  if (n == 0) {
+    return(data.frame())
+  }
 
   # set up progress bar ----
   pb <- pb(n, "Checking stats [:bar] :current/:total :elapsedfull")
@@ -27,21 +29,26 @@ stats <- function(text, ...) {
     # statcheck uses cat() to output messages :(
     sink_output <- utils::capture.output(
       sc <- tryCatch(statcheck::statcheck(subtext, messages = FALSE, ...),
-                     error = function(e) {
-                       return(NULL)
-                     }, warning = function(w) {})
+        error = function(e) {
+          return(NULL)
+        }, warning = function(w) {}
+      )
     )
     if (verbose()) pb$tick()
-    if (is.null(sc)) return(data.frame())
+    if (is.null(sc)) {
+      return(data.frame())
+    }
     sc$source <- i
 
     return(sc)
   })
   checks <- do.call(rbind, subchecks)
 
-  if (nrow(checks) == 0) return(checks)
+  if (nrow(checks) == 0) {
+    return(checks)
+  }
 
-  text$source = seq_along(text$text)
+  text$source <- seq_along(text$text)
 
   stat_table <- dplyr::left_join(checks, text, by = "source")
   rownames(stat_table) <- NULL

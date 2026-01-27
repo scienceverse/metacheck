@@ -81,13 +81,15 @@ stat_check <- function(paper) {
   } else if (tl == "red") {
     n_errors <- sum(table$error, na.rm = TRUE)
     report_text <- "We detected possible errors in test statistics. Note that as the accuracy of statcheck has only been validated for *t*-tests and *F*-tests. As Metacheck only uses validated modules, we only provide statcheck results for *t* tests and *F*-tests."
-    summary_text <- sprintf("%d possible error%s in t-tests or F-tests",
-                            n_errors, ifelse(n_errors==1, "", "s"))
+    summary_text <- sprintf(
+      "%d possible error%s in t-tests or F-tests",
+      n_errors, ifelse(n_errors == 1, "", "s")
+    )
 
     # report_table ----
     # Only show these columns in the HTML view (if they exist)
     wanted <- c("raw", "computed_p", "section", "text")
-    cols   <- intersect(wanted, names(table))
+    cols <- intersect(wanted, names(table))
     report_table <- table[table$error, cols, drop = FALSE]
     report_table$computed_p <- round(report_table$computed_p, 5)
 
@@ -106,9 +108,11 @@ stat_check <- function(paper) {
       format_ref(Nuijten2023)
     )
 
-    report <- c(report_text,
-                scroll_table(report_table, colwidths = c("10em", NA, NA, NA)),
-                collapse_section(guidance))
+    report <- c(
+      report_text,
+      scroll_table(report_table, colwidths = c("10em", NA, NA, NA)),
+      collapse_section(guidance)
+    )
   }
 
   # return a list ----

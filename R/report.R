@@ -23,21 +23,24 @@
 #' report(paper)
 #' }
 report <- function(paper,
-                   modules = c("prereg_check",
-                               "funding_check",
-                               "coi_check",
-                               "power",
-                               "code_check",
-                               "stat_check",
-                               "stat_p_exact",
-                               "stat_p_nonsig",
-                               "stat_effect_size",
-                               "marginal",
-                               "ref_doi_check",
-                               "ref_replication",
-                               "ref_retraction",
-                               "ref_pubpeer",
-                               "ref_summary"),
+                   modules = c(
+                     "prereg_check",
+                     "funding_check",
+                     "coi_check",
+                     "power",
+                     "repo_check",
+                     "code_check",
+                     "stat_check",
+                     "stat_p_exact",
+                     "stat_p_nonsig",
+                     "stat_effect_size",
+                     "marginal",
+                     "ref_doi_check",
+                     "ref_replication",
+                     "ref_retraction",
+                     "ref_pubpeer",
+                     "ref_summary"
+                   ),
                    output_file = paste0(paper$id, "_report.", output_format),
                    output_format = c("html", "qmd"),
                    args = list()) {
@@ -46,7 +49,8 @@ report <- function(paper,
   output_format <- tolower(output_format[[1]])
   if (!output_format %in% c("html", "qmd")) {
     stop("The output_format must be either 'html' or 'qmd'.",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
 
   ## check if modules are available
@@ -58,8 +62,10 @@ report <- function(paper,
     paper <- paper[[1]]
   } else if (is_paper_list(paper)) {
     ## set up progress bar ----
-    pb <- pb(length(paper),
-             ":what [:bar] :current/:total :elapsedfull")
+    pb <- pb(
+      length(paper),
+      ":what [:bar] :current/:total :elapsedfull"
+    )
     pb$tick(0, tokens = list(what = "Creating reports"))
 
     if (length(output_file) != length(paper)) {
@@ -69,11 +75,13 @@ report <- function(paper,
 
     reports <- mapply(\(x, of) {
       r <- tryCatch(report(x, modules, of, output_format, args),
-                     error = \(e) {
-                       warning("Error in ", x$id, ":\n", e$message,
-                               call. = FALSE)
-                       return(NULL)
-                     })
+        error = \(e) {
+          warning("Error in ", x$id, ":\n", e$message,
+            call. = FALSE
+          )
+          return(NULL)
+        }
+      )
       pb$tick(tokens = list(what = x$id))
       r
     }, x = paper, of = output_file, SIMPLIFY = FALSE)
@@ -85,10 +93,11 @@ report <- function(paper,
 
   ## check if the output_file is valid
   # so the modules don't run then failure
-  tryCatch(suppressWarnings( write("test", output_file) ),
-           error = \(e) {
-             stop("The output_file is not a valid path.", call. = FALSE)
-           })
+  tryCatch(suppressWarnings(write("test", output_file)),
+    error = \(e) {
+      stop("The output_file is not a valid path.", call. = FALSE)
+    }
+  )
 
   ## check paper has required things
   if (!"scivrs_paper" %in% class(paper)) {
@@ -115,23 +124,29 @@ report <- function(paper,
 
     write(report_text, temp_input)
 
-    save_path <- tryCatch({
-      quarto::quarto_render(input = temp_input,
-                            quiet = TRUE,
-                            output_format = output_format)
-      file.rename(temp_output, output_file)
-      output_file
-    }, error = function(e) {
-      # save the qmd on render error and return its path
-      output_qmd <- output_file |>
-        gsub("\\.html$", "", x = _) |>
-        paste0(".qmd")
-      write(report_text, output_qmd)
-      warning("There was an error rendering your report:\n", e$message,
-              "\n\nSee the following for the quarto file:\n", output_qmd,
-              call. = FALSE)
-      return(output_qmd)
-    })
+    save_path <- tryCatch(
+      {
+        quarto::quarto_render(
+          input = temp_input,
+          quiet = TRUE,
+          output_format = output_format
+        )
+        file.rename(temp_output, output_file)
+        output_file
+      },
+      error = function(e) {
+        # save the qmd on render error and return its path
+        output_qmd <- output_file |>
+          gsub("\\.html$", "", x = _) |>
+          paste0(".qmd")
+        write(report_text, output_qmd)
+        warning("There was an error rendering your report:\n", e$message,
+          "\n\nSee the following for the quarto file:\n", output_qmd,
+          call. = FALSE
+        )
+        return(output_qmd)
+      }
+    )
   }
 
   attr(module_output, "save_path") <- save_path
@@ -161,12 +176,14 @@ report <- function(paper,
 #' module_output <- report_module_run(paper, modules)
 report_module_run <- function(paper, modules, args = list()) {
   # set up progress bar
-  pb <- pb(length(modules),
-           ":what [:bar] :current/:total :elapsedfull")
+  pb <- pb(
+    length(modules),
+    ":what [:bar] :current/:total :elapsedfull"
+  )
   pb$tick(0, tokens = list(what = "Running modules"))
 
   # run each module ----
-  #module_output <- lapply(modules, \(module) {
+  # module_output <- lapply(modules, \(module) {
   op <- paper
   for (module in modules) {
     pb$tick(tokens = list(what = module))
@@ -175,24 +192,25 @@ report_module_run <- function(paper, modules, args = list()) {
     mod_args$module <- module
 
     op <- tryCatch(do.call(module_run, mod_args),
-                   error = function(e) {
-                     warning("Error in ", module)
-                     prev <- mod_args$paper$prev_outputs
-                     report_items <- list(
-                       module = module,
-                       title = module,
-                       table = NULL,
-                       report = e$message,
-                       summary_text = "This module failed to run",
-                       summary_table = mod_args$paper$summary_table,
-                       traffic_light = "fail",
-                       paper = paper,
-                       prev_outputs = prev
-                     )
-                     class(report_items) <- "metacheck_module_output"
+      error = function(e) {
+        warning("Error in ", module)
+        prev <- mod_args$paper$prev_outputs
+        report_items <- list(
+          module = module,
+          title = module,
+          table = NULL,
+          report = e$message,
+          summary_text = "This module failed to run",
+          summary_table = mod_args$paper$summary_table,
+          traffic_light = "fail",
+          paper = paper,
+          prev_outputs = prev
+        )
+        class(report_items) <- "metacheck_module_output"
 
-                     return(report_items)
-                   })
+        return(report_items)
+      }
+    )
   }
 
   # pull last module output out
@@ -209,7 +227,7 @@ report_module_run <- function(paper, modules, args = list()) {
   tls <- sapply(module_output, \(mo) mo$traffic_light %||% "info")
   tls <- factor(tls, tl_levels)
   # this seems hacky, but I can't figure out how to sort by 2 vectors
-  mod_order <- xtfrm(sections)*10 + xtfrm(tls)
+  mod_order <- xtfrm(sections) * 10 + xtfrm(tls)
   module_output <- sort_by(module_output, mod_order)
 
   return(module_output)
@@ -225,7 +243,8 @@ report_module_run <- function(paper, modules, args = list()) {
 report_qmd <- function(module_output, paper = list()) {
   ## read in report template ----
   report_template <- system.file("templates/_report.qmd",
-                                 package = "metacheck")
+    package = "metacheck"
+  )
   rt <- readLines(report_template)
   cut_after <- which(rt == "<!-- Demo -->") - 1
   rt_head <- paste(rt[1:cut_after], collapse = "\n")
@@ -233,15 +252,18 @@ report_qmd <- function(module_output, paper = list()) {
   rt_head <- gsub("\\%(?![sdfi])", "%%", rt_head, perl = TRUE)
   subtitle <- gsub('"', '\\\\"', paper$info$title %||% "")
   doi_text <- ifelse((paper$info$doi %||% "") == "", "",
-                     sprintf("DOI: [%s](https://doi.org/%s)", paper$info$doi, paper$info$doi))
+    sprintf("DOI: [%s](https://doi.org/%s)", paper$info$doi, paper$info$doi)
+  )
   author_text <- utils::capture.output(print.scivrs_authors(paper$authors))
   if (length(author_text) == 0) author_text <- ""
-  qmd_header <- sprintf(rt_head,
-                        subtitle,
-                        author_text,
-                        as.character(utils::packageVersion("metacheck")),
-                        Sys.Date(),
-                        doi_text)
+  qmd_header <- sprintf(
+    rt_head,
+    subtitle,
+    author_text,
+    as.character(utils::packageVersion("metacheck")),
+    Sys.Date(),
+    doi_text
+  )
 
   ## generate summary section ----
   summary_list <- sapply(module_output, \(x) {
@@ -251,15 +273,19 @@ report_qmd <- function(module_output, paper = list()) {
     if (nzchar(summary_text) && substr(summary_text, 1, 1) == "\n") {
       summary_text <- gsub("\n", "\n    ", summary_text)
     }
-    sprintf("- %s [%s](#%s){.%s}: %s  ",
-            emojis[[tl]],
-            x$title,
-            gsub("\\s", "-", tolower(x$title)),
-            x$traffic_light %||% "info",
-            summary_text)
+    sprintf(
+      "- %s [%s](#%s){.%s}: %s  ",
+      emojis[[tl]],
+      x$title,
+      gsub("\\s", "-", tolower(x$title)),
+      x$traffic_light %||% "info",
+      summary_text
+    )
   })
-  summary_text <- sprintf("## Summary\n\n%s\n\n",
-                          paste(summary_list, collapse = "\n"))
+  summary_text <- sprintf(
+    "## Summary\n\n%s\n\n",
+    paste(summary_list, collapse = "\n")
+  )
 
   ## format module reports ----
   section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
@@ -268,14 +294,18 @@ report_qmd <- function(module_output, paper = list()) {
     this_section <- sapply(module_output, `[[`, "section") == sec
     # remove fail and na from main report section
     valid_tl <- !sapply(module_output, `[[`, "traffic_light") %in% c("na", "fail")
-    if (!any(this_section & valid_tl)) return(NULL)
+    if (!any(this_section & valid_tl)) {
+      return(NULL)
+    }
 
     section_op <- module_output[this_section & valid_tl]
     mr <- sapply(section_op, module_report)
 
-    title <- sprintf("## %s%s Modules",
-                     toupper(substr(sec, 1, 1)),
-                     substr(sec, 2, nchar(sec)))
+    title <- sprintf(
+      "## %s%s Modules",
+      toupper(substr(sec, 1, 1)),
+      substr(sec, 2, nchar(sec))
+    )
     c(title, mr)
   }) |>
     unlist() |>
@@ -283,10 +313,11 @@ report_qmd <- function(module_output, paper = list()) {
     gsub("\\n{3,}", "\n\n", x = _)
 
   report_text <- paste(qmd_header,
-                       summary_text,
-                       module_reports,
-                       "\n", # prevent incomplete final line warnings
-                       sep = "\n\n")
+    summary_text,
+    module_reports,
+    "\n", # prevent incomplete final line warnings
+    sep = "\n\n"
+  )
 
   return(report_text)
 }
@@ -316,12 +347,14 @@ module_report <- function(module_output,
   } else if (header == 0) {
     head <- sprintf("%s %s", tl_symbol, module_output$title)
   } else if (header %in% 1:6) {
-    head <- sprintf("%s %s %s {#%s .%s}",
-                    rep("#", header) |> paste(collapse = ""),
-                    tl_symbol,
-                    module_output$title,
-                    gsub(" ", "-", tolower(module_output$title)),
-                    tl)
+    head <- sprintf(
+      "%s %s %s {#%s .%s}",
+      rep("#", header) |> paste(collapse = ""),
+      tl_symbol,
+      module_output$title,
+      gsub(" ", "-", tolower(module_output$title)),
+      tl
+    )
   } else {
     head <- header
   }
@@ -331,39 +364,43 @@ module_report <- function(module_output,
   if (all(report == "")) report <- NULL
 
   # how it works
-  hiw <- tryCatch({
-    info <- module_info(module_output$module)
+  hiw <- tryCatch(
+    {
+      info <- module_info(module_output$module)
 
-    author_ack <- tryCatch({
-      if (!is.null(info$author)) {
-        a <- info$author |>
-          gsub("\\s*\\(.*email\\{.+\\})", "", x = _)
-        authors <- if (length(a) < 3) {
-          paste(a, collapse = " and ")
-        } else {
-          n <- length(a)
-          paste0(paste(a[-n], collapse = ", "), " and ", a[n])
+      author_ack <- tryCatch({
+        if (!is.null(info$author)) {
+          a <- info$author |>
+            gsub("\\s*\\(.*email\\{.+\\})", "", x = _)
+          authors <- if (length(a) < 3) {
+            paste(a, collapse = " and ")
+          } else {
+            n <- length(a)
+            paste0(paste(a[-n], collapse = ", "), " and ", a[n])
+          }
+          sprintf("This module was developed by %s", authors)
         }
-        sprintf("This module was developed by %s", authors)
-      }
-    })
+      })
 
-    c(info$description, info$details, author_ack) |>
-      collapse_section("How It Works", callout = "note")
-    }, error = \(e) { return(NULL) })
+      c(info$description, info$details, author_ack) |>
+        collapse_section("How It Works", callout = "note")
+    },
+    error = \(e) {
+      return(NULL)
+    }
+  )
 
   # create collapsible boxes around substantial reports (> 300 char)
   pre <- paste(module_output$summary_text,
-               "<details><summary>View detailed feedback</summary><div>",
-               sep = "\n\n")
+    "<details><summary>View detailed feedback</summary><div>",
+    sep = "\n\n"
+  )
   post <- "</div></details>"
   if (is.null(report) ||
-      all(module_output$summary_text == report) ||
-      paste(report, collapse = "\n\n") |> nchar() < 300) {
+    all(module_output$summary_text == report) ||
+    paste(report, collapse = "\n\n") |> nchar() < 300) {
     pre <- post <- NULL
   }
 
   paste0(c(head, pre, report, post, hiw), collapse = "\n\n")
 }
-
-

@@ -21,6 +21,6 @@ Get File List from GitHub
 }
 \examples{
 \donttest{
-  github_files("scienceverse/metacheck")
+github_files("scienceverse/metacheck")
 }
 }

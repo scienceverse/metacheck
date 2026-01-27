@@ -49,7 +49,7 @@
   )
   # only set if not already set
   toset <- !(names(op.pkg) %in% names(op))
-  if(any(toset)) options(op.pkg[toset])
+  if (any(toset)) options(op.pkg[toset])
 
   invisible()
 }
@@ -80,13 +80,15 @@
     "\033[33m*****", # yellow
     "\033[32m*****", # green
     "\033[34m*****", # blue
-    #"\033[36m*****" # cyan
-    "\033[35m*****\033[0m"  # magenta
+    # "\033[36m*****" # cyan
+    "\033[35m*****\033[0m" # magenta
   )
 
-  stripe <- paste0("\033[32m",
-                   rep("*", 43) |> paste(collapse = ""),
-                   "\033[0m")
+  stripe <- paste0(
+    "\033[32m",
+    rep("*", 43) |> paste(collapse = ""),
+    "\033[0m"
+  )
 
   if (!interactive()) {
     stripe <- rep("*", 43) |> paste(collapse = "")
@@ -107,4 +109,4 @@
 }
 
 ## quiets concerns of R CMD check re: the .'s that appear in pipelines
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
+if (getRversion() >= "2.15.1") utils::globalVariables(c("."))

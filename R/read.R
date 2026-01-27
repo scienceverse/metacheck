@@ -16,8 +16,10 @@ read <- function(filename) {
     # handle list of files or a directory----
 
     ## set up progress bar ----
-    pb <- pb(length(filename),
-             "Processing file [:bar] :current/:total :elapsedfull")
+    pb <- pb(
+      length(filename),
+      "Processing file [:bar] :current/:total :elapsedfull"
+    )
 
     ## get unique names ----
     dirs <- filename |>
@@ -29,7 +31,7 @@ read <- function(filename) {
       as.data.frame() |>
       t()
     distinct_vals <- apply(dir_df, 2, unique) |> lapply(length) > 1
-    unique_names <- dir_df[ , distinct_vals, drop = FALSE] |>
+    unique_names <- dir_df[, distinct_vals, drop = FALSE] |>
       apply(1, \(row) {
         row[!is.na(row)] |> paste0(collapse = "/")
       }) |>
@@ -37,11 +39,13 @@ read <- function(filename) {
 
     p <- lapply(filename, \(x) {
       p1 <- tryCatch(read(x),
-                     error = \(e) {
-                       warning(x, " did not read correctly",
-                               call. = FALSE)
-                       return(NULL)
-                     })
+        error = \(e) {
+          warning(x, " did not read correctly",
+            call. = FALSE
+          )
+          return(NULL)
+        }
+      )
       pb$tick()
       p1
     })
@@ -62,8 +66,9 @@ read <- function(filename) {
   } else if (dir.exists(filename)) {
     ## iterate over a directory ----
     files <- list.files(filename, "\\.(xml|txt|docx)",
-                       full.names = TRUE,
-                       recursive = TRUE)
+      full.names = TRUE,
+      recursive = TRUE
+    )
     if (length(files) == 0) {
       stop("There are no xml, docx or txt files in the directory ", filename)
     }
@@ -79,9 +84,10 @@ read <- function(filename) {
 
   ## read xml ----
   xml <- tryCatch(read_xml(filename),
-                  error = function(e) {
-                    return(NULL)
-                  })
+    error = function(e) {
+      return(NULL)
+    }
+  )
 
   # return nothing if the file can't be read, so iteration doesn't fail
   if (is.null(xml) || isFALSE(xml)) {
@@ -169,7 +175,7 @@ read_grobid <- read
 
 #' @rdname read
 #' @export
-read_cermine<- read
+read_cermine <- read
 
 #' @rdname read
 #' @export
@@ -186,40 +192,52 @@ read_xml <- function(filename) {
   xml <- NULL
 
   if (ext == "xml") {
-     raw_text <- filename |>
+    raw_text <- filename |>
       readLines(warn = FALSE)
 
-     # check doctype
-     doctype <- grep("^\\s*<!DOCTYPE", x = raw_text,
-                     value = TRUE, ignore.case = TRUE) |>
-       trimws()
-     doc_elements <- strsplit(doctype, "\"")
-     dtd <- ""
-     if (length(doc_elements) > 0 &&
-         length(doc_elements[[1]]) >= 2) {
-       dtd <- doc_elements[[1]][[2]]
-     }
+    # check doctype
+    doctype <- grep("^\\s*<!DOCTYPE",
+      x = raw_text,
+      value = TRUE, ignore.case = TRUE
+    ) |>
+      trimws()
+    doc_elements <- strsplit(doctype, "\"")
+    dtd <- ""
+    if (length(doc_elements) > 0 &&
+      length(doc_elements[[1]]) >= 2) {
+      dtd <- doc_elements[[1]][[2]]
+    }
 
-     xml_text <- raw_text |>
+    xml_text <- raw_text |>
       paste(collapse = "\n") |>
       # fixes a glitch that stopped grobid xml from being read
       gsub(' xmlns="http://www.tei-c.org/ns/1.0"', "",
-           x = _, fixed = TRUE) |>
+        x = _, fixed = TRUE
+      ) |>
       # get rid of sentence tags
       gsub("</s><s>", " ", x = _) |>
       gsub("</?s>", "", x = _) |>
       # TODO: handle this better in full_text functions
       # replace URL links with markdown style
       gsub("<ref type=\"url\" target=\"([^\"]+)\">([^<]+)</ref>",
-           "{{\\1}}", x = _) |>
+        "{{\\1}}",
+        x = _
+      ) |>
       gsub("<ext-link[^>]+xlink:href=\"([^\"]+)\"[^>]*>([^<]+)</ext-link>",
-           "{{\\1}}", x = _)
+        "{{\\1}}",
+        x = _
+      )
 
-    xml <- tryCatch({
-      myxml <- xml2::read_xml(xml_text)
-      xml2::xml_attr(myxml, "dtd") <- dtd
-      myxml
-    }, error = function(e) { return(NULL) })
+    xml <- tryCatch(
+      {
+        myxml <- xml2::read_xml(xml_text)
+        xml2::xml_attr(myxml, "dtd") <- dtd
+        myxml
+      },
+      error = function(e) {
+        return(NULL)
+      }
+    )
   } else if (ext == "docx") {
     docx <- officer::read_docx(filename)
     summary <- officer::docx_summary(docx)
@@ -233,11 +251,16 @@ read_xml <- function(filename) {
       paste0("<p>", x = _, "</p>") |>
       paste(collapse = "\n") |>
       paste('<?xml version="1.0" encoding="UTF-8"?>',
-            "<text>", x = _, "</text>\n",
-            sep = "\n")
+        "<text>",
+        x = _, "</text>\n",
+        sep = "\n"
+      )
 
     xml <- tryCatch(xml2::read_xml(xml_text),
-                    error = function(e) { return(NULL) })
+      error = function(e) {
+        return(NULL)
+      }
+    )
   }
 
   return(xml)
@@ -260,7 +283,7 @@ xml_find <- function(xml, xpath, join = NULL) {
 
   if (length(text) == 0) text <- ""
 
-  return (text)
+  return(text)
 }
 
 #' Find and return first info from XML by xpath
@@ -285,12 +308,16 @@ xml_find1 <- function(xml, xpath, join = NULL) {
 xml_date <- function(xml, xpath = ".//string-date") {
   date <- xml2::xml_find_first(xml, xpath)
 
-  m <- date |> xml2::xml_find_first(".//month") |>
-    xml2::xml_attr("number") |> as.numeric()
+  m <- date |>
+    xml2::xml_find_first(".//month") |>
+    xml2::xml_attr("number") |>
+    as.numeric()
   d <- xml_find1(date, ".//day") |> as.numeric()
   y <- xml_find1(date, ".//year") |> as.numeric()
 
-  if (is.na(m) & is.na(d) & is.na(y)) return(NULL)
+  if (is.na(m) & is.na(d) & is.na(y)) {
+    return(NULL)
+  }
   sprintf("%d-%02d-%02d", y, m, d)
 }
 
@@ -369,17 +396,17 @@ process_full_text <- function(full_text) {
   # assume sections are the same class as previous if unclassified (after abstract)
   for (i in seq_along(ft$section)) {
     if (i > 1 &
-        !abstract[i] &
-        isFALSE(abstract[i-1]) &
-        is.na(ft$section[i]) ) {
-      ft$section[i] <- ft$section[i-1]
+      !abstract[i] &
+      isFALSE(abstract[i - 1]) &
+      is.na(ft$section[i])) {
+      ft$section[i] <- ft$section[i - 1]
     }
   }
 
   colorder <- c("text", "section", "header", "div", "p", "s")
 
   blank_divs <- grepl("\\[div-\\d+\\]", ft$text)
-  #blank_divs <- ft$p == 0
+  # blank_divs <- ft$p == 0
 
   body_table <- ft[!blank_divs, colorder]
   rownames(body_table) <- NULL
@@ -399,7 +426,7 @@ apa_info <- function(xml) {
   info <- list()
 
   info$title <- xml_find1(xml, "//article-title")
-  info$description <-  xml_find(xml, "//abstract //p", join = "\n\n")
+  info$description <- xml_find(xml, "//abstract //p", join = "\n\n")
   info$keywords <- xml_find(xml, "//kwd-group //kwd")
   info$doi <- xml_find(xml, "//article-id[@pub-id-type='doi']")
 
@@ -421,33 +448,37 @@ apa_info <- function(xml) {
 #' @return an author list
 #' @keywords internal
 apa_authors <- function(xml) {
-    s <- study()
-    authors <- xml2::xml_find_all(xml, "//contrib-group[@content-type='primary-authors'] //contrib[@contrib-type='author']")
+  s <- study()
+  authors <- xml2::xml_find_all(xml, "//contrib-group[@content-type='primary-authors'] //contrib[@contrib-type='author']")
 
-    affiliations <- xml2::xml_find_all(xml, "//contrib-group[@content-type='primary-authors'] //aff")
-    affs <- xml2::xml_text(affiliations)
-    names(affs) <- xml2::xml_attr(affiliations, "id")
+  affiliations <- xml2::xml_find_all(xml, "//contrib-group[@content-type='primary-authors'] //aff")
+  affs <- xml2::xml_text(affiliations)
+  names(affs) <- xml2::xml_attr(affiliations, "id")
 
-    for (a in authors) {
-      family <- xml2::xml_find_first(a, ".//surname") |>
-        xml2::xml_text() |> trimws()
-      given <- xml2::xml_find_all(a, ".//given-names") |>
-        xml2::xml_text() |> trimws()
-      email <- xml2::xml_find_all(a, ".//email") |> xml2::xml_text()
-      orcid <- xml2::xml_find_all(a, ".//contrib-id[@contrib-id-type='orcid']") |> xml2::xml_text()
+  for (a in authors) {
+    family <- xml2::xml_find_first(a, ".//surname") |>
+      xml2::xml_text() |>
+      trimws()
+    given <- xml2::xml_find_all(a, ".//given-names") |>
+      xml2::xml_text() |>
+      trimws()
+    email <- xml2::xml_find_all(a, ".//email") |> xml2::xml_text()
+    orcid <- xml2::xml_find_all(a, ".//contrib-id[@contrib-id-type='orcid']") |> xml2::xml_text()
 
-      if (length(orcid) == 0) orcid = NULL
+    if (length(orcid) == 0) orcid <- NULL
 
-      # get affiliations
-      rids <- xml2::xml_attr(a, "rid") |> strsplit("\\s")
-      my_affs <- intersect(rids[[1]], names(affs))
-      affiliation <- affs[my_affs] |> unname()
+    # get affiliations
+    rids <- xml2::xml_attr(a, "rid") |> strsplit("\\s")
+    my_affs <- intersect(rids[[1]], names(affs))
+    affiliation <- affs[my_affs] |> unname()
 
-      s <- add_author(s, family, given, orcid, email = email,
-                      affiliation = affiliation)
-    }
+    s <- add_author(s, family, given, orcid,
+      email = email,
+      affiliation = affiliation
+    )
+  }
 
-    return(s$authors)
+  return(s$authors)
 }
 
 #' Get full text from JATS APA-DTD type XML
@@ -486,10 +517,10 @@ apa_full_text <- function(xml) {
   # TODO: get sentences with internal refs to figs
   figs <- xml2::xml_find_all(xml, "//fig")
   figtbl <- lapply(figs, \(fig) {
-    id <- xml_find1(fig, ".//label")|> as.numeric()
+    id <- xml_find1(fig, ".//label") |> as.numeric()
     title <- xml_find(fig, ".//caption //title")
     p <- xml_find(fig, ".//caption //p")
-    if(length(p) == 0) p <- title
+    if (length(p) == 0) p <- title
     data.frame(
       header = title,
       text = c(title, p),
@@ -516,7 +547,7 @@ apa_full_text <- function(xml) {
   notetbl <- lapply(notes, \(note) {
     id <- xml_find1(note, ".//label") |> as.numeric()
     p <- xml_find(note, ".//p")
-    if(length(p) == 0) p <- ""
+    if (length(p) == 0) p <- ""
     data.frame(
       header = xml2::xml_attr(note, "id"),
       text = p,
@@ -526,11 +557,15 @@ apa_full_text <- function(xml) {
     )
   }) |> do.call(dplyr::bind_rows, args = _)
 
-  all_tables <- c(list(abst_table),
-                  div_text,
-                  list(notetbl,
-                       authnotetbl,
-                       figtbl))
+  all_tables <- c(
+    list(abst_table),
+    div_text,
+    list(
+      notetbl,
+      authnotetbl,
+      figtbl
+    )
+  )
   full_text <- do.call(dplyr::bind_rows, all_tables)
 
   return(full_text)
@@ -583,8 +618,10 @@ jats_xrefs <- function(xml) {
     # should split contents too,
     # but splitting on ; doesn't always match n of refs split
     tidyr::separate_longer_delim(xref_id, delim = " ") |>
-    dplyr::arrange(type,
-                   gsub("\\D", "", x = xref_id) |> as.integer())
+    dplyr::arrange(
+      type,
+      gsub("\\D", "", x = xref_id) |> as.integer()
+    )
 
   xrefs <- xref_data[c("xref_id", "type", "contents", "text")] |> unique()
 
@@ -629,11 +666,12 @@ jats_bib <- function(xml) {
       )
     }
     bibtype <- dplyr::case_match(pubtype,
-                                 "journal" ~ "Article",
-                                 "book-chapter" ~ "InCollection",
-                                 "book" ~ "Book",
-                                 "other" ~ "Misc",
-                                 .default = "Misc")
+      "journal" ~ "Article",
+      "book-chapter" ~ "InCollection",
+      "book" ~ "Book",
+      "other" ~ "Misc",
+      .default = "Misc"
+    )
 
     id <- xml2::xml_attr(cite, "id")
     if (is.na(id)) id <- xml2::xml_attr(ref, "id")
@@ -646,11 +684,11 @@ jats_bib <- function(xml) {
       title = xml_find1(cite, ".//article-title"),
       journal = xml_find1(cite, ".//source"),
       authors = authors,
-      year =   xml_find1(cite, ".//year"),
+      year = xml_find1(cite, ".//year"),
       volume = xml_find1(cite, ".//volume"),
-      issue =  xml_find1(cite, ".//issue"),
-      fpage =  xml_find1(cite, ".//fpage"),
-      lpage =  xml_find1(cite, ".//lpage")
+      issue = xml_find1(cite, ".//issue"),
+      fpage = xml_find1(cite, ".//fpage"),
+      lpage = xml_find1(cite, ".//lpage")
     )
   }) |> do.call(dplyr::bind_rows, args = _)
 
@@ -670,7 +708,7 @@ nlm_info <- function(xml, filename = "") {
   info <- list()
 
   info$title <- xml_find(xml, "//front //article-title")
-  info$description <-  xml_find(xml, "//abstract //p", join = "\n\n")
+  info$description <- xml_find(xml, "//abstract //p", join = "\n\n")
   info$keywords <- xml_find(xml, "//kwd-group //kwd") |>
     gsub("^eol>", "", x = _)
   info$doi <- xml_find(xml, "//front //pub-id[@pub-id-type='doi']")
@@ -691,12 +729,13 @@ nlm_authors <- function(xml) {
   for (a in authors) {
     name <- xml_find(a, ".//string-name")
     m <- gregexpr(" (van |de |van der |van de |della )?[\\S]+$", name,
-                  perl = TRUE, ignore.case = TRUE)
+      perl = TRUE, ignore.case = TRUE
+    )
     family <- regmatches(name, m) |> trimws()
     given <- sub(paste0(family, "$"), "", name) |> trimws()
     email <- xml_find(a, ".//email")
     orcid <- xml_find(a, ".//idno[@type='ORCID']")
-    if (orcid == "") orcid = NULL
+    if (orcid == "") orcid <- NULL
 
     affs <- xml2::xml_find_all(a, ".//xref[@ref-type='aff']")
     affiliation <- lapply(affs, function(aff) {
@@ -707,8 +746,10 @@ nlm_authors <- function(xml) {
       org
     })
 
-    s <- add_author(s, family, given, orcid, email = email,
-                    affiliation = affiliation)
+    s <- add_author(s, family, given, orcid,
+      email = email,
+      affiliation = affiliation
+    )
   }
 
   return(s$authors)
@@ -747,14 +788,13 @@ nlm_full_text <- function(xml) {
   })
 
 
-
-  full_text <- do.call(dplyr::bind_rows, c(list(abst_table),
-                                         div_text
+  full_text <- do.call(dplyr::bind_rows, c(
+    list(abst_table),
+    div_text
   ))
 
   return(full_text)
 }
-
 
 
 # TEI ----
@@ -775,54 +815,59 @@ tei_info <- function(xml, filename = "") {
   info$doi <- xml_find(xml, "//sourceDesc //idno[@type='DOI']")
 
   # parse submission dates, which suck
-  tryCatch({
-    info$submission <- xml_find(xml, "//sourceDesc //note[@type='submission']")
+  tryCatch(
+    {
+      info$submission <- xml_find(xml, "//sourceDesc //note[@type='submission']")
 
-    # set up date regex
-    # TODO: move this to utilities
-    months <- "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|June|July|August|September|October|November|December"
-    pattern <- paste0(
-      "(", months, "|\\d{1,4})",
-      "[- /\\.](", months, "|\\d{1,2}),?",
-      "[- /\\.]\\d{2,4}"
-    )
+      # set up date regex
+      # TODO: move this to utilities
+      months <- "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|June|July|August|September|October|November|December"
+      pattern <- paste0(
+        "(", months, "|\\d{1,4})",
+        "[- /\\.](", months, "|\\d{1,2}),?",
+        "[- /\\.]\\d{2,4}"
+      )
 
-    m <- gregexpr(pattern, info$submission, ignore.case = TRUE)
-    dates <- regmatches(info$submission, m)
-    if (length(dates[[1]] > 0)) {
-      parsed_dates <- suppressWarnings(anytime::anydate(dates[[1]]))
-      parsed_dates_na <- is.na(parsed_dates) |> which()
+      m <- gregexpr(pattern, info$submission, ignore.case = TRUE)
+      dates <- regmatches(info$submission, m)
+      if (length(dates[[1]] > 0)) {
+        parsed_dates <- suppressWarnings(anytime::anydate(dates[[1]]))
+        parsed_dates_na <- is.na(parsed_dates) |> which()
 
-      for (i in parsed_dates_na) {
-        d <- dates[[1]][i]
-        if (grepl("\\d{1,2}/\\d{1,2}/\\d{2}", d)) {
-          # stupid psychsci format :(
-          parts <- strsplit(d, "/")[[1]] |> as.integer()
-          thisyear <- Sys.Date() |> format("%Y") |> as.integer()
-          parts[3] <- ifelse(parts[3] < thisyear + 1,
-                             parts[3] + 2000, parts[3] + 1900)
-          d <- sprintf("%d-%02d-%02d", parts[3], parts[1], parts[2])
+        for (i in parsed_dates_na) {
+          d <- dates[[1]][i]
+          if (grepl("\\d{1,2}/\\d{1,2}/\\d{2}", d)) {
+            # stupid psychsci format :(
+            parts <- strsplit(d, "/")[[1]] |> as.integer()
+            thisyear <- Sys.Date() |>
+              format("%Y") |>
+              as.integer()
+            parts[3] <- ifelse(parts[3] < thisyear + 1,
+              parts[3] + 2000, parts[3] + 1900
+            )
+            d <- sprintf("%d-%02d-%02d", parts[3], parts[1], parts[2])
+          }
+
+          parsed_dates[i] <- d
         }
 
-        parsed_dates[i] <- d
+        received <- gregexpr("received", info$submission, ignore.case = TRUE)[[1]][[1]]
+        accepted <- gregexpr("accepted", info$submission, ignore.case = TRUE)[[1]][[1]]
       }
 
-      received <- gregexpr("received", info$submission, ignore.case = TRUE)[[1]][[1]]
-      accepted <- gregexpr("accepted", info$submission, ignore.case = TRUE)[[1]][[1]]
-    }
-
-    for (i in seq_along(parsed_dates)) {
-      if (is.null(info$received) &&
+      for (i in seq_along(parsed_dates)) {
+        if (is.null(info$received) &&
           received != -1 && received < m[[1]][[i]]) {
-        info$received <- parsed_dates[[i]]
-      }
-      if (is.null(info$accepted) &&
+          info$received <- parsed_dates[[i]]
+        }
+        if (is.null(info$accepted) &&
           accepted != -1 && accepted < m[[1]][[i]]) {
-        info$accepted <- parsed_dates[[i]]
+          info$accepted <- parsed_dates[[i]]
+        }
       }
-    }
-
-  }, error = \(e) {})
+    },
+    error = \(e) {}
+  )
 
   return(info)
 }
@@ -843,7 +888,7 @@ tei_authors <- function(xml) {
     email <- xml_find(a, ".//email", join = ";")
     orcid <- xml_find(a, ".//idno[@type='ORCID']")
 
-    if (orcid == "") orcid = NULL
+    if (orcid == "") orcid <- NULL
 
     affs <- xml2::xml_find_all(a, ".//affiliation")
     affiliation <- lapply(affs, function(aff) {
@@ -853,8 +898,10 @@ tei_authors <- function(xml) {
       stats::setNames(as.list(vals), names)
     })
 
-    s <- add_author(s, family, given, orcid, email = email,
-                    affiliation = affiliation)
+    s <- add_author(s, family, given, orcid,
+      email = email,
+      affiliation = affiliation
+    )
   }
 
   return(s$authors)
@@ -867,7 +914,7 @@ tei_authors <- function(xml) {
 #' @return a data frame with all text
 #' @keywords internal
 tei_full_text <- function(xml) {
-  div <- NULL  # ugh cmdcheck
+  div <- NULL # ugh cmdcheck
 
   ## abstract ----
   abst_table <- data.frame(
@@ -952,11 +999,15 @@ tei_full_text <- function(xml) {
   }) |> do.call(rbind, args = _)
   notetbl <- notetbl %||% data.frame()
 
-  all_tables <- c(list(abst_table),
-                   div_text,
-                   list(back_text,
-                        figtbl,
-                        notetbl))
+  all_tables <- c(
+    list(abst_table),
+    div_text,
+    list(
+      back_text,
+      figtbl,
+      notetbl
+    )
+  )
   full_text <- do.call(dplyr::bind_rows, all_tables)
 
   return(full_text)
@@ -1002,7 +1053,7 @@ tei_xrefs <- function(xml) {
     dplyr::rowwise() |>
     dplyr::filter(
       (is.na(xref_id) & grepl(contents, xml2::read_html(text) |> xml2::xml_text(), fixed = TRUE)) |
-      grepl(paste0("#", xref_id), text, fixed = TRUE)
+        grepl(paste0("#", xref_id), text, fixed = TRUE)
     )
 
   if (nrow(xref_data) > 0) {
@@ -1038,7 +1089,9 @@ tei_bib <- function(xml) {
     # pull visible text on error
     formatted <- bibs |>
       sapply(\(bib) {
-        tryCatch(format(bib), error = \(e) { return("")})
+        tryCatch(format(bib), error = \(e) {
+          return("")
+        })
       }) |>
       gsub("\\n", " ", x = _)
 
@@ -1070,7 +1123,6 @@ tei_bib <- function(xml) {
 }
 
 
-
 # Text ----
 
 #' Get article info from plain text
@@ -1079,9 +1131,7 @@ tei_bib <- function(xml) {
 #'
 #' @return an info list
 #' @keywords internal
-text_info <- function(xml, filename = "") {
-
-}
+text_info <- function(xml, filename = "") {}
 
 #' Get author info from plain text
 #'
@@ -1089,9 +1139,7 @@ text_info <- function(xml, filename = "") {
 #'
 #' @return an author list
 #' @keywords internal
-text_authors <- function(xml) {
-
-}
+text_authors <- function(xml) {}
 
 #' Get full text from plain text
 #'
@@ -1158,9 +1206,7 @@ text_bib <- function(xml) {
 #'
 #' @return an info list
 #' @keywords internal
-word_info <- function(xml, filename = "") {
-
-}
+word_info <- function(xml, filename = "") {}
 
 #' Get author info from  Word
 #'
@@ -1168,9 +1214,7 @@ word_info <- function(xml, filename = "") {
 #'
 #' @return an author list
 #' @keywords internal
-word_authors <- function(xml) {
-
-}
+word_authors <- function(xml) {}
 
 #' Get full text from  Word
 #'
@@ -1254,31 +1298,38 @@ xml2bib <- function(ref) {
       forename <- xml2::xml_find_all(a, ".//forename") |> xml2::xml_text()
       surname <- xml2::xml_find_all(a, ".//surname") |> xml2::xml_text()
 
-      utils::person(given = forename,
-                    family = surname)
-    }) |> do.call(base::c, args = _)
+      utils::person(
+        given = forename,
+        family = surname
+      )
+    }) |>
+    do.call(base::c, args = _)
 
   b$editor <- xml2::xml_find_all(ref, ".//editor //persName") |>
     lapply(\(a) {
       forename <- xml2::xml_find_all(a, ".//forename") |> xml2::xml_text()
       surname <- xml2::xml_find_all(a, ".//surname") |> xml2::xml_text()
 
-      utils::person(given = forename,
-                    family = surname)
-    }) |> do.call(base::c, args = _)
+      utils::person(
+        given = forename,
+        family = surname
+      )
+    }) |>
+    do.call(base::c, args = _)
 
   b$journal <- xml2::xml_find_first(ref, ".//title[@level='j']") |>
     xml2::xml_text() |>
-    gsub("\\s+", " ", x = _) |> trimws()
+    gsub("\\s+", " ", x = _) |>
+    trimws()
 
   b$booktitle <- xml2::xml_find_first(ref, ".//title[@level='m']") |>
     xml2::xml_text()
 
   # imprint
   imprint <- xml2::xml_find_first(ref, ".//imprint")
-  b$publisher <-  xml2::xml_find_first(imprint, ".//publisher") |>
+  b$publisher <- xml2::xml_find_first(imprint, ".//publisher") |>
     xml2::xml_text()
-  b$year <-  xml2::xml_find_first(imprint, ".//date[@type='published']") |>
+  b$year <- xml2::xml_find_first(imprint, ".//date[@type='published']") |>
     xml2::xml_text()
   b$volume <- xml2::xml_find_first(imprint, ".//biblScope[@unit='volume']") |>
     xml2::xml_text()
@@ -1315,15 +1366,16 @@ xml2bib <- function(ref) {
   }
 
   bib <- tryCatch(do.call(utils::bibentry, b),
-                  error = function(e) {
-                    b$bibtype <- "misc"
-                    bib <- do.call(utils::bibentry, b)
-                    return(bib)
+    error = function(e) {
+      b$bibtype <- "misc"
+      bib <- do.call(utils::bibentry, b)
+      return(bib)
 
-                    # TODO: fix more types
-                    #warning(e$message, "\\n")
-                    #return(txt)
-                  })
+      # TODO: fix more types
+      # warning(e$message, "\\n")
+      # return(txt)
+    }
+  )
 
   bib
 }

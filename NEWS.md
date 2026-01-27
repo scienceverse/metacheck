@@ -4,6 +4,7 @@
 * New `report_module_run()` and `report_qmd()` break down the `report()` function to allow separation of module output lists and creation of QMD report from them (might be changed to internal functions).
 * Ability to select returned columns in `crossref_query()`
 * Module "ref_accuracy" now returns info for references with missing DOIs that were found by ref_doi_check
+* Module "code_check" split into "repo_check" and "code_check"
 
 # metacheck 0.0.0.9066
 

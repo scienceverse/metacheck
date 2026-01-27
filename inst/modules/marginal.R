@@ -46,9 +46,11 @@ marginal <- function(paper) {
     cols <- c("section", "text")
     report_table <- table[, cols, drop = FALSE]
 
-    report <- c(report_text,
-                scroll_table(report_table),
-                collapse_section(guidance))
+    report <- c(
+      report_text,
+      scroll_table(report_table),
+      collapse_section(guidance)
+    )
   }
 
   # return list ----
