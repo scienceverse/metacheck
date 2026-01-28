@@ -49,42 +49,46 @@ repo_check <- function(paper) {
     unique()
   osf_files_df <- data.frame(repo_name = character(0))
   if (length(osf_urls) > 0) {
-    suppressWarnings({
-      osf_info <- lapply(osf_urls, \(x) {
-        osf_files <- osf_retrieve(x, recursive = TRUE)
-        osf_files$repo_name <- x
-        osf_files
-      }) |> dplyr::bind_rows()
+    tryCatch({
+      suppressWarnings({
+        osf_info <- lapply(osf_urls, \(x) {
+          osf_files <- osf_retrieve(x, recursive = TRUE)
+          osf_files$repo_name <- x
+          osf_files
+        }) |> dplyr::bind_rows()
+      })
+
+      # "kind" only in table if there are files
+      if ("kind" %in% names(osf_info)) {
+        osf_file_list <- osf_info |>
+          dplyr::filter(kind == "file", !isFALSE(public))
+
+        osf_files_df <- data.frame(
+          repo_url = osf_file_list$repo_name,
+          file_name = osf_file_list$name,
+          file_url = osf_file_list$download_url,
+          file_location = rep(NA_character_, nrow(osf_file_list)),
+          file_size = osf_file_list$size,
+          file_type = osf_file_list$filetype
+        )
+      }
+
+      # remove e.g., registrations from repos list
+      osf_to_remove <- osf_info |>
+        dplyr::filter(!osf_type %in% c("nodes", "files", "private")) |>
+        _$osf_url
+      repos <- repos[!repos$repo_url %in% osf_to_remove, ]
+
+      # note private repos
+      private_repos <- osf_info |>
+        dplyr::filter(osf_type %in% "private") |>
+        _$osf_url
+      if (length(private_repos)) {
+        repos$repo_error[repos$repo_url %in% private_repos] <- "private"
+      }
+    }, error = \(e) {
+      # TODO: communicate errors to repos table
     })
-
-    # "kind" only in table if there are files
-    if ("kind" %in% names(osf_info)) {
-      osf_file_list <- osf_info |>
-        dplyr::filter(kind == "file", !isFALSE(public))
-
-      osf_files_df <- data.frame(
-        repo_url = osf_file_list$repo_name,
-        file_name = osf_file_list$name,
-        file_url = osf_file_list$download_url,
-        file_location = rep(NA_character_, nrow(osf_file_list)),
-        file_size = osf_file_list$size,
-        file_type = osf_file_list$filetype
-      )
-    }
-
-    # remove e.g., registrations from repos list
-    osf_to_remove <- osf_info |>
-      dplyr::filter(!osf_type %in% c("nodes", "files", "private")) |>
-      _$osf_url
-    repos <- repos[!repos$repo_url %in% osf_to_remove, ]
-
-    # note private repos
-    private_repos <- osf_info |>
-      dplyr::filter(osf_type %in% "private") |>
-      _$osf_url
-    if (length(private_repos)) {
-      repos$repo_error[repos$repo_url %in% private_repos] <- "private"
-    }
   }
 
   ## GitHub ----
@@ -94,17 +98,21 @@ repo_check <- function(paper) {
     unique()
   github_files_df <- data.frame(repo_name = character(0))
   if (length(github_urls) > 0) {
-    github_file_list <- github_files(github_urls, recursive = TRUE) |>
-      dplyr::filter(type != "dir")
+    tryCatch({
+      github_file_list <- github_files(github_urls, recursive = TRUE) |>
+        dplyr::filter(type != "dir")
 
-    github_files_df <- data.frame(
-      repo_url = github_file_list$repo,
-      file_name = github_file_list$name,
-      file_url = github_file_list$download_url,
-      file_location = rep(NA_character_, nrow(github_file_list)),
-      file_size = github_file_list$size,
-      file_type = github_file_list$type
-    )
+      github_files_df <- data.frame(
+        repo_url = github_file_list$repo,
+        file_name = github_file_list$name,
+        file_url = github_file_list$download_url,
+        file_location = rep(NA_character_, nrow(github_file_list)),
+        file_size = github_file_list$size,
+        file_type = github_file_list$type
+      )
+    }, error = \(e) {
+      # TODO: communicate errors to repos table
+    })
   }
 
   ## ResearchBox ----
@@ -114,16 +122,20 @@ repo_check <- function(paper) {
     unique()
   rb_files_df <- data.frame(repo_name = character(0))
   if (length(rb_urls) > 0) {
-    rb_file_list <- rbox_file_download(rb_urls) |>
-      dplyr::filter(!isdir)
-    rb_files_df <- data.frame(
-      repo_url = rb_file_list$rb_url,
-      file_name = rb_file_list$name,
-      file_url = rb_file_list$rb_url,
-      file_location = rb_file_list$file_location,
-      file_size = rb_file_list$size,
-      file_type = rb_file_list$type
-    )
+    tryCatch({
+      rb_file_list <- rbox_file_download(rb_urls) |>
+        dplyr::filter(!isdir)
+      rb_files_df <- data.frame(
+        repo_url = rb_file_list$rb_url,
+        file_name = rb_file_list$name,
+        file_url = rb_file_list$rb_url,
+        file_location = rb_file_list$file_location,
+        file_size = rb_file_list$size,
+        file_type = rb_file_list$type
+      )
+    }, error = \(e) {
+      # TODO: communicate errors to repos table
+    })
   }
 
   ## no repos found ----
@@ -150,11 +162,14 @@ repo_check <- function(paper) {
 
   # remove duplicate links
   # (can happen when same repo is referenced different ways)
-  dupes <- duplicated(all_files$file_url)
-  all_files <- all_files[!dupes, ]
-  # remove repos that were only duplicates
-  in_files <- repos$repo_url %in% all_files$repo_url
-  repos <- repos[in_files, ]
+  if (nrow(all_files) > 0) {
+    dupes <- duplicated(all_files$file_url) &
+      duplicated(all_files$file_name)
+    all_files <- all_files[!dupes, ]
+    # remove repos that were only duplicates
+    in_files <- repos$repo_url %in% all_files$repo_url
+    repos <- repos[in_files, ]
+  }
 
   if (nrow(all_files) == 0) {
     all_files$repo_url <- character(0)
