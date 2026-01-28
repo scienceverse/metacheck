@@ -122,7 +122,7 @@ open_practices <- function(paper) {
   if (nrow(table) == 1) {
     # data_report
     if (!table$data_open) {
-      data_report <- "We did not detect open sharing of data, which could be because there is no data related to this article, or the repository is not reconized by ODDPub. If there is data, please consider sharing it in a repository."
+      data_report <- "We did not detect open sharing of data, which could be because there is no data related to this article, or the repository is not recognized by ODDPub. If there is data, please consider sharing it in a repository."
     } else if (nzchar(table$data_statements)) {
       data_report <- sprintf(
         "Data was openly shared for this article, based on the following text:\n\n> %s",

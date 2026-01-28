@@ -216,11 +216,13 @@ rbox_file_download <- function(rb_url) {
     sub("^https://researchbox.org/", "", rb_url),
     ".zip"
   )
-  utils::download.file(url_researchbox,
-    destfile = zip_path,
-    mode = "wb",
-    quiet = TRUE
-  )
+  tryCatch({
+    utils::download.file(url_researchbox,
+      destfile = zip_path,
+      mode = "wb",
+      quiet = TRUE
+    )
+  }, error = \(e) {})
 
   if (!file.exists(zip_path) || file.size(zip_path) == 0) {
     warning("Download failed or resulted in an empty file: ", zip_path)
