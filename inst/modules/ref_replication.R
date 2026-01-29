@@ -4,7 +4,7 @@
 #' This module checks references and warns for citations of original studies for which replication or reproduction studies exist in the FLoRA database.
 #'
 #' @details
-#' The Replication Check module compares the reference list against studies in the FLoRA (FORRT Literature Replication Archive) database based on the DOI. If a study in the database is found, a reminder is provided that a replication or reproduction of the original study exists, and should be cited (currently, a warning is provided regardless of whether the replication/reproduction study is already cited).
+#' The Replication Check module compares the reference list against studies in the FLoRA (FORRT Library of Replication Attempts) database based on the DOI. If a study in the database is found, a reminder is provided that a replication or reproduction of the original study exists, and should be cited (currently, a warning is provided regardless of whether the replication/reproduction study is already cited).
 #'
 #' The module requires that the reference has a DOI. If you run the ref_doi_check module in a pipeline before this, it will use the enhanced DOI list from that module, otherwise it will only run on references with existing DOIs.
 #'
