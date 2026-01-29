@@ -110,9 +110,22 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
 
     ## report_text ----
     n_doi <- sum(!is.na(bib$doi))
+    has_both_types <- n_replications > 0 && n_reproductions > 0
+
+    if (n_reproductions == 0) {
+      study_type_text <- "replication studies"
+      col_header <- "Replication"
+    } else if (n_replications == 0) {
+      study_type_text <- "reproduction studies"
+      col_header <- "Reproduction"
+    } else {
+      study_type_text <- "replication/reproduction studies"
+      col_header <- "Replication/Reproduction"
+    }
+
     report_text <- sprintf(
-      "We checked %d reference%s with DOIs. %s\n\nCheck if you are aware of the replication/reproduction studies, and cite them where appropriate.",
-      n_doi, plural(n_doi), summary_text
+      "We checked %d reference%s with DOIs. %s\n\nCheck if you are aware of the %s, and cite them where appropriate.",
+      n_doi, plural(n_doi), summary_text, study_type_text
     )
 
     ## report_table ----
@@ -127,15 +140,23 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
       link(table$replication_url, type = "url")
     )
 
-    # Label entries with type (Replication/Reproduction)
-    type_label <- tools::toTitleCase(table$replication_type)
-    report_table$replication_ref <- sprintf(
-      "<b>[%s]</b> %s %s",
-      type_label,
-      table$replication_ref,
-      replication_links
-    )
-    names(report_table) <- c("Reference", "Replication/Reproduction")
+    # Only label entries with type if both replications and reproductions are present
+    if (has_both_types) {
+      type_label <- tools::toTitleCase(table$replication_type)
+      report_table$replication_ref <- sprintf(
+        "<b>[%s]</b> %s %s",
+        type_label,
+        table$replication_ref,
+        replication_links
+      )
+    } else {
+      report_table$replication_ref <- sprintf(
+        "%s %s",
+        table$replication_ref,
+        replication_links
+      )
+    }
+    names(report_table) <- c("Reference", col_header)
 
     if (show_outcomes) {
       report_table$Outcome <- table$replication_outcome
