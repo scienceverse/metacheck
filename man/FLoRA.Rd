@@ -13,7 +13,7 @@ A data frame with 8 columns:
 \item{url_r}{URL of replication study (used when DOI is not available)}
 \item{outcome}{replication outcome}
 \item{outcome_quote}{quote describing replication outcome}
-\item{type}{type of replication}
+\item{type}{replication or reproduction}
 }
 }
 \source{
