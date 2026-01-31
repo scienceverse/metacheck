@@ -105,7 +105,7 @@ funding_check <- function(paper) {
   )
 }
 
-# Code form rtransparent ----
+# Code from rtransparent ----
 
 rtransparent_funding <- function(text) {
   index <- integer()

@@ -21,29 +21,9 @@
 #'
 #' @returns a list
 coi_check <- function(paper) {
-  # # table ----
-  #
-  # ## get potential COI statements ----
-  # pattern_main <- c(
-  #   "\\binterest?s\\b",
-  #   "\\bCOI\\b"
-  # )
-  # pattern_inc <- c(
-  #   "conflict",
-  #   "compet",
-  #   "disclosure",
-  #   "declaration"
-  # )
-  # # definitely exclude
-  # pattern_exc <- c("financial disclosure")
-  #
-  # table <- paper |>
-  #   search_text(pattern_main, search_header = TRUE) |>
-  #   search_text(pattern_inc, search_header = TRUE) |>
-  #   search_text(pattern_exc, exclude = TRUE) |>
-  #   # merge the text by section/id
-  #   search_text(return = "section")
+  # table ----
 
+  # get text and send to rtransparent function (defined below)
   table <- paper |>
     search_text() |>
     dplyr::select(id, text) |>
