@@ -1,3 +1,7 @@
+# metacheck 0.0.0.9068
+
+* Modules "function_check" and "coi_check" reverted to the rtransparent versions (the re-written version were overinclusive and need more development).
+
 # metacheck 0.0.0.9067
 
 * `reports()` now takes a paperlist and makes a report from each
