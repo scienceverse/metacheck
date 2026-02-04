@@ -16,6 +16,7 @@
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
 #' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
+#' @author Lukas Wallrich (\email{lukas.wallrich@gmail.com})
 #'
 #'
 #' @import dplyr
@@ -67,6 +68,12 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
   already_cited <- has_rep_doi & (table$replication_doi %in% bib$doi)
   table <- table[!already_cited, ]
 
+  # Remove trailing URLs from reference text to avoid duplication with link
+  table$replication_ref <- trimws(gsub(
+    "https?://[^[:space:]]+$", "",
+    table$replication_ref, ignore.case = TRUE
+  ))
+
   # traffic_light ----
   tl <- if (nrow(table)) "info" else "na"
 
@@ -88,23 +95,24 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
     ## sumary_text ----
     n_replications <- sum(table$replication_type == "replication", na.rm = TRUE)
     n_reproductions <- sum(table$replication_type == "reproduction", na.rm = TRUE)
+    n_originals <- dplyr::n_distinct(table$doi)
 
     if (n_reproductions == 0) {
       summary_text <- sprintf(
-        "You cited %d article%s with replication%s in the FLoRA database.",
-        n_replications, plural(n_replications), plural(n_replications)
+        "We found %d replication%s for %d original%s you cited.",
+        n_replications, plural(n_replications), n_originals, plural(n_originals)
       )
     } else if (n_replications == 0) {
       summary_text <- sprintf(
-        "You cited %d article%s with reproduction%s in the FLoRA database.",
-        n_reproductions, plural(n_reproductions), plural(n_reproductions)
+        "We found %d reproduction%s for %d original%s you cited.",
+        n_reproductions, plural(n_reproductions), n_originals, plural(n_originals)
       )
     } else {
       summary_text <- sprintf(
-        "You cited %d article%s with %d replication%s and %d reproduction%s in the FLoRA database.",
-        nrow(table), plural(nrow(table)),
+        "We found %d replication%s and %d reproduction%s for %d original%s you cited.",
         n_replications, plural(n_replications),
-        n_reproductions, plural(n_reproductions)
+        n_reproductions, plural(n_reproductions),
+        n_originals, plural(n_originals)
       )
     }
 
@@ -134,11 +142,13 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
 
     # Create links using DOI if available, otherwise use URL
     has_doi <- !is.na(table$replication_doi) & table$replication_doi != ""
-    replication_links <- ifelse(
-      has_doi,
-      link(table$replication_doi, type = "doi"),
-      link(table$replication_url, type = "url")
+    # Format DOI links with doi: prefix to match format_ref() output
+    bare_doi <- gsub("^https?://doi.org/", "", table$replication_doi)
+    doi_links <- link(
+      url = paste0("https://doi.org/", bare_doi),
+      text = paste0("doi:", bare_doi)
     )
+    replication_links <- ifelse(has_doi, doi_links, link(table$replication_url))
 
     # Only label entries with type if both replications and reproductions are present
     if (has_both_types) {
