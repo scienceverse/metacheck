@@ -2,7 +2,6 @@
 
 > Small guide into using local LLM's via Ollama to run the llm() command 
 
-
 Written by a local LLM and Levi Baruch
 
 ---
@@ -29,8 +28,8 @@ curl -fsSL https://ollama.com/install.sh | sh
 ### 2. Pull a Model from Ollama
 
 ```bash
-ollama pull llama3.1
-# or any model you want
+ollama pull gpt-oss
+# or any model you want, I recommend gpt-oss since it has worked quite well for me
 ```
 
 ### 3. Set Up `ellmer` to Use the Local Endpoint
