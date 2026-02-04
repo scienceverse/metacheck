@@ -6,9 +6,7 @@
 #' @details
 #' The Funding Check module uses regular expressions to check sentences for words related to funding statements. It will return the sentences in which the conflict of interest statement was found.
 #'
-#' The function was inspired by [rtransparent](https://github.com/serghiou/rtransparent), which is no longer maintained. For their validation, see [the paper](https://doi.org/10.1371/journal.pbio.3001107).
-#'
-#' Our version uses a more inclusive algorithm, which decreases false negatives (missing a potential funding statement) at the expense of increasing false positives (falsely detecting sentences as a funding statement).
+#' The function incorporates code from [rtransparent](https://github.com/serghiou/rtransparent), which is no longer maintained. For their validation, see [the paper](https://doi.org/10.1371/journal.pbio.3001107).
 #'
 #' @references
 #' Serghiou, S., Contopoulos-Ioannidis, D. G., Boyack, K. W., Riedel, N., Wallach, J. D., & Ioannidis, J. P. (2021). Assessment of transparency indicators across the biomedical literature: How open is open?. PLoS biology, 19(3), e3001107. doi: 10.1371/journal.pbio.3001107
@@ -27,45 +25,55 @@
 #'
 funding_check <- function(paper) {
   # table ----
-
-  # get all sentences with both funding and study terms
-  pattern_fund <- c(
-    "funder",
-    "funded",
-    "funding",
-    "financed",
-    "supported by",
-    "support from"
-  )
-  pattern_study <- c(
-    "work",
-    "study",
-    "studies",
-    "research",
-    "manuscript",
-    "collaboration",
-    "paper",
-    "project",
-    "grant",
-    "award",
-    "fellowship",
-    "scholarship",
-    "stipend"
-  )
-
-  # if more than 1 per ID, favour those in specific sections
-  likely_section <- c("funding", "annex", "acknowledgement")
+  #
+  # # get all sentences with both funding and study terms
+  # pattern_fund <- c(
+  #   "funder",
+  #   "funded",
+  #   "funding",
+  #   "financed",
+  #   "supported by",
+  #   "support from"
+  # )
+  # pattern_study <- c(
+  #   "work",
+  #   "study",
+  #   "studies",
+  #   "research",
+  #   "manuscript",
+  #   "collaboration",
+  #   "paper",
+  #   "project",
+  #   "grant",
+  #   "award",
+  #   "fellowship",
+  #   "scholarship",
+  #   "stipend"
+  # )
+  #
+  # # if more than 1 per ID, favour those in specific sections
+  # likely_section <- c("funding", "annex", "acknowledgement")
+  #
+  # table <- paper |>
+  #   search_text(pattern_fund) |>
+  #   search_text(pattern_study) |>
+  #   # merge the text by section/id
+  #   search_text(return = "section") |>
+  #   dplyr::filter(
+  #     !any(section %in% likely_section) |
+  #       section %in% likely_section,
+  #     .by = id
+  #   )
 
   table <- paper |>
-    search_text(pattern_fund) |>
-    search_text(pattern_study) |>
-    # merge the text by section/id
-    search_text(return = "section") |>
-    dplyr::filter(
-      !any(section %in% likely_section) |
-        section %in% likely_section,
-      .by = id
-    )
+    search_text() |>
+    dplyr::select(id, text) |>
+    dplyr::nest_by(id) |>
+    dplyr::rowwise() |>
+    dplyr::mutate(text = rtransparent_funding(data$text)) |>
+    dplyr::ungroup() |>
+    dplyr::select(-data) |>
+    dplyr::filter(!is.na(text) & nzchar(text))
 
   # summary_table ----
   summary_table <- dplyr::summarise(table, funding_found = TRUE, .by = id)
@@ -97,72 +105,73 @@ funding_check <- function(paper) {
   )
 }
 
+# Code from rtransparent ----
 
-rtransparent_funding <- function(paper) {
+rtransparent_funding <- function(text) {
   index <- integer()
   disclosure <- integer()
   diff <- integer()
 
   # Index sets (any)
   index_any <- list()
-  index_any[["support_1"]] <- get_support_1(paper$full_text$text)
+  index_any[["support_1"]] <- get_support_1(text)
   # index_any[["support_2"]] <- get_support_2(paragraphs_pruned)
-  index_any[["support_3"]] <- get_support_3(paper$full_text$text)
-  index_any[["support_4"]] <- get_support_4(paper$full_text$text)
-  index_any[["support_5"]] <- get_support_5(paper$full_text$text)
-  index_any[["support_6"]] <- get_support_6(paper$full_text$text)
-  index_any[["support_7"]] <- get_support_7(paper$full_text$text)
-  index_any[["support_8"]] <- get_support_8(paper$full_text$text)
-  index_any[["support_9"]] <- get_support_9(paper$full_text$text)
-  index_any[["support_10"]] <- get_support_10(paper$full_text$text)
-  index_any[["developed_1"]] <- get_developed_1(paper$full_text$text)
-  index_any[["received_1"]] <- get_received_1(paper$full_text$text)
-  index_any[["received_2"]] <- get_received_2(paper$full_text$text)
-  index_any[["recipient_1"]] <- get_recipient_1(paper$full_text$text)
-  index_any[["authors_1"]] <- get_authors_1(paper$full_text$text)
-  index_any[["authors_2"]] <- get_authors_2(paper$full_text$text)
-  index_any[["thank_1"]] <- get_thank_1(paper$full_text$text)
-  index_any[["thank_2"]] <- get_thank_2(paper$full_text$text)
-  index_any[["fund_1"]] <- get_fund_1(paper$full_text$text)
-  index_any[["fund_2"]] <- get_fund_2(paper$full_text$text)
-  index_any[["fund_3"]] <- get_fund_3(paper$full_text$text)
-  index_any[["supported_1"]] <- get_supported_1(paper$full_text$text)
-  index_any[["financial_1"]] <- get_financial_1(paper$full_text$text)
-  index_any[["financial_2"]] <- get_financial_2(paper$full_text$text)
-  index_any[["financial_3"]] <- get_financial_3(paper$full_text$text)
-  index_any[["grant_1"]] <- get_grant_1(paper$full_text$text)
-  index_any[["french_1"]] <- get_french_1(paper$full_text$text)
-  index_any[["common_1"]] <- get_common_1(paper$full_text$text)
-  index_any[["common_2"]] <- get_common_2(paper$full_text$text)
-  index_any[["common_3"]] <- get_common_3(paper$full_text$text)
-  index_any[["common_4"]] <- get_common_4(paper$full_text$text)
-  index_any[["common_5"]] <- get_common_5(paper$full_text$text)
-  index_any[["acknow_1"]] <- get_acknow_1(paper$full_text$text)
-  index_any[["disclosure_1"]] <- get_disclosure_1(paper$full_text$text)
-  index_any[["disclosure_2"]] <- get_disclosure_2(paper$full_text$text)
+  index_any[["support_3"]] <- get_support_3(text)
+  index_any[["support_4"]] <- get_support_4(text)
+  index_any[["support_5"]] <- get_support_5(text)
+  index_any[["support_6"]] <- get_support_6(text)
+  index_any[["support_7"]] <- get_support_7(text)
+  index_any[["support_8"]] <- get_support_8(text)
+  index_any[["support_9"]] <- get_support_9(text)
+  index_any[["support_10"]] <- get_support_10(text)
+  index_any[["developed_1"]] <- get_developed_1(text)
+  index_any[["received_1"]] <- get_received_1(text)
+  index_any[["received_2"]] <- get_received_2(text)
+  index_any[["recipient_1"]] <- get_recipient_1(text)
+  index_any[["authors_1"]] <- get_authors_1(text)
+  index_any[["authors_2"]] <- get_authors_2(text)
+  index_any[["thank_1"]] <- get_thank_1(text)
+  index_any[["thank_2"]] <- get_thank_2(text)
+  index_any[["fund_1"]] <- get_fund_1(text)
+  index_any[["fund_2"]] <- get_fund_2(text)
+  index_any[["fund_3"]] <- get_fund_3(text)
+  index_any[["supported_1"]] <- get_supported_1(text)
+  index_any[["financial_1"]] <- get_financial_1(text)
+  index_any[["financial_2"]] <- get_financial_2(text)
+  index_any[["financial_3"]] <- get_financial_3(text)
+  index_any[["grant_1"]] <- get_grant_1(text)
+  index_any[["french_1"]] <- get_french_1(text)
+  index_any[["common_1"]] <- get_common_1(text)
+  index_any[["common_2"]] <- get_common_2(text)
+  index_any[["common_3"]] <- get_common_3(text)
+  index_any[["common_4"]] <- get_common_4(text)
+  index_any[["common_5"]] <- get_common_5(text)
+  index_any[["acknow_1"]] <- get_acknow_1(text)
+  index_any[["disclosure_1"]] <- get_disclosure_1(text)
+  index_any[["disclosure_2"]] <- get_disclosure_2(text)
 
   index <- sort(unique(unlist(index_any)))
 
   # Remove potential mistakes (absence)
   if (length(index) > 0) {
-    is_absent <- negate_absence_1(paper$full_text$text[index])
+    is_absent <- negate_absence_1(text[index])
     index <- index[!is_absent]
   }
 
   # Identify potentially missed signals within Acknowledgements
   index_fund <- list()
   if (length(index) == 0) {
-    from <- .where_acknows_txt(paper$full_text$text)
-    to <- .where_refs_txt(paper$full_text$text) - 1
+    from <- .where_acknows_txt(text)
+    to <- .where_refs_txt(text) - 1
     if (length(from) > 0 && length(to) > 0) {
       diff <- to - from
       if (diff < 0) {
-        to <- min(length(paper$full_text$text), from + 100)
+        to <- min(length(text), from + 100)
         diff <- to - from
       }
       if (diff <= 100) {
-        index_fund[["fund"]] <- get_fund_acknow(paper$full_text$text[from:to])
-        index_fund[["project"]] <- get_project_acknow(paper$full_text$text[from:to])
+        index_fund[["fund"]] <- get_fund_acknow(text[from:to])
+        index_fund[["project"]] <- get_project_acknow(text[from:to])
         adjusted <- unlist(index_fund) + (from - 1)
         index <- adjusted
       }
@@ -171,63 +180,12 @@ rtransparent_funding <- function(paper) {
 
   index <- sort(unique(index))
   is_funded_pred <- length(index) > 0
-  funding_text <- paste(paper$full_text$text[index], collapse = " ")
+  funding_text <- paste(text[index], collapse = " ")
 
-  # Summaries of index sets (lengths)
-  index_any <- purrr::map(index_any, length)
-  index_fund <- purrr::map(index_fund, length)
-
-  id <- paper$id
-  doi <- paper$info$doi
-
-  summary_table <- tibble::tibble(id = id, doi = doi, is_funded_pred = is_funded_pred, funding_text = funding_text)
-
-  # Normalize the index lists to data frames with the same row count as results
-  index_any_df <- if (length(index_any) == 0L) {
-    summary_table[, FALSE] # 0-column data frame with nrow(results) rows
-  } else {
-    as.data.frame(index_any, check.names = FALSE)
-  }
-
-  index_fund_df <- if (length(index_fund) == 0L) {
-    summary_table[, FALSE]
-  } else {
-    as.data.frame(index_fund, check.names = FALSE)
-  }
-
-  # Bind
-  table <- cbind(summary_table, index_any_df, index_fund_df)
-
-  # traffic light ----
-  tl <- ifelse(is_funded_pred, "green", "red")
-
-  # report ----
-  if (tl == "green") {
-    report <- sprintf(
-      "The following funding statement was detected: \n%s",
-      funding_text
-    )
-    summary_text <- "A funding statement was detected"
-  } else if (tl == "red") {
-    report <- "No funding statement was detected. Consider adding one."
-    summary_text <- "No funding statement was detected"
-  }
-
-  # return list ----
-  list(
-    table = table,
-    summary_table = summary_table,
-    na_replace = 0,
-    traffic_light = tl,
-    summary_text = summary_text,
-    report = report
-  )
+  funding_text
 }
 
-
-# -------------------------------
-# Utilities
-# -------------------------------
+## Utilities -------------------------------
 
 # Cache for synonyms to avoid recomputing
 .syn_cache <- new.env(parent = emptyenv())
@@ -579,9 +537,7 @@ rtransparent_funding <- function(paper) {
   stop("Unknown location in .first_capital")
 }
 
-# -------------------------------
-# Text obliteration/cleanup
-# -------------------------------
+## Text obliteration/cleanup ----
 
 # Remove full stops unlikely to be end-of-sentence
 obliterate_fullstop_1 <- function(article) {
@@ -669,9 +625,7 @@ obliterate_disclosure_1 <- function(article) {
   return(gsub(pattern, "", article, perl = TRUE))
 }
 
-# -------------------------------
-# Locators (references, acknowledgements, methods)
-# -------------------------------
+# Locators (references, acknowledgements, methods) -------
 
 .where_refs_txt <- function(article) {
   stopifnot(is.character(article))
@@ -746,9 +700,7 @@ obliterate_disclosure_1 <- function(article) {
   return(method_index)
 }
 
-# -------------------------------
-# Patterned builders
-# -------------------------------
+## Patterned builders ----
 
 get_support_1 <- function(article) {
   stopifnot(is.character(article))
@@ -1271,9 +1223,7 @@ get_common_5 <- function(article) {
   return(grep(pattern, article, perl = TRUE))
 }
 
-# -------------------------------
-# Negation/predicate helpers
-# -------------------------------
+## Negation/predicate helpers ----
 
 negate_disclosure_1 <- function(article) {
   stopifnot(is.character(article))
@@ -1352,9 +1302,7 @@ negate_absence_1 <- function(article) {
   return(grepl(pattern, article, perl = TRUE))
 }
 
-# -------------------------------
-# Acknowledgements section
-# -------------------------------
+## Acknowledgements section ----
 
 get_acknow_1 <- function(article) {
   stopifnot(is.character(article))

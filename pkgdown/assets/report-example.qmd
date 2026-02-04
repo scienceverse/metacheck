@@ -4,7 +4,7 @@ subtitle: "To Err is Human: An Empirical Investigation"
 author: "Daniel Lakens & Lisa DeBruine"
 metacheck:
   version: "0.0.0.9067"
-  report-created: "2026-01-27"
+  report-created: "2026-01-31"
 format:
   html:
     theme: 
@@ -97,7 +97,7 @@ Metacheck is under continuous development. Issues can be submitted [on Github](h
 - ⚠️ [StatCheck](#statcheck){.red}: 1 possible error in t-tests or F-tests  
 - 🔍 [Non-Significant P Value Check](#non-significant-p-value-check){.yellow}: We found 2 non-significant p values that should be checked for appropriate interpretation.  
 - 🔍 [Repository Check](#repository-check){.yellow}: 
-    -  We found 7 files in 3 repositories.
+    -  We found 13 files in 3 repositories.
     -  We found 0 README files and 3 repositories without READMEs.
     -  We found 1 archive file.  
 - 🔍 [Code Check](#code-check){.yellow}: 
@@ -127,9 +127,7 @@ Identify and extract Conflicts of Interest (COI) statements.
 
 The COI Check module uses regular expressions to check sentences for words related to conflict of interest statements. It will return the sentences in which the conflict of interest statement was found.
 
-The function was inspired by [rtransparent](https://github.com/serghiou/rtransparent), which is no longer maintained. For their validation, see [the paper](https://doi.org/10.1371/journal.pbio.3001107).
-
-Our version uses a more inclusive algorithm, which decreases false negatives (missing a potential COI) at the expense of increasing false positives (falsely detecting sentences as a COI statement).
+The function incorporates code from [rtransparent](https://github.com/serghiou/rtransparent), which is no longer maintained. For their validation, see [the paper](https://doi.org/10.1371/journal.pbio.3001107).
 
 This module was developed by Daniel Lakens
 
@@ -145,9 +143,7 @@ Identify and extract funding statements.
 
 The Funding Check module uses regular expressions to check sentences for words related to funding statements. It will return the sentences in which the conflict of interest statement was found.
 
-The function was inspired by [rtransparent](https://github.com/serghiou/rtransparent), which is no longer maintained. For their validation, see [the paper](https://doi.org/10.1371/journal.pbio.3001107).
-
-Our version uses a more inclusive algorithm, which decreases false negatives (missing a potential funding statement) at the expense of increasing false positives (falsely detecting sentences as a funding statement).
+The function incorporates code from [rtransparent](https://github.com/serghiou/rtransparent), which is no longer maintained. For their validation, see [the paper](https://doi.org/10.1371/journal.pbio.3001107).
 
 This module was developed by Daniel Lakens
 
@@ -191,15 +187,15 @@ We detected 1 potential power analysis.
 
 <details><summary>View detailed feedback</summary><div>
 
-Some essential information could not be detected: alpha_level, software
+Some essential information could not be detected: alpha_level
 
 ```{r}
 #| echo: false
 
 # table data --------------------------------------
-table <- structure(list(power_type = "sensitivity", statistical_test = "unpaired t-test", 
+table <- structure(list(power_type = "sensitivity", statistical_test = "t-test", 
     sample_size = 100L, alpha_level = NA, power = 0.8, effect_size = 0.5, 
-    effect_size_metric = "Cohen's d", software = NA), row.names = c(NA, 
+    effect_size_metric = "Cohen's d", software = "other"), row.names = c(NA, 
 -1L), class = c("tbl_df", "tbl", "data.frame"))
 
 # display table -----------------------------------
@@ -684,7 +680,7 @@ This module was developed by Daniel Lakens
 
 ### 🔍 Repository Check {#repository-check .yellow}
 
--  We found 7 files in 3 repositories.
+-  We found 13 files in 3 repositories.
 -  We found 0 README files and 3 repositories without READMEs.
 -  We found 1 archive file.
 
@@ -698,7 +694,7 @@ table <- structure(list(Repository = c("<a href='osf.io/629bx' target='_blank'>o
 "<a href='https://github.com/Lakens/to_err_is_human' target='_blank'>github.com/Lakens/to_err_is_human</a>", 
 "<a href='https://researchbox.org/4377' target='_blank'>researchbox.org/4377</a>"
 ), Platform = c("osf", "github", "researchbox"), "All Files" = c(4L, 
-2L, 1L), "Data Files" = c(1L, 1L, 0L), "Code Files" = c(2L, 1L, 
+2L, 7L), "Data Files" = c(1L, 1L, 5L), "Code Files" = c(2L, 1L, 
 1L), READMEs = c(0L, 0L, 0L), Archives = c(1L, 0L, 0L)), row.names = c(NA, 
 -3L), class = c("tbl_df", "tbl", "data.frame"))
 
@@ -712,17 +708,28 @@ metacheck::report_table(table, "auto", 10, FALSE)
 # table data --------------------------------------
 table <- structure(list(Repository = c("osf.io/629bx", "osf.io/629bx", 
 "osf.io/629bx", "osf.io/629bx", "https://github.com/Lakens/to_err_is_human", 
-"https://github.com/Lakens/to_err_is_human", "https://researchbox.org/4377"
+"https://github.com/Lakens/to_err_is_human", "https://researchbox.org/4377", 
+"https://researchbox.org/4377", "https://researchbox.org/4377", 
+"https://researchbox.org/4377", "https://researchbox.org/4377", 
+"https://researchbox.org/4377", "https://researchbox.org/4377"
 ), File = c("<a href='https://osf.io/download/6935bc117049c887a125cb25/' target='_blank'>bad.R</a>", 
 "<a href='https://osf.io/download/6935c4679ca0f02ea72a1a31/' target='_blank'>example2.csv</a>", 
 "<a href='https://osf.io/download/uq347/' target='_blank'>bad.Rmd</a>", 
 "<a href='https://osf.io/download/6976438ff9da155d0565c720/' target='_blank'>Archive.zip</a>", 
 "<a href='https://raw.githubusercontent.com/Lakens/to_err_is_human/main/analysis.R' target='_blank'>analysis.R</a>", 
 "<a href='https://raw.githubusercontent.com/Lakens/to_err_is_human/main/file2.csv' target='_blank'>file2.csv</a>", 
-"<a href='https://researchbox.org/4377' target='_blank'>Code/Study 1.r</a>"
+"<a href='https://researchbox.org/4377' target='_blank'>Code/Study 1.r</a>", 
+"<a href='https://researchbox.org/4377' target='_blank'>Codebook/Study 1 - csv - dataset 1.csv___CODEBOOK.csv</a>", 
+"<a href='https://researchbox.org/4377' target='_blank'>Codebook/Study 1.csv___CODEBOOK.csv</a>", 
+"<a href='https://researchbox.org/4377' target='_blank'>Data/Study 1 - csv - dataset 1.csv</a>", 
+"<a href='https://researchbox.org/4377' target='_blank'>Data/Study 1.csv</a>", 
+"<a href='https://researchbox.org/4377' target='_blank'>Materials/Study 1 - test txt file.txt</a>", 
+"<a href='https://researchbox.org/4377' target='_blank'>Table of Contents Box #4377.csv</a>"
 ), Size = c("172 B", "5 B", "413 B", "6.4 kB", "306 B", "794 B", 
-"183 B"), Type = c("code", "data", "code", "archive", "code", 
-"data", "code")), row.names = c(NA, 7L), class = "data.frame")
+"183 B", "96 B", "96 B", "185 B", "185 B", "12 B", "573 B"), 
+    Type = c("code", "data", "code", "archive", "code", "data", 
+    "code", "data", "data", "data", "data", "text", "data")), row.names = c(NA, 
+13L), class = "data.frame")
 
 # display table -----------------------------------
 metacheck::report_table(table, "auto", 10, FALSE)

@@ -6,9 +6,7 @@
 #' @details
 #' The COI Check module uses regular expressions to check sentences for words related to conflict of interest statements. It will return the sentences in which the conflict of interest statement was found.
 #'
-#' The function was inspired by [rtransparent](https://github.com/serghiou/rtransparent), which is no longer maintained. For their validation, see [the paper](https://doi.org/10.1371/journal.pbio.3001107).
-#'
-#' Our version uses a more inclusive algorithm, which decreases false negatives (missing a potential COI) at the expense of increasing false positives (falsely detecting sentences as a COI statement).
+#' The function incorporates code from [rtransparent](https://github.com/serghiou/rtransparent), which is no longer maintained. For their validation, see [the paper](https://doi.org/10.1371/journal.pbio.3001107).
 #'
 #' @references
 #' Serghiou, S., Contopoulos-Ioannidis, D. G., Boyack, K. W., Riedel, N., Wallach, J. D., & Ioannidis, J. P. (2021). Assessment of transparency indicators across the biomedical literature: How open is open?. PLoS biology, 19(3), e3001107. doi: 10.1371/journal.pbio.3001107
@@ -25,29 +23,20 @@
 coi_check <- function(paper) {
   # table ----
 
-  ## get potential COI statements ----
-  pattern_main <- c(
-    "\\binterest?s\\b",
-    "\\bCOI\\b"
-  )
-  pattern_inc <- c(
-    "conflict",
-    "compet",
-    "disclosure",
-    "declaration"
-  )
-  # definitely exclude
-  pattern_exc <- c("financial disclosure")
-
+  # get text and send to rtransparent function (defined below)
   table <- paper |>
-    search_text(pattern_main, search_header = TRUE) |>
-    search_text(pattern_inc, search_header = TRUE) |>
-    search_text(pattern_exc, exclude = TRUE) |>
-    # merge the text by section/id
-    search_text(return = "section")
+    search_text() |>
+    dplyr::select(id, text) |>
+    dplyr::nest_by(id) |>
+    dplyr::rowwise() |>
+    dplyr::mutate(text = rtransparent_coi(data$text)) |>
+    dplyr::ungroup() |>
+    dplyr::select(-data) |>
+    dplyr::filter(!is.na(text) & nzchar(text))
 
   # summary_table ----
-  summary_table <- dplyr::summarise(table, coi_found = TRUE, .by = id)
+  summary_table <- table |>
+    dplyr::summarise(coi_found = TRUE, .by = id)
 
   # traffic light ----
   tl <- ifelse(nrow(table), "green", "red")
@@ -78,14 +67,7 @@ coi_check <- function(paper) {
 
 
 # function adapted from rtransparent
-# the function above is inspired by this, but this is too specififc
-# and assumes a different text structure than ours (lines, not)
-
-rtransparent_coi <- function(paper) {
-  splitted <- paper$full_text$text
-  id <- paper$id
-  doi <- paper$info$doi
-
+rtransparent_coi <- function(splitted) {
   conflict <- "conflict of interest"
   conflicts <- "conflicts of interest"
   competing <- "competing interest"
@@ -283,32 +265,5 @@ rtransparent_coi <- function(paper) {
     }
   }
 
-  coi_text <- trimws(coi_text)
-
-  table <- data.frame(id, doi, is_coi_pred, coi_text, stringsAsFactors = F)
-  summary_table <- table
-  # traffic light ----
-  tl <- ifelse(is_coi_pred, "green", "red")
-
-  # report ----
-  if (tl == "green") {
-    report <- sprintf(
-      "The following conflict of interest statement was detected: \n%s",
-      coi_text
-    )
-    summary_text <- "A conflict of interest statement was detected"
-  } else if (tl == "red") {
-    report <- "No conflict of interest statement was detected. Consider adding one."
-    summary_text <- "No conflict of interest statement was detected"
-  }
-
-  # return list ----
-  list(
-    table = table,
-    summary_table = summary_table,
-    na_replace = 0,
-    traffic_light = tl,
-    summary_text = summary_text,
-    report = report
-  )
+  trimws(coi_text)
 }
