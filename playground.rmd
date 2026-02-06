@@ -1,0 +1,103 @@
+testing out some stuff with the llm's
+
+```{r}
+library(metacheck)
+
+llm_model("ollama/gpt-oss")
+
+cat("API Base:", Sys.getenv("OPENAI_API_BASE"), "\n")
+cat("Model:", llm_model(), "\n")
+llm_use(TRUE)
+```
+
+```{r append-logging}
+library(readr)
+# Function to log LLM results
+# Simple version - keep JSON as-is
+log_llm_result <- function(result, log_file = "llm_log.csv") {
+  # Extract metadata
+  metadata <- attr(result, "llm")
+  
+  # Create log entry
+  log_entry <- data.frame(
+    timestamp = Sys.time(),
+    input = result$text,
+    output = result$answer,
+    model = metadata$model,
+    system_prompt = metadata$system_prompt,
+    temperature = if(!is.null(metadata$temperature)) metadata$temperature else NA, # nolint: line_length_linter.
+    max_tokens = if(!is.null(metadata$max_tokens)) metadata$max_tokens else NA,
+    top_p = if(!is.null(metadata$top_p)) metadata$top_p else NA,
+    error = if("error" %in% names(result)) result$error else FALSE,
+    error_msg = if("error_msg" %in% names(result)) result$error_msg else "None",
+    stringsAsFactors = FALSE
+  )
+  
+  # Append to file (create if doesn't exist)
+    readr::write_csv(log_entry,
+        log_file,
+        append = TRUE,
+        col_names = !file.exists(log_file)
+    )
+
+    message(sprintf("Logged %d query to %s", nrow(log_entry), log_file))
+  
+  return(invisible(log_entry))
+}
+```
+
+
+getting the method
+
+```{r}
+library(dplyr)
+
+paper <- read("data-raw/psychsci/grobid_0.8.1/0956797615588467.xml")
+text_by_section <- paper$full_text %>%
+  group_by(section) %>%
+  summarise(
+    text = paste(text, collapse = " "),
+    .groups = "drop"
+  )
+
+method_text <- text_by_section$text[text_by_section$section == "method"]
+
+
+method_text
+
+```
+
+```{r}
+llm_max_calls(1000)
+
+prompt <- 'Based on this text, classify the study type and details. 
+Only output pure JSON. Any NON JSON output counts as catastrophic failure. 
+If no type is identified, set type as "FALSE" 
+Return JSON:
+{
+  "type": "experimental|quasi-experimental|correlational|observational|review|other(mention which)",
+  "article gist": one sentence string,
+  "randomization": true/false,
+  "classification confidence": 0.0-1.0,
+  "sample size: int"
+  "sentence containing sample size: string"
+}'
+
+# Example usage
+result <- llm(
+  method_text, prompt
+)
+
+```
+```{r}
+
+result
+
+# Logging
+log_llm_result(result, log_file = "llm_log_sample_size.csv")
+
+```
+
+
+
+
