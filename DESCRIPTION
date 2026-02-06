@@ -76,7 +76,6 @@ Imports:
     gitcreds, 
     roxygen2, 
     bib2df,   
-    readxl,   
     oddpub    
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
