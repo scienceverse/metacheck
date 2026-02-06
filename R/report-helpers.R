@@ -244,7 +244,13 @@ format_ref <- function(bib) {
     bib <- Reduce(c, bib)
   }
 
-  formatted <- format(bib, style = "html")
+  formatted <- tryCatch({
+      format(bib, style = "html")
+    },
+    error = \(e) {
+      md <- format(bib, style = "md")
+      return(md)
+    })
 
   # tidy up
   gsub("\\n|<p>|</p>", " ", formatted) |> trimws()
