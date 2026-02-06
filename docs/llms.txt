@@ -138,6 +138,10 @@ Max Littel
   : Create a Module from a Template
 - [`report()`](https://scienceverse.github.io/metacheck/reference/report.md)
   : Create a Report
+- [`report_module_run()`](https://scienceverse.github.io/metacheck/reference/report_module_run.md)
+  : Run modules for a report
+- [`report_qmd()`](https://scienceverse.github.io/metacheck/reference/report_qmd.md)
+  : Create Report from Module Output
 
 ## Module Helpers
 

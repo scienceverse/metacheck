@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9066</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9068</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,8 +89,10 @@ will share more modules.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/module_list.html">module_list</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>*** GENERAL **<em> </em> all_urls: List all the URLs in the main
 text. * coi_check: Identify and extract Conflicts of Interest (COI)
-statements. * funding_check: Identify and extract funding statements. *
-open_practices: This module incorporates ODDPub into metacheck. ODDPub
+statements. * coi_check_oi: Identify and extract Conflicts of Interest
+(COI) statements. * funding_check: Identify and extract funding
+statements. * funding_check_oi: Identify and extract funding statements.
+* open_practices: This module incorporates ODDPub into metacheck. ODDPub
 is a text mining algorithm that detects which publications disseminated
 Open Data or Open Code together with the publication.</p>
 <p>*** METHOD **<em> </em> causal_claims: Aims to identify the presence
@@ -107,14 +109,15 @@ check.</p>
 <p>*** RESULTS **<em> </em> all_p_values: List all p-values in the text,
 returning the matched text (e.g., ‘p = 0.04’) and document location in a
 table. * code_check: This module retrieves information from repositories
-(OSF and GitHub) about code files (R, SAS, SPSS, Stata), zip files, and
-readme. * marginal: List all sentences that describe an effect as
-‘marginally significant’. * stat_check: Check consistency of p-values
-and test statistics * stat_effect_size: The Effect Size module checks
-for effect sizes in t-tests and F-tests. * stat_p_exact: List any
-p-values reported with insufficient precision (e.g., p &lt; .05 or p =
-n.s.) * stat_p_nonsig: This module checks for imprecisely reported p
-values. If p &gt; .05 is detected, it warns for misinterpretations.</p>
+checked by repo_check about code files (R, SAS, SPSS, Stata). *
+marginal: List all sentences that describe an effect as ‘marginally
+significant’. * repo_check: This module retrieves information from
+repositories. * stat_check: Check consistency of p-values and test
+statistics * stat_effect_size: The Effect Size module checks for effect
+sizes in t-tests and F-tests. * stat_p_exact: List any p-values reported
+with insufficient precision (e.g., p &lt; .05 or p = n.s.) *
+stat_p_nonsig: This module checks for imprecisely reported p values. If
+p &gt; .05 is detected, it warns for misinterpretations.</p>
 <p>*** REFERENCE **<em> </em> ref_accuracy: This module checks
 references for mismatches with CrossRef. * ref_consistency: Check if all
 references are cited and all citations are referenced * ref_doi_check:
@@ -127,7 +130,8 @@ references and warns for citations that have comments on pubpeer
 references and warns for citations of original studies for which
 replication studies exist in the Replication Database. * ref_retraction:
 This module checks references and warns for citations in the
-RetractionWatch Database.</p>
+RetractionWatch Database. * ref_summary: Summarise information about
+each reference in a paper.</p>
 <p>Use <code>module_help("module_name")</code> for help with a specific
 module</p>
 </div>

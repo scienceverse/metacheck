@@ -5,7 +5,13 @@ Look up Reference in CrossRef
 ## Usage
 
 ``` r
-crossref_query(ref, min_score = 50, rows = 1)
+crossref_query(
+  ref,
+  min_score = 50,
+  rows = 1,
+  select = c("DOI", "score", "type", "title", "author", "container-title", "published",
+    "volume", "issue", "page", "URL", "abstract")
+)
 ```
 
 ## Arguments
@@ -22,6 +28,10 @@ crossref_query(ref, min_score = 50, rows = 1)
 
   the maximum number of rows to return per reference (default 1)
 
+- select:
+
+  what fields to select from the crossref API
+
 ## Value
 
 doi
@@ -30,15 +40,15 @@ doi
 
 The argument `ref` can take many formats. Crossref queries only look for
 authors, title, and container-title (e.g., journal or book), but extra
-infomration doesn't seem to hurt.
+information doesn't seem to hurt.
 
 - be a text reference or fragment
 
-- a bibentry object (authors, ttle and container will be extracted)
+- a bibentry object (authors, title and container will be extracted)
 
 - a vector of text or bibentry objects
 
-- a paper object (the ref colum of the bib table will be extracted)
+- a paper object (the ref column of the bib table will be extracted)
 
 ## Examples
 
@@ -49,6 +59,6 @@ ref <- paste(
   "Evidence-Based Toxicology, 2(1)."
 )
 # \donttest{
-  cr <- crossref_query(ref)
+cr <- crossref_query(ref)
 # }
 ```

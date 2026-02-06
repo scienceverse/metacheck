@@ -10,7 +10,7 @@ column data types, if possible.
 ## Usage
 
 ``` r
-json_expand(table, col = "answer", suffix = ".json")
+json_expand(table, col = "answer", suffix = c("", ".json"))
 ```
 
 ## Arguments
@@ -42,7 +42,7 @@ table <- data.frame(
     '{"number": "1", "letter": "A", "bool": true}',
     '{"number": "2", "letter": "B", "bool": "FALSE"}',
     '{"number": "3", "letter": "", "bool": null}',
-    'oh no, the LLM misunderstood',
+    "oh no, the LLM misunderstood",
     '{"number": "5", "letter": ["E", "F"], "bool": false}'
   )
 )

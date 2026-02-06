@@ -27,7 +27,7 @@ A vector of matching ORCiDs
 
 ``` r
 # \donttest{
-  get_orcid("DeBruine", "Lisa")
+get_orcid("DeBruine", "Lisa")
 #> [1] "0000-0002-7523-5539"
 # }
 ```

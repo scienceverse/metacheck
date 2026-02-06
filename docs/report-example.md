@@ -1,5 +1,5 @@
-[MetaCheck](http://www.scienceverse.org/metacheck) version 0.0.0.9065  
-Report Created: 2026-01-16  
+[MetaCheck](http://www.scienceverse.org/metacheck) version 0.0.0.9067  
+Report Created: 2026-01-31  
 
 [Metacheck](https://www.scienceverse.org/metacheck/) is a tool that
 screens scientific manuscripts and aims to identify potential issues for
@@ -59,26 +59,28 @@ suggestions for improvement or feedback can be sent to D.Lakens@tue.nl.
 - 🔍 [Non-Significant P Value Check](#non-significant-p-value-check): We
   found 2 non-significant p values that should be checked for
   appropriate interpretation.  
+- 🔍 [Repository Check](#repository-check):
+  - We found 13 files in 3 repositories.
+  - We found 0 README files and 3 repositories without READMEs.
+  - We found 1 archive file.  
 - 🔍 [Code Check](#code-check):
-  - We found 4 R, SAS, SPSS, or Stata code files in the 6 searched
-    repositories.
-  - Some files loaded in the code were missing in the repository.
-  - Hardcoded file paths were found.
-  - Libraries/imports were loaded in multiple places.
-  - Some code files had no comments.
-  - We found 0 README files and 3 sources without READMEs: osf.io/cxjg4,
-    https://github.com/Lakens/to_err_is_human,
-    https://researchbox.org/4377.  
+  - We found 4 R, SAS, SPSS, or Stata code files.
+  - 1 code file had no comments.
+  - 1 file loaded in the code was missing in the repository.
+  - Absolute file paths were found.
+  - Libraries/imports were loaded in multiple places.  
 - 🔍 [DOI Check](#doi-check): We checked 1 reference in CrossRef and
   found 1 missing DOI.  
-- 🔍 [Reference Accuracy](#reference-accuracy): We checked 3 references
-  with DOIs in CrossRef and found matches for 2.  
+- 🔍 [Reference Accuracy](#reference-accuracy): We checked 4 references
+  with DOIs in CrossRef and found matches for 3.  
 - ℹ️ [Replication Check](#replication-check): You cited 1 article in the
   FReD replication database.  
 - ℹ️ [RetractionWatch](#retractionwatch): You cited 1 article in the
   RetractionWatch database.  
 - ℹ️ [Check PubPeer Comments](#check-pubpeer-comments): You cited 1
-  reference with comments in PubPeer.
+  reference with comments in PubPeer.  
+- ℹ️ [Summarise References](#summarise-references): Summary information
+  provided for 4 references
 
 ## General Modules
 
@@ -94,14 +96,10 @@ The COI Check module uses regular expressions to check sentences for
 words related to conflict of interest statements. It will return the
 sentences in which the conflict of interest statement was found.
 
-The function was inspired by
+The function incorporates code from
 [rtransparent](https://github.com/serghiou/rtransparent), which is no
 longer maintained. For their validation, see [the
 paper](https://doi.org/10.1371/journal.pbio.3001107).
-
-Our version uses a more inclusive algorithm, which decreases false
-negatives (missing a potential COI) at the expense of increasing false
-positives (falsely detecting sentences as a COI statement).
 
 This module was developed by Daniel Lakens
 
@@ -117,15 +115,10 @@ The Funding Check module uses regular expressions to check sentences for
 words related to funding statements. It will return the sentences in
 which the conflict of interest statement was found.
 
-The function was inspired by
+The function incorporates code from
 [rtransparent](https://github.com/serghiou/rtransparent), which is no
 longer maintained. For their validation, see [the
 paper](https://doi.org/10.1371/journal.pbio.3001107).
-
-Our version uses a more inclusive algorithm, which decreases false
-negatives (missing a potential funding statement) at the expense of
-increasing false positives (falsely detecting sentences as a funding
-statement).
 
 This module was developed by Daniel Lakens
 
@@ -179,7 +172,7 @@ We detected 1 potential power analysis.
 
 View detailed feedback
 
-Some essential information could not be detected: alpha_level, software
+Some essential information could not be detected: alpha_level
 
 TipLearn More
 
@@ -343,7 +336,7 @@ TipFull Preregistration
 
 TipLearn More
 
-For metascientific articles demonstrating the rate of deviationsfrom
+For metascientific articles demonstrating the rate of deviations from
 preregistrations, see:
 
 van den Akker O, Bakker M, van Assen M, Pennington C, Verweij L,
@@ -617,17 +610,43 @@ to the Metacheck development team.
 
 This module was developed by Daniel Lakens
 
+### 🔍 Repository Check
+
+- We found 13 files in 3 repositories.
+- We found 0 README files and 3 repositories without READMEs.
+- We found 1 archive file.
+
+View detailed feedback
+
+README files are a way to document the contents and structure of a
+folder, helping users locate the information they need. You can use a
+README to document changes to a repository, and explain how files are
+named. Please consider adding a README to each repository.
+
+The following files are archives: Archive.zip. We did not examine their
+content. Consider uploading these individually to improve
+discoverability and re-use.
+
+NoteHow It Works
+
+This module retrieves information from repositories.
+
+The Repository Check module lists files on the OSF, GitHub, and
+ResearchBox based on links in the manuscript.
+
+If you want to extend the package to be able to download files from
+additional data repositories reach out to the Metacheck development
+team.
+
+This module was developed by Daniel Lakens and Lisa DeBruine
+
 ### 🔍 Code Check
 
-- We found 4 R, SAS, SPSS, or Stata code files in the 6 searched
-  repositories.
-- Some files loaded in the code were missing in the repository.
-- Hardcoded file paths were found.
+- We found 4 R, SAS, SPSS, or Stata code files.
+- 1 code file had no comments.
+- 1 file loaded in the code was missing in the repository.
+- Absolute file paths were found.
 - Libraries/imports were loaded in multiple places.
-- Some code files had no comments.
-- We found 0 README files and 3 sources without READMEs: osf.io/cxjg4,
-  https://github.com/Lakens/to_err_is_human,
-  https://researchbox.org/4377.
 
 View detailed feedback
 
@@ -636,61 +655,47 @@ automatic evaluation of these practices in the code files below. This
 check may miss things or produce false positives if your scripts are
 less typical.
 
+#### Code Comments
+
+Best programming practice is to add comments to code, to explain what
+the code does (to yourself in the future, or peers who want to re-use
+your code).
+
 #### Missing Files
 
-The scripts load files, but 1 scripts loaded files that could not be
+The scripts load files, but 1 script loaded 1 file that could not be
 automatically identified in the repository. Check if the following files
 are made available, so that others can reproduce your code, or that the
 files are missing:
 
-#### Hardcoded Paths
+#### Absolute Paths
 
 Best programming practice is to use relative file paths instead of
-hardcoded file paths (e.g., C://Lakens/files) as these folder names do
-not exist on other computers. The following hardcoded file paths were
-found in 4 code file(s).
+absolute file paths (e.g., C://Lakens/files) as these folder names do
+not exist on other computers. The following absolute file paths were
+found in 4 code files:
 
 #### Libraries / Imports
 
 Best programming practice is to load all required libraries/imports in
 one block near the top of the code. In 3 code files, libraries/imports
-were at multiple places (i.e., with more than 3 lines in between). This
-was true in the following files, where libraries/imports were loaded on
-the following lines:
-
-#### Code Comments
-
-Best programming practice is to add comments to code, to explain what
-the code does (to yourself in the future, or peers who want to re-use
-your code). The following 1 files had no comments:
-
-#### README
-
-We found 0 README files and 3 sources without READMEs: osf.io/cxjg4,
-https://github.com/Lakens/to_err_is_human, https://researchbox.org/4377.
-
-README files are a way to document the contents and structure of a
-folder, helping users locate the information they need. You can use a
-README to document changes to a repository, and explain how files are
-named. Please consider adding a README to each repository.
+were at multiple places (i.e., with more than 3 non-comment lines in
+between).
 
 NoteHow It Works
 
-This module retrieves information from repositories (OSF and GitHub)
-about code files (R, SAS, SPSS, Stata), zip files, and readme.
+This module retrieves information from repositories checked by
+repo_check about code files (R, SAS, SPSS, Stata).
 
-The Code Check module lists files on the OSF and GitHub based on links
-in the manuscript, and retrieves R, Rmd, Qmd, SAS, SPSS, and Stata
-files. The module then uses regular expressions to check the code. The
-regular expression search will detect the number of comments, the lines
-at which libraries/imports are loaded, attempts to detect absolute paths
-to files, and lists files that are loaded, and checks if these files are
-in the repository. It will also check for a readme file in the
-repository, and will warn it can’t examine the contents of zip files.
-The module will return suggestions to improve the code if there are no
-comments, if libraries/imports are loaded in lines further than 4 lines
-apart, if files that are loaded are not in the repository, and if
-hardcoded file paths are found.
+The Code Check module checks R, Rmd, Qmd, SAS, SPSS, and Stata files,
+using regular expressions to check the code. The regular expression
+search will detect the number of comments, the lines at which
+libraries/imports are loaded, attempts to detect absolute paths to
+files, and lists files that are loaded, and checks if these files are in
+the repository. The module will return suggestions to improve the code
+if there are no comments, if libraries/imports are loaded in lines
+further than 4 lines apart, if files that are loaded are not in the
+repository, and if absolute file paths are found.
 
 The regular expressions can miss information in code files, or falsely
 detect parts of the code as a fixed file path. Libraries/imports might
@@ -700,8 +705,7 @@ Psychological Science. There might be valid reasons why some loaded
 files can’t be shared, but the module can’t evaluate these reasons, and
 always gives a warning.
 
-If you want to extend the package to be able to download files from
-additional data repositories, or perform additional checks on code
+If you want to extend the package to perform additional checks on code
 files, or make the checks work on other types of code files, reach out
 to the Metacheck development team.
 
@@ -739,7 +743,7 @@ This module was developed by Daniel Lakens and Lisa DeBruine
 
 ### 🔍 Reference Accuracy
 
-We checked 3 references with DOIs in CrossRef and found matches for 2.
+We checked 4 references with DOIs in CrossRef and found matches for 3.
 
 View detailed feedback
 
@@ -750,13 +754,15 @@ NoteHow It Works
 
 This module checks references for mismatches with CrossRef.
 
-It only looks up the DOIs originally present in your paper (not those
-found by ref_doi_check) and returns the bibliographic information.
+It looks up the DOIs originally present in your paper (not those found
+by ref_doi_check) and returns the bibliographic information.
 
 We then check that the title from your reference section is the same as
 the retrieved title (ignoring differences in capitalisation) and that
 all author last names in your reference section are also in the
-retrieved author list (we do not check first names or order yet).
+retrieved author list (we do not check first names or order yet). This
+check is done for all references with crossref entries, including those
+found by ref_doi_check, if it was previously run.
 
 Mismatches may be because of problems with our parsing of references
 from your PDF (we’re working on improving this), incorrect formatting in
@@ -870,3 +876,19 @@ For more information, see
 [PubPeer](https://www.pubpeer.com/static/about).
 
 This module was developed by Daniel Lakens and Lisa DeBruine
+
+### ℹ️ Summarise References
+
+Summary information provided for 4 references
+
+View detailed feedback
+
+NoteHow It Works
+
+Summarise information about each reference in a paper.
+
+This module summarises previously-run reference section modules:
+ref_doi_check, ref_accuracy, ref_pubpeer, ref_replication, and
+ref_retractiuon.
+
+This module was developed by Lisa DeBruine

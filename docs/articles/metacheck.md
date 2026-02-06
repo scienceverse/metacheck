@@ -150,7 +150,7 @@ paper$info
     #> [1] ""
     #> 
     #> $filename
-    #> [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/Rtmpemy1yo/temp_libpath110e4114b79c7/metacheck/extdata/to_err_is_human.xml"
+    #> [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/RtmpiPaWWJ/temp_libpath1edb7d40e629/metacheck/extdata/to_err_is_human.xml"
 
 ### Bibliography
 
@@ -407,170 +407,13 @@ You can get or set the default LLM model with
 and access a list of the current available models using
 [`llm_model_list()`](https://scienceverse.github.io/metacheck/reference/llm_model_list.md).
 
-| platform | id | cached_input | input | output | created_at | owned_by | object | context_window | max_completion_tokens |
-|:---|:---|---:|---:|---:|:---|:---|:---|---:|---:|
-| google_gemini | deep-research-pro-preview-12-2025 | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.0-flash | 0.02500 | 0.100 | 0.4 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.0-flash-001 | 0.02500 | 0.100 | 0.4 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.0-flash-exp | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.0-flash-lite | 0.01875 | 0.075 | 0.3 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.0-flash-lite-001 | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.0-flash-lite-preview | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.0-flash-lite-preview-02-05 | 0.01875 | 0.075 | 0.3 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.5-computer-use-preview-10-2025 | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.5-flash | 0.07500 | 0.300 | 2.5 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.5-flash-image | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.5-flash-lite | 0.02500 | 0.100 | 0.4 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.5-flash-lite-preview-09-2025 | 0.02500 | 0.100 | 0.4 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.5-flash-preview-09-2025 | 0.07500 | 0.300 | 2.5 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.5-flash-preview-tts | 0.03750 | 0.150 | 0.6 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.5-pro | 0.31250 | 1.250 | 10.0 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-2.5-pro-preview-tts | 0.31250 | 1.250 | 10.0 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-3-flash-preview | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemini-3-pro-image-preview | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemini-3-pro-preview | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemini-exp-1206 | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemini-flash-latest | 0.07500 | 0.300 | 2.5 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-flash-lite-latest | 0.02500 | 0.100 | 0.4 | NA | NA | NA | NA | NA |
-| google_gemini | gemini-pro-latest | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemini-robotics-er-1.5-preview | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemma-3-12b-it | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemma-3-1b-it | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemma-3-27b-it | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemma-3-4b-it | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemma-3n-e2b-it | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | gemma-3n-e4b-it | NA | NA | NA | NA | NA | NA | NA | NA |
-| google_gemini | nano-banana-pro-preview | NA | NA | NA | NA | NA | NA | NA | NA |
-| openai | gpt-5.2-codex | NA | NA | NA | 2025-12-19 | system | NA | NA | NA |
-| openai | chatgpt-image-latest | NA | NA | NA | 2025-12-16 | system | NA | NA | NA |
-| openai | gpt-audio-mini-2025-12-15 | NA | NA | NA | 2025-12-15 | system | NA | NA | NA |
-| openai | gpt-4o-mini-tts-2025-12-15 | NA | NA | NA | 2025-12-13 | system | NA | NA | NA |
-| openai | gpt-realtime-mini-2025-12-15 | NA | NA | NA | 2025-12-13 | system | NA | NA | NA |
-| openai | gpt-4o-mini-transcribe-2025-12-15 | NA | NA | NA | 2025-12-13 | system | NA | NA | NA |
-| openai | gpt-4o-mini-transcribe-2025-03-20 | NA | NA | NA | 2025-12-13 | system | NA | NA | NA |
-| openai | gpt-4o-mini-tts-2025-03-20 | NA | NA | NA | 2025-12-13 | system | NA | NA | NA |
-| openai | gpt-5.2-pro-2025-12-11 | NA | NA | NA | 2025-12-10 | system | NA | NA | NA |
-| openai | gpt-5.2-pro | NA | NA | NA | 2025-12-10 | system | NA | NA | NA |
-| openai | gpt-5.2-chat-latest | NA | NA | NA | 2025-12-10 | system | NA | NA | NA |
-| openai | gpt-5.2-2025-12-11 | NA | NA | NA | 2025-12-09 | system | NA | NA | NA |
-| openai | gpt-5.2 | NA | NA | NA | 2025-12-09 | system | NA | NA | NA |
-| openai | gpt-image-1.5 | NA | NA | NA | 2025-11-25 | system | NA | NA | NA |
-| openai | gpt-5.1-codex-max | NA | NA | NA | 2025-11-20 | system | NA | NA | NA |
-| openai | gpt-5.1-codex-mini | NA | NA | NA | 2025-11-13 | system | NA | NA | NA |
-| openai | gpt-5.1-codex | NA | NA | NA | 2025-11-12 | system | NA | NA | NA |
-| openai | gpt-5.1-2025-11-13 | NA | NA | NA | 2025-11-10 | system | NA | NA | NA |
-| openai | gpt-5.1 | NA | NA | NA | 2025-11-10 | system | NA | NA | NA |
-| openai | gpt-5.1-chat-latest | NA | NA | NA | 2025-11-07 | system | NA | NA | NA |
-| openai | gpt-5-search-api-2025-10-14 | NA | NA | NA | 2025-10-09 | system | NA | NA | NA |
-| openai | sora-2 | NA | NA | NA | 2025-10-05 | system | NA | NA | NA |
-| openai | sora-2-pro | NA | NA | NA | 2025-10-05 | system | NA | NA | NA |
-| openai | gpt-5-pro-2025-10-06 | NA | 15.000 | 120.0 | 2025-10-03 | system | NA | NA | NA |
-| openai | gpt-5-pro | NA | 15.000 | 120.0 | 2025-10-03 | system | NA | NA | NA |
-| openai | gpt-audio-mini | NA | NA | NA | 2025-10-03 | system | NA | NA | NA |
-| openai | gpt-audio-mini-2025-10-06 | NA | NA | NA | 2025-10-03 | system | NA | NA | NA |
-| openai | gpt-5-search-api | NA | NA | NA | 2025-10-03 | system | NA | NA | NA |
-| openai | gpt-realtime-mini | NA | 0.600 | 2.4 | 2025-10-03 | system | NA | NA | NA |
-| openai | gpt-realtime-mini-2025-10-06 | NA | NA | NA | 2025-10-03 | system | NA | NA | NA |
-| openai | gpt-image-1-mini | 0.20000 | 2.000 | NA | 2025-09-26 | system | NA | NA | NA |
-| openai | gpt-5-codex | 0.12500 | 1.250 | 10.0 | 2025-09-10 | system | NA | NA | NA |
-| openai | gpt-audio | NA | NA | NA | 2025-08-28 | system | NA | NA | NA |
-| openai | gpt-audio-2025-08-28 | NA | NA | NA | 2025-08-27 | system | NA | NA | NA |
-| openai | gpt-realtime | 0.40000 | 4.000 | 16.0 | 2025-08-27 | system | NA | NA | NA |
-| openai | gpt-realtime-2025-08-28 | 0.40000 | 4.000 | 16.0 | 2025-08-27 | system | NA | NA | NA |
-| openai | gpt-5 | 0.12500 | 1.250 | 10.0 | 2025-08-05 | system | NA | NA | NA |
-| openai | gpt-5-mini-2025-08-07 | 0.02500 | 0.250 | 2.0 | 2025-08-05 | system | NA | NA | NA |
-| openai | gpt-5-mini | 0.02500 | 0.250 | 2.0 | 2025-08-05 | system | NA | NA | NA |
-| openai | gpt-5-nano-2025-08-07 | 0.00500 | 0.050 | 0.4 | 2025-08-05 | system | NA | NA | NA |
-| openai | gpt-5-nano | 0.00500 | 0.050 | 0.4 | 2025-08-05 | system | NA | NA | NA |
-| openai | gpt-5-chat-latest | 0.12500 | 1.250 | 10.0 | 2025-08-01 | system | NA | NA | NA |
-| openai | gpt-5-2025-08-07 | 0.12500 | 1.250 | 10.0 | 2025-08-01 | system | NA | NA | NA |
-| openai | gpt-4o-transcribe-diarize | NA | NA | NA | 2025-06-24 | system | NA | NA | NA |
-| openai | gpt-4o-realtime-preview-2025-06-03 | 2.50000 | 5.000 | 20.0 | 2025-06-02 | system | NA | NA | NA |
-| openai | gpt-4o-audio-preview-2025-06-03 | NA | 2.500 | 10.0 | 2025-06-02 | system | NA | NA | NA |
-| openai | gpt-image-1 | NA | NA | NA | 2025-04-24 | system | NA | NA | NA |
-| openai | gpt-4.1-2025-04-14 | 0.50000 | 2.000 | 8.0 | 2025-04-10 | system | NA | NA | NA |
-| openai | gpt-4.1 | 0.50000 | 2.000 | 8.0 | 2025-04-10 | system | NA | NA | NA |
-| openai | gpt-4.1-mini-2025-04-14 | 0.10000 | 0.400 | 1.6 | 2025-04-10 | system | NA | NA | NA |
-| openai | gpt-4.1-mini | 0.10000 | 0.400 | 1.6 | 2025-04-10 | system | NA | NA | NA |
-| openai | gpt-4.1-nano-2025-04-14 | 0.02500 | 0.100 | 0.4 | 2025-04-10 | system | NA | NA | NA |
-| openai | gpt-4.1-nano | 0.02500 | 0.100 | 0.4 | 2025-04-10 | system | NA | NA | NA |
-| openai | o3 | 0.50000 | 2.000 | 8.0 | 2025-04-09 | system | NA | NA | NA |
-| openai | o4-mini | 0.27500 | 1.100 | 4.4 | 2025-04-09 | system | NA | NA | NA |
-| openai | o3-2025-04-16 | 0.50000 | 2.000 | 8.0 | 2025-04-08 | system | NA | NA | NA |
-| openai | o4-mini-2025-04-16 | 0.27500 | 1.100 | 4.4 | 2025-04-08 | system | NA | NA | NA |
-| openai | gpt-4o-mini-tts | NA | 2.500 | 10.0 | 2025-03-19 | system | NA | NA | NA |
-| openai | o1-pro-2025-03-19 | NA | 150.000 | 600.0 | 2025-03-17 | system | NA | NA | NA |
-| openai | o1-pro | NA | 150.000 | 600.0 | 2025-03-17 | system | NA | NA | NA |
-| openai | gpt-4o-transcribe | NA | 2.500 | 10.0 | 2025-03-15 | system | NA | NA | NA |
-| openai | gpt-4o-mini-transcribe | NA | 1.250 | 5.0 | 2025-03-15 | system | NA | NA | NA |
-| openai | gpt-4o-search-preview-2025-03-11 | 1.25000 | 2.500 | 10.0 | 2025-03-07 | system | NA | NA | NA |
-| openai | gpt-4o-search-preview | 1.25000 | 2.500 | 10.0 | 2025-03-07 | system | NA | NA | NA |
-| openai | gpt-4o-mini-search-preview-2025-03-11 | 0.07500 | 0.150 | 0.6 | 2025-03-07 | system | NA | NA | NA |
-| openai | gpt-4o-mini-search-preview | 0.07500 | 0.150 | 0.6 | 2025-03-07 | system | NA | NA | NA |
-| openai | gpt-4o-2024-11-20 | 1.25000 | 2.500 | 10.0 | 2025-02-12 | system | NA | NA | NA |
-| openai | o3-mini-2025-01-31 | 0.55000 | 1.100 | 4.4 | 2025-01-27 | system | NA | NA | NA |
-| openai | o3-mini | 0.55000 | 1.100 | 4.4 | 2025-01-17 | system | NA | NA | NA |
-| openai | o1-2024-12-17 | 7.50000 | 15.000 | 60.0 | 2024-12-16 | system | NA | NA | NA |
-| openai | o1 | 7.50000 | 15.000 | 60.0 | 2024-12-16 | system | NA | NA | NA |
-| openai | gpt-4o-mini-realtime-preview | 0.30000 | 0.600 | 2.4 | 2024-12-16 | system | NA | NA | NA |
-| openai | gpt-4o-mini-audio-preview | NA | 0.150 | 0.6 | 2024-12-16 | system | NA | NA | NA |
-| openai | gpt-4o-mini-realtime-preview-2024-12-17 | 0.30000 | 0.600 | 2.4 | 2024-12-13 | system | NA | NA | NA |
-| openai | gpt-4o-mini-audio-preview-2024-12-17 | NA | 0.150 | 0.6 | 2024-12-13 | system | NA | NA | NA |
-| openai | gpt-4o-audio-preview-2024-12-17 | NA | 2.500 | 10.0 | 2024-12-12 | system | NA | NA | NA |
-| openai | gpt-4o-realtime-preview-2024-12-17 | 2.50000 | 5.000 | 20.0 | 2024-12-11 | system | NA | NA | NA |
-| openai | omni-moderation-2024-09-26 | NA | NA | NA | 2024-11-27 | system | NA | NA | NA |
-| openai | omni-moderation-latest | NA | NA | NA | 2024-11-15 | system | NA | NA | NA |
-| openai | gpt-4o-realtime-preview | 2.50000 | 5.000 | 20.0 | 2024-09-30 | system | NA | NA | NA |
-| openai | gpt-4o-audio-preview | NA | 2.500 | 10.0 | 2024-09-27 | system | NA | NA | NA |
-| openai | chatgpt-4o-latest | NA | 5.000 | 15.0 | 2024-08-13 | system | NA | NA | NA |
-| openai | gpt-4o-2024-08-06 | 1.25000 | 2.500 | 10.0 | 2024-08-04 | system | NA | NA | NA |
-| openai | gpt-4o-mini-2024-07-18 | 0.07500 | 0.150 | 0.6 | 2024-07-16 | system | NA | NA | NA |
-| openai | gpt-4o-mini | 0.07500 | 0.150 | 0.6 | 2024-07-16 | system | NA | NA | NA |
-| openai | gpt-4o | 1.25000 | 2.500 | 10.0 | 2024-05-10 | system | NA | NA | NA |
-| openai | gpt-4o-2024-05-13 | NA | 5.000 | 15.0 | 2024-05-10 | system | NA | NA | NA |
-| openai | gpt-4-turbo-2024-04-09 | NA | 10.000 | 30.0 | 2024-04-08 | system | NA | NA | NA |
-| openai | gpt-4-turbo | NA | 10.000 | 30.0 | 2024-04-05 | system | NA | NA | NA |
-| openai | gpt-4-0125-preview | NA | 10.000 | 30.0 | 2024-01-23 | system | NA | NA | NA |
-| openai | gpt-4-turbo-preview | NA | 10.000 | 30.0 | 2024-01-23 | system | NA | NA | NA |
-| openai | gpt-3.5-turbo-0125 | NA | 0.500 | 1.5 | 2024-01-23 | system | NA | NA | NA |
-| openai | text-embedding-3-small | NA | 0.020 | 0.0 | 2024-01-22 | system | NA | NA | NA |
-| openai | text-embedding-3-large | NA | 0.130 | 0.0 | 2024-01-22 | system | NA | NA | NA |
-| openai | tts-1-hd | NA | NA | NA | 2023-11-03 | system | NA | NA | NA |
-| openai | tts-1-1106 | NA | NA | NA | 2023-11-03 | system | NA | NA | NA |
-| openai | tts-1-hd-1106 | NA | NA | NA | 2023-11-03 | system | NA | NA | NA |
-| openai | gpt-4-1106-preview | NA | 10.000 | 30.0 | 2023-11-02 | system | NA | NA | NA |
-| openai | gpt-3.5-turbo-1106 | NA | 1.000 | 2.0 | 2023-11-02 | system | NA | NA | NA |
-| openai | dall-e-2 | NA | NA | NA | 2023-11-01 | system | NA | NA | NA |
-| openai | dall-e-3 | NA | NA | NA | 2023-10-31 | system | NA | NA | NA |
-| openai | gpt-3.5-turbo-instruct-0914 | NA | NA | NA | 2023-09-07 | system | NA | NA | NA |
-| openai | gpt-3.5-turbo-instruct | NA | NA | NA | 2023-08-24 | system | NA | NA | NA |
-| openai | davinci-002 | NA | NA | NA | 2023-08-21 | system | NA | NA | NA |
-| openai | babbage-002 | NA | NA | NA | 2023-08-21 | system | NA | NA | NA |
-| openai | gpt-4 | NA | 30.000 | 60.0 | 2023-06-27 | openai | NA | NA | NA |
-| openai | gpt-4-0613 | NA | 30.000 | 60.0 | 2023-06-12 | openai | NA | NA | NA |
-| openai | gpt-3.5-turbo-16k | NA | 3.000 | 4.0 | 2023-05-10 | openai-internal | NA | NA | NA |
-| openai | tts-1 | NA | NA | NA | 2023-04-19 | openai-internal | NA | NA | NA |
-| openai | gpt-3.5-turbo | NA | 0.500 | 1.5 | 2023-02-28 | openai | NA | NA | NA |
-| openai | whisper-1 | NA | NA | NA | 2023-02-27 | openai-internal | NA | NA | NA |
-| openai | text-embedding-ada-002 | NA | 0.100 | 0.0 | 2022-12-16 | openai-internal | NA | NA | NA |
-| groq | qwen/qwen3-32b | NA | NA | NA | 2025-05-28 | Alibaba Cloud | model | 131072 | 40960 |
-| groq | meta-llama/llama-prompt-guard-2-22m | NA | NA | NA | 2025-05-30 | Meta | model | 512 | 512 |
-| groq | canopylabs/orpheus-arabic-saudi | NA | NA | NA | 2025-12-17 | Canopy Labs | model | 4000 | 50000 |
-| groq | openai/gpt-oss-20b | NA | NA | NA | 2025-08-05 | OpenAI | model | 131072 | 65536 |
-| groq | groq/compound-mini | NA | NA | NA | 2025-09-04 | Groq | model | 131072 | 8192 |
-| groq | groq/compound | NA | NA | NA | 2025-09-04 | Groq | model | 131072 | 8192 |
-| groq | openai/gpt-oss-safeguard-20b | NA | NA | NA | 2025-10-29 | OpenAI | model | 131072 | 65536 |
-| groq | moonshotai/kimi-k2-instruct-0905 | NA | NA | NA | 2025-09-05 | Moonshot AI | model | 262144 | 16384 |
-| groq | meta-llama/llama-4-scout-17b-16e-instruct | NA | NA | NA | 2025-04-05 | Meta | model | 131072 | 8192 |
-| groq | allam-2-7b | NA | NA | NA | 2025-01-23 | SDAIA | model | 4096 | 4096 |
-| groq | meta-llama/llama-4-maverick-17b-128e-instruct | NA | NA | NA | 2025-04-05 | Meta | model | 131072 | 8192 |
-| groq | meta-llama/llama-prompt-guard-2-86m | NA | NA | NA | 2025-05-30 | Meta | model | 512 | 512 |
-| groq | meta-llama/llama-guard-4-12b | NA | NA | NA | 2025-05-09 | Meta | model | 131072 | 1024 |
-| groq | llama-3.1-8b-instant | NA | NA | NA | 2023-09-03 | Meta | model | 131072 | 131072 |
-| groq | llama-3.3-70b-versatile | NA | NA | NA | 2024-12-06 | Meta | model | 131072 | 32768 |
-| groq | openai/gpt-oss-120b | NA | NA | NA | 2025-08-05 | OpenAI | model | 131072 | 65536 |
-| groq | canopylabs/orpheus-v1-english | NA | NA | NA | 2025-12-20 | Canopy Labs | model | 4000 | 50000 |
-| groq | moonshotai/kimi-k2-instruct | NA | NA | NA | 2025-07-13 | Moonshot AI | model | 131072 | 16384 |
+| platform | id | object | owned_by | context_window | max_completion_tokens | created_at |
+|:---|:---|:---|:---|---:|---:|:---|
+| groq | llama-3.1-8b-instant | model | Meta | 131072 | 131072 | 2023-09-03 |
+| groq | openai/gpt-oss-20b | model | OpenAI | 131072 | 65536 | 2025-08-05 |
+| groq | moonshotai/kimi-k2-instruct-0905 | model | Moonshot AI | 262144 | 16384 | 2025-09-05 |
+| groq | meta-llama/llama-prompt-guard-2-22m | model | Meta | 512 | 512 | 2025-05-30 |
+| groq | groq/compound-mini | model | Groq | 131072 | 8192 | 2025-09-04 |
 
 When you start metacheck for the first time, it will check for relevant
 API keys in your Renviron and automatically set the model to use. You
@@ -869,7 +712,9 @@ module_list()
     #> *** GENERAL ***
     #>  * all_urls: List all the URLs in the main text.
     #>  * coi_check: Identify and extract Conflicts of Interest (COI) statements.
+    #>  * coi_check_oi: Identify and extract Conflicts of Interest (COI) statements.
     #>  * funding_check: Identify and extract funding statements.
+    #>  * funding_check_oi: Identify and extract funding statements.
     #>  * open_practices: This module incorporates ODDPub into metacheck. ODDPub is a text mining algorithm that detects which publications disseminated Open Data or Open Code together with the publication.
     #>  
     #> *** METHOD ***
@@ -882,8 +727,9 @@ module_list()
     #>  
     #> *** RESULTS ***
     #>  * all_p_values: List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.
-    #>  * code_check: This module retrieves information from repositories (OSF and GitHub) about code files (R, SAS, SPSS, Stata), zip files, and readme.
+    #>  * code_check: This module retrieves information from repositories checked by repo_check about code files (R, SAS, SPSS, Stata).
     #>  * marginal: List all sentences that describe an effect as 'marginally significant'.
+    #>  * repo_check: This module retrieves information from repositories.
     #>  * stat_check: Check consistency of p-values and test statistics
     #>  * stat_effect_size: The Effect Size module checks for effect sizes in t-tests and F-tests.
     #>  * stat_p_exact: List any p-values reported with insufficient precision (e.g., p < .05 or p = n.s.)
@@ -897,6 +743,7 @@ module_list()
     #>  * ref_pubpeer: This module checks references and warns for citations that have comments on pubpeer (excluding Statcheck comments).
     #>  * ref_replication: This module checks references and warns for citations of original studies for which replication studies exist in the Replication Database.
     #>  * ref_retraction: This module checks references and warns for citations in the RetractionWatch Database.
+    #>  * ref_summary: Summarise information about each reference in a paper.
     #>  
     #> Use `module_help("module_name")` for help with a specific module
 

@@ -34,6 +34,6 @@ A data frame with citation info
 
 ``` r
 if (FALSE) { # \dontrun{
-  openalex_query("Sample Size Justification", "Collabra Psychology")
+openalex_query("Sample Size Justification", "Collabra Psychology")
 } # }
 ```

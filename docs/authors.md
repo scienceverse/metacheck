@@ -22,13 +22,13 @@ Source:
 [`DESCRIPTION`](https://github.com/scienceverse/metacheck/blob/HEAD/DESCRIPTION)
 
 DeBruine L, Lakens D (2026). *metacheck: Check Research Outputs for Best
-Practices*. R package version 0.0.0.9066,
+Practices*. R package version 0.0.0.9068,
 <https://github.com/scienceverse/metacheck>.
 
     @Manual{,
       title = {metacheck: Check Research Outputs for Best Practices},
       author = {Lisa DeBruine and Daniel Lakens},
       year = {2026},
-      note = {R package version 0.0.0.9066},
+      note = {R package version 0.0.0.9068},
       url = {https://github.com/scienceverse/metacheck},
     }

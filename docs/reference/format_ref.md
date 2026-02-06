@@ -31,12 +31,12 @@ returned unformatted.
 ``` r
 mc <- citation("metacheck")
 format_ref(mc)
-#> [1] "DeBruine L, Lakens D (2025). <em>metacheck: Check Research Outputs for Best Practices</em>. R package version 0.0.0.9066, <a href=\"https://github.com/scienceverse/metacheck\">https://github.com/scienceverse/metacheck</a>."
+#> [1] "DeBruine L, Lakens D (2025). <em>metacheck: Check Research Outputs for Best Practices</em>. R package version 0.0.0.9068, <a href=\"https://github.com/scienceverse/metacheck\">https://github.com/scienceverse/metacheck</a>."
 
 # handles bibtext
 bib_mc <- utils::toBibtex(mc)
 format_ref(bib_mc)
-#> [1] "DeBruine L, Lakens D (2025). <em>metacheck: Check Research Outputs for Best Practices</em>. R package version 0.0.0.9066, <a href=\"https://github.com/scienceverse/metacheck\">https://github.com/scienceverse/metacheck</a>."
+#> [1] "DeBruine L, Lakens D (2025). <em>metacheck: Check Research Outputs for Best Practices</em>. R package version 0.0.0.9068, <a href=\"https://github.com/scienceverse/metacheck\">https://github.com/scienceverse/metacheck</a>."
 
 paper <- read(demoxml())
 format_ref(paper$bib$ref[1:2])

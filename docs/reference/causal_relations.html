@@ -17,7 +17,7 @@ and returns a tidy data frame with one row per detected cause–effect relation.
 
     <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9067</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9068</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -122,24 +122,24 @@ https://huggingface.co/rasoultilburg/SocioCausaNet</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span>  <span class="co"># Single sentence</span></span></span>
-<span class="r-in"><span>  <span class="va">df1</span> <span class="op">&lt;-</span> <span class="fu">causal_relations</span><span class="op">(</span><span class="st">"Smoking causes cancer"</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">df1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Single sentence</span></span></span>
+<span class="r-in"><span><span class="va">df1</span> <span class="op">&lt;-</span> <span class="fu">causal_relations</span><span class="op">(</span><span class="st">"Smoking causes cancer"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">df1</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>  <span class="co"># Multiple sentences (batch)</span></span></span>
-<span class="r-in"><span>  <span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu">causal_relations</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Insomnia causes depression."</span>, <span class="st">"Rain leads to flooding."</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">df2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Multiple sentences (batch)</span></span></span>
+<span class="r-in"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu">causal_relations</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Insomnia causes depression."</span>, <span class="st">"Rain leads to flooding."</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">df2</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>  <span class="co"># Custom parameters and verbose diagnostics</span></span></span>
-<span class="r-in"><span>  <span class="va">df3</span> <span class="op">&lt;-</span> <span class="fu">causal_relations</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    sentence <span class="op">=</span> <span class="st">"Stress increases blood pressure."</span>,</span></span>
-<span class="r-in"><span>    rel_mode <span class="op">=</span> <span class="st">"auto"</span>,</span></span>
-<span class="r-in"><span>    rel_threshold <span class="op">=</span> <span class="fl">0.4</span>,</span></span>
-<span class="r-in"><span>    cause_decision <span class="op">=</span> <span class="st">"cls+span"</span>,</span></span>
-<span class="r-in"><span>    timeout <span class="op">=</span> <span class="fl">10</span>,</span></span>
-<span class="r-in"><span>    verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">df3</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Custom parameters and verbose diagnostics</span></span></span>
+<span class="r-in"><span><span class="va">df3</span> <span class="op">&lt;-</span> <span class="fu">causal_relations</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  sentence <span class="op">=</span> <span class="st">"Stress increases blood pressure."</span>,</span></span>
+<span class="r-in"><span>  rel_mode <span class="op">=</span> <span class="st">"auto"</span>,</span></span>
+<span class="r-in"><span>  rel_threshold <span class="op">=</span> <span class="fl">0.4</span>,</span></span>
+<span class="r-in"><span>  cause_decision <span class="op">=</span> <span class="st">"cls+span"</span>,</span></span>
+<span class="r-in"><span>  timeout <span class="op">=</span> <span class="fl">10</span>,</span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">df3</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

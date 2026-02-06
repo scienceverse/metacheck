@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9066</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9068</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,12 +71,12 @@
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">mc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"metacheck"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">format_ref</span><span class="op">(</span><span class="va">mc</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DeBruine L, Lakens D (2025). &lt;em&gt;metacheck: Check Research Outputs for Best Practices&lt;/em&gt;. R package version 0.0.0.9066, &lt;a href=\"https://github.com/scienceverse/metacheck\"&gt;https://github.com/scienceverse/metacheck&lt;/a&gt;."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DeBruine L, Lakens D (2025). &lt;em&gt;metacheck: Check Research Outputs for Best Practices&lt;/em&gt;. R package version 0.0.0.9068, &lt;a href=\"https://github.com/scienceverse/metacheck\"&gt;https://github.com/scienceverse/metacheck&lt;/a&gt;."</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># handles bibtext</span></span></span>
 <span class="r-in"><span><span class="va">bib_mc</span> <span class="op">&lt;-</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/toLatex.html" class="external-link">toBibtex</a></span><span class="op">(</span><span class="va">mc</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">format_ref</span><span class="op">(</span><span class="va">bib_mc</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DeBruine L, Lakens D (2025). &lt;em&gt;metacheck: Check Research Outputs for Best Practices&lt;/em&gt;. R package version 0.0.0.9066, &lt;a href=\"https://github.com/scienceverse/metacheck\"&gt;https://github.com/scienceverse/metacheck&lt;/a&gt;."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "DeBruine L, Lakens D (2025). &lt;em&gt;metacheck: Check Research Outputs for Best Practices&lt;/em&gt;. R package version 0.0.0.9068, &lt;a href=\"https://github.com/scienceverse/metacheck\"&gt;https://github.com/scienceverse/metacheck&lt;/a&gt;."</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="fu"><a href="read.html">read</a></span><span class="op">(</span><span class="fu"><a href="demoxml.html">demoxml</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">format_ref</span><span class="op">(</span><span class="va">paper</span><span class="op">$</span><span class="va">bib</span><span class="op">$</span><span class="va">ref</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span></span>

@@ -31,7 +31,7 @@ a data frame of files
 
 ``` r
 # \donttest{
-  github_files("scienceverse/metacheck")
+github_files("scienceverse/metacheck")
 #>                      repo             clean_repo             name
 #> 1  scienceverse/metacheck scienceverse/metacheck    .Rbuildignore
 #> 2  scienceverse/metacheck scienceverse/metacheck          .github
@@ -96,15 +96,15 @@ a data frame of files
 #> 19                                                                           <NA>
 #> 20                                                                           <NA>
 #>     size          ext   type
-#> 1    223 rbuildignore   file
+#> 1    246 rbuildignore   file
 #> 2      0       github    dir
 #> 3    380    gitignore config
-#> 4   2191                file
+#> 4   2203                file
 #> 5  34303           md   text
-#> 6   2700                file
-#> 7  16912           md   text
+#> 6   2826                file
+#> 7  18053           md   text
 #> 8      0                 dir
-#> 9    887           md   text
+#> 9    995           md   text
 #> 10   462        rproj config
 #> 11     0                 dir
 #> 12   134          yml config

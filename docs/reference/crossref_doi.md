@@ -44,6 +44,6 @@ content-created, short-container-title, relation, editor
 ``` r
 doi <- "10.7717/peerj.4375"
 if (FALSE) { # \dontrun{
- # cr_info <- crossref_doi(doi)
+# cr_info <- crossref_doi(doi)
 } # }
 ```

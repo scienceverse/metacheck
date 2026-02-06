@@ -27,12 +27,12 @@ a list of information about the repo
 
 ``` r
 # \donttest{
-  github_info("scienceverse/metacheck")
+github_info("scienceverse/metacheck")
 #> $repo
 #> [1] "scienceverse/metacheck"
 #> 
 #> $readme
-#> [1] "# metacheck\n\n<!-- badges: start -->\n[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)\n\n[![Codecov test coverage](https://codecov.io/gh/scienceverse/metacheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/metacheck)\n<!-- badges: end -->\n\nThe goal of metacheck is to automatically check research outputs for best practices. You can find out more at <https://scienceverse.github.io/metacheck/>.\n\n## Installation\n\nYou can install the development version of metacheck from [GitHub](https://github.com/) with:\n\n``` r\n# install.packages(\"devtools\")\ndevtools::install_github(\"scienceverse/metacheck\")\n```\n\n## API (optional)\nTo run metacheck as a REST API either using plumber or Docker, see [`inst/plumber/README.md`](inst/plumber/README.md) for instructions and documentation.\n"
+#> [1] "# metacheck\n\n<!-- badges: start -->\n![Made in Europe](https://img.shields.io/badge/Made_in_Europe-003399?logo=european-union&logoColor=FFCC00)\n\n[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)\n\n[![Codecov test coverage](https://codecov.io/gh/scienceverse/metacheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/metacheck)\n<!-- badges: end -->\n\nThe goal of metacheck is to automatically check research outputs for best practices. You can find out more at <https://scienceverse.github.io/metacheck/>.\n\n## Installation\n\nYou can install the development version of metacheck from [GitHub](https://github.com/) with:\n\n``` r\n# install.packages(\"devtools\")\ndevtools::install_github(\"scienceverse/metacheck\")\n```\n\n## API (optional)\nTo run metacheck as a REST API either using plumber or Docker, see [`inst/plumber/README.md`](inst/plumber/README.md) for instructions and documentation.\n"
 #> 
 #> $files
 #>                      repo             clean_repo             name
@@ -99,15 +99,15 @@ a list of information about the repo
 #> 19                                                                           <NA>
 #> 20                                                                           <NA>
 #>     size          ext   type
-#> 1    223 rbuildignore   file
+#> 1    246 rbuildignore   file
 #> 2      0       github    dir
 #> 3    380    gitignore config
-#> 4   2191                file
+#> 4   2203                file
 #> 5  34303           md   text
-#> 6   2700                file
-#> 7  16912           md   text
+#> 6   2826                file
+#> 7  18053           md   text
 #> 8      0                 dir
-#> 9    887           md   text
+#> 9    995           md   text
 #> 10   462        rproj config
 #> 11     0                 dir
 #> 12   134          yml config
@@ -122,8 +122,8 @@ a list of information about the repo
 #> 
 #> $languages
 #>                      repo   language    bytes
-#> 1  scienceverse/metacheck       HTML 18624995
-#> 2  scienceverse/metacheck          R  7084201
+#> 1  scienceverse/metacheck       HTML 18689007
+#> 2  scienceverse/metacheck          R  6428992
 #> 3  scienceverse/metacheck        TeX    47751
 #> 4  scienceverse/metacheck       AMPL     7571
 #> 5  scienceverse/metacheck     Python     6986

@@ -19,7 +19,9 @@ module_list()
 
 \*\*\* GENERAL \*\* all_urls: List all the URLs in the main text. \*
 coi_check: Identify and extract Conflicts of Interest (COI) statements.
-\* funding_check: Identify and extract funding statements. \*
+\* coi_check_oi: Identify and extract Conflicts of Interest (COI)
+statements. \* funding_check: Identify and extract funding statements.
+\* funding_check_oi: Identify and extract funding statements. \*
 open_practices: This module incorporates ODDPub into metacheck. ODDPub
 is a text mining algorithm that detects which publications disseminated
 Open Data or Open Code together with the publication.
@@ -39,9 +41,10 @@ preregistrations in a standardised way, and make them easier to check.
 \*\*\* RESULTS \*\* all_p_values: List all p-values in the text,
 returning the matched text (e.g., ‘p = 0.04’) and document location in a
 table. \* code_check: This module retrieves information from
-repositories (OSF and GitHub) about code files (R, SAS, SPSS, Stata),
-zip files, and readme. \* marginal: List all sentences that describe an
-effect as ‘marginally significant’. \* stat_check: Check consistency of
+repositories checked by repo_check about code files (R, SAS, SPSS,
+Stata). \* marginal: List all sentences that describe an effect as
+‘marginally significant’. \* repo_check: This module retrieves
+information from repositories. \* stat_check: Check consistency of
 p-values and test statistics \* stat_effect_size: The Effect Size module
 checks for effect sizes in t-tests and F-tests. \* stat_p_exact: List
 any p-values reported with insufficient precision (e.g., p \< .05 or p =
@@ -59,7 +62,8 @@ for citations that have comments on pubpeer (excluding Statcheck
 comments). \* ref_replication: This module checks references and warns
 for citations of original studies for which replication studies exist in
 the Replication Database. \* ref_retraction: This module checks
-references and warns for citations in the RetractionWatch Database.
+references and warns for citations in the RetractionWatch Database. \*
+ref_summary: Summarise information about each reference in a paper.
 
 Use `module_help("module_name")` for help with a specific module
 

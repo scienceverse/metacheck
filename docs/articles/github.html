@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9066</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9068</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -131,6 +131,8 @@ of. repo name, and NULL if the repository in inaccessible.</p>
 <pre><code><span><span class="co">#&gt; # metacheck</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; &lt;!-- badges: start --&gt;</span></span>
+<span><span class="co">#&gt; ![Made in Europe](https://img.shields.io/badge/Made_in_Europe-003399?logo=european-union&amp;logoColor=FFCC00)</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [![Codecov test coverage](https://codecov.io/gh/scienceverse/metacheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/metacheck)</span></span>
@@ -158,8 +160,8 @@ languages, as detected and classified by GitHub.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/github_languages.html">github_languages</a></span><span class="op">(</span><span class="st">"scienceverse/metacheck"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                      repo   language    bytes</span></span>
-<span><span class="co">#&gt; 1  scienceverse/metacheck       HTML 18624995</span></span>
-<span><span class="co">#&gt; 2  scienceverse/metacheck          R  7084201</span></span>
+<span><span class="co">#&gt; 1  scienceverse/metacheck       HTML 18689007</span></span>
+<span><span class="co">#&gt; 2  scienceverse/metacheck          R  6428992</span></span>
 <span><span class="co">#&gt; 3  scienceverse/metacheck        TeX    47751</span></span>
 <span><span class="co">#&gt; 4  scienceverse/metacheck       AMPL     7571</span></span>
 <span><span class="co">#&gt; 5  scienceverse/metacheck     Python     6986</span></span>
@@ -246,33 +248,36 @@ directory, non-recursively.</p>
 <span><span class="co">#&gt; 2      0                 dir</span></span>
 <span><span class="co">#&gt; 3      0       github    dir</span></span>
 <span><span class="co">#&gt; 4    380    gitignore config</span></span>
-<span><span class="co">#&gt; 5    223 rbuildignore   file</span></span>
+<span><span class="co">#&gt; 5    246 rbuildignore   file</span></span>
 <span><span class="co">#&gt; 6    134          yml config</span></span>
 <span><span class="co">#&gt; 7      0                 dir</span></span>
 <span><span class="co">#&gt; 8      0                 dir</span></span>
-<span><span class="co">#&gt; 9   2191                file</span></span>
+<span><span class="co">#&gt; 9   2203                file</span></span>
 <span><span class="co">#&gt; 10     0                 dir</span></span>
 <span><span class="co">#&gt; 11     0                 dir</span></span>
 <span><span class="co">#&gt; 12 34303           md   text</span></span>
 <span><span class="co">#&gt; 13     0                 dir</span></span>
-<span><span class="co">#&gt; 14  2700                file</span></span>
-<span><span class="co">#&gt; 15 16912           md   text</span></span>
+<span><span class="co">#&gt; 14  2826                file</span></span>
+<span><span class="co">#&gt; 15 18053           md   text</span></span>
 <span><span class="co">#&gt; 16     0                 dir</span></span>
 <span><span class="co">#&gt; 17     0                 dir</span></span>
-<span><span class="co">#&gt; 18   887           md   text</span></span>
+<span><span class="co">#&gt; 18   995           md   text</span></span>
 <span><span class="co">#&gt; 19     0                 dir</span></span>
 <span><span class="co">#&gt; 20     0                 dir</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/github_files.html">github_files</a></span><span class="op">(</span><span class="st">"scienceverse/metacheck"</span>, dir <span class="op">=</span> <span class="st">".github"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                     repo             clean_repo       name               path</span></span>
 <span><span class="co">#&gt; 1 scienceverse/metacheck scienceverse/metacheck .gitignore .github/.gitignore</span></span>
-<span><span class="co">#&gt; 2 scienceverse/metacheck scienceverse/metacheck  workflows  .github/workflows</span></span>
+<span><span class="co">#&gt; 2 scienceverse/metacheck scienceverse/metacheck CODEOWNERS .github/CODEOWNERS</span></span>
+<span><span class="co">#&gt; 3 scienceverse/metacheck scienceverse/metacheck  workflows  .github/workflows</span></span>
 <span><span class="co">#&gt;                                                                       download_url</span></span>
 <span><span class="co">#&gt; 1 https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/.gitignore</span></span>
-<span><span class="co">#&gt; 2                                                                             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2 https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/CODEOWNERS</span></span>
+<span><span class="co">#&gt; 3                                                                             &lt;NA&gt;</span></span>
 <span><span class="co">#&gt;   size       ext   type</span></span>
 <span><span class="co">#&gt; 1    7 gitignore config</span></span>
-<span><span class="co">#&gt; 2    0              dir</span></span></code></pre></div>
+<span><span class="co">#&gt; 2   41             file</span></span>
+<span><span class="co">#&gt; 3    0              dir</span></span></code></pre></div>
 <p>You can also retrieve files recursively. Searching a large repository
 recursively can take a while.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -281,32 +286,36 @@ recursively can take a while.</p>
 <span>             recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                     repo             clean_repo                name</span></span>
 <span><span class="co">#&gt; 1 scienceverse/metacheck scienceverse/metacheck          .gitignore</span></span>
-<span><span class="co">#&gt; 2 scienceverse/metacheck scienceverse/metacheck           workflows</span></span>
-<span><span class="co">#&gt; 3 scienceverse/metacheck scienceverse/metacheck        pkgdown.yaml</span></span>
-<span><span class="co">#&gt; 4 scienceverse/metacheck scienceverse/metacheck    teams-notify.yml</span></span>
-<span><span class="co">#&gt; 5 scienceverse/metacheck scienceverse/metacheck  test-coverage.yaml</span></span>
-<span><span class="co">#&gt; 6 scienceverse/metacheck scienceverse/metacheck upload_packages.yml</span></span>
+<span><span class="co">#&gt; 2 scienceverse/metacheck scienceverse/metacheck          CODEOWNERS</span></span>
+<span><span class="co">#&gt; 3 scienceverse/metacheck scienceverse/metacheck           workflows</span></span>
+<span><span class="co">#&gt; 4 scienceverse/metacheck scienceverse/metacheck        pkgdown.yaml</span></span>
+<span><span class="co">#&gt; 5 scienceverse/metacheck scienceverse/metacheck    teams-notify.yml</span></span>
+<span><span class="co">#&gt; 6 scienceverse/metacheck scienceverse/metacheck  test-coverage.yaml</span></span>
+<span><span class="co">#&gt; 7 scienceverse/metacheck scienceverse/metacheck upload_packages.yml</span></span>
 <span><span class="co">#&gt;                                    path</span></span>
 <span><span class="co">#&gt; 1                    .github/.gitignore</span></span>
-<span><span class="co">#&gt; 2                     .github/workflows</span></span>
-<span><span class="co">#&gt; 3        .github/workflows/pkgdown.yaml</span></span>
-<span><span class="co">#&gt; 4    .github/workflows/teams-notify.yml</span></span>
-<span><span class="co">#&gt; 5  .github/workflows/test-coverage.yaml</span></span>
-<span><span class="co">#&gt; 6 .github/workflows/upload_packages.yml</span></span>
+<span><span class="co">#&gt; 2                    .github/CODEOWNERS</span></span>
+<span><span class="co">#&gt; 3                     .github/workflows</span></span>
+<span><span class="co">#&gt; 4        .github/workflows/pkgdown.yaml</span></span>
+<span><span class="co">#&gt; 5    .github/workflows/teams-notify.yml</span></span>
+<span><span class="co">#&gt; 6  .github/workflows/test-coverage.yaml</span></span>
+<span><span class="co">#&gt; 7 .github/workflows/upload_packages.yml</span></span>
 <span><span class="co">#&gt;                                                                                          download_url</span></span>
 <span><span class="co">#&gt; 1                    https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/.gitignore</span></span>
-<span><span class="co">#&gt; 2                                                                                                &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3        https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/pkgdown.yaml</span></span>
-<span><span class="co">#&gt; 4    https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/teams-notify.yml</span></span>
-<span><span class="co">#&gt; 5  https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/test-coverage.yaml</span></span>
-<span><span class="co">#&gt; 6 https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/upload_packages.yml</span></span>
+<span><span class="co">#&gt; 2                    https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/CODEOWNERS</span></span>
+<span><span class="co">#&gt; 3                                                                                                &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4        https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/pkgdown.yaml</span></span>
+<span><span class="co">#&gt; 5    https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/teams-notify.yml</span></span>
+<span><span class="co">#&gt; 6  https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/test-coverage.yaml</span></span>
+<span><span class="co">#&gt; 7 https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/upload_packages.yml</span></span>
 <span><span class="co">#&gt;   size       ext   type</span></span>
 <span><span class="co">#&gt; 1    7 gitignore config</span></span>
-<span><span class="co">#&gt; 2    0              dir</span></span>
-<span><span class="co">#&gt; 3 1380      yaml config</span></span>
-<span><span class="co">#&gt; 4  521       yml config</span></span>
-<span><span class="co">#&gt; 5 1877      yaml config</span></span>
-<span><span class="co">#&gt; 6 3231       yml config</span></span></code></pre></div>
+<span><span class="co">#&gt; 2   41             file</span></span>
+<span><span class="co">#&gt; 3    0              dir</span></span>
+<span><span class="co">#&gt; 4 1380      yaml config</span></span>
+<span><span class="co">#&gt; 5  521       yml config</span></span>
+<span><span class="co">#&gt; 6 1877      yaml config</span></span>
+<span><span class="co">#&gt; 7 3231       yml config</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="github_info">github_info<a class="anchor" aria-label="anchor" href="#github_info"></a>

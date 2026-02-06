@@ -34,7 +34,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">metacheck</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9066</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9068</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -193,7 +193,7 @@ info, references, and citations.</p>
 <span><span class="co">#&gt; [1] ""</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $filename</span></span>
-<span><span class="co">#&gt; [1] "/Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library/metacheck/extdata/to_err_is_human.xml"</span></span></code></pre>
+<span><span class="co">#&gt; [1] "/private/var/folders/t6/7x6md_5s2j5bfb324s784yzw0000gn/T/RtmpiPaWWJ/temp_libpath1edb7d40e629/metacheck/extdata/to_err_is_human.xml"</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="bibliography">Bibliography<a class="anchor" aria-label="anchor" href="#bibliography"></a>
@@ -799,15 +799,15 @@ file).</p>
 <p>You can get or set the default LLM model with
 <code><a href="../reference/llm_model.html">llm_model()</a></code> and access a list of the current available
 models using <code><a href="../reference/llm_model_list.html">llm_model_list()</a></code>.</p>
-<table class="table">
+<table style="width:100%;" class="table">
 <colgroup>
-<col width="7%">
-<col width="37%">
-<col width="5%">
-<col width="11%">
-<col width="12%">
-<col width="17%">
 <col width="8%">
+<col width="32%">
+<col width="6%">
+<col width="10%">
+<col width="13%">
+<col width="19%">
+<col width="9%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">platform</th>
@@ -821,43 +821,43 @@ models using <code><a href="../reference/llm_model_list.html">llm_model_list()</
 <tbody>
 <tr class="odd">
 <td align="left">groq</td>
-<td align="left">meta-llama/llama-4-maverick-17b-128e-instruct</td>
+<td align="left">llama-3.1-8b-instant</td>
 <td align="left">model</td>
 <td align="left">Meta</td>
 <td align="right">131072</td>
-<td align="right">8192</td>
-<td align="left">2025-04-05</td>
+<td align="right">131072</td>
+<td align="left">2023-09-03</td>
 </tr>
 <tr class="even">
 <td align="left">groq</td>
-<td align="left">meta-llama/llama-guard-4-12b</td>
+<td align="left">openai/gpt-oss-20b</td>
 <td align="left">model</td>
-<td align="left">Meta</td>
+<td align="left">OpenAI</td>
 <td align="right">131072</td>
-<td align="right">1024</td>
-<td align="left">2025-05-09</td>
+<td align="right">65536</td>
+<td align="left">2025-08-05</td>
 </tr>
 <tr class="odd">
 <td align="left">groq</td>
-<td align="left">llama-3.3-70b-versatile</td>
+<td align="left">moonshotai/kimi-k2-instruct-0905</td>
 <td align="left">model</td>
-<td align="left">Meta</td>
-<td align="right">131072</td>
-<td align="right">32768</td>
-<td align="left">2024-12-06</td>
+<td align="left">Moonshot AI</td>
+<td align="right">262144</td>
+<td align="right">16384</td>
+<td align="left">2025-09-05</td>
 </tr>
 <tr class="even">
 <td align="left">groq</td>
-<td align="left">qwen/qwen3-32b</td>
+<td align="left">meta-llama/llama-prompt-guard-2-22m</td>
 <td align="left">model</td>
-<td align="left">Alibaba Cloud</td>
-<td align="right">131072</td>
-<td align="right">40960</td>
-<td align="left">2025-05-28</td>
+<td align="left">Meta</td>
+<td align="right">512</td>
+<td align="right">512</td>
+<td align="left">2025-05-30</td>
 </tr>
 <tr class="odd">
 <td align="left">groq</td>
-<td align="left">groq/compound</td>
+<td align="left">groq/compound-mini</td>
 <td align="left">model</td>
 <td align="left">Groq</td>
 <td align="right">131072</td>
@@ -1230,7 +1230,9 @@ will share more modules.</p>
 <span><span class="co">#&gt; *** GENERAL ***</span></span>
 <span><span class="co">#&gt;  * all_urls: List all the URLs in the main text.</span></span>
 <span><span class="co">#&gt;  * coi_check: Identify and extract Conflicts of Interest (COI) statements.</span></span>
+<span><span class="co">#&gt;  * coi_check_oi: Identify and extract Conflicts of Interest (COI) statements.</span></span>
 <span><span class="co">#&gt;  * funding_check: Identify and extract funding statements.</span></span>
+<span><span class="co">#&gt;  * funding_check_oi: Identify and extract funding statements.</span></span>
 <span><span class="co">#&gt;  * open_practices: This module incorporates ODDPub into metacheck. ODDPub is a text mining algorithm that detects which publications disseminated Open Data or Open Code together with the publication.</span></span>
 <span><span class="co">#&gt;  </span></span>
 <span><span class="co">#&gt; *** METHOD ***</span></span>
@@ -1243,8 +1245,9 @@ will share more modules.</p>
 <span><span class="co">#&gt;  </span></span>
 <span><span class="co">#&gt; *** RESULTS ***</span></span>
 <span><span class="co">#&gt;  * all_p_values: List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.</span></span>
-<span><span class="co">#&gt;  * code_check: This module retrieves information from repositories (OSF and GitHub) about code files (R, SAS, SPSS, Stata), zip files, and readme.</span></span>
+<span><span class="co">#&gt;  * code_check: This module retrieves information from repositories checked by repo_check about code files (R, SAS, SPSS, Stata).</span></span>
 <span><span class="co">#&gt;  * marginal: List all sentences that describe an effect as 'marginally significant'.</span></span>
+<span><span class="co">#&gt;  * repo_check: This module retrieves information from repositories.</span></span>
 <span><span class="co">#&gt;  * stat_check: Check consistency of p-values and test statistics</span></span>
 <span><span class="co">#&gt;  * stat_effect_size: The Effect Size module checks for effect sizes in t-tests and F-tests.</span></span>
 <span><span class="co">#&gt;  * stat_p_exact: List any p-values reported with insufficient precision (e.g., p &lt; .05 or p = n.s.)</span></span>
@@ -1258,6 +1261,7 @@ will share more modules.</p>
 <span><span class="co">#&gt;  * ref_pubpeer: This module checks references and warns for citations that have comments on pubpeer (excluding Statcheck comments).</span></span>
 <span><span class="co">#&gt;  * ref_replication: This module checks references and warns for citations of original studies for which replication studies exist in the Replication Database.</span></span>
 <span><span class="co">#&gt;  * ref_retraction: This module checks references and warns for citations in the RetractionWatch Database.</span></span>
+<span><span class="co">#&gt;  * ref_summary: Summarise information about each reference in a paper.</span></span>
 <span><span class="co">#&gt;  </span></span>
 <span><span class="co">#&gt; Use `module_help("module_name")` for help with a specific module</span></span></code></pre>
 </div>

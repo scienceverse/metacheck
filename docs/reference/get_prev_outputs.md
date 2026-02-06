@@ -35,7 +35,9 @@ the extracted list item, or NULL if not found
 ``` r
 # .__mc__prev_outputs is usually created by `module_run()`
 .__mc__prev_outputs <- list(mod_1 = list(a = 1, b = 2))
-f <- function(item) { get_prev_outputs("mod_1", item) }
+f <- function(item) {
+  get_prev_outputs("mod_1", item)
+}
 f("a")
 #> [1] 1
 f("d")

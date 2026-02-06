@@ -573,7 +573,7 @@ sessionInfo()
 #> locale:
 #> [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 #> 
-#> time zone: Europe/Amsterdam
+#> time zone: Europe/London
 #> tzcode source: internal
 #> 
 #> attached base packages:
@@ -583,7 +583,7 @@ sessionInfo()
 #>  [1] lubridate_1.9.4      forcats_1.0.1        stringr_1.6.0       
 #>  [4] dplyr_1.1.4          purrr_1.2.1          readr_2.1.6         
 #>  [7] tidyr_1.3.2          tibble_3.3.1         ggplot2_4.0.1       
-#> [10] tidyverse_2.0.0      metacheck_0.0.0.9066
+#> [10] tidyverse_2.0.0      metacheck_0.0.0.9068
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] sass_0.4.10        generics_0.1.4     stringi_1.8.7      hms_1.1.4         
@@ -765,7 +765,7 @@ many such field-dependent checks that can be automated, as the ability
 to automatically examine and/or retrieve files that are linked to in a
 paper should be useful for a large range of use-cases.
 
-**These examples were created using papercheck version 0.0.0.9066.**
+**These examples were created using papercheck version 0.0.0.9068.**
 
 ## References
 

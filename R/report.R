@@ -266,6 +266,7 @@ report_qmd <- function(module_output, paper = list()) {
   )
 
   ## generate summary section ----
+  emojis <- metacheck::emojis
   summary_list <- sapply(module_output, \(x) {
     tl <- paste0("tl_", x$traffic_light %||% "info")
     summary_text <- x$summary_text %||% ""
@@ -338,6 +339,7 @@ report_qmd <- function(module_output, paper = list()) {
 module_report <- function(module_output,
                           header = 3) {
   n <- NULL
+  emojis <- metacheck::emojis
 
   # set up header
   tl <- module_output$traffic_light %||% "info"

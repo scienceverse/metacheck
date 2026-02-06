@@ -91,37 +91,24 @@ https://huggingface.co/rasoultilburg/SocioCausaNet
 ## Examples
 
 ``` r
-# \donttest{
-  # Single sentence
-  df1 <- causal_relations("Smoking causes cancer")
-  print(df1)
-#>                sentence causal   cause effect
-#> 1 Smoking causes cancer   TRUE smoking cancer
+if (FALSE) { # \dontrun{
+# Single sentence
+df1 <- causal_relations("Smoking causes cancer")
+print(df1)
 
-  # Multiple sentences (batch)
-  df2 <- causal_relations(c("Insomnia causes depression.", "Rain leads to flooding."))
-  print(df2)
-#>                      sentence causal    cause     effect
-#> 1 Insomnia causes depression.   TRUE insomnia depression
-#> 2     Rain leads to flooding.   TRUE     rain   flooding
+# Multiple sentences (batch)
+df2 <- causal_relations(c("Insomnia causes depression.", "Rain leads to flooding."))
+print(df2)
 
-  # Custom parameters and verbose diagnostics
-  df3 <- causal_relations(
-    sentence = "Stress increases blood pressure.",
-    rel_mode = "auto",
-    rel_threshold = 0.4,
-    cause_decision = "cls+span",
-    timeout = 10,
-    verbose = TRUE
-  )
-#> === Processing sentence 1/1 ===
-#> [POST] https://lakens-causal-sentences.hf.space/gradio_api/call/predict
-#> [POST] HTTP 200, 47 bytes
-#> [GET/SSE] https://lakens-causal-sentences.hf.space/gradio_api/call/predict/d736bf0507334cf5a15d424b77b7900b
-#> [SSE] event: complete
-#> [SSE] received complete payload
-  print(df3)
-#>                           sentence causal  cause         effect
-#> 1 Stress increases blood pressure.   TRUE stress blood pressure
-# }
+# Custom parameters and verbose diagnostics
+df3 <- causal_relations(
+  sentence = "Stress increases blood pressure.",
+  rel_mode = "auto",
+  rel_threshold = 0.4,
+  cause_decision = "cls+span",
+  timeout = 10,
+  verbose = TRUE
+)
+print(df3)
+} # }
 ```

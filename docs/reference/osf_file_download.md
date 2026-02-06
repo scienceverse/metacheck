@@ -64,9 +64,9 @@ the downloaded column value set to FALSE.
 ## Examples
 
 ``` r
-# \dontrun{
-  osf_file_download("6nt4v")
+# \donttest{
+osf_file_download("6nt4v")
 #> Starting retrieval for 6nt4v
-#> - Created directory /Users/debruine/rproj/scienceverse/metacheck/docs/reference/6nt4v_17
+#> - Created directory /Users/debruine/rproj/scienceverse/metacheck/docs/reference/6nt4v
 # }
 ```

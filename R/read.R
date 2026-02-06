@@ -1087,10 +1087,16 @@ tei_bib <- function(xml) {
     bib_table$ref <- bibs
 
     # pull visible text on error
+    # deal with rare print format errors
+    # e.g., doi = "10.1177/\\penalty-\\@M002383099704000203"
     formatted <- bibs |>
       sapply(\(bib) {
-        tryCatch(format(bib), error = \(e) {
-          return("")
+        suppressWarnings({ # TODO: log this
+          tryCatch(format(bib), error = \(e) {
+            tryCatch(format(bib, "md"), error = \(e) {
+              return("")
+            })
+          })
         })
       }) |>
       gsub("\\n", " ", x = _)

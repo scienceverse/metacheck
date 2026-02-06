@@ -13,6 +13,8 @@ extract_urls(paper)
 
 - paper:
 
+  a paper object or paperlist object
+
 ## Value
 
 a table

@@ -1,5 +1,30 @@
 # Changelog
 
+## metacheck 0.0.0.9068
+
+- Various bug fixes discovered when running modules on large numbers of
+  papers (e.g., handling when zero references have DOIs)
+- Modules “function_check” and “coi_check” reverted to the rtransparent
+  versions (the re-written version were overinclusive and need more
+  development).
+
+## metacheck 0.0.0.9067
+
+- `reports()` now takes a paperlist and makes a report from each
+- New
+  [`report_module_run()`](https://scienceverse.github.io/metacheck/reference/report_module_run.md)
+  and
+  [`report_qmd()`](https://scienceverse.github.io/metacheck/reference/report_qmd.md)
+  break down the
+  [`report()`](https://scienceverse.github.io/metacheck/reference/report.md)
+  function to allow separation of module output lists and creation of
+  QMD report from them (might be changed to internal functions).
+- Ability to select returned columns in
+  [`crossref_query()`](https://scienceverse.github.io/metacheck/reference/crossref_query.md)
+- Module “ref_accuracy” now returns info for references with missing
+  DOIs that were found by ref_doi_check
+- Module “code_check” split into “repo_check” and “code_check”
+
 ## metacheck 0.0.0.9066
 
 - `lmm()` allows you to set the model to any provider or provider/model

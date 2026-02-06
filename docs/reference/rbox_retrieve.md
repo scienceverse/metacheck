@@ -28,7 +28,7 @@ a data frame of information
 
 ``` r
 if (FALSE) { # \dontrun{
-  # get info on one OSF node
-  rbox_retrieve("https://researchbox.org/801")
+# get info on one OSF node
+rbox_retrieve("https://researchbox.org/801")
 } # }
 ```

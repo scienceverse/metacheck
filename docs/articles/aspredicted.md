@@ -306,13 +306,15 @@ llm_response <- llm(text, system_prompt)
 llm_response$answer |> cat("> ", x = _)
 ```
 
-> The authors deviated from their preregistration regarding the sample
-> size for each species. They initially planned to “test a minimum of 10
-> and a maximum of 15 individuals for each species based on availability
-> and individual’s willingness to participate at the time of testing.”
-> However, the article does not state the number of individuals tested
-> for each species, but Table S1 in the supplemental material is
-> mentioned to provide the subject information where it might be found.
+> The authors deviated from their preregistration. In the original plan,
+> they stated they would “test a minimum of 10 and a maximum of 15
+> individuals for each species based on availability and individual’s
+> willingness to participate at the time of testing.” However, in the
+> study, the total number of lemurs included was 39, with the specific
+> numbers being: ruffed lemurs (n = 10), Coquerel’s sifakas (n = 10),
+> ring-tailed lemurs (n = 10), and mongoose lemurs (n = 9). The sample
+> size for each species significantly exceeded the initially planned
+> maximum of 15 individuals.
 
 As we see, the LLM does a very good job evaluating whether the authors
 adhered to their preregistration in terms of the sample size. The
@@ -376,16 +378,21 @@ llm_response <- llm(text, system_prompt)
 llm_response$answer |> cat("> ", x = _)
 ```
 
-> The authors deviated from their preregistration when it comes to the
-> sample size. According to the text, the researchers conducted a power
-> analysis based on the effect sizes of Madan et al.’s (2017) study and
-> found that a sample size of 56 and 41, respectively, was sufficient
-> for detecting an effect on “what” and “which” aspects of memory.
-> However, they planned to collect data from 60 participants in each
-> cohort, as stated in the manuscript. They did collect data from 60
-> participants in cohort A, but due to the COVID-19 pandemic, they were
-> only able to collect data from 56 participants in cohort B, not the
-> planned 60.
+> The authors deviated from their preregistration.
+
+The text states that “Here, we sought to collect data from 60
+participants in each cohort.” However, it also states that in cohort B,
+“Cohort B (n = 56; 44 female), our replication sample, the mean age was
+20.64 years (SD = 1.96). Cohort B was originally intended to be another
+60 participants, but data collection was interrupted because of the
+COVID-19 pandemic; we shut down all laboratory testing on March 13,
+2020.” This indicates that the researchers aimed to collect data from 60
+participants in each cohort, as stated in the abstract, but in cohort B,
+they only collected data from 56 participants due to the COVID-19
+pandemic.
+
+Therefore, the authors deviated from their preregistered sample size of
+60 participants in cohort B.
 
 ``` r
 # manual check - no LLM
@@ -607,17 +614,10 @@ LLM Assessment:
 
 The authors deviated from their preregistration.
 
-The authors initially stated in the article that they planned to recruit
-60 participants for each cohort. However, they only recruited 56
-participants for cohort B due to data collection being interrupted by
-the COVID-19 pandemic. This change in sample size deviates from their
-initially stated plan.
-
-Additionally, the planned sample size for cohort A was also based on a
-power analysis that indicated a sample size of 56 and 41 participants
-would be adequate to detect an effect. However, the authors decided to
-recruit 60 participants for cohort A, which may not have been sufficient
-to detect an effect based on their initial power analysis.
+According to the initial plan, the researchers stated they would collect
+data from 60 participants in each cohort. However, for cohort B, the
+study was interrupted due to the COVID-19 pandemic, and only 56
+participants were collected instead of the planned 60.
 
 It fails gracefully if there are no links.
 

@@ -31,5 +31,7 @@ A study object created or edited by the app
 ## Examples
 
 ``` r
-if (FALSE)  s <- metacheck_app()  # \dontrun{}
+if (FALSE) { # \dontrun{
+s <- metacheck_app()
+} # }
 ```

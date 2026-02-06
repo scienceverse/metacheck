@@ -22,8 +22,10 @@ a dataframe with information from pubpeer
 ## Examples
 
 ``` r
-doi <- c("10.1038/s41598-025-24662-9",
-          "10.1177/0146167211398138")
+doi <- c(
+  "10.1038/s41598-025-24662-9",
+  "10.1177/0146167211398138"
+)
 pubpeer_comments(doi)
 #>                          doi total_comments
 #> 1 10.1038/s41598-025-24662-9             18

@@ -60,6 +60,8 @@ cat(readme)
     #> # metacheck
     #> 
     #> <!-- badges: start -->
+    #> ![Made in Europe](https://img.shields.io/badge/Made_in_Europe-003399?logo=european-union&logoColor=FFCC00)
+    #> 
     #> [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
     #> 
     #> [![Codecov test coverage](https://codecov.io/gh/scienceverse/metacheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/metacheck)
@@ -87,8 +89,8 @@ languages, as detected and classified by GitHub.
 ``` r
 github_languages("scienceverse/metacheck")
 #>                      repo   language    bytes
-#> 1  scienceverse/metacheck       HTML 18624995
-#> 2  scienceverse/metacheck          R  7084201
+#> 1  scienceverse/metacheck       HTML 18689007
+#> 2  scienceverse/metacheck          R  6428992
 #> 3  scienceverse/metacheck        TeX    47751
 #> 4  scienceverse/metacheck       AMPL     7571
 #> 5  scienceverse/metacheck     Python     6986
@@ -177,20 +179,20 @@ github_files("scienceverse/metacheck")
 #> 2      0                 dir
 #> 3      0       github    dir
 #> 4    380    gitignore config
-#> 5    223 rbuildignore   file
+#> 5    246 rbuildignore   file
 #> 6    134          yml config
 #> 7      0                 dir
 #> 8      0                 dir
-#> 9   2191                file
+#> 9   2203                file
 #> 10     0                 dir
 #> 11     0                 dir
 #> 12 34303           md   text
 #> 13     0                 dir
-#> 14  2700                file
-#> 15 16912           md   text
+#> 14  2826                file
+#> 15 18053           md   text
 #> 16     0                 dir
 #> 17     0                 dir
-#> 18   887           md   text
+#> 18   995           md   text
 #> 19     0                 dir
 #> 20     0                 dir
 ```
@@ -199,13 +201,16 @@ github_files("scienceverse/metacheck")
 github_files("scienceverse/metacheck", dir = ".github")
 #>                     repo             clean_repo       name               path
 #> 1 scienceverse/metacheck scienceverse/metacheck .gitignore .github/.gitignore
-#> 2 scienceverse/metacheck scienceverse/metacheck  workflows  .github/workflows
+#> 2 scienceverse/metacheck scienceverse/metacheck CODEOWNERS .github/CODEOWNERS
+#> 3 scienceverse/metacheck scienceverse/metacheck  workflows  .github/workflows
 #>                                                                       download_url
 #> 1 https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/.gitignore
-#> 2                                                                             <NA>
+#> 2 https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/CODEOWNERS
+#> 3                                                                             <NA>
 #>   size       ext   type
 #> 1    7 gitignore config
-#> 2    0              dir
+#> 2   41             file
+#> 3    0              dir
 ```
 
 You can also retrieve files recursively. Searching a large repository
@@ -217,32 +222,36 @@ github_files("scienceverse/metacheck",
              recursive = TRUE)
 #>                     repo             clean_repo                name
 #> 1 scienceverse/metacheck scienceverse/metacheck          .gitignore
-#> 2 scienceverse/metacheck scienceverse/metacheck           workflows
-#> 3 scienceverse/metacheck scienceverse/metacheck        pkgdown.yaml
-#> 4 scienceverse/metacheck scienceverse/metacheck    teams-notify.yml
-#> 5 scienceverse/metacheck scienceverse/metacheck  test-coverage.yaml
-#> 6 scienceverse/metacheck scienceverse/metacheck upload_packages.yml
+#> 2 scienceverse/metacheck scienceverse/metacheck          CODEOWNERS
+#> 3 scienceverse/metacheck scienceverse/metacheck           workflows
+#> 4 scienceverse/metacheck scienceverse/metacheck        pkgdown.yaml
+#> 5 scienceverse/metacheck scienceverse/metacheck    teams-notify.yml
+#> 6 scienceverse/metacheck scienceverse/metacheck  test-coverage.yaml
+#> 7 scienceverse/metacheck scienceverse/metacheck upload_packages.yml
 #>                                    path
 #> 1                    .github/.gitignore
-#> 2                     .github/workflows
-#> 3        .github/workflows/pkgdown.yaml
-#> 4    .github/workflows/teams-notify.yml
-#> 5  .github/workflows/test-coverage.yaml
-#> 6 .github/workflows/upload_packages.yml
+#> 2                    .github/CODEOWNERS
+#> 3                     .github/workflows
+#> 4        .github/workflows/pkgdown.yaml
+#> 5    .github/workflows/teams-notify.yml
+#> 6  .github/workflows/test-coverage.yaml
+#> 7 .github/workflows/upload_packages.yml
 #>                                                                                          download_url
 #> 1                    https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/.gitignore
-#> 2                                                                                                <NA>
-#> 3        https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/pkgdown.yaml
-#> 4    https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/teams-notify.yml
-#> 5  https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/test-coverage.yaml
-#> 6 https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/upload_packages.yml
+#> 2                    https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/CODEOWNERS
+#> 3                                                                                                <NA>
+#> 4        https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/pkgdown.yaml
+#> 5    https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/teams-notify.yml
+#> 6  https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/test-coverage.yaml
+#> 7 https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/upload_packages.yml
 #>   size       ext   type
 #> 1    7 gitignore config
-#> 2    0              dir
-#> 3 1380      yaml config
-#> 4  521       yml config
-#> 5 1877      yaml config
-#> 6 3231       yml config
+#> 2   41             file
+#> 3    0              dir
+#> 4 1380      yaml config
+#> 5  521       yml config
+#> 6 1877      yaml config
+#> 7 3231       yml config
 ```
 
 ## github_info

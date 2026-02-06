@@ -153,8 +153,9 @@ test_that("TEI", {
   filename <- test_path("fixtures", "problem_xml", "paper_912.xml")
   xml <- read_xml(filename)
   bib <- tei_bib(xml)
-  exp <- "Climate change impacts on global food security TWheeler VonBraun J 10.1126/science.1239402\\aftergroup\\futurelet\\@let@token\\egroup Science 341 2013 Wheeler, T., and Von Braun, J. (2013). Climate change impacts on global food security. Science. 341, 508-513. doi: 10.1126/science.1239402"
-  expect_equal(bib$ref[[70]], exp)
+  exp <- "Wheeler T, Braun V, J (2013). \"Climate change impacts on global food\nsecurity.\" _Science_, **341**, 508-513.\n[doi:10.1126/science.1239402\\aftergroup\\futurelet\\@let@token\\egroup](https://doi.org/10.1126/science.1239402\\aftergroup\\futurelet\\@let@token\\egroup)."
+  obs <- format(bib$ref[[70]], "md")
+  expect_equal(obs, exp)
 
   # is a problem with the DOI when trying to format a bib
   refs <- xml2::xml_find_all(xml, "//listBibl //biblStruct")

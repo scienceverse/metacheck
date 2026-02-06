@@ -626,7 +626,7 @@ format_ref(bib)
 ```
 
 \[1\] “DeBruine L, Lakens D (2025). *metacheck: Check Research Outputs
-for Best Practices*. R package version 0.0.0.9066,
+for Best Practices*. R package version 0.0.0.9068,
 [https://github.com/scienceverse/metacheck](NA).”
 
 The function can also handle references in bibtex format.

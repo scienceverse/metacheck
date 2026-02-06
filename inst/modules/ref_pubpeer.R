@@ -38,10 +38,18 @@ ref_pubpeer <- function(paper) {
   if (nrow(bib) == 0) {
     norefs <- list(
       traffic_light = "na",
-      report = "We found no references",
       summary_text = "We found no references"
     )
     return(norefs)
+  }
+
+  # If there are no DOIs, return immediately
+  if (all(is.na(bib$doi))) {
+    nodois <- list(
+      traffic_light = "na",
+      summary_text = "We found no references with DOIs"
+    )
+    return(nodois)
   }
 
   ## join to  pubpeer ----

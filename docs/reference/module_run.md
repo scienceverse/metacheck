@@ -22,7 +22,8 @@ module_run(paper, module, ...)
 
   further arguments to the module (e.g., arguments for the
   [`llm()`](https://scienceverse.github.io/metacheck/reference/llm.md)
-  function like `seed`); these will override any arguments in the module
+  function like `params`); these will override any arguments in the
+  module
 
 ## Value
 

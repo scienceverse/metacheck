@@ -22,8 +22,8 @@ A data frame of details
 
 ``` r
 # \donttest{
-  orcids <- c("0000-0002-0247-239X", "0000-0002-7523-5539")
-  orcid_person(orcids)
+orcids <- c("0000-0002-0247-239X", "0000-0002-7523-5539")
+orcid_person(orcids)
 #> # A tibble: 2 × 7
 #>   orcid               given  family   email     country keywords  urls     
 #>   <chr>               <chr>  <chr>    <list>    <chr>   <list>    <list>   
