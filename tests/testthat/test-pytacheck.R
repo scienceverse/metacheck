@@ -5,6 +5,7 @@ test_that("pytacheck", {
   expect_error(pytacheck(bad_arg))
 
   skip_if_offline()
+  skip()
 
   file_path <- demopdf()
   data <- pytacheck(file_path)

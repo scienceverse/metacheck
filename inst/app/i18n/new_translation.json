@@ -593,6 +593,18 @@
       "en": "code_check"
     },
     {
+      "en": "COI Check"
+    },
+    {
+      "en": "COI Check (Overinclusive)"
+    },
+    {
+      "en": "coi_check"
+    },
+    {
+      "en": "coi_check_oi"
+    },
+    {
       "en": "div"
     },
     {
@@ -603,6 +615,18 @@
     },
     {
       "en": "Exact P-Values"
+    },
+    {
+      "en": "Funding Check"
+    },
+    {
+      "en": "Funding Check (Overinclusive)"
+    },
+    {
+      "en": "funding_check"
+    },
+    {
+      "en": "funding_check_oi"
     },
     {
       "en": "GROQ API Key"
@@ -629,7 +653,7 @@
       "en": "power"
     },
     {
-      "en": "Power"
+      "en": "Power Analysis Check"
     },
     {
       "en": "prereg_check"
@@ -662,10 +686,19 @@
       "en": "ref_retraction"
     },
     {
+      "en": "ref_summary"
+    },
+    {
       "en": "Reference Accuracy"
     },
     {
       "en": "Replication Check"
+    },
+    {
+      "en": "repo_check"
+    },
+    {
+      "en": "Repository Check"
     },
     {
       "en": "stat_check"
@@ -681,6 +714,9 @@
     },
     {
       "en": "StatCheck"
+    },
+    {
+      "en": "Summarise References"
     },
     {
       "en": "Use `pdf2grobid()` to create XML files from PDFs. This relies on an external or local grobid server, and will save files to your machine, so needs to run outside this app."

@@ -72,6 +72,13 @@ test_that("ref_replication", {
   expect_equal(mod_output$traffic_light, "na")
   expect_null(mod_output$table)
 
+  # no DOIs
+  paper <- read(demoxml())
+  paper$bib <- paper$bib[is.na(paper$bib$doi), ]
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "na")
+  expect_null(mod_output$table)
+
   # relevant references
   paper <- read(demoxml())
   mod_output <- module_run(paper, module)
@@ -90,6 +97,13 @@ test_that("ref_retraction", {
   expect_equal(mod_output$traffic_light, "na")
   expect_null(mod_output$table)
 
+  # no DOIs
+  paper <- read(demoxml())
+  paper$bib <- paper$bib[is.na(paper$bib$doi), ]
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "na")
+  expect_null(mod_output$table)
+
   # relevant references
   paper <- read(demoxml())
   mod_output <- module_run(paper, module)
@@ -103,8 +117,17 @@ test_that("ref_pubpeer", {
   mods <- module_list()
   expect_true(module %in% mods$name)
 
+  skip_if_offline()
+
   # no references
   paper <- psychsci[[210]]
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "na")
+  expect_null(mod_output$table)
+
+  # no DOIs
+  paper <- read(demoxml())
+  paper$bib <- paper$bib[is.na(paper$bib$doi), ]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "na")
   expect_null(mod_output$table)

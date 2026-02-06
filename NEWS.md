@@ -1,5 +1,6 @@
 # metacheck 0.0.0.9068
 
+* Various bug fixes discovered when running modules on large numbers of papers (e.g., handling when zero references have DOIs)
 * Modules "function_check" and "coi_check" reverted to the rtransparent versions (the re-written version were overinclusive and need more development).
 
 # metacheck 0.0.0.9067

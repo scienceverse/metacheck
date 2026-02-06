@@ -1,7 +1,7 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
 Version: 0.0.0.9068
-Date: 2025-01-31
+Date: 2025-02-06
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -49,35 +49,35 @@ Suggests:
     withr
 Config/testthat/edition: 3
 Imports: 
-    ellmer,
-    arrow,
-    DT,
     dplyr,
     tidyr,
-    progress,
-    tidytext,
-    SnowballC,
-    xml2,
-    statcheck,
-    httr,
-    httr2,
+    quarto,   
+    DT,       
+    bibtex,   
+    ellmer,   
+    progress, 
     jsonlite,
-    quarto,
-    officer,
-    base64enc,
-    gitcreds,
-    roxygen2,
-    rvest,
-    urltools,
+    xml2,
     curl,
-    fs,
+    httr,
+    httr2,    
+    rvest,    
+    urltools, 
+    fs,       
+    rappdirs, 
+    officer,  
+    anytime,  
     htmltools,
-    anytime,
-    rappdirs,
-    bib2df,
-    readxl,
-    bibtex,
-    oddpub
+    arrow,    
+    tidytext, 
+    SnowballC,
+    statcheck,
+    base64enc,
+    gitcreds, 
+    roxygen2, 
+    bib2df,   
+    readxl,   
+    oddpub    
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
 BugReports: https://github.com/scienceverse/metacheck/issues
