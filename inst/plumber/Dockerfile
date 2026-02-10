@@ -17,11 +17,14 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libicu-dev \
     libuv1-dev \
+    cmake \
+    git \
+    libwebp-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# install R dependencies
+# install R dependencies (pre-cache heavy packages for better Docker layer caching)
 RUN R -e "install.packages(c('remotes', 'plumber'))"
-RUN R -e "remotes::install_cran(c('dplyr', 'tidyr', 'logger', 'progress', 'tidytext', 'SnowballC', 'xml2', 'statcheck', 'httr', 'jsonlite', 'quarto', 'knitr'))"
+RUN R -e "remotes::install_cran(c('dplyr', 'tidyr', 'logger', 'progress', 'tidytext', 'SnowballC', 'xml2', 'statcheck', 'httr', 'httr2', 'jsonlite', 'quarto', 'knitr', 'arrow', 'ellmer', 'rvest', 'officer', 'DT', 'bibtex', 'bib2df', 'roxygen2', 'gitcreds', 'anytime', 'htmltools', 'base64enc', 'urltools', 'fs', 'rappdirs', 'curl'))"
 
 # copy app
 COPY . /srv/metacheck
