@@ -17,11 +17,11 @@ logpath <- function() {
   pattern <- paste0("^", Sys.Date())
   log <- list.files(dir, pattern, full.names = TRUE) |> utils::tail(1)
 
-  # make a new log if missing or over 1§MB
+  # make a new log if missing or over 1MB
   if (length(log) == 0 || file.size(log) > 1024^2) {
     dt <- Sys.time() |> format("%Y-%m-%d_%H-%M-%S")
-    path <- paste0(dt, ".log") |> file.path(dir, x = _)
-    jsonlite::write_json(list(), path)
+    log <- paste0(dt, ".log") |> file.path(dir, x = _)
+    jsonlite::write_json(list(), log)
   }
 
   return(log)
