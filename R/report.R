@@ -76,6 +76,7 @@ report <- function(paper,
     reports <- mapply(\(x, of) {
       r <- tryCatch(report(x, modules, of, output_format, args),
         error = \(e) {
+          logger("report", list(paper = x$id, error = e$message))
           warning("Error in ", x$id, ":\n", e$message,
             call. = FALSE
           )
@@ -140,6 +141,11 @@ report <- function(paper,
           gsub("\\.html$", "", x = _) |>
           paste0(".qmd")
         write(report_text, output_qmd)
+
+        logger("quarto render", list(paper = paper$id,
+                                     quarto = output_qmd,
+                                     error = e$message))
+
         warning("There was an error rendering your report:\n", e$message,
           "\n\nSee the following for the quarto file:\n", output_qmd,
           call. = FALSE

@@ -1,0 +1,100 @@
+#' Get log path
+#'
+#' Checks the most recent log file created that day and creates a new one if missing or larger than 1MB.
+#'
+#' @returns the log file path
+#' @export
+#'
+#' @keywords internal
+#'
+#' @examples
+#' logpath()
+logpath <- function() {
+  dir <- rappdirs::user_data_dir("metacheck/log", "scienceverse")
+  dir.create(dir, showWarnings = FALSE, recursive = TRUE)
+
+  # get most recent log with today's date
+  pattern <- paste0("^", Sys.Date())
+  log <- list.files(dir, pattern, full.names = TRUE) |> utils::tail(1)
+
+  # make a new log if missing or over 1§MB
+  if (length(log) == 0 || file.size(log) > 1024^2) {
+    dt <- Sys.time() |> format("%Y-%m-%d_%H-%M-%S")
+    path <- paste0(dt, ".log") |> file.path(dir, x = _)
+    jsonlite::write_json(list(), path)
+  }
+
+  return(log)
+}
+
+
+#' Log messages
+#'
+#' @param label a string with the context (e.g.,module name)
+#' @param contents a named list of the log contents
+#' @param logpath an optional file path to save the log in
+#'
+#' @returns called for side effects of writing to log, returns logpath
+#' @export
+#'
+#' @examples
+#' logpath <- tempfile(fileext = ".log")
+#' logger("test", list(x = 1), logpath)
+#' jsonlite::read_json(logpath)
+logger <- function(label = "", contents = list(), logpath = NULL) {
+  logpath <- logpath %||% logpath()
+  if (!file.exists(logpath)) {
+    jsonlite::write_json(list(), logpath)
+  }
+  prev_log <- tryCatch(jsonlite::read_json(logpath),
+                       error = \(e) { return(list()) })
+  log <- c(list(
+    label = label,
+    dt = Sys.time() |> format("%Y-%m-%d %H:%M:%S")
+  ), contents)
+  #log$stack <- capture.output(sys.calls())
+
+  # prepend to log
+  new_log <- c(list(log), prev_log)
+  jsonlite::write_json(new_log, logpath, auto_unbox = TRUE, pretty = TRUE)
+
+  invisible(logpath)
+}
+
+
+#' Get the last log
+#'
+#' @param i the indices to return
+#' @param logpath an optional file path to read the log from
+#'
+#' @returns a list of the last log item, or a data frame of multiple items
+#' @export
+#'
+#' @examples
+#' # set up 2 log items
+#' logger("test", list(msg = "hi"))
+#' logger("test", list(msg = "hi again"))
+#'
+#' lastlog()
+#' lastlog(2)
+#' lastlog(1:2)
+lastlog <- function(i = 1, logpath = NULL) {
+  if (!is.numeric(i)) {
+    stop("i must be a vector of indices", call. = FALSE)
+  }
+
+  logpath <- logpath %||% logpath()
+  log <- logpath |>
+    jsonlite::read_json() |>
+    _[i]
+
+  if (length(log) == 1) {
+    log <- log[[1]]
+  } else {
+    log <- tryCatch(
+      dplyr::bind_rows(log),
+      error = \(e) { return(log)})
+  }
+
+  return(log)
+}
