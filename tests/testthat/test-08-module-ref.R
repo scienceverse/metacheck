@@ -81,6 +81,7 @@ test_that("ref_replication", {
 
   # relevant references
   paper <- read(demoxml())
+  paper$bib$doi[[4]] <- FLoRA()$doi_o[[1]]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "info")
   expect_equal(nrow(mod_output$table), 1)
@@ -143,16 +144,19 @@ test_that("chaining", {
   paper <- read(demoxml())
   # remove DOIs to make sure rw/reps/pp are getting DOIs from rc
   paper$bib$doi <- NA
+  # add in FLoRA doi (Gino paper isn't in there now)
+  paper$bib$doi[[4]] <- FLoRA()$doi_o[[1]]
 
   mo1 <- module_run(paper, "ref_doi_check")
-  expect_equal(mo1$summary_table$doi_found, 3)
+  expect_equal(mo1$summary_table$doi_found, 2)
 
   mo2 <- module_run(mo1, "ref_retraction")
   expect_equal(mo2$table$doi, "10.1177/0956797614520714")
-  expect_equal(mo2$summary_table$doi_found, 3)
+  expect_equal(mo2$summary_table$doi_found, 2)
 
   mo3 <- module_run(mo2, "ref_replication")
-  expect_equal(mo3$table$doi, "10.1098/rspb.1998.0380")
+  # expect_equal(mo3$table$doi, "10.1098/rspb.1998.0380")
+  expect_equal(mo3$table$doi, FLoRA()$doi_o[[1]])
   expect_equal(mo3$summary_table$retractionwatch, 1)
 
   mo4 <- module_run(mo3, "ref_pubpeer")

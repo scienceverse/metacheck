@@ -1,5 +1,10 @@
+# metacheck 0.0.0.9069
+
+* New logging functions: `logger()` and `lastlog()` inspired by @levibaruch 
+
 # metacheck 0.0.0.9068
 
+* FReD replication database and associated functions now renamed to `FLoRA()`
 * Various bug fixes discovered when running modules on large numbers of papers (e.g., handling when zero references have DOIs)
 * Modules "function_check" and "coi_check" reverted to the rtransparent versions (the re-written version were overinclusive and need more development).
 

@@ -69,7 +69,10 @@ module_run <- function(paper, module, ...) {
 
   tryCatch(basename(module_path) |> source(local = TRUE),
     error = function(e) {
-      stop("The module code has errors: ", e$message)
+      m <- basename(module) |> gsub("\\.R$", "", x = _)
+      logger(m, list(paper = paper$id,
+                     error = e$message))
+      stop("The module '", m, "' has errors: ", e$message)
     }
   )
 
@@ -80,7 +83,10 @@ module_run <- function(paper, module, ...) {
   }
   results <- tryCatch(eval(parse(text = code)),
     error = function(e) {
-      stop("Running the module produced errors: ", e$message)
+      m <- basename(module) |> gsub("\\.R$", "", x = _)
+      logger(m, list(paper = paper$id,
+                     error = e$message))
+      stop("Running the module '", m, "' produced errors: ", e$message)
     }
   )
 
@@ -244,7 +250,9 @@ module_info <- function(module) {
       roxy <- roxygen2::parse_file(module_path, env = NULL)
     },
     error = function(e) {
-      stop("The module code has errors: ", e$message)
+      m <- basename(module) |> gsub("\\.R$", "", x = _)
+      logger(m, list(error = e$message))
+      stop("The module '", m, "' code has errors: ", e$message)
     }
   )
 
