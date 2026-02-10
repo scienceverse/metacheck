@@ -96,7 +96,7 @@ curl -X POST http://localhost:2005/paper/authors \
 ```bash
 curl -X POST http://localhost:2005/paper/search \
   -F "file=@paper.xml" \
-  -F "q=statistics"
+  -F "pattern=statistics"
 ```
 
 ### Run a Module
@@ -104,7 +104,7 @@ curl -X POST http://localhost:2005/paper/search \
 ```bash
 curl -X POST http://localhost:2005/paper/module \
   -F "file=@paper.xml" \
-  -F "name=check_dois"
+  -F "name=ref_doi_check"
 ```
 
 ### Run Multiple Checking Modules
