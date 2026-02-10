@@ -3,9 +3,15 @@ name: Upload Packages
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * 1'    # Every Monday at 4am UTC
   push:
-    tags:
-      - 'v*.*.*'
+    branches:
+      - main
+    paths:
+      - 'R/**'
+      - 'inst/**'
+      - 'DESCRIPTION'
 
 env:
   REGISTRY_IMAGE: scienceverse/metacheck
