@@ -129,26 +129,26 @@ test_that("module_run", {
   expect_error( module_run(paper, "notamodule"),
                 "There were no modules that matched notamodule")
 
-  err_mod <- test_path("modules", "module-error.R")
-  expect_error(module_run(paper, err_mod),
+  module <- test_path("modules", "module-error.R")
+  expect_error(module_run(paper, module),
                "The module .* code has errors")
   log <- lastlog()
   expect_equal(log$label, "module-error")
   expect_grepl("unexpected", log$error)
 
-  err_mod <- test_path("modules", "code-error.R")
-  expect_error(module_run(paper, err_mod),
+  module <- test_path("modules", "code-error.R")
+  expect_error(module_run(paper, module),
                "Running the module .* produced errors")
   log <- lastlog()
   expect_equal(log$label, "code-error")
   expect_equal("argument 1 is empty", log$error)
 
-  err_mod <- test_path("modules", "missing-pkg.R")
-  expect_error(module_run(paper, err_mod),
+  module <- test_path("modules", "missing-pkg.R")
+  expect_error(module_run(paper, module),
                "notarealpkg")
 
-  err_mod <- test_path("modules", "missing-importFrom.R")
-  expect_error(module_run(paper, err_mod),
+  module <- test_path("modules", "missing-importFrom.R")
+  expect_error(module_run(paper, module),
                "dplyr::notarealfunction")
 
   # demo

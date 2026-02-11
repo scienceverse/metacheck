@@ -7,20 +7,20 @@
 logger(label = "", contents = list(), logpath = NULL)
 }
 \arguments{
+\item{label}{a string with the context (e.g.,module name)}
+
 \item{contents}{a named list of the log contents}
 
 \item{logpath}{an optional file path to save the log in}
-
-\item{context}{a string with the context (e.g.,module name)}
 }
 \value{
 called for side effects of writing to log, returns logpath
 }
 \description{
-Log messages
+Adds a logging message to the log. Keeps the log as a maximum of 1000 rows.
 }
 \examples{
 logpath <- tempfile(fileext = ".log")
 logger("test", list(x = 1), logpath)
-jsonlite::read_json(logpath)
+lastlog()
 }

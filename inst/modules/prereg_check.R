@@ -117,6 +117,7 @@ prereg_check <- function(paper) {
   ps <- lapply(prereg_schemas, \(x) lapply(x, paste, collapse = "\n\n"))
   prereg_info <- do.call(dplyr::bind_rows, ps)
 
+
   # traffic light ----
   tl <- "info"
 

@@ -54,7 +54,7 @@ paper <- sample(psychsci, n)
 
 
 # paper <- psychsci$`09567976211040491` # doi_check
-paper <- psychsci$`09567976241239935` # code_check failed
+# paper <- psychsci$`09567976241239935` # code_check failed
 
 # paper <- read(demoxml())
 args <- list(
@@ -69,10 +69,8 @@ rep <- report(
   args = args
 )
 
-files <- attr(rep, "save_path")
-
 # open all files in web browser
-sapply(files, browseURL)
+attr(rep, "save_path") |> sapply(browseURL)
 
 
 # get fails ----

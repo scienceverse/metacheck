@@ -33,11 +33,7 @@ test_that("power, no LLM", {
   expect_equal(mod_output$summary_table$power_complete, rep(NA_integer_, 6))
 
   # only false positives
-  paper <- paper()
-  paper$full_text <- data.frame(
-    id = paper$id,
-    text = "Our 12 participants have a lot of power to detect a moth."
-  )
+  paper <- test_paper(text = "Our 12 participants have a lot of power to detect a moth.")
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "yellow")
   expect_equal(nrow(mod_output$table), 1)
@@ -55,21 +51,14 @@ test_that("power, with LLM", {
   llm_model("groq/llama-3.3-70b-versatile")
 
   # only false positives
-  paper <- paper()
-  paper$full_text <- data.frame(
-    id = paper$id,
-    text = "Our 12 participants have a lot of power to detect a moth."
-  )
+  paper <- test_paper(text = "Our 12 participants have a lot of power to detect a moth.")
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "na")
   expect_equal(nrow(mod_output$table), 0)
   expect_equal(mod_output$summary_table$power_n, 0)
 
   # only some info
-  paper <- paper()
-  paper$full_text <- data.frame(
-    id = paper$id,
-    text = "The a priori power analysis determined a sample size of 15 in each group for 80% power with a medium effect size."
+  paper <- test_paper(text = "The a priori power analysis determined a sample size of 15 in each group for 80% power with a medium effect size."
   )
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
@@ -81,10 +70,7 @@ test_that("power, with LLM", {
   expect_equal(mod_output$table$complete, FALSE)
 
   # the example from the prompt
-  paper <- paper()
-  paper$full_text <- data.frame(
-    id = paper$id,
-    text = "An a priori power analysis was conducted to estimate the sample size required to achieve 80% power to detect a Cohen's d of 0.2 using an unpaired t-test at an alpha level of 0.05. This required a total sample size of 300 participants. A second a priori power analysis was conducted to estimate the required sample size for a secondary outcome. To achieve 80% power to detect a Cohen's f of 0.1 using a one-way ANOVA, a sample size of 350 was required. The a priori power analyses were conducted with G*Power."
+  paper <- test_paper(text = "An a priori power analysis was conducted to estimate the sample size required to achieve 80% power to detect a Cohen's d of 0.2 using an unpaired t-test at an alpha level of 0.05. This required a total sample size of 300 participants. A second a priori power analysis was conducted to estimate the required sample size for a secondary outcome. To achieve 80% power to detect a Cohen's f of 0.1 using a one-way ANOVA, a sample size of 350 was required. The a priori power analyses were conducted with G*Power."
   )
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")

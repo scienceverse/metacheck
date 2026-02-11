@@ -27,8 +27,7 @@ test_that("OSF no files", {
   skip_osf()
 
   module <- "repo_check"
-  paper <- paper()
-  paper$full_text <- data.frame(text = "https://osf.io/y6a34", id = paper$id)
+  paper <- test_paper("https://osf.io/y6a34")
   mod_output <- module_run(paper, module)
 
   expect_equal(mod_output$traffic_light, "yellow")
@@ -48,11 +47,7 @@ test_that("no code files", {
   skip_osf()
 
   module <- "repo_check"
-  paper <- paper()
-  paper$full_text <- data.frame(
-    text = c("https://osf.io/m4nbv"),
-    id = paper$id
-  )
+  paper <- test_paper("https://osf.io/m4nbv")
   mod_output <- module_run(paper, module)
 
   expect_true(grepl("We found 2 files ", mod_output$summary_text))
@@ -70,11 +65,7 @@ test_that("OSF", {
   skip_osf()
 
   module <- "repo_check"
-  paper <- paper()
-  paper$full_text <- data.frame(
-    text = c("https://osf.io/629bx"),
-    id = paper$id
-  )
+  paper <- test_paper("https://osf.io/629bx")
   mod_output <- module_run(paper, module)
 
   expect_true(grepl("We found 4 files ", mod_output$summary_text))
@@ -94,13 +85,10 @@ test_that("OSF, github and rb", {
 
   # relevant text - info
   module <- "repo_check"
-  paper <- paper()
-  paper$full_text <- data.frame(
-    text = c("osf.io/629bx",
-             "github.com/scienceverse/demo",
-             "https://researchbox.org/4377"),
-    id = paper$id
-  )
+  text <- c("osf.io/629bx",
+            "github.com/scienceverse/demo",
+            "https://researchbox.org/4377")
+  paper <- test_paper(text)
   mod_output <- module_run(paper, module)
 
   expect_equal(mod_output$traffic_light, "yellow")

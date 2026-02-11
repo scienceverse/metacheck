@@ -1,12 +1,10 @@
 test_that("logpath", {
   expect_true(is.function(metacheck:::logpath))
-  expect_no_error(helplist <- help(logpath, metacheck))
 
   expect_error(logpath("x"))
 
   lp <- logpath()
-  d <- Sys.Date() |> format("%Y-%m-%d")
-  expect_true(grepl(d, lp))
+  expect_grepl("metacheck\\.log", lp)
 })
 
 test_that("logger", {
@@ -30,6 +28,18 @@ test_that("logger", {
   log <- lastlog(1, obs_path)
   expect_equal(log$label, "test")
   expect_equal(substr(log$dt, 1, 14), dt)
+})
+
+test_that("logger truncate at 1000", {
+  skip_if_quick() # logs write about 30/second
+  log_path <- withr::local_tempfile(fileext = ".log")
+  for (i in 1:1010) {
+    logger(i, list(i = i), log_path)
+  }
+  logs <- lastlog(1:1010, log_path)
+  expect_equal(nrow(logs), 1000)
+  expect_equal(logs$label, 1010:11)
+  expect_equal(logs$i, 1010:11)
 })
 
 test_that("lastlog", {

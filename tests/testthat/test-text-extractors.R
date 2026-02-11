@@ -11,11 +11,7 @@ test_that("extract_urls", {
     "osf.io/48ncu"
   )
 
-  paper <- paper()
-  paper$full_text <- data.frame(
-    id <- paper$id,
-    text = valid_urls
-  )
+  paper <- test_paper(valid_urls)
   urls <- extract_urls(paper)
   expect_equal(urls$text, valid_urls)
 
@@ -28,11 +24,7 @@ test_that("extract_urls", {
     # "3.full text is available"
   )
 
-  paper <- paper()
-  paper$full_text <- data.frame(
-    id <- paper$id,
-    text = invalid_urls
-  )
+  paper <- test_paper(invalid_urls)
   urls <- extract_urls(paper)
   expect_equal(urls$text, character(0))
 

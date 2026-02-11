@@ -24,19 +24,16 @@ test_that("github_links", {
 
   expect_error(github_links(bad_arg))
 
-  paper <- paper()
-  paper$full_text <- data.frame(
-    id = paper$id,
-    text = c("No https:  github.com/a/b1",
-             "Oops: http://github.com/a/b2/",
-             "It's at https://github.com/a/b3/.",
-             "check out https://github.com/a/b4.git",
-             "I named it https://github.com/a/b5/file. which is dumb.",
-             "markdown: [GitHub](https://github.com/a/b6)",
-             "md: <https://github.com/a/b7>",
-             "html: <a href=\"https://github.com/a/b8\"",
-             "The github repo is a/b9")
-  )
+  text <- c("No https:  github.com/a/b1",
+            "Oops: http://github.com/a/b2/",
+            "It's at https://github.com/a/b3/.",
+            "check out https://github.com/a/b4.git",
+            "I named it https://github.com/a/b5/file. which is dumb.",
+            "markdown: [GitHub](https://github.com/a/b6)",
+            "md: <https://github.com/a/b7>",
+            "html: <a href=\"https://github.com/a/b8\"",
+            "The github repo is a/b9")
+  paper <- test_paper(text)
   obs <- github_links(paper)
   exp <- c("github.com/a/b1",
            "http://github.com/a/b2",

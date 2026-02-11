@@ -1,27 +1,24 @@
 #' Get log path
 #'
-#' Checks the most recent log file created that day and creates a new one if missing or larger than 1MB.
+#' Checks the most recent log file created that day and creates a new one if missing.
 #'
 #' @returns the log file path
 #' @export
 #'
 #' @keywords internal
-#'
-#' @examples
-#' logpath()
 logpath <- function() {
   dir <- rappdirs::user_data_dir("metacheck/log", "scienceverse")
   dir.create(dir, showWarnings = FALSE, recursive = TRUE)
 
-  # get most recent log with today's date
-  pattern <- paste0("^", Sys.Date())
+  # get most recent log
+  pattern <- "^metacheck.log$"
   log <- list.files(dir, pattern, full.names = TRUE) |> utils::tail(1)
 
-  # make a new log if missing or over 1MB
-  if (length(log) == 0 || file.size(log) > 1024^2) {
-    dt <- Sys.time() |> format("%Y-%m-%d_%H-%M-%S")
-    log <- paste0(dt, ".log") |> file.path(dir, x = _)
-    jsonlite::write_json(list(), log)
+  # make a new log if missing
+  if (length(log) == 0) { # || file.size(log) > 1024^2) {
+    #dt <- Sys.time() |> format("%Y-%m-%d_%H-%M-%S")
+    path <- paste0("metacheck", ".log") |> file.path(dir, x = _)
+    jsonlite::write_json(list(), path)
   }
 
   return(log)
@@ -29,6 +26,8 @@ logpath <- function() {
 
 
 #' Log messages
+#'
+#' Adds a logging message to the log. Keeps the log as a maximum of 1000 rows.
 #'
 #' @param label a string with the context (e.g.,module name)
 #' @param contents a named list of the log contents
@@ -40,14 +39,16 @@ logpath <- function() {
 #' @examples
 #' logpath <- tempfile(fileext = ".log")
 #' logger("test", list(x = 1), logpath)
-#' jsonlite::read_json(logpath)
+#' lastlog()
 logger <- function(label = "", contents = list(), logpath = NULL) {
   logpath <- logpath %||% logpath()
   if (!file.exists(logpath)) {
     jsonlite::write_json(list(), logpath)
   }
-  prev_log <- tryCatch(jsonlite::read_json(logpath),
-                       error = \(e) { return(list()) })
+  prev_log <- tryCatch({
+      jsonlite::read_json(logpath) |>
+        utils::head(999) # don't let log get over 1000
+    }, error = \(e) { return(list()) })
   log <- c(list(
     label = label,
     dt = Sys.time() |> format("%Y-%m-%d %H:%M:%S")
