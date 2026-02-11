@@ -24,6 +24,11 @@ repo_check <- function(paper) {
 
   ## get links ----
   osf_links_found <- osf_links(paper)
+  # exclude psychsci badges
+  if ("repo_url" %in% names(osf_links_found)) {
+    osf_links_found <- osf_links_found |>
+      dplyr::filter(!grepl("tvyxz", repo_url))
+  }
   github_links_found <- github_links(paper)
   rb_links_found <- rbox_links(paper)
 
@@ -47,6 +52,7 @@ repo_check <- function(paper) {
     dplyr::filter(repo_type == "osf") |>
     _$repo_url |>
     unique()
+
   osf_files_df <- data.frame(repo_name = character(0))
   if (length(osf_urls) > 0) {
     tryCatch({

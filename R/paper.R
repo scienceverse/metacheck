@@ -88,3 +88,26 @@ paperlist <- function(..., merge_duplicates = TRUE) {
 
   invisible(paperlist)
 }
+
+#' Test paper
+#'
+#' Create a paper object with the specified text and id (mainly for testing/demos).
+#'
+#' @param text a vector of text to add
+#' @param id the ID for the paper
+#'
+#' @returns a paper object
+#' @export
+#'
+#' @examples
+#' # to test a paper with a specific URL
+#' p <- test_paper("https://osf.io/abcde")
+test_paper <- function(text, id = "test") {
+  p <- paper(id)
+  p$full_text <- data.frame(
+    id = id,
+    text = as.character(text)
+  )
+
+  return(p)
+}

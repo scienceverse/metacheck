@@ -122,12 +122,11 @@ test_that("odd errors", {
 })
 
 test_that("exclude", {
-  paper <- paper()
   text <- c("Apple and Banana",
             "Just an apple.",
             "Bananas only here.",
             "Mango smoothie.")
-  paper$full_text <- data.frame(text = text, id = paper$id)
+  paper <- test_paper(text)
 
   pattern <- c("mango")
   x <- search_text(paper, pattern, exclude = TRUE)
@@ -139,12 +138,11 @@ test_that("exclude", {
 })
 
 test_that("multiple patterns", {
-  paper <- paper()
   text <- c("Apple and Banana",
     "Just an apple.",
     "Bananas only here.",
     "Mango smoothie.")
-  paper$full_text <- data.frame(text = text, id = paper$id)
+  paper <- test_paper(text)
 
   pattern <- c("apple", "banana")
   x <- search_text(paper, pattern)
@@ -164,15 +162,12 @@ test_that("multiple patterns", {
 })
 
 test_that("search_header", {
-  paper <- paper()
   text <- c("Apple and Banana",
             "Just an apple.",
             "Bananas only here.",
             "Mango smoothie.")
-  header <- c("Fruit", "Fruit", "Fruit", "No Apples here")
-  paper$full_text <- data.frame(text = text,
-                                header = header,
-                                id = paper$id)
+  paper <- test_paper(text)
+  paper$full_text$header <- c("Fruit", "Fruit", "Fruit", "No Apples here")
 
   pattern <- c("apple")
   x <- search_text(paper, pattern, search_header = TRUE)

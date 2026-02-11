@@ -6,16 +6,10 @@
 \usage{
 logpath()
 }
-\arguments{
-\item{module}{The name of the module (optional)}
-}
 \value{
 the log file path
 }
 \description{
-Checks the most recent log file created that day and creates a new one if missing or larger than 1MB.
-}
-\examples{
-logpath()
+Checks the most recent log file created that day and creates a new one if missing.
 }
 \keyword{internal}

@@ -1,6 +1,7 @@
 # metacheck 0.0.0.9069
 
 * New logging functions: `logger()` and `lastlog()` inspired by @levibaruch 
+* New `test_paper()` for creating paper objects with specfic test text
 
 # metacheck 0.0.0.9068
 

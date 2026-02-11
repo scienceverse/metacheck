@@ -23,8 +23,7 @@ test_that("OSF no files", {
   skip_osf()
 
   module <- "code_check"
-  paper <- paper()
-  paper$full_text <- data.frame(text = "https://osf.io/y6a34", id = paper$id)
+  paper <- test_paper("https://osf.io/y6a34")
   mod_output <- module_run(paper, module)
 
   expect_equal(mod_output$traffic_light, "na")
@@ -40,11 +39,7 @@ test_that("no code files", {
   skip_osf()
 
   module <- "code_check"
-  paper <- paper()
-  paper$full_text <- data.frame(
-    text = c("https://osf.io/m4nbv"),
-    id = paper$id
-  )
+  paper <- test_paper("https://osf.io/m4nbv")
   mod_output <- module_run(paper, module)
 
   exp <- data.frame(id = paper$id,
@@ -60,11 +55,7 @@ test_that("OSF", {
   skip_osf()
 
   module <- "code_check"
-  paper <- paper()
-  paper$full_text <- data.frame(
-    text = c("https://osf.io/629bx"),
-    id = paper$id
-  )
+  paper <- test_paper("https://osf.io/629bx")
   mod_output <- module_run(paper, module)
 
   expect_equal(mod_output$traffic_light, "yellow")

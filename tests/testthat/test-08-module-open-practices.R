@@ -40,11 +40,7 @@ test_that("open_practices paperlist", {
 test_that("open_practices only open data", {
   # examples from https://authorservices.taylorandfrancis.com/data-sharing-policies/open-data/
   module <- "open_practices"
-  paper <- paper()
-  paper$full_text <- data.frame(
-    id = paper$id,
-    text = "Data for all experiments have been made publicly available on OSF at https://osf.io/hk4yq/."
-  )
+  paper <- test_paper("Data for all experiments have been made publicly available on OSF at https://osf.io/hk4yq/.")
   mo <- module_run(paper, module)
   expect_equal(mo$table$data_open, TRUE)
   expect_equal(mo$table$data_category, "general-purpose repository")
@@ -68,11 +64,7 @@ test_that("open_practices only open code", {
 
   # just statements
   module <- "open_practices"
-  paper <- paper()
-  paper$full_text <- data.frame(
-    id = paper$id,
-    text = statements
-  )
+  paper <- test_paper(statements)
   mo <- module_run(paper, module)
   expect_equal(mo$table$data_open, FALSE)
   expect_equal(mo$table$code_open, TRUE)
@@ -82,11 +74,7 @@ test_that("open_practices only open code", {
 test_that("open_practices both open data and code", {
   # examples from https://authorservices.taylorandfrancis.com/data-sharing-policies/open-data/
   module <- "open_practices"
-  paper <- paper()
-  paper$full_text <- data.frame(
-    id = paper$id,
-    text = "The data and code to reproduce the findings of this study are available at the Open Science Framework at https://osf.io/abcde."
-  )
+  paper <- test_paper("The data and code to reproduce the findings of this study are available at the Open Science Framework at https://osf.io/abcde.")
   mo <- module_run(paper, module)
   expect_equal(mo$table$data_open, TRUE)
   expect_equal(mo$table$data_category, "general-purpose repository")

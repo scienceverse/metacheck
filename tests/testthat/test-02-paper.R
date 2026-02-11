@@ -58,3 +58,19 @@ test_that("paperlist", {
   merged <- paperlist(psychsci[1:2], psychsci[2:3], merge_duplicates = FALSE)
   expect_equal(names(merged), names(psychsci)[c(1:2,2:3)])
 })
+
+
+test_that("test_paper", {
+  expect_true(is.function(metacheck::test_paper))
+  expect_no_error(helplist <- help(test_paper, metacheck))
+
+  expect_error(test_paper())
+
+  p <- test_paper("A")
+  expect_equal(p$full_text$text, "A")
+  expect_equal(p$full_text$id, "test")
+
+  p <- test_paper(LETTERS, "newid")
+  expect_equal(p$full_text$text, LETTERS)
+  expect_equal(p$full_text$id[[1]], "newid")
+})
