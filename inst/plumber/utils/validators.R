@@ -53,7 +53,7 @@ validate_file_upload <- function(file_path) {
     return(list(
       valid = FALSE,
       status = 413,
-      message = "File too large. Maximum size is 50MB"
+      message = "File too large. Maximum size is 3MB."
     ))
   }
 
@@ -70,19 +70,4 @@ validate_file_upload <- function(file_path) {
 
   logger::log_info("File uploaded: size={file.size(file_path)} bytes, type=XML")
   list(valid = TRUE)
-}
-
-#' Validate GROBID parameters
-#'
-#' @param params List of parsed parameters
-#' @return List with valid (logical), and optionally message
-validate_grobid_params <- function(params) {
-  # Validate grobid_url
-  if (!is.null(params$grobid_url) && !grepl("^https?://", params$grobid_url)) {
-    logger::log_warn("Validation error: Invalid grobid_url")
-    return(list(
-      valid = FALSE,
-      message = "Invalid grobid_url. Must start with http:// or https://"
-    ))
-  }
 }
