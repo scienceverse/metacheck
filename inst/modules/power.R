@@ -308,7 +308,7 @@ schema <- r"({
     "alpha_level": {
       "description": "The alpha threshold used to determine significance.",
       "type": ["number", "null"],
-      "exclusiveMinimum": 0,
+     search_text "exclusiveMinimum": 0,
       "maximum": 1
     },
 

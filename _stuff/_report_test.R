@@ -73,16 +73,16 @@ rep <- report(
 attr(rep, "save_path") |> sapply(browseURL)
 
 
-# get fails ----
-tls <- lapply(rep, \(paper) {
-  lapply(paper, \(module) {
-    module$traffic_light
-  })
-})
-for (n in names(tls)) {
-  tls[[n]]$id <- n
-}
-tls <- dplyr::bind_rows(tls) |>
-  tidyr::pivot_longer(-id)
-
-fails <- dplyr::filter(tls, value == "fail")
+# # get fails ----
+# tls <- lapply(rep, \(paper) {
+#   lapply(paper, \(module) {
+#     module$traffic_light
+#   })
+# })
+# for (n in names(tls)) {
+#   tls[[n]]$id <- n
+# }
+# tls <- dplyr::bind_rows(tls) |>
+#   tidyr::pivot_longer(-id)
+#
+# fails <- dplyr::filter(tls, value == "fail")

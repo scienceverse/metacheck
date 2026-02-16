@@ -4,10 +4,12 @@
 \alias{osf_files}
 \title{List Files in an OSF Component}
 \usage{
-osf_files(osf_id)
+osf_files(osf_id, pb = NULL)
 }
 \arguments{
 \item{osf_id}{an OSF ID}
+
+\item{pb}{a progress bar passed from another function}
 }
 \value{
 a data frame with file info

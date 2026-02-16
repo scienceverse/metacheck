@@ -9,6 +9,7 @@
 #' @export
 #' @keywords internal
 paper <- function(name = "Demo Paper", ...) {
+  name <- as.character(name)
   is_xml <- isTRUE(grepl("\\.xml$", name, ignore.case = TRUE))
   is_pdf <- isTRUE(grepl("\\.pdf$", name, ignore.case = TRUE))
 

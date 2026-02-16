@@ -4,10 +4,12 @@
 \alias{rbox_file_download}
 \title{Retrieve files from ResearchBox by URL}
 \usage{
-rbox_file_download(rb_url)
+rbox_file_download(rb_url, pb = NULL)
 }
 \arguments{
 \item{rb_url}{a vector of ResearchBox URLs}
+
+\item{pb}{a progress bar passed from another function}
 }
 \value{
 a data frame of information

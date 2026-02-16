@@ -116,6 +116,7 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api")) {
 #' @param id_col the index or name of the column that contains OSF IDs or URLs, if id is a table
 #' @param recursive whether to retrieve all children
 #' @param find_project DEPRECATED always TRUE now - find the top-level project associated with a file (adds 1+ API calls)
+#' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame of information
 #' @export
@@ -129,7 +130,14 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api")) {
 #' }
 osf_retrieve <- function(osf_url, id_col = 1,
                          recursive = FALSE,
-                         find_project = FALSE) {
+                         find_project = FALSE,
+                         pb = NULL) {
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    pb$tick(0, list(what = "OSF Retrieve"))
+    on.exit(pb$terminate())
+  }
+
   api_check <- osf_api_check()
   if (api_check != "ok") {
     stop(
@@ -161,22 +169,26 @@ osf_retrieve <- function(osf_url, id_col = 1,
   valid_ids <- unique(ids$osf_id)
 
   if (length(valid_ids) == 0) {
-    message("No valid OSF links")
+    paste0("No valid OSF links") |>
+      list(what = _) |>
+      pb$tick(0, tokens = _)
     return(table)
   }
 
   # iterate over valid IDs
-  message(
+  paste0(
     "Starting OSF retrieval for ", length(valid_ids),
     " URL", ifelse(length(valid_ids) == 1, "", "s"), "..."
-  )
+  )|>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
 
   id_info <- vector("list", length(valid_ids))
   too_many <- FALSE
   i <- 0
   while (!too_many & i < length(valid_ids)) {
     i <- i + 1
-    oi <- osf_info(valid_ids[[i]])
+    oi <- osf_info(valid_ids[[i]], pb = pb)
     if ("too many requests" %in% oi$osf_type) too_many <- TRUE
     id_info[[i]] <- oi
   }
@@ -196,8 +208,12 @@ osf_retrieve <- function(osf_url, id_col = 1,
   )
 
   if (isTRUE(recursive)) {
-    message("...Main retrieval complete")
-    message("Starting retrieval of children...")
+    paste0("...Main retrieval complete")|>
+      list(what = _) |>
+      pb$tick(0, tokens = _)
+    paste0("Starting retrieval of children...")|>
+      list(what = _) |>
+      pb$tick(0, tokens = _)
 
     children <- info
     child_collector <- data.frame()
@@ -205,7 +221,7 @@ osf_retrieve <- function(osf_url, id_col = 1,
     while (nrow(children) > 0) {
       node_ids <- children[children$osf_type == "nodes", "osf_id"]
 
-      children <- osf_children(node_ids)
+      children <- osf_children(node_ids, pb = pb)
 
       child_collector <- dplyr::bind_rows(child_collector, children)
     }
@@ -223,7 +239,7 @@ osf_retrieve <- function(osf_url, id_col = 1,
     file_collector <- data.frame()
     while (nrow(folders) > 0) {
       subfiles <- mapply(\(f, proj_id) {
-        dat <- osf_files(f)
+        dat <- osf_files(f, pb = pb)
         dat$project <- rep(proj_id, nrow(dat))
         dat
       }, folders$osf_id, folders$project, SIMPLIFY = FALSE) |>
@@ -241,7 +257,9 @@ osf_retrieve <- function(osf_url, id_col = 1,
       do.call(dplyr::bind_rows, args = _)
   }
 
-  message("...OSF retrieval complete!")
+  paste0("...OSF retrieval complete!")|>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
 
   return(data)
 }
@@ -250,12 +268,22 @@ osf_retrieve <- function(osf_url, id_col = 1,
 #' Retrieve info from the OSF by ID
 #'
 #' @param osf_id an OSF ID or URL
+#' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame of information
 #' @export
 #' @keywords internal
-osf_info <- function(osf_id) {
-  message("* Retrieving info from ", osf_id, "...")
+osf_info <- function(osf_id,
+                     pb = NULL) {
+
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    on.exit(pb$terminate())
+  }
+
+  paste0("* Retrieving info from ", osf_id, "...") |>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
   osf_api <- getOption("metacheck.osf.api")
 
   # double-check ID
@@ -742,15 +770,24 @@ osf_get_all_pages <- function(url, page_end = Inf) {
 #' List Files in an OSF Component
 #'
 #' @param osf_id an OSF ID
+#' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame with file info
 #' @export
 #' @keywords internal
-osf_files <- function(osf_id) {
+osf_files <- function(osf_id,
+                      pb = NULL) {
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    on.exit(pb$terminate())
+  }
+
   osf_api <- getOption("metacheck.osf.api")
   node_id <- osf_check_id(osf_id)
 
-  message("* Retrieving files for ", node_id, "...")
+  paste0("* Retrieving files for ", node_id, "...") |>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
 
   if (nchar(node_id) == 5) {
     url <- sprintf("%s/nodes/%s/files/", osf_api, node_id)
@@ -777,11 +814,17 @@ osf_files <- function(osf_id) {
 #' List Children of an OSF Component
 #'
 #' @param osf_id a vector of OSF IDs
+#' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame with child info
 #' @export
 #' @keywords internal
-osf_children <- function(osf_id) {
+osf_children <- function(osf_id, pb = NULL) {
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    on.exit(pb$terminate())
+  }
+
   osf_api <- getOption("metacheck.osf.api")
   node_id <- osf_check_id(osf_id)
 
@@ -789,11 +832,13 @@ osf_children <- function(osf_id) {
     return(data.frame())
   }
 
-  message(
+  paste0(
     "* Retrieving children for ",
     paste(node_id, collapse = ", "),
     "..."
-  )
+  )|>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
 
   # url <- sprintf("%s/nodes/%s/children/",
   #                osf_api, node_id)
@@ -824,7 +869,7 @@ osf_parent_project <- function(osf_id) {
     return(NA_character_)
   }
 
-  # TODO: make this more efficient my just getting the parent
+  # TODO: make this more efficient by just getting the parent
   obj <- suppressMessages(osf_info(valid_id))
 
   if (!is.null(obj$project) && !is.na(obj$project)) {
@@ -839,67 +884,6 @@ osf_parent_project <- function(osf_id) {
   return(parent)
 }
 
-
-#' Summarize Directory Contents
-#'
-#' @param contents a table with columns name, path such as from `osf_contents()`
-#'
-#' @returns the table with new column file_category
-#' @export
-#'
-summarize_contents <- function(contents) {
-  nm <- contents$name
-  cat <- contents$category
-  ft <- contents$filetype
-
-  # category is from OSF, so can be: analysis, communication, data, hypothesis, instrumentation, methods and measures, procedure, project, software, other, but mostly uncategorized (NA)
-
-  # hard rules
-  sure_class <- dplyr::case_when(
-    ft == "stats" ~ "code",
-    ft == "data" ~ "data",
-    ft == "code" ~ "code",
-    grepl("code[ _]?book", nm, ignore.case = TRUE) ~ "codebook",
-    grepl("data[ _]?dict", nm, ignore.case = TRUE) ~ "codebook",
-  )
-
-  is_readme <- grepl("read[ _-]?me", contents$name, ignore.case = TRUE)
-
-  # data
-  is_data <- dplyr::case_when(
-    cat == "data" ~ TRUE,
-    ft == "data" ~ TRUE,
-    grepl("data", nm, ignore.case = TRUE) ~ TRUE,
-    .default = FALSE
-  )
-
-  # code
-  is_code <- dplyr::case_when(
-    cat == "code" ~ TRUE,
-    ft == "code" ~ TRUE,
-    grepl("code|script", nm, ignore.case = TRUE) ~ TRUE,
-    .default = FALSE
-  )
-
-  # codebook
-  is_codebook <- dplyr::case_when(
-    cat == "codebook" ~ TRUE,
-    grepl("code[ _]?book", nm, ignore.case = TRUE) ~ TRUE,
-    grepl("data[ _]?dict", nm, ignore.case = TRUE) ~ TRUE,
-    .default = FALSE
-  )
-
-  contents$file_category <- dplyr::case_when(
-    !is.na(sure_class) ~ sure_class,
-    is_readme ~ "readme",
-    is_codebook ~ "codebook",
-    # is_code ~ "code",
-    # is_data ~ "data",
-    .default = NA_character_
-  )
-
-  return(contents)
-}
 
 #' Set the OSF delay
 #'
@@ -992,10 +976,12 @@ osf_file_download <- function(osf_id,
 
   ## iterate ----
   if (length(osf_id) > 1) {
-    message(
+    paste0(
       "Starting downloads for ", length(osf_id),
       " OSF projects...\n"
-    )
+    )|>
+      list(what = _) |>
+      pb$tick(0, tokens = _)
     dl <- lapply(osf_id, function(x) {
       tryCatch(
         {
@@ -1017,25 +1003,31 @@ osf_file_download <- function(osf_id,
       )
     }) |>
       do.call(dplyr::bind_rows, args = _)
-    message(
+    paste0(
       "...Completed downloads for ", length(osf_id),
       " OSF projects"
-    )
+    )|>
+      list(what = _) |>
+      pb$tick(0, tokens = _)
     # names(dl) <- osf_id
     return(dl)
   }
 
   ## get files and folders ----
-  message("Starting retrieval for ", osf_id)
+  paste0("Starting retrieval for ", osf_id)|>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
   contents <- suppressMessages(
-    osf_retrieve(osf_id, recursive = TRUE)
+    osf_retrieve(osf_id, recursive = TRUE, pb = pb)
   )
   cols <- c("osf_id", "name", "parent", "kind", "size", "download_url") |>
     intersect(names(contents))
   files <- contents[contents$osf_type == "files", cols, drop = FALSE]
 
   if (nrow(files) == 0) {
-    message("- ", osf_id, " contained no files")
+    paste0("- ", osf_id, " contained no files")|>
+      list(what = _) |>
+      pb$tick(0, tokens = _)
     return(NULL)
   }
 
@@ -1044,10 +1036,12 @@ osf_file_download <- function(osf_id,
     too_big_files <- which(files$size > max_file_size * 1024 * 1024)
     if (length(too_big_files) > 0) {
       for (i in too_big_files) {
-        message(
+        paste0(
           "- omitting ", files$name[[i]],
           " (", round(files$size[[i]] / 1024 / 1024, 1), "MB)"
-        )
+        )|>
+          list(what = _) |>
+          pb$tick(0, tokens = _)
       }
 
       files <- files[-too_big_files, ]
@@ -1058,10 +1052,12 @@ osf_file_download <- function(osf_id,
   while (sum(files$size, na.rm = TRUE) > max_download_size * 1024 * 1024) {
     max_file <- which(files$size == max(files$size, na.rm = TRUE))
 
-    message(
+    paste0(
       "- omitting ", files$name[[max_file]],
       " (", round(files$size[[max_file]] / 1024 / 1024, 1), "MB)"
-    )
+    )|>
+      list(what = _) |>
+      pb$tick(0, tokens = _)
 
     files <- files[-max_file, ]
   }
@@ -1080,7 +1076,9 @@ osf_file_download <- function(osf_id,
       paste0("_", i)
   }
   dir.create(download_to, showWarnings = FALSE, recursive = FALSE)
-  message("- Created directory ", download_to)
+  paste0("- Created directory ", download_to)|>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
 
   if (sum(files$kind == "file") > 0) {
     ## download all to temp folder ----

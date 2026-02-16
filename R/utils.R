@@ -291,9 +291,15 @@ pb <- function(total, format = "[:bar] :percent") {
       },
       message = function(...) {
         invisible()
+      },
+      terminate = function(...) {
+        invisible()
       }
     )
   }
 
   return(pb)
 }
+
+
+

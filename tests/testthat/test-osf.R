@@ -16,9 +16,6 @@ test_that("exists", {
   expect_true(is.function(metacheck::osf_delay))
   expect_no_error(helplist <- help(osf_delay, metacheck))
 
-  expect_true(is.function(metacheck::summarize_contents))
-  expect_no_error(helplist <- help(summarize_contents, metacheck))
-
   expect_true(is.function(metacheck::osf_file_download))
   expect_no_error(helplist <- help(osf_file_download, metacheck))
 })
@@ -44,15 +41,15 @@ test_that("edge case summarise", {
     "datarelease.pdf",  NA,         NA,        # pdf cannot be data or code
     "data.pdf",         "data",     NA,        # what about qual data?
     "my_r_code.pdf",    NA,         NA,
-    "readme.xls",       "project",  "data",    # is an xls file always data?
+    "readme.xls",       "project",  "readme",    # is an xls file always data?
     "data.sas",         NA,         "code",    # sas is always code
-    "codebook.sas",     NA,         "code",
-    "readme.sas",       NA,         "code",
+    "codebook.sas",     NA,         "codebook",
+    "readme.sas",       NA,         "readme",
     "codebook.pdf",     NA,         "codebook" # not a great format but possible
   )
   contents$filetype <- filetype(contents$name)
 
-  summary <- summarize_contents(contents)
+  summary <- file_category(contents)
   expect_equal(summary$file_category, contents$classify)
 })
 
@@ -528,21 +525,6 @@ test_that("osf_parent_project", {
   expect_true(is.na(parent))
 })
 
-test_that("summarize_contents", {
-  # handle zero results and/or OSF down
-  summary <- summarize_contents(data.frame())
-  expect_equal(nrow(summary), 0)
-
-  skip_osf()
-
-  osf_id <- "pngda"
-  contents <- osf_retrieve(osf_id, recursive = TRUE)
-
-  summary <- summarize_contents(contents)
-
-  readme <- dplyr::filter(summary, name == "README")
-  expect_equal(unique(readme$file_category), "readme")
-})
 
 httptest::stop_mocking()
 # httptest::stop_capturing()

@@ -21,6 +21,12 @@
 repo_check <- function(paper) {
   # get repository links ----
   # paper <- read(demoxml())
+  pb <- pb(NA, "(:spin) :what")
+  pb$tick(0, list(what = "Starting Repo Check"))
+  on.exit({
+    pb$tick(0, list(what = "Repo Check Complete"))
+    pb$terminate()
+  })
 
   ## get links ----
   osf_links_found <- osf_links(paper)
@@ -58,7 +64,7 @@ repo_check <- function(paper) {
     tryCatch({
       suppressWarnings({
         osf_info <- lapply(osf_urls, \(x) {
-          osf_files <- osf_retrieve(x, recursive = TRUE)
+          osf_files <- osf_retrieve(x, recursive = TRUE, pb = pb)
           osf_files$repo_name <- x
           osf_files
         }) |> dplyr::bind_rows()
@@ -129,7 +135,7 @@ repo_check <- function(paper) {
   rb_files_df <- data.frame(repo_name = character(0))
   if (length(rb_urls) > 0) {
     tryCatch({
-      rb_file_list <- rbox_file_download(rb_urls) |>
+      rb_file_list <- rbox_file_download(rb_urls, pb = pb) |>
         dplyr::filter(!isdir)
       rb_files_df <- data.frame(
         repo_url = rb_file_list$rb_url,

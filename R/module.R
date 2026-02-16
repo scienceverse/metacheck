@@ -81,6 +81,7 @@ module_run <- function(paper, module, ...) {
   } else {
     code <- sprintf("%s(paper)", info$func_name)
   }
+
   results <- tryCatch(eval(parse(text = code)),
     error = function(e) {
       m <- basename(module) |> gsub("\\.R$", "", x = _)

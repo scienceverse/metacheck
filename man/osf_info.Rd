@@ -4,10 +4,12 @@
 \alias{osf_info}
 \title{Retrieve info from the OSF by ID}
 \usage{
-osf_info(osf_id)
+osf_info(osf_id, pb = NULL)
 }
 \arguments{
 \item{osf_id}{an OSF ID or URL}
+
+\item{pb}{a progress bar passed from another function}
 }
 \value{
 a data frame of information

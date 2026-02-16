@@ -1,7 +1,11 @@
 # metacheck 0.0.0.9069
 
+* Updated osf_* and rb_* functions to use progress bars instead of messages
 * New logging functions: `logger()` and `lastlog()` inspired by @levibaruch 
-* New `test_paper()` for creating paper objects with specfic test text
+* New `test_paper()` for creating paper objects with specific test text
+* `summarize_contents()` changed to `file_category()` and now works with a vector of file names, as well as a data frame
+* `compare_tables()`, `text_features()` and `distinctive_words()` now deprecated
+* `validate()` function simplified
 
 # metacheck 0.0.0.9068
 

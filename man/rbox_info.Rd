@@ -4,10 +4,12 @@
 \alias{rbox_info}
 \title{Retrieve info from ResearchBox by URL}
 \usage{
-rbox_info(rb_url)
+rbox_info(rb_url, pb = NULL)
 }
 \arguments{
 \item{rb_url}{a ResearchBox URL}
+
+\item{pb}{a progress bar passed from another function}
 }
 \value{
 a data frame of information

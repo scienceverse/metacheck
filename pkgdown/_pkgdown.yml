@@ -60,7 +60,6 @@ reference:
   - '`read_grobid`'
   - '`read_cermine`'
   - '`read_text`'
-  - '`paper_validate`'
 - title: Demo Resources
   desc: ~
   contents:
@@ -163,7 +162,7 @@ reference:
   contents:
   - '`email`'
   - '`filetype`'
-  - '`summarize_contents`'
+  - '`file_category`'
   - '`causal_relations`'
   - '`check_orcid`'
   - '`get_orcid`'
@@ -173,10 +172,8 @@ reference:
 - title: Validation Functions
   desc: ~
   contents:
-  - '`compare_tables`'
+  - '`validate`'
   - '`accuracy`'
-  - '`text_features`'
-  - '`distinctive_words`'
 - title: Extras
   desc: ~
   contents:
