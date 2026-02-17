@@ -1,0 +1,779 @@
+---
+title: "Local MetaCheckLLM - Proof of Concept"
+author: "Written by a local LLM and Levi Baruch"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = TRUE,
+  warning = TRUE,
+  error = TRUE
+)
+```
+
+# Introduction
+
+This proof of concept demonstrates two ways to use the `metacheck` package's `llm()` function for LLM queries:
+
+1. **Groq API** - Fast cloud-based inference (free tier with rate limits)
+2. **Local Ollama** - Self-hosted models (no rate limits, requires local compute)
+
+The `metacheck` package provides a convenient wrapper around `ellmer` that simplifies LLM usage and adds helpful features like progress bars and error handling.
+
+---
+
+# Prerequisites
+
+Before running this document, ensure you have:
+
+- R package: `metacheck`
+- For Groq: A Groq API key from [console.groq.com](https://console.groq.com)
+- For Ollama: Ollama installed and running locally
+
+
+```{r load-libraries}
+library(metacheck)
+```
+
+---
+
+# Part 1: Using Groq API
+
+Groq provides fast inference for popular open-source models. The free tier has rate limits, making it suitable for moderate usage.
+
+## Setup Groq Credentials
+
+```{r groq-setup, eval=FALSE}
+# Set your Groq API key in .Renviron
+# Use usethis::edit_r_environ() to edit the file
+# Add this line:
+# GROQ_API_KEY="your_groq_api_key_here"
+
+# Or set it temporarily in your R session:
+#Sys.setenv(GROQ_API_KEY = "your_groq_api_key_here")
+```
+
+```{r groq-setup-check}
+# Check if GROQ_API_KEY is set (without displaying it)
+if (Sys.getenv("GROQ_API_KEY") == "") {
+  cat("⚠️ GROQ_API_KEY not set. Please set it in your .Renviron or using Sys.setenv()\n")
+  cat("   Use usethis::edit_r_environ() to add: GROQ_API_KEY=\"your_key\"\n")
+} else {
+  cat("✓ GROQ_API_KEY is configured\n")
+}
+```
+
+## Enable LLM Usage
+
+```{r enable-llm}
+# Enable LLM functionality in metacheck
+llm_use(TRUE)
+
+cat("LLM usage enabled:", llm_use(), "\n")
+```
+
+## Configure Groq Model
+
+```{r groq-configure}
+# Set the model to use
+# Popular Groq models: 
+#   - llama-3.1-70b-versatile
+#   - llama-3.1-8b-instant
+#   - mixtral-8x7b-32768
+#   - gemma2-9b-it
+
+llm_model("groq")
+
+cat("Model set to:", llm_model(), "\n")
+```
+
+## View Available Models
+
+```{r groq-models}
+# List all available Groq models
+available_models <- llm_model_list(platform = "groq")
+
+if (nrow(available_models) > 0) {
+  cat("Available Groq models:\n")
+  print(available_models[, c("id", "created_at")])
+} else {
+  cat("Could not retrieve model list (check API key)\n")
+}
+```
+
+## Set Maximum Calls (Safety Feature)
+
+```{r set-max-calls}
+# Set maximum number of LLM calls to prevent accidental overuse
+llm_max_calls(100)
+
+cat("Maximum LLM calls per run:", llm_max_calls(), "\n")
+```
+
+## Example 1: Simple Question
+
+```{r groq-simple-query}
+# Single question
+question <- "What is the capital of France?"
+system_prompt <- "You are a helpful assistant. Provide concise answers."
+
+result <- llm(
+  text = question,
+  system_prompt = system_prompt
+)
+
+cat("Question:", question, "\n")
+cat("Answer:", result$answer, "\n")
+```
+
+## Example 2: Batch Processing
+
+```{r groq-batch-query}
+# Multiple questions at once
+questions <- c(
+  "What is 2 + 2?",
+  "Name three programming languages.",
+  "What is the speed of light?",
+  "Who wrote Romeo and Juliet?",
+  "What is the chemical symbol for gold?"
+)
+
+system_prompt <- "Provide brief, factual answers in one sentence or less."
+
+results <- llm(
+  text = questions,
+  system_prompt = system_prompt
+)
+
+# Display results
+for (i in 1:nrow(results)) {
+  cat("\nQ", i, ":", results$text[i], "\n")
+  cat("A", i, ":", results$answer[i], "\n")
+}
+```
+
+## Example 3: Data Frame Input
+
+```{r groq-dataframe-input}
+# Use a data frame as input
+reviews <- data.frame(
+  review_id = 1:4,
+  text = c(
+    "This product is amazing! Best purchase ever.",
+    "Terrible quality. Broke after one day.",
+    "It's okay, nothing special.",
+    "Good value for money, would recommend."
+  )
+)
+
+system_prompt <- "Classify the sentiment as: POSITIVE, NEGATIVE, or NEUTRAL. Answer with only one word."
+
+results <- llm(
+  text = reviews,
+  system_prompt = system_prompt,
+  text_col = "text"
+)
+
+# View results
+print(results[, c("review_id", "text", "answer")])
+```
+
+## Example 4: study type extraction from papers
+
+```{r}
+xml_file = demoxml()
+paper = read(xml_file)
+
+```{r llm-paper, eval=FALSE}
+
+intro_text <- search_text(paper, section = "intro", return = "section")
+
+
+classification_prompt <- 'Based on this introduction, classify the study type. Only output pure JSON. Any NON JSON output counts as catastrophic failure. If no type is identified, set type as "FALSE" 
+Return JSON:
+{
+  "type": "experimental|quasi-experimental|correlational|observational|review",
+  "randomization": true/false,
+  "confidence": 0.0-1.0
+}'
+
+study_types <- llm(intro_text, classification_prompt)
+
+classified <- json_expand(study_types, "answer")
+
+print(classified)
+```
+
+
+```
+
+## Groq Rate Limits
+
+```{r groq-rate-limits}
+cat("⚠️ Important: Groq free tier has rate limits:\n")
+cat("  - Requests per minute: ~30\n")
+cat("  - Requests per day: ~14,400\n")
+cat("  - Tokens per minute: varies by model\n\n")
+cat("For heavy usage, consider upgrading or switching to local Ollama.\n")
+```
+
+---
+
+# Part 2: Using Local Ollama
+
+Ollama allows you to run LLMs locally without API costs or rate limits. This requires sufficient RAM/VRAM.
+
+## Prerequisites for Ollama
+
+```{r ollama-prerequisites, eval=FALSE}
+# Installation instructions (run in terminal, not R)
+
+# macOS
+#system("brew install ollama")
+
+# Linux (Ubuntu/Debian)
+#system("curl -fsSL https://ollama.com/install.sh | sh")
+
+# Windows: Download from https://ollama.com/download
+```
+
+## Pull an Ollama Model
+
+```{r ollama-pull-model, eval=FALSE}
+# Pull a model (run in terminal)
+# Common models:
+#   - llama3.1 (8B parameters, ~4.7GB)
+#   - llama3.1:70b (70B parameters, ~40GB)
+#   - mistral (7B parameters, ~4.1GB)
+#   - gemma2:9b (9B parameters, ~5.5GB)
+
+#system("ollama pull llama3.1")
+```
+
+## Check Ollama is Running
+
+```{r ollama-check}
+# Check if Ollama is accessible
+ollama_running <- tryCatch({
+  response <- httr::GET("http://localhost:11434/api/tags")
+  httr::status_code(response) == 200
+}, error = function(e) {
+  FALSE
+})
+
+if (ollama_running) {
+  cat("✓ Ollama is running at http://localhost:11434\n")
+} else {
+  cat("⚠️ Ollama is not running. Start it with 'ollama serve' in terminal.\n")
+  cat("   Or enable it to run automatically in Settings.\n")
+}
+```
+
+## List Available Ollama Models
+
+```{r ollama-list-models, eval=ollama_running}
+# Check which models are downloaded. If you can handle it I recommend gpt-oss:20b
+if (ollama_running) {
+  response <- httr::GET("http://localhost:11434/api/tags")
+  models <- httr::content(response)$models
+
+  if (length(models) > 0) {
+    cat("Available Ollama models:\n")
+    for (model in models) {
+      cat("  -", model$name, "\n")
+    }
+  } else {
+    cat("No models downloaded. Run 'ollama pull llama3.1' to download a model.\n")
+  }
+}
+```
+
+## Configure Ollama Settings
+
+```{r ollama-settings, eval=FALSE}
+# Enable network exposure and expand context
+# Go to Ollama Settings:
+#   - Check "Expose Ollama to the network"
+#   - Increase context window if needed
+
+# Or start Ollama server via command line:
+system("ollama serve")  # Runs in foreground
+```
+
+## Setup Environment for Ollama
+
+```{r ollama-setup}
+# Configure environment to use local Ollama endpoint
+# Ollama provides an OpenAI-compatible API at localhost:11434
+
+# Sys.setenv(
+#   OPENAI_API_BASE = "http://localhost:11434/v1",
+#   OPENAI_API_KEY = "ollama"  # Key is ignored by Ollama but required
+# )
+
+# Important: Use the ollama/ prefix for model names
+llm_model("ollama/gpt-oss")
+
+cat("API Base:", Sys.getenv("OPENAI_API_BASE"), "\n")
+cat("Model:", llm_model(), "\n")
+```
+
+## Note that when running locally; the current `llm()` code does not take into account startup time of model initialization. It might seem that the model freezes at the first prompt, but give it some time!
+## Example 1: Simple Local Query
+
+```{r ollama-simple-query, eval=ollama_running}
+# Single question using local model
+question <- "What is the capital of France?"
+system_prompt <- "You are a helpful assistant. Provide concise answers."
+
+result <- llm(
+  text = question,
+  system_prompt = system_prompt
+)
+
+cat("Question:", question, "\n")
+cat("Answer:", result$answer, "\n")
+```
+
+## Example 2: Batch Processing Locally (No Rate Limits!)
+
+```{r ollama-batch-query, eval=ollama_running}
+# Multiple questions - no rate limits!
+questions <- c(
+  "What is 2 + 2?",
+  "Name three programming languages.",
+  "What is the speed of light?",
+  "Explain photosynthesis in one sentence.",
+  "What is the largest planet in our solar system?",
+  "Who discovered penicillin?",
+  "What is the boiling point of water?",
+  "Name two noble gases."
+)
+
+cat("Processing", length(questions), "questions locally...\n\n")
+
+# Time the batch processing
+start_time <- Sys.time()
+
+results <- llm(
+  text = questions,
+  system_prompt = "Provide brief, factual answers."
+)
+
+end_time <- Sys.time()
+elapsed <- as.numeric(difftime(end_time, start_time, units = "secs"))
+
+# Display results
+for (i in 1:nrow(results)) {
+  cat("Q", i, ":", results$text[i], "\n")
+  cat("A", i, ":", results$answer[i], "\n\n")
+}
+
+cat("Total time:", round(elapsed, 2), "seconds\n")
+cat("Average per query:", round(elapsed / length(questions), 2), "seconds\n")
+```
+
+## Example 3: Classification Task with ground truth knowledge
+
+```{r ollama-classification, eval=ollama_running}
+# Classify text using local model
+emails <- data.frame(
+  email_id = 1:6,
+  text = c(
+    "URGENT: You've won $1,000,000! Click here now!",
+    "Meeting reminder: Team sync at 2pm tomorrow",
+    "Your package has been delivered",
+    "Congratulations! You are the lucky winner!",
+    "Please review the attached quarterly report",
+    "Limited time offer! Buy now and save 90%!"
+  )
+)
+
+system_prompt <- "Classify this email as SPAM or LEGITIMATE. Answer with only one word."
+
+results <- llm(
+  text = emails,
+  system_prompt = system_prompt,
+  text_col = "text"
+)
+
+print(results[, c("email_id", "text", "answer")])
+
+# Calculate accuracy if we know true labels
+true_labels <- c("SPAM", "LEGITIMATE", "LEGITIMATE", "SPAM", "LEGITIMATE", "SPAM")
+results$true_label <- true_labels
+results$correct <- tolower(trimws(results$answer)) == tolower(results$true_label)
+
+cat("\nAccuracy:", mean(results$correct) * 100, "%\n")
+```
+
+## Example 4: using the paper as before
+
+```{r ollama-advanced, eval=ollama_running}
+xml_file = demoxml()
+paper = read(xml_file)
+
+```{r llm-advanced, eval=FALSE}
+
+intro_text <- search_text(paper, section = "intro", return = "section")
+
+
+classification_prompt <- 'Based on this introduction, classify the study type. Only output pure JSON. Any NON JSON output counts as catastrophic failure. If no type is identified, set type as "FALSE" 
+Return JSON:
+{
+  "type": "experimental|quasi-experimental|correlational|observational|review",
+  "article gist": string,
+  "randomization": true/false,
+  "classification confidence": 0.0-1.0
+}'
+
+study_types <- llm(intro_text, classification_prompt)
+
+classified <- json_expand(study_types, "answer")
+
+classified
+```
+
+---
+
+# Comparison: Groq vs Ollama
+
+```{r comparison-table}
+comparison <- data.frame(
+  Feature = c(
+    "Speed (first query)",
+    "Speed (subsequent)",
+    "Rate limits",
+    "Cost",
+    "Privacy",
+    "Model selection",
+    "Hardware requirements",
+    "Internet required",
+    "Setup complexity"
+  ),
+  Groq = c(
+    "Very fast",
+    "Very fast",
+    "Yes (~30/min)",
+    "Free tier available",
+    "Data sent to cloud",
+    "Limited to Groq models",
+    "None",
+    "Yes",
+    "Easy (just API key)"
+  ),
+  Ollama = c(
+    "Slow (model loading)",
+    "Fast",
+    "None",
+    "Free (local compute)",
+    "Fully private",
+    "Any Ollama model",
+    "8GB+ (v)RAM recommended",
+    "No (after download)",
+    "Moderate (install + config)"
+  ),
+  stringsAsFactors = FALSE
+)
+
+knitr::kable(comparison, caption = "Groq vs Ollama Comparison")
+```
+
+---
+
+# Recommendations
+
+## When to Use Groq
+
+- ✓ Quick prototyping and testing
+- ✓ Moderate query volumes (<100/day)
+- ✓ No local GPU/compute available
+- ✓ Need fastest possible inference
+- ✓ Don't mind cloud processing
+- ✓ Want easy setup (just API key)
+
+## When to Use Ollama
+
+- ✓ High query volumes (100s-1000s/day)
+- ✓ Privacy-sensitive data
+- ✓ Offline work required
+- ✓ Have sufficient RAM/VRAM (8GB+)
+- ✓ Long-running batch jobs
+- ✓ Want to avoid rate limits
+- ✓ Need full control over model
+
+---
+
+# Tips for Ollama Performance
+
+```{r ollama-tips, eval=FALSE}
+# 1. Keep model loaded between queries to avoid reload time
+# Ollama keeps models in memory by default for efficiency
+
+# 2. Choose appropriate model size for your hardware
+# - llama3.1 (8B) → ~8GB RAM
+# - llama3.1:70b → ~40GB RAM
+# - mistral (7B) → ~6GB RAM
+
+# 3. Adjust context window if needed
+# Run in terminal:
+#system("ollama run llama3.1 --ctx-size 4096")
+
+# 4. Monitor resource usage
+# - macOS: Activity Monitor
+# - Linux: htop or top
+# - Windows: Task Manager
+
+# 5. Use smaller models for faster iteration
+# llama3.1:8b is much faster than llama3.1:70b
+# Consider using smaller models during development
+
+# 6. Batch similar queries together
+# The metacheck llm() function automatically handles batching
+# and deduplication for efficiency
+```
+
+---
+
+# Switching Between Providers
+
+The `metacheck` package makes it possible to switch between Groq and Ollama by changing environment variables and model names.
+
+```{r switch-providers, eval=FALSE}
+# ===== Switch to Groq =====
+# 1. Set API key
+Sys.setenv(GROQ_API_KEY = "your_groq_api_key")
+
+# 2. Remove Ollama endpoint (optional, to be explicit)
+Sys.unsetenv("OPENAI_API_BASE")
+
+# 3. Set model (no ollama/ prefix)
+llm_model("groq")
+
+# 4. Run query
+llm("Hello!", "You are helpful.")
+
+```
+
+```{r}
+# ===== Switch to Ollama =====
+# 1. Set Ollama endpoint
+Sys.setenv(
+  OPENAI_API_BASE = "http://localhost:11434/v1",
+  OPENAI_API_KEY = "ollama"
+)
+
+# 2. Set model (with ollama/ prefix)
+llm_model("ollama/gpt-oss")
+
+# 3. Run query
+llm("Hello!", "You are helpful.")
+
+```
+
+---
+
+# Best Practices
+
+## 1. Use .Renviron for API Keys
+
+```{r renviron-setup, eval=FALSE}
+# Edit your .Renviron file
+usethis::edit_r_environ()
+
+# Add your API keys:
+# GROQ_API_KEY="your_groq_key_here"
+
+
+# Restart R for changes to take effect
+```
+
+## 2. Use Informative System Prompts
+
+```{r system-prompts}
+# Good: Clear, specific instructions
+good_prompt <- "Classify the sentiment as POSITIVE, NEGATIVE, or NEUTRAL. Respond with only one word in uppercase."
+
+# Bad: Vague instructions
+bad_prompt <- "What do you think about this?"
+
+cat("Use clear, specific system prompts for best results.\n")
+```
+
+---
+
+# Metadata from LLM Calls
+
+The `llm()` function returns a special data frame with metadata about the call.
+
+```{r metadata-example}
+# Run a simple query
+result <- llm(
+  text = "What is 2+2?",
+  system_prompt = "Answer briefly.",
+  params = list(temperature = 0.5)
+)
+
+# Access metadata
+llm_metadata <- attr(result, "llm")
+
+cat("System prompt used:", llm_metadata$system_prompt, "\n")
+cat("Model used:", llm_metadata$model, "\n")
+cat("Temperature:", llm_metadata$temperature, "\n")
+```
+
+
+## Logging LLM Results
+
+The `llm()` function returns results with metadata that can be logged for reproducibility and analysis.
+```{r append-logging}
+# Function to log LLM results
+# Simple version - keep JSON as-is
+log_llm_result <- function(result, log_file = "llm_log.csv") {
+  # Extract metadata
+  metadata <- attr(result, "llm")
+  
+  # Create log entry
+  log_entry <- data.frame(
+    timestamp = Sys.time(),
+    input = result$text,
+    output = result$answer,
+    model = metadata$model,
+    system_prompt = metadata$system_prompt,
+    temperature = if(!is.null(metadata$temperature)) metadata$temperature else NA,
+    max_tokens = if(!is.null(metadata$max_tokens)) metadata$max_tokens else NA,
+    top_p = if(!is.null(metadata$top_p)) metadata$top_p else NA,
+    error = if("error" %in% names(result)) result$error else FALSE,
+    error_msg = if("error_msg" %in% names(result)) result$error_msg else NA,
+    stringsAsFactors = FALSE
+  )
+  
+  # Append to file (create if doesn't exist)
+  if (file.exists(log_file)) {
+    write.table(log_entry, log_file, 
+                append = TRUE, sep = ",", 
+                col.names = FALSE, row.names = FALSE)
+  } else {
+    write.csv(log_entry, log_file, row.names = FALSE)
+  }
+  
+  cat("Logged", nrow(log_entry), "queries to", log_file, "\n")
+  
+  return(invisible(log_entry))
+}
+# Example usage
+result <- llm(
+  text = "Explain photosynthesis in one sentence.",
+  system_prompt = "Be concise and scientific.",
+  params = list(temperature = 0.3)
+)
+
+# Additional prompt that can be logged
+
+intro_text <- search_text(paper, section = "intro", return = "section")
+
+classification_prompt <- 'Based on this introduction, classify the study type. Only output pure JSON. Any NON JSON output counts as catastrophic failure. If no type is identified, set type as "FALSE" 
+Return JSON:
+{
+  "type": "experimental|quasi-experimental|correlational|observational|review",
+  "article gist": string,
+  "randomization": true/false,
+  "classification confidence": 0.0-1.0
+}'
+
+result2 <- llm(intro_text, classification_prompt)
+
+# Logging
+log_llm_result(result)
+log_llm_result(result2)
+
+```
+
+### View Logged Results
+```{r view-logs}
+# Read and analyze your logs
+if (file.exists("llm_log.csv")) {
+  logs <- read.csv("llm_log.csv", stringsAsFactors = FALSE)
+  
+  cat("Total queries logged:", nrow(logs), "\n")
+  cat("Models used:", paste(unique(logs$model), collapse = ", "), "\n")
+  cat("Date range:", min(logs$timestamp), "to", max(logs$timestamp), "\n")
+  
+  # View recent queries
+  cat("\nMost recent queries:\n")
+  print(tail(logs[, c("timestamp", "input", "output", "model")], 5))
+}
+```
+---
+
+# Troubleshooting
+
+## Groq Issues
+
+```{r troubleshoot-groq, eval=FALSE}
+# 1. Check API key is set
+Sys.getenv("GROQ_API_KEY")
+
+# 2. Test with a simple query
+llm("test", "respond with 'ok'")
+
+# 3. Check rate limits
+# View your usage at console.groq.com
+
+# 4. List available models
+llm_model_list(platform = "groq")
+```
+
+## Ollama Issues
+
+```{r troubleshoot-ollama, eval=FALSE}
+# 1. Check Ollama is running
+system("ollama list")  # Shows installed models
+
+# 2. Check Ollama service
+system("curl http://localhost:11434/api/tags")
+
+# 3. Try running a model directly
+system("ollama run llama3.1 'test'")
+
+# 4. Check logs
+system("ollama serve")  # Run in foreground to see logs
+
+# 5. Verify model name includes ollama/ prefix
+llm_model("ollama/llama3.1")  # Correct
+# llm_model("llama3.1")  # Incorrect for Ollama
+```
+
+---
+
+# Conclusion
+
+This proof of concept demonstrates the `metacheck` package's `llm()` function with:
+
+1. **Groq API**: Fast cloud inference with rate limits
+   - Easy setup (just API key)
+   - Best for moderate usage
+   - Excellent for prototyping
+
+2. **Local Ollama**: Self-hosted inference without limits
+   - Requires local resources
+   - Best for high-volume or sensitive data
+   - Full privacy and control
+
+3. **Proper logging of LLM inputs and outputs** so later developments/validation is easier to do.
+
+---
+
+# Session Info
+
+```{r session-info}
+sessionInfo()
+```

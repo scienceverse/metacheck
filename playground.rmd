@@ -1,0 +1,7 @@
+testing out some stuff with the llm's
+
+```{r}
+lines <- readLines("/Users/levibaruch/dev/metacheck/data_check/papers/GambleWalkerPsychologicalScienceData.csv", n = 5)
+cat(lines, sep = "\n")
+
+```

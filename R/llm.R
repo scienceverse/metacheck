@@ -27,7 +27,8 @@
 llm <- function(text, system_prompt,
                 text_col = "text",
                 model = llm_model(),
-                params = list()) {
+                params = list(),
+                deduplicate = TRUE) {
   ## error detection ----
   if (!llm_use()) {
     stop("Set llm_use(TRUE) to use LLM functions")
@@ -40,7 +41,11 @@ llm <- function(text, system_prompt,
   }
 
   # set up answer data frame to return ----
-  unique_text <- unique(text[[text_col]])
+  if (deduplicate) {
+    unique_text <- unique(text[[text_col]])
+  } else {
+    unique_text <- text[[text_col]]
+  }
   ncalls <- length(unique_text)
   responses <- replicate(ncalls, list(), simplify = FALSE)
 
