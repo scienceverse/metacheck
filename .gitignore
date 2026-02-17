@@ -18,4 +18,10 @@ _stuff/check_correct_citations/pdfs_lakens
 _stuff/check_correct_citations/xmls_lakens
 _stuff/report-demo/
 
+pythonLevi/
+./data_check/*.csv
+./data_check/*.sav
+./data_check/*.xlsx
+
+
 ./output
