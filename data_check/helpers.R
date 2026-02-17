@@ -1,4 +1,16 @@
 library(haven)
+
+### READING IN THE FULL TEXT FROM A PAPER
+extract_full_text <- function(paper) {
+text_by_section <- paper$full_text %>%
+    summarise(text = paste(text, collapse = " "), .groups = "drop")
+  text <- text_by_section$text
+  full_text <- text[1]
+  return(full_text)
+}
+
+
+
 ### LOADING ANY TYPE OF DATA AS TIBBLE
 # load CSV as tibble
 load_csv_as_tibble <- function(file_path) {
