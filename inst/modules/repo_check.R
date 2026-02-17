@@ -20,7 +20,7 @@
 #' @returns a list
 repo_check <- function(paper) {
   # get repository links ----
-  # paper <- read(demoxml())
+  # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
   pb$tick(0, list(what = "Starting Repo Check"))
   on.exit({

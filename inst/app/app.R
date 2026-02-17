@@ -148,12 +148,12 @@ server <- function(input, output, session) {
   observeEvent(input$demo, {
     debug_msg("demo")
 
-    p <- list(read(demoxml()))
+    p <- list(demopaper())
     id <- "to_err_is_human.xml"
     names(p) <- id
     p[[1]]$name <- id
     p[[1]]$info$filename <- id
-    p[[1]]$full_text$id = id
+    p[[1]]$text$id = id
     update_from_paper(p)
   })
 
@@ -193,7 +193,7 @@ server <- function(input, output, session) {
         name <- names(s)[[i]]
         s[[i]]$name <- name
         s[[i]]$info$filename <- name
-        s[[i]]$full_text$id <- name
+        s[[i]]$text$id <- name
       }
 
       update_from_paper(s)

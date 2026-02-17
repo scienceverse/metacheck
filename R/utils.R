@@ -120,11 +120,12 @@ concat_tables <- function(papers, name_path) {
     x <- table_list[[i]]
     if (is.data.frame(x) && nrow(x) > 0) {
       table_list[[i]]$id <- papers[[i]]$id
+    } else {
+      table_list[[i]] <- data.frame(id = papers[[i]]$id)
     }
   }
 
-  merged_table <- do.call(rbind, table_list)
-  rownames(merged_table) <- NULL
+  merged_table <- dplyr::bind_rows(table_list)
 
   merged_table
 }
@@ -181,8 +182,8 @@ print.scivrs_paper <- function(x, ...) {
     "%s\n%s\n%s\n\n%s\n\n* Sections: %d\n* Sentences: %d\n* Bibliography: %d\n* X-Refs: %d\n\n",
     underline, x$id, underline,
     x$info$title %||% "{No title}",
-    max(c(0, x$full_text$div)),
-    nrow(x$full_text),
+    nrow(x$sections),
+    nrow(x$text),
     nrow(x$bib),
     nrow(x$xrefs)
   )
@@ -198,7 +199,7 @@ print.scivrs_paper <- function(x, ...) {
 #' @export
 #' @keywords internal
 print.scivrs_paperlist <- function(x, ...) {
-  txt <- info_table(x, c("title", "doi"))
+  txt <- info_table(x)
 
   print(txt)
 }
@@ -216,48 +217,22 @@ print.scivrs_paperlist <- function(x, ...) {
 }
 
 
-#' Get demo PDF file
+#' Get demo paper
 #'
-#' @return vector of paths
+#' @return paper object
 #' @export
 #'
 #' @examples
-#' demopdf()
-demopdf <- function() {
-  grobid_dir <- system.file("extdata", package = "metacheck")
-  pattern <- "to_err_is_human\\.pdf$"
-  file <- list.files(grobid_dir, pattern, full.names = TRUE)
-  return(file)
-}
+#' paper <- demopaper()
+demopaper <- function() {
+  file_path <- system.file("demo/to_err_is_human.zip",
+                          package = "metacheck")
 
-#' Get demo XML file
-#'
-#' @return vector of paths
-#' @export
-#'
-#' @examples
-#' demoxml()
-demoxml <- function() {
-  grobid_dir <- system.file("extdata", package = "metacheck")
-  pattern <- "to_err_is_human\\.xml$"
-  file <- list.files(grobid_dir, pattern, full.names = TRUE)
-  return(file)
-}
-
-#' Get demo directory of grobid XML files
-#'
-#' @return paths
-#' @export
-#'
-#' @examples
-#' demodir()
-demodir <- function() {
-  grobid_dir <- system.file("grobid", package = "metacheck")
-  return(grobid_dir)
+  read_bibr(file_path)
 }
 
 
-#' Psychologial Science Open Access Paper Set
+#' Psychological Science Open Access Paper Set
 #'
 #' 250 open access papers from Psychological Science.
 #'

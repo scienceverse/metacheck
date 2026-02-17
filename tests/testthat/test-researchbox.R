@@ -1,20 +1,19 @@
 test_that("exists", {
   expect_true(is.function(metacheck::rbox_links))
   expect_no_error(helplist <- help(rbox_links, metacheck))
-})
 
-test_that("errors", {
   expect_error(rbox_links(bad_arg))
 })
 
 test_that("rbox_links", {
-  links <- rbox_links(psychsci)
-  expect_equal(nrow(links), 3)
+  paper <- test_paper("I like research box: https://researchbox.org/801")
+  links <- rbox_links(paper)
+  expect_equal(nrow(links), 1)
   expect_equal(links$text[[1]], "https://researchbox.org/801")
 })
 
 
-# httptest::start_capturing()
+#httptest::start_capturing()
 httptest::use_mock_api()
 
 test_that("rbox_info", {
@@ -52,11 +51,15 @@ test_that("rbox_info", {
 test_that("rbox_retrieve", {
   skip_if_offline("researchbox.org")
 
-  links <- rbox_links(psychsci)
-  info <- rbox_retrieve(links)
+  paper <- test_paper(c(
+    "https://researchbox.org/4377",
+    "https://researchbox.org/6018"
+  ))
+  links <- rbox_links(paper)
+  info <- rbox_retrieve(links, "text")
 
   #expected
-  public <- c("June 09, 2023", "June 09, 2023", "October 07, 2024")
+  public <- c("November 28, 2025", "February 15, 2026")
 
   expect_equal(info$text, links$text)
   expect_equal(info$RB_public, public)
@@ -64,5 +67,5 @@ test_that("rbox_retrieve", {
 
 
 httptest::stop_mocking()
-# httptest::stop_capturing()
+#httptest::stop_capturing()
 

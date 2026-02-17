@@ -31,7 +31,7 @@ test_that("logger", {
 })
 
 test_that("logger truncate at 1000", {
-  skip_if_quick() # logs write about 30/second
+  skip("30-second test") # logs write about 30/second
   log_path <- withr::local_tempfile(fileext = ".log")
   for (i in 1:1010) {
     logger(i, list(i = i), log_path)

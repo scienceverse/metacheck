@@ -38,7 +38,7 @@ stat_effect_size <- function(paper) {
   )
   text_found_test <- stat_sentences |>
     search_text(test_regex, perl = TRUE, ignore.case = FALSE) |>
-    dplyr::select(id, text, section, div, p, s)
+    dplyr::select(id, text, section_id, paragraph_id, text_id)
 
   ## detect relevant effect sizes ----
   potentials <- c(
@@ -57,7 +57,7 @@ stat_effect_size <- function(paper) {
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
 
-  by <- c("id", "section", "div", "p", "s")
+  by <- c("id", "section_id", "paragraph_id", "text_id")
   text_found_es <- search_text(text_found_test, es_regex,
     return = "match", perl = FALSE
   ) |>
@@ -93,7 +93,7 @@ stat_effect_size <- function(paper) {
   # sentences with a relevant test
   text_found_test <- stat_sentences |>
     search_text(test_regex, perl = TRUE, ignore.case = FALSE) |>
-    dplyr::select(id, section, text, div, p, s)
+    dplyr::select(id, text, section_id, paragraph_id, text_id)
 
   ## detect relevant effect sizes ----
   potentials <- c(
@@ -157,8 +157,8 @@ stat_effect_size <- function(paper) {
     )
 
   # traffic light ----
-  total_n <- nrow(table_missing)
-  noes_n <- is.na(table_missing$es) |> sum()
+  total_n <- nrow(table)
+  noes_n <- is.na(table$es) |> sum()
   tl <- dplyr::case_when(
     total_n > 0 & noes_n == 0 ~ "green",
     total_n == 0 ~ "na",
@@ -191,9 +191,9 @@ stat_effect_size <- function(paper) {
     )
 
     # select cols for the report table
-    cols <- c("text", "section", "es", "test_text", "test")
+    cols <- c("text", "es", "test_text", "test")
     report_table <- table[, cols, drop = FALSE]
-    colnames(report_table) <- c("Sentence", "Section", "Effect Size", "Reported Test", "Test Type")
+    colnames(report_table) <- c("Sentence", "Effect Size", "Reported Test", "Test Type")
     # wrap in a collapsible
     detail_table <- scroll_table(report_table) |>
       collapse_section("All detected and assessed stats")

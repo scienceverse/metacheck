@@ -1,35 +1,28 @@
-grobid_dir <- system.file("grobid", package="metacheck")
-filename <- file.path(grobid_dir, "incest.xml")
+test_that("stats", {
+  expect_true(is.function(metacheck::stats))
+  expect_no_error(helplist <- help(stats, metacheck))
 
-test_that("exists", {
-  expect_true(is.function(stats))
+  expect_error(stats(bad_arg))
 })
 
 test_that("defaults", {
-  # search list of paper objects
-  s <- read(filename)
-  stat_table <- stats(s)
+  # search a paper object
+  paper <- test_paper("Test (M=4.5, t(97.2) = -1.96, p = 0.152).")
+  stat_table <- stats(paper)
   expect_true(is.data.frame(stat_table))
-  expect_equal(nrow(stat_table), 5)
-  expect_equal(ncol(stat_table), 20)
-
-  # search text table by sentence
-  text <- search_text(s, section = "results")
-  res_table <- stats(text)
-  expect_true(is.data.frame(res_table))
-  expect_equal(res_table$s, c(1,1,2,2,3))
-
-  # search text table by paragraph
-  text <- search_text(s, section = "results", return = "paragraph")
-  p_res_table <- stats(text)
-  expect_true(is.data.frame(p_res_table))
-  expect_equal(p_res_table$s, rep(NA, 5))
-  expect_equal(res_table$computed_p, p_res_table$computed_p)
+  expect_equal(nrow(stat_table), 1)
+  expect_equal(stat_table$test_type, "t")
+  expect_equal(stat_table$df2, 97.2)
+  expect_equal(stat_table$test_comp, "=")
+  expect_equal(stat_table$test_value, -1.96)
+  expect_equal(stat_table$p_comp, "=")
+  expect_equal(stat_table$reported_p, 0.152)
+  expect_equal(stat_table$error, TRUE)
 
   # no matches
-  text <- search_text(s, section = "discussion")
-  disc_table <- stats(text)
-  expect_equal(disc_table, data.frame())
+  paper <- test_paper("No stats here")
+  stat_table <- stats(paper)
+  expect_equal(stat_table, data.frame())
 })
 
 test_that("statcheck options", {
@@ -57,6 +50,5 @@ test_that("error", {
   # Error in missing value where TRUE/FALSE needed
   paper <- psychsci[100]
   expect_no_error( stats <- stats(paper) )
-
 })
 

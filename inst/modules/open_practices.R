@@ -25,10 +25,10 @@ open_practices <- function(paper) {
   # devtools::install_github("quest-bih/oddpub")
 
   # format text for oddpub as vectors of sentences for each paper
-  full_text <- search_text(paper)
+  text <- search_text(paper)
 
-  # Check if full_text is NULL or empty, happens in correction notices.
-  if (is.null(full_text) || nrow(full_text) == 0 || all(full_text$text == "")) {
+  # Check if text is NULL or empty, happens in correction notices.
+  if (is.null(text) || nrow(text) == 0 || all(text$text == "")) {
     report <- list(
       traffic_light = "na",
       summary_text = "There was no text to search through"
@@ -36,9 +36,9 @@ open_practices <- function(paper) {
     return(report)
   }
 
-  ids <- unique(full_text$id)
+  ids <- unique(text$id)
   paper_oddpub <- lapply(ids, \(id) {
-    full_text[full_text$id == id, ]$text
+    text[text$id == id, ]$text
   })
   names(paper_oddpub) <- ids
 

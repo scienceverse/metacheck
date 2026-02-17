@@ -47,8 +47,8 @@ read_cermine <- function(filename) {
 
     names(p) <- unique_names
     for (un in unique_names) {
-      if (!is.null(p[[un]]) && nrow(p[[un]]$full_text) > 0) {
-        p[[un]]$full_text$id <- un
+      if (!is.null(p[[un]]) && nrow(p[[un]]$text) > 0) {
+        p[[un]]$text$id <- un
       }
     }
 
@@ -105,7 +105,7 @@ read_cermine <- function(filename) {
   p$authors <- get_cermine_authors(xml)
 
   # full text----
-  p$full_text <- get_cermine_full_text(xml, id = basename(filename))
+  p$text <- get_cermine_text(xml, id = basename(filename))
 
   # references ----
   refs <- get_cermine_refs(xml)
@@ -200,7 +200,7 @@ get_cermine_authors <- function(xml) {
 #' @return a data frame of the classified full text
 #' @keywords internal
 #'
-get_cermine_full_text<- function(xml, id = "") {
+get_cermine_text<- function(xml, id = "") {
   div <- NULL  # ugh cmdcheck
 
   ## abstract ----

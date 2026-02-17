@@ -1,3 +1,9 @@
+# metacheck 0.0.0.9070
+
+* Major updates to replace grobid functions with bibr
+* Remove `author_table()`, as this is just `concat_tables()` now
+
+
 # metacheck 0.0.0.9069
 
 * Updated osf_* and rb_* functions to use progress bars instead of messages
@@ -292,7 +298,7 @@
 
 # papercheck 0.0.0.9031
 
-* `read_grobid()` now includes figure and table captions, plus footnotes, in the full_text table
+* `read_grobid()` now includes figure and table captions, plus footnotes, in the text table
 * the `psychsci` paper list object is updated to include the above
 * The functions that `module_run()` delegates to now check and only pass valid arguments
 
@@ -300,7 +306,7 @@
 
 * modules are now updated for clearer output, and added a new module vignette
 * `llm()` no longer returns NA when the rate limit is hit, but slows down queries accordingly
-* `read_grobid()` now includes back matter (e.g., acknowledgements, COI statements) in the full_text, so is searchable with `search_text()`
+* `read_grobid()` now includes back matter (e.g., acknowledgements, COI statements) in the text, so is searchable with `search_text()`
 * references are now converted to bibtex format, so are more complete and consistent
 * Machine-learning module types are removed (the python/reticulate setup was too complex for many users), and instructions for how to create simple text feature models is included in the metascience vignette
 
@@ -308,7 +314,7 @@
 
 * added `author_table()` to get a dataframe of author info from a list of paper objects
 * fixed a bunch of tests now that multiple matches in a sentence are possible
-* added back text (acknowledgements, annex, funding notes) to the full_text of a paper
+* added back text (acknowledgements, annex, funding notes) to the text of a paper
 * Fixed a bug in `search_text()` that omitted duplicate matches in the same sentence when using results = "match"
 * Upgraded the search string for the "all-p-values" module to not error when a numeric value is followed by "-"
 * Error catching for `stats()` related to the above problem (and filed an issue on statcheck)

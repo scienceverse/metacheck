@@ -70,7 +70,9 @@ validate <- function(gt, module, compare = "table") {
   # create a test paper for each id containing the text
   paper <- lapply(gt$id, \(id) {
     t <- gt[gt$id == id, "text"]
-    test_paper(t, id)
+    p <- test_paper(t)
+    p$id <- id
+    p
   }) |>
   paperlist()
 

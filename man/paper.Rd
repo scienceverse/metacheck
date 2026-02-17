@@ -4,12 +4,12 @@
 \alias{paper}
 \title{Create a paper object}
 \usage{
-paper(name = "Demo Paper", ...)
+paper(id = NULL, ...)
 }
 \arguments{
-\item{name}{The name of the study or a file path to a PDF or grobid XML}
-
 \item{...}{further arguments to add}
+
+\item{name}{The name of the study or a file path to a PDF or grobid XML}
 }
 \value{
 An object with class scivrs_paper

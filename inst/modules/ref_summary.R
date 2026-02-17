@@ -36,7 +36,7 @@ ref_summary <- function(paper, ...) {
 
   # for dev only ----
   # if (TRUE) {
-  #   paper <- read(demoxml())
+  #   paper <- demopaper()
   #   checks <- paper |>
   #     module_run("ref_doi_check") |>
   #     module_run("ref_accuracy") |>

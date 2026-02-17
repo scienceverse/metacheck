@@ -8,30 +8,30 @@
 #' @return An object with class scivrs_paper
 #' @export
 #' @keywords internal
-paper <- function(name = "Demo Paper", ...) {
-  name <- as.character(name)
-  is_xml <- isTRUE(grepl("\\.xml$", name, ignore.case = TRUE))
-  is_pdf <- isTRUE(grepl("\\.pdf$", name, ignore.case = TRUE))
-
-  if (is_xml & file.exists(name)) {
-    paper <- read(name)
-  } else if (is_pdf & file.exists(name)) {
-    xml <- pdf2grobid(name, ...)
-    paper <- read(xml)
-  } else {
-    # make empty paper object
-    paper <- list(
-      id = gsub("\\.(pdf|xml)$", "", name, ignore.case = TRUE),
-      info = list(),
-      authors = list(),
-      full_text = data.frame(),
-      bib = data.frame(),
-      xrefs = data.frame()
-    )
-
-    class(paper) <- c("scivrs_paper", "list")
-    class(paper$authors) <- c("scivrs_authors", "list")
+paper <- function(id = NULL, ...) {
+  if (is.null(id)) {
+    # make a random hash from the time
+    id <- Sys.time() |>
+      format("%s%OS6") |>
+      charToRaw() |>
+      tools::md5sum(bytes = _) |>
+      substr(1, 14)
   }
+
+  paper <- list(
+    id = id,
+    info = list(),
+    authors = list(),
+    text = data.frame(),
+    links = data.frame(),
+    tables = data.frame(),
+    sections = data.frame(),
+    bib = data.frame(),
+    xrefs = data.frame(),
+    figures = data.frame()
+  )
+
+  class(paper) <- c("scivrs_paper", "list")
 
   invisible(paper)
 }
@@ -92,10 +92,9 @@ paperlist <- function(..., merge_duplicates = TRUE) {
 
 #' Test paper
 #'
-#' Create a paper object with the specified text and id (mainly for testing/demos).
+#' Create a paper object with the specified text (mainly for testing/demos).
 #'
 #' @param text a vector of text to add
-#' @param id the ID for the paper
 #'
 #' @returns a paper object
 #' @export
@@ -103,12 +102,17 @@ paperlist <- function(..., merge_duplicates = TRUE) {
 #' @examples
 #' # to test a paper with a specific URL
 #' p <- test_paper("https://osf.io/abcde")
-test_paper <- function(text, id = "test") {
-  p <- paper(id)
-  p$full_text <- data.frame(
-    id = id,
+test_paper <- function(text) {
+  p <- paper()
+
+  p$text <- data.frame(
+    text_id = seq_along(text),
+    section_id = 0,
+    paragraph_id = 0,
     text = as.character(text)
   )
+
+  p$info$title <- "Test Paper"
 
   return(p)
 }

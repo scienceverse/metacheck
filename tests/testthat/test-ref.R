@@ -282,7 +282,7 @@ test_that("crossref_query", {
   expect_equal(obs$DOI, exp)
 
   # paper object as ref
-  ref <- read(demoxml())
+  ref <- demopaper()
   obs <- crossref_query(ref)
   exp <- c("10.1098/rspb.1998.0380",
            "10.1177/0956797614520714",

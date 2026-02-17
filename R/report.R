@@ -177,7 +177,7 @@ report <- function(paper,
 #' @export
 #'
 #' @examples
-#' paper <- read(demoxml())
+#' paper <- demopaper()
 #' modules <- c("stat_p_exact", "stat_p_nonsig")
 #' module_output <- report_module_run(paper, modules)
 report_module_run <- function(paper, modules, args = list()) {

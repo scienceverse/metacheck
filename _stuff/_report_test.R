@@ -56,7 +56,7 @@ paper <- sample(psychsci, n)
 # paper <- psychsci$`09567976211040491` # doi_check
 # paper <- psychsci$`09567976241239935` # code_check failed
 
-# paper <- read(demoxml())
+# paper <- demopaper()
 args <- list(
   doi_check = list(crossref_min_score = 50)
 )

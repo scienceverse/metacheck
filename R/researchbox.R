@@ -43,7 +43,7 @@ rbox_retrieve <- function(rb_url, id_col = 1, pb = NULL) {
 
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")
-    pb$tick(0, list(what = "ResaerchBox Retrieve"))
+    pb$tick(0, list(what = "ResearchBox Retrieve"))
     on.exit(pb$terminate())
   }
 

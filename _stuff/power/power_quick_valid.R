@@ -13,7 +13,7 @@ table <- dplyr::setdiff(power_no$table, power_words$table)[, 1:7]
 llm_use(TRUE)
 llm_max_calls(nrow(table))
 paper <- paper()
-paper$full_text <- table
+paper$text <- table
 power_check <- module_run(paper, "power")
 
 # wrongly omitted text

@@ -41,6 +41,10 @@ logpath <- function() {
 #' logger("test", list(x = 1), logpath)
 #' lastlog()
 logger <- function(label = "", contents = list(), logpath = NULL) {
+  if (!is.list(contents)) {
+    contents <- list(error = contents)
+  }
+
   logpath <- logpath %||% logpath()
   if (!file.exists(logpath)) {
     jsonlite::write_json(list(), logpath)

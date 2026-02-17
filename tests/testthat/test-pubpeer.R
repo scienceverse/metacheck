@@ -1,9 +1,7 @@
 test_that("exists", {
   expect_true(is.function(metacheck::pubpeer_comments))
   expect_no_error(helplist <- help(pubpeer_comments, metacheck))
-})
 
-test_that("errors", {
   expect_error(pubpeer_comments(bad_arg))
 })
 

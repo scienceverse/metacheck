@@ -1,6 +1,6 @@
 devtools::load_all(".")
 llm_use(TRUE)
-paper <- read(demoxml())
+paper <- demopaper()
 modules <- c(
   # local only
   "stat_p_exact",

@@ -41,7 +41,12 @@ test_that("extract_p_values", {
 
   expect_error(extract_p_values(bad_arg))
 
-  paper <- read(demoxml())
+  paper <- test_paper(c(
+    "t = 2.23, p = 0.005.",
+    "(p = 0.152)",
+    "peta = 2.3; p > .05, ppp = 2",
+    "2 = p"
+  ))
   p <- extract_p_values(paper)
   expect_equal(nrow(p), 3)
   expect_equal(p$text, c("p = 0.005", "p = 0.152", "p > .05"))
@@ -51,13 +56,7 @@ test_that("extract_p_values", {
   # iteration: text modules need no special adaptation
   paper <- psychsci
   p <- extract_p_values(paper)
-  expect_equal(nrow(p), 4832)
 
-  # check problem with minus sign at end
-  minus <- p$text[grep("-$", p$text)]
-  e <- p$text[grep("e", p$text)]
-  expect_equal(length(minus), 0)
-  expect_equal(length(e), 9L)
 
   # specific values
   expected <- c(

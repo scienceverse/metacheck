@@ -24,7 +24,7 @@
 #'
 #' @returns a list
 ref_retraction <- function(paper) {
-  # for testing: paper <- read(demoxml())
+  # for testing: paper <- demopaper()
 
   # table ----
   bib <- concat_tables(paper, "bib")[, c("id", "xref_id", "doi", "ref")]

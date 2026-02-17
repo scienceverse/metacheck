@@ -56,16 +56,12 @@ reference:
 - title: Reading in Papers
   desc: ~
   contents:
-  - '`pdf2grobid`'
-  - '`read_grobid`'
-  - '`read_cermine`'
-  - '`read_text`'
+  - '`bibr_convert`'
+  - '`read_bibr`'
 - title: Demo Resources
   desc: ~
   contents:
-  - '`demoxml`'
-  - '`demopdf`'
-  - '`demodir`'
+  - '`demopaper`'
   - '`psychsci`'
   - '`test_paper`'
 - title: Search Papers

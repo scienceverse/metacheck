@@ -22,7 +22,7 @@ We welcome contributions to metacheck. Small bug fixes can be made as a simple p
       mods <- module_list()
       expect_true(module %in% mods$name)
       
-      paper <- read(demoxml())
+      paper <- demopaper()
       expect_no_error( mo <- module_run(paper, module) )
     })
     ```
