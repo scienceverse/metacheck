@@ -81,6 +81,68 @@ parse_llm_json <- function(log_file, out_file = NULL) {
   
   return(parsed)
 }
+parse_llm_json_from_df <- function(llm_df) {
+  # Handle NULL or empty input
+  if(is.null(llm_df) || nrow(llm_df) == 0) {
+    return(NULL)
+  }
+  
+  # Check if result column exists
+  if(!"result" %in% names(llm_df)) {
+    warning("No 'result' column found in LLM output")
+    return(NULL)
+  }
+  
+  parse_json_cell <- function(cell) {
+    if(is.na(cell) || cell == "" || is.null(cell)) return(NULL)
+    
+    parsed <- tryCatch(fromJSON(cell, simplifyVector = FALSE), 
+                      error = function(e) NULL)
+    
+    if(!is.null(parsed)) {
+      if("studies" %in% names(parsed)) {
+        return(parsed$studies)
+      } else {
+        return(list(parsed))
+      }
+    }
+    
+    # Try splitting multiple JSON objects
+    parts <- unlist(str_split(cell, "(?<=\\})\\s*(?=\\{)"))
+    map(parts, ~ tryCatch(fromJSON(.x, simplifyVector = FALSE), 
+                         error = function(e) NULL)) %>% compact()
+  }
+  
+  parsed_rows <- list()
+  
+  for(i in 1:nrow(llm_df)) {
+    row <- llm_df[i, ]
+    study_list <- parse_json_cell(row$result)
+    
+    if(is.null(study_list) || length(study_list) == 0) next
+    
+    # Create a row for each study in this iteration
+    for(j in seq_along(study_list)) {
+      study <- study_list[[j]]
+      study_df <- as_tibble(map(study, as.character))
+      
+      # Add metadata if available
+      if("paper_id" %in% names(row)) study_df$paper_id <- row$paper_id
+      study_df$study_number <- j
+      
+      parsed_rows[[length(parsed_rows) + 1]] <- study_df
+    }
+  }
+  
+  if(length(parsed_rows) == 0) {
+    return(NULL)
+  }
+  
+  # Combine without duplication
+  parsed <- bind_rows(parsed_rows) %>% distinct()
+  
+  return(parsed)
+}
 
 #' Extract method text from paper
 extract_method_text <- function(paper) {  
@@ -104,39 +166,28 @@ extract_method_text <- function(paper) {
 
 #' Define the classification prompt
 get_classification_prompt <- function() {
-  'Based on the text provided, classify the study and extract relevant details. 
-Output **only valid JSON**. Any non-JSON output counts as catastrophic failure. 
-If no study type can be determined, set `"type": "FALSE"`. 
-If multiple research questions are present, return them all as separate entries in an array.
-
-Return JSON in the following format:
+  'Extract the study sample size from the text.
+Output only valid JSON. Any non-JSON output is failure.
+If no sample size is reported, set "sample_size": NULL.
+Return:
 {
   "studies": [
     {
-      "type": "experimental|quasi-experimental|correlational|observational|review|other(mention which)",
-      "research_question": "one sentence string describing the research question",
-      "randomization": true/false/notapplicable,
-      "classification_confidence": 0.0-1.0,
-      "classification_size_argumentation": "one sentence explaining why this type was chosen",
       "sample_size": int,
       "sample_size_confidence": 0.0-1.0,
-      "sample_size_argumentation": "one sentence explaining how the sample size was inferred",
-      "sentence_containing_sample_size": "the exact sentence from the text mentioning the sample size",
-      "sentence_containing_research_question": "the exact sentence from the text containing or implying the research question"
+      "sample_size_argumentation": "one short sentence explaining inference",
+      "sentence_containing_sample_size": "exact sentence from text or empty string"
     }
   ]
 }
-
-Additional instructions:
-1. Return multiple research questions as separate objects in the `"studies"` array.
-2. For ambiguous terms like "participants", "subjects", or "cases", infer the sample size conservatively, but indicate confidence accordingly.
-3. Ensure the `"research_question"` is concise and captures the essence of the study.
-4. Use confidence scores between 0.0 and 1.0 to reflect uncertainty.
-5. All fields must be filled, even if using `"FALSE"`, `0`, `notapplicable`, or empty strings where necessary.'
+Rules:
+Infer conservatively if ambiguous (e.g., participants, cases).
+If multiple experiments exist in one paper, return separate objects and argue the rationale for each and the seperation.
+All fields required.
+Confidence between 0.0 and 1.0.'
 }
 #' regex like implementation to extract sentences containing sample size information.
 #' 
-
 prepare_fsample_llm_input <- function(
   paper,
   max_sentences = 8,
@@ -152,13 +203,11 @@ prepare_fsample_llm_input <- function(
     "excluded", "final sample", "after excluding", "after removing"
   )
 
-  #numeric_pattern <- "\\b\\d{2,5}\\b"
-
   # --- search candidate sentences ---
   candidates <- search_text(
     paper,
     section = sections,
-    pattern = str_c(positive_anchors, collapse = "|"),
+    pattern = str_c(positive_anchors),
     return = "sentence"
   )
 
@@ -166,21 +215,10 @@ prepare_fsample_llm_input <- function(
     return(list(
       has_candidates = FALSE,
       reason = "no_anchor_matches",
-      sentences = NULL
+      sentences = NULL,
+      llm_text = ""
     ))
   }
-  # --- require numeric content ---
-  # DISABLED -> Soemtimes people write "twenty participants" instead of "20 participants". Stupid but maybe there is a regex implementation for this.
-  # candidates <- candidates %>%
-  #   filter(str_detect(text, numeric_pattern))
-
-  # if (nrow(candidates) == 0) {
-  #   return(list(
-  #     has_candidates = FALSE,
-  #     reason = "no_numeric_sentences",
-  #     sentences = NULL
-  #   ))
-  # }
 
   llm_text <- paste(candidates$text, collapse = " ")
 
