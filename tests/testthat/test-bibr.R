@@ -4,6 +4,8 @@ test_that("bibr_convert", {
 
   expect_error(bibr_convert(bad_arg))
 
+  skip_if_offline()
+
   # pdf
   file_name <- "to_err_is_human.pdf"
   file_path <- test_path("fixtures", "formats", file_name)
@@ -82,4 +84,3 @@ test_that("read_bibr", {
   expect_s3_class(ps, "scivrs_paperlist")
   expect_s3_class(ps[[1]], "scivrs_paper")
 })
-

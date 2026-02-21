@@ -260,8 +260,18 @@ report_qmd <- function(module_output, paper = list()) {
   doi_text <- ifelse((paper$info$doi %||% "") == "", "",
     sprintf("DOI: [%s](https://doi.org/%s)", paper$info$doi, paper$info$doi)
   )
-  author_text <- utils::capture.output(print.scivrs_authors(paper$authors))
-  if (length(author_text) == 0) author_text <- ""
+
+  # get authors
+  author_text <- ""
+  if (nrow(paper$authors) > 0) {
+    names <- paste(paper$authors$given,
+                   paper$authors$family)
+    last <- utils::tail(names, 1)
+    first <- setdiff(names, last)
+    if (length(first)) first <- paste(first, collapse = ", ")
+    author_text <- c(first, last) |> paste(collapse = " & ")
+  }
+
   qmd_header <- sprintf(
     rt_head,
     subtitle,

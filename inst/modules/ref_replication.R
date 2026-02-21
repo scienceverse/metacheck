@@ -27,19 +27,9 @@
 #'
 #' @returns a list
 ref_replication <- function(paper, show_outcomes = FALSE) {
-  # for testing: paper <- psychsci[[109]]
-
   # table ----
-  bib <- concat_tables(paper, "bib")[, c("id", "xref_id", "doi", "ref")]
-  missing_doi <- get_prev_outputs("ref_doi_check", "table")
-
-  if (!is.null(missing_doi)) {
-    md <- missing_doi[, c("id", "xref_id", "DOI")]
-    bib <- dplyr::left_join(bib, md, by = c("id", "xref_id"))
-    is_missing <- is.na(bib$doi)
-    bib$doi[is_missing] <- bib$DOI[is_missing]
-    bib$DOI <- NULL
-  }
+  cols <- c("id", "bib_id", "doi", "bib_text")
+  bib <- concat_tables(paper, "bib")[, cols]
 
   # If there are no rows, return immediately
   if (nrow(bib) == 0) {
@@ -69,6 +59,7 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
       replication_outcome = outcome,
       replication_type = type
     )
+
   table <- dplyr::inner_join(bib, flora, by = "doi")
 
   ## remove rows that are already cited (by DOI)

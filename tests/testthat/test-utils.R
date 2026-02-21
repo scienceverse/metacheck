@@ -32,6 +32,7 @@ test_that("demo paper", {
 })
 
 test_that("concat_tables", {
+  # concat 2 papers
   papers <- psychsci[1:2]
   bibs <- concat_tables(papers, c("bib"))
   n <- nrow(papers[[1]]$bib) + nrow(papers[[2]]$bib)
@@ -39,6 +40,18 @@ test_that("concat_tables", {
 
   ids <- unique(bibs$id)
   expect_equal(ids, names(papers))
+
+  # concat 1 paper
+  papers <- demopaper()
+  info <- concat_tables(papers, c("info"))
+  expect_equal(info$id, paper$id)
+
+  # concat 1 paper empty table
+  papers <- demopaper()
+  papers$bib <- data.frame(text = character(0))
+  bib <- concat_tables(papers, c("bib"))
+  expect_equal(nrow(bib), 0)
+  expect_equal(names(bib), c("text", "id"))
 })
 
 

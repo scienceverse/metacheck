@@ -21,18 +21,9 @@
 #'
 #' @returns a list
 ref_pubpeer <- function(paper) {
-  # for testing: paper <- psychsci[[109]]
-
   # create table ----
-  bib <- concat_tables(paper, "bib")[, c("id", "xref_id", "doi", "ref")]
-  missing_doi <- get_prev_outputs("ref_doi_check", "table")
-  if (!is.null(missing_doi)) {
-    md <- missing_doi[, c("id", "xref_id", "DOI")]
-    bib <- dplyr::left_join(bib, md, by = c("id", "xref_id"))
-    is_missing <- is.na(bib$doi)
-    bib$doi[is_missing] <- bib$DOI[is_missing]
-    bib$DOI <- NULL
-  }
+  cols <- c("id", "bib_id", "doi", "bib_text")
+  bib <- concat_tables(paper, "bib")[, cols]
 
   # If there are no rows, return immediately
   if (nrow(bib) == 0) {
@@ -91,9 +82,8 @@ ref_pubpeer <- function(paper) {
 
     ## report_table ----
     rows <- !is.na(table$url)
-    cols <- c("ref", "total_comments", "url")
+    cols <- c("bib_text", "total_comments", "url")
     report_table <- table[rows, cols]
-    report_table$ref <- format_ref(report_table$ref)
     report_table$url <- link(report_table$url, "link")
     names(report_table) <- c("Reference", "Comments", "PubPeer Link")
 

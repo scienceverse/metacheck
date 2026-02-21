@@ -7,7 +7,8 @@ test_that("ref_doi_check", {
   expect_true(module %in% mods$name)
 
   # no references
-  paper <- psychsci[[210]]
+  paper <- demopaper()
+  paper$bib <- paper$bib[c(), ]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "na")
   expect_null(mod_output$table)
@@ -67,7 +68,8 @@ test_that("ref_replication", {
   expect_true(module %in% mods$name)
 
   # no references
-  paper <- psychsci[[210]]
+  paper <- demopaper()
+  paper$bib <- paper$bib[c(), ]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "na")
   expect_null(mod_output$table)

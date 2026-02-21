@@ -4,18 +4,12 @@
 \alias{info_table}
 \title{Get paper information in a table}
 \usage{
-info_table(
-  paper,
-  info = c("filename", "title", "keywords", "doi"),
-  path = c("relative", "absolute")
-)
+info_table(paper, info = c("title", "doi"))
 }
 \arguments{
 \item{paper}{a paper object or a list of paper objects}
 
 \item{info}{a vector of columns to return}
-
-\item{path}{whether to return absolute or relative path for the filename}
 }
 \value{
 a data frame with each paper id and info columns
@@ -24,5 +18,5 @@ a data frame with each paper id and info columns
 Get paper information in a table
 }
 \examples{
-info_table(psychsci[1:10])
+info_table(psychsci[1:5])
 }

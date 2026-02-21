@@ -31,7 +31,7 @@ If you have a table resulting from \code{search_text()} or a module return objec
 }
 \examples{
 # single paper search
-paper <- demoxml() |> read()
+paper <- demopaper()
 res_tbl <- search_text(paper, "p =", return = "match")
 expanded <- expand_text(res_tbl, paper)
 

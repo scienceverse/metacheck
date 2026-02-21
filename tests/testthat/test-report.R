@@ -166,17 +166,16 @@ test_that("detected", {
 
   # add a retracted paper
   retracted <- data.frame(
-    xref_id = "x",
-    ref = "Test retracted paper",
-    doi = retractionwatch()$doi[[1]],
-    bibtype = "Article",
+    bib_id = 5,
     title = "Fake",
-    journal = "Fake Journal",
+    doi = retractionwatch()$doi[[1]],
+    ref = "Test retracted paper",
+    bibtype = "Article",
+    journal_title = "Fake Journal",
     year = 2025,
-    authors = "Hmmm",
-    id = paper$id
+    author = "Hmmm"
   )
-  paper$bib <- rbind(paper$bib, retracted)
+  paper$bib <- dplyr::bind_rows(paper$bib, retracted)
 
   # add imprecise p-values
   paper$text[1, "text"] <- "Bad p-value example (p < .05)"
@@ -293,5 +292,7 @@ test_that("report_qmd", {
   report_text <- report_qmd(mo, paper)
   expect_true(grepl("MetaCheck Report", report_text))
   expect_true(grepl(paper$info$title, report_text))
-  expect_true(grepl("Non-Significant P Value Check", report_text, fixed = TRUE))
+
+  mi <- module_info(modules)
+  expect_true(grepl(mi$title, report_text, fixed = TRUE))
 })

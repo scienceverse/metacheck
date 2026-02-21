@@ -87,7 +87,7 @@ module_run <- function(paper, module, ...) {
       m <- basename(module) |> gsub("\\.R$", "", x = _)
       logger(m, list(paper = paper$id,
                      error = e$message))
-      stop("Running the module '", m, "' produced errors: ", e$message)
+      stop("Running the module '", m, "' produced errors: ", e$message, call. = FALSE)
     }
   )
 

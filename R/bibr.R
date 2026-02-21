@@ -135,5 +135,57 @@ read_bibr <- function(file_path) {
     paper[[table_name]] <- arrow::read_ipc_file(tbl_path)
   }
 
+  # temporary processing for format changes to be added to bibr ----
+
+  ## remove references from text table
+  ref_section <- paper$sections[paper$sections$section_type == "references", ]$section_id
+  non_refs <- !paper$text$section_id %in% ref_section
+  paper$text <- paper$text[non_refs, ]
+
+  ## add bib_text
+  paper$bib$bib_text <- sprintf("%s (%d) %s. %s. %s",
+                                paper$bib$author,
+                                paper$bib$year,
+                                paper$bib$title,
+                                paper$bib$journal_title,
+                                paper$bib$doi)
+
   paper
 }
+
+#' Read in grobis XML or bibr ZIP
+#'
+#' @param file_path path to a directory containing XML and/or zip files, or a vector of paths to XML or zip files
+#'
+#' @returns a paper or paperlist
+#' @export
+read <- function(file_path) {
+  # handle directory or multiple files ----
+  if (length(file_path) == 1 && dir.exists(file_path)) {
+    dir_path <- file_path
+    file_path <- list.files(dir_path,
+                            pattern = "\\.(zip|xml)$",
+                            full.names = TRUE)
+  }
+
+  pb <- pb(length(file_path), "Loading :current/:total [:bar] (:what)")
+  papers <- lapply(file_path, \(fp) {
+    pb$tick(1, list(what = basename(fp)))
+    tryCatch({
+      if (grepl("\\.zip$", fp, ignore.case = TRUE)) {
+        read_bibr(file_path = fp)
+      } else if (grepl("\\.xml$", fp, ignore.case = TRUE)) {
+        tei_to_bibr(fp)
+      }
+    }, error = \(e) {
+      logger("read", e$message)
+      return(NULL)
+    })
+  })
+  papers <- paperlist(papers)
+  if (length(papers) == 1) papers <- papers[[1]]
+
+  return(papers)
+}
+
+

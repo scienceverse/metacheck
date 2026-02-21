@@ -21,6 +21,6 @@ Note that this will not catch p-values reported like "the p-value is 0.03" becau
 This will catch most comparators like =<>~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.
 }
 \examples{
-paper <- read(demoxml())
+paper <- demopaper()
 p_values <- extract_p_values(paper)
 }

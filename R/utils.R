@@ -112,16 +112,17 @@ online <- function(url = "google.com") {
 concat_tables <- function(papers, name_path) {
   if (!is_paper_list(papers)) papers <- list(papers)
 
-  table_list <- papers #
+  # iterate down the name_path
+  table_list <- papers
   for (name in name_path) {
     table_list <- lapply(table_list, `[[`, name)
   }
   for (i in seq_along(papers)) {
     x <- table_list[[i]]
-    if (is.data.frame(x) && nrow(x) > 0) {
-      table_list[[i]]$id <- papers[[i]]$id
+    if (is.data.frame(x)) {
+      table_list[[i]]$id <- rep(papers[[i]]$id, nrow(x))
     } else {
-      table_list[[i]] <- data.frame(id = papers[[i]]$id)
+      table_list[[i]] <- data.frame(id = character(0))
     }
   }
 

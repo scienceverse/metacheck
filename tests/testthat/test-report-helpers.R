@@ -228,15 +228,4 @@ test_that("format_ref", {
   bib <- c("help", "me")
   obs <- format_ref(bib)
   expect_equal(obs, bib)
-
-  # from paper
-  paper <- demopaper()
-  bib <- paper$bib$ref
-  obs <- format_ref(bib)
-  exp <- c("Gangestad SW, Thornhill R (1998). &ldquo;Menstrual cycle variation in women's preferences for the scent of symmetrical men.&rdquo; <em>Proceedings Biological Sciences</em>, <b>22</b>, 927-933. <a href=\"https://doi.org/10.1098/rspb.1998.0380\">doi:10.1098/rspb.1998.0380</a>.",
-           "Gino F, Wiltermuth SS (2014). &ldquo;Evil Genius? How Dishonesty Can Lead to Greater Creativity.&rdquo; <em>Psychological Science</em>, <b>25</b>(4), 973-981. <a href=\"https://doi.org/10.1177/0956797614520714\">doi:10.1177/0956797614520714</a>.",
-           "Smith F (2021). &ldquo;Human error is a symptom of a poor design.&rdquo; <em>Journal of Journals</em>, <b>0</b>(0), 0. <a href=\"https://doi.org/10.0000/0123456789\">doi:10.0000/0123456789</a>.",
-           "Lakens D (2018). &ldquo;Equivalence testing for psychological research.&rdquo; <em>Advances in Methods and Practices in Psychological Science</em>, <b>1</b>, 259-270."
-  )
-  expect_equal(obs, exp)
 })

@@ -1,0 +1,124 @@
+# To Err is Human: An Empirical Investigation
+Daniel Lakens & Lisa DeBruine
+2026-02-19
+
+This paper demonstrates some good and poor practices for use with the
+{metacheck} R package. All data are simulated. The paper shows examples
+of (1) open and closed OSF links; (2a) citation of retracted papers,
+(2b) citations without a doi, (2c) citations with Pubpeer comments, (2d)
+citations in the FLoRA replication database, and (2e)
+missing/mismatched/incorrect citations and references; (3a) R files with
+code on GitHub that do not load libraries in one location, (3b) load
+files that are not shared in the repository, (3c) lack comments, and
+(3d) have absolute file paths; (4) imprecise reporting of
+non-significant p-values; (5) tests with and without effect sizes; (6)
+use of “marginally significant” to describe non-significant findings;
+(7) a power analysis reporting some of the essential attributes; and (8)
+retrieving information from preregistrations.
+
+## Introduction
+
+Although intentional dishonestly might be a successful way to boost
+creativity (Gino & Wiltermuth, 2014), it is safe to say most mistakes
+researchers make are unintentional. From a human factors perspective,
+human error is a symptom of a poor design (Smithy, 2020). Automation can
+be used to check for errors in scientific manuscripts, and inform
+authors about possible corrections. In this study we examine the
+usefulness of metacheck to improve best practices.
+
+## Method
+
+In this study we examine whether automated checks reduce the amount of
+errors that researchers make in scientific manuscripts. This study was
+preregistered at https://osf.io/48ncu and on AsPredicted at
+https://aspredicted.org/by8i8v.pdf.
+
+## Procedure
+
+We randomly assigned 50 scientists to a condition where their manuscript
+was automatically checked for errors, and 50 scientists to a control
+condition with a checklist. Scientists had the opportunity to make
+changes to their manuscript based on the feedback of the tool. We
+subsequently coded all manuscripts for mistakes, and counted the total
+number of mistakes. We also measured the expertise of researchers (in
+years) to explore whether the automated tool would be more useful, the
+less research experience researchers had. We also asked researchers to
+rate how useful they found the checklist or app on a scale from 1 (not
+at all) to 7 (extremely useful).
+
+## Data Availability
+
+Data and analysis code is available on GitHub from
+https://github.com/Lakens/to_err_is_human and from
+https://researchbox.org/4377. Data is also available from
+https://osf.io/5tbm9 and code is also available from
+https://osf.io/629bx.
+
+## Power Analysis
+
+We conducted a sensitivity power analysis to determine that a Cohen’s d
+of 0.50 is the smallest effect size that we could detect with 50
+participants in each group and 80% power.
+
+## Results
+
+![](to_err_is_human.markdown_strict_files/figure-markdown_strict/fig-sim-1.png)
+
+<table class="do-not-create-environment cell">
+<thead>
+<tr>
+<th style="text-align: left;">Condition</th>
+<th style="text-align: right;">Mistakes</th>
+<th style="text-align: right;">Usefulness</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">10.90</td>
+<td style="text-align: right;">4.50</td>
+</tr>
+<tr>
+<td style="text-align: left;">experimental</td>
+<td style="text-align: right;">9.12</td>
+<td style="text-align: right;">5.06</td>
+</tr>
+</tbody>
+</table>
+
+On average researchers in the experimental (app) condition made fewer
+mistakes (*M* = 9.12) than researchers in the control (checklist)
+condition (*M* = 10.9), *t*(97.7) = 2.9, *p* = 0.005, d = 0.59.
+
+On average researchers in the experimental condition found the app
+marginally significantly more useful (*M* = 5.06) than researchers in
+the control condition found the checklist (*M* = 4.5), *t*(97.2) =
+-1.96, *p* = 0.152.
+
+![](to_err_is_human.markdown_strict_files/figure-markdown_strict/unnamed-chunk-2-1.png)
+
+There was no effect of experience on the reduction in errors when using
+the tool (*p* \> .05), as the correlation was non-significant.
+
+## Discussion
+
+It seems automated tools can help prevent errors by providing
+researchers with feedback about potential mistakes, and researchers feel
+the app is useful. We conclude the use of automated checks has potential
+to reduce the number of mistakes in scientific manuscripts.
+
+## References
+
+Eagly, A. H., & Wood, W. (1999). The origins of sex differences in human
+behavior: Evolved dispositions versus social roles. American
+Psychologist, 54(6), 408–423. https://doi.org/10.1037/0003-066x.54.6.408
+
+Gino, F., & Wiltermuth, S. S. (2014). Evil Genius? How Dishonesty Can
+Lead to Greater Creativity. Psychological Science, 25(4), 973–981.
+https://doi.org/10.1177/0956797614520714
+
+Lakens, D. (2018). Equivalence testing for psychological research.
+Advances in Methods and Practices in Psychological Science, 1, 259-270.
+
+Smith, F. (2021). Human error is a symptom of a poor design. Journal of
+Journals, 0(0), 0. https://doi.org/10.0000/0123456789
