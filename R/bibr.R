@@ -143,12 +143,14 @@ read_bibr <- function(file_path) {
   paper$text <- paper$text[non_refs, ]
 
   ## add bib_text
-  paper$bib$bib_text <- sprintf("%s (%d) %s. %s. %s",
-                                paper$bib$author,
-                                paper$bib$year,
-                                paper$bib$title,
-                                paper$bib$journal_title,
-                                paper$bib$doi)
+  if (all(is.na(paper$bib$bib_text))) {
+    paper$bib$bib_text <- sprintf("%s (%d) %s. %s. %s",
+                                  paper$bib$author,
+                                  paper$bib$year,
+                                  paper$bib$title,
+                                  paper$bib$journal_title,
+                                  paper$bib$doi)
+  }
 
   paper
 }
