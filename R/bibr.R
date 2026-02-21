@@ -86,35 +86,11 @@ bibr_convert <- function(file_path,
 
 #' Read Bibr zip file
 #'
-#' @param file_path path to the zip file or a directory of zip files
+#' @param file_path path to the zip file
 #'
 #' @returns a paper object
 #' @export
 read_bibr <- function(file_path) {
-  # handle directory or multiple files ----
-  if (length(file_path) == 1 && dir.exists(file_path)) {
-    dir_path <- file_path
-    file_path <- list.files(dir_path,
-                            pattern = "\\.zip$",
-                            full.names = TRUE)
-  }
-
-  if (length(file_path) > 1) {
-    pb <- pb(length(file_path), "Loading :current/:total [:bar] (:what)")
-    papers <- lapply(file_path, \(fp) {
-      pb$tick(1, list(what = basename(fp)))
-      tryCatch(
-        read_bibr(file_path = fp),
-        error = \(e) {
-          logger("read_bibr", e$message)
-          return(NULL)
-        })
-    })
-    papers <- paperlist(papers)
-
-    return(papers)
-  }
-
   # temp dir for unzip and cleanup ----
   exdir <- file.path(
     tempdir(),

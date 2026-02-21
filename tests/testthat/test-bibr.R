@@ -66,11 +66,29 @@ test_that("read_bibr", {
            "sections", "bib", "xrefs", "figures")
   expect_contains(obs, exp)
   expect_grepl("^[a-f0-9]{14}$", paper$id)
+})
+
+test_that("read", {
+  expect_true(is.function(metacheck::read))
+  expect_no_error(helplist <- help(read, metacheck))
+
+  expect_error(read(bad_arg))
+
+  # single paper
+  file_path <- test_path("fixtures", "bibr", "to_err_is_human.zip")
+  paper <- read(file_path)
+
+  expect_s3_class(paper, "scivrs_paper")
+  obs <- names(paper)
+  exp <- c("id", "info", "authors", "text", "links", "tables",
+           "sections", "bib", "xrefs", "figures")
+  expect_contains(obs, exp)
+  expect_grepl("^[a-f0-9]{14}$", paper$id)
 
   # vector of paths
   zips <- c("to_err_is_human.zip", "published.zip")
   file_path <- test_path("fixtures", "bibr", zips)
-  papers <- read_bibr(file_path)
+  papers <- read(file_path)
   expect_s3_class(papers, "scivrs_paperlist")
   expect_s3_class(papers[[1]], "scivrs_paper")
   expect_s3_class(papers[[2]], "scivrs_paper")
@@ -80,7 +98,7 @@ test_that("read_bibr", {
 
   # directory
   file_path <- test_path("fixtures", "bibr", "psychsci")
-  ps <- read_bibr(file_path)
+  ps <- read(file_path)
   expect_s3_class(ps, "scivrs_paperlist")
   expect_s3_class(ps[[1]], "scivrs_paper")
 })
