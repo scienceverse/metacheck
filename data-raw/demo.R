@@ -5,7 +5,7 @@ quarto::quarto_render("data-raw/demo/to_err_is_human.qmd", "docx")
 
 # convert newest PDF to bibr zip
 pdf <- "data-raw/demo/to_err_is_human.pdf"
-zip <- bibr_convert(pdf, "data-raw/demo")
+zip <- platform_bibr_convert(pdf, "data-raw/demo")
 
 # copy to inst
 file.copy(zip, "inst/demo/", overwrite = TRUE)

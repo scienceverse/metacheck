@@ -12,7 +12,6 @@
 #'   Defaults to the \code{PLATFORM_API_KEY} environment variable.
 #' @param poll_interval Seconds between status polls (default 2)
 #' @param timeout Maximum seconds to wait for processing (default 600)
-#' @param quiet If TRUE, suppress polling progress messages
 #'
 #' @return Path(s) to the saved zip file(s)
 #' @export
@@ -30,8 +29,7 @@ platform_bibr_convert <- function(file_path,
                        api_url = "https://platform.metacheck.app",
                        api_key = Sys.getenv("PLATFORM_API_KEY"),
                        poll_interval = 2,
-                       timeout = 600,
-                       quiet = FALSE) {
+                       timeout = 600) {
   if (nchar(api_key) == 0) {
     stop("Platform API key not set. ",
          "Set the PLATFORM_API_KEY environment variable or pass api_key directly.",
@@ -84,11 +82,16 @@ platform_bibr_convert <- function(file_path,
 
   job <- httr2::resp_body_json(submit_resp)
   job_id <- job$job_id
-  if (!quiet) message("Job submitted: ", job_id, " [", basename(file_path), "]")
 
   # poll for completion ----
   status_url <- paste0(api_url, "/jobs/", job_id)
   elapsed <- 0
+
+  # set up progress bar ----
+  pb <- pb(NA, "(:spin) :elapsed :what")
+  on.exit(pb$terminate())
+  pb$tick(0, list(what = "submitted"))
+  pb$message(paste0("Job: ", job_id, " [", basename(file_path), "]"))
 
   repeat {
     Sys.sleep(poll_interval)
@@ -101,10 +104,9 @@ platform_bibr_convert <- function(file_path,
 
     status <- httr2::resp_body_json(status_resp)
 
-    if (!quiet && verbose()) {
-      message("  [", round(elapsed), "s] ", status$status,
-              if (!is.null(status$stage)) paste0(" (", status$stage, ")"))
-    }
+    msg <- paste0(status$status,
+               if (!is.null(status$stage)) paste0(" (", status$stage, ")"))
+    pb$tick(0, list(what = msg))
 
     if (identical(status$status, "complete")) break
 
