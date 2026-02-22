@@ -1,3 +1,150 @@
+#' Process a paper using the Scienceverse platform API
+#'
+#' Submits a document to the Scienceverse platform queue for extraction.
+#' The platform runs bibr behind Arq workers with load balancing, and is
+#' the recommended way to process papers. Use \code{\link{bibr_convert}} for
+#' direct bibr API access without the queue.
+#'
+#' @param file_path Path to the document file, or a directory of documents
+#' @param save_dir Path to a directory in which to save the zip file
+#' @param api_url Base URL of the Scienceverse platform API
+#' @param api_key Platform API key (Bearer token, starts with \code{sv_}).
+#'   Defaults to the \code{PLATFORM_API_KEY} environment variable.
+#' @param poll_interval Seconds between status polls (default 2)
+#' @param timeout Maximum seconds to wait for processing (default 600)
+#' @param quiet If TRUE, suppress polling progress messages
+#'
+#' @return Path(s) to the saved zip file(s)
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Single file
+#' sv_convert("paper.pdf")
+#'
+#' # Directory of papers
+#' platform_bibr_convert("papers/", save_dir = "results/")
+#' }
+platform_bibr_convert <- function(file_path,
+                       save_dir = ".",
+                       api_url = "https://platform.metacheck.app",
+                       api_key = Sys.getenv("PLATFORM_API_KEY"),
+                       poll_interval = 2,
+                       timeout = 600,
+                       quiet = FALSE) {
+  if (nchar(api_key) == 0) {
+    stop("Platform API key not set. ",
+         "Set the PLATFORM_API_KEY environment variable or pass api_key directly.",
+         call. = FALSE)
+  }
+
+  # handle directory or multiple files ----
+  if (length(file_path) == 1 && dir.exists(file_path)) {
+    dir_path <- file_path
+    file_path <- list.files(dir_path,
+                            pattern = "\\.(docx?|html|md|pdf|txt)$",
+                            full.names = TRUE)
+  }
+
+  if (length(file_path) > 1) {
+    pb <- pb(length(file_path), "Converting :current/:total [:bar] (:what)")
+    zip_paths <- sapply(file_path, \(fp) {
+      pb$tick(1, list(what = basename(fp)))
+      tryCatch(
+        sv_convert(file_path = fp,
+                   save_dir = save_dir,
+                   api_url = api_url,
+                   api_key = api_key,
+                   poll_interval = poll_interval,
+                   timeout = timeout,
+                   quiet = quiet),
+        error = \(e) {
+          logger("sv_convert", e$message)
+          return(NULL)
+      })
+    })
+    return(zip_paths)
+  }
+
+  # submit job ----
+  submit_req <- httr2::request(api_url) |>
+    httr2::req_url_path_append("jobs") |>
+    httr2::req_auth_bearer_token(api_key) |>
+    httr2::req_body_multipart(
+      file = curl::form_file(file_path)
+    ) |>
+    httr2::req_timeout(60)
+
+  submit_resp <- httr2::req_perform(submit_req)
+  if (httr2::resp_status(submit_resp) != 200) {
+    stop("Job submission failed (HTTP ", httr2::resp_status(submit_resp), "): ",
+         httr2::resp_body_string(submit_resp),
+         call. = FALSE)
+  }
+
+  job <- httr2::resp_body_json(submit_resp)
+  job_id <- job$job_id
+  if (!quiet) message("Job submitted: ", job_id, " [", basename(file_path), "]")
+
+  # poll for completion ----
+  status_url <- paste0(api_url, "/jobs/", job_id)
+  elapsed <- 0
+
+  repeat {
+    Sys.sleep(poll_interval)
+    elapsed <- elapsed + poll_interval
+
+    status_resp <- httr2::request(status_url) |>
+      httr2::req_auth_bearer_token(api_key) |>
+      httr2::req_timeout(30) |>
+      httr2::req_perform()
+
+    status <- httr2::resp_body_json(status_resp)
+
+    if (!quiet && verbose()) {
+      message("  [", round(elapsed), "s] ", status$status,
+              if (!is.null(status$stage)) paste0(" (", status$stage, ")"))
+    }
+
+    if (identical(status$status, "complete")) break
+
+    if (identical(status$status, "failed")) {
+      err_msg <- status$stage %||% "unknown error"
+      stop("Job ", job_id, " failed: ", err_msg, call. = FALSE)
+    }
+
+    if (elapsed >= timeout) {
+      stop("Job ", job_id, " timed out after ", timeout, "s ",
+           "(last status: ", status$status, ")",
+           call. = FALSE)
+    }
+  }
+
+  # download result ----
+  result_req <- httr2::request(api_url) |>
+    httr2::req_url_path_append("jobs", job_id, "result") |>
+    httr2::req_url_query(format = "arrow") |>
+    httr2::req_auth_bearer_token(api_key) |>
+    httr2::req_timeout(120)
+
+  result_resp <- httr2::req_perform(result_req)
+  if (httr2::resp_status(result_resp) != 200) {
+    stop("Result download failed (HTTP ", httr2::resp_status(result_resp), ")",
+         call. = FALSE)
+  }
+
+  contents <- httr2::resp_body_raw(result_resp)
+  dir.create(save_dir, showWarnings = FALSE, recursive = TRUE)
+  zip_path <- basename(file_path) |>
+    gsub("\\..{1,4}$", "\\.zip", x = _) |>
+    file.path(save_dir, x = _)
+  writeBin(contents, zip_path)
+
+  if (!quiet) message("Done: ", zip_path)
+  zip_path
+}
+
+
 #' Process a paper using the bibr API
 #'
 #' @param file_path Path to the document file, or a directory of documents
