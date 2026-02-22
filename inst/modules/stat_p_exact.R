@@ -45,7 +45,7 @@ stat_p_exact <- function(paper) {
 
   # summary_table ----
   summary_table <- p[p$imprecise, , drop = FALSE]
-  summary_table <- dplyr::count(summary_table, id, name = "n_imprecise")
+  summary_table <- dplyr::count(summary_table, paper_id, name = "n_imprecise")
 
   # traffic light ----
   if (nrow(p) == 0) {

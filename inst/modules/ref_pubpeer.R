@@ -22,7 +22,7 @@
 #' @returns a list
 ref_pubpeer <- function(paper) {
   # create table ----
-  cols <- c("id", "bib_id", "doi", "bib_text")
+  cols <- c("paper_id", "bib_id", "doi", "bib_text")
   bib <- concat_tables(paper, "bib")[, cols]
 
   # If there are no rows, return immediately
@@ -54,7 +54,7 @@ ref_pubpeer <- function(paper) {
   # summary_table ----
   summary_table <- dplyr::summarise(
     table,
-    .by = "id",
+    .by = "paper_id",
     pubpeer_comments = sum(total_comments, na.rm = TRUE)
   )
 

@@ -19,11 +19,11 @@ test_that("default", {
   sig <- search_text(paper, "significant")
 
   expect_true(all(grepl("significant", sig$text)))
-  expect_equal(nrow(sig), 3)
+  expect_equal(nrow(sig), 2)
 
   # section
   res <- search_text(paper, "significant", "results")
-  expect_equal(nrow(res), 2)
+  expect_equal(nrow(res), 1)
   expect_true(all(res$section_type == "results"))
 
   # multiple matches in a sentence
@@ -51,7 +51,7 @@ test_that("table as first argument", {
   sig2 <- search_text(sig, "significant")
   expect_equal(sig, sig2)
 
-  s3 <- search_text(sig, "significant", return = "id")
+  s3 <- search_text(sig, "significant", return = "paper_id")
   expect_equal(nrow(s3), 1)
 })
 
@@ -74,7 +74,7 @@ test_that("return", {
   res_div <- search_text(s, section = "method", return = "header")
   # res_sec <- search_text(s, section = "method", return = "section")
   res_m <- search_text(s, "Part [0-9]", section = "method", return = "match")
-  res_id <- search_text(s, return = "id")
+  res_id <- search_text(s, return = "paper_id")
 
   expect_equal(res_s1$text, res_s2$text)
   expect_equal(res_s1$text, s$text[2:11])
@@ -110,7 +110,7 @@ test_that("iteration", {
 
   # search full text
   sig <- search_text(paper, "significant")
-  expect_equal(nrow(sig), 18)
+  expect_equal(nrow(sig), 19)
 
   equal <- search_text(paper, "=", section = "results")
   classes <- as.character(unique(equal$section_type))
@@ -131,7 +131,7 @@ test_that("odd errors", {
   x <- search_text(paper, pattern, perl = TRUE, return = "match")
   expect_equal(nrow(x), 0)
   exp <- c("text_id", "section_id", "paragraph_id",
-           "text", "id", "header", "section_type")
+           "text", "paper_id", "header", "section_type")
   expect_contains(names(x), exp)
 })
 
@@ -181,7 +181,14 @@ test_that("search_header", {
             "Bananas only here.",
             "Mango smoothie.")
   paper <- test_paper(text)
-  paper$text$header <- c("Fruit", "Fruit", "Fruit", "No Apples here")
+  paper$text$section_id <- 1:4
+  paper$sections <- data.frame(
+    section_id = 1:4,
+    header <- c("Fruit", "Fruit", "Fruit", "No Apples here"),
+    parent_section_id = 0,
+    section_type = "unknown",
+    classification_score = 0
+  )
 
   pattern <- c("apple")
   x <- search_text(paper, pattern, search_header = TRUE)

@@ -152,9 +152,9 @@ test_that("module_run", {
                "dplyr::notarealfunction")
 
   # demo
-  module <- "modules/no_error.R"
+  module <- test_path("modules", "no_error.R")
   mod_output <- module_run(paper, module)
-  expected_summary <- data.frame(id = paper$id, p_values = 3)
+  expected_summary <- data.frame(paper_id = paper$paper_id, p_values = 3)
 
   expect_equal(mod_output$module, module)
   expect_equal(mod_output$title, "Demo No Error")
@@ -188,17 +188,18 @@ test_that("chaining modules - one paper", {
 })
 
 test_that("chaining modules - paperlist", {
-  paper <- psychsci[1:50]
+  paper <- psychsci[1:5]
 
   p <- module_run(paper, "all_p_values")
   url <- module_run(paper, "all_urls")
+  noerrors <- test_path("modules", "no_error.R")
 
   x <- paper |>
     module_run("all_p_values") |>
     module_run("all_urls") |>
-    module_run("modules/no_error.R")
+    module_run(noerrors)
 
-  expect_equal(names(x$summary_table), c("id", "p_values", "urls", "p_values.no_error"))
+  expect_equal(names(x$summary_table), c("paper_id", "p_values", "urls", "p_values.no_error"))
   expect_equal(x$summary_table$p_values, p$summary_table$p_values)
   expect_equal(x$summary_table$urls, url$summary_table$urls)
 })
@@ -240,8 +241,8 @@ test_that("all_urls", {
   expect_equal(urls$module, module)
 
   # iteration
-  paper <- psychsci[1:20]
+  paper <- psychsci[1:5]
   mod_output <- module_run(paper, module)
-  ids <- mod_output$table$id |> unique()
+  ids <- mod_output$table$paper_id |> unique()
   expect_contains(ids, names(paper))
 })

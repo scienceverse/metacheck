@@ -120,7 +120,7 @@ concat_tables <- function(papers, name_path) {
   for (i in seq_along(papers)) {
     x <- table_list[[i]]
     if (is.data.frame(x)) {
-      table_list[[i]]$id <- rep(papers[[i]]$id, nrow(x))
+      table_list[[i]]$paper_id <- rep(papers[[i]]$paper_id, nrow(x))
     } else {
       table_list[[i]] <- data.frame(id = character(0))
     }
@@ -178,10 +178,10 @@ is_paper_list <- function(paper) {
 #' @keywords internal
 #'
 print.scivrs_paper <- function(x, ...) {
-  underline <- rep("-", nchar(x$id)) |> paste(collapse = "")
+  underline <- rep("-", nchar(x$paper_id)) |> paste(collapse = "")
   txt <- sprintf(
     "%s\n%s\n%s\n\n%s\n\n* Sections: %d\n* Sentences: %d\n* Bibliography: %d\n* X-Refs: %d\n\n",
-    underline, x$id, underline,
+    underline, x$paper_id, underline,
     x$info$title %||% "{No title}",
     nrow(x$sections),
     nrow(x$text),

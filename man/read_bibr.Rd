@@ -7,7 +7,7 @@
 read_bibr(file_path)
 }
 \arguments{
-\item{file_path}{path to the zip file or a directory of zip files}
+\item{file_path}{path to the zip file}
 }
 \value{
 a paper object
@@ -15,3 +15,4 @@ a paper object
 \description{
 Read Bibr zip file
 }
+\keyword{internal}

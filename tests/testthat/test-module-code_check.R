@@ -8,7 +8,7 @@ test_that("code_check offline", {
   mo <- module_run(paper, module)
   expect_equal(mo$traffic_light, "na")
   expect_null(mo$table)
-  exp <- data.frame(id = paper$id,
+  exp <- data.frame(paper_id = paper$paper_id,
                     code_file_n = 0)
   expect_equal(mo$summary_table, exp)
   expect_grepl("0", mo$summary_text)
@@ -18,7 +18,6 @@ test_that("code_check offline", {
 
 test_that("OSF no files", {
   # OSF but no R files
-  skip_if_quick()
   skip_osf()
 
   module <- "code_check"
@@ -26,7 +25,7 @@ test_that("OSF no files", {
   mo <- module_run(paper, module)
 
   expect_equal(mo$traffic_light, "na")
-  exp <- data.frame(id = paper$id,
+  exp <- data.frame(paper_id = paper$paper_id,
                     code_file_n = 0)
   expect_equal(mo$summary_table, exp)
   expect_grepl("0", mo$summary_text)
@@ -40,7 +39,7 @@ test_that("no code files", {
   paper <- test_paper("https://osf.io/m4nbv")
   mo <- module_run(paper, module)
 
-  exp <- data.frame(id = paper$id,
+  exp <- data.frame(paper_id = paper$paper_id,
                     code_file_n = 0)
   expect_equal(mo$summary_table, exp)
 
@@ -57,7 +56,7 @@ test_that("OSF", {
   mo <- module_run(paper, module)
 
   expect_equal(mo$traffic_light, "yellow")
-  exp <- data.frame(id = paper$id,
+  exp <- data.frame(paper_id = paper$paper_id,
                     code_n = 2,
                     code_abs_path = 3,
                     code_missing_files = 0)

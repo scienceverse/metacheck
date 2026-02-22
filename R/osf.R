@@ -952,6 +952,7 @@ osf_api_calls <- function(calls = NULL) {
 #' @param max_download_size maximum total size to download
 #' @param max_folder_length maximum folder name length (set to make sure paths are <260 character on some Windows OS)
 #' @param ignore_folder_structure if TRUE, download all files into a single folder
+#' @param pb a progress bar passed from another function
 #'
 #' @returns data frame of file info
 #' @export
@@ -965,13 +966,20 @@ osf_file_download <- function(osf_id,
                               max_file_size = 10,
                               max_download_size = 100,
                               max_folder_length = Inf,
-                              ignore_folder_structure = FALSE) {
+                              ignore_folder_structure = FALSE,
+                              pb = NULL) {
   ## error checking ----
   osf_id <- osf_check_id(osf_id) |>
     stats::na.omit() |>
     unique()
   if (length(osf_id) == 0) {
     return(NULL)
+  }
+
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    pb$tick(0, list(what = "OSF File Download"))
+    on.exit(pb$terminate())
   }
 
   ## iterate ----

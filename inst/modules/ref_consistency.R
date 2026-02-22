@@ -22,9 +22,9 @@ ref_consistency <- function(paper) {
   xrefs <- concat_tables(paper, "xrefs")
   xrefs <- xrefs[xrefs$type == "bibr", ]
 
-  missing_refs <- dplyr::anti_join(bibs, xrefs, by = c("id", "xref_id"))
+  missing_refs <- dplyr::anti_join(bibs, xrefs, by = c("paper_id", "xref_id"))
   missing_refs$missing <- rep("xrefs", nrow(missing_refs))
-  missing_bib <- dplyr::anti_join(xrefs, bibs, by = c("id", "xref_id"))
+  missing_bib <- dplyr::anti_join(xrefs, bibs, by = c("paper_id", "xref_id"))
   missing_bib$missing <- rep("bib", nrow(missing_bib))
   names(missing_bib) <- names(missing_bib) |> sub("text", "ref", x = _)
   missing_bib$ref <- as.list(missing_bib$ref)
@@ -41,9 +41,9 @@ ref_consistency <- function(paper) {
       values_from = n, values_fill = 0
     )
   summary_table <- info_table(paper, c()) |>
-    dplyr::left_join(nbibs, by = "id") |>
-    dplyr::left_join(nxrefs, by = "id") |>
-    dplyr::left_join(nmiss, by = "id")
+    dplyr::left_join(nbibs, by = "paper_id") |>
+    dplyr::left_join(nxrefs, by = "paper_id") |>
+    dplyr::left_join(nmiss, by = "paper_id")
 
   # traffic light ----
   tl <- dplyr::case_when(

@@ -4,13 +4,13 @@ test_that("bibr_convert", {
 
   expect_error(bibr_convert(bad_arg))
 
-  skip_if_offline()
+  skip_if_offline("api.bibr.metacheck.app")
 
   # pdf
   file_name <- "to_err_is_human.pdf"
   file_path <- test_path("fixtures", "formats", file_name)
-  save_path <- withr::local_tempdir()
-  zip_path <- bibr_convert(file_path, save_path)
+  save_dir <- withr::local_tempdir()
+  zip_path <- bibr_convert(file_path, save_dir)
   expect_true(file.exists(zip_path) |> all())
   expect_grepl("to_err_is_human\\.zip", zip_path)
   pdf <- read_bibr(zip_path)
@@ -62,10 +62,10 @@ test_that("read_bibr", {
 
   expect_s3_class(paper, "scivrs_paper")
   obs <- names(paper)
-  exp <- c("id", "info", "authors", "text", "links", "tables",
-           "sections", "bib", "xrefs", "figures")
+  exp <- c("paper_id", "info", "authors", "text", "links", "tables",
+           "sections", "bib", "xrefs", "figures", "equations")
   expect_contains(obs, exp)
-  expect_grepl("^[a-f0-9]{14}$", paper$id)
+  expect_grepl("^[a-f0-9]{14}$", paper$paper_id)
 })
 
 test_that("read", {
@@ -80,24 +80,27 @@ test_that("read", {
 
   expect_s3_class(paper, "scivrs_paper")
   obs <- names(paper)
-  exp <- c("id", "info", "authors", "text", "links", "tables",
+  exp <- c("paper_id", "info", "authors", "text", "links", "tables",
            "sections", "bib", "xrefs", "figures")
   expect_contains(obs, exp)
-  expect_grepl("^[a-f0-9]{14}$", paper$id)
+  expect_grepl("^[a-f0-9]{14}$", paper$paper_id)
 
   # vector of paths
-  zips <- c("to_err_is_human.zip", "published.zip")
-  file_path <- test_path("fixtures", "bibr", zips)
+  file_path <- c(
+    test_path("fixtures", "formats", "to_err_is_human.zip"),
+    test_path("fixtures", "psychsci", "0956797613520608.zip")
+  )
   papers <- read(file_path)
   expect_s3_class(papers, "scivrs_paperlist")
   expect_s3_class(papers[[1]], "scivrs_paper")
   expect_s3_class(papers[[2]], "scivrs_paper")
 
   expect_equal(paper, papers[[1]])
-  expect_equal(names(papers), c(papers[[1]]$id, papers[[2]]$id))
+  expect_equal(names(papers),
+               c(papers[[1]]$paper_id, papers[[2]]$paper_id))
 
   # directory
-  file_path <- test_path("fixtures", "bibr", "psychsci")
+  file_path <- test_path("fixtures", "psychsci")
   ps <- read(file_path)
   expect_s3_class(ps, "scivrs_paperlist")
   expect_s3_class(ps[[1]], "scivrs_paper")

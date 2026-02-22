@@ -6,8 +6,8 @@ test_that("exists", {
 test_that("paper", {
   p <- paper()
   expect_s3_class(p, "scivrs_paper")
-  exp_names <- c("id", "info", "authors", "text", "links", "tables", "sections",
-                 "bib", "xrefs", "figures")
+  exp_names <- c("paper_id", "info", "authors", "text", "links", "tables", "sections",
+                 "bib", "xrefs", "figures", "equations")
   expect_contains(names(p), exp_names)
   expect_grepl("^[a-f0-9]{14}$", p$id)
   expect_equal(p$info, list())
@@ -28,13 +28,13 @@ test_that("paperlist", {
   pl <- paperlist(p1, p2)
 
   expect_s3_class(pl, "scivrs_paperlist")
-  expect_equal(names(pl), c(p1$id, p2$id))
+  expect_equal(names(pl), c(p1$paper_id, p2$paper_id))
 
   # single list of papers
   pl <- paperlist(psychsci[1:2])
 
   expect_s3_class(pl, "scivrs_paperlist")
-  expect_equal(names(pl), c(p1$id, p2$id))
+  expect_equal(names(pl), c(p1$paper_id, p2$paper_id))
 
   # multiple lists of papers
   pl <- paperlist(psychsci[1:2], psychsci[3:4])
@@ -61,8 +61,6 @@ test_that("paperlist", {
 test_that("test_paper", {
   expect_true(is.function(metacheck::test_paper))
   expect_no_error(helplist <- help(test_paper, metacheck))
-
-  expect_error(test_paper())
 
   p <- test_paper("A")
   expect_equal(p$text$text, "A")

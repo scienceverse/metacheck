@@ -25,7 +25,7 @@ expand_text <- function(results_table,
                         paper,
                         expand_to = c("sentence", "paragraph", "div", "section"),
                         plus = 0, minus = 0) {
-  id <- section_id <- paragraph_id <- text_id <- text <- expanded <- NULL # ugh cmdcheck
+  paper_id <- section_id <- paragraph_id <- text_id <- text <- expanded <- NULL # ugh cmdcheck
 
   # check results_table and extract table if object
   if (!is.data.frame(results_table)) {
@@ -39,7 +39,7 @@ expand_text <- function(results_table,
   }
 
   # set up full text table ----
-  by <- c("id", "section_id", "paragraph_id", "text_id", "text")
+  by <- c("paper_id", "section_id", "paragraph_id", "text_id", "text")
   ft <- search_text(paper)[, by]
 
   # set up expand_to ----
@@ -80,17 +80,17 @@ expand_text <- function(results_table,
       # cut down to relevant sentences
 
       text <- lapply(-minus:plus, function(offset) {
-        coords <- results_table[c("id", "section_id", "paragraph_id", "text_id")]
+        coords <- results_table[c("paper_id", "section_id", "paragraph_id", "text_id")]
         coords$exp_text_id <- coords$text_id + offset
         coords
       }) |>
         do.call(rbind, args = _) |>
         unique() |>
-        dplyr::left_join(text, by = c("id", "section_id", "paragraph_id", "exp_text_id" = "text_id")) |>
+        dplyr::left_join(text, by = c("paper_id", "section_id", "paragraph_id", "exp_text_id" = "text_id")) |>
         dplyr::filter(!is.na(expanded)) |>
         dplyr::summarise(
           expanded = paste(expanded, collapse = " "),
-          .by = dplyr::all_of(c("id", "section_id", "paragraph_id", "text_id"))
+          .by = dplyr::all_of(c("paper_id", "section_id", "paragraph_id", "text_id"))
         )
     }
   }

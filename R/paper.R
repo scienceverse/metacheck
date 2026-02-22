@@ -19,7 +19,7 @@ paper <- function(id = NULL, ...) {
   }
 
   paper <- list(
-    id = id,
+    paper_id = id,
     info = list(),
     authors = list(),
     text = data.frame(),
@@ -28,7 +28,8 @@ paper <- function(id = NULL, ...) {
     sections = data.frame(),
     bib = data.frame(),
     xrefs = data.frame(),
-    figures = data.frame()
+    figures = data.frame(),
+    equations = data.frame()
   )
 
   class(paper) <- c("scivrs_paper", "list")
@@ -70,7 +71,7 @@ paperlist <- function(..., merge_duplicates = TRUE) {
   }
 
   # update names from id
-  names(paperlist) <- sapply(paperlist, \(x) x$id)
+  names(paperlist) <- sapply(paperlist, \(x) x$paper_id)
 
   if (merge_duplicates) {
     # check for duplicate IDs
@@ -102,7 +103,7 @@ paperlist <- function(..., merge_duplicates = TRUE) {
 #' @examples
 #' # to test a paper with a specific URL
 #' p <- test_paper("https://osf.io/abcde")
-test_paper <- function(text) {
+test_paper <- function(text = LETTERS) {
   p <- paper()
 
   p$text <- data.frame(
@@ -112,7 +113,19 @@ test_paper <- function(text) {
     text = as.character(text)
   )
 
-  p$info$title <- "Test Paper"
+  p$sections <- data.frame(
+    section_id = 0,
+    header = "Test",
+    parent_section_id = NA,
+    section_type = "unknown",
+    classification_score = 0
+  )
+
+  p$info <- data.frame(
+    title = "Test Paper",
+    file_hash = p$paper_id,
+    input_format = "test"
+  )
 
   return(p)
 }

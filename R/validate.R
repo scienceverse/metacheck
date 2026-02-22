@@ -82,7 +82,7 @@ validate <- function(gt, module, compare = "table") {
   # get table for comparison to text
   comp_table <- dplyr::full_join(
     gt, mo[[compare]],
-    by = c("id", "text"),
+    by = c("paper_id", "text"),
     suffix = c(".gt", ".mod")
   )
 

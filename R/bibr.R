@@ -90,6 +90,8 @@ bibr_convert <- function(file_path,
 #'
 #' @returns a paper object
 #' @export
+#'
+#' @keywords internal
 read_bibr <- function(file_path) {
   # temp dir for unzip and cleanup ----
   exdir <- file.path(
@@ -112,6 +114,7 @@ read_bibr <- function(file_path) {
   }
 
   # temporary processing for format changes to be added to bibr ----
+  paper$paper_id <- paper$info$file_hash
 
   ## remove references from text table
   ref_section <- paper$sections[paper$sections$section_type == "references", ]$section_id

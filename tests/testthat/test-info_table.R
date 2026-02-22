@@ -12,17 +12,17 @@ test_that("errors", {
 test_that("defaults", {
   # list of papers
   paper <- psychsci[1:3]
-  info <- c("id", "title", "doi")
+  info <- c("paper_id", "title", "doi")
   infotable <- info_table(paper)
 
-  expect_equal(infotable$id, names(paper))
+  expect_equal(infotable$paper_id, names(paper))
   expect_equal(names(infotable), info)
 
   # one paper
   paper <- demopaper()
   infotable <- info_table(paper)
 
-  expect_equal(infotable$id, paper$id)
+  expect_equal(infotable$paper_id, paper$paper_id)
   expect_equal(names(infotable), info)
 })
 
@@ -32,12 +32,12 @@ test_that("missing items", {
   info <- c("doi", "title", "not a column")
   infotable <- info_table(paper, info)
 
-  expected <- c("id", info)
+  expected <- c("paper_id", info)
   expect_equal(names(infotable), expected)
 
   expect_equal(infotable$`not a column`, NA)
 
-  info <- c("doi", "title", "id")
+  info <- c("doi", "title", "paper_id")
   infotable <- info_table(paper, info)
   expect_equal(names(infotable), info)
 })

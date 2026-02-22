@@ -38,7 +38,7 @@ stat_effect_size <- function(paper) {
   )
   text_found_test <- stat_sentences |>
     search_text(test_regex, perl = TRUE, ignore.case = FALSE) |>
-    dplyr::select(id, text, section_id, paragraph_id, text_id)
+    dplyr::select(paper_id, text, section_id, paragraph_id, text_id)
 
   ## detect relevant effect sizes ----
   potentials <- c(
@@ -57,7 +57,7 @@ stat_effect_size <- function(paper) {
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
 
-  by <- c("id", "section_id", "paragraph_id", "text_id")
+  by <- c("paper_id", "section_id", "paragraph_id", "text_id")
   text_found_es <- search_text(text_found_test, es_regex,
     return = "match", perl = FALSE
   ) |>
@@ -93,7 +93,7 @@ stat_effect_size <- function(paper) {
   # sentences with a relevant test
   text_found_test <- stat_sentences |>
     search_text(test_regex, perl = TRUE, ignore.case = FALSE) |>
-    dplyr::select(id, text, section_id, paragraph_id, text_id)
+    dplyr::select(paper_id, text, section_id, paragraph_id, text_id)
 
   ## detect relevant effect sizes ----
   potentials <- c(
@@ -153,7 +153,7 @@ stat_effect_size <- function(paper) {
       ttests_without_es = sum(test == "t-test" & is.na(es)),
       Ftests_with_es = sum(test == "F-test" & !is.na(es)),
       Ftests_without_es = sum(test == "F-test" & is.na(es)),
-      .by = dplyr::all_of(c("id"))
+      .by = "paper_id"
     )
 
   # traffic light ----

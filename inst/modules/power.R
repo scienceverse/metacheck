@@ -169,7 +169,7 @@ power <- function(paper, seed = 8675309) {
     report <- c(summary_text, collapse_section(guidance))
 
     summary_table <- data.frame(
-      id = NA_character_,
+      paper_id = NA_character_,
       power_n = NA_integer_,
       power_complete = NA_integer_
     )
@@ -231,7 +231,7 @@ power <- function(paper, seed = 8675309) {
         \(x) sum(!is.na(x)),
         .names = "power_{.col}"
       ),
-      .by = id
+      .by = paper_id
     )
 
     # report ----

@@ -57,10 +57,7 @@ reference:
   desc: ~
   contents:
   - '`bibr_convert`'
-  - '`read_bibr`'
-- title: Demo Resources
-  desc: ~
-  contents:
+  - '`read`'
   - '`demopaper`'
   - '`psychsci`'
   - '`test_paper`'
@@ -71,7 +68,6 @@ reference:
   - '`expand_text`'
   - '`concat_tables`'
   - '`info_table`'
-  - '`author_table`'
 - title: Module Functions
   desc: ~
   contents:

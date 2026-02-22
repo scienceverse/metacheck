@@ -4,12 +4,14 @@ test_that("tei_to_bibr", {
 
   expect_error(tei_to_bibr(bad_arg))
 
-  xml_file <- test_path("fixtures", "examples", "to_err_is_human.xml")
+  xml_file <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
   paper <- tei_to_bibr(xml_file)
 
   expect_s3_class(paper, "scivrs_paper")
   text_cols <- c("text_id", "paragraph_id", "section_id", "text")
   expect_in(names(paper$text), text_cols)
+
+  expect_equal(paper$bib$doi[[4]], "10.0000/0123456789")
 })
 
 test_that("read", {

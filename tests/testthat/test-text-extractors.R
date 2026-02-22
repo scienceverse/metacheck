@@ -31,7 +31,7 @@ test_that("extract_urls", {
   # paperlist
   paper <- psychsci[1:10]
   urls <- extract_urls(paper)
-  expect_in(urls$id, names(paper))
+  expect_in(urls$paper_id, names(paper))
 })
 
 

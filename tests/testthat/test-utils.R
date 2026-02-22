@@ -38,20 +38,20 @@ test_that("concat_tables", {
   n <- nrow(papers[[1]]$bib) + nrow(papers[[2]]$bib)
   expect_equal(nrow(bibs), n)
 
-  ids <- unique(bibs$id)
+  ids <- unique(bibs$paper_id)
   expect_equal(ids, names(papers))
 
   # concat 1 paper
   papers <- demopaper()
   info <- concat_tables(papers, c("info"))
-  expect_equal(info$id, paper$id)
+  expect_equal(info$file_hash, papers$paper_id)
 
   # concat 1 paper empty table
   papers <- demopaper()
   papers$bib <- data.frame(text = character(0))
   bib <- concat_tables(papers, c("bib"))
   expect_equal(nrow(bib), 0)
-  expect_equal(names(bib), c("text", "id"))
+  expect_equal(names(bib), c("text", "paper_id"))
 })
 
 
@@ -73,7 +73,7 @@ test_that("print.scivrs_paper", {
   op.sv <- capture_output(print.scivrs_paper(paper))
 
   expect_equal(op, op.sv)
-  expect_grepl(paper$id, op)
+  expect_grepl(paper$paper_id, op)
   expect_grepl(paper$info$title, op, ignore.case = FALSE, fixed = TRUE)
 })
 
@@ -92,8 +92,8 @@ test_that("print.scivrs_paperlist", {
   )
 
   op <- capture_output(print(x))
-  expect_grepl(x[[1]]$id, op)
-  expect_grepl(x[[2]]$id, op)
+  expect_grepl(x[[1]]$paper_id, op)
+  expect_grepl(x[[2]]$paper_id, op)
 })
 
 test_that("[.scivrs_paperlist", {

@@ -67,8 +67,8 @@ funding_check <- function(paper) {
 
   table <- paper |>
     search_text() |>
-    dplyr::select(id, text) |>
-    dplyr::nest_by(id) |>
+    dplyr::select(paper_id, text) |>
+    dplyr::nest_by(paper_id) |>
     dplyr::rowwise() |>
     dplyr::mutate(text = rtransparent_funding(data$text)) |>
     dplyr::ungroup() |>
@@ -76,7 +76,8 @@ funding_check <- function(paper) {
     dplyr::filter(!is.na(text) & nzchar(text))
 
   # summary_table ----
-  summary_table <- dplyr::summarise(table, funding_found = TRUE, .by = id)
+  summary_table <- dplyr::summarise(table, funding_found = TRUE,
+                                    .by = paper_id)
 
   # traffic light ----
   tl <- ifelse(nrow(table), "green", "red")

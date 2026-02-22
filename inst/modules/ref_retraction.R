@@ -27,11 +27,11 @@ ref_retraction <- function(paper) {
   # for testing: paper <- demopaper()
 
   # table ----
-  bib <- concat_tables(paper, "bib")[, c("id", "xref_id", "doi", "ref")]
+  bib <- concat_tables(paper, "bib")[, c("paper_id", "xref_id", "doi", "bib_text")]
   missing_doi <- get_prev_outputs("ref_doi_check", "table")
   if (!is.null(missing_doi)) {
-    md <- missing_doi[, c("id", "xref_id", "DOI")]
-    bib <- dplyr::left_join(bib, md, by = c("id", "xref_id"))
+    md <- missing_doi[, c("paper_id", "xref_id", "DOI")]
+    bib <- dplyr::left_join(bib, md, by = c("paper_id", "xref_id"))
     is_missing <- is.na(bib$doi)
     bib$doi[is_missing] <- bib$DOI[is_missing]
     bib$DOI <- NULL
@@ -64,7 +64,7 @@ ref_retraction <- function(paper) {
   # summary_table ----
   summary_table <- dplyr::summarise(
     table,
-    .by = "id",
+    .by = "paper_id",
     retractionwatch = sum(!is.na(retractionwatch)),
   )
 
@@ -91,7 +91,7 @@ ref_retraction <- function(paper) {
     )
 
     ## report_table ----
-    report_table <- table[, c("ref", "retractionwatch")]
+    report_table <- table[, c("bib_text", "retractionwatch")]
     report_table$ref <- format_ref(report_table$ref)
     names(report_table) <- c("Reference", "RW Type")
 

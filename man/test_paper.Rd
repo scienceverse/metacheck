@@ -4,7 +4,7 @@
 \alias{test_paper}
 \title{Test paper}
 \usage{
-test_paper(text)
+test_paper(text = LETTERS)
 }
 \arguments{
 \item{text}{a vector of text to add}

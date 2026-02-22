@@ -147,15 +147,15 @@ effect_size <- function(paper, ...) {
                               by = c("div", "p", "s", "id"))
 
   ## summary table ----
-  summary_not <- dplyr::count(es_not_reported, id,
+  summary_not <- dplyr::count(es_not_reported, paper_id,
                               name = "Ftests_without_es")
-  summary_test <- dplyr::count(text_found_test, id,
+  summary_test <- dplyr::count(text_found_test, paper_id,
                                name = "Ftests_n")
-  summary_es <- dplyr::count(text_found_es, id,
+  summary_es <- dplyr::count(text_found_es, paper_id,
                              name = "Ftests_with_es")
   f_summary_table <- summary_test |>
-    dplyr::left_join(summary_es, by = "id") |>
-    dplyr::left_join(summary_not, by = "id") |>
+    dplyr::left_join(summary_es, by = "paper_id") |>
+    dplyr::left_join(summary_not, by = "paper_id") |>
     dplyr::mutate(
       Ftests_with_es = tidyr::replace_na(Ftests_with_es, 0),
       Ftests_without_es = tidyr::replace_na(Ftests_without_es, 0)
@@ -163,7 +163,9 @@ effect_size <- function(paper, ...) {
 
   # combine tests ----
   table <- dplyr::bind_rows(t_table, f_table)
-  summary_table <- dplyr::full_join(t_summary_table, f_summary_table, by = "id")
+  summary_table <- dplyr::full_join(t_summary_table,
+                                    f_summary_table,
+                                    by = "paper_id")
 
   # traffic light ----
   total_n <- t_total_n + f_total_n

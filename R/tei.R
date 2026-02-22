@@ -7,42 +7,28 @@
 tei_to_bibr <- function(xml_file) {
   bibr_version = "0.1.0"
 
-  xml_text <- readLines(xml_file) |>
+  xml_text <- readLines(xml_file, warn = FALSE) |>
     paste(collapse = "\n") |>
     # fixes a glitch that stopped grobid xml from being read
     gsub(' xmlns="http://www.tei-c.org/ns/1.0"', "",
          x = _, fixed = TRUE
     )
-  doc <- xml2::read_xml(xml_text)
-
-  # helpers ----
-  null_if_empty <- function(x) {
-    if (length(x) == 0 || all(is.na(x)) || all(trimws(x) == "")) return(NULL)
-    x
-  }
-
-  text_or_null <- function(node) {
-    if (length(node) == 0) return(NULL)
-    val <- xml2::xml_text(node) |> trimws()
-    ifelse(val == "", NULL, val)
-  }
+  xml <- xml2::read_xml(xml_text)
 
   file_hash <- substr(tools::md5sum(xml_file), 1, 14)
   paper <- paper(file_hash)
 
   # info ----
-  title <- text_or_null(xml2::xml_find_first(doc, ".//titleStmt/title"))
-  abstract <- text_or_null(xml2::xml_find_first(doc, ".//abstract"))
+  title <- xml_find1(xml, ".//titleStmt/title")
+  abstract <- xml_find1(xml, ".//abstract")
 
-  keywords <- xml2::xml_find_all(doc, ".//textClass/keywords/term")
-  keywords <- null_if_empty(xml2::xml_text(keywords))
+  keywords <- xml_find(xml, ".//textClass/keywords/term")
   if (is.null(keywords)) keywords <- character()
 
-  doi_node <- xml2::xml_find_first(doc, ".//idno[@type='DOI']")
-  doi <- text_or_null(doi_node)
+  doi <- xml_find1(xml, ".//idno[@type='DOI']")
 
   # authors ----
-  author_nodes <- xml2::xml_find_all(doc, "//sourceDesc //author[persName]")
+  author_nodes <- xml2::xml_find_all(xml, "//sourceDesc //author[persName]")
   authors <- lapply(seq_along(author_nodes), function(i) {
     a <- author_nodes[[i]]
 
@@ -85,7 +71,7 @@ tei_to_bibr <- function(xml_file) {
   )
 
   # text ----
-  ft <- tei_full_text(doc)
+  ft <- tei_full_text(xml)
   ft$p <- seq_along(ft$p)
   ft <- process_full_text(ft)
 
@@ -109,24 +95,25 @@ tei_to_bibr <- function(xml_file) {
   )
 
   # bib ----
-  bib <- tei_bib(doc)
+  bib <- tei_bib(xml)
 
   paper$bib <- data.frame(
     bib_id = gsub("b", "", bib$xref_id) |> as.integer(),
-    title = bib$title,
-    first_page = NA_character_,
-    volume = NA_character_,
-    author = bib$authors,
-    year = bib$year,
-    journal_title = bib$journal,
+    bibtype = bib$bibtype %||% NA_character_,
+    bib_text = format_ref(bib$ref) %||% NA_character_,
+    doi = bib$doi %||% NA_character_,
+    title = bib$title %||% NA_character_,
+    author = bib$authors %||% NA_character_,
+    journal_title = bib$journal %||% NA_character_,
+    year = bib$year %||% NA_real_,
+    volume = bib$volume %||% NA_character_,
+    issue = bib$number %||% NA_character_,
+    first_page = bib$first_page %||% NA_character_,
+    last_page = bib$last_page %||% NA_character_,
+    booktitle = bib$booktitle %||% NA_character_,
+    editor = bib$editor %||% NA_character_,
+    publisher = bib$publisher %||% NA_character_,
     isbn = NA_character_,
-    doi = bib$doi,
-    bibtype = bib$bibtype,
-    bib_text = format_ref(bib$ref),
-    last_page = NA_character_,
-    issue = NA_character_,
-    editor = NA_character_,
-    publisher = NA_character_,
     issn = NA_character_,
     link = NA_character_,
     crossref_verified = FALSE,
@@ -135,7 +122,7 @@ tei_to_bibr <- function(xml_file) {
   )
 
   # xrefs ----
-  paper$xrefs <- tei_xrefs(doc) |>
+  paper$xrefs <- tei_xrefs(xml) |>
     dplyr::rowwise() |>
     dplyr::mutate(
       text = paper$text$text[which.min(stringdist::stringdist(text, paper$text$text))]
@@ -474,7 +461,7 @@ tei_bib <- function(xml) {
 
 #' Find and return info from XML by xpath
 #'
-#' @param xml the xml document, node, or nodeset
+#' @param xml the xml xmlument, node, or nodeset
 #' @param xpath a string containing an xpath expression
 #' @param join optional string to join vectors
 #'
@@ -494,7 +481,7 @@ xml_find <- function(xml, xpath, join = NULL) {
 
 #' Find and return first info from XML by xpath
 #'
-#' @param xml the xml document, node, or nodeset
+#' @param xml the xml xmlument, node, or nodeset
 #' @param xpath a string containing an xpath expression
 #' @param join optional string to join vectors
 #'
@@ -537,16 +524,14 @@ xml_date <- function(xml, xpath = ".//string-date") {
 xml2bib <- function(ref) {
   b <- list(bibtype = "misc")
 
-  b$doi <- xml2::xml_find_first(ref, ".//idno[@type='DOI']") |>
-    xml2::xml_text()
+  b$doi <- xml_find1(ref, ".//idno[@type='DOI']")
 
-  b$title <- xml2::xml_find_first(ref, ".//title[@level='a']") |>
-    xml2::xml_text()
+  b$title <- xml_find1(ref, ".//title[@level='a']")
 
   b$author <- xml2::xml_find_all(ref, ".//author //persName") |>
     lapply(\(a) {
-      forename <- xml2::xml_find_all(a, ".//forename") |> xml2::xml_text()
-      surname <- xml2::xml_find_all(a, ".//surname") |> xml2::xml_text()
+      forename <- xml_find(a, ".//forename", join = " ")
+      surname <- xml_find(a, ".//surname", join = " ")
 
       utils::person(
         given = forename,
@@ -557,8 +542,8 @@ xml2bib <- function(ref) {
 
   b$editor <- xml2::xml_find_all(ref, ".//editor //persName") |>
     lapply(\(a) {
-      forename <- xml2::xml_find_all(a, ".//forename") |> xml2::xml_text()
-      surname <- xml2::xml_find_all(a, ".//surname") |> xml2::xml_text()
+      forename <- xml_find(a, ".//forename", join = " ")
+      surname <- xml_find(a, ".//surname", join = " ")
 
       utils::person(
         given = forename,
@@ -567,24 +552,16 @@ xml2bib <- function(ref) {
     }) |>
     do.call(base::c, args = _)
 
-  b$journal <- xml2::xml_find_first(ref, ".//title[@level='j']") |>
-    xml2::xml_text() |>
-    gsub("\\s+", " ", x = _) |>
-    trimws()
+  b$journal <- xml_find1(ref, ".//title[@level='j']")
 
-  b$booktitle <- xml2::xml_find_first(ref, ".//title[@level='m']") |>
-    xml2::xml_text()
+  b$booktitle <- xml_find1(ref, ".//title[@level='m']")
 
   # imprint
   imprint <- xml2::xml_find_first(ref, ".//imprint")
-  b$publisher <- xml2::xml_find_first(imprint, ".//publisher") |>
-    xml2::xml_text()
-  b$year <- xml2::xml_find_first(imprint, ".//date[@type='published']") |>
-    xml2::xml_text()
-  b$volume <- xml2::xml_find_first(imprint, ".//biblScope[@unit='volume']") |>
-    xml2::xml_text()
-  b$number <- xml2::xml_find_first(imprint, ".//biblScope[@unit='issue']") |>
-    xml2::xml_text()
+  b$publisher <- xml_find1(imprint, ".//publisher")
+  b$year <- xml_find1(imprint, ".//date[@type='published']")
+  b$volume <- xml_find1(imprint, ".//biblScope[@unit='volume']")
+  b$number <- xml_find1(imprint, ".//biblScope[@unit='issue']")
   page_unit <- xml2::xml_find_first(imprint, ".//biblScope[@unit='page']")
   if (!is.na(page_unit)) {
     pages <- xml2::xml_text(page_unit)
@@ -592,9 +569,12 @@ xml2bib <- function(ref) {
       pages <- xml2::xml_attrs(page_unit)
       if (!is.na(pages[[1]])) {
         b$pages <- paste(pages[["from"]], pages[["to"]], sep = "-")
+        b$first_page <- pages[["from"]]
+        b$last_page <- pages[["to"]]
       }
     } else {
       b$pages <- pages
+      b$first_page <- pages
     }
   }
 

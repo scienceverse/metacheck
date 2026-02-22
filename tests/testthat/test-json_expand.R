@@ -1,6 +1,6 @@
 test_that("json_expand", {
   table <- data.frame(
-    id = 1:5,
+    paper_id = 1:5,
     answer = c(
       '{"number": 1, "letter": "A", "bool": true}',
       '{"number": 2, "letter": "B", "bool": "FALSE"}',
@@ -16,7 +16,7 @@ test_that("json_expand", {
   expect_equal(names(expanded)[[2]], "answer")
   expect_equal(names(expanded2)[[1]], "json")
 
-  expect_equal(names(expanded), c("id", "answer", "number", "letter", "bool", "error"))
+  expect_equal(names(expanded), c("paper_id", "answer", "number", "letter", "bool", "error"))
   expect_equal(typeof(expanded$number), "integer")
   expect_equal(typeof(expanded$letter), "character")
   expect_equal(typeof(expanded$bool), "logical")

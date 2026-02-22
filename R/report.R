@@ -41,7 +41,9 @@ report <- function(paper,
                      "ref_pubpeer",
                      "ref_summary"
                    ),
-                   output_file = paste0(paper$id, "_report.", output_format),
+                   output_file = paste0(paper$paper_id,
+                                        "_report.",
+                                        output_format),
                    output_format = c("html", "qmd"),
                    args = list()) {
   # error catching ----
@@ -142,7 +144,7 @@ report <- function(paper,
           paste0(".qmd")
         write(report_text, output_qmd)
 
-        logger("quarto render", list(paper = paper$id,
+        logger("quarto render", list(paper = paper$paper_id,
                                      quarto = output_qmd,
                                      error = e$message))
 

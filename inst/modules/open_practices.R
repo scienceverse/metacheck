@@ -36,9 +36,9 @@ open_practices <- function(paper) {
     return(report)
   }
 
-  ids <- unique(text$id)
-  paper_oddpub <- lapply(ids, \(id) {
-    text[text$id == id, ]$text
+  ids <- unique(text$paper_id)
+  paper_oddpub <- lapply(ids, \(paper_id) {
+    text[text$paper_id == paper_id, ]$text
   })
   names(paper_oddpub) <- ids
 

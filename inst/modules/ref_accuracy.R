@@ -66,7 +66,7 @@ ref_accuracy <- function(paper) {
     orig_authors = authors,
     orig_title = title
   )
-  table <- dplyr::left_join(table, aut_title, by = c("id", "xref_id"))
+  table <- dplyr::left_join(table, aut_title, by = c("paper_id", "xref_id"))
 
   # clean up text to prevent irrelevant mismatches
   clean <- \(x) {

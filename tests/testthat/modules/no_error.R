@@ -27,7 +27,7 @@ pvals2 <- function(paper, demo_arg = "", ...) {
   table <- search_text(paper, pattern, return = "match", "perl" = TRUE)
 
   # summary output for paperlists ----
-  summary_table <- dplyr::count(table, id, name = "p_values")
+  summary_table <- dplyr::count(table, paper_id, name = "p_values")
 
   # determine the traffic light ----
   tl <- if (nrow(table)) "info" else "na"

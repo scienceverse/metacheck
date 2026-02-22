@@ -7,7 +7,7 @@
 xml_find1(xml, xpath, join = NULL)
 }
 \arguments{
-\item{xml}{the xml document, node, or nodeset}
+\item{xml}{the xml xmlument, node, or nodeset}
 
 \item{xpath}{a string containing an xpath expression}
 

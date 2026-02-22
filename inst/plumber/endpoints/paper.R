@@ -166,7 +166,7 @@ function(req, res) {
 #* @param file:file GROBID XML file to process
 #* @param pattern the regex pattern to search for (required)
 #* @param section the section(s) to search in (optional)
-#* @param return the kind of text to return: "sentence", "paragraph", "div", "section", "match", or "id" (optional, defaults to "sentence")
+#* @param return the kind of text to return: "sentence", "paragraph", "div", "section", "match", or "paper_id" (optional, defaults to "sentence")
 #* @param ignore.case whether to ignore case when text searching (optional, defaults to TRUE)
 #* @param fixed logical. If TRUE, pattern is a string to be matched as is (optional, defaults to FALSE)
 #* @param perl logical. Should Perl-compatible regexps be used? (optional, defaults to FALSE)

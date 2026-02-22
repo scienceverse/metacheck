@@ -5,7 +5,7 @@
 #' @param paper a paper object or a list of paper objects
 #' @param pattern the regex pattern to search for, if a vector with length > 1, the patterns will be searched separately and combined
 #' @param section the section(s) to search in
-#' @param return the kind of text to return, the full sentence, paragraph, header, or section that the text is in, or just the (regex) match, or all body text for a paper (id)
+#' @param return the kind of text to return, the full sentence, paragraph, header, or section that the text is in, or just the (regex) match, or all body text for a paper (paper_id)
 #' @param ignore.case whether to ignore case when text searching
 #' @param fixed logical. If TRUE, pattern is a string to be matched as is. Overrides all conflicting arguments.
 #' @param perl logical. Should Perl-compatible regexps be used?
@@ -22,7 +22,7 @@
 #' search_text(paper, "p\\s*(=|<)\\s*[0-9\\.]+", return = "match")
 search_text <- function(paper, pattern = ".*",
                         section = NULL,
-                        return = c("sentence", "paragraph", "section", "header", "match", "id"),
+                        return = c("sentence", "paragraph", "section", "header", "match", "paper_id"),
                         ignore.case = TRUE,
                         fixed = FALSE,
                         perl = FALSE,
@@ -69,8 +69,8 @@ search_text <- function(paper, pattern = ".*",
     sections <- concat_tables(paper, "sections")
     sections$classification_score <- NULL
     sections$parent_section_id <- NULL
-    if (all(c("section_id", "id") %in% names(sections))) {
-      text <- dplyr::left_join(text, sections, by = c("section_id", "id"))
+    if (all(c("section_id", "paper_id") %in% names(sections))) {
+      text <- dplyr::left_join(text, sections, by = c("section_id", "paper_id"))
     }
   } else if (is.vector(paper) && is.character(paper)) {
     text <- data.frame(text = paper)
@@ -80,7 +80,7 @@ search_text <- function(paper, pattern = ".*",
 
   # make sure all columns exist
   required_cols <- c("text_id", "section_id", "paragraph_id", "text",
-                     "id", "header", "section_type")
+                     "paper_id", "header", "section_type")
   missing_cols <- setdiff(required_cols, names(text))
   text[missing_cols] <- NA
 
@@ -141,20 +141,20 @@ search_text <- function(paper, pattern = ".*",
     ft_match_all$text <- longtext
   } else {
     # recombine paragraphs first
-    pgroups <- c("section_type", "header", "section_id", "paragraph_id", "id")
+    pgroups <- c("section_type", "header", "section_id", "paragraph_id", "paper_id")
     ft_p <- dplyr::summarise(ft,
       text = paste(text, collapse = " "),
       .by = dplyr::all_of(pgroups)
     )
 
     if (return == "paragraph") {
-      groups <- c("section_type", "header", "section_id", "paragraph_id", "id")
+      groups <- c("section_type", "header", "section_id", "paragraph_id", "paper_id")
     } else if (return == "header") {
-      groups <- c("section_type", "header", "section_id", "id")
+      groups <- c("section_type", "header", "section_id", "paper_id")
     } else if (return == "section") {
-      groups <- c("section_type", "section_id", "id")
-    } else if (return == "id") {
-      groups <- c("id")
+      groups <- c("section_type", "section_id", "paper_id")
+    } else if (return == "paper_id") {
+      groups <- c("paper_id")
     }
 
     ft_match_all <- dplyr::semi_join(ft_p, ft_match, by = groups) |>

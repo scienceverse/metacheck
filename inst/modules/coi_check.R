@@ -26,8 +26,8 @@ coi_check <- function(paper) {
   # get text and send to rtransparent function (defined below)
   table <- paper |>
     search_text() |>
-    dplyr::select(id, text) |>
-    dplyr::nest_by(id) |>
+    dplyr::select(paper_id, text) |>
+    dplyr::nest_by(paper_id) |>
     dplyr::rowwise() |>
     dplyr::mutate(text = rtransparent_coi(data$text)) |>
     dplyr::ungroup() |>
@@ -36,7 +36,7 @@ coi_check <- function(paper) {
 
   # summary_table ----
   summary_table <- table |>
-    dplyr::summarise(coi_found = TRUE, .by = id)
+    dplyr::summarise(coi_found = TRUE, .by = paper_id)
 
   # traffic light ----
   tl <- ifelse(nrow(table), "green", "red")

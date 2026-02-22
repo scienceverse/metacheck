@@ -33,7 +33,7 @@ stat_check <- function(paper) {
   # handle no stats
   if (nrow(stat_table) == 0) {
     ret <- list(
-      summary_table = data.frame(id = paper$id),
+      summary_table = data.frame(paper_id = paper$paper_id),
       table = data.frame(),
       traffic_light = "na",
       report = "No detectable statistics. StatCheck currently only detects statistics written in APA format.",
@@ -52,7 +52,7 @@ stat_check <- function(paper) {
   # no validated stats
   if (nrow(table) == 0) {
     ret <- list(
-      summary_table = data.frame(id = paper$id),
+      summary_table = data.frame(paper_id = paper$paper_id),
       table = data.frame(),
       traffic_light = "na",
       report = "No t-tests or F-tests detected.\n\nThe accuracy of StatCheck has only been validated for *t*-tests and *F*-tests.",
@@ -68,7 +68,7 @@ stat_check <- function(paper) {
     statcheck_found = dplyr::n(),
     statcheck_errors = sum(error, na.rm = TRUE),
     statcheck_decision_errors = sum(decision_error, na.rm = TRUE),
-    .by = id
+    .by = paper_id
   )
 
   # determine the traffic light ----

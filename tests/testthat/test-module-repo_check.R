@@ -4,11 +4,11 @@ test_that("repo_check offline", {
   expect_true(module %in% mods$name)
 
   # no relevant text
-  paper <- psychsci[[210]]
+  paper <- test_paper("No repos")
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "na")
   expect_null(mod_output$table)
-  exp <- data.frame(id = paper$id,
+  exp <- data.frame(paper_id = paper$paper_id,
                     repo_n = 0,
                     files_n = NA,
                     files_data = NA,
@@ -31,7 +31,7 @@ test_that("OSF no files", {
   mod_output <- module_run(paper, module)
 
   expect_equal(mod_output$traffic_light, "yellow")
-  exp <- data.frame(id = paper$id,
+  exp <- data.frame(paper_id = paper$paper_id,
                     repo_n = 1,
                     files_n = 0,
                     files_data = 0,
@@ -51,7 +51,7 @@ test_that("no code files", {
   mod_output <- module_run(paper, module)
 
   expect_true(grepl("We found 2 files ", mod_output$summary_text))
-  exp <- data.frame(id = paper$id,
+  exp <- data.frame(paper_id = paper$paper_id,
                     repo_n = 1,
                     files_n = 2,
                     files_data = 0,
@@ -69,7 +69,7 @@ test_that("OSF", {
   mod_output <- module_run(paper, module)
 
   expect_true(grepl("We found 4 files ", mod_output$summary_text))
-  exp <- data.frame(id = paper$id,
+  exp <- data.frame(paper_id = paper$paper_id,
                     repo_n = 1,
                     files_n = 4,
                     files_data = 1,
@@ -96,7 +96,7 @@ test_that("OSF, github and rb", {
   exp <- c("bad.R", "bad.Rmd", "Code/Study 1.r", "good-example.R")
   expect_contains(mod_output$table$file_name, exp)
 
-  exp <- data.frame(id = paper$id,
+  exp <- data.frame(paper_id = paper$paper_id,
                     repo_n = 3,
                     files_n = 15,
                     files_data = 6,

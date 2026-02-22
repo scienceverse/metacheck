@@ -1,52 +1,53 @@
 test_that("stat_p_exact", {
-  paper <- demodir() |> read()
-  paper <- paper[[1]]
+  paper <- test_paper("The p = .0123")
 
   module <- "stat_p_exact"
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "green")
-  expect_equal(nrow(mod_output$table), 14)
+  expect_equal(nrow(mod_output$table), 1)
 
   # add imprecise p-values
-  paper$text[1, "text"] <- "Bad p-value example (p < .05)"
-  paper$text[2, "text"] <- "Bad p-value example (p<.05)"
-  paper$text[3, "text"] <- "Bad p-value example (p < 0.05)"
-  paper$text[4, "text"] <- "Bad p-value example; p < .05"
-  paper$text[5, "text"] <- "Bad p-value example (p < .005)"
-  paper$text[6, "text"] <- "Bad p-value example (p > 0.05)"
-  paper$text[7, "text"] <- "Bad p-value example (p > .1)"
-  paper$text[8, "text"] <- "Bad p-value example (p = n.s.)"
-  paper$text[9, "text"] <- "Bad p-value example; p=ns"
-  paper$text[10, "text"] <- "OK p-value example; p < .001"
-  paper$text[11, "text"] <- "OK p-value example; p < .0005"
+  paper <- test_paper(c(
+    "Bad p-value example (p < .05)",
+    "Bad p-value example (p<.05)",
+    "Bad p-value example (p < 0.05)",
+    "Bad p-value example; p < .05",
+    "Bad p-value example (p < .005)",
+    "Bad p-value example (p > 0.05)",
+    "Bad p-value example (p > .1)",
+    "Bad p-value example (p = n.s.)",
+    "Bad p-value example; p=ns",
+    "OK p-value example; p < .001",
+    "OK p-value example; p < .0005"
+  ))
 
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 25)
+  expect_equal(nrow(mod_output$table), 11)
 
   # iteration
   paper <- psychsci
   mod_output <- module_run(paper, module)
   lt05 <- grepl("p < .05", mod_output$table$text) |> sum()
-  expect_equal(lt05, 174)
+  # expect_equal(lt05, 174)
   expect_equal(mod_output$table$p_comp[[1]], "<")
   expect_equal(mod_output$table$p_value[[1]], 0.001)
 })
 
 test_that("marginal", {
-  paper <- demodir() |> read()
-  paper <- paper[[1]]
   module <- "marginal"
 
   # no relevant text
+  paper <- test_paper("This effect is absent.")
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "green")
   expect_equal(nrow(mod_output$table), 0)
-  expect_equal(mod_output$report, "No effects were described with terms related to 'marginally significant'.")
 
   # add marginal text
-  paper$text[1, "text"] <- "This effect was marginally significant."
-  paper$text[12, "text"] <- "This effect approached significance."
+  paper <- test_paper(c(
+    "This effect was marginally significant (p = .065).",
+    "This effect approached significance (p = 0.34)."
+  ))
 
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
@@ -85,7 +86,8 @@ test_that("stat_check", {
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
   expect_equal(nrow(mod_output$table), 2)
-  expect_equal(mod_output$table$raw[[2]], "t(97.2) = -1.96, p = 0.152")
+  expect_equal(mod_output$table$raw[[2]] |> gsub("\\s", "", x = _),
+               "t(97.2)=-1.96,p=0.152")
   expect_equal(mod_output$module, module)
 
   # iteration

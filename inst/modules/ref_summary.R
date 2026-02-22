@@ -61,32 +61,32 @@ ref_summary <- function(paper, ...) {
   if (!is.null(tables$accuracy) && nrow(tables$accuracy) > 0) {
     cols <- setdiff(names(tables$accuracy), c("ref", "orig_title", "orig_authors"))
     tbl <- tables$accuracy[, cols]
-    not_id <- !names(tbl) %in% c("id", "xref_id")
+    not_id <- !names(tbl) %in% c("paper_id", "xref_id")
     names(tbl)[not_id] <- paste0("crossref_", names(tbl)[not_id])
-    table <- dplyr::left_join(table, tbl, by = c("id", "xref_id"))
+    table <- dplyr::left_join(table, tbl, by = c("paper_id", "xref_id"))
   }
 
   ## pubpeer ----
   if (!is.null(tables$pubpeer) && nrow(tables$pubpeer) > 0) {
     cols <- setdiff(names(tables$pubpeer), c("ref", "doi"))
     tbl <- tables$pubpeer[, cols]
-    not_id <- !names(tbl) %in% c("id", "xref_id")
+    not_id <- !names(tbl) %in% c("paper_id", "xref_id")
     names(tbl)[not_id] <- paste0("pubpeer_", names(tbl)[not_id])
-    table <- dplyr::left_join(table, tbl, by = c("id", "xref_id"))
+    table <- dplyr::left_join(table, tbl, by = c("paper_id", "xref_id"))
   }
 
   ## replication ----
   if (!is.null(tables$replication) && nrow(tables$replication) > 0) {
     cols <- setdiff(names(tables$replication), c("ref", "doi"))
     tbl <- tables$replication[, cols]
-    table <- dplyr::left_join(table, tbl, by = c("id", "xref_id"))
+    table <- dplyr::left_join(table, tbl, by = c("paper_id", "xref_id"))
   }
 
   ## retraction ----
   if (!is.null(tables$retraction) && nrow(tables$retraction) > 0) {
     cols <- setdiff(names(tables$retraction), c("ref", "doi"))
     tbl <- tables$retraction[, cols]
-    table <- dplyr::left_join(table, tbl, by = c("id", "xref_id"))
+    table <- dplyr::left_join(table, tbl, by = c("paper_id", "xref_id"))
   }
 
   ## traffic light ----

@@ -5,22 +5,20 @@ test_that("aspredicted_links", {
   expect_error(aspredicted_links(bad_arg))
 
   links <- aspredicted_links(psychsci)
-  expect_equal(names(links)[[1]], "text")
+  expect_in(names(links)[[1]], "text_id")
   expect_true(all(grepl("^https://aspredicted\\.org", links$text)))
   expect_equal(nrow(links), 74)
   expect_equal(links, unique(links))
 
   sentences <- expand_text(links, psychsci)
 
-  paper <- data.frame(id = 1,
-                      s = 1:10,
-                      p = 1,
-                      text = c("</aspredicted.org/stuff>", "hi",
-                              "<https://aspredicted.org/stuff>", "hi",
-                              "<https://aspredicted.org/ stuff>", "hi",
-                              "<https://aspredicted.org/blind.php?", " x=stuff> hi",
-                              "<https://aspredicted> .org/stuff.pdf", "hi"
-                              ))
+  paper <- test_paper(text = c(
+    "</aspredicted.org/stuff>", "hi",
+    "<https://aspredicted.org/stuff>", "hi",
+    "<https://aspredicted.org/ stuff>", "hi",
+    "<https://aspredicted.org/blind.php?", " x=stuff> hi",
+    "<https://aspredicted> .org/stuff.pdf", "hi"
+  ))
   links <- aspredicted_links(paper)
   exp <- c("https://aspredicted.org/stuff",
            "https://aspredicted.org/stuff",

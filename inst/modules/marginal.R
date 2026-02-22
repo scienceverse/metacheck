@@ -21,7 +21,7 @@ marginal <- function(paper) {
   table <- search_text(paper, pattern)
 
   # summary_table ----
-  summary_table <- dplyr::count(table, id, name = "marginal")
+  summary_table <- dplyr::count(table, paper_id, name = "marginal")
 
   # traffic light ----
   tl <- ifelse(nrow(table), "red", "green")

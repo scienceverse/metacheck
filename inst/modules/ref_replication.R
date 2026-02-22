@@ -28,7 +28,7 @@
 #' @returns a list
 ref_replication <- function(paper, show_outcomes = FALSE) {
   # table ----
-  cols <- c("id", "bib_id", "doi", "bib_text")
+  cols <- c("paper_id", "bib_id", "doi", "bib_text")
   bib <- concat_tables(paper, "bib")[, cols]
 
   # If there are no rows, return immediately
@@ -79,7 +79,7 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
   # summary_table ----
   summary_table <- dplyr::summarise(
     table,
-    .by = "id",
+    .by = "paper_id",
     replications = dplyr::n(),
   )
 
