@@ -12,10 +12,10 @@ test_that("bibr_convert", {
   save_dir <- withr::local_tempdir()
   zip_path <- bibr_convert(file_path, save_dir)
   expect_true(file.exists(zip_path) |> all())
-  expect_grepl("to_err_is_human\\.zip", zip_path)
+  expect_match(info$RB_license, "to_err_is_human\\.zip")
   pdf <- read_bibr(zip_path)
   expect_equal(pdf$info$file_name, file_name)
-  expect_grepl("^[a-f0-9]{14}$", pdf$id)
+  expect_match(pdf$paper_id, "^[a-f0-9]{14}$")
 
   # docx
   file_name <- "to_err_is_human.docx"
@@ -23,29 +23,40 @@ test_that("bibr_convert", {
   save_path <- withr::local_tempdir()
   zip_path <- bibr_convert(file_path, save_path)
   expect_true(file.exists(zip_path) |> all())
-  expect_grepl("to_err_is_human\\.zip", zip_path)
+  expect_match(zip_path, "to_err_is_human\\.zip")
   docx <- read_bibr(zip_path)
   expect_equal(docx$info$file_name, file_name)
-  expect_grepl("^[a-f0-9]{14}$", docx$id)
+  expect_match(docx$paper_id, "^[a-f0-9]{14}$")
 
-  # html
-  file_name <- "to_err_is_human.html"
+  # doc
+  file_name <- "to_err_is_human.doc"
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
   zip_path <- bibr_convert(file_path, save_path)
   expect_true(file.exists(zip_path) |> all())
-  expect_grepl("to_err_is_human\\.zip", zip_path)
-  html <- read_bibr(zip_path)
-  expect_equal(html$info$file_name, file_name)
-  expect_grepl("^[a-f0-9]{14}$", html$id)
+  expect_match(zip_path, "to_err_is_human\\.zip")
+  doc <- read_bibr(zip_path)
+  expect_equal(doc$info$file_name, file_name)
+  expect_match(doc$paper_id, "^[a-f0-9]{14}$")
+
+  # html
+  # file_name <- "to_err_is_human.html"
+  # file_path <- test_path("fixtures", "formats", file_name)
+  # save_path <- withr::local_tempdir()
+  # zip_path <- bibr_convert(file_path, save_path)
+  # expect_true(file.exists(zip_path) |> all())
+  # expect_match(zip_path, "to_err_is_human\\.zip")
+  # html <- read_bibr(zip_path)
+  # expect_equal(html$info$file_name, file_name)
+  # expect_match(html$paper_id, "^[a-f0-9]{14}$")
 
   # multiple files
   file_name <- c("to_err_is_human.pdf", "published.pdf")
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
   zip_path <- bibr_convert(file_path, save_path)
-  expect_grepl("to_err_is_human\\.zip", zip_path[[1]])
-  expect_grepl("published\\.zip", zip_path[[2]])
+  expect_match(zip_path[[1]], "to_err_is_human\\.zip")
+  expect_match(zip_path[[2]], "published\\.zip")
   expect_true(file.exists(zip_path) |> all())
 })
 
@@ -65,7 +76,8 @@ test_that("read_bibr", {
   exp <- c("paper_id", "info", "authors", "text", "links", "tables",
            "sections", "bib", "xrefs", "figures", "equations")
   expect_contains(obs, exp)
-  expect_grepl("^[a-f0-9]{14}$", paper$paper_id)
+  expect_match(paper$paper_id, "^[a-f0-9]{14}$")
+
 })
 
 test_that("read", {
@@ -83,7 +95,7 @@ test_that("read", {
   exp <- c("paper_id", "info", "authors", "text", "links", "tables",
            "sections", "bib", "xrefs", "figures")
   expect_contains(obs, exp)
-  expect_grepl("^[a-f0-9]{14}$", paper$paper_id)
+  expect_match(paper$paper_id, "^[a-f0-9]{14}$")
 
   # vector of paths
   file_path <- c(

@@ -48,6 +48,7 @@ Suggests:
     knitr,
     withr
 Config/testthat/edition: 3
+Config/testthat/parallel: true
 Imports: 
     dplyr,
     tidyr,

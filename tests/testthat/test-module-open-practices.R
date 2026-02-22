@@ -30,7 +30,7 @@ test_that("open_practices paperlist", {
   )
   mo <- module_run(paper, module)
   expect_equal(nrow(mo$table), length(paper))
-  expect_equal(mo$table$id, mo$summary_table$id)
+  expect_equal(mo$table$paper_id, mo$summary_table$paper_id)
   expect_equal(mo$table$data_open, c(F, F))
   expect_equal(mo$table$data_category, c("", "upon request"))
   expect_equal(mo$table$data_reuse, c(F, F))

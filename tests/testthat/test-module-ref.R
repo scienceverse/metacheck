@@ -15,6 +15,7 @@ test_that("ref_doi_check", {
 
   # relevant references - info
   paper <- demopaper()
+  paper$bib$doi[[1]] <- NA
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "yellow")
   expect_equal(nrow(mod_output$table), 1)
@@ -31,13 +32,15 @@ test_that("ref_accuracy", {
   expect_true(module %in% mods$name)
 
   # no references
-  paper <- psychsci[[210]]
+  paper <- demopaper()
+  paper$bib <- paper$bib[c(), ]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "na")
   expect_null(mod_output$table)
 
   # relevant references - info
   paper <- demopaper()
+  paper$bib$doi[[1]] <- NA
   mod_output <- module_run(paper, module)
   exp <- ifelse(online("api.labs.crossref.org"), "yellow", "fail")
   expect_equal(mod_output$traffic_light, exp)
@@ -47,13 +50,14 @@ test_that("ref_accuracy", {
   expect_equal(mod_output$summary_table$refs_checked, 3)
   expect_equal(mod_output$summary_table$refs_not_found, 1)
   expect_equal(mod_output$summary_table$title_mismatch, 1)
-  expect_equal(mod_output$summary_table$author_mismatch, 0)
+  expect_equal(mod_output$summary_table$author_mismatch, 1)
 })
 
 test_that("ref_doi_check + ref_accuracy", {
   skip_if_offline("api.labs.crossref.org")
 
   paper <- demopaper()
+  paper$bib$doi[[1]] <- NA
   mod_output <- paper |>
     module_run("ref_doi_check") |>
     module_run("ref_accuracy")
@@ -76,6 +80,7 @@ test_that("ref_replication", {
 
   # no DOIs
   paper <- demopaper()
+  paper$bib$doi[[1]] <- NA
   paper$bib <- paper$bib[is.na(paper$bib$doi), ]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "na")
@@ -83,10 +88,15 @@ test_that("ref_replication", {
 
   # relevant references
   paper <- demopaper()
-  paper$bib$doi[[4]] <- FLoRA()$doi_o[[1]]
+  paper$bib$doi[[1]] <- FLoRA()$doi_o[[1]]
+  paper$bib <- paper$bib[1, ]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "info")
   expect_equal(nrow(mod_output$table), 1)
+
+  mod_output <- module_run(paper, module, show_outcomes = TRUE)
+  expect_equal(mod_output$table$replication_outcome, "failed")
+  expect_equal(mod_output$table$replication_type, "replication")
 })
 
 test_that("ref_retraction", {
@@ -95,7 +105,8 @@ test_that("ref_retraction", {
   expect_true(module %in% mods$name)
 
   # no references
-  paper <- psychsci[[210]]
+  paper <- demopaper()
+  paper$bib <- paper$bib[c(), ]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "na")
   expect_null(mod_output$table)
@@ -123,7 +134,8 @@ test_that("ref_pubpeer", {
   skip_if_offline()
 
   # no references
-  paper <- psychsci[[210]]
+  paper <- demopaper()
+  paper$bib <- paper$bib[c(), ]
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "na")
   expect_null(mod_output$table)
@@ -147,7 +159,7 @@ test_that("chaining", {
   # remove DOIs to make sure rw/reps/pp are getting DOIs from rc
   paper$bib$doi <- NA
   # add in FLoRA doi (Gino paper isn't in there now)
-  paper$bib$doi[[4]] <- FLoRA()$doi_o[[1]]
+  paper$bib$doi[[1]] <- FLoRA()$doi_o[[1]]
 
   mo1 <- module_run(paper, "ref_doi_check")
   expect_equal(mo1$summary_table$doi_found, 2)

@@ -1,11 +1,11 @@
-test_that("tei_to_bibr", {
-  expect_true(is.function(metacheck::tei_to_bibr))
-  expect_no_error(helplist <- help(tei_to_bibr, metacheck))
+test_that("grobid_to_bibr", {
+  expect_true(is.function(metacheck::grobid_to_bibr))
+  expect_no_error(helplist <- help(grobid_to_bibr, metacheck))
 
-  expect_error(tei_to_bibr(bad_arg))
+  expect_error(grobid_to_bibr(bad_arg))
 
   xml_file <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
-  paper <- tei_to_bibr(xml_file)
+  paper <- grobid_to_bibr(xml_file)
 
   expect_s3_class(paper, "scivrs_paper")
   text_cols <- c("text_id", "paragraph_id", "section_id", "text")
@@ -20,8 +20,8 @@ test_that("read", {
 
   expect_error(read(bad_arg))
 
-  xml_file <- test_path("fixtures", "examples", "to_err_is_human.xml")
-  zip_file <- test_path("fixtures", "bibr", "to_err_is_human.zip")
+  xml_file <- test_path("fixtures", "formats", "to_err_is_human.xml")
+  zip_file <- test_path("fixtures", "formats", "to_err_is_human.zip")
   title <- "To Err is Human: An Empirical Investigation"
 
   # grobid xml

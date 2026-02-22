@@ -11,8 +11,8 @@ test_that("code_check offline", {
   exp <- data.frame(paper_id = paper$paper_id,
                     code_file_n = 0)
   expect_equal(mo$summary_table, exp)
-  expect_grepl("0", mo$summary_text)
-  expect_grepl("0", mo$report)
+  expect_match(mo$summary_text, "0")
+  expect_match(mo$report, "0")
 })
 
 
@@ -28,8 +28,8 @@ test_that("OSF no files", {
   exp <- data.frame(paper_id = paper$paper_id,
                     code_file_n = 0)
   expect_equal(mo$summary_table, exp)
-  expect_grepl("0", mo$summary_text)
-  expect_grepl("0", mo$report)
+  expect_match(mo$summary_text, "0")
+  expect_match(mo$report, "0")
 })
 
 test_that("no code files", {

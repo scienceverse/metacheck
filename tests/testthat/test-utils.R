@@ -73,8 +73,8 @@ test_that("print.scivrs_paper", {
   op.sv <- capture_output(print.scivrs_paper(paper))
 
   expect_equal(op, op.sv)
-  expect_grepl(paper$paper_id, op)
-  expect_grepl(paper$info$title, op, ignore.case = FALSE, fixed = TRUE)
+  expect_match(op, paper$paper_id)
+  expect_match(op, paper$info$title, fixed = TRUE)
 })
 
 test_that("print.scivrs_paperlist", {
@@ -92,8 +92,8 @@ test_that("print.scivrs_paperlist", {
   )
 
   op <- capture_output(print(x))
-  expect_grepl(x[[1]]$paper_id, op)
-  expect_grepl(x[[2]]$paper_id, op)
+  expect_match(op, x[[1]]$paper_id)
+  expect_match(op, x[[2]]$paper_id)
 })
 
 test_that("[.scivrs_paperlist", {

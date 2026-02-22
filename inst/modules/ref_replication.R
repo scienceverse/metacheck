@@ -136,8 +136,7 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
     )
 
     ## report_table ----
-    report_table <- table[, c("ref", "replication_ref")]
-    report_table$ref <- format_ref(report_table$ref)
+    report_table <- table[, c("bib_text", "replication_ref")]
 
     # Create links using DOI if available, otherwise use URL
     has_doi <- !is.na(table$replication_doi) & table$replication_doi != ""

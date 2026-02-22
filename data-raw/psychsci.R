@@ -3,11 +3,11 @@
 pdf <- "data-raw/psychsci/pdf/"
 files <- list.files(pdf, full.names = T)
 bibr <- "data-raw/psychsci/bibr"
-zip <- bibr_convert(files[7:10], bibr)
+zip <- bibr_convert(files, bibr)
 
 psychsci <- read(bibr)
 usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")
 
-
-files[1:20]
-list.files(bibr)
+# copy 3 to test dir
+list.files(bibr, full.names = T)[1:3] |>
+  file.copy("tests/testthat/fixtures/psychsci/", overwrite = TRUE)

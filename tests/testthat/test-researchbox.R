@@ -27,14 +27,14 @@ test_that("rbox_info", {
   authors <- "Joyce He (joyce.he@anderson.ucla.edu)\nStéphane Côté (stephane.cote@rotman.utoronto.ca)"
   abstract <- "Are individuals adept at perceiving others’ emotions optimally adjusted? We extend past research by conducting a high-powered pre-registered study that comprehensively tests five theoretical models of empathic ability (i.e., emotion recognition ability) and self-views and intra- and interpersonal facets of adjustment in a sample of 1126 undergraduate students from Canada and 2205 informants. We obtained both self- and peer-reports of adjustment and controlled for cognitive abilities as a potential confounding variable. Empathic accuracy ability (but not self-views of that ability) was positively related to relationship satisfaction rated by both participants and informants. Self-views about empathic accuracy (but not actual empathic accuracy) were positively related to life satisfaction rated by both participants and informants. All associations held when controlling for cognitive abilities."
 
-  # using expect_grepl because RB keeps subtly changing formats
+  # using expect_match because RB keeps subtly changing formats
   expect_equal(info$rb_url, url)
-  expect_grepl("Are Empathic People Better Adjusted",info$RB_target)
-  expect_grepl("CC By 4.0", info$RB_license)
+  expect_match(info$RB_target, "Are Empathic People Better Adjusted",)
+  expect_match(info$RB_license, "CC By 4.0", fixed = TRUE)
   expect_equal(info$RB_public, "June 09, 2023")
-  expect_grepl("Joyce He", info$RB_authors)
-  expect_grepl("Stéphane Côté", info$RB_authors)
-  expect_grepl("Are individuals adept at perceiving other", info$RB_abstract)
+  expect_match(info$RB_authors, "Joyce He")
+  expect_match(info$RB_authors, "Stéphane Côté")
+  expect_match(info$RB_abstract, "Are individuals adept at perceiving other")
 
   files <- info$files[[1]]
   expect_equal(nrow(files), 9)

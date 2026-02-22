@@ -50,7 +50,7 @@ open_practices <- function(paper) {
   # table ----
   # put in a sensible naming scheme and order
   table <- dplyr::select(oddpub_results,
-    id = article,
+    paper_id = article,
     data_open = is_open_data,
     data_statements = open_data_statements,
     data_reuse = is_reuse,

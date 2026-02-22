@@ -61,8 +61,8 @@ bibr_convert <- function(file_path,
   resp <- httr2::req_perform(req)
 
   # Check if the request was successful
-  if (httr2::resp_status(resp) == 200) {
-    # httr2::resp_content_type(resp)
+  if (httr2::resp_status(resp) == 200 &&
+      httr2::resp_content_type(resp) == "application/zip") {
     contents <- httr2::resp_body_raw(resp)
 
     # Write to file
@@ -116,20 +116,25 @@ read_bibr <- function(file_path) {
   # temporary processing for format changes to be added to bibr ----
   paper$paper_id <- paper$info$file_hash
 
-  ## remove references from text table
-  ref_section <- paper$sections[paper$sections$section_type == "references", ]$section_id
-  non_refs <- !paper$text$section_id %in% ref_section
-  paper$text <- paper$text[non_refs, ]
+  # ## remove references from text table
+  # ref_section <- paper$sections[paper$sections$section_type == "references", ]$section_id
+  # refs <- paper$text$section_id %in% ref_section
+  # paper$text <- paper$text[!refs, ]
 
   ## add bib_text
-  if (all(is.na(paper$bib$bib_text))) {
-    paper$bib$bib_text <- sprintf("%s (%d) %s. %s. %s",
-                                  paper$bib$author,
-                                  paper$bib$year,
-                                  paper$bib$title,
-                                  paper$bib$journal_title,
-                                  paper$bib$doi)
-  }
+  #if (all(is.na(paper$bib$bib_text))) {
+    # paper$bib$bib_text <- sprintf("%s (%s) %s. %s. %s",
+    #                               paper$bib$author,
+    #                               paper$bib$year,
+    #                               paper$bib$title,
+    #                               paper$bib$journal_title,
+    #                               paper$bib$doi)
+  #}
+  paper$bib$bib_text <- paper$bib$bib_text |>
+    gsub("</?table[^>]*>", "", x = _) |>
+    gsub("</?t(r|d)>", "", x = _) |>
+    trimws()
+
 
   paper
 }
@@ -156,7 +161,7 @@ read <- function(file_path) {
       if (grepl("\\.zip$", fp, ignore.case = TRUE)) {
         read_bibr(file_path = fp)
       } else if (grepl("\\.xml$", fp, ignore.case = TRUE)) {
-        tei_to_bibr(fp)
+        grobid_to_bibr(fp)
       }
     }, error = \(e) {
       logger("read", e$message)

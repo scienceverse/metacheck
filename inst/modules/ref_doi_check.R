@@ -65,8 +65,8 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
 
   ## get DOIs from crossref ----
   table <- crossref_query(bib$bib_text[dois_to_look_up], crossref_min_score)
-  table$ref <- format_ref(bib$bib_text[dois_to_look_up])
-  table$id <- bib$id[dois_to_look_up]
+  table$bib_text <- bib$bib_text[dois_to_look_up]
+  table$paper_id <- bib$paper_id[dois_to_look_up]
   table$bib_id <- bib$bib_id[dois_to_look_up]
 
   # missing/mismatched DOIs
@@ -83,7 +83,7 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
 
   # summary_table ----
   summary_table <- dplyr::summarise(table,
-    .by = id,
+    .by = paper_id,
     refs_checked = sum(!is.na(bib_text)),
     doi_found = sum(doi_found)
   )

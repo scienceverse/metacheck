@@ -4,7 +4,7 @@ test_that("logpath", {
   expect_error(logpath("x"))
 
   lp <- logpath()
-  expect_grepl("metacheck\\.log", lp)
+  expect_match(lp, "metacheck\\.log")
 })
 
 test_that("logger", {

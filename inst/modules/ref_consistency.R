@@ -20,14 +20,14 @@ ref_consistency <- function(paper) {
   # detailed table of results ----
   bibs <- concat_tables(paper, "bib")
   xrefs <- concat_tables(paper, "xrefs")
-  xrefs <- xrefs[xrefs$type == "bibr", ]
+  xrefs <- xrefs[xrefs$xref_type == "bib", ]
 
-  missing_refs <- dplyr::anti_join(bibs, xrefs, by = c("paper_id", "xref_id"))
+  missing_refs <- dplyr::anti_join(bibs, xrefs, by = c("paper_id", "bib_id" = "xref_id"))
   missing_refs$missing <- rep("xrefs", nrow(missing_refs))
-  missing_bib <- dplyr::anti_join(xrefs, bibs, by = c("paper_id", "xref_id"))
+  missing_bib <- dplyr::anti_join(xrefs, bibs, by = c("paper_id", "xref_id" = "bib_id"))
   missing_bib$missing <- rep("bib", nrow(missing_bib))
-  names(missing_bib) <- names(missing_bib) |> sub("text", "ref", x = _)
-  missing_bib$ref <- as.list(missing_bib$ref)
+  names(missing_bib) <- names(missing_bib) |> sub("text", "bib_text", x = _)
+  missing_bib$bib_text <- as.list(missing_bib$bib_text)
 
   table <- dplyr::bind_rows(missing_refs, missing_bib) |>
     dplyr::arrange(id, xref_id)
@@ -59,7 +59,7 @@ ref_consistency <- function(paper) {
     na = "No bibliography entries were detected"
   )
 
-  cols <- c("xref_id", "ref", "missing")
+  cols <- c("xref_id", "bib_text", "missing")
   report_table <- table[, cols]
 
   report_text <- c(

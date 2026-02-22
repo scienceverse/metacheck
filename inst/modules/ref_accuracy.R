@@ -38,9 +38,9 @@ ref_accuracy <- function(paper) {
 
   ## get papers with DOIs ----
   table <- crossref_doi(bib$doi)
-  table$ref <- format_ref(bib$ref)
-  table$id <- bib$id
-  table$xref_id <- bib$xref_id
+  table$bib_text <- bib$bib_text
+  table$paper_id <- bib$paper_id
+  table$bib_id <- bib$bib_id
 
   # deal with crossref errors
   if ("error" %in% names(table) & all(!is.na(table$error))) {
@@ -62,11 +62,11 @@ ref_accuracy <- function(paper) {
 
   ## other mismatches ----
   aut_title <- dplyr::select(all_bib,
-    id, xref_id,
-    orig_authors = authors,
+    paper_id, bib_id,
+    orig_authors = author,
     orig_title = title
   )
-  table <- dplyr::left_join(table, aut_title, by = c("paper_id", "xref_id"))
+  table <- dplyr::left_join(table, aut_title, by = c("paper_id", "bib_id"))
 
   # clean up text to prevent irrelevant mismatches
   clean <- \(x) {
@@ -114,7 +114,7 @@ ref_accuracy <- function(paper) {
 
   # summary_table ----
   summary_table <- dplyr::summarise(table,
-    .by = id,
+    .by = paper_id,
     refs_checked = sum(!is.na(DOI)),
     refs_not_found = sum(ref_not_found),
     title_mismatch = sum(title_mismatch),
@@ -136,20 +136,20 @@ ref_accuracy <- function(paper) {
   # report ----
 
   ## unfound table ----
-  unfound_table <- table[table$ref_not_found, c("ref"), drop = FALSE]
+  unfound_table <- table[table$ref_not_found, c("bib_text"), drop = FALSE]
   names(unfound_table) <- c("Unfound Reference")
 
   ## title mismatches ----
-  title_table <- table[table$title_mismatch, c("orig_title", "title", "ref")]
+  title_table <- table[table$title_mismatch, c("orig_title", "title", "bib_text")]
   names(title_table) <- c("Original Title", "CrossRef Title", "Reference")
 
   ## author mismatches ----
-  author_table <- table[table$author_mismatch, c("orig_authors", "author", "ref")]
+  author_table <- table[table$author_mismatch, c("orig_authors", "author", "bib_text")]
   if (nrow(author_table)) {
     author_table$cr <- sapply(author_table$author, \(a) {
       paste(substr(a$given, 1, 1), a$family, collapse = ", ")
     })
-    author_table <- author_table[, c("orig_authors", "cr", "ref")]
+    author_table <- author_table[, c("orig_authors", "cr", "bib_text")]
     names(author_table) <- c("Original Authors", "CrossRef Authors", "Reference")
   }
 

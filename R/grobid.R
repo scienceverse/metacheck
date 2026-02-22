@@ -4,8 +4,8 @@
 #'
 #' @returns a paper object
 #' @export
-tei_to_bibr <- function(xml_file) {
-  bibr_version = "0.1.0"
+grobid_to_bibr <- function(xml_file) {
+  bibr_version = "5.6"
 
   xml_text <- readLines(xml_file, warn = FALSE) |>
     paste(collapse = "\n") |>
@@ -136,9 +136,16 @@ tei_to_bibr <- function(xml_file) {
                                                 "table" ~ "tbl"),
                   xref_id = suppressWarnings(gsub("[a-z]", "", xref_id) |> as.integer()))
 
-  # empty lists ----
-  paper$links <- list()
+  # links ----
+  links <- extract_urls(paper)
+  paper$links <- data.frame(
+    url = links$text,
+    link_text = rep(NA_character_, nrow(links)),
+    text_id = links$text_id
+  )
 
+  # equations ----
+  paper$equations <- extract_equations(paper)
 
   return(paper)
 }

@@ -9,7 +9,7 @@ test_that("paper", {
   exp_names <- c("paper_id", "info", "authors", "text", "links", "tables", "sections",
                  "bib", "xrefs", "figures", "equations")
   expect_contains(names(p), exp_names)
-  expect_grepl("^[a-f0-9]{14}$", p$id)
+  expect_match(p$paper_id, "^[a-f0-9]{14}$")
   expect_equal(p$info, list())
   expect_equal(length(p$authors), 0)
   expect_equal(p$text, data.frame())

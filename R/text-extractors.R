@@ -74,3 +74,87 @@ extract_p_values <- function(paper) {
 
   return(p)
 }
+
+
+#' Extract P-Values
+#'
+#' List all equations in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.
+#'
+#' @details
+#' Note that this will not catch p-values reported like "the p-value is 0.03" because that results in a ton of false positives when papers discuss p-value thresholds. If you need to detect text like that, use the `search_text()` function and a custom pattern.
+#'
+#' This will catch most comparators like =<>~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.
+#'
+#' @param paper a paper object or paperlist object
+#'
+#' @returns a table
+#' @export
+#'
+#' @examples
+#' paper <- demopaper()
+#' p_values <- extract_equations(paper)
+extract_equations <- function(paper) {
+  # set up pattern
+  operators <- c(
+    "=", "<", ">", "~", "≈",
+    "\u2248", # ~~
+    "\u2260", # !=
+    "\u2264", # <=
+    "\u2265", # >=
+    "\u226A", # <<
+    "\u226B" # >>
+  )
+
+  op <- operators |> paste(collapse = "")
+  pattern <- paste0(
+    "(?:(Cronbach..|Cohen..|\\d{1,2}%)\\s+)?", # common prefix
+    "[βηa-zA-Z-_\\.0-9\\{\\}\\^\\\\]+\\s*", # statistic name
+    "(?:\\([^)]*\\))?\\s*", # optional parentheses
+    "[", op , "]{1,2}\\s*", # 1-2 operators
+    "([0-9\\.,+-]*[0-9]|\\[[^\\]]+\\])", # valid numbers or anything in []
+    "\\s*(e\\s*-\\d+)?", # also match scientific notation
+    "(\\s*[x\\*]\\s*10\\s*\\^\\s*-\\d+)?"
+  )
+
+  eq <- paper |>
+    search_text(operators) |>
+    search_text(pattern,
+                return = "match",
+                perl = TRUE,
+                ignore.case = TRUE)
+
+  if (nrow(eq) == 0) {
+    return(data.frame())
+  }
+
+  # get operator
+  pattern <- paste0("[", op, "]{1,2}")
+  matches <- gregexpr(pattern, eq$text, perl = TRUE)
+  eq$comp <- regmatches(eq$text, matches) |> sapply(`[[`, 1)
+
+  # get lhs & rhs
+  s <- strsplit(eq$text, paste0("\\s*[", op, "]{1,2}\\s*"))
+  eq$lhs <- sapply(s, \(x) x[[1]]) |> trimws()
+
+  eq$rhs <- sapply(s, \(x) x[[2]]) |> trimws()
+  #   gsub("\\s", "", x = _) |>
+  #   gsub("[x*]10\\^", "e", x = _)
+  # eq$rhs <- suppressWarnings(as.numeric(rhs))
+
+  # set group equal to sentence for now
+  eq$grp_id <- 1
+  for (i in seq_along(eq$text_id)) {
+    if (i == 1) {
+      eq$grp_id[[i]] <- 1
+    } else if (eq$text_id[[i]] == eq$text_id[[i-1]]) {
+      eq$grp_id[[i]] <- eq$grp_id[[i-1]]
+    } else {
+      eq$grp_id[[i]] <- eq$grp_id[[i-1]] + 1
+    }
+  }
+
+  eq$eq_type <- "stat"
+  cols <- c("text_id", "grp_id", "lhs", "comp", "rhs", "eq_type", "paper_id")
+
+  return(eq[, cols])
+}

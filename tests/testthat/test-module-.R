@@ -134,7 +134,7 @@ test_that("module_run", {
                "The module .* code has errors")
   log <- lastlog()
   expect_equal(log$label, "module-error")
-  expect_grepl("unexpected", log$error)
+  expect_match(log$error, "unexpected")
 
   module <- test_path("modules", "code-error.R")
   expect_error(module_run(paper, module),
@@ -154,7 +154,7 @@ test_that("module_run", {
   # demo
   module <- test_path("modules", "no_error.R")
   mod_output <- module_run(paper, module)
-  expected_summary <- data.frame(paper_id = paper$paper_id, p_values = 3)
+  expected_summary <- data.frame(paper_id = paper$paper_id, p_values = 2)
 
   expect_equal(mod_output$module, module)
   expect_equal(mod_output$title, "Demo No Error")

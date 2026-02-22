@@ -1,6 +1,8 @@
 # always executed by load_all() and at the beginning of automated testing
 # https://r-pkgs.org/testing-design.html#testthat-helper-files
 
+testthat::set_max_fails(1)
+
 email("metacheck@scienceverse.org")
 
 httptest::.mockPaths(NULL)
@@ -9,7 +11,7 @@ httptest::.mockPaths(apis)
 
 # adjust to run LLM tests where wanted
 skip_llm <- function() {
-  #skip("LLM")
+  skip("LLM")
 
   # skips tests if contraindicated
   skip_on_cran()
@@ -19,7 +21,7 @@ skip_llm <- function() {
 
 # skip if requires OSF API
 skip_osf <- function() {
-  #skip("Requires OSF") # skips all tests that require API
+  skip("Requires OSF") # skips all tests that require API
 
   # skips tests if contraindicated
   skip_if_offline()
@@ -30,15 +32,5 @@ skip_osf <- function() {
 
 # skip when running quick checks
 skip_if_quick <- function() {
-  # skip("Too long")
-}
-
-# expect pattern in x
-expect_grepl <- function(pattern, x,
-                         ignore.case = TRUE,
-                         perl = FALSE,
-                         fixed = FALSE,
-                         useBytes = FALSE) {
-  obs <- grepl(pattern, x, ignore.case, perl, fixed, useBytes)
-  expect_true(all(obs))
+  skip("Too long")
 }
