@@ -19,10 +19,12 @@
 #' @examples
 #' \dontrun{
 #' # Single file
-#' sv_convert("paper.pdf")
+#' pdf <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
+#' platform_bibr_convert(pdf)
 #'
 #' # Directory of papers
-#' platform_bibr_convert("papers/", save_dir = "results/")
+#' dir <- system.file("demo", package = "metacheck")
+#' platform_bibr_convert(dir, save_dir = "results/")
 #' }
 platform_bibr_convert <- function(file_path,
                        save_dir = ".",
@@ -40,7 +42,7 @@ platform_bibr_convert <- function(file_path,
   if (length(file_path) == 1 && dir.exists(file_path)) {
     dir_path <- file_path
     file_path <- list.files(dir_path,
-                            pattern = "\\.(docx?|html|md|pdf|txt)$",
+                            pattern = "\\.(docx?|pdf)$",
                             full.names = TRUE)
   }
 
@@ -49,15 +51,14 @@ platform_bibr_convert <- function(file_path,
     zip_paths <- sapply(file_path, \(fp) {
       pb$tick(1, list(what = basename(fp)))
       tryCatch(
-        sv_convert(file_path = fp,
-                   save_dir = save_dir,
-                   api_url = api_url,
-                   api_key = api_key,
-                   poll_interval = poll_interval,
-                   timeout = timeout,
-                   quiet = quiet),
+        platform_bibr_convert(file_path = fp,
+                              save_dir = save_dir,
+                              api_url = api_url,
+                              api_key = api_key,
+                              poll_interval = poll_interval,
+                              timeout = timeout),
         error = \(e) {
-          logger("sv_convert", e$message)
+          logger("platform_bibr_convert", e$message)
           return(NULL)
       })
     })
@@ -142,7 +143,7 @@ platform_bibr_convert <- function(file_path,
     file.path(save_dir, x = _)
   writeBin(contents, zip_path)
 
-  if (!quiet) message("Done: ", zip_path)
+  pb$tick(0, list(what = zip_path))
   zip_path
 }
 
@@ -169,7 +170,7 @@ bibr_convert <- function(file_path,
   if (length(file_path) == 1 && dir.exists(file_path)) {
     dir_path <- file_path
     file_path <- list.files(dir_path,
-                            pattern = "\\.(docx?|html|md|pdf|txt)$",
+                            pattern = "\\.(docx?|pdf)$",
                             full.names = TRUE)
   }
 
