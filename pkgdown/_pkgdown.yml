@@ -58,6 +58,7 @@ reference:
   contents:
   - '`bibr_convert`'
   - '`platform_bibr_convert`'
+  - '`grobid_convert`'
   - '`read`'
   - '`demopaper`'
   - '`psychsci`'

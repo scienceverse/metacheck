@@ -2,7 +2,7 @@
 load_tab <- tabItem(
   tabName = "load_tab",
   p("This app is under development; all materials created should be carefully checked.", class = "warning"),
-  p("Use `pdf2grobid()` to create XML files from PDFs. This relies on an external or local grobid server, and will save files to your machine, so needs to run outside this app."),
+  p("Use `grobid_convert()` to create XML files from PDFs. This relies on an external or local grobid server, and will save files to your machine, so needs to run outside this app."),
   fileInput("load_xml", "Load XML",
             multiple = TRUE,
             width = "100%",
