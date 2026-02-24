@@ -173,7 +173,7 @@ crossref_doi <- function(doi, select = c(
 
   if (is_paper(doi) || is_paper_list(doi)) {
     papers <- doi
-    doi <- info_table(papers, "doi")$doi
+    doi <- paper_table(papers, "info", "doi")$doi
   }
 
   if (!online("api.labs.crossref.org")) {
@@ -502,7 +502,7 @@ openalex_doi <- function(doi, select = NULL) {
 
   if (is_paper(doi) || is_paper_list(doi)) {
     papers <- doi
-    doi <- info_table(papers, "doi")$doi
+    paper_table(papers, "info", "doi")$doi
   }
 
   if (!online("api.openalex.org")) {

@@ -5,6 +5,7 @@ test_that("bibr_convert", {
   expect_error(bibr_convert(bad_arg))
 
   skip_api("api.bibr.metacheck.app")
+  skip_if_quick()
 
   # pdf
   file_name <- "to_err_is_human.pdf"
@@ -67,7 +68,8 @@ test_that("platform_bibr_convert", {
 
   expect_error(platform_bibr_convert(bad_arg))
 
-  skip_api("https://platform.metacheck.app")
+  skip_api("platform.metacheck.app")
+  skip_if_quick()
 
   # pdf
   file_name <- "to_err_is_human.pdf"
@@ -128,7 +130,7 @@ test_that("read_bibr", {
   exp <- c("paper_id", "info", "authors", "text", "links", "tables",
            "sections", "bib", "xrefs", "figures", "equations")
   expect_contains(obs, exp)
-  expect_match(paper$paper_id, "^[a-f0-9]{14}$")
+  expect_match(paper$paper_id, "^[a-f0-9]{16}$")
 
 })
 
@@ -147,7 +149,7 @@ test_that("read", {
   exp <- c("paper_id", "info", "authors", "text", "links", "tables",
            "sections", "bib", "xrefs", "figures")
   expect_contains(obs, exp)
-  expect_match(paper$paper_id, "^[a-f0-9]{14}$")
+  expect_match(paper$paper_id, "^[a-f0-9]{16}$")
 
   # vector of paths
   file_path <- c(

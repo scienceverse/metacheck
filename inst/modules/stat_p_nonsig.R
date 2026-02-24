@@ -48,7 +48,7 @@ stat_p_nonsig <- function(paper) {
   summary_table <- dplyr::summarise(table,
     n_significant = sum(significance == "significant", na.rm = TRUE),
     n_nonsignificant = sum(significance == "nonsignificant", na.rm = TRUE),
-    .by = id
+    .by = paper_id
   )
 
   # traffic light ----

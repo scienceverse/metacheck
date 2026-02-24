@@ -10,6 +10,7 @@ apis <- normalizePath("apis")
 httptest::.mockPaths(apis)
 
 skip_api <- function(host = "google.com") {
+  #skip("External API not available")
   skip_on_cran()
   skip_on_covr()
   skip_if_offline(host)
@@ -22,7 +23,7 @@ skip_llm <- function() {
   # skips tests if contraindicated
   skip_on_cran()
   skip_on_covr()
-  skip_if_offline("api.groq.com")
+  skip_if_offline()
 }
 
 # skip if requires OSF API

@@ -65,8 +65,8 @@ search_text <- function(paper, pattern = ".*",
   if (is.data.frame(paper)) {
     text <- paper
   } else if (is_paper(paper) || is_paper_list(paper)) {
-    text <- concat_tables(paper, "text")
-    sections <- concat_tables(paper, "sections")
+    text <- paper_table(paper, "text")
+    sections <- paper_table(paper, "sections")
     sections$classification_score <- NULL
     sections$parent_section_id <- NULL
     if (all(c("section_id", "paper_id") %in% names(sections))) {

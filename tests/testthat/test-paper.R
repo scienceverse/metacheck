@@ -68,3 +68,87 @@ test_that("test_paper", {
   p <- test_paper(LETTERS)
   expect_equal(p$text$text, LETTERS)
 })
+
+test_that("demo paper", {
+  paper <- demopaper()
+  expect_s3_class(paper, "scivrs_paper")
+  expect_match(paper$info$title, "^To Err is Human")
+})
+
+test_that("paper_table", {
+  # concat 2 papers
+  paper <- psychsci[1:2]
+  bibs <- paper_table(paper, "bib")
+  n <- nrow(paper[[1]]$bib) + nrow(paper[[2]]$bib)
+  expect_equal(nrow(bibs), n)
+
+  ids <- unique(bibs$paper_id)
+  expect_equal(ids, names(paper))
+
+  # concat 1 paper
+  paper <- demopaper()
+  info <- paper_table(paper, "info")
+  expect_equal(info$file_hash, paper$paper_id)
+
+  # select columns
+  paper <- demopaper()
+  cols <- c("given", "family")
+  authors <- paper_table(paper, "authors", cols)
+  expect_equal(names(authors), c(cols, "paper_id"))
+
+  # concat 1 paper empty table
+  paper <- demopaper()
+  paper$bib <- data.frame(text = character(0))
+  bib <- paper_table(paper, c("bib"))
+  expect_equal(nrow(bib), 0)
+  expect_equal(names(bib), c("text", "paper_id"))
+})
+
+
+test_that("is_paper_list", {
+  expect_equal(is_paper_list(psychsci), TRUE)
+  expect_equal(is_paper_list(psychsci[1]), TRUE)
+  expect_equal(is_paper_list(psychsci[[1]]), FALSE)
+  expect_equal(is_paper_list(list(1,3,5)), FALSE)
+  expect_equal(is_paper_list(NULL), FALSE)
+
+  # empty lists return TRUE
+  expect_equal(is_paper_list(psychsci[c()]), TRUE)
+  expect_equal(is_paper_list(list()), TRUE)
+})
+
+test_that("print.scivrs_paper", {
+  paper <- demopaper()
+  op <- capture_output(print(paper))
+  op.sv <- capture_output(print.scivrs_paper(paper))
+
+  expect_equal(op, op.sv)
+  expect_match(op, paper$paper_id)
+  expect_match(op, paper$info$title, fixed = TRUE)
+})
+
+test_that("print.scivrs_paperlist", {
+  x <- psychsci[1:3]
+  op <- capture_output(print(x))
+  op.sv <- capture_output(print.scivrs_paperlist(x))
+
+  expect_true(grepl("# A tibble: 3", op, fixed = TRUE))
+  expect_equal(op, op.sv)
+
+  # test papers
+  x <- paperlist(
+    test_paper(LETTERS),
+    test_paper(letters)
+  )
+
+  op <- capture_output(print(x))
+  expect_match(op, x[[1]]$paper_id)
+  expect_match(op, x[[2]]$paper_id)
+})
+
+test_that("[.scivrs_paperlist", {
+  # subsetting maintains class
+  x <- psychsci[1:3]
+  expect_s3_class(psychsci, "scivrs_paperlist")
+  expect_s3_class(x, "scivrs_paperlist")
+})

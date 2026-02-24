@@ -24,7 +24,7 @@ ref_accuracy <- function(paper) {
   # for testing: paper <- psychsci[[109]]
 
   # table ----
-  all_bib <- concat_tables(paper, "bib")
+  all_bib <- paper_table(paper, "bib")
   bib <- all_bib[!is.na(all_bib$doi), ]
 
   # If there are no rows, return immediately

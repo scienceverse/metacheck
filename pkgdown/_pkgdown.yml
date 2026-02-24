@@ -57,6 +57,7 @@ reference:
   desc: ~
   contents:
   - '`bibr_convert`'
+  - '`platform_bibr_convert`'
   - '`read`'
   - '`demopaper`'
   - '`psychsci`'
@@ -66,8 +67,7 @@ reference:
   contents:
   - '`search_text`'
   - '`expand_text`'
-  - '`concat_tables`'
-  - '`info_table`'
+  - '`paper_table`'
 - title: Module Functions
   desc: ~
   contents:

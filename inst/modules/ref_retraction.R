@@ -27,7 +27,8 @@ ref_retraction <- function(paper) {
   # for testing: paper <- demopaper()
 
   # table ----
-  bib <- concat_tables(paper, "bib")[, c("paper_id", "bib_id", "doi", "bib_text")]
+  cols <- c("paper_id", "bib_id", "doi", "bib_text")
+  bib <- paper_table(paper, "bib", cols)
   missing_doi <- get_prev_outputs("ref_doi_check", "table")
   if (!is.null(missing_doi)) {
     md <- missing_doi[, c("paper_id", "bib_id", "DOI")]

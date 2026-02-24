@@ -19,13 +19,13 @@
 #' @returns a list
 ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.Rds", package = "metacheck"))) {
   # consolidate bib tables and filter to relevant DOI
-  bibs <- concat_tables(paper, "bib") |>
+  bibs <- paper_table(paper, "bib") |>
     dplyr::select(xref_id, ref, doi, paper_id) |>
     dplyr::inner_join(db, by = "doi") |>
     unique()
 
   # consolidate xrefs, filter, and expand
-  xrefs <- concat_tables(paper, "xrefs") |>
+  xrefs <- paper_table(paper, "xrefs") |>
     dplyr::right_join(bibs, by = c("xref_id", "paper_id")) |>
     # expand_text(paper, expand_to = "paragraph")
     unique()

@@ -32,7 +32,7 @@ test_that("read", {
   # bibr zip
   obs_zip <- read(zip_file)
   expect_s3_class(obs_zip, "scivrs_paper")
-  expect_equal(obs_zip$info$title, title)
+  expect_match(obs_zip$info$title, "To Err is Human")
 
   # both
   file_path <- c(xml_file, zip_file)

@@ -198,7 +198,7 @@ print.scivrs_paper <- function(x, ...) {
 #' @export
 #' @keywords internal
 print.scivrs_paperlist <- function(x, ...) {
-  txt <- info_table(x)
+  txt <- paper_table(x, "info", c("title", "doi"))
 
   print(txt)
 }
@@ -230,37 +230,38 @@ demopaper <- function() {
   read_bibr(file_path)
 }
 
-#' Concatenate tables
+#' Paper tables
 #'
-#' Concatenate tables across a list of paper objects
+#' Return a table from a paper object or Cconcatenate tables across a list of paper objects.
 #'
-#' @param papers a list of paper objects
-#' @param name_path a vector of names that get you to the table
+#' @param paper a paper or paperlist
+#' @param table a table name
+#' @param cols the columns to return from the table (default all columns)
 #'
 #' @return a merged table
 #' @export
 #'
 #' @examples
-#' biblio <- concat_tables(psychsci[1:10], "bib")
-#' xrefs <- concat_tables(psychsci[1:10], "xrefs")
-concat_tables <- function(papers, name_path) {
-  if (!is_paper_list(papers)) papers <- list(papers)
+#' biblio <- paper_table(psychsci[1:10], "bib")
+#' xrefs <- paper_table(psychsci[1:10], "xrefs")
+paper_table <- function(paper, table, cols = NULL) {
+  if (!is_paper_list(paper)) paper <- list(paper)
 
-  # iterate down the name_path
-  table_list <- papers
-  for (name in name_path) {
-    table_list <- lapply(table_list, `[[`, name)
-  }
-  for (i in seq_along(papers)) {
+  # add paper_id to tables
+  table_list <- lapply(paper, `[[`, table)
+  for (i in seq_along(paper)) {
     x <- table_list[[i]]
     if (is.data.frame(x)) {
-      table_list[[i]]$paper_id <- rep(papers[[i]]$paper_id, nrow(x))
-    } else {
-      table_list[[i]] <- data.frame(id = character(0))
+      table_list[[i]]$paper_id <- rep(paper[[i]]$paper_id, nrow(x))
     }
   }
 
   merged_table <- dplyr::bind_rows(table_list)
+  if (!is.null(cols)) {
+    cols <- c(cols, "paper_id")
+    keep <- intersect(cols, names(merged_table))
+    merged_table <- merged_table[, keep, drop = FALSE]
+  }
 
   merged_table
 }

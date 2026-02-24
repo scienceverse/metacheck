@@ -34,7 +34,7 @@ test_that("validate", {
 
   # has ground truth
   gt <- data.frame(
-    id = as.character(1:3),
+    paper_id = as.character(1:3),
     text = text,
     p_comp = p_comp
   )

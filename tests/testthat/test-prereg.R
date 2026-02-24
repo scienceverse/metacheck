@@ -28,12 +28,12 @@ test_that("aspredicted_links", {
   expect_equal(links$text, exp)
 
   # second trailing blind links
-  paper <- psychsci$`09567976231204035`
+  paper <- psychsci[[220]]
   links <- aspredicted_links(paper)
   expect_true(all(links$text != "https://aspredicted.org/blind.php?"))
 
   # wierd aspredicted> .org
-  paper <- psychsci$`0956797620948821`
+  paper <- psychsci[[88]]
   links <- aspredicted_links(paper)
   expect_true(any(grepl("/vp4rg", links$text)))
   expect_true(any(grepl("/3kq9y", links$text)))
@@ -43,6 +43,8 @@ test_that("aspredicted_links", {
 httptest::use_mock_api()
 
 test_that("aspredicted_retrieve blind", {
+  skip_api("aspredicted.org")
+
   # single blind link
   ap_url <- "https://aspredicted.org/blind.php?x=nq4xa3"
   suppressMessages( info <- aspredicted_retrieve(ap_url) )
@@ -52,6 +54,8 @@ test_that("aspredicted_retrieve blind", {
 })
 
 test_that("aspredicted_retrieve pdf", {
+  skip_api("aspredicted.org")
+
   # single pdf
   ap_url <- "https://aspredicted.org/ve2qn.pdf"
   suppressMessages( info <- aspredicted_retrieve(ap_url) )
@@ -61,6 +65,8 @@ test_that("aspredicted_retrieve pdf", {
 })
 
 test_that("aspredicted_retrieve multiple", {
+  skip_api("aspredicted.org")
+
   # multiple links in a table
   ap_url <- data.frame(link = c(
     "https://aspredicted.org/ve2qn.pdf",
@@ -75,6 +81,8 @@ test_that("aspredicted_retrieve multiple", {
 })
 
 test_that("aspredicted_info proj", {
+  skip_api("aspredicted.org")
+
   ap_url <- "https://aspredicted.org/Y2F_6B7"
   suppressMessages( info <- aspredicted_info(ap_url) )
   title <- "Children's prosocial behavior in response to awe-inspiring art"

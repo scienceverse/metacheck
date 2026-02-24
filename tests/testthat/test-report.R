@@ -155,8 +155,8 @@ test_that("report pass args", {
 
 test_that("detected", {
   skip_on_ci()
-  skip_if_not_installed("quarto")
   skip_on_cran()
+  skip_if_not_installed("quarto")
 
   paper <- demopaper()
   # skip modules that require osf.api
@@ -169,10 +169,10 @@ test_that("detected", {
     bib_id = 5,
     title = "Fake",
     doi = retractionwatch()$doi[[1]],
-    ref = "Test retracted paper",
+    bib_text = "Test retracted paper",
     bibtype = "Article",
     journal_title = "Fake Journal",
-    year = 2025,
+    year = "2025",
     author = "Hmmm"
   )
   paper$bib <- dplyr::bind_rows(paper$bib, retracted)

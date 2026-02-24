@@ -12,7 +12,7 @@ zip <- platform_bibr_convert(pdf, "data-raw/demo")
 file.copy(zip, "inst/demo/", overwrite = TRUE)
 file.copy(pdf, "inst/demo/", overwrite = TRUE)
 
-# copy to tests
+# copy to tests (fix this redundancy eventually)
 docx <- "data-raw/demo/to_err_is_human.docx"
 file.copy(zip, "tests/testthat/fixtures/bibr", overwrite = TRUE)
 file.copy(zip, "tests/testthat/fixtures/formats/", overwrite = TRUE)

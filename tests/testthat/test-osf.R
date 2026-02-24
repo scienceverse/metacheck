@@ -101,7 +101,7 @@ httptest::use_mock_api()
 test_that("osf_api_check", {
   status <- osf_api_check()
   possible <- c("ok", "too many requests",
-                "server error", "unknown")
+                "server error", "unknown", "no internet")
   expect_true(status %in% possible)
 })
 

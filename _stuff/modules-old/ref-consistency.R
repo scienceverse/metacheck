@@ -1,5 +1,5 @@
-refs <- concat_tables(paper, "bib")
-cites <- concat_tables(paper, "xrefs")
+refs <- paper_table(paper, "bib")
+cites <- paper_table(paper, "xrefs")
 
 missing_cites <- dplyr::anti_join(refs, cites, by = c("id", "ref_id"))
 if (nrow(missing_cites)) missing_cites$missing <- "citation"

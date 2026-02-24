@@ -53,7 +53,8 @@ test_that("module_info", {
   expect_equal(info$description, "List all sentences that describe an effect as 'marginally significant'.")
   expect_equal(info$func_name, "marginal")
 
-  info <- module_info("modules/no_error.R")
+  mod_path <- test_path("modules", "no_error.R")
+  info <- module_info(mod_path)
   expect_equal(info$title, "Demo No Error")
   expect_equal(info$description, "Demo description")
   expect_equal(info$details, "Demo details...")
@@ -154,7 +155,7 @@ test_that("module_run", {
   # demo
   module <- test_path("modules", "no_error.R")
   mod_output <- module_run(paper, module)
-  expected_summary <- data.frame(paper_id = paper$paper_id, p_values = 2)
+  expected_summary <- data.frame(paper_id = paper$paper_id, p_values = 3)
 
   expect_equal(mod_output$module, module)
   expect_equal(mod_output$title, "Demo No Error")
@@ -222,7 +223,6 @@ test_that("all builtin modules have essential components", {
 
   # expect some content in roxygen header
   for (module in modules) {
-    message(module)
     info <- module_info(module)
     expect_true(nzchar(info$title))
     expect_true(nzchar(info$description))

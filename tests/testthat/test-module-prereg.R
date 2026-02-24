@@ -2,6 +2,8 @@
 httptest::use_mock_api()
 
 test_that("multiple prereg", {
+  skip_api("aspredicted.org")
+  skip_api("api.osf.io")
   paper <- demopaper()
   mo <- module_run(paper, "prereg_check")
   expect_equal(nrow(mo$table), 2)
@@ -10,6 +12,7 @@ test_that("multiple prereg", {
 })
 
 test_that("oer", {
+  skip_api("api.osf.io")
   guid <- "5xysn"
   text <- paste0("https://osf.io/", guid)
   paper <- test_paper(text)
@@ -20,6 +23,7 @@ test_that("oer", {
 })
 
 test_that("prc", {
+  skip_api("api.osf.io")
   guid <- "jez3g"
   text <- paste0("https://osf.io/", guid)
   paper <- test_paper(text)
@@ -30,6 +34,7 @@ test_that("prc", {
 })
 
 test_that("osf_pr_28", {
+  skip_api("api.osf.io")
   guid <- "g59u6"
   text <- paste0("https://osf.io/", guid)
   paper <- test_paper(text)
@@ -40,6 +45,7 @@ test_that("osf_pr_28", {
 })
 
 test_that("osf_pr_31", {
+  skip_api("api.osf.io")
   guid <- "7qcxa"
   text <- paste0("https://osf.io/", guid)
   paper <- test_paper(text)
@@ -50,6 +56,7 @@ test_that("osf_pr_31", {
 })
 
 test_that("osf_pre", {
+  skip_api("api.osf.io")
   guid <- "dr42m"
   text <- paste0("https://osf.io/", guid)
   paper <- test_paper(text)
@@ -60,6 +67,7 @@ test_that("osf_pre", {
 })
 
 test_that("prap", {
+  skip_api("api.osf.io")
   guid <- "7v28u"
   text <- paste0("https://osf.io/", guid)
   paper <- test_paper(text)
@@ -70,6 +78,7 @@ test_that("prap", {
 })
 
 test_that("rrbrandt", {
+  skip_api("api.osf.io")
   guid <- "vzb48"
   text <- paste0("https://osf.io/", guid)
   paper <- test_paper(text)

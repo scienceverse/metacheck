@@ -72,12 +72,12 @@ funding_check <- function(paper) {
     dplyr::filter(
       !any(section %in% likely_section) |
         section %in% likely_section,
-      .by = id
+      .by = paper_id
     )
 
 
   # summary_table ----
-  summary_table <- dplyr::summarise(table, funding_found = TRUE, .by = id)
+  summary_table <- dplyr::summarise(table, funding_found = TRUE, .by = paper_id)
 
   # traffic light ----
   tl <- ifelse(nrow(table), "green", "red")

@@ -147,7 +147,7 @@ test_that("extract_equations", {
 test_that("bibr vs extract_equations", {
   skip("Failures expected")
 
-  eq_bibr <- concat_tables(psychsci, "equations")
+  eq_bibr <- paper_table(psychsci, "equations")
   #eq_bibr$rhs <- as.numeric(eq_bibr$rhs)
   eq_bibr$grp_id <- NULL
   eq_bibr$bibr <- TRUE

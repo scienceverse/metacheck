@@ -15,6 +15,8 @@ test_that("errors", {
 httptest::use_mock_api()
 
 test_that("get_orcid", {
+  skip_api("pub.orcid.org")
+
   obs <- get_orcid("DeBruine", "Lisa")
   exp <- "0000-0002-7523-5539"
   expect_equal(obs, exp)
@@ -34,6 +36,8 @@ test_that("get_orcid", {
 })
 
 test_that("orcid_person", {
+  skip_api("pub.orcid.org")
+
   orcid <- "0000-0002-7523-5539"
   person <- orcid_person(orcid)
   expect_equal(person$orcid, orcid)

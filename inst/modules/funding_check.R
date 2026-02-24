@@ -62,7 +62,7 @@ funding_check <- function(paper) {
   #   dplyr::filter(
   #     !any(section %in% likely_section) |
   #       section %in% likely_section,
-  #     .by = id
+  #     .by = paper_id
   #   )
 
   table <- paper |>

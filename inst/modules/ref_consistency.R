@@ -18,8 +18,8 @@
 #' @returns a list
 ref_consistency <- function(paper) {
   # detailed table of results ----
-  bibs <- concat_tables(paper, "bib")
-  xrefs <- concat_tables(paper, "xrefs")
+  bibs <- paper_table(paper, "bib")
+  xrefs <- paper_table(paper, "xrefs")
   xrefs <- xrefs[xrefs$xref_type == "bib", ]
 
   missing_refs <- dplyr::anti_join(bibs, xrefs, by = c("paper_id", "bib_id" = "xref_id"))

@@ -29,7 +29,7 @@
 ref_replication <- function(paper, show_outcomes = FALSE) {
   # table ----
   cols <- c("paper_id", "bib_id", "doi", "bib_text")
-  bib <- concat_tables(paper, "bib")[, cols]
+  bib <- paper_table(paper, "bib", cols)
 
   # If there are no rows, return immediately
   if (nrow(bib) == 0) {

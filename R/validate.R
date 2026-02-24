@@ -62,16 +62,16 @@ validate <- function(gt, module, compare = "table") {
   # convert vector of text to table
   if (!is.data.frame(gt)) {
     gt <- data.frame(
-      id = seq_along(gt) |> as.character(),
+      paper_id = seq_along(gt) |> as.character(),
       text = gt
     )
   }
 
   # create a test paper for each id containing the text
-  paper <- lapply(gt$id, \(id) {
-    t <- gt[gt$id == id, "text"]
+  paper <- lapply(gt$paper_id, \(paper_id) {
+    t <- gt[gt$paper_id == paper_id, "text"]
     p <- test_paper(t)
-    p$id <- id
+    p$paper_id <- paper_id
     p
   }) |>
   paperlist()

@@ -26,7 +26,7 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
   # table ----
 
   ## get references ----
-  bib <- concat_tables(paper, "bib")
+  bib <- paper_table(paper, "bib")
 
   # If there are no rows, return immediately
   if (nrow(bib) == 0) {
