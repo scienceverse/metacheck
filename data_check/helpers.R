@@ -210,7 +210,27 @@ compare_table <- function(data_stats, paper_stats, tol = 0.01) {
         abs(sd_paper - sd_data) <= tol * abs(sd_paper) ~ "match",
         TRUE ~ "mismatch"
       ),
+
+      min_difference = ifelse(variable %in% numeric_vars, abs(min_paper - min_data), NA_real_),
+      min_comparison = case_when(
+        !(variable %in% numeric_vars) ~ NA_character_,
+        is.na(min_paper) & !is.na(min_data) ~ "missing in paper",
+        !is.na(min_paper) & is.na(sd_data) ~ "missing in data",
+        is.na(min_paper) & is.na(sd_data) ~ "missing both",
+        abs(min_paper - min_data) <= tol * abs(min_paper) ~ "match",
+        TRUE ~ "mismatch"
+      ),
       
+      max_difference = ifelse(variable %in% numeric_vars, abs(max_paper - max_data), NA_real_),
+      max_comparison = case_when(
+        !(variable %in% numeric_vars) ~ NA_character_,
+        is.na(max_paper) & !is.na(max_data) ~ "missing in paper",
+        !is.na(max_paper) & is.na(sd_data) ~ "missing in data",
+        is.na(max_paper) & is.na(sd_data) ~ "missing both",
+        abs(max_paper - max_data) <= tol * abs(max_paper) ~ "match",
+        TRUE ~ "mismatch"
+      ),
+
       # Type comparison
       type_comparison = case_when(
         is.na(type_paper) & !is.na(type_data) ~ "missing in paper",
@@ -244,6 +264,10 @@ compare_table <- function(data_stats, paper_stats, tol = 0.01) {
                                           abs(mean_difference / mean_paper * 100), NA_real_),
       sd_percentage_difference = ifelse(!is.na(sd_difference) & sd_paper != 0,
                                         abs(sd_difference / sd_paper * 100), NA_real_),
+      min_percentage_difference = ifelse(!is.na(min_difference) & min_paper != 0,
+                                        abs(min_difference / min_paper * 100), NA_real_),
+      max_percentage_difference = ifelse(!is.na(max_difference) & max_paper != 0,
+                                        abs(max_difference / max_paper * 100), NA_real_),
       n_unique_percentage_difference = ifelse(n_unique_paper != 0,
                                               abs(n_unique_difference / n_unique_paper * 100), NA_real_)
     ) %>%
@@ -255,6 +279,8 @@ compare_table <- function(data_stats, paper_stats, tol = 0.01) {
       N_paper, N_data, N_difference, N_comparison,
       mean_paper, mean_data, mean_difference, mean_percentage_difference, mean_comparison,
       sd_paper, sd_data, sd_difference, sd_percentage_difference, sd_comparison,
+      min_paper, min_data, min_difference, min_percentage_difference,
+      max_paper, max_data, max_difference, max_percentage_difference, 
       n_unique_paper, n_unique_data, n_unique_difference, n_unique_percentage_difference, n_unique_comparison
     )
   

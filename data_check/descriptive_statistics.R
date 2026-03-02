@@ -9,7 +9,7 @@ library(metacheck)
 # Source R functions for now
 source("./data_check/helpers.R")
 # Configure LLM
-llm_model("ollama/gpt-oss:20b")
+llm_model("ollama/gpt-oss:20b-cloud")
 llm_use(TRUE)
 llm_max_calls(10000)
 verbose(verbose = TRUE)
@@ -86,7 +86,10 @@ file_list_prompt <- paste(
   )
 json_file_list <- llm(
   system_prompt = file_list_prompt,
-  text = ""
+  text = "",
+  params = list(
+    think = "low"
+  )
 )
 parsed_file_list <- jsonlite::fromJSON(json_file_list$answer, simplifyVector = TRUE)
 
@@ -374,13 +377,10 @@ data_desc_stats
 results <- compare_table(data_desc_stats, paper_desc_stats) 
 print(results)
 
+dir.create("./data_check/comparison_results/", showWarnings = FALSE)
+
+# Create the output! I pushed an example so it can be observed and not ran
+write_csv(results, sprintf("./data_check/comparison_results/%s.csv", paper$id))
 
 # Write the results in an MD report so its easily parsable.
 writeLines(generate_md_report(results, report_title = sprintf("Data Comparison Report for paper %s", paper$id)), sprintf("./data_check/comparison_results/%s.md", paper$id))
-
-
-# Create the output! I pushed an example so it can be observed and not ran
-dir.create("./data_check/comparison_results/", showWarnings = FALSE)
-write_csv(results, sprintf("./data_check/comparison_results/%s.csv", paper$id))
-
-
