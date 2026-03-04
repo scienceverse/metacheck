@@ -1,3 +1,58 @@
+# ── Text file helpers ─────────────────────────────────────────────────────────
+
+# Sniff the delimiter of a text file by counting candidate characters in the
+# first non-empty line.  Returns the most frequent one, defaulting to ",".
+sniff_delimiter <- function(path) {
+  line <- ""
+  con  <- file(path, "r")
+  on.exit(close(con))
+  for (i in seq_len(10)) {
+    line <- readLines(con, n = 1, warn = FALSE)
+    if (nchar(trimws(line)) > 0) break
+  }
+  candidates <- c(",", ";", "\t", "|")
+  counts     <- vapply(candidates, function(d)
+    nchar(line) - nchar(gsub(d, "", line, fixed = TRUE)), integer(1))
+  if (max(counts) == 0) "," else candidates[which.max(counts)]
+}
+
+# Read the first n_rows of a data file regardless of format.
+# Returns a data.frame, or NULL on failure / unsupported format.
+read_data_head <- function(path, n_rows = 3) {
+  ext <- tolower(tools::file_ext(path))
+  tryCatch({
+    switch(ext,
+      csv  = ,
+      txt  = ,
+      tsv  = {
+        sep <- if (ext == "tsv") "\t" else sniff_delimiter(path)
+        read.delim(path, sep = sep, nrows = n_rows, check.names = FALSE,
+                   stringsAsFactors = FALSE)
+      },
+      xlsx = ,
+      xls  = readxl::read_excel(path, n_max = n_rows),
+      sav  = as.data.frame(haven::read_sav(path, n_max = n_rows)),
+      dta  = as.data.frame(haven::read_dta(path, n_max = n_rows)),
+      sas7bdat = as.data.frame(haven::read_sas(path, n_max = n_rows)),
+      rds  = {
+        obj <- readRDS(path)
+        if (is.data.frame(obj)) head(obj, n_rows) else NULL
+      },
+      rda  = ,
+      rdata = {
+        env <- new.env()
+        load(path, envir = env)
+        dfs <- Filter(is.data.frame, as.list(env))
+        if (length(dfs) > 0) head(dfs[[1]], n_rows) else NULL
+      },
+      NULL   # unsupported
+    )
+  }, error = function(e) {
+    warning("Could not read ", basename(path), ": ", conditionMessage(e))
+    NULL
+  })
+}
+
 # ── Archive helpers ───────────────────────────────────────────────────────────
 
 unpack_archive <- function(path) {

@@ -1,0 +1,57 @@
+TODO — metacheck-datacheck pipeline
+================================================================================
+Legend:
+  [USER]   — explicitly requested by user
+  [DEV]    — unsolicited suggestion added during development (with rationale)
+
+Open items are marked  [ ]
+Done items are marked  [x]
+
+────────────────────────────────────────────────────────────────────────────────
+PIPELINE: 0_index.R — file classification & structure
+────────────────────────────────────────────────────────────────────────────────
+
+[ ] [USER] Qualtrics triple-header detection
+      Qualtrics exports use a 3-row header:
+        row 1 = machine-readable column names  (used as R header)
+        row 2 = human-readable labels
+        row 3 = ImportId JSON  (e.g. {"ImportId":"QID1_TEXT"})
+      When row 1 of the data (after reading) contains {"ImportId": strings,
+      skip rows 1–2 so that actual participant responses are used as
+      sample_values instead of label/ImportId strings.
+      Location: extract_columns() in 0_index.R
+
+[ ] [USER] Supplemental experiments — dedicated group "supex<N>"
+      Currently "Supplemental Experiment N" folders are mapped to group
+      "other" to avoid false merges with the main ex<N> groups.
+      But supplemental experiments are sometimes real replications or
+      additional studies that warrant tracking separately.
+      Proposed fix: introduce a "supex<N>" group (e.g. "supex1", "supex2")
+      and update the LLM prompt + downstream schema-mapping step accordingly.
+      Location: STRUCTURE_PROMPT rules in 0_index.R
+
+────────────────────────────────────────────────────────────────────────────────
+PIPELINE: general / future
+────────────────────────────────────────────────────────────────────────────────
+
+[ ] [DEV]  Verify downloaded files match OSF manifest, not just folder existence
+      Rationale: The current download guard checks only whether the target
+      folder exists. If a previous run was interrupted mid-download, the folder
+      exists but is incomplete. Comparing the local file list against the OSF
+      API manifest (file names + sizes) would make reruns safe and idempotent.
+      Location: step 1 (download) in 0_index.R
+
+[ ] [DEV]  Qualtrics ResponseId / metadata column stripping
+      Rationale: Qualtrics exports always include housekeeping columns
+      (ResponseId, RecordedDate, Status, IPAddress, etc.) that are not
+      substantive variables. These inflate the column index and confuse
+      downstream schema matching. A lightweight blocklist or pattern filter
+      applied in extract_columns() would keep the output clean.
+      Location: extract_columns() in 0_index.R
+
+[ ] [DEV]  Multi-sheet Excel handling
+      Rationale: read_data_head() currently reads only the first sheet of
+      .xlsx/.xls files. Repos sometimes store each experiment's data in
+      separate sheets of one workbook. Each sheet should be treated as a
+      separate logical file, producing its own rows in the columns CSV.
+      Location: read_data_head() in helper.R
