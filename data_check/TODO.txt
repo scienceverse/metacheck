@@ -30,6 +30,11 @@ PIPELINE: 0_index.R — file classification & structure
       and update the LLM prompt + downstream schema-mapping step accordingly.
       Location: STRUCTURE_PROMPT rules in 0_index.R
 
+[ ] [USER] Explode xslx files into different csv files (as an unpack file)
+      Probably, some analysis of the first row would be needed to classify the files as either codebook,
+      data or other things
+
+
 ────────────────────────────────────────────────────────────────────────────────
 PIPELINE: general / future
 ────────────────────────────────────────────────────────────────────────────────

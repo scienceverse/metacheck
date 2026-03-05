@@ -24,7 +24,8 @@ read_data_head <- function(path, n_rows = 3) {
     switch(ext,
       csv  = ,
       txt  = ,
-      tsv  = {
+      tsv  = ,
+      dat  = {
         sep <- if (ext == "tsv") "\t" else sniff_delimiter(path)
         read.delim(path, sep = sep, nrows = n_rows, check.names = FALSE,
                    stringsAsFactors = FALSE)
@@ -114,7 +115,12 @@ extract_json <- function(txt) {
   txt <- trimws(txt)
   # Remove ```json ... ``` or ``` ... ``` wrappers
   txt <- gsub("^```(?:json)?\\s*|\\s*```$", "", txt, perl = TRUE)
-  trimws(txt)
+  txt <- trimws(txt)
+  # Extract only the outermost JSON array [...] — discard any prose the LLM
+  # appended after the closing bracket (e.g. "(Note: paths truncated ...)")
+  m <- regexpr("\\[.*\\]", txt, perl = TRUE)
+  if (m != -1) txt <- regmatches(txt, m)
+  txt
 }
 
 clean_llm_values <- function(df) {
@@ -138,7 +144,9 @@ llm_batch <- function(paths, system_prompt, user_prefix, key_col, extra_cols,
     chunk_paths <- chunks[[i]]
     chunk_text  <- paste(seq_along(chunk_paths), chunk_paths, sep = ". ", collapse = "\n")
     chunk_input <- paste0(user_prefix, "\n\n", chunk_text,
-                          "\n\nReturn only a JSON array with ", length(chunk_paths), " objects.")
+                          "\n\nReturn ONLY a JSON array with exactly ", length(chunk_paths),
+                          " objects — one per path above. Echo every path character-for-character.",
+                          " No truncation. No notes. No text outside the array.")
 
     raw <- llm(system_prompt = system_prompt, text = chunk_input)
 
