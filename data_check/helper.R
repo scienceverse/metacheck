@@ -118,7 +118,7 @@ extract_json <- function(txt) {
   txt <- trimws(txt)
   # Extract only the outermost JSON array [...] — discard any prose the LLM
   # appended after the closing bracket (e.g. "(Note: paths truncated ...)")
-  m <- regexpr("\\[.*\\]", txt, perl = TRUE)
+  m <- regexpr("(?s)\\[.*\\]", txt, perl = TRUE)
   if (m != -1) txt <- regmatches(txt, m)
   txt
 }
