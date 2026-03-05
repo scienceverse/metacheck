@@ -168,6 +168,46 @@ run_index <- function(paper_id = NA) {
     files <- files[!(tolower(tools::file_ext(files)) %in% ARCHIVE_EXTS)]
   }
 
+  # ── 3b. Explode multi-sheet Excel files into per-sheet CSVs ─────────────────
+  # Each sheet becomes <stem>_<sheet_name>.csv alongside the original.
+  # The original xlsx/xls is then deleted so downstream sees only flat CSVs.
+
+  excel_paths <- files[tolower(tools::file_ext(files)) %in% c("xlsx", "xls")]
+  if (length(excel_paths) > 0) {
+    for (xl in excel_paths) {
+      sheets <- tryCatch(readxl::excel_sheets(xl), error = function(e) {
+        warning("Could not read sheets from ", basename(xl), ": ", conditionMessage(e))
+        character(0)
+      })
+      if (length(sheets) == 0) next
+      stem    <- tools::file_path_sans_ext(xl)
+      n_written <- 0L
+      for (sh in sheets) {
+        df <- tryCatch(
+          as.data.frame(readxl::read_excel(xl, sheet = sh), stringsAsFactors = FALSE),
+          error = function(e) {
+            warning("  skipping sheet '", sh, "' in ", basename(xl),
+                    ": ", conditionMessage(e))
+            NULL
+          }
+        )
+        if (is.null(df) || nrow(df) == 0) next
+        # Sanitize sheet name for use in a filename (replace path-unsafe chars)
+        safe_sh  <- gsub("[/\\\\:*?\"<>|]", "_", sh)
+        out_path <- paste0(stem, "_", safe_sh, ".csv")
+        write.csv(df, out_path, row.names = FALSE)
+        n_written <- n_written + 1L
+      }
+      if (n_written > 0) {
+        message("  exploded ", basename(xl), " → ", n_written, " CSV(s)")
+        file.remove(xl)
+      }
+    }
+    # Refresh file list after explosion
+    files <- drop_git(list.files(target_dir, full.names = TRUE, recursive = TRUE))
+    files <- files[!(tolower(tools::file_ext(files)) %in% ARCHIVE_EXTS)]
+  }
+
   # ── 4. Build relative-path tree ─────────────────────────────────────────────
 
   norm_base  <- normalizePath(target_dir, mustWork = FALSE)
