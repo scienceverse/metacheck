@@ -61,25 +61,57 @@ unpack_archive <- function(path) {
   stem <- tools::file_path_sans_ext(basename(path))
   dest <- file.path(dirname(path), stem)
 
-  if (dir.exists(dest)) {
-    message("  skipping (already unpacked): ", basename(path))
-    return(dest)
-  }
+  # Standalone compressed files (e.g. data.csv.gz, data.csv.bz2, data.csv.xz)
+  # are NOT tar archives — decompress to a single file instead
+  is_standalone <- (ext %in% c("gz", "bz2", "xz") &&
+    !grepl("\\.(tar\\.(gz|bz2|xz)|tgz)$", tolower(basename(path))))
 
-  dir.create(dest, recursive = TRUE)
-  message("  unpacking: ", basename(path), " → ", dest)
-
-  tryCatch({
-    if (ext == "zip") {
-      utils::unzip(path, exdir = dest)
-    } else if (ext %in% c("tar", "tgz", "gz", "bz2", "xz")) {
-      utils::untar(path, exdir = dest)
+  if (is_standalone) {
+    # dest is the decompressed file path (e.g. data.csv)
+    if (file.exists(dest)) {
+      message("  skipping (already unpacked): ", basename(path))
+      return(dirname(path))
     }
-    dest
-  }, error = function(e) {
-    warning("Failed to unpack ", basename(path), ": ", conditionMessage(e))
-    NULL
-  })
+    message("  decompressing: ", basename(path), " → ", dest)
+    tryCatch({
+      if (ext == "gz") {
+        con_in <- gzfile(path, "rb")
+      } else if (ext == "bz2") {
+        con_in <- bzfile(path, "rb")
+      } else {
+        con_in <- xzfile(path, "rb")
+      }
+      con_out <- file(dest, "wb")
+      on.exit({ close(con_in); close(con_out) })
+      while (length(chunk <- readBin(con_in, "raw", n = 1048576L)) > 0)
+        writeBin(chunk, con_out)
+      dirname(path)
+    }, error = function(e) {
+      warning("Failed to decompress ", basename(path), ": ", conditionMessage(e))
+      NULL
+    })
+  } else {
+    if (dir.exists(dest)) {
+      message("  skipping (already unpacked): ", basename(path))
+      return(dest)
+    }
+
+    dir.create(dest, recursive = TRUE)
+    message("  unpacking: ", basename(path), " → ", dest)
+
+    tryCatch({
+      if (ext == "zip") {
+        utils::unzip(path, exdir = dest)
+      } else {
+        # tar, tgz, tar.gz, tar.bz2, tar.xz — untar auto-detects compression
+        utils::untar(path, exdir = dest)
+      }
+      dest
+    }, error = function(e) {
+      warning("Failed to unpack ", basename(path), ": ", conditionMessage(e))
+      NULL
+    })
+  }
 }
 
 # ── Rule-based classification ─────────────────────────────────────────────────
