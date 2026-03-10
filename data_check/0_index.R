@@ -111,9 +111,16 @@ run_index <- function(paper_id = NA) {
   links        <- osf_links(paper)
   unique_links <- setdiff(unique(links$text), BADGE_REPOS)
 
+  if (length(unique_links) == 0) {
+    stop("no_links: paper ", paper_id, " has no OSF data links")
+  }
+
+  download_attempted <- FALSE
+  t_download_start <- proc.time()[["elapsed"]]
   if (!dir.exists(target_dir)) {
+    download_attempted <- TRUE
     osf_file_download(unique_links, download_to = target_dir,
-                      max_download_size = Inf, max_file_size = NULL)
+                      max_download_size = 10e9, max_file_size = NULL)
   }
 
   # ── 2. Sanitize directory names ─────────────────────────────────────────────
@@ -156,8 +163,11 @@ run_index <- function(paper_id = NA) {
   }
 
   if (length(files) == 0) {
-    stop("No files found for paper ", paper_id,
-         " — check that the OSF download succeeded and the folder exists.")
+    if (!dir.exists(target_dir)) {
+      stop("download_failed: OSF download produced no directory for paper ", paper_id)
+    } else {
+      stop("empty_repo: directory exists but contains no files for paper ", paper_id)
+    }
   }
 
   archive_paths <- files[tolower(tools::file_ext(files)) %in% ARCHIVE_EXTS]
@@ -293,6 +303,9 @@ run_index <- function(paper_id = NA) {
 
   # ── 6. LLM: understand repository structure ──────────────────────────────────
 
+  t_download <- proc.time()[["elapsed"]] - t_download_start
+
+  t_llm_start <- proc.time()[["elapsed"]]
   MAX_LLM_CALLS <- 10
   n_llm_calls   <- ceiling(length(llm_paths) / LLM_BATCH_SIZE)
   if (n_llm_calls > MAX_LLM_CALLS) {
@@ -359,6 +372,9 @@ run_index <- function(paper_id = NA) {
   cat("\n── File inventory ──────────────────────────────\n")
   print(table(paste0(file_df$type, " / ", file_df$group)))
 
+  t_llm <- proc.time()[["elapsed"]] - t_llm_start
+
+  t_col_start <- proc.time()[["elapsed"]]
   # ── 9. Extract columns + sample values from data files ───────────────────────
 
   data_files <- file_df[file_df$type == "data" & !file_df$is_sentinel, ]
@@ -483,6 +499,7 @@ run_index <- function(paper_id = NA) {
     columns_out <- NULL
   }
 
+  t_col <- proc.time()[["elapsed"]] - t_col_start
   elapsed <- proc.time()[["elapsed"]] - t_start
 
   # ── Return structured result ─────────────────────────────────────────────────
@@ -492,6 +509,9 @@ run_index <- function(paper_id = NA) {
     success        = TRUE,
     error          = NULL,
     elapsed_sec    = elapsed,
+    download_sec   = t_download,
+    llm_sec        = t_llm,
+    column_sec     = t_col,
     n_files        = nrow(file_df),
     n_data_files   = nrow(data_files),
     n_agg_dirs     = length(agg_dirs),

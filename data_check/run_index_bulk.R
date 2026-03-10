@@ -26,9 +26,11 @@ if (length(all_ids) == 0) stop("No XML files found in ", XML_DIR)
 
 done_ids <- character(0)
 if (file.exists(SUMMARY_CSV)) {
-  prior <- read.csv(SUMMARY_CSV, stringsAsFactors = FALSE)
-  done_ids <- prior$paper_id
-  message("── Resuming: ", length(done_ids), " paper(s) already completed, skipping")
+  prior <- tryCatch(read.csv(SUMMARY_CSV, stringsAsFactors = FALSE, colClasses = c(paper_id = "character")), error = function(e) NULL)
+  if (!is.null(prior) && "paper_id" %in% names(prior)) {
+    done_ids <- unique(as.character(prior$paper_id))
+    message("── Resuming: ", length(done_ids), " paper(s) already processed, skipping")
+  }
 }
 
 # ── Determine papers to run ─────────────────────────────────────────────────
@@ -60,7 +62,10 @@ append_summary_row <- function(r) {
     paper_id     = na_fallback(r$paper_id, NA_character_),
     success      = r$success,
     error        = na_fallback(r$error, NA_character_),
-    elapsed_sec  = round(na_fallback(r$elapsed_sec, NA_real_), 1),
+    elapsed_ms   = round(na_fallback(r$elapsed_sec, NA_real_) * 1000),
+    download_ms  = round(na_fallback(r$download_sec, NA_real_) * 1000),
+    llm_ms       = round(na_fallback(r$llm_sec, NA_real_) * 1000),
+    column_ms    = round(na_fallback(r$column_sec, NA_real_) * 1000),
     n_files      = na_fallback(r$n_files, NA_integer_),
     n_data_files = na_fallback(r$n_data_files, NA_integer_),
     n_agg_dirs   = na_fallback(r$n_agg_dirs, NA_integer_),
@@ -79,6 +84,15 @@ append_summary_row <- function(r) {
 
 for (i in seq_along(remaining_ids)) {
   pid <- remaining_ids[i]
+
+  # Double-check: re-read CSV in case a prior iteration already covered this ID
+  if (file.exists(SUMMARY_CSV)) {
+    already <- tryCatch(read.csv(SUMMARY_CSV, stringsAsFactors = FALSE, colClasses = c(paper_id = "character")), error = function(e) NULL)
+    if (!is.null(already) && pid %in% already$paper_id) {
+      message("  skipping (already in CSV): ", pid)
+      next
+    }
+  }
 
   cat("\n══════════════════════════════════════════════════════════════════════\n")
   cat(sprintf("  Run %d / %d  (overall %d / %d)  —  %s\n",
@@ -110,7 +124,7 @@ for (i in seq_along(remaining_ids)) {
 
 # ── Print summary ────────────────────────────────────────────────────────────
 
-summary_df <- read.csv(SUMMARY_CSV, stringsAsFactors = FALSE)
+summary_df <- read.csv(SUMMARY_CSV, stringsAsFactors = FALSE, colClasses = c(paper_id = "character"))
 
 cat("\n\n")
 cat("╔══════════════════════════════════════════════════════════════════════╗\n")
