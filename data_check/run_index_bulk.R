@@ -1,102 +1,138 @@
 # run_index_bulk.R
 # ─────────────────────────────────────────────────────────────────────────────
-# Stress-test run_index() across N randomly selected papers.
-# Each run picks a random paper_id (same randomisation logic as 0_index.R).
-# Results are collected and printed as a diagnostic summary.
+# Run run_index() across all (or N) papers, writing results incrementally
+# to a CSV so that progress survives crashes. On restart, already-completed
+# papers are skipped automatically.
 # ─────────────────────────────────────────────────────────────────────────────
 
 source("./data_check/0_index.R")
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-N_RUNS <- 10          # how many papers to run
-SEED   <- NULL        # set an integer for reproducibility, or NULL for random
+N_RUNS      <- Inf          # Inf = all papers; set an integer to cap
+SEED        <- NULL         # set an integer for reproducibility, or NULL
+SUMMARY_CSV <- "./data_check/bulk_summary.csv"
 
 if (!is.null(SEED)) set.seed(SEED)
 
-# ── Run ───────────────────────────────────────────────────────────────────────
+# ── Discover all papers ──────────────────────────────────────────────────────
 
-results <- vector("list", N_RUNS)
+all_ids <- tools::file_path_sans_ext(
+  list.files(XML_DIR, pattern = "\\.xml$", full.names = FALSE)
+)
+if (length(all_ids) == 0) stop("No XML files found in ", XML_DIR)
 
-for (i in seq_len(N_RUNS)) {
+# ── Load prior progress ─────────────────────────────────────────────────────
+
+done_ids <- character(0)
+if (file.exists(SUMMARY_CSV)) {
+  prior <- read.csv(SUMMARY_CSV, stringsAsFactors = FALSE)
+  done_ids <- prior$paper_id
+  message("── Resuming: ", length(done_ids), " paper(s) already completed, skipping")
+}
+
+# ── Determine papers to run ─────────────────────────────────────────────────
+
+remaining_ids <- setdiff(all_ids, done_ids)
+if (!is.null(SEED)) {
+  remaining_ids <- sample(remaining_ids)
+}
+if (is.finite(N_RUNS) && N_RUNS < length(remaining_ids)) {
+  remaining_ids <- remaining_ids[seq_len(N_RUNS)]
+}
+
+n_total    <- length(remaining_ids)
+n_prior    <- length(done_ids)
+
+if (n_total == 0) {
+  message("── Nothing to do — all papers already processed.")
+  q(save = "no")
+}
+
+message("── Will process ", n_total, " paper(s)")
+
+# ── Helper: append one row to the summary CSV ───────────────────────────────
+
+na_fallback <- function(x, na = NA) if (is.null(x) || length(x) == 0) na else x
+
+append_summary_row <- function(r) {
+  row <- data.frame(
+    paper_id     = na_fallback(r$paper_id, NA_character_),
+    success      = r$success,
+    error        = na_fallback(r$error, NA_character_),
+    elapsed_sec  = round(na_fallback(r$elapsed_sec, NA_real_), 1),
+    n_files      = na_fallback(r$n_files, NA_integer_),
+    n_data_files = na_fallback(r$n_data_files, NA_integer_),
+    n_agg_dirs   = na_fallback(r$n_agg_dirs, NA_integer_),
+    n_raw        = na_fallback(r$n_raw, NA_integer_),
+    n_nonraw     = na_fallback(r$n_nonraw, NA_integer_),
+    n_columns    = na_fallback(r$n_columns, NA_integer_),
+    n_src_files  = na_fallback(r$n_source_files, NA_integer_),
+    stringsAsFactors = FALSE
+  )
+  write_header <- !file.exists(SUMMARY_CSV)
+  write.table(row, SUMMARY_CSV, append = TRUE, sep = ",",
+              row.names = FALSE, col.names = write_header)
+}
+
+# ── Run ──────────────────────────────────────────────────────────────────────
+
+for (i in seq_along(remaining_ids)) {
+  pid <- remaining_ids[i]
+
   cat("\n══════════════════════════════════════════════════════════════════════\n")
-  cat(sprintf("  Run %d / %d\n", i, N_RUNS))
+  cat(sprintf("  Run %d / %d  (overall %d / %d)  —  %s\n",
+              i, n_total, n_prior + i, n_prior + n_total, pid))
   cat("══════════════════════════════════════════════════════════════════════\n")
 
-  results[[i]] <- tryCatch(
-    run_index(paper_id = NA),
+  result <- tryCatch(
+    run_index(paper_id = pid),
     error = function(e) {
       message("  FAILED: ", conditionMessage(e))
       list(
-        paper_id     = NA_character_,
-        success      = FALSE,
-        error        = conditionMessage(e),
-        elapsed_sec  = NA_real_,
-        n_files      = NA_integer_,
-        n_data_files = NA_integer_,
-        n_agg_dirs   = NA_integer_,
-        n_raw        = NA_integer_,
-        n_nonraw     = NA_integer_,
-        n_columns    = NA_integer_,
-        n_source_files = NA_integer_,
-        type_counts  = NULL,
-        group_counts = NULL,
-        file_df      = NULL,
-        columns_df   = NULL
+        paper_id       = pid,
+        success        = FALSE,
+        error          = conditionMessage(e),
+        elapsed_sec    = NA_real_,
+        n_files        = NA_integer_,
+        n_data_files   = NA_integer_,
+        n_agg_dirs     = NA_integer_,
+        n_raw          = NA_integer_,
+        n_nonraw       = NA_integer_,
+        n_columns      = NA_integer_,
+        n_source_files = NA_integer_
       )
     }
   )
+
+  append_summary_row(result)
 }
 
-# ── Build summary table ───────────────────────────────────────────────────────
+# ── Print summary ────────────────────────────────────────────────────────────
 
-summary_df <- do.call(rbind, lapply(results, function(r) {
-  data.frame(
-    paper_id     = if (is.null(r$paper_id) || is.na(r$paper_id)) NA_character_ else r$paper_id,
-    success      = r$success,
-    elapsed_sec  = round(r$elapsed_sec, 1),
-    n_files      = r$n_files,
-    n_data_files = r$n_data_files,
-    n_agg_dirs   = r$n_agg_dirs,
-    n_raw        = r$n_raw,
-    n_nonraw     = r$n_nonraw,
-    n_columns    = r$n_columns,
-    n_src_files  = r$n_source_files,
-    stringsAsFactors = FALSE
-  )
-}))
-
-# ── Print diagnostics ─────────────────────────────────────────────────────────
+summary_df <- read.csv(SUMMARY_CSV, stringsAsFactors = FALSE)
 
 cat("\n\n")
 cat("╔══════════════════════════════════════════════════════════════════════╗\n")
 cat("║                       BULK RUN SUMMARY                              ║\n")
 cat("╚══════════════════════════════════════════════════════════════════════╝\n\n")
 
-# ── 1. Per-run table ──────────────────────────────────────────────────────────
-
 cat("── Per-run results ────────────────────────────────────────────────────\n")
-print(summary_df, row.names = FALSE)
-
-# ── 2. High-level fit stats ───────────────────────────────────────────────────
+print(summary_df[, setdiff(names(summary_df), "error")], row.names = FALSE)
 
 n_ok   <- sum(summary_df$success)
-n_fail <- N_RUNS - n_ok
+n_fail <- nrow(summary_df) - n_ok
 
-cat(sprintf("\n── Success rate: %d / %d  (%.0f%%)\n", n_ok, N_RUNS, 100 * n_ok / N_RUNS))
+cat(sprintf("\n── Success rate: %d / %d  (%.0f%%)\n",
+            n_ok, nrow(summary_df), 100 * n_ok / nrow(summary_df)))
 
 if (n_fail > 0) {
   cat("\n── Failures:\n")
-  failed_idx <- which(!summary_df$success)
-  for (fi in failed_idx) {
-    pid_str <- results[[fi]]$paper_id
-    pid_str <- if (is.null(pid_str) || is.na(pid_str)) "unknown" else pid_str
-    cat(sprintf("   Run %d — %s\n   Error: %s\n",
-                fi, pid_str, results[[fi]]$error))
+  fails <- summary_df[!summary_df$success, ]
+  for (j in seq_len(nrow(fails))) {
+    cat(sprintf("   %s — %s\n", fails$paper_id[j], fails$error[j]))
   }
 }
-
-# ── 3. Timing ─────────────────────────────────────────────────────────────────
 
 if (n_ok > 0) {
   ok_times <- summary_df$elapsed_sec[summary_df$success]
@@ -104,13 +140,8 @@ if (n_ok > 0) {
     "\n── Elapsed time (successful runs):\n   mean=%.1fs  median=%.1fs  min=%.1fs  max=%.1fs\n",
     mean(ok_times), median(ok_times), min(ok_times), max(ok_times)
   ))
-}
 
-# ── 4. Coverage stats ─────────────────────────────────────────────────────────
-
-ok_rows <- summary_df[summary_df$success, ]
-
-if (nrow(ok_rows) > 0) {
+  ok_rows <- summary_df[summary_df$success, ]
   cat("\n── Coverage (successful runs):\n")
   cat(sprintf("   Files per paper      — mean=%.1f  median=%.1f  range=[%d,%d]\n",
               mean(ok_rows$n_files),      median(ok_rows$n_files),
@@ -122,14 +153,12 @@ if (nrow(ok_rows) > 0) {
               mean(ok_rows$n_columns),    median(ok_rows$n_columns),
               min(ok_rows$n_columns),     max(ok_rows$n_columns)))
 
-  # Papers with zero data files — a potential pipeline miss
   n_no_data <- sum(ok_rows$n_data_files == 0)
   if (n_no_data > 0) {
     cat(sprintf("\n   ⚠  %d paper(s) produced zero data files:\n", n_no_data))
     for (pid in ok_rows$paper_id[ok_rows$n_data_files == 0]) cat("      ", pid, "\n")
   }
 
-  # Papers with zero columns — data files found but nothing read
   n_no_cols <- sum(ok_rows$n_data_files > 0 & ok_rows$n_columns == 0)
   if (n_no_cols > 0) {
     cat(sprintf("   ⚠  %d paper(s) had data files but zero columns extracted:\n", n_no_cols))
@@ -139,36 +168,4 @@ if (nrow(ok_rows) > 0) {
   }
 }
 
-# ── 5. Aggregate type distribution ────────────────────────────────────────────
-
-all_file_dfs <- Filter(Negate(is.null), lapply(results, `[[`, "file_df"))
-if (length(all_file_dfs) > 0) {
-  all_files <- do.call(rbind, all_file_dfs)
-  cat("\n── File type distribution (all successful runs combined):\n")
-  type_tbl <- sort(table(all_files$type), decreasing = TRUE)
-  for (nm in names(type_tbl)) {
-    pct <- 100 * type_tbl[[nm]] / nrow(all_files)
-    cat(sprintf("   %-14s %4d  (%.1f%%)\n", nm, type_tbl[[nm]], pct))
-  }
-
-  cat("\n── Group distribution (data files only):\n")
-  data_only <- all_files[all_files$type == "data", ]
-  if (nrow(data_only) > 0) {
-    grp_tbl <- sort(table(data_only$group), decreasing = TRUE)
-    for (nm in names(grp_tbl)) {
-      pct <- 100 * grp_tbl[[nm]] / nrow(data_only)
-      cat(sprintf("   %-14s %4d  (%.1f%%)\n", nm, grp_tbl[[nm]], pct))
-    }
-  }
-
-  # Raw detection rate
-  data_nonsentinel <- all_files[all_files$type == "data" & !all_files$is_sentinel, ]
-  if (nrow(data_nonsentinel) > 0) {
-    pct_raw <- 100 * mean(data_nonsentinel$is_raw, na.rm = TRUE)
-    cat(sprintf("\n── Raw file detection rate: %.1f%% of data files flagged as raw\n", pct_raw))
-  }
-}
-
-# ── 6. Return results invisibly for further inspection ────────────────────────
-
-invisible(results)
+cat("\n── Results saved to: ", SUMMARY_CSV, "\n")

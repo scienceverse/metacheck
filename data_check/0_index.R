@@ -292,6 +292,13 @@ run_index <- function(paper_id = NA) {
 
   # ── 6. LLM: understand repository structure ──────────────────────────────────
 
+  MAX_LLM_CALLS <- 10
+  n_llm_calls   <- ceiling(length(llm_paths) / LLM_BATCH_SIZE)
+  if (n_llm_calls > MAX_LLM_CALLS) {
+    stop("too_large: ", length(llm_paths), " paths would require ",
+         n_llm_calls, " LLM calls (max ", MAX_LLM_CALLS, ")")
+  }
+
   structure_parsed <- llm_batch(
     paths         = llm_paths,
     system_prompt = STRUCTURE_PROMPT,
@@ -356,7 +363,14 @@ run_index <- function(paper_id = NA) {
   data_files <- file_df[file_df$type == "data" & !file_df$is_sentinel, ]
   message("── Extracting columns + statistics from ", nrow(data_files), " data file(s)")
 
+  MAX_FILE_MB <- 500  # skip data files larger than this
+
   extract_column_info <- function(path, rel_path, group) {
+    file_mb <- file.info(path)$size / 1048576
+    if (!is.na(file_mb) && file_mb > MAX_FILE_MB) {
+      message("  skipping (too large: ", round(file_mb), " MB): ", basename(path))
+      return(NULL)
+    }
     df <- read_data_head(path, n_rows = Inf)
     if (is.null(df) || ncol(df) == 0) {
       message("  skipping (unreadable or empty): ", basename(path))
