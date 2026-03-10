@@ -44,8 +44,9 @@ type — pick one:
   supplemental : supporting materials that are NOT raw data — includes survey
                  instruments (e.g. .qsf Qualtrics files), questionnaire PDFs,
                  scale items, consent forms, syntax/output files showing results,
-                 preregistrations, supporting info appendices, and any file
-                 labelled "supplemental/supporting"
+                 preregistrations, supporting info appendices, saved plot objects
+                 (e.g. .Rdata/.rda files containing ggplot/plot objects), and any
+                 file labelled "supplemental/supporting"
   doc          : manuscript, report, general notes, project proposals, changelogs
   readme       : readme file
   asset        : image, audio, video, stimulus material used in the study
