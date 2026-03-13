@@ -20,16 +20,92 @@ paper <- function(id = NULL, ...) {
 
   paper <- list(
     paper_id = id,
-    info = list(),
-    authors = list(),
-    text = data.frame(),
-    links = data.frame(),
-    tables = data.frame(),
-    sections = data.frame(),
-    bib = data.frame(),
-    xrefs = data.frame(),
-    figures = data.frame(),
-    equations = data.frame()
+    info = data.frame(
+      title = character(0),
+      description = character(0),
+      keywords = character(0),
+      doi = character(0),
+      file_hash = character(0),
+      input_format = character(0),
+      file_name = character(0),
+      bibr_version = character(0),
+      paper_type = character(0),
+      paper_type_confidence = numeric(0),
+      oecd_l1 = character(0),
+      oecd_l2 = character(0),
+      oecd_confidence = numeric(0)
+    ),
+    authors = data.frame(
+      author_id = integer(0),
+      given = character(0),
+      family = character(0),
+      affiliation = character(0),
+      email = character(0),
+      corresponding = character(0),
+      orcid = character(0),
+      role = character(0)
+    ),
+    text = data.frame(
+      text_id = integer(0),
+      paragraph_id = integer(0),
+      section_id = integer(0),
+      text = character(0)
+    ),
+    links = data.frame(
+      url = character(0),
+      link_text = character(0),
+      text_id = integer(0)
+    ),
+    tables = data.frame(
+      tbl_id = integer(0),
+      section_id = integer(0),
+      contents = character(0)
+    ),
+    sections = data.frame(
+      section_id = integer(0),
+      header = character(0),
+      parent_section_id = integer(0),
+      section_type = character(0),
+      classification_score = double(0)
+    ),
+    bib = data.frame(
+      bib_id = integer(0),
+      bib_type = character(0),
+      doi = character(0),
+      title = character(0),
+      authors = character(0),
+      editors = character(0),
+      publisher = character(0),
+      publication_year = integer(0),
+      publication_date = character(0),
+      container = character(0),
+      volume = character(0),
+      issue = character(0),
+      first_page = character(0),
+      last_page = character(0),
+      edition = character(0),
+      version = character(0),
+      url = character(0),
+      text_id = integer(0)
+    ),
+    xrefs = data.frame(
+      xref_id = integer(0),
+      xref_type = character(0),
+      contents = character(0),
+      text_id = integer(0)
+    ),
+    figures = data.frame(
+      fig_id = integer(0),
+      section_id = integer(0),
+      image = character(0)
+    ),
+    equations = data.frame(
+      text_id = integer(0),
+      grp_id = integer(0),
+      lhs = character(0),
+      comp = character(0),
+      rhs = character(0)
+    )
   )
 
   class(paper) <- c("scivrs_paper", "list")
@@ -53,8 +129,9 @@ paper <- function(id = NULL, ...) {
 #' p2 <- psychsci[[2]]
 #' plist <- paperlist(p1, p2)
 #'
-#' merged <- paperlist(psychsci[1:2], psychsci[2:3])
-paperlist <- function(..., merge_duplicates = TRUE) {
+#' merged <- paperlist(psychsci[1:2], psychsci[2:3],
+#'.                    merge_duplicates = TRUE)
+paperlist <- function(..., merge_duplicates = FALSE) {
   dots <- list(...)
 
   if (is_paper_list(dots)) {
@@ -128,6 +205,90 @@ test_paper <- function(text = LETTERS) {
   )
 
   return(p)
+}
+
+#' Validate a Paper Object
+#'
+#' Checks if a paper object conforms to the JSON schema.
+#'
+#' @param paper a paper object
+#'
+#' @returns TRUE or error
+#' @export
+#'
+#' @examples
+#' paper <- list(paper_id = "Not a paper object")
+#' validate_paper(paper)
+#'
+#' paper <- demopaper()
+#' validate_paper(paper)
+validate_paper <- function(paper) {
+  json <- system.file("schema/paper.json", package = "metacheck")
+  schema <- jsonlite::read_json(json)
+
+  paper_tables <- c("paper_id", "info", "authors",
+                    "text", "links", "sections",
+                    "bib", "xrefs",
+                    "tables", "figures", "equations")
+  if (!all(paper_tables %in% names(paper))) {
+    missing <- setdiff(paper_tables, names(paper)) |>
+      paste(collapse = ", ") |>
+      paste("The following tables are missing:\n", x = _)
+    stop(missing)
+  }
+
+  # check required and optional columns for non-bib tables
+  tbls <- c("info", "authors", "text", "links", "sections",
+            "xrefs", "tables", "figures", "equations")
+  defs <- c("info", "author", "sentence", "link", "section",
+            "xref", "tbl", "fig", "equation")
+
+  sink <- mapply(\(tbl, def) {
+    cols <- names(paper[[tbl]])
+    ok <- schema$`$defs`[[def]]$properties |> names()
+    req <- schema$`$defs`[[def]]$required |> unlist()
+
+    if (!all(req %in% cols)) {
+      missing <- setdiff(req, cols) |>
+        paste(collapse = ", ") |>
+        sprintf("The %s table is missing required columns:\n%s", tbl, x =_)
+      stop(missing)
+    }
+
+    if (!all(cols %in% ok)) {
+      extra <- setdiff(cols, ok) |>
+        paste(collapse = ", ") |>
+        sprintf("The %s table has extra columns:\n%s", tbl, x =_)
+      stop(extra)
+    }
+  }, tbl = tbls, def = defs)
+
+  # bib table is a little more complex
+  cols <- names(paper[[tbl]])
+  ok <- c(
+    schema$`$defs`$biblio$properties |> names(),
+    schema$`$defs`$biblio_ref$allOf[[2]]$properties |> names()
+  )
+  req <- c(
+    schema$`$defs`$biblio$required |> unlist(),
+    schema$`$defs`$biblio_ref$allOf[[2]]$required |> unlist()
+  )
+
+  if (!all(req %in% cols)) {
+    missing <- setdiff(req, cols) |>
+      paste(collapse = ", ") |>
+      sprintf("The bib table is missing required columns:\n%s", x =_)
+    stop(missing)
+  }
+
+  if (!all(cols %in% ok)) {
+    extra <- setdiff(cols, ok) |>
+      paste(collapse = ", ") |>
+      sprintf("The bib table has extra columns:\n%s", x =_)
+    stop(extra)
+  }
+
+  return(TRUE)
 }
 
 #' Detect a paper object
@@ -264,4 +425,84 @@ paper_table <- function(paper, table, cols = NULL) {
   }
 
   merged_table
+}
+
+
+#' Write paper
+#'
+#' Save a paper as a bibr zip file. The zip file consist of a manifest.json file and arrow files for each table in the paper object.
+#'
+#' @param paper a paper object
+#' @param file_name the name of the file (if NULL, defaults to the paper_id)
+#' @param save_path the directory to save the zip file in
+#'
+#' @returns the path to the zip file
+#' @export
+#'
+#' @examples
+#' dontrun{
+#' paper <- demopaper()
+#' paper$info$title <- "New title"
+#' paper_write(paper, "new_paper")
+#' }
+paper_write <- function(paper, file_name = NULL, save_path = ".") {
+  save_path <- normalizePath(save_path)
+  dir.create(save_path, showWarnings = FALSE, recursive = TRUE)
+
+  if (is_paper_list(paper)) {
+    if (is.null(file_name)) file_name <- names(paper)
+    pb <- pb(length(paper), ":what [:bar] :current/:total")
+    pb$tick(0, list(what = "Saving..."))
+    zip_paths <- mapply(\(p, f, s) {
+      zp <- paper_write(p, f, s)
+      pb$tick(1, list(what = f))
+      zp
+    }, paper, file_name, save_path)
+
+    return(zip_paths)
+  }
+
+  # create temp directory to zip
+  if (is.null(file_name)) file_name <- paper$paper_id
+  file_name <- gsub("\\.zip$", "", x = file_name)
+  zip_path <- file.path(tempdir(), file_name)
+  unlink(zip_path, recursive = TRUE)
+  dir.create(zip_path, showWarnings = FALSE)
+  on.exit(unlink(zip_path, recursive = TRUE))
+
+  paper_id <- paper$paper_id
+  paper$paper_id <- NULL
+
+  # write arrow tables
+  for (tbl in names(paper)) {
+    tryCatch({
+      tbl_path <- file.path(zip_path, paste0(tbl, ".arrow"))
+      arrow::write_ipc_file(paper[[tbl]], tbl_path)
+    }, error = \(e) {
+      warning(tbl, " table could not be saved for ", paper_id)
+      logger("paper_write", list(paper_id = paper_id, table = tbl, error = e$message))
+    })
+  }
+
+  # create manifest
+  tables <- list.files(zip_path) |> gsub("\\.arrow$", "", x = _)
+  dynamic <- grepl("^(table|figure)_", tables)
+  manifest <- list(
+    bibr_version = paper$info$bibr_version,
+    tables =  tables[!dynamic],
+    dynamic_tables =  tables[dynamic]
+  )
+  manifest_path <- file.path(zip_path, "manifest.json")
+  jsonlite::write_json(manifest, manifest_path)
+
+  # zip the files
+  old_wd <- getwd()
+  on.exit(setwd(old_wd))
+  setwd(dirname(zip_path))
+  zipfile <- file_name |>
+    paste0(".zip") |>
+    file.path(save_path, x = _)
+  utils::zip(zipfile, file_name, flags   = "-rq9X") # zip quietly
+
+  return(zipfile)
 }

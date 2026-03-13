@@ -21,8 +21,6 @@
 #'
 #' @returns a list
 ref_doi_check <- function(paper, crossref_min_score = 50) {
-  # for testing: paper <- psychsci[[109]]
-
   # table ----
 
   ## get references ----

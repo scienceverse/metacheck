@@ -10,7 +10,7 @@ apis <- normalizePath("apis")
 httptest::.mockPaths(apis)
 
 skip_api <- function(host = "google.com") {
-  #skip("Uses External API")
+  skip("Uses External API")
   skip_on_cran()
   skip_on_covr()
   skip_if_offline(host)

@@ -1,6 +1,6 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.0.0.9069
+Version: 0.0.1.9001
 Date: 2025-02-16
 Authors@R: c(
   person(  given = "Lisa",
@@ -48,7 +48,7 @@ Suggests:
     knitr,
     withr
 Config/testthat/edition: 3
-Config/testthat/parallel: true
+Config/testthat/parallel: false
 Imports: 
     dplyr,
     tidyr,
@@ -77,7 +77,8 @@ Imports:
     gitcreds, 
     roxygen2, 
     bib2df,   
-    oddpub    
+    oddpub,
+    stringdist
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
 BugReports: https://github.com/scienceverse/metacheck/issues

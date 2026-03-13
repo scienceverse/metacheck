@@ -22,7 +22,7 @@ modules <- c(
 
   # in reports ----
   "prereg_check",
-  "causal_claims",
+  # "causal_claims",
   "open_practices",
   "funding_check",
   "coi_check",

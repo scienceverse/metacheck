@@ -4,10 +4,12 @@
 \alias{tei_xrefs}
 \title{Get cross references from TEI type XML}
 \usage{
-tei_xrefs(xml)
+tei_xrefs(xml, text_table)
 }
 \arguments{
 \item{xml}{The XML}
+
+\item{text_table}{The text table for the paper}
 }
 \value{
 xrefs table

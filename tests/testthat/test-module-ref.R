@@ -1,30 +1,28 @@
 # #httptest::start_capturing()
 # httptest::use_mock_api()
 #
-# test_that("ref_doi_check", {
-#   module <- "ref_doi_check"
-#   mods <- module_list()
-#   expect_true(module %in% mods$name)
-#
-#   # no references
-#   paper <- demopaper()
-#   paper$bib <- paper$bib[c(), ]
-#   mod_output <- module_run(paper, module)
-#   expect_equal(mod_output$traffic_light, "na")
-#   expect_null(mod_output$table)
-#
-#   # relevant references - info
-#   paper <- demopaper()
-#   paper$bib$doi[[1]] <- NA
-#   mod_output <- module_run(paper, module)
-#   expect_equal(mod_output$traffic_light, "yellow")
-#   expect_equal(nrow(mod_output$table), 1)
-#   expect_equal(mod_output$summary_table$refs_checked, 1)
-#
-#   # if offline, none will be found
-#   exp <- ifelse(online(), 1, 0)
-#   expect_equal(mod_output$summary_table$doi_found, exp)
-# })
+test_that("ref_doi_check", {
+  module <- "ref_doi_check"
+  mods <- module_list()
+  expect_true(module %in% mods$name)
+
+  # no references
+  paper <- demopaper()
+  paper$bib <- paper$bib[c(), ]
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "na")
+  expect_null(mod_output$table)
+
+  # 1 reference with missing DOI
+  paper <- demopaper()
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "yellow")
+  expect_contains(mod_output$table$DOI, "10.1177/2515245918770963")
+
+  # if offline, none will be found
+  exp <- ifelse(online(), 1, 0)
+  expect_equal(mod_output$summary_table$doi_found, exp)
+})
 #
 # test_that("ref_accuracy", {
 #   module <- "ref_accuracy"

@@ -1,0 +1,50 @@
+---
+title: "To Err is Human: An Empirical Investigation"
+date: "2026-02-22"
+
+author:
+  # - name: Daniel Lakens
+  #   affiliation: "Eindhoven Technical University"
+  #   orcid: 0000-0002-0247-239X
+  #   email: lakens@gmail.com
+  #   roles: 
+  #   - conceptualization 
+  #   - data curation
+  #   - funding acquisition
+  #   - software 
+  #   - validation 
+  #   - writing
+  #   corresponding: true
+  - name: Lisa DeBruine
+    affiliation: "University of Glasgow"
+  #   orcid: 0000-0002-7523-5539
+  #   email: lisa.debruine@glasgow.ac.uk
+  #   roles: 
+  #   - conceptualization 
+  #   - data curation
+  #   - software 
+  #   - validation 
+  #   - editing
+  #   corresponding: false
+  #- name: Jakub Werner
+  #  affiliation: "Eindhoven Technical University"
+  #   roles: 
+  #   - software 
+  #   - validation
+  #   corresponding: false
+
+format:
+  pdf:
+    documentclass: apa7
+    classoption: man
+    pdf-engine: lualatex
+
+abstract: |
+  This is the abstract. It should be a single paragraph.
+
+bibliography: references.bib
+---
+
+# Introduction
+
+Your introduction text.

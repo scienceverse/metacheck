@@ -9,7 +9,7 @@ crossref_query(
   min_score = 50,
   rows = 1,
   select = c("DOI", "score", "type", "title", "author", "container-title", "published",
-    "volume", "issue", "page", "URL", "abstract")
+    "volume", "issue", "page", "URL")
 )
 }
 \arguments{
@@ -30,10 +30,10 @@ Look up Reference in CrossRef
 \details{
 The argument \code{ref} can take many formats.  Crossref queries only look for authors, title, and container-title (e.g., journal or book), but extra information doesn't seem to hurt.
 \itemize{
-\item be a text reference or fragment
+\item a text reference or fragment
 \item a bibentry object (authors, title and container will be extracted)
 \item a vector of text or bibentry objects
-\item a paper object (the ref column of the bib table will be extracted)
+\item a paper object (the bib table will be extracted)
 }
 }
 \examples{

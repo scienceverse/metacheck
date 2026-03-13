@@ -144,7 +144,7 @@ extract_equations <- function(paper) {
   # set group equal to sentence for now
   eq$grp_id <- 1
   for (i in seq_along(eq$text_id)) {
-    if (i == 1) {
+    if (i == 1 || eq$paper_id[[i]] != eq$paper_id[[i-1]]) {
       eq$grp_id[[i]] <- 1
     } else if (eq$text_id[[i]] == eq$text_id[[i-1]]) {
       eq$grp_id[[i]] <- eq$grp_id[[i-1]]
@@ -153,8 +153,7 @@ extract_equations <- function(paper) {
     }
   }
 
-  eq$eq_type <- "stat"
-  cols <- c("text_id", "grp_id", "lhs", "comp", "rhs", "eq_type", "paper_id")
+  cols <- c("text_id", "grp_id", "lhs", "comp", "rhs", "paper_id")
 
   return(eq[, cols])
 }

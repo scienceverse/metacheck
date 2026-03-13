@@ -134,6 +134,235 @@ doi_resolves <- function(doi, timeout = 10) {
   NA
 }
 
+#' Doi.org Info from DOI
+#'
+#' @param doi the DOI(s) to get info for
+#'
+#' @return data frame with DOIs and info
+#' @export
+#' @examples
+#' doi <- "10.7717/peerj.4375"
+#' \dontrun{
+#' doi_info <- doi_lookup(doi)
+#' }
+doi_lookup <- function(doi) {
+  if (length(doi) == 0) {
+    return(data.frame(doi = character(0)))
+  }
+
+  pb <- pb(length(doi), ":what [:bar] :current/:total")
+  bibdata <- lapply(doi, \(the_doi) {
+    if (is.na(the_doi)) {
+      pb$tick(1, list(what = "Skipping NA"))
+      return(list(doi = the_doi))
+    }
+
+    d <- doi_clean(the_doi)
+    pb$tick(0, list(what = d))
+    x <- tryCatch({
+      resp <- paste0("https://doi.org/", d) |>
+        httr2::request() |>
+        httr2::req_headers(Accept = "application/json") |>
+        httr2::req_perform()
+
+      ct <- httr2::resp_content_type(resp)
+
+      if (ct == "text/html") {
+        xml <- httr2::resp_body_html(resp)
+
+        xml2::xml_find_first(xml, '//*[@id="recordExportDownload"]') |>
+          xml2::xml_attr("data-formats") |>
+          jsonlite::fromJSON()
+      }
+
+      httr2::resp_body_json(resp)
+    }, error = \(e) {
+      return(NULL)
+    })
+    pb$tick(1, list(what = ""))
+    x
+  })
+
+  bib_table <- lapply(bibdata, \(bd) {
+    # pages
+    first_page <- NA_character_
+    last_page <- NA_character_
+    if (!is.null(bd$page)) {
+      pages <- strsplit(bd$page, "-")[[1]]
+      first_page <- pages[[1]]
+      if (length(pages) > 1) last_page <- pages[[2]]
+    }
+
+    # authors
+    authors <- bd$author |>
+      sapply(\(a) {
+        paste(a$family, a$given, sep = ", ")
+      }) |>
+      paste(collapse = "; ")
+
+    info <- list(
+      doi        = bd[["DOI"]] %||% NA_character_,
+      type       = bd[["type"]] %||% NA_character_,
+      title      = bd[["title"]] %||% NA_character_,
+      container  = bd[["container-title"]] %||% NA_character_,
+      year       = bd[["published"]]$`date-parts`[[1]][[1]] %||% NA_real_,
+      author     = authors %||% NA_character_,
+      volume     = bd[["volume"]] %||% NA_character_,
+      issue      = bd[["issue"]] %||% NA_character_,
+      first_page = first_page,
+      last_page  = last_page,
+      editor     = bd[["editor"]] %||% NA_character_,
+      publisher  = bd[["publisher"]] %||% NA_character_,
+      url        = bd[["URL"]] %||% NA_character_
+    )
+
+    lapply(info, \(i) {
+      if (length(i) == 1 & is.atomic(i)) return(i[[1]])
+      unlist(i) |> paste(sep = ", ", collapse = "; ")
+    })
+  }) |> dplyr::bind_rows()
+
+  bib_table
+}
+
+#' Doi.org Info from DataCite
+#'
+#' @param doi the DOI(s) to get info for
+#'
+#' @return data frame with DOIs and info
+#' @export
+#' @examples
+#' doi <- "10.5281/zenodo.2669586"
+#' \dontrun{
+#' doi_info <- datacite_doi(doi)
+#' }
+datacite_doi <- function(doi) {
+  if (length(doi) == 0) {
+    return(data.frame(doi = character(0)))
+  }
+
+  pb <- pb(length(doi), ":what [:bar] :current/:total")
+  bibdata <- lapply(doi, \(the_doi) {
+    if (is.na(the_doi)) {
+      pb$tick(1, list(what = "Skipping NA"))
+      return(list(doi = the_doi))
+    }
+
+    d <- doi_clean(the_doi)
+    pb$tick(0, list(what = d))
+    x <- tryCatch({
+      resp <- paste0("https://api.datacite.org/dois/", d) |>
+        httr2::request() |>
+        httr2::req_headers(Accept = "application/json") |>
+        httr2::req_perform()
+
+      ct <- httr2::resp_content_type(resp)
+
+      if (ct == "application/json") {
+        httr2::resp_body_json(resp)
+      } else {
+        NULL
+      }
+    }, error = \(e) {
+      return(NULL)
+    })
+    pb$tick(1, list(what = ""))
+    x
+  })
+
+  bib_table <- lapply(bibdata, \(bd) {
+    att <- bd$data$attributes
+
+    # authors
+    authors <- att$creators |>
+      sapply(\(a) {
+        paste(a$familyName, a$givenName, sep = ", ")
+      }) |>
+      paste(collapse = "; ")
+
+    info <- list(
+      doi        = att$doi %||% NA_character_,
+      type       = att$types$bibtex %||% NA_character_,
+      title      = unlist(att$titles)[[1]] %||% NA_character_,
+      container  = unlist(att$container)[[1]] %||% NA_character_,
+      year       = att$publicationYear %||% NA_real_,
+      author     = authors %||% NA_character_,
+      publisher  = att[["publisher"]] %||% NA_character_,
+      url        = att[["url"]] %||% NA_character_,
+      version    = att[["version"]] %||% NA_character_
+    )
+
+    lapply(info, \(i) {
+      if (length(i) == 1 & is.atomic(i)) return(i[[1]])
+      unlist(i) |> paste(sep = ", ", collapse = "; ")
+    })
+  }) |> dplyr::bind_rows()
+
+  bib_table
+}
+
+#' Convert crossref/doi types to bibtex types
+#'
+#' @param type a vector of crossref types
+#'
+#' @returns a vector of bibtext types
+#' @export
+#' @keywords internal
+#'
+#' @examples
+#' crossref_types <- c("book-part",
+#'                     "journal-article",
+#'                     "monograph",
+#'                     NA,
+#'                     "unmatched-type")
+#' bibtype_convert(crossref_types)
+bibtype_convert <- function(type) {
+  if (is.null(type)) return(NULL)
+
+  # required <- list(
+  #   "article" = c("author", "title", "journal", "year"),
+  #   "book" = c("title", "publisher", "year"),  # plus author OR editor
+  #   "booklet" = c("title"),
+  #   "conference" = c("author", "title", "booktitle", "year"),
+  #   "inbook" = c("title", "publisher", "year"),  # plus author OR editor; and chapter OR pages
+  #   "incollection" = c("author", "title", "booktitle", "publisher", "year"),
+  #   "inproceedings" = c("author", "title", "booktitle", "year"),
+  #   "manual" = c("title"),
+  #   "mastersthesis" = c("author", "title", "school", "year"),
+  #   "misc" = character(0),
+  #   "phdthesis" = c("author", "title", "school", "year"),
+  #   "proceedings" = c("title", "year"),
+  #   "techreport" = c("author", "title", "institution", "year"),
+  #   "unpublished" = c("author", "title", "note")
+  # )
+
+  dplyr::case_match(type,
+    "journal-article"        ~ "article",
+    "book"                   ~ "book",
+    "book-chapter"           ~ "incollection",
+    "book-part"              ~ "inbook",
+    "book-section"           ~ "inbook",
+    "book-series"            ~ "book",
+    "edited-book"            ~ "book",
+    "reference-book"         ~ "book",
+    "monograph"              ~ "book",
+    "report"                 ~ "techreport",
+    "proceedings-article"    ~ "inproceedings",
+    "proceedings"            ~ "proceedings",
+    "conference-paper"       ~ "inproceedings",
+    "conference-proceeding"  ~ "proceedings",
+    "posted-content"         ~ "misc",
+    "dissertation"           ~ "phdthesis",
+    "thesis"                 ~ "phdthesis",
+    "dataset"                ~ "misc",
+    "standard"               ~ "misc",
+    "reference-entry"        ~ "incollection",
+    "reference-work"         ~ "book",
+    "report-series"          ~ "techreport",
+    "other"                  ~ "misc",
+    .default = type)
+}
+
 # CrossRef Functions ----
 
 #' CrossRef Info from DOI
@@ -267,10 +496,10 @@ crossref_doi <- function(doi, select = c(
 #' @details
 #' The argument `ref` can take many formats.  Crossref queries only look for authors, title, and container-title (e.g., journal or book), but extra information doesn't seem to hurt.
 #'
-#' - be a text reference or fragment
+#' - a text reference or fragment
 #' - a bibentry object (authors, title and container will be extracted)
 #' - a vector of text or bibentry objects
-#' - a paper object (the ref column of the bib table will be extracted)
+#' - a paper object (the bib table will be extracted)
 #'
 #' @param ref the full text reference of the paper to get info for, see Details
 #' @param min_score minimal score that is taken to be a reliable match (default 50)
@@ -300,20 +529,19 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
                              "volume",
                              "issue",
                              "page",
-                             "URL",
-                             "abstract"
+                             "URL"
                            )) {
   if (is_paper(ref)) {
     # pull the whole reference list
     paper <- ref
-    ref <- paper$bib$ref
+    ref <- paper$bib
   }
 
   if (length(ref) == 0) {
     return(data.frame())
   }
 
-  if (inherits(ref, "bibentry")) {
+  if (inherits(ref, "bibentry") || is.data.frame(ref)) {
     # TODO: take advantage of query.title, query.author, query.container-title
     title <- ref$title
     author <- ref$author
@@ -321,7 +549,9 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
 
     ref <- paste(author, collapse = ", ") |>
       paste(title, container, sep = "; ")
-  } else if (length(ref) > 1 | is.list(ref)) {
+  }
+
+  if (length(ref) > 1 | is.list(ref)) {
     # vectorise
     pb <- pb(length(ref),
       format = "Checking References [:bar] :current/:total :elapsedfull"
@@ -345,7 +575,7 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
 
   if (!online("api.labs.crossref.org")) {
     message("Crossref is offline")
-    return(data.frame(ref = ref, DOI = NA, error = "offline"))
+    return(data.frame(bib_text = ref, DOI = NA, error = "offline"))
   }
 
   query <- utils::URLencode(ref, reserved = TRUE) |>
@@ -360,7 +590,6 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
     c(select, "score") |> unique() |> paste(collapse = ","),
     query
   )
-
 
   items <- tryCatch(
     {
@@ -417,6 +646,106 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
     intersect(names(table))
   table[rows, cols]
 }
+
+
+#' Match table from bib table
+#'
+#' @param paper a paper or paperlist object
+#' @param min_score minimal score that is taken to be a reliable match
+#'
+#' @returns the paper or paperlist with bib_match table added
+#' @export
+#'
+#' @examples
+#' dontrun{
+#' paper <- demopaper()
+#' paper$bib_match <- NULL # remove existing
+#' paper2 <- add_bib_match(paper)
+#' paper2$bib_match
+#' }
+add_bib_match <- function(paper, min_score = 50) {
+  bib <- paper_table(paper, "bib")
+
+  if (nrow(bib) == 0) {
+    return(paper)
+  }
+
+  # get search string, deduplicate, and look up
+  refs <- paste(
+    bib$title,
+    bib$author,
+    bib$journal %||% bib$booktitle,
+    sep = "; "
+  )
+  cr_data <- crossref_query(unique(refs), min_score = min_score)
+  if ("page" %in% names(cr_data)) {
+    cr_data <- tidyr::separate(
+      cr_data, page,
+      c("first_page", "last_page"),
+      sep = "-", extra = "merge", fill = "right"
+    )
+  }
+
+  if (is.null(cr_data$author)) {
+    authors <- NA_character_
+  } else {
+    authors <- sapply(cr_data$author, \(a) {
+      paste(a$family, a$given, sep = ", ", collapse = "; ")
+    })
+  }
+
+  # determine if container title is a journal or book
+  cr_data$journal <- ifelse(bibtypes %in% c("book", "inbook"),
+                            NA, cr_data$`container-title` %||% NA_character_)
+  cr_data$booktitle <- ifelse(bibtypes %in% c("book", "inbook"),
+                              cr_data$`container-title` %||% NA_character_, NA)
+
+  bib_match <- data.frame(
+    ref            = unique(refs),
+    source         = "crossref",
+    source_id      = "",
+    match_score    = cr_data$score %||% NA_real_,
+    type           = bibtype_convert(cr_data$type) %||% NA_character_,
+    doi            = cr_data$DOI %||% NA_character_,
+    title          = cr_data$title %||% NA_character_,
+    author         = authors %||% NA_character_,
+    journal        = cr_data$journal %||% NA_character_,
+    year           = cr_data$year %||% NA_real_,
+    volume         = cr_data$volume %||% NA_character_,
+    issue          = cr_data$issue %||% NA_character_,
+    first_page     = cr_data$first_page %||% NA_character_,
+    last_page      = cr_data$last_page %||% NA_character_,
+    booktitle      = cr_data$booktitle %||% NA_character_,
+    editor         = cr_data$editor %||% NA_character_,
+    publisher      = cr_data$publisher %||% NA_character_,
+    url            = cr_data$URL %||% NA_character_
+  )
+
+  # re-duplicate and add IDs
+  bib_match_table <- data.frame(
+    paper_id = bib$paper_id,
+    bib_id = bib$bib_id,
+    ref = refs
+  ) |>
+    dplyr::left_join(bib_match, by = "ref")
+  bib_match_table$ref <- NULL
+
+  # add bib_match table to paper object(s)
+  if (is_paper(paper)) {
+    bib_match_table$paper_id <- NULL
+    paper$bib_match <- bib_match_table
+  } else if (is_paper_list(paper)) {
+    paper <- lapply(paper, \(p) {
+      bib_match_i <- bib_match[bib_match$paper_id == p$paper_id, ]
+      bib_match_i$paper_id <- NULL
+      p$bib_match <- bib_match_i
+      p
+    }) |> paperlist()
+  }
+
+  paper
+}
+
 
 # OpenAlex functions ----
 

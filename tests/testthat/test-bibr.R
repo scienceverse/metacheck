@@ -151,6 +151,10 @@ test_that("read", {
   expect_contains(obs, exp)
   expect_match(paper$paper_id, "^[a-f0-9]{16}$")
 
+  # check for no links ending in .
+  end_dot <- grepl("\\.$", paper$links$url)
+  expect_true(all(!end_dot))
+
   # vector of paths
   file_path <- c(
     test_path("fixtures", "formats", "to_err_is_human.zip"),

@@ -1,0 +1,9 @@
+xref_id,xref_type,contents,text_id
+1,tbl,Table 1,20
+1,fig,Figure 1,20
+2,fig,Figure 2,23
+1,foot,1,10
+2,foot,2,19
+3,bib,(Gino and Wiltermuth 2014),6
+,bib,"(Smithy, 2020)",7
+1,bib, (DeBruine 2025),20

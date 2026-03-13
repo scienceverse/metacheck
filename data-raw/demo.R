@@ -1,6 +1,5 @@
 # render versions from qmd
 qmd <- "data-raw/demo/to_err_is_human.qmd"
-quarto::quarto_render(qmd, "html")
 quarto::quarto_render(qmd, "pdf")
 quarto::quarto_render(qmd, "docx")
 
@@ -23,18 +22,16 @@ file.copy(docx, "tests/testthat/fixtures/formats/", overwrite = TRUE)
 devtools::load_all(".")
 
 paper <- demopaper()
-paper2 <- lapply(paper, \(tbl) {
-  if (is.data.frame(tbl)) {
-    for (col in names(tbl)) {
-      #if (any(grepl("^vctrs_unspecified", class(tbl[[col]])))) {
-        tbl[[col]] <- unclass(tbl[[col]])
-      #}
-    }
-  }
-  tbl
-})
 
-paper2$authors$role <- lapply(paper2$authors$role, unclass)
+ground_truth <- list.files("data-raw/demo/ground_truth", "\\.csv$", full.names = T)
+
+paper2 <- paper()
+for (gt in ground_truth) {
+  table <- basename(gt) |> gsub("\\.csv$", "", x = _)
+  paper2[[table]] <- read.csv(gt)
+}
+paper2$paper_id <- paper$paper_id
+
 
 paper2 |>
   jsonlite::toJSON(pretty = TRUE)|>

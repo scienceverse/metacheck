@@ -244,5 +244,5 @@ test_that("all_urls", {
   paper <- psychsci[1:5]
   mod_output <- module_run(paper, module)
   ids <- mod_output$table$paper_id |> unique()
-  expect_contains(ids, names(paper))
+  expect_contains(names(paper), ids)
 })

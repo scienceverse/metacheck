@@ -4,22 +4,25 @@ test_that("exists", {
 })
 
 test_that("paper", {
-  p <- paper()
-  expect_s3_class(p, "scivrs_paper")
-  exp_names <- c("paper_id", "info", "authors", "text", "links", "tables", "sections",
-                 "bib", "xrefs", "figures", "equations")
-  expect_contains(names(p), exp_names)
-  expect_match(p$paper_id, "^[a-f0-9]{14}$")
-  expect_equal(p$info, list())
-  expect_equal(length(p$authors), 0)
-  expect_equal(p$text, data.frame())
-  expect_equal(p$sections, data.frame())
-  expect_equal(p$bib, data.frame())
-  expect_equal(p$xrefs, data.frame())
-  expect_equal(p$links, data.frame())
-  expect_equal(p$tables, data.frame())
-  expect_equal(p$figures, data.frame())
+  paper <- paper()
+  expect_s3_class(paper, "scivrs_paper")
+  expect_match(paper$paper_id, "^[a-f0-9]{14}$")
+  expect_true(validate_paper(paper))
 })
+
+test_that("validate_paper", {
+  expect_true(is.function(metacheck::validate_paper))
+  expect_no_error(helplist <- help(validate_paper, metacheck))
+
+  expect_error(validate_paper(bad_arg))
+
+  paper <- paper()
+  expect_true(validate_paper(paper))
+
+  paper <- list(paper_id = "not a paper")
+  expect_error(validate_paper(paper))
+})
+
 
 test_that("paperlist", {
   # individual papers
@@ -49,11 +52,12 @@ test_that("paperlist", {
   expect_equal(names(pl), names(psychsci[1:4]))
 
   # merge duplicate papers
-  merged <- paperlist(psychsci[1:2], psychsci[2:3], psychsci[1:3])
+  merged <- paperlist(psychsci[1:2], psychsci[2:3], psychsci[1:3],
+                      merge_duplicates = TRUE)
   expect_equal(names(merged), names(psychsci[1:3]))
 
   # don't merge duplicate papers
-  merged <- paperlist(psychsci[1:2], psychsci[2:3], merge_duplicates = FALSE)
+  merged <- paperlist(psychsci[1:2], psychsci[2:3])
   expect_equal(names(merged), names(psychsci)[c(1:2,2:3)])
 })
 
@@ -151,4 +155,30 @@ test_that("[.scivrs_paperlist", {
   x <- psychsci[1:3]
   expect_s3_class(psychsci, "scivrs_paperlist")
   expect_s3_class(x, "scivrs_paperlist")
+})
+
+
+test_that("paper_write", {
+  expect_true(is.function(metacheck::paper_write))
+  expect_no_error(helplist <- help(paper_write, metacheck))
+
+  expect_error(paper_write(bad_arg))
+
+  # save an exact copy
+  paper <- demopaper()
+  save_path <- withr::local_tempdir()
+  zip_path <- paper_write(paper, NULL, save_path)
+  expect_true(file.exists(zip_path))
+  paper2 <- read(zip_path)
+  expect_setequal(names(paper), names(paper2))
+
+  # save changes
+  paper <- demopaper()
+  paper$info$title <- "New paper"
+  paper$bib <- paper$bib[1:2, ]
+  save_path <- withr::local_tempdir()
+  zip_path <- paper_write(paper, NULL, save_path)
+  expect_true(file.exists(zip_path))
+  paper2 <- read(zip_path)
+  expect_setequal(names(paper), names(paper2))
 })

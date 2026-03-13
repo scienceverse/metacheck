@@ -252,14 +252,15 @@ read_bibr <- function(file_path) {
 
   # unzip and check manifest ----
   unzipped_files <- utils::unzip(file_path, exdir = exdir)
-  manifest <- file.path(exdir, "manifest.json") |>
-    jsonlite::read_json()
+  # manifest <- grep("manifest\\.json$", unzipped_files, value = TRUE) |>
+  #   jsonlite::read_json()
 
   # read in arrow tables -----
-  paper <- paper(manifest$file_hash)
-  all_tables <- c(manifest$tables, manifest$dynamic_tables)
-  for (table_name in all_tables) {
-    tbl_path <- file.path(exdir, paste0(table_name, ".arrow"))
+  paper <- paper()
+  # all_tables <- c(manifest$tables, manifest$dynamic_tables)
+  all_tables <- grep("\\.arrow$", unzipped_files, value = TRUE)
+  for (tbl_path in all_tables) {
+    table_name <- basename(tbl_path) |> gsub("\\.arrow$", "", x = _)
     paper[[table_name]] <- arrow::read_ipc_file(tbl_path)
   }
 
@@ -285,6 +286,8 @@ read_bibr <- function(file_path) {
     gsub("</?t(r|d)>", "", x = _) |>
     trimws()
 
+  # fix urls with . at end
+  paper$links$url <- gsub("\\.$", "", paper$links$url)
 
   paper
 }
@@ -311,7 +314,7 @@ read <- function(file_path) {
       if (grepl("\\.zip$", fp, ignore.case = TRUE)) {
         read_bibr(file_path = fp)
       } else if (grepl("\\.xml$", fp, ignore.case = TRUE)) {
-        grobid_to_bibr(fp)
+        .grobid_to_bibr(fp)
       }
     }, error = \(e) {
       logger("read", e$message)

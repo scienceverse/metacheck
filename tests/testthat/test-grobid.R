@@ -1,17 +1,66 @@
 test_that("grobid_to_bibr", {
   expect_true(is.function(metacheck::grobid_to_bibr))
+  expect_true(is.function(metacheck:::.grobid_to_bibr))
   expect_no_error(helplist <- help(grobid_to_bibr, metacheck))
 
-  expect_error(grobid_to_bibr(bad_arg))
+  expect_error(grobid_to_bibr(NULL))
 
+  # 1 paper, NULL save_path, no CR lookup
   xml_file <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
-  paper <- grobid_to_bibr(xml_file)
+  paper <- grobid_to_bibr(xml_file, NULL)
 
   expect_s3_class(paper, "scivrs_paper")
   text_cols <- c("text_id", "paragraph_id", "section_id", "text")
   expect_in(names(paper$text), text_cols)
-
   expect_equal(paper$bib$doi[[4]], "10.0000/0123456789")
+  expect_false("bib_match" %in% names(paper))
+
+  # 1 paper, save_path, no CR lookup
+  save_path <- withr::local_tempdir()
+  zip_path <- grobid_to_bibr(xml_file, save_path)
+  paper2 <- read(zip_path)
+  suppressWarnings( expect_setequal(paper, paper2))
+
+  # multiple papers, NULL save_path, no CR lookup
+  xml_file <- c(
+    test_path("fixtures", "formats", "preprint.pdf.tei.xml"),
+    test_path("fixtures", "formats", "published.pdf.tei.xml")
+  )
+  papers <- grobid_to_bibr(xml_file, save_path = NULL)
+  expect_s3_class(papers, "scivrs_paperlist")
+
+
+  # multiple papers, save_path, no CR lookup
+  xml_file <- c(
+    test_path("fixtures", "formats", "preprint.pdf.tei.xml"),
+    test_path("fixtures", "formats", "published.pdf.tei.xml")
+  )
+  save_path <- withr::local_tempdir()
+  zip_path <- grobid_to_bibr(xml_file, save_path)
+  expect_equal(length(zip_path), 2)
+  papers <- read(zip_path)
+  expect_s3_class(papers, "scivrs_paperlist")
+
+  # 1 paper, NULL save_path, CR lookup
+  skip_api("api.labs.crossref.org")
+  xml_file <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
+  paper_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
+  expect_contains(names(paper_cr$bib_match), c("doi", "source"))
+
+  # multiple papers, NULL save_path, CR lookup
+  xml_file <- c(
+    test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml"),
+    test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
+  )
+  papers_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
+  expect_contains(names(papers_cr[[1]]$bib_match), c("doi", "source"))
+  expect_contains(names(papers_cr[[2]]$bib_match), c("doi", "source"))
+})
+
+test_that("grobid_to_bibr format", {
+  xml_file <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
+  paper <- grobid_to_bibr(xml_file, NULL)
+  expect_true(validate_paper(paper))
 })
 
 test_that("read", {
@@ -46,16 +95,22 @@ test_that("grobid_convert", {
   expect_no_error(helplist <- help(grobid_convert, metacheck))
 
   expect_error(grobid_convert(bad_arg))
+
+  filename <- "wrongfile.pdf"
+  expect_error(grobid_convert(filename), "Files do not exist")
+
+  filename <- c("wrongfile.pdf", "wrongfile.pdf")
+  expect_error(grobid_convert(filename), "Files do not exist")
 })
 
 test_that("invalid URL error", {
   filename <- test_path("fixtures", "formats", "to_err_is_human.pdf")
-  expect_error(grobid_convert(filename, grobid_url = "notawebsite"),
-               "grobid_url must be a valid URL, starting with http or https!")
+  expect_error(grobid_convert(filename, api_url = "notawebsite"),
+               "api_url must be a valid URL, starting with http or https!")
 
   # URL without http/https detected"
-  expect_error(grobid_convert(filename, grobid_url = "kermitt2-grobid.hf.space"),
-               "grobid_url must be a valid URL, starting with http or https!")
+  expect_error(grobid_convert(filename, api_url = "kermitt2-grobid.hf.space"),
+               "api_url must be a valid URL, starting with http or https!")
 })
 
 
@@ -63,24 +118,9 @@ test_that("non-Grobid URL rejected", {
   skip_if_offline("google.com")
 
   filename <- test_path("fixtures", "formats", "to_err_is_human.pdf")
-  expect_error(grobid_convert(filename, grobid_url = "https://google.com"))
+  expect_error(grobid_convert(filename, api_url = "https://google.com"))
 })
 
-test_that("missing single file errors", {
-  skip_if_offline() # offline error happens before filename error
-
-  filename <- "wrongfile.pdf"
-  expect_error(grobid_convert(filename), "wrongfile.pdf does not exist")
-})
-
-test_that("missing batch files just warn", {
-  skip_if_offline() # offline error happens before filename error
-  filename <- c("wrongfile.pdf", "wrongfile.pdf")
-  expect_warning(x <- grobid_convert(filename),
-                 "2 of 2 files did not convert")
-  exp <- c("wrongfile.pdf" = NA_character_, "wrongfile.pdf" = NA_character_)
-  expect_equal(x, exp)
-})
 
 # TODO: figure out why mock_api isn't wotking
 # returns a different api file each time
@@ -152,30 +192,15 @@ test_that("makes missing save directory - specific", {
 test_that("defaults", {
   skip_api("kermitt2-grobid.hf.space")
 
-  filename <- test_path("fixtures", "formats", "to_err_is_human.pdf")
-  first_sentence <- "Although intentional dishonestly might be a successful way to boost creativity"
-  last_sentence <- "We conclude the use of automated checks has potential to reduce the number of mistakes in scientific manuscripts"
-
-  xml <- grobid_convert(filename, NULL)
-  expect_s3_class(xml, "xml_document")
-  body <- xml2::xml_find_all(xml, "//text") |> xml2::xml_text()
-  expect_true(grepl(first_sentence, body))
-  expect_true(grepl(last_sentence, body))
-
-  file.remove(list.files(withr::local_tempdir(), "\\.xml", full.names = TRUE))
+  pdf <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  paper <- grobid_convert(pdf, NULL)
+  expect_s3_class(paper, "scivrs_paper")
 
   # save to withr::local_tempdir
   dir <- withr::local_tempdir()
-  xml_file <- grobid_convert(filename, dir)
+  xml <- grobid_convert(pdf, dir)
   exp <- file.path(dir, "to_err_is_human.xml")
-  expect_equal(xml_file, exp)
-  xml2 <- read_xml(xml_file)
-
-  # fails if when is not identical, so remove it
-  when <- "when=\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}\\+0000\""
-  xml_txt <- sub(when, "", xml)
-  xml2_txt <- sub(when, "", xml2)
-  expect_equal(xml_txt, xml2_txt)
+  expect_equal(xml, exp)
 
   # parameters
   # https://grobid.readthedocs.io/en/latest/Grobid-service/
@@ -197,20 +222,17 @@ test_that("defaults", {
 
   # reference consolidation
   ref <- tei_bib(xml)
-  xml_cite0 <- grobid_convert(filename, NULL, consolidate_citations = 0)
-  xml_cite1 <- grobid_convert(filename, NULL, consolidate_citations = 1)
-  xml_cite2 <- grobid_convert(filename, NULL, consolidate_citations = 2)
-  ref0 <- tei_bib(xml_cite0)
-  ref1 <- tei_bib(xml_cite1)
-  ref2 <- tei_bib(xml_cite2)
+  paper0 <- grobid_convert(pdf, NULL, consolidate_citations = 0)
+  paper1 <- grobid_convert(pdf, NULL, consolidate_citations = 1)
+  paper2 <- grobid_convert(pdf, NULL, consolidate_citations = 2)
 
   ref_n <- 4
   wrongtitle <- "Equivalence testing for psychological research"
   righttitle <- "Equivalence Testing for Psychological Research: A Tutorial"
-  expect_equal(ref$title[[ref_n]], wrongtitle)
-  expect_equal(ref0$title[[ref_n]], wrongtitle)
-  expect_equal(ref1$title[[ref_n]], righttitle)
-  expect_equal(ref2$title[[ref_n]], wrongtitle)
+  expect_equal(paper$bib$title[[ref_n]], wrongtitle)
+  expect_equal(paper0$bib$title[[ref_n]], wrongtitle)
+  expect_equal(paper1$bib$title[[ref_n]], righttitle)
+  expect_equal(paper2$bib$title[[ref_n]], wrongtitle)
 
   rightauthors <- "Daniël Lakens, Anne M Scheel, Peder M Isager"
   wrongauthors <- "D Lakens"
@@ -290,8 +312,8 @@ test_that("local", {
 #   dir.create(t2, showWarnings = FALSE)
 #   #files <- list.files("pdf/psyarxiv", full.names = TRUE)
 #   files <- list.files("pdf/psychsci/", full.names = TRUE)
-#   xml1 <- grobid_convert(files[1:20], save_path = t1, grobid_url = local_url)
-#   xml2 <- grobid_convert(files[1:20], save_path = t2, grobid_url = local_url)
+#   xml1 <- grobid_convert(files[1:20], save_path = t1, api_url = local_url)
+#   xml2 <- grobid_convert(files[1:20], save_path = t2, api_url = local_url)
 #
 #   # check the identicalness of the XML files
 #   f1 <- list.files(t1, full.names = TRUE)

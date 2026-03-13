@@ -1,51 +1,70 @@
 ---
-project:
-  type: manuscript
 format: 
-  html:
-    embed-resources: true
-  docx: default
-  pdf: default
-execute: 
-  echo: false
-title: To Err is Human
-subtitle: An Empirical Investigation
+  pdf: 
+    documentclass: article
+    classoption: jou
+  docx:
+    toc: false
+  # apaquarto-docx: 
+  #   toc: false
+  # apaquarto-pdf: 
+  #   documentmode: man
+title: "To Err is Human: An Empirical Investigation"
+#subtitle: "An Empirical Investigation"
 date: "2026-02-22"
-authors:
+# Select from the CRediT: Contributor Roles Taxonomy https://credit.niso.org/
+    # conceptualization, data curation, formal analysis, funding acquisition, 
+    # investigation, methodology, project administration, resources, software, 
+    # supervision, validation, visualization, writing, editing
+author:
   - name: Daniel Lakens
-    affiliation: Eindhoven Technical University
+    affiliations:
+      - id: tue
+        name: "Eindhoven Technical University"
+        country: Netherlands
     orcid: 0000-0002-0247-239X
     email: lakens@gmail.com
     roles: 
-    - Conceptualization 
-    - Data curation
-    - Funding acquisition
-    - Software 
-    - Validation 
-    - Writing - original draft 
+    - conceptualization 
+    - data curation
+    - funding acquisition
+    - software 
+    - validation 
+    - writing
     corresponding: true
   - name: Lisa DeBruine
-    affiliation: University of Glasgow
+    affiliations:
+      - id: uofg
+        name: "University of Glasgow"
+        country: Scotland
     orcid: 0000-0002-7523-5539
     email: lisa.debruine@glasgow.ac.uk
     roles: 
-    - Conceptualization 
-    - Data curation
-    - Software 
-    - Validation 
-    - Writing - review & editing
+    - conceptualization 
+    - data curation
+    - software 
+    - validation 
+    - editing
     corresponding: false
   - name: Jakub Werner
-    affiliation: Eindhoven Technical University
+    affiliations:
+        - ref: tue
     roles: 
-    - Software 
-    - Validation
+    - software 
+    - validation
     corresponding: false
 bibliography: references.bib
 nocite: '@*'
 keywords: [metascience, software]
+# author-note:
+#   disclosures:
+#     study-registration: This demo study was preregistered on the [OSF](https://osf.io/48ncu) and [AsPredicted](https://aspredicted.org/by8i8v.pdf).
+#     data-sharing: Data is available from [OSF Project 5tbm9](https://osf.io/5tbm9). Code is available from [OSF Project 629bx](https://osf.io/629bx). Data and analysis code are also available on [GitHub](https://github.com/Lakens/to_err_is_human) and  [ResearchBox](https://researchbox.org/4377). 
+#     conflict-of-interest: The authors are the developers of Metacheck, bibr and other related apps in the ScienceVerse.
 abstract: |
   This paper demonstrates some good and poor practices for use with the {metacheck} R package. All data are simulated. The paper shows examples of (1) open and closed OSF links; (2a) citation of retracted papers, (2b) citations without a doi, (2c) citations with Pubpeer comments, (2d) citations in the FLoRA replication database, and (2e) missing/mismatched/incorrect citations and references; (3a) R files with code on GitHub that do not load libraries in one location, (3b) load files that are not shared in the repository, (3c) lack comments, and (3d) have absolute file paths; (4) imprecise reporting of non-significant p-values; (5) tests with and without effect sizes; (6) use of "marginally significant" to describe non-significant findings; (7) a power analysis reporting some of the essential attributes; and (8) retrieving information from preregistrations.
+execute: 
+  echo: false
 ---
 
 ```{r}
@@ -62,39 +81,43 @@ set.seed(1243)
 ```
 
 
-
-## Introduction
-
 Although intentional dishonesty might be a successful way to boost creativity [@GinoWiltermuth2014], it is safe to say most mistakes researchers make are unintentional. From a human factors perspective, human error is a symptom of a poor design (Smithy, 2020). Automation can be used to check for errors in scientific manuscripts, and inform authors about possible corrections. In this study we examine the usefulness of metacheck to improve best practices.
 
 ## Method
 
-In this study we examine whether automated checks reduce the amount of errors that researchers make in scientific manuscripts. This study was preregistered at https://osf.io/48ncu and on AsPredicted at https://aspredicted.org/by8i8v.pdf.
+In this study[^1] we examine whether automated checks reduce the amount of errors that researchers make in scientific manuscripts. This study was preregistered at https://osf.io/48ncu and on AsPredicted at https://aspredicted.org/by8i8v.pdf.
 
-## Procedure
+[^1]: Remember, this is a demo and none of this is real.
+
+
+### Procedure
 
 We randomly assigned 50 scientists to a condition where their manuscript was automatically checked for errors, and 50 scientists to a control condition with a checklist. Scientists had the opportunity to make changes to their manuscript based on the feedback of the tool. We subsequently coded all manuscripts for mistakes, and counted the total number of mistakes. We also measured the expertise of researchers (in years) to explore whether the automated tool would be more useful, the less research experience researchers had. We also asked researchers to rate how useful they found the checklist or app on a scale from 1 (not at all) to 7 (extremely useful). 
 
-## Data Availability
+### Data Availability
 
 Data and analysis code is available on GitHub from https://github.com/Lakens/to_err_is_human and from https://researchbox.org/4377. Data is also available from https://osf.io/5tbm9 and code is also available from https://osf.io/629bx. 
 
-## Power Analysis
+### Power Analysis
 
 ```{r}
 sens <- pwr::pwr.t.test(n = 50, power = 0.8, alternative = "greater")
 d <- sprintf("%.2f", sens$d)
 ```
 
-We conducted a sensitivity power analysis to determine that a Cohen's d of `r d` is the smallest effect size that we could detect with N = 50 participants in each group and 80% power.
+We conducted a sensitivity power analysis[^2] to determine that a Cohen's d of `r d` is the smallest effect size that we could detect with N = 50 participants in each group and 80% power.
+
+[^2]: The code we used for this analysis is as follows.
+    
+    `pwr::pwr.t.test(n = 50, power = 0.8, alternative = "greater")`
 
 ## Results
 
-We simulated the data using Faux [@faux] (@fig-sim).
+We simulated the data using Faux [@faux] (@tbl-summary, @fig-sim).
 
 ```{r}
 #| label: fig-sim
-#| fig-cap: The simulated data
+#| fig-cap: The simulated data.
 
 # simulate data
 data <- sim_design(
@@ -167,7 +190,11 @@ ggplot(data, aes(x = mistakes, y = experience)) +
 
 ## Discussion
 
-It seems automated tools can help prevent errors by providing researchers with feedback about potential mistakes, and researchers feel the app is useful. We conclude the use of automated checks has potential to reduce the number of mistakes in scientific manuscripts. 
+Since our data are simulated for demonstration purposes, of course they confirm our hypotheses. It seems automated tools can help prevent errors by providing researchers with feedback about potential mistakes, and researchers feel the app is useful. We conclude the use of automated checks has potential to reduce the number of mistakes in scientific manuscripts. 
+
+## Author Notes
+
+The authors declare a conflict of interest. We really want to see this project succeed and help researchers make their papers better.
 
 ## References
 

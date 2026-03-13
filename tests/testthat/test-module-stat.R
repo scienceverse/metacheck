@@ -80,21 +80,29 @@ test_that("marginal", {
 
 
 test_that("stat_check", {
-  paper <- demopaper()
+  paper <- test_paper(c(
+    "This is right: t(17.4), p = 0.137",
+    "This is wrong: t(97.2) = -1.96, p = 0.152"
+  ))
   module <- "stat_check"
 
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 2)
-  expect_equal(mod_output$table$raw[[2]] |> gsub("\\s", "", x = _),
-               "t(97.2)=-1.96,p=0.152")
+  expect_equal(nrow(mod_output$table), 1)
+  expect_equal(mod_output$table$raw[[1]],
+               "t(97.2) = -1.96, p = 0.152")
   expect_equal(mod_output$module, module)
 
   # iteration
-  paper <- psychsci[1:2]
+  paper <- paperlist(
+    test_paper("This is right: t(17.4), p = 0.137"),
+    test_paper("This is wrong: t(97.2) = -1.96, p = 0.152")
+  )
   expect_no_error(
     mod_output <- module_run(paper, module)
   )
+  expect_equal(nrow(mod_output$table), 1)
+  expect_equal(mod_output$table$paper_id, names(paper)[[2]])
 })
 
 

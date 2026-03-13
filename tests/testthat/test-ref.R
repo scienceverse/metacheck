@@ -1,3 +1,130 @@
+test_that("add_bib_match", {
+  expect_true(is.function(metacheck::add_bib_match))
+  expect_no_error(helplist <- help(add_bib_match, metacheck))
+
+  expect_error(add_bib_match(bad_arg))
+
+  # no refs
+  paper <- test_paper("No refs")
+  paper_bm <- add_bib_match(paper)
+  expect_null(paper_bm$bib_match)
+
+  skip_api("api.labs.crossref.org")
+
+  # only unmatching refs
+  paper <- test_paper("No matching refs")
+  paper$bib <- data.frame(
+    bib_id = 1,
+    title = c("Not a real paper"),
+    author = "Not A Realname",
+    journal = c("Journal of Journals")
+  )
+  paper_bm <- add_bib_match(paper)
+  expect_equal(paper_bm$bib_match$bib_id, 1)
+  expect_equal(paper_bm$bib_match$match_score, NA_real_)
+
+  # make paper with 2 refs
+  paper <- test_paper("LDB test papers")
+  paper$bib <- data.frame(
+    bib_id = 1:2,
+    title = c("Facial resemblance enhances trust",
+              "Trustworthy but not Lustworthy"),
+    author = "Lisa DeBruine",
+    journal = c("Proceedings of the Royal Society of London B")
+  )
+  paper_bm <- add_bib_match(paper, 0)
+
+  expect_equal(paper_bm$bib_match$bib_id, 1:2)
+  expect_equal(paper_bm$bib_match$doi, c("10.1098/rspb.2002.2034",
+                                         "10.1098/rspb.2004.3003"))
+
+  # set threshold between two papers
+  min_score <- mean(paper_bm$bib_match$match_score)
+  paper_bm2 <- add_bib_match(paper, min_score)
+  expect_equal(paper_bm2$bib_match$doi, c("10.1098/rspb.2002.2034", NA))
+})
+
+test_that("doi_lookup", {
+  expect_true(is.function(metacheck::doi_lookup))
+  expect_no_error(helplist <- help(doi_lookup, metacheck))
+
+  expect_error(doi_lookup(badarg))
+
+  # NULL VALUE
+  doi <- NULL
+  exp <- data.frame(doi = character(0))
+  info <- doi_lookup(doi)
+  expect_equal(info, exp)
+
+  # empty vector
+  doi <- c()
+  exp <- data.frame(doi = character(0))
+  info <- doi_lookup(doi)
+  expect_equal(info, exp)
+
+  skip_api("doi.org")
+
+  # one item
+  doi <- "10.7717/peerj.4375"
+  info <- doi_lookup(doi)
+  expect_equal(nrow(info), 1)
+  expect_equal(info$title, "The state of OA: a large-scale analysis of the prevalence and impact of Open Access articles")
+
+  # one NA
+  doi <- NA
+  info <- doi_lookup(doi)
+  expect_equal(nrow(info), 1)
+  expect_equal(info$title, NA_character_)
+
+  # multiple items
+  doi <- c("10.1177/2515245920970949", "10.1037/0003-066x.54.6.408")
+  info <- doi_lookup(doi)
+  exp <- c("Improving Transparency, Falsifiability, and Rigor by Making Hypothesis Tests Machine-Readable",
+           "The origins of sex differences in human behavior: Evolved dispositions versus social roles.")
+  expect_equal(info$title, exp)
+})
+
+test_that("datacite_doi", {
+  expect_true(is.function(metacheck::datacite_doi))
+  expect_no_error(helplist <- help(datacite_doi, metacheck))
+
+  expect_error(datacite_doi(badarg))
+
+  # NULL VALUE
+  doi <- NULL
+  exp <- data.frame(doi = character(0))
+  info <- datacite_doi(doi)
+  expect_equal(info, exp)
+
+  # empty vector
+  doi <- c()
+  exp <- data.frame(doi = character(0))
+  info <- datacite_doi(doi)
+  expect_equal(info, exp)
+
+  skip_api("api.datacite.org")
+
+  # one item
+  doi <- "10.5281/zenodo.2669586"
+  info <- datacite_doi(doi)
+  expect_equal(nrow(info), 1)
+  expect_equal(info$title, "faux: Simulation for Factorial Designs")
+
+  # one NA
+  doi <- NA
+  info <- datacite_doi(doi)
+  expect_equal(nrow(info), 1)
+  expect_equal(info$title, NA_character_)
+
+  # multiple items
+  doi <- c("10.5281/zenodo.2669586", "10.5281/zenodo.3564348")
+  info <- datacite_doi(doi)
+  expect_equal(info$title, c("faux: Simulation for Factorial Designs",
+                             "Data Skills for Reproducible Science"))
+})
+
+
+
 # test_that("doi_clean", {
 #   expect_true(is.function(metacheck::doi_clean))
 #   expect_no_error(helplist <- help(doi_clean, metacheck))

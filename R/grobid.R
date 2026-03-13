@@ -1,12 +1,12 @@
 #' Convert a PDF to Grobid XML
 #'
-#' This function uses a public grobid server maintained by Patrice Lopez. You can set up your own local grobid server following instructions from <https://grobid.readthedocs.io/> and set the argument `grobid_url` to its path (probably <http://localhost:8070>)
+#' This function uses a public grobid server maintained by Patrice Lopez. You can set up your own local grobid server following instructions from <https://grobid.readthedocs.io/> and set the argument `api_url` to its path (probably <http://localhost:8070>)
 #'
 #' Consolidation of citations, headers, and funders looks up these items in CrossRef or another database to fix or enhance information (see <https://grobid.readthedocs.io/en/latest/Consolidation/>). This can slow down conversion. Consolidating headers is only useful for published papers, and can be set to 0 for work in prep.
 #'
-#' @param filename path to the PDF, a vector of paths, or a directory name that contains PDFs
+#' @param file_path path to the PDF, a vector of paths, or a directory name that contains PDFs
 #' @param save_path directory or file path to save to; set to NULL to save to a temp file
-#' @param grobid_url the URL to the grobid server
+#' @param api_url the URL to the grobid server
 #' @param start the first page of the PDF to read (defaults to -1 to read all pages)
 #' @param end the last page of the PDF to read (defaults to -1 to read all pages)
 #' @param consolidate_citations whether to fix/enhance citations
@@ -16,83 +16,86 @@
 #' @return XML object
 #' @export
 #'
-grobid_convert <- function(filename, save_path = ".",
-                       grobid_url = "https://kermitt2-grobid.hf.space",
-                       # grobid_url = "http://api.metacheck.app",
-                       start = -1,
-                       end = -1,
-                       consolidate_citations = 0,
-                       consolidate_header = 0,
-                       consolidate_funders = 0) {
-  # check if grobid_url is a valid url, before connecting to it
-  if (!grepl("^https?://", grobid_url)) {
-    stop("grobid_url must be a valid URL, starting with http or https!")
+grobid_convert <- function(file_path, save_path = ".",
+                           api_url = "https://kermitt2-grobid.hf.space",
+                           start = -1,
+                           end = -1,
+                           consolidate_citations = 0,
+                           consolidate_header = 0,
+                           consolidate_funders = 0) {
+  if (!all(file.exists(file_path))) {
+    stop("Files do not exist")
   }
 
-  if (grobid_url != "http://api.metacheck.app") {
-    # test if the server is up using the isalive endpoint, instead of sitedown
-    service_status_url <- httr::modify_url(grobid_url, path = "/api/isalive")
+  # check if api_url is a valid url, before connecting to it
+  if (!grepl("^https?://", api_url)) {
+    stop("api_url must be a valid URL, starting with http or https!")
+  }
 
-    resp <- tryCatch(
-      {
-        httr::GET(service_status_url)
-      },
-      error = function(e) {
-        stop(
-          "Connection to the GROBID server failed!",
-          "Please check your connection or the URL: ", grobid_url
-        )
-      }
-    )
+  # test if the server is up using the isalive endpoint, instead of sitedown
+  service_status_url <- httr::modify_url(api_url, path = "/api/isalive")
 
-    status <- httr::status_code(resp)
-    if (status != 200) {
-      stop("GROBID server does not appear up and running on the provided URL. Status: ", status)
+  resp <- tryCatch(
+    {
+      httr::GET(service_status_url)
+    },
+    error = function(e) {
+      stop(
+        "Connection to the GROBID server failed!",
+        "Please check your connection or the URL: ", api_url
+      )
     }
+  )
+
+  status <- httr::status_code(resp)
+  if (status != 200) {
+    stop("GROBID server does not appear up and running on the provided URL. Status: ", status)
   }
 
   # handle list of files or a directory----
-  if (length(filename) > 1) {
+  if (length(file_path) > 1) {
     if (is.null(save_path)) save_path <- "."
     if (length(save_path) == 1) {
       dir.create(save_path, FALSE)
-      save_path <- rep_len(save_path, length(filename))
+      save_path <- rep_len(save_path, length(file_path))
     }
-    if (length(save_path) != length(filename)) {
+    if (length(save_path) != length(file_path)) {
       stop("The argument save_path must be a single directory name or a vector of file names with the same length as the number of files to convert.")
     }
 
-    # set up progress bar ----
+    # set up progress bar
     pb <- pb(
-      length(filename),
+      length(file_path),
       "Processing PDFs [:bar] :current/:total :elapsedfull"
     )
 
     xmls <- mapply(\(pdf, sp) {
       args <- list(
-        filename = pdf,
+        file_path = pdf,
         save_path = sp,
-        grobid_url = grobid_url,
+        api_url = api_url,
         start = start,
         end = end,
         consolidate_citations = consolidate_citations,
         consolidate_header = consolidate_header,
         consolidate_funders = consolidate_funders
       )
-      xml <- tryCatch(do.call(grobid_convert, args),
-                      error = function(e) {
-                        return(e$message)
-                      }
+      xml <- tryCatch(
+        do.call(grobid_convert, args),
+        error = function(e) {
+          logger("grobid_convert", list(error = e$message))
+          return(e$message)
+        }
       )
       pb$tick()
       xml
-    }, pdf = filename, sp = save_path)
+    }, pdf = file_path, sp = save_path)
 
     errors <- !file.exists(xmls)
     if (any(errors)) {
       warning(
         sum(errors), " of ", length(xmls), " files did not convert: \n",
-        paste0(" * ", filename[errors], ": ", xmls[errors], collapse = "\n")
+        paste0(" * ", file_path[errors], ": ", xmls[errors], collapse = "\n")
       )
       xmls[errors] <- NA_character_
     }
@@ -102,12 +105,12 @@ grobid_convert <- function(filename, save_path = ".",
     n_total <- length(xmls)
     message(sprintf(
       "%d out of %d PDF file%s successfully converted to Grobid TEI XML.",
-      n_success, n_total, ifelse(n_total == 1, "", "s")
+      n_success, n_total, plural(n_total)
     ))
 
     return(invisible(xmls)) # invisible to prioritize formatted print at the end
-  } else if (dir.exists(filename)) {
-    pdfs <- list.files(filename, "\\.pdf",
+  } else if (dir.exists(file_path)) {
+    pdfs <- list.files(file_path, "\\.pdf",
                        full.names = TRUE,
                        recursive = TRUE,
                        ignore.case = TRUE
@@ -115,47 +118,40 @@ grobid_convert <- function(filename, save_path = ".",
     if (length(pdfs) == 0) {
       warning("There are no PDF files in the directory ", filename)
     }
-    xmls <- grobid_convert(pdfs, save_path, grobid_url)
+    xmls <- grobid_convert(pdfs, save_path, api_url)
     return(invisible(xmls))
   }
 
-  if (!file.exists(filename)) {
-    stop("The file ", filename, " does not exist.")
+  if (!file.exists(file_path)) {
+    stop("The file ", file_path, " does not exist.")
   }
 
-  if (grobid_url == "http://api.metacheck.app") {
-    pyta <- pytacheck(filename)
-    content <- pyta$grobid_xml
-    # TODO: integrate other info into this
-  } else {
-    # grobid server
-    file <- httr::upload_file(filename)
-    post_url <- httr::modify_url(grobid_url, path = "/api/processFulltextDocument")
-    args <- list(
-      input = file,
-      start = start,
-      end = end,
-      consolidateCitations = consolidate_citations,
-      consolidateHeader = consolidate_header,
-      consolidateFunders = consolidate_funders,
-      includeRawCitations = 1
-    )
-    resp <- httr::POST(post_url, body = args, encode = "multipart")
+  # grobid server
+  post_url <- httr::modify_url(api_url, path = "/api/processFulltextDocument")
+  args <- list(
+    input = httr::upload_file(file_path),
+    start = start,
+    end = end,
+    consolidateCitations = consolidate_citations,
+    consolidateHeader = consolidate_header,
+    consolidateFunders = consolidate_funders,
+    includeRawCitations = 1
+  )
+  resp <- httr::POST(post_url, body = args, encode = "multipart")
 
-    # Check if the request was successful
-    status <- httr::http_status(resp)
-    if (status$category != "Success") {
-      stop(status$reason)
-    }
-
-    content <- httr::content(resp, as = "raw")
+  # Check if the request was successful
+  status <- httr::http_status(resp)
+  if (status$category != "Success") {
+    stop(status$reason)
   }
+
+  content <- httr::content(resp, as = "raw")
 
   # save to save_path
   if (is.null(save_path)) {
     save_file <- tempfile(fileext = ".xml")
   } else if (dir.exists(save_path)) { # save_path is an existing dir
-    base <- basename(filename) |>
+    base <- basename(file_path) |>
       sub("\\.pdf", "", x = _, TRUE) |>
       paste0(".xml")
     save_file <- file.path(save_path, base)
@@ -187,63 +183,95 @@ grobid_convert <- function(filename, save_path = ".",
 #' Convert Grobid TEI XML file to bibr format
 #'
 #' @param xml_file the XML file
+#' @param save_path directory or file path to save to; set to NULL to return a paper object
+#' @param crossref_lookup whether to look up references in crossref
 #'
 #' @returns a paper object
 #' @export
-grobid_to_bibr <- function(xml_file) {
-  bibr_version = "5.6"
+grobid_to_bibr <- function(xml_file,
+                           save_path = ".",
+                           crossref_lookup = FALSE) {
+  # handle directory or multiple files ----
+  if (length(xml_file) == 1 && dir.exists(xml_file)) {
+    dir_path <- xml_file
+    xml_file <- list.files(dir_path,
+                           pattern = "\\.xml$",
+                           ignore.case = TRUE,
+                           full.names = TRUE)
+  }
 
+  if (length(xml_file) > 1) {
+    pb <- pb(length(xml_file), "Converting :step [:bar] (:what) :current/:total")
+    paper <- lapply(xml_file, \(xml_file1) {
+      what <- basename(xml_file1)
+      pb$tick(0, list(step = "", what = what))
+      p <- tryCatch(
+        .grobid_to_bibr(xml_file = xml_file1, pb),
+        error = \(e) {
+          logger("grobid_to_bibr", e$message)
+          return(NULL)
+        })
+      pb$tick(1, list(step = "complete", what = what))
+      p
+    }) |> paperlist()
+  } else {
+    paper <- .grobid_to_bibr(xml_file)
+  }
+
+  if (isTRUE(crossref_lookup)) {
+    paper <- add_bib_match(paper)
+  }
+  if (is.null(save_path)) {
+    return(paper)
+  } else {
+    file_name <- basename(xml_file) |> gsub("\\.xml$", "", x = _)
+    zip_paths <- paper_write(paper, file_name, save_path)
+    return(zip_paths)
+  }
+}
+
+
+#' Convert grobid to Bibr format
+#'
+#' @param xml_file a singhle XML file
+#' @param pb a progress bar passed from `grobid_to_bibr()`
+#'
+#' @returns a paper object
+#' @export
+#' @keywords internal
+.grobid_to_bibr <- function(xml_file, pb = NULL) {
+  bibr_version = "5.6"
+  what <- basename(xml_file)
+
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) Converting :step (:what)")
+    on.exit(pb$terminate())
+    pb$tick(0, list(step = "", what = what))
+  }
+
+  pb$tick(0, list(step = "XML", what = what))
   xml_text <- readLines(xml_file, warn = FALSE) |>
     paste(collapse = "\n") |>
-    # fixes a glitch that stopped grobid xml from being read
+    # fixes a glitch that stops grobid xml from being read
     gsub(' xmlns="http://www.tei-c.org/ns/1.0"', "",
          x = _, fixed = TRUE
     )
   xml <- xml2::read_xml(xml_text)
 
-  file_hash <- substr(tools::md5sum(xml_file), 1, 14)
+  file_hash <- substr(tools::md5sum(xml_file), 1, 16)[[1]]
   paper <- paper(file_hash)
 
   # info ----
+  pb$tick(0, list(step = "info", what = what))
   title <- xml_find1(xml, ".//titleStmt/title")
   abstract <- xml_find1(xml, ".//abstract")
-
   keywords <- xml_find(xml, ".//textClass/keywords/term")
-  if (is.null(keywords)) keywords <- character()
-
   doi <- xml_find1(xml, ".//idno[@type='DOI']")
 
-  # authors ----
-  author_nodes <- xml2::xml_find_all(xml, "//sourceDesc //author[persName]")
-  authors <- lapply(seq_along(author_nodes), function(i) {
-    a <- author_nodes[[i]]
-
-    given <- xml_find1(a, ".//forename")
-    family <- xml_find1(a, ".//surname")
-    email <- xml_find1(a, ".//email")
-    affiliation <- xml_find1(a, ".//affiliation")
-    orcid <- xml_find1(a, ".//idno[@type='ORCID']")
-
-    list(
-      author_id = i,
-      given = given,
-      family = family,
-      affiliation = affiliation,
-      email = email,
-      corresponding = FALSE,
-      orcid = orcid,
-      role = list(NULL)
-    )
-  })
-
-  paper$authors <- dplyr::bind_rows(authors)
-
-  # info ----
-
-  paper$info <- list(
+  paper$info <- data.frame(
     title = title %||% "",
     description = abstract,
-    keywords = keywords,
+    keywords = I(list(keywords)),
     doi = doi,
     file_hash = file_hash,
     input_format = "TEI XML",
@@ -251,18 +279,24 @@ grobid_to_bibr <- function(xml_file) {
     bibr_version = bibr_version,
     paper_type = "unknown",
     paper_type_confidence = 0,
-    oecd_l1 = NULL,
-    oecd_l2 = NULL,
-    oecd_confidence = 0
+    oecd_l1 = NA_character_,
+    oecd_l2 = NA_character_,
+    oecd_confidence = NA_real_
   )
 
+  # authors ----
+  pb$tick(0, list(step = "authors", what = what))
+  paper$authors <- tei_authors(xml)
+
   # text ----
-  ft <- tei_full_text(xml)
+  pb$tick(0, list(step = "text"))
+  ft <- tei_text(xml)
   ft$p <- seq_along(ft$p)
   ft <- process_full_text(ft)
 
-  paper$tbl <- ft[ft$section == "tab", ]
-  paper$fig <- ft[ft$section == "fig", ]
+  # TODO: figures and tables
+  # paper$tables <- ft[ft$section == "tab", ]
+  # paper$figures <- ft[ft$section == "fig", ]
   ft <- ft[!ft$section %in% c("fig", "tab"), ]
   ft <- ft[ft$text != ft$header, ]
 
@@ -273,56 +307,26 @@ grobid_to_bibr <- function(xml_file) {
     text = ft$text
   )
 
+  # sections ----
   sec <- dplyr::count(ft, div, header, section)
   paper$sections <- data.frame(
     section_id = sec$div,
     header = sec$header,
-    section_type = sec$section
+    parent_section_id = NA_integer_,
+    section_type = sec$section,
+    classification_score = NA_real_
   )
 
   # bib ----
-  bib <- tei_bib(xml)
-
-  paper$bib <- data.frame(
-    bib_id = gsub("b", "", bib$xref_id) |> as.integer(),
-    bibtype = bib$bibtype %||% NA_character_,
-    bib_text = format_ref(bib$ref) %||% NA_character_,
-    doi = bib$doi %||% NA_character_,
-    title = bib$title %||% NA_character_,
-    author = bib$authors %||% NA_character_,
-    journal_title = bib$journal %||% NA_character_,
-    year = bib$year %||% NA_real_,
-    volume = bib$volume %||% NA_character_,
-    issue = bib$number %||% NA_character_,
-    first_page = bib$first_page %||% NA_character_,
-    last_page = bib$last_page %||% NA_character_,
-    booktitle = bib$booktitle %||% NA_character_,
-    editor = bib$editor %||% NA_character_,
-    publisher = bib$publisher %||% NA_character_,
-    isbn = NA_character_,
-    issn = NA_character_,
-    link = NA_character_,
-    crossref_verified = FALSE,
-    crossref_match = NA_character_,
-    crossref_score = NA_real_
-  )
+  pb$tick(0, list(step = "bib", what = what))
+  paper$bib <- tei_bib(xml)
 
   # xrefs ----
-  paper$xrefs <- tei_xrefs(xml) |>
-    dplyr::rowwise() |>
-    dplyr::mutate(
-      text = paper$text$text[which.min(stringdist::stringdist(text, paper$text$text))]
-    ) |>
-    dplyr::ungroup() |>
-    dplyr::left_join(paper$text, by = "text") |>
-    dplyr::select(xref_id, xref_type = type, contents, text_id) |>
-    dplyr::mutate(xref_type = dplyr::case_match(xref_type,
-                                                "bibr" ~ "bib",
-                                                "figure" ~ "fig",
-                                                "table" ~ "tbl"),
-                  xref_id = suppressWarnings(gsub("[a-z]", "", xref_id) |> as.integer()))
+  pb$tick(0, list(step = "xrefs", what = what))
+  paper$xrefs <- tei_xrefs(xml, text_table = paper$text)
 
   # links ----
+  pb$tick(0, list(step = "links", what = what))
   links <- extract_urls(paper)
   paper$links <- data.frame(
     url = links$text,
@@ -331,8 +335,11 @@ grobid_to_bibr <- function(xml_file) {
   )
 
   # equations ----
+  pb$tick(0, list(step = "equations", what = what))
   paper$equations <- extract_equations(paper)
+  paper$equations$paper_id <- NULL
 
+  pb$tick(0, list(step = "complete", what = what))
   return(paper)
 }
 
@@ -436,7 +443,7 @@ process_full_text <- function(full_text) {
 #'
 #' @return a data frame with all text
 #' @keywords internal
-tei_full_text <- function(xml) {
+tei_text <- function(xml) {
   div <- NULL # ugh cmdcheck
 
   ## abstract ----
@@ -536,14 +543,47 @@ tei_full_text <- function(xml) {
   return(full_text)
 }
 
-#' Get cross references from TEI type XML
+#' Get authors from TEI type XML
 #'
 #' @param xml The XML
 #'
+#' @return authors table
+#' @keywords internal
+tei_authors <- function(xml) {
+  author_nodes <- xml2::xml_find_all(xml, "//sourceDesc //author[persName]")
+  authors <- lapply(seq_along(author_nodes), function(i) {
+    a <- author_nodes[[i]]
+
+    given <- xml_find1(a, ".//forename")
+    family <- xml_find1(a, ".//surname")
+    email <- xml_find1(a, ".//email")
+    affiliation <- xml_find1(a, ".//affiliation")
+    orcid <- xml_find1(a, ".//idno[@type='ORCID']")
+
+    list(
+      author_id = i,
+      given = given,
+      family = family,
+      affiliation = affiliation,
+      email = email,
+      corresponding = FALSE,
+      orcid = orcid,
+      role = list(NULL)
+    )
+  })
+
+  dplyr::bind_rows(authors)
+}
+
+#' Get cross references from TEI type XML
+#'
+#' @param xml The XML
+#' @param text_table The text table for the paper
+#'
 #' @return xrefs table
 #' @keywords internal
-tei_xrefs <- function(xml) {
-  text <- xref_id <- type <- NULL
+tei_xrefs <- function(xml, text_table) {
+  text <- xref_id <- xref_type <- NULL
   xrefs <- xml2::xml_find_all(xml, "//ref")
   if (length(xrefs) == 0) {
     return(data.frame(
@@ -565,7 +605,7 @@ tei_xrefs <- function(xml) {
   xref_data <- data.frame(
     i = seq_along(xrefs),
     xref_id = sub("#", "", targets),
-    type = types,
+    xref_type = types,
     contents = contents,
     p = p
   ) |>
@@ -583,10 +623,33 @@ tei_xrefs <- function(xml) {
     xref_data <- xref_data |>
       dplyr::mutate(text = xml2::read_html(text) |> xml2::xml_text()) |>
       dplyr::ungroup() |>
-      dplyr::arrange(type, gsub("\\D", "", x = xref_id) |> as.integer())
+      dplyr::arrange(xref_type, gsub("\\D", "", x = xref_id) |> as.integer())
   }
 
-  xrefs <- xref_data[c("xref_id", "type", "contents", "text")] |> unique()
+  # get text_id
+  cols <- c("xref_id", "xref_type", "contents", "text")
+  xrefs <- xref_data[, cols] |>
+    unique() |>
+    dplyr::left_join(text_table, by = "text") |>
+    dplyr::select(xref_id, xref_type, contents, text_id, text) |>
+    dplyr::mutate(xref_type = dplyr::case_match(xref_type,
+                                                "bibr" ~ "bib",
+                                                "figure" ~ "fig",
+                                                "table" ~ "tbl"),
+                  xref_id = suppressWarnings(gsub("[a-z]", "", xref_id) |>
+                                               as.integer()))
+
+  # fuzzy_match if no text id
+  # no_id <- xrefs[is.na(xrefs$text_id), cols] |>
+  #   dplyr::rowwise() |>
+  #   dplyr::mutate(
+  #     strdist = which.min(stringdist::stringdist(text, text_table$text)),
+  #     text = text_table$text[strdist],
+  #     text_id = text_table$text_id[strdist]
+  #   ) |>
+  #   dplyr::ungroup()
+  xrefs$text <- NULL
+
   return(xrefs)
 }
 
@@ -601,50 +664,34 @@ tei_bib <- function(xml) {
 
   if (length(refs) > 0) {
     bib_table <- data.frame(
-      xref_id = xml2::xml_attr(refs, "id")
-    )
-    # ref_table$doi <- xml2::xml_find_first(refs, ".//analytic //idno[@type='DOI']") |>
-    #   xml2::xml_text()
-
-    bibs <- lapply(refs, xml2bib)
-    bib_table$ref <- bibs
-
-    # pull visible text on error
-    # deal with rare print format errors
-    # e.g., doi = "10.1177/\\penalty-\\@M002383099704000203"
-    formatted <- bibs |>
-      sapply(\(bib) {
-        suppressWarnings({ # TODO: log this
-          tryCatch(format(bib), error = \(e) {
-            tryCatch(format(bib, "md"), error = \(e) {
-              return("")
-            })
-          })
-        })
-      }) |>
-      gsub("\\n", " ", x = _)
-
-    bib_errors <- which(formatted == "")
-
-    if (length(bib_errors) > 0) {
-      bib_table$ref[[bib_errors]] <- refs[[bib_errors]] |>
-        xml2::xml_text() |>
+      bib_id = xml2::xml_attr(refs, "id") |>
+        gsub("b", "", x = _) |>
+        as.integer(),
+      bib_text = xml2::xml_text(refs) |>
         gsub("\\s+", " ", x = _) |>
         trimws()
-    }
+    )
+
+    bibs <- lapply(refs, xml2bib)
 
     bib_table$doi <- sapply(bibs, \(x) x$doi %||% NA_character_)
-    bib_table$bibtype <- sapply(bibs, \(x) x$bibtype %||% NA_character_)
+    bib_table$type <- sapply(bibs, \(x) x$bibtype %||% NA_character_)
     bib_table$title <- sapply(bibs, \(x) x$title %||% NA_character_)
     bib_table$journal <- sapply(bibs, \(x) x$journal %||% NA_character_)
     bib_table$year <- sapply(bibs, \(x) x$year %||% NA_integer_)
-    bib_table$authors <- lapply(bibs, \(x) x$author %||% NA_character_) |>
-      sapply(paste, collapse = ", ")
+    bib_table$author <- lapply(bibs, \(x) x$author %||% NA_character_) |>
+      sapply(paste, collapse = "; ")
+    bib_table$issue <- sapply(bibs, \(x) x$number %||% NA_character_)
+    bib_table$first_page <- sapply(bibs, \(x) x$first_page %||% NA_character_)
+    bib_table$last_page <- sapply(bibs, \(x) x$last_page %||% NA_character_)
+    bib_table$booktitle <- sapply(bibs, \(x) x$booktitle %||% NA_character_)
+    bib_table$editor <- sapply(bibs, \(x) paste(x$editor, collapse = "; ") %||% NA_character_)
+    bib_table$publisher <- sapply(bibs, \(x) x$publisher %||% NA_character_)
   } else {
     bib_table <- data.frame(
-      xref_id = character(0),
+      bib_id = character(0),
       doi = character(0),
-      ref = character(0)
+      bib_text = character(0)
     )
   }
 
@@ -654,7 +701,7 @@ tei_bib <- function(xml) {
 
 #' Find and return info from XML by xpath
 #'
-#' @param xml the xml xmlument, node, or nodeset
+#' @param xml the xml document, node, or nodeset
 #' @param xpath a string containing an xpath expression
 #' @param join optional string to join vectors
 #'
@@ -674,7 +721,7 @@ xml_find <- function(xml, xpath, join = NULL) {
 
 #' Find and return first info from XML by xpath
 #'
-#' @param xml the xml xmlument, node, or nodeset
+#' @param xml the xml document, node, or nodeset
 #' @param xpath a string containing an xpath expression
 #' @param join optional string to join vectors
 #'
@@ -682,29 +729,6 @@ xml_find <- function(xml, xpath, join = NULL) {
 #' @keywords internal
 xml_find1 <- function(xml, xpath, join = NULL) {
   xml_find(xml, xpath, join)[[1]]
-}
-
-#' Find and return date info from XML
-#'
-#' @param xml the xml node
-#' @param xpath a string containing an xpath expression
-#'
-#' @returns text
-#' @keywords internal
-xml_date <- function(xml, xpath = ".//string-date") {
-  date <- xml2::xml_find_first(xml, xpath)
-
-  m <- date |>
-    xml2::xml_find_first(".//month") |>
-    xml2::xml_attr("number") |>
-    as.numeric()
-  d <- xml_find1(date, ".//day") |> as.numeric()
-  y <- xml_find1(date, ".//year") |> as.numeric()
-
-  if (is.na(m) & is.na(d) & is.na(y)) {
-    return(NULL)
-  }
-  sprintf("%d-%02d-%02d", y, m, d)
 }
 
 #' Parse XML bib format to bibtex

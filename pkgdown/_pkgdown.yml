@@ -59,10 +59,13 @@ reference:
   - '`bibr_convert`'
   - '`platform_bibr_convert`'
   - '`grobid_convert`'
+  - '`grobid_to_bibr`'
   - '`read`'
   - '`demopaper`'
   - '`psychsci`'
   - '`test_paper`'
+  - '`paper_write`'
+  - '`validate_paper`'
 - title: Search Papers
   desc: ~
   contents:
@@ -106,6 +109,7 @@ reference:
 - title: References/Citations
   desc: ~
   contents:
+  - '`add_bib_match`'
   - '`crossref_doi`'
   - '`crossref_query`'
   - '`doi_clean`'
@@ -123,16 +127,16 @@ reference:
 - title: OSF Functions
   desc: ~
   contents:
+  - '`osf_api_calls`'
   - '`osf_api_check`'
   - '`osf_check_id`'
   - '`osf_delay`'
   - '`osf_file_download`'
+  - '`osf_get_all_pages`'
   - '`osf_links`'
+  - '`osf_preprint_list`'
   - '`osf_retrieve`'
   - '`osf_type`'
-  - '`osf_get_all_pages`'
-  - '`osf_api_calls`'
-  - '`osf_preprint_list`'
 - title: GitHub Functions
   desc: ~
   contents:
@@ -171,6 +175,7 @@ reference:
   desc: ~
   contents:
   - '`verbose`'
+  - '`extract_equations`'
   - '`extract_p_values`'
   - '`extract_urls`'
   - '`stats`'

@@ -5,9 +5,9 @@
 \title{Convert a PDF to Grobid XML}
 \usage{
 grobid_convert(
-  filename,
+  file_path,
   save_path = ".",
-  grobid_url = "https://kermitt2-grobid.hf.space",
+  api_url = "https://kermitt2-grobid.hf.space",
   start = -1,
   end = -1,
   consolidate_citations = 0,
@@ -16,11 +16,11 @@ grobid_convert(
 )
 }
 \arguments{
-\item{filename}{path to the PDF, a vector of paths, or a directory name that contains PDFs}
+\item{file_path}{path to the PDF, a vector of paths, or a directory name that contains PDFs}
 
 \item{save_path}{directory or file path to save to; set to NULL to save to a temp file}
 
-\item{grobid_url}{the URL to the grobid server}
+\item{api_url}{the URL to the grobid server}
 
 \item{start}{the first page of the PDF to read (defaults to -1 to read all pages)}
 
@@ -36,7 +36,7 @@ grobid_convert(
 XML object
 }
 \description{
-This function uses a public grobid server maintained by Patrice Lopez. You can set up your own local grobid server following instructions from \url{https://grobid.readthedocs.io/} and set the argument \code{grobid_url} to its path (probably \url{http://localhost:8070})
+This function uses a public grobid server maintained by Patrice Lopez. You can set up your own local grobid server following instructions from \url{https://grobid.readthedocs.io/} and set the argument \code{api_url} to its path (probably \url{http://localhost:8070})
 }
 \details{
 Consolidation of citations, headers, and funders looks up these items in CrossRef or another database to fix or enhance information (see \url{https://grobid.readthedocs.io/en/latest/Consolidation/}). This can slow down conversion. Consolidating headers is only useful for published papers, and can be set to 0 for work in prep.
