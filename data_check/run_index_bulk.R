@@ -99,25 +99,58 @@ for (i in seq_along(remaining_ids)) {
               i, n_total, n_prior + i, n_prior + n_total, pid))
   cat("══════════════════════════════════════════════════════════════════════\n")
 
-  result <- tryCatch(
-    run_index(paper_id = pid),
-    error = function(e) {
-      message("  FAILED: ", conditionMessage(e))
-      list(
-        paper_id       = pid,
-        success        = FALSE,
-        error          = conditionMessage(e),
-        elapsed_sec    = NA_real_,
-        n_files        = NA_integer_,
-        n_data_files   = NA_integer_,
-        n_agg_dirs     = NA_integer_,
-        n_raw          = NA_integer_,
-        n_nonraw       = NA_integer_,
-        n_columns      = NA_integer_,
-        n_source_files = NA_integer_
-      )
-    }
-  )
+  run_once <- function() {
+    tryCatch(
+      run_index(paper_id = pid),
+      error = function(e) {
+        msg <- conditionMessage(e)
+        # If the folder is empty, delete it and retry the download once
+        if (grepl("^empty_repo:", msg)) {
+          empty_dir <- file.path(DATA_DIR, pid)
+          if (dir.exists(empty_dir)) {
+            message("  empty_repo — deleting empty folder and retrying: ", empty_dir)
+            unlink(empty_dir, recursive = TRUE)
+          }
+          tryCatch(
+            run_index(paper_id = pid),
+            error = function(e2) {
+              message("  FAILED (retry): ", conditionMessage(e2))
+              list(
+                paper_id       = pid,
+                success        = FALSE,
+                error          = conditionMessage(e2),
+                elapsed_sec    = NA_real_,
+                n_files        = NA_integer_,
+                n_data_files   = NA_integer_,
+                n_agg_dirs     = NA_integer_,
+                n_raw          = NA_integer_,
+                n_nonraw       = NA_integer_,
+                n_columns      = NA_integer_,
+                n_source_files = NA_integer_
+              )
+            }
+          )
+        } else {
+          message("  FAILED: ", msg)
+          list(
+            paper_id       = pid,
+            success        = FALSE,
+            error          = msg,
+            elapsed_sec    = NA_real_,
+            n_files        = NA_integer_,
+            n_data_files   = NA_integer_,
+            n_agg_dirs     = NA_integer_,
+            n_raw          = NA_integer_,
+            n_nonraw       = NA_integer_,
+            n_columns      = NA_integer_,
+            n_source_files = NA_integer_
+          )
+        }
+      }
+    )
+  }
+
+  result <- run_once()
 
   append_summary_row(result)
 }
