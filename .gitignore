@@ -22,6 +22,6 @@ pythonLevi/
 ./data_check/*.csv
 ./data_check/*.sav
 ./data_check/*.xlsx
-
+data_check/data/
 
 ./output
