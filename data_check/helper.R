@@ -315,3 +315,370 @@ llm_batch <- function(paths, system_prompt, user_prefix, key_col, extra_cols,
 
   do.call(rbind, all_parsed)
 }
+
+# ── Codebook parsing helpers ──────────────────────────────────────────────────
+
+# Normalise a variable name for case-insensitive, whitespace-tolerant matching.
+# Applies tolower, trims whitespace, collapses interior spaces, strips
+# leading/trailing underscores and dots.
+normalize_varname <- function(x) {
+  x <- tolower(x)
+  x <- trimws(x)
+  x <- gsub("[_]+", " ", x)   # treat underscores as word separators (e.g. SSS_total → sss total)
+  x <- gsub("\\s+", " ", x)  # collapse any resulting multiple spaces
+  x <- gsub("^[\\.]+|[\\.]+$", "", x)  # strip leading/trailing dots
+  x <- trimws(x)
+  x
+}
+
+# Scan a data.frame's column headers for a "variable name" column and a
+# "label/description" column.  Returns list(var_col, lab_col) or NULL.
+.find_codebook_cols <- function(col_names) {
+  var_col <- grep(
+    "(?i)^(var(iable)?|name|column|field|variable_?name|varname)$",
+    col_names, perl = TRUE, value = TRUE
+  )[1]
+  lab_col <- grep(
+    "(?i)^(label|description|desc|definition|meaning|explanation|text)$",
+    col_names, perl = TRUE, value = TRUE
+  )[1]
+  if (is.na(var_col) || is.na(lab_col)) return(NULL)
+  list(var_col = var_col, lab_col = lab_col)
+}
+
+# Extract variable-label pairs from a structured data.frame (CSV/Excel rows).
+# Returns NULL when no matching header columns are found.
+.extract_structured_codebook <- function(df, src) {
+  if (is.null(df) || nrow(df) == 0 || ncol(df) < 2) return(NULL)
+  cols <- .find_codebook_cols(names(df))
+  if (is.null(cols)) return(NULL)
+  rows <- df[nzchar(trimws(as.character(df[[cols$var_col]]))), , drop = FALSE]
+  if (nrow(rows) == 0) return(NULL)
+  data.frame(
+    codebook_variable = as.character(rows[[cols$var_col]]),
+    label             = as.character(rows[[cols$lab_col]]),
+    codebook_source   = src,
+    group             = NA_character_,
+    stringsAsFactors  = FALSE
+  )
+}
+
+# Extract embedded variable labels from a Haven-labelled data.frame (SPSS/DTA).
+.extract_haven_labels <- function(df, src) {
+  labels <- vapply(names(df), function(col) {
+    lbl <- attr(df[[col]], "label")
+    if (is.null(lbl)) NA_character_ else trimws(as.character(lbl[1]))
+  }, character(1))
+  has_label <- !is.na(labels) & nzchar(labels)
+  if (!any(has_label)) return(NULL)
+  data.frame(
+    codebook_variable = names(df)[has_label],
+    label             = labels[has_label],
+    codebook_source   = src,
+    group             = NA_character_,
+    stringsAsFactors  = FALSE
+  )
+}
+
+# Map free-text experiment context strings to canonical group codes.
+# e.g. "Experiment 1" -> "ex1", "Study 2a" -> "ex2a", "Pilot 1" -> "pilot1"
+.infer_group <- function(context_str) {
+  vapply(context_str, function(s) {
+    if (is.null(s) || is.na(s) || !nzchar(trimws(as.character(s))))
+      return(NA_character_)
+    s <- trimws(as.character(s))
+    # Pilot takes priority — never reclassify a pilot as "ex"
+    m <- regmatches(s, regexpr("(?i)pilot\\s*(\\d+[a-z]?)", s, perl = TRUE))
+    if (length(m) > 0 && nzchar(m)) {
+      num <- sub("(?i)pilot\\s*", "", m, perl = TRUE)
+      return(paste0("pilot", tolower(num)))
+    }
+    m <- regmatches(s, regexpr("(?i)(experiment|study)\\s*(\\d+[a-z]?)", s, perl = TRUE))
+    if (length(m) > 0 && nzchar(m)) {
+      num <- sub("(?i)(experiment|study)\\s*", "", m, perl = TRUE)
+      return(paste0("ex", tolower(num)))
+    }
+    NA_character_
+  }, character(1), USE.NAMES = FALSE)
+}
+
+# Read a codebook file and return a data.frame of variable definitions with
+# columns: codebook_variable, label, codebook_source, group.
+# Returns NULL (with warning) on failure, oversized file, or no definitions found.
+# Relies on MAX_CODEBOOK_FILE_MB, MAX_CODEBOOK_LLM_CALLS, CODEBOOK_PARSE_PROMPT
+# being defined in the calling script (same pattern as LLM_BATCH_SIZE in llm_batch).
+parse_codebook <- function(path) {
+  if (!file.exists(path)) {
+    warning("Codebook file not found: ", basename(path))
+    return(NULL)
+  }
+  file_mb <- file.info(path)$size / 1048576
+  if (!is.na(file_mb) && file_mb > MAX_CODEBOOK_FILE_MB) {
+    warning("Skipping codebook (", round(file_mb), " MB > ", MAX_CODEBOOK_FILE_MB,
+            " MB limit): ", basename(path))
+    return(NULL)
+  }
+  ext <- tolower(tools::file_ext(path))
+  src <- basename(path)
+
+  # ── Structured extraction (rule-based) ──────────────────────────────────────
+  result <- tryCatch({
+    switch(ext,
+      csv = , tsv = , txt = , dat = {
+        sep <- if (ext == "tsv") "\t" else sniff_delimiter(path)
+        df  <- read.delim(path, sep = sep, check.names = FALSE,
+                          stringsAsFactors = FALSE)
+        .extract_structured_codebook(df, src)
+      },
+      xlsx = , xls = {
+        df <- tryCatch(
+          as.data.frame(readxl::read_excel(path), stringsAsFactors = FALSE),
+          error = function(e) NULL
+        )
+        .extract_structured_codebook(df, src)
+      },
+      sav = {
+        df <- haven::read_sav(path)
+        .extract_haven_labels(df, src)
+      },
+      dta = {
+        df <- haven::read_dta(path)
+        .extract_haven_labels(df, src)
+      },
+      NULL  # unsupported extension — fall through to LLM
+    )
+  }, error = function(e) {
+    warning("Structured codebook parse failed for ", src, ": ", conditionMessage(e))
+    NULL
+  })
+
+  if (!is.null(result) && nrow(result) > 0) {
+    result$group <- .infer_group(result$group)
+    return(result)
+  }
+
+  # ── LLM fallback for unstructured / unparseable files ────────────────────────
+  lines <- tryCatch(
+    readLines(path, warn = FALSE),
+    error = function(e) {
+      warning("Cannot read ", src, " for LLM parsing: ", conditionMessage(e))
+      character(0)
+    }
+  )
+  if (length(lines) == 0) return(NULL)
+
+  chunks    <- split(lines, ceiling(seq_along(lines) / 40))
+  max_calls <- min(length(chunks), MAX_CODEBOOK_LLM_CALLS)
+  all_vars  <- vector("list", max_calls)
+
+  for (i in seq_len(max_calls)) {
+    chunk_text <- paste(chunks[[i]], collapse = "\n")
+    raw <- tryCatch(
+      llm(system_prompt = CODEBOOK_PARSE_PROMPT,
+          text = paste0("Extract all variable definitions from this codebook text:\n\n",
+                        chunk_text)),
+      error = function(e) {
+        warning("LLM codebook parse failed (chunk ", i, " of ", src, "): ",
+                conditionMessage(e))
+        list(answer = "[]")
+      }
+    )
+    all_vars[[i]] <- tryCatch({
+      parsed <- jsonlite::fromJSON(extract_json(raw$answer))
+      if (!is.data.frame(parsed) ||
+          !all(c("variable_name", "label") %in% names(parsed))) return(NULL)
+      parsed <- parsed[nzchar(trimws(as.character(parsed$variable_name))), , drop = FALSE]
+      if (nrow(parsed) == 0) return(NULL)
+      ec <- if ("experiment_context" %in% names(parsed))
+        as.character(parsed$experiment_context) else NA_character_
+      data.frame(
+        codebook_variable = as.character(parsed$variable_name),
+        label             = as.character(parsed$label),
+        codebook_source   = src,
+        group             = .infer_group(ec),
+        stringsAsFactors  = FALSE
+      )
+    }, error = function(e) NULL)
+  }
+
+  result <- do.call(rbind, Filter(Negate(is.null), all_vars))
+  if (is.null(result) || nrow(result) == 0) {
+    message("  no variables extracted from: ", src)
+    return(NULL)
+  }
+  result
+}
+
+# Match columns_df (from _columns.csv) against codebook_vars_df.
+# Returns a _labels.csv-shaped data.frame covering every row of columns_df.
+# Handles experiment-group scoping and conflict detection.
+match_column_labels <- function(columns_df, codebook_vars_df,
+                                column_match_prompt = NULL) {
+  make_empty <- function() {
+    data.frame(
+      paper_id          = columns_df$paper_id,
+      source_file       = columns_df$source_file,
+      column_name       = columns_df$column_name,
+      group             = columns_df$group,
+      label             = NA_character_,
+      codebook_variable = NA_character_,
+      label_source      = NA_character_,
+      label_status      = "unlabelled",
+      label_method      = NA_character_,
+      stringsAsFactors  = FALSE
+    )
+  }
+
+  if (is.null(codebook_vars_df) || nrow(codebook_vars_df) == 0) return(make_empty())
+  if (is.null(columns_df)       || nrow(columns_df) == 0)       return(make_empty())
+
+  norm_col <- normalize_varname(columns_df$column_name)
+  norm_var <- normalize_varname(codebook_vars_df$codebook_variable)
+
+  n                <- nrow(columns_df)
+  label_out        <- rep(NA_character_, n)
+  cbk_var_out      <- rep(NA_character_, n)
+  src_out          <- rep(NA_character_, n)
+  status_out       <- rep("unlabelled",  n)
+  label_method_out <- rep(NA_character_, n)
+
+  for (i in seq_len(n)) {
+    nc <- norm_col[i]
+    cg <- columns_df$group[i]
+
+    name_idx <- which(norm_var == nc)
+    if (length(name_idx) == 0) next
+
+    matches  <- codebook_vars_df[name_idx, , drop = FALSE]
+    scoped   <- matches[!is.na(matches$group), , drop = FALSE]
+    unscoped <- matches[ is.na(matches$group), , drop = FALSE]
+
+    same_group_scoped <- scoped[!is.na(scoped$group) & scoped$group == cg, , drop = FALSE]
+    applicable        <- rbind(unscoped, same_group_scoped)
+    other_scoped      <- scoped[!is.na(scoped$group) & scoped$group != cg, , drop = FALSE]
+
+    if (nrow(applicable) == 0) {
+      if (nrow(other_scoped) > 0) {
+        # Name exists only in a different experiment's codebook
+        status_out[i]  <- "ambiguous_experiment"
+        label_out[i]   <- paste(unique(other_scoped$label),             collapse = " | ")
+        cbk_var_out[i] <- paste(unique(other_scoped$codebook_variable), collapse = " | ")
+        src_out[i]     <- paste(unique(other_scoped$codebook_source),   collapse = " | ")
+      }
+      next
+    }
+
+    distinct_labels <- unique(applicable$label)
+    if (length(distinct_labels) > 1) {
+      # Same variable name, different definitions from different sources
+      status_out[i]  <- "conflicting_definition"
+      label_out[i]   <- paste(distinct_labels,                           collapse = " | ")
+      cbk_var_out[i] <- paste(unique(applicable$codebook_variable),     collapse = " | ")
+      src_out[i]     <- paste(unique(applicable$codebook_source),       collapse = " | ")
+    } else {
+      status_out[i]  <- "labelled"
+      label_out[i]   <- distinct_labels[1]
+      cbk_var_out[i] <- applicable$codebook_variable[1]
+      src_out[i]     <- paste(unique(applicable$codebook_source), collapse = " | ")
+    }
+  }
+
+  # Set label_method for rule-matched rows
+  label_method_out[status_out == "labelled"] <- "rules"
+
+  # ── LLM secondary pass (T005–T009) ───────────────────────────────────────────
+  if (!is.null(column_match_prompt)) {
+
+    # T006: Collect candidate sets
+    unlabelled_idx      <- which(status_out == "unlabelled")
+    unlabelled_norm_cols <- unique(norm_col[unlabelled_idx])
+
+    matched_norm_vars <- unique(normalize_varname(
+      cbk_var_out[status_out == "labelled" & !is.na(cbk_var_out)]
+    ))
+    unmatched_vars_df <- codebook_vars_df[
+      !normalize_varname(codebook_vars_df$codebook_variable) %in% matched_norm_vars,
+      , drop = FALSE
+    ]
+
+    if (length(unlabelled_norm_cols) > 0 && nrow(unmatched_vars_df) > 0) {
+
+      # T007: Build prompt body and call LLM
+      col_list <- paste(seq_along(unlabelled_norm_cols),
+                        columns_df$column_name[match(unlabelled_norm_cols, norm_col)],
+                        sep = ". ", collapse = "\n")
+      var_list <- paste(seq_len(nrow(unmatched_vars_df)),
+                        unmatched_vars_df$codebook_variable,
+                        sep = ". ", collapse = "\n")
+      prompt_body <- paste0(
+        "Data columns (unlabelled):\n", col_list,
+        "\n\nCodebook variables (unmatched):\n", var_list
+      )
+
+      llm_resp <- tryCatch(
+        llm(system_prompt = column_match_prompt, text = prompt_body),
+        error = function(e) {
+          warning("LLM column-matching call failed: ", conditionMessage(e))
+          list(answer = "[]")
+        }
+      )
+
+      # T008: Parse and validate response
+      pairs_df <- tryCatch({
+        json_txt <- extract_json(llm_resp$answer)
+        parsed   <- jsonlite::fromJSON(json_txt, simplifyDataFrame = TRUE)
+        if (is.data.frame(parsed) && nrow(parsed) > 0 &&
+            all(c("column_name", "codebook_variable") %in% names(parsed))) {
+          parsed
+        } else {
+          data.frame(column_name = character(0), codebook_variable = character(0),
+                     stringsAsFactors = FALSE)
+        }
+      }, error = function(e) {
+        data.frame(column_name = character(0), codebook_variable = character(0),
+                   stringsAsFactors = FALSE)
+      })
+
+      norm_unmatched_vars <- normalize_varname(unmatched_vars_df$codebook_variable)
+
+      # Validate: both sides must be in the submitted candidate sets
+      valid_pairs <- pairs_df[
+        normalize_varname(pairs_df$column_name)      %in% unlabelled_norm_cols &
+        normalize_varname(pairs_df$codebook_variable) %in% norm_unmatched_vars,
+        , drop = FALSE
+      ]
+
+      # T009: Apply valid pairs
+      for (k in seq_len(nrow(valid_pairs))) {
+        pair_norm_col <- normalize_varname(valid_pairs$column_name[k])
+        pair_norm_var <- normalize_varname(valid_pairs$codebook_variable[k])
+
+        row_idxs  <- which(norm_col == pair_norm_col & status_out == "unlabelled")
+        var_row   <- which(norm_unmatched_vars == pair_norm_var)[1]
+
+        if (length(row_idxs) == 0 || is.na(var_row)) next
+
+        for (i in row_idxs) {
+          label_out[i]        <- unmatched_vars_df$label[var_row]
+          cbk_var_out[i]      <- unmatched_vars_df$codebook_variable[var_row]
+          src_out[i]          <- unmatched_vars_df$codebook_source[var_row]
+          status_out[i]       <- "llm"
+          label_method_out[i] <- "llm"
+        }
+      }
+    }
+  }
+
+  data.frame(
+    paper_id          = columns_df$paper_id,
+    source_file       = columns_df$source_file,
+    column_name       = columns_df$column_name,
+    group             = columns_df$group,
+    label             = label_out,
+    codebook_variable = cbk_var_out,
+    label_source      = src_out,
+    label_status      = status_out,
+    label_method      = label_method_out,
+    stringsAsFactors  = FALSE
+  )
+}
