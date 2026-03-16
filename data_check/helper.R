@@ -157,25 +157,26 @@ classify_col_type_rules <- function(col_name, values) {
   # Rule 1: all NA
   if (n_noNA == 0)
     return(list(col_type = "empty", ambiguous = FALSE, numeric_values = NULL,
-                n_coerced = NA_integer_))
+                n_coerced = NA_integer_, is_numeric = FALSE))
 
   n_unique <- length(unique(x_noNA))
 
   # Rule 2: binary (≤ 2 unique non-NA values)
   if (n_unique <= 2)
     return(list(col_type = "binary", ambiguous = FALSE, numeric_values = NULL,
-                n_coerced = NA_integer_))
+                n_coerced = NA_integer_, is_numeric = FALSE))
 
   # Rule 3: possible ID column — name matches common ID patterns AND all non-NA
   #         values are whole numbers.  Route to LLM rather than hard-classifying
   #         because ID columns appear in too many forms to rule-classify reliably.
+  #         is_numeric = FALSE: LLM may correctly return "id"; do not fall back to "continuous".
   id_pat <- "(?i)(^|\\b)(id|subj|subject|participant|pp|ppt|pid|respondent)(\\b|$|[_\\-]?\\d)"
   if (grepl(id_pat, col_name, perl = TRUE)) {
     vals_num <- suppressWarnings(as.numeric(as.character(x_noNA)))
     if (!any(is.na(vals_num)) && all(vals_num == floor(vals_num)))
       return(list(col_type = NA_character_, ambiguous = TRUE,
                   numeric_values = suppressWarnings(as.numeric(as.character(values))),
-                  n_coerced = NA_integer_))
+                  n_coerced = NA_integer_, is_numeric = FALSE))
   }
 
   # Rule 4: date — try as.Date on a sample of up to 20 unique string values
@@ -185,21 +186,30 @@ classify_col_type_rules <- function(col_name, values) {
   }, logical(1)))
   if (n_date_ok / length(char_sample) >= 0.70)
     return(list(col_type = "date", ambiguous = FALSE, numeric_values = NULL,
-                n_coerced = NA_integer_))
+                n_coerced = NA_integer_, is_numeric = FALSE))
 
   # Rule 5: free text — long median string length
   if (median(nchar(as.character(x_noNA))) > 40)
     return(list(col_type = "text", ambiguous = FALSE, numeric_values = NULL,
-                n_coerced = NA_integer_))
+                n_coerced = NA_integer_, is_numeric = FALSE))
 
-  # Rule 6: numeric column
+  # Rule 6a: decimal numeric — any fractional value is unambiguously continuous.
+  # Fires before Rule 6 to avoid routing VAS / ratio scales to the LLM.
+  if (is.numeric(values) && any(x_noNA != floor(x_noNA)))
+    return(list(col_type = "continuous", ambiguous = FALSE, numeric_values = values,
+                n_coerced = NA_integer_, is_numeric = FALSE))
+
+  # Rule 6: integer numeric column.
+  # > 20 unique values → continuous without LLM.
+  # 3–20 unique values → route to LLM (ordinal vs continuous vs categorical).
+  #   is_numeric = TRUE flags integer-numeric columns so a post-LLM fallback can
+  #   replace "unknown" → "continuous" when the LLM cannot determine the type.
   if (is.numeric(values)) {
     if (n_unique > 20)
       return(list(col_type = "continuous", ambiguous = FALSE, numeric_values = values,
-                  n_coerced = NA_integer_))
-    # 3–20 unique values → ambiguous (LLM decides ordinal/categorical/continuous/binary)
+                  n_coerced = NA_integer_, is_numeric = FALSE))
     return(list(col_type = NA_character_, ambiguous = TRUE, numeric_values = values,
-                n_coerced = NA_integer_))
+                n_coerced = NA_integer_, is_numeric = TRUE))
   }
 
   # Rule 7: comma-decimal normalisation for character columns
@@ -209,22 +219,23 @@ classify_col_type_rules <- function(col_name, values) {
     num_vec    <- suppressWarnings(as.numeric(gsub(",", ".", as.character(values), fixed = TRUE)))
     n_coerced  <- sum(is.na(x_sub))  # non-NA values that failed conversion
     return(list(col_type = "continuous_comma_decimal", ambiguous = FALSE,
-                numeric_values = num_vec, n_coerced = n_coerced))
+                numeric_values = num_vec, n_coerced = n_coerced, is_numeric = FALSE))
   }
   if (pct_ok >= 0.80) {
     num_vec    <- suppressWarnings(as.numeric(gsub(",", ".", as.character(values), fixed = TRUE)))
     n_coerced  <- sum(is.na(x_sub))  # non-NA values that failed conversion
     return(list(col_type = "continuous_outliers_excluded", ambiguous = FALSE,
-                numeric_values = num_vec, n_coerced = n_coerced))
+                numeric_values = num_vec, n_coerced = n_coerced, is_numeric = FALSE))
   }
 
   # Rule 8: categorical (character, few short unique values)
   if (n_unique <= 10 && median(nchar(as.character(x_noNA))) <= 20)
     return(list(col_type = "categorical", ambiguous = FALSE, numeric_values = NULL,
-                n_coerced = NA_integer_))
+                n_coerced = NA_integer_, is_numeric = FALSE))
 
   # Rule 9: text fallback for character columns
-  list(col_type = "text", ambiguous = FALSE, numeric_values = NULL, n_coerced = NA_integer_)
+  list(col_type = "text", ambiguous = FALSE, numeric_values = NULL,
+       n_coerced = NA_integer_, is_numeric = FALSE)
 }
 
 # ── LLM helpers ───────────────────────────────────────────────────────────────

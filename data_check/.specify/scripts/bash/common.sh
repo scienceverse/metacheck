@@ -1,14 +1,33 @@
 #!/usr/bin/env bash
 # Common functions and variables for all scripts
 
-# Get repository root, with fallback for non-git repositories
+# Get repository root, with fallback for non-git repositories.
+# When init-options.json has "here": true, the .specify parent directory is
+# used as the project root instead of the git root. This allows specs/ to live
+# inside a subdirectory (e.g. data_check/) rather than the outer git root.
 get_repo_root() {
+    local script_dir="$(CDPATH="" cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local specify_parent="$(CDPATH="" cd "$script_dir/../../.." && pwd)"
+    local init_options="$specify_parent/.specify/init-options.json"
+
+    # Respect "here": true — anchor to .specify parent, not git root
+    if [ -f "$init_options" ]; then
+        local here_flag
+        if command -v python3 >/dev/null 2>&1; then
+            here_flag=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print('true' if d.get('here') else 'false')" "$init_options" 2>/dev/null)
+        elif command -v node >/dev/null 2>&1; then
+            here_flag=$(node -e "const d=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')); process.stdout.write(d.here?'true':'false')" "$init_options" 2>/dev/null)
+        fi
+        if [ "$here_flag" = "true" ]; then
+            echo "$specify_parent"
+            return
+        fi
+    fi
+
     if git rev-parse --show-toplevel >/dev/null 2>&1; then
         git rev-parse --show-toplevel
     else
-        # Fall back to script location for non-git repos
-        local script_dir="$(CDPATH="" cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-        (cd "$script_dir/../../.." && pwd)
+        echo "$specify_parent"
     fi
 }
 
