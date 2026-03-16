@@ -12,6 +12,7 @@ DATA_DIR          <- "./data_check/data"
 XML_DIR           <- "./data-raw/psychsci/grobid_0.8.2"
 PROGRESS_CSV      <- "./data_check/download_progress.csv"
 BADGE_REPOS       <- c("tvyxz", "osf.io/tvyxz/", "osf.io/tvyxz")
+DOWNLOAD_TIMEOUT_SEC <- 10 * 60  # 10 minutes; set to NULL to disable
 
 # ── Discover all papers ───────────────────────────────────────────────────────
 
@@ -114,8 +115,13 @@ for (i in seq_along(remaining_ids)) {
 
     # Download files
     message("  downloading from ", length(unique_links), " link(s)...")
+    if (!is.null(DOWNLOAD_TIMEOUT_SEC)) {
+      setTimeLimit(elapsed = DOWNLOAD_TIMEOUT_SEC, transient = TRUE)
+      on.exit(setTimeLimit(elapsed = Inf, transient = FALSE), add = TRUE)
+    }
     osf_file_download(unique_links, download_to = target_dir,
                       max_download_size = 10e9, max_file_size = NULL)
+    setTimeLimit(elapsed = Inf, transient = FALSE)
 
     # Verify download worked
     if (!dir.exists(target_dir)) {
