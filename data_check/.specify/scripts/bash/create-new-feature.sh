@@ -191,6 +191,23 @@ else
     HAS_GIT=false
 fi
 
+# Respect "here": true in init-options.json — use .specify parent dir as project root
+# instead of the git root. SCRIPT_DIR is .specify/scripts/bash, so ../../.. is data_check/.
+_SPECIFY_PARENT="$(CDPATH="" cd "$SCRIPT_DIR/../../.." && pwd)"
+_INIT_OPTIONS="$_SPECIFY_PARENT/.specify/init-options.json"
+if [ -f "$_INIT_OPTIONS" ]; then
+    _HERE_FLAG=""
+    if command -v python3 >/dev/null 2>&1; then
+        _HERE_FLAG=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print('true' if d.get('here') else 'false')" "$_INIT_OPTIONS" 2>/dev/null)
+    elif command -v node >/dev/null 2>&1; then
+        _HERE_FLAG=$(node -e "const d=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')); process.stdout.write(d.here?'true':'false')" "$_INIT_OPTIONS" 2>/dev/null)
+    fi
+    if [ "$_HERE_FLAG" = "true" ]; then
+        REPO_ROOT="$_SPECIFY_PARENT"
+    fi
+fi
+unset _SPECIFY_PARENT _INIT_OPTIONS _HERE_FLAG
+
 cd "$REPO_ROOT"
 
 SPECS_DIR="$REPO_ROOT/specs"

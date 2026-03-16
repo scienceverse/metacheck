@@ -93,12 +93,19 @@ For each column descriptor return a JSON array (same order).
 Each element: {"descriptor": "<exact descriptor>", "col_type": "<type>"}
 
 col_type — pick one:
-  continuous  : numeric measurement (reaction time, score, rating, age, percentage, etc.)
-  ordinal     : ordered scale with few levels (Likert, ranked preference, grade)
+  continuous  : numeric measurement — reaction time, age, VAS rating (0–10), Likert-scale
+                mean, subscale score, count, percentage, any column with decimal values
+  ordinal     : ordered integer scale with few levels — 1–5 Likert item, 1–10 attention
+                rating, bounded compliance or distress score, ranked preference, grade
   categorical : unordered group or category code with few levels (condition, gender, language)
   binary      : exactly two possible values (yes/no, 0/1, treatment/control)
   id          : row or participant identifier — unique or nearly-unique integer per row
-  unknown     : cannot determine from name and sample values alone
+  unknown     : ONLY when name AND values together give no numeric signal — e.g. fully
+                redacted data, meaningless all-constant codes. Do NOT use for any column
+                whose samples look like numbers.
+
+IMPORTANT: Prefer "continuous" or "ordinal" over "unknown". When in doubt between
+"continuous" and "ordinal" for a numeric column, choose "continuous".
 
 Output ONLY the JSON array. No notes, no text outside the array.'
 
@@ -435,6 +442,10 @@ run_index <- function(paper_id = NA) {
 
     ambiguous_idx <- vapply(col_classifications, `[[`, logical(1), "ambiguous")
 
+    is_numeric_vec <- vapply(col_classifications, function(cls) {
+      isTRUE(cls$is_numeric)
+    }, logical(1))
+
     n_coerced_vec <- vapply(col_classifications, function(cls) {
       v <- cls$n_coerced
       if (is.null(v) || is.na(v)) NA_integer_ else as.integer(v)
@@ -515,6 +526,7 @@ run_index <- function(paper_id = NA) {
         n_coerced            = n_coerced_vec,
         stats_mat,
         sample_values_unique = sample_vals_unique,
+        is_numeric           = is_numeric_vec,
         stringsAsFactors = FALSE,
         row.names     = NULL
       ),
@@ -555,6 +567,20 @@ run_index <- function(paper_id = NA) {
     returned_types <- llm_result$col_type
     returned_types[!returned_types %in% VALID_COL_TYPES] <- "unknown"
     columns_df$col_type[ambig_rows] <- returned_types
+
+    # Fallback: LLM "unknown" for a confirmed-numeric column → "continuous".
+    # is_numeric is TRUE only for Rule 6 (integer numeric, 3–20 unique values);
+    # NOT for Rule 3 ID columns, which must stay as "id" or "unknown".
+    if ("is_numeric" %in% names(columns_df)) {
+      num_unknown <- ambig_rows[
+        columns_df$is_numeric[ambig_rows] & columns_df$col_type[ambig_rows] == "unknown"
+      ]
+      if (length(num_unknown) > 0) {
+        columns_df$col_type[num_unknown] <- "continuous"
+        message("── col_type fallback: ", length(num_unknown),
+                " numeric column(s) reclassified from unknown \u2192 continuous")
+      }
+    }
   }
 
   # ── Final cleanup: fallback NAs, stat suppression, drop transient column ──
@@ -567,6 +593,7 @@ run_index <- function(paper_id = NA) {
     suppress_rows <- !columns_df$col_type %in% numeric_types
     columns_df[suppress_rows, stat_cols] <- NA
     columns_df$sample_values_unique <- NULL
+    columns_df$is_numeric           <- NULL
   }
 
   is_raw_flags <- setNames(
