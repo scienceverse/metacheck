@@ -51,5 +51,7 @@ The `docs/` directory contains the canonical documentation for this pipeline.
 - When adding a new file classification `type` or `group` → update the File Types / Groups tables in `output-schemas.md`
 - When adding a new error code → update the Error Codes table in `output-schemas.md`
 - When adding a new output CSV column → add it to the relevant schema table in `output-schemas.md`
+- When committing a new feature or writing a PR → add it to/update `progress.md`
+
 
 <!-- MANUAL ADDITIONS END -->
