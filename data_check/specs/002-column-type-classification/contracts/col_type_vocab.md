@@ -36,19 +36,19 @@ Any value not in this set written to the CSV is a pipeline bug.
 
 ## Statistics Population Rules
 
-| `col_type` | `n`, `n_missing` | `mean`, `sd`, `se`, `median`, `min`, `max`, `range`, `p25`, `p75`, `iqr`, `skewness`, `kurtosis` |
-|------------|-----------------|--------------------------------------------------------------------------------------------------|
-| `continuous` | populated | populated |
-| `continuous_comma_decimal` | populated | populated (computed on comma→period-substituted values) |
-| `continuous_outliers_excluded` | populated | populated (non-parseable values coerced to NA, counted in `n_missing`) |
-| `binary` | populated | NA |
-| `categorical` | populated | NA |
-| `ordinal` | populated | NA |
-| `date` | populated | NA |
-| `id` | populated | NA |
-| `text` | populated | NA |
-| `empty` | NA | NA |
-| `unknown` | populated | NA |
+| `col_type` | `n_coerced` | `n`, `n_missing` | `mean`, `sd`, `se`, `median`, `min`, `max`, `range`, `p25`, `p75`, `iqr`, `skewness`, `kurtosis` |
+|------------|-------------|-----------------|--------------------------------------------------------------------------------------------------|
+| `continuous` | NA | populated | populated |
+| `continuous_comma_decimal` | count of failed conversions | populated | populated (computed on comma→period-substituted values) |
+| `continuous_outliers_excluded` | count of non-parseable values | populated | populated (coerced values counted in both `n_coerced` and `n_missing`) |
+| `binary` | NA | populated | NA |
+| `categorical` | NA | populated | NA |
+| `ordinal` | NA | populated | NA |
+| `date` | NA | populated | NA |
+| `id` | NA | populated | NA |
+| `text` | NA | populated | NA |
+| `empty` | NA | NA | NA |
+| `unknown` | NA | populated | NA |
 
 ---
 

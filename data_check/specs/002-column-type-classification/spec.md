@@ -83,6 +83,7 @@ For columns that rule-based heuristics cannot confidently classify (e.g., numeri
   - Column is numeric in R and has > 20 unique values → `continuous` (subject to outlier check)
 - **FR-005**: Malformed numeric detection MUST check whether a character column becomes fully numeric after replacing `,` with `.`. If yes, apply substitution, compute statistics, and set `col_type = "continuous_comma_decimal"`.
 - **FR-006**: When a numeric column has ≤ 5% non-parseable values, those MUST be coerced to NA, statistics computed on the remainder, and `col_type = "continuous_outliers_excluded"`.
+- **FR-006b**: For `continuous_comma_decimal` and `continuous_outliers_excluded` columns, the output MUST include an `n_coerced` field recording the count of values that were coerced to NA during normalization. This count MUST be NA for all other column types.
 - **FR-007**: Columns that rule-based logic marks as ambiguous MUST be sent to the LLM in batches, using up to 10 unique sample values per column (prefer `unique()` over head-of-file values).
 - **FR-008**: LLM calls for type classification MUST be batched consistently with the existing `llm_batch()` architecture.
 - **FR-009**: The LLM prompt MUST request a single controlled-vocabulary label per column with no explanation.

@@ -435,6 +435,11 @@ run_index <- function(paper_id = NA) {
 
     ambiguous_idx <- vapply(col_classifications, `[[`, logical(1), "ambiguous")
 
+    n_coerced_vec <- vapply(col_classifications, function(cls) {
+      v <- cls$n_coerced
+      if (is.null(v) || is.na(v)) NA_integer_ else as.integer(v)
+    }, integer(1))
+
     # Unique sample values for LLM classification of ambiguous columns
     sample_vals_unique <- vapply(seq_along(names(df)), function(i) {
       if (!ambiguous_idx[i]) return(NA_character_)
@@ -507,6 +512,7 @@ run_index <- function(paper_id = NA) {
         column_name          = names(df),
         sample_values        = sample_vals,
         col_type             = col_types,
+        n_coerced            = n_coerced_vec,
         stats_mat,
         sample_values_unique = sample_vals_unique,
         stringsAsFactors = FALSE,
