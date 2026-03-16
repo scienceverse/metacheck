@@ -1,6 +1,6 @@
 # Output Schemas
 
-Three CSV files are produced per bulk run.
+Five CSV files are produced per paper run (three from `0_index.R`, two from `2_codebook_label.R`).
 
 ---
 
@@ -125,3 +125,47 @@ runner to resume after a crash.
 | `download_failed` | Network or OSF API error during download |
 | `empty_repo` | Downloaded repository contains no usable files after unpacking (retried once) |
 | `too_large` | Exceeded download size limit (10 GB) or file path count limit (200 paths) |
+
+---
+
+## `structure/<paper_id>_labels.csv`
+
+One row per column in each data file (parallel to `_columns.csv`). Produced by `2_codebook_label.R`.
+
+| Column | Type | Description |
+|---|---|---|
+| `paper_id` | character | Paper identifier (leading zeros preserved) |
+| `source_file` | character | Relative path to the source data file (join key to `_columns.csv`) |
+| `column_name` | character | Column name as it appears in the data file |
+| `group` | character | Experiment group inherited from `_columns.csv` |
+| `label` | character | Human-readable label/description from the matched codebook variable; `NA` if unlabelled |
+| `codebook_variable` | character | Variable name as written in the codebook; `NA` if unlabelled; pipe-separated if multiple candidates |
+| `label_source` | character | Basename of the codebook file that provided the label; `NA` if unlabelled; pipe-separated if multiple sources |
+| `label_status` | character | Labelling outcome — see [Label Status Values](#label-status-values) |
+| `label_method` | character | How the label was determined: `"rules"` = normalized string match; `"llm"` = secondary LLM pass; `NA` = column is unlabelled |
+
+### Label Status Values
+
+| Value | Meaning |
+|---|---|
+| `labelled` | Column matched exactly one codebook variable with no conflicts |
+| `unlabelled` | Column has no matching codebook variable |
+| `conflicting_definition` | Column matched a variable present in multiple codebooks with different definitions; all candidates pipe-concatenated in `label` |
+| `ambiguous_experiment` | Column name exists only in a different experiment group's codebook; candidates pipe-concatenated |
+| `no_codebook` | Paper has no codebook or readme files; entire paper is unlabelled |
+| `llm` | Matched by secondary LLM pass after rule-based matching found no match |
+
+---
+
+## `structure/<paper_id>_codebook_coverage.csv`
+
+One row per variable extracted from any codebook/readme file. Produced by `2_codebook_label.R`.
+
+| Column | Type | Description |
+|---|---|---|
+| `paper_id` | character | Paper identifier |
+| `codebook_variable` | character | Variable name as written in the codebook |
+| `label` | character | Human-readable label/description |
+| `codebook_source` | character | Basename of the codebook file |
+| `group` | character | Experiment group scope inferred from codebook context; `NA` if no scope detected (applicable to all groups) |
+| `match_status` | character | `matched` — variable found in at least one data column; `unmatched_in_data` — not found in any data column |

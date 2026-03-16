@@ -93,6 +93,15 @@ Paper ID (character string)
 ┌─────────────────────┐
 │  11. Append to      │  bulk_summary.csv  (one row per paper, appended immediately)
 │      bulk summary   │  Crash-safe: progress survives interruption
+└──────────┬──────────┘
+           │  (optional post-processing step)
+           ▼
+┌─────────────────────┐
+│  12. Codebook       │  2_codebook_label.R  run_codebook_label(paper_id)
+│      labelling      │  Reads: _structure.csv (codebook/readme files)
+│                     │         _columns.csv (data columns to label)
+│                     │  Writes: _labels.csv        (one row per data column)
+│                     │          _codebook_coverage.csv (one row per codebook var)
 └─────────────────────┘
 ```
 
@@ -100,13 +109,15 @@ Paper ID (character string)
 
 ## Key Constants (`0_index.R`)
 
-| Constant | Value | Purpose |
-|---|---|---|
-| `LLM_BATCH_SIZE` | 20 | Paths per LLM call |
-| `N_DATA_READ` | 5 | Rows sampled per data file |
-| `MAX_COL_TYPE_LLM_CALLS` | 5 | Max LLM calls for column classification (= 100 columns max) |
-| `AGGREGATE_THRESHOLD` | 50 | Files per folder above which a sentinel row replaces individual paths |
-| `MAX_DIR_WORDS` | 5 | Directory name word limit before truncation |
+| Constant | Value | Script | Purpose |
+|---|---|---|---|
+| `LLM_BATCH_SIZE` | 20 | `0_index.R`, `2_codebook_label.R` | Paths per LLM call |
+| `N_DATA_READ` | 5 | `0_index.R` | Rows sampled per data file |
+| `MAX_COL_TYPE_LLM_CALLS` | 5 | `0_index.R` | Max LLM calls for column classification (= 100 columns max) |
+| `AGGREGATE_THRESHOLD` | 50 | `0_index.R` | Files per folder above which a sentinel row replaces individual paths |
+| `MAX_DIR_WORDS` | 5 | `0_index.R` | Directory name word limit before truncation |
+| `MAX_CODEBOOK_LLM_CALLS` | 3 | `2_codebook_label.R` | Max LLM calls per paper for codebook text parsing |
+| `MAX_CODEBOOK_FILE_MB` | 100 | `2_codebook_label.R` | Codebook files larger than this (MB) are skipped |
 
 ## Resource Limits
 
