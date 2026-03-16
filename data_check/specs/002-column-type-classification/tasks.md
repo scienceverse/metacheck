@@ -23,8 +23,8 @@ All changes are in `data_check/` at the repository root. Two files are modified:
 
 **Purpose**: Add the shared constant and function skeleton before any user story logic is written. Both tasks touch different files and can be done in parallel.
 
-- [ ] T001 [P] Add `VALID_COL_TYPES` character vector constant to the constants block in `data_check/0_index.R` (after the existing `N_DATA_READ` constant). Value: `c("continuous","binary","categorical","ordinal","date","id","text","continuous_comma_decimal","continuous_outliers_excluded","empty","unknown")`
-- [ ] T002 [P] Add `classify_col_type_rules()` function skeleton to `data_check/helper.R` (after `classify_by_rules()`). Signature: `classify_col_type_rules <- function(col_name, values)`. Return structure: `list(col_type = NA_character_, ambiguous = FALSE, numeric_values = NULL)`. Body: single `return()` of the fallback — no logic yet.
+- [x] T001 [P] Add `VALID_COL_TYPES` character vector constant to the constants block in `data_check/0_index.R` (after the existing `N_DATA_READ` constant). Value: `c("continuous","binary","categorical","ordinal","date","id","text","continuous_comma_decimal","continuous_outliers_excluded","empty","unknown")`
+- [x] T002 [P] Add `classify_col_type_rules()` function skeleton to `data_check/helper.R` (after `classify_by_rules()`). Signature: `classify_col_type_rules <- function(col_name, values)`. Return structure: `list(col_type = NA_character_, ambiguous = FALSE, numeric_values = NULL)`. Body: single `return()` of the fallback — no logic yet.
 
 **Checkpoint**: Both files compile without error. `classify_col_type_rules("x", 1:5)` returns the fallback list.
 
@@ -46,7 +46,7 @@ All changes are in `data_check/` at the repository root. Two files are modified:
 
 ### Implementation for User Story 1
 
-- [ ] T003 [US1] Implement the full rule-based classification cascade (rules 1–6 and 8–9 from plan.md Phase A, **excluding** comma-decimal normalization) in `classify_col_type_rules()` in `data_check/helper.R`. The function must:
+- [x] T003 [US1] Implement the full rule-based classification cascade (rules 1–6 and 8–9 from plan.md Phase A, **excluding** comma-decimal normalization) in `classify_col_type_rules()` in `data_check/helper.R`. The function must:
   - Rule 1: all-NA → `col_type = "empty"`
   - Rule 2: n_unique ≤ 2 → `col_type = "binary"`
   - Rule 3: col_name matches ID regex AND all values are near-integer → `col_type = "id"`
@@ -57,11 +57,11 @@ All changes are in `data_check/` at the repository root. Two files are modified:
   - Rule 9: character column fallback → `col_type = "text"`
   - Rule 10: numeric ambiguous (from rule 6) → `ambiguous = TRUE`, `col_type = NA`
 
-- [ ] T004 [US1] Modify `extract_column_info()` in `data_check/0_index.R` to call `classify_col_type_rules(col, df[[col]])` for each column, collecting results into a `col_types` character vector (NA where ambiguous) and an `ambiguous_idx` logical vector. Thread these through the existing `col_stats` loop so each column's classification is computed alongside its stats.
+- [x] T004 [US1] Modify `extract_column_info()` in `data_check/0_index.R` to call `classify_col_type_rules(col, df[[col]])` for each column, collecting results into a `col_types` character vector (NA where ambiguous) and an `ambiguous_idx` logical vector. Thread these through the existing `col_stats` loop so each column's classification is computed alongside its stats.
 
-- [ ] T005 [US1] Insert `col_type = col_types` into the `data.frame()` constructor in `extract_column_info()` in `data_check/0_index.R`, positioned between `sample_values` and `stats_mat` (i.e., column 7 in the output). Verify column order matches data-model.md.
+- [x] T005 [US1] Insert `col_type = col_types` into the `data.frame()` constructor in `extract_column_info()` in `data_check/0_index.R`, positioned between `sample_values` and `stats_mat` (i.e., column 7 in the output). Verify column order matches data-model.md.
 
-- [ ] T006 [US1] In `extract_column_info()` in `data_check/0_index.R`, after building the column data frame, zero out numeric stat fields (mean, sd, se, median, min, max, range, p25, p75, iqr, skewness, kurtosis) for rows where `col_type` is not in `c("continuous","continuous_comma_decimal","continuous_outliers_excluded")` AND is not NA. Keep `n` and `n_missing` populated. This is the initial stat suppression — note NA rows are left intact for the LLM step (US3).
+- [x] T006 [US1] In `extract_column_info()` in `data_check/0_index.R`, after building the column data frame, zero out numeric stat fields (mean, sd, se, median, min, max, range, p25, p75, iqr, skewness, kurtosis) for rows where `col_type` is not in `c("continuous","continuous_comma_decimal","continuous_outliers_excluded")` AND is not NA. Keep `n` and `n_missing` populated. This is the initial stat suppression — note NA rows are left intact for the LLM step (US3).
 
 **Checkpoint**: At this point, User Story 1 is fully functional. Re-run `run_index("0956797620903716")` — the output CSV has a `col_type` column with sensible labels. The "Response time" column (comma-decimal) may still show `col_type = "text"` — that is fixed in US2.
 
@@ -75,14 +75,14 @@ All changes are in `data_check/` at the repository root. Two files are modified:
 
 ### Implementation for User Story 2
 
-- [ ] T007 [US2] Extend `classify_col_type_rules()` in `data_check/helper.R` to add comma-decimal normalization (plan.md Phase A, rule 7) **before** the categorical/text character-column rules (rules 8–9). Logic:
+- [x] T007 [US2] Extend `classify_col_type_rules()` in `data_check/helper.R` to add comma-decimal normalization (plan.md Phase A, rule 7) **before** the categorical/text character-column rules (rules 8–9). Logic:
   - For character columns: apply `x_sub <- suppressWarnings(as.numeric(gsub(",", ".", x_noNA, fixed = TRUE)))`
   - Compute `pct_ok <- sum(!is.na(x_sub)) / length(x_noNA)`
   - If `pct_ok >= 0.95` → `col_type = "continuous_comma_decimal"`, return `numeric_values = as.numeric(gsub(",", ".", values, fixed = TRUE))`
   - If `pct_ok >= 0.80` → `col_type = "continuous_outliers_excluded"`, return `numeric_values = as.numeric(gsub(",", ".", values, fixed = TRUE))` (non-parseable become NA)
   - Otherwise fall through to rules 8–9 (categorical/text)
 
-- [ ] T008 [US2] Modify the stats computation block in `extract_column_info()` in `data_check/0_index.R` so that when `cls$col_type` is `"continuous_comma_decimal"` or `"continuous_outliers_excluded"`, stats are computed using `cls$numeric_values` (the substituted/coerced vector) rather than the raw column. Ensure `n_missing` for `"continuous_outliers_excluded"` includes the coerced-to-NA outlier count.
+- [x] T008 [US2] Modify the stats computation block in `extract_column_info()` in `data_check/0_index.R` so that when `cls$col_type` is `"continuous_comma_decimal"` or `"continuous_outliers_excluded"`, stats are computed using `cls$numeric_values` (the substituted/coerced vector) rather than the raw column. Ensure `n_missing` for `"continuous_outliers_excluded"` includes the coerced-to-NA outlier count.
 
 **Checkpoint**: US1 + US2 are both functional. The "Response time" column now has statistics. All other previously-classified columns are unaffected.
 
@@ -96,13 +96,13 @@ All changes are in `data_check/` at the repository root. Two files are modified:
 
 ### Implementation for User Story 3
 
-- [ ] T009 [P] [US3] Add two constants to `data_check/0_index.R` in the constants block: `MAX_COL_TYPE_LLM_CALLS <- 5L` and `COLUMN_TYPE_PROMPT` string. The prompt content (from plan.md Phase C): classifies each column descriptor as one of `continuous`, `ordinal`, `categorical`, `binary`, `id`, `unknown`. Ask for JSON array with `{"descriptor": "...", "col_type": "..."}` per element, no explanation.
+- [x] T009 [P] [US3] Add two constants to `data_check/0_index.R` in the constants block: `MAX_COL_TYPE_LLM_CALLS <- 5L` and `COLUMN_TYPE_PROMPT` string. The prompt content (from plan.md Phase C): classifies each column descriptor as one of `continuous`, `ordinal`, `categorical`, `binary`, `id`, `unknown`. Ask for JSON array with `{"descriptor": "...", "col_type": "..."}` per element, no explanation.
 
-- [ ] T010 [P] [US3] Inside `extract_column_info()` in `data_check/0_index.R`, for columns where `cls$ambiguous == TRUE`, compute a `sample_values_unique` string: `paste(unique(values[!is.na(values)])[seq_len(min(10, length(unique(values[!is.na(values)]))))], collapse = ", ")`. Store this alongside `col_type = NA` in the column data frame as a transient column (it will be used in T011 and removed before CSV write).
+- [x] T010 [P] [US3] Inside `extract_column_info()` in `data_check/0_index.R`, for columns where `cls$ambiguous == TRUE`, compute a `sample_values_unique` string: `paste(unique(values[!is.na(values)])[seq_len(min(10, length(unique(values[!is.na(values)]))))], collapse = ", ")`. Store this alongside `col_type = NA` in the column data frame as a transient column (it will be used in T011 and removed before CSV write).
 
-- [ ] T011 [US3] After `column_list` is assembled and `columns_df` is built in `data_check/0_index.R`, add the LLM batch step: collect rows where `is.na(columns_df$col_type)`, build descriptor strings (`'"<col_name>" (samples: <sample_values_unique>)'`), cap at `MAX_COL_TYPE_LLM_CALLS * LLM_BATCH_SIZE` columns, call `llm_batch()` with `COLUMN_TYPE_PROMPT`, validate returned `col_type` values against `VALID_COL_TYPES` (map invalid → `"unknown"`), and write back to `columns_df$col_type`.
+- [x] T011 [US3] After `column_list` is assembled and `columns_df` is built in `data_check/0_index.R`, add the LLM batch step: collect rows where `is.na(columns_df$col_type)`, build descriptor strings (`'"<col_name>" (samples: <sample_values_unique>)'`), cap at `MAX_COL_TYPE_LLM_CALLS * LLM_BATCH_SIZE` columns, call `llm_batch()` with `COLUMN_TYPE_PROMPT`, validate returned `col_type` values against `VALID_COL_TYPES` (map invalid → `"unknown"`), and write back to `columns_df$col_type`.
 
-- [ ] T012 [US3] Add the final resolution pass in `data_check/0_index.R` after the LLM step: (1) set any remaining `NA` in `columns_df$col_type` to `"unknown"`; (2) apply full stat suppression — clear numeric stat fields for all rows where `col_type` is not in `c("continuous","continuous_comma_decimal","continuous_outliers_excluded")`; (3) drop the transient `sample_values_unique` column from `columns_df` before `write.csv()`.
+- [x] T012 [US3] Add the final resolution pass in `data_check/0_index.R` after the LLM step: (1) set any remaining `NA` in `columns_df$col_type` to `"unknown"`; (2) apply full stat suppression — clear numeric stat fields for all rows where `col_type` is not in `c("continuous","continuous_comma_decimal","continuous_outliers_excluded")`; (3) drop the transient `sample_values_unique` column from `columns_df` before `write.csv()`.
 
 **Checkpoint**: All three user stories are functional. Ambiguous columns now have LLM-assigned labels. No NA values remain in `col_type`.
 
@@ -112,7 +112,7 @@ All changes are in `data_check/` at the repository root. Two files are modified:
 
 **Purpose**: Regression validation and vocabulary enforcement.
 
-- [ ] T013 Add a vocabulary guard assertion in `data_check/0_index.R` immediately before `write.csv(columns_df, ...)`: `invalid_types <- setdiff(unique(columns_df$col_type), VALID_COL_TYPES); if (length(invalid_types) > 0) warning("Unknown col_type values: ", paste(invalid_types, collapse=", "))`. This surfaces pipeline bugs without crashing.
+- [x] T013 Add a vocabulary guard assertion in `data_check/0_index.R` immediately before `write.csv(columns_df, ...)`: `invalid_types <- setdiff(unique(columns_df$col_type), VALID_COL_TYPES); if (length(invalid_types) > 0) warning("Unknown col_type values: ", paste(invalid_types, collapse=", "))`. This surfaces pipeline bugs without crashing.
 
 - [ ] T014 [P] Run `run_index("0956797620903716")` and manually verify all six success criteria from spec.md: SC-001 (col_type present in all rows), SC-002 (Response time has stats + col_type = "continuous_comma_decimal"), SC-004 (userid = "id"), SC-005 (success = TRUE). Document results as a comment in the commit message.
 

@@ -24,6 +24,10 @@ STRUCTURE_DIR   <- "./data_check/structure"
 ARCHIVE_EXTS    <- c("zip", "gz", "tar", "tgz", "bz2", "xz")
 LLM_BATCH_SIZE  <- 20
 N_DATA_READ     <- 5
+VALID_COL_TYPES <- c("continuous", "binary", "categorical", "ordinal", "date", "id",
+                     "text", "continuous_comma_decimal", "continuous_outliers_excluded",
+                     "empty", "unknown")
+MAX_COL_TYPE_LLM_CALLS <- 5L
 # Folders with more than this many files are treated as aggregate datasets
 AGGREGATE_THRESHOLD <- 50
 # Directory names longer than this many words are truncated; spaces → underscores
@@ -83,6 +87,20 @@ Rules:
   every path must appear verbatim in the output.
 - Output ONLY the JSON array. Do not add any notes, comments, or explanatory
   text before or after the array.'
+
+COLUMN_TYPE_PROMPT <- 'You are classifying columns in psychology research data.
+For each column descriptor return a JSON array (same order).
+Each element: {"descriptor": "<exact descriptor>", "col_type": "<type>"}
+
+col_type — pick one:
+  continuous  : numeric measurement (reaction time, score, rating, age, percentage, etc.)
+  ordinal     : ordered scale with few levels (Likert, ranked preference, grade)
+  categorical : unordered group or category code with few levels (condition, gender, language)
+  binary      : exactly two possible values (yes/no, 0/1, treatment/control)
+  id          : row or participant identifier — unique or nearly-unique integer per row
+  unknown     : cannot determine from name and sample values alone
+
+Output ONLY the JSON array. No notes, no text outside the array.'
 
 # ── Pipeline function ─────────────────────────────────────────────────────────
 
@@ -406,16 +424,49 @@ run_index <- function(paper_id = NA) {
       if (length(vals) == 0) "" else paste(head(vals, N_DATA_READ), collapse = " | ")
     }, character(1))
 
-    col_stats <- lapply(names(df), function(col) {
-      x <- df[[col]]
-      if (!is.numeric(x)) {
-        return(list(n = NA, n_missing = NA, mean = NA, sd = NA, se = NA,
+    # ── Classify each column ───────────────────────────────────────────────────
+    col_classifications <- lapply(names(df), function(col) {
+      classify_col_type_rules(col, df[[col]])
+    })
+
+    col_types <- vapply(col_classifications, function(cls) {
+      if (is.null(cls$col_type) || is.na(cls$col_type)) NA_character_ else cls$col_type
+    }, character(1))
+
+    ambiguous_idx <- vapply(col_classifications, `[[`, logical(1), "ambiguous")
+
+    # Unique sample values for LLM classification of ambiguous columns
+    sample_vals_unique <- vapply(seq_along(names(df)), function(i) {
+      if (!ambiguous_idx[i]) return(NA_character_)
+      x_noNA <- df[[names(df)[i]]]
+      x_noNA <- x_noNA[!is.na(x_noNA)]
+      uniq_v <- unique(x_noNA)[seq_len(min(10, length(unique(x_noNA))))]
+      paste(as.character(uniq_v), collapse = ", ")
+    }, character(1))
+
+    col_stats <- lapply(seq_along(names(df)), function(i) {
+      col <- names(df)[i]
+      cls <- col_classifications[[i]]
+
+      # Determine which numeric vector to use for statistics
+      x_for_stats <- cls$numeric_values
+      if (is.null(x_for_stats) && isTRUE(cls$ambiguous)) {
+        x_for_stats <- df[[col]]  # ambiguous numeric — compute tentative stats
+      }
+
+      if (is.null(x_for_stats)) {
+        # Non-numeric, non-ambiguous: report n/n_missing only
+        x_raw  <- df[[col]]
+        n_miss <- sum(is.na(x_raw))
+        n_val  <- length(x_raw) - n_miss
+        return(list(n = n_val, n_missing = n_miss, mean = NA, sd = NA, se = NA,
                     median = NA, min = NA, max = NA, range = NA,
                     p25 = NA, p75 = NA, iqr = NA, skewness = NA, kurtosis = NA))
       }
-      x_comp <- x[!is.na(x)]
+
+      x_comp <- x_for_stats[!is.na(x_for_stats)]
       n      <- length(x_comp)
-      n_miss <- sum(is.na(x))
+      n_miss <- sum(is.na(x_for_stats))
       if (n == 0) {
         return(list(n = 0L, n_missing = n_miss, mean = NA, sd = NA, se = NA,
                     median = NA, min = NA, max = NA, range = NA,
@@ -449,13 +500,15 @@ run_index <- function(paper_id = NA) {
 
     list(
       columns = data.frame(
-        paper_id      = paper_id,
-        source_file   = rel_path,
-        filename      = basename(path),
-        group         = group,
-        column_name   = names(df),
-        sample_values = sample_vals,
+        paper_id             = paper_id,
+        source_file          = rel_path,
+        filename             = basename(path),
+        group                = group,
+        column_name          = names(df),
+        sample_values        = sample_vals,
+        col_type             = col_types,
         stats_mat,
+        sample_values_unique = sample_vals_unique,
         stringsAsFactors = FALSE,
         row.names     = NULL
       ),
@@ -468,6 +521,48 @@ run_index <- function(paper_id = NA) {
                          group = data_files$group, SIMPLIFY = FALSE)
   column_list  <- Filter(Negate(is.null), column_list)
   columns_df   <- do.call(rbind, lapply(column_list, `[[`, "columns"))
+
+  # ── LLM classification for ambiguous columns ──────────────────────────────
+  if (!is.null(columns_df) && nrow(columns_df) > 0 && any(is.na(columns_df$col_type))) {
+    ambig_rows <- which(is.na(columns_df$col_type))
+    max_cols   <- MAX_COL_TYPE_LLM_CALLS * LLM_BATCH_SIZE
+    if (length(ambig_rows) > max_cols) ambig_rows <- ambig_rows[seq_len(max_cols)]
+    descriptors <- paste0('"', columns_df$column_name[ambig_rows], '"',
+                          " (samples: ", columns_df$sample_values_unique[ambig_rows], ")")
+    message("── LLM col_type: classifying ", length(ambig_rows), " ambiguous column(s)")
+    llm_result <- tryCatch(
+      llm_batch(
+        paths         = descriptors,
+        system_prompt = COLUMN_TYPE_PROMPT,
+        user_prefix   = "Classify each column:",
+        key_col       = "descriptor",
+        extra_cols    = "col_type",
+        fallback_vals = list(col_type = "unknown")
+      ),
+      error = function(e) {
+        warning("LLM col_type batch failed: ", conditionMessage(e))
+        data.frame(descriptor = descriptors,
+                   col_type   = rep("unknown", length(descriptors)),
+                   stringsAsFactors = FALSE)
+      }
+    )
+    returned_types <- llm_result$col_type
+    returned_types[!returned_types %in% VALID_COL_TYPES] <- "unknown"
+    columns_df$col_type[ambig_rows] <- returned_types
+  }
+
+  # ── Final cleanup: fallback NAs, stat suppression, drop transient column ──
+  if (!is.null(columns_df) && nrow(columns_df) > 0) {
+    columns_df$col_type[is.na(columns_df$col_type)] <- "unknown"
+    stat_cols     <- c("mean", "sd", "se", "median", "min", "max", "range",
+                       "p25", "p75", "iqr", "skewness", "kurtosis")
+    numeric_types <- c("continuous", "continuous_comma_decimal",
+                       "continuous_outliers_excluded")
+    suppress_rows <- !columns_df$col_type %in% numeric_types
+    columns_df[suppress_rows, stat_cols] <- NA
+    columns_df$sample_values_unique <- NULL
+  }
+
   is_raw_flags <- setNames(
     vapply(column_list, `[[`, logical(1), "is_raw"),
     vapply(column_list, function(x) x$columns$source_file[1], character(1))
@@ -488,7 +583,10 @@ run_index <- function(paper_id = NA) {
   message("── Saved structure → ", structure_out)
 
   if (!is.null(columns_df) && nrow(columns_df) > 0) {
-    columns_out <- file.path(STRUCTURE_DIR, paste0(paper_id, "_columns.csv"))
+    columns_out   <- file.path(STRUCTURE_DIR, paste0(paper_id, "_columns.csv"))
+    invalid_types <- setdiff(unique(columns_df$col_type), VALID_COL_TYPES)
+    if (length(invalid_types) > 0)
+      warning("Unknown col_type values: ", paste(invalid_types, collapse = ", "))
     write.csv(columns_df, columns_out, row.names = FALSE)
     message("── Saved columns  → ", columns_out,
             "  (", nrow(columns_df), " rows across ",

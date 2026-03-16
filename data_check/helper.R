@@ -140,6 +140,79 @@ classify_by_rules <- function(path) {
   list(label = NA_character_, certain = FALSE)
 }
 
+# ── Column type classification ─────────────────────────────────────────────────
+
+# Rule-based classification of a single data column.
+# Returns list(col_type, ambiguous, numeric_values):
+#   col_type      : character label from VALID_COL_TYPES, or NA when LLM is needed
+#   ambiguous     : TRUE when the column should be sent to the LLM
+#   numeric_values: numeric vector for stat computation (may be normalised),
+#                   or NULL when the column is non-numeric
+classify_col_type_rules <- function(col_name, values) {
+  x_noNA  <- values[!is.na(values)]
+  n_noNA  <- length(x_noNA)
+
+  # Rule 1: all NA
+  if (n_noNA == 0)
+    return(list(col_type = "empty", ambiguous = FALSE, numeric_values = NULL))
+
+  n_unique <- length(unique(x_noNA))
+
+  # Rule 2: binary (≤ 2 unique non-NA values)
+  if (n_unique <= 2)
+    return(list(col_type = "binary", ambiguous = FALSE, numeric_values = NULL))
+
+  # Rule 3: ID column — name matches common ID patterns AND all non-NA values
+  #         are whole numbers (integer or near-integer numeric)
+  id_pat <- "(?i)(^|\\b)(id|subj|subject|participant|pp|ppt|pid|respondent)(\\b|$|[_\\-]?\\d)"
+  if (grepl(id_pat, col_name, perl = TRUE)) {
+    vals_num <- suppressWarnings(as.numeric(as.character(x_noNA)))
+    if (!any(is.na(vals_num)) && all(vals_num == floor(vals_num)))
+      return(list(col_type = "id", ambiguous = FALSE, numeric_values = NULL))
+  }
+
+  # Rule 4: date — try as.Date on a sample of up to 20 unique string values
+  char_sample <- as.character(unique(x_noNA))[seq_len(min(20, n_unique))]
+  n_date_ok   <- sum(vapply(char_sample, function(v) {
+    tryCatch(!is.na(as.Date(v)), warning = function(w) FALSE, error = function(e) FALSE)
+  }, logical(1)))
+  if (n_date_ok / length(char_sample) >= 0.70)
+    return(list(col_type = "date", ambiguous = FALSE, numeric_values = NULL))
+
+  # Rule 5: free text — long median string length
+  if (median(nchar(as.character(x_noNA))) > 40)
+    return(list(col_type = "text", ambiguous = FALSE, numeric_values = NULL))
+
+  # Rule 6: numeric column
+  if (is.numeric(values)) {
+    if (n_unique > 20)
+      return(list(col_type = "continuous", ambiguous = FALSE, numeric_values = values))
+    # 3–20 unique values → ambiguous (LLM decides ordinal/categorical/continuous/binary)
+    return(list(col_type = NA_character_, ambiguous = TRUE, numeric_values = values))
+  }
+
+  # Rule 7: comma-decimal normalisation for character columns
+  x_sub  <- suppressWarnings(as.numeric(gsub(",", ".", as.character(x_noNA), fixed = TRUE)))
+  pct_ok <- sum(!is.na(x_sub)) / n_noNA
+  if (pct_ok >= 0.95) {
+    num_vec <- suppressWarnings(as.numeric(gsub(",", ".", as.character(values), fixed = TRUE)))
+    return(list(col_type = "continuous_comma_decimal", ambiguous = FALSE,
+                numeric_values = num_vec))
+  }
+  if (pct_ok >= 0.80) {
+    num_vec <- suppressWarnings(as.numeric(gsub(",", ".", as.character(values), fixed = TRUE)))
+    return(list(col_type = "continuous_outliers_excluded", ambiguous = FALSE,
+                numeric_values = num_vec))
+  }
+
+  # Rule 8: categorical (character, few short unique values)
+  if (n_unique <= 10 && median(nchar(as.character(x_noNA))) <= 20)
+    return(list(col_type = "categorical", ambiguous = FALSE, numeric_values = NULL))
+
+  # Rule 9: text fallback for character columns
+  list(col_type = "text", ambiguous = FALSE, numeric_values = NULL)
+}
+
 # ── LLM helpers ───────────────────────────────────────────────────────────────
 
 # Strip markdown fences and stray backticks the LLM may add around values
