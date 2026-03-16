@@ -162,13 +162,15 @@ classify_col_type_rules <- function(col_name, values) {
   if (n_unique <= 2)
     return(list(col_type = "binary", ambiguous = FALSE, numeric_values = NULL))
 
-  # Rule 3: ID column — name matches common ID patterns AND all non-NA values
-  #         are whole numbers (integer or near-integer numeric)
+  # Rule 3: possible ID column — name matches common ID patterns AND all non-NA
+  #         values are whole numbers.  Route to LLM rather than hard-classifying
+  #         because ID columns appear in too many forms to rule-classify reliably.
   id_pat <- "(?i)(^|\\b)(id|subj|subject|participant|pp|ppt|pid|respondent)(\\b|$|[_\\-]?\\d)"
   if (grepl(id_pat, col_name, perl = TRUE)) {
     vals_num <- suppressWarnings(as.numeric(as.character(x_noNA)))
     if (!any(is.na(vals_num)) && all(vals_num == floor(vals_num)))
-      return(list(col_type = "id", ambiguous = FALSE, numeric_values = NULL))
+      return(list(col_type = NA_character_, ambiguous = TRUE,
+                  numeric_values = suppressWarnings(as.numeric(as.character(values)))))
   }
 
   # Rule 4: date — try as.Date on a sample of up to 20 unique string values
