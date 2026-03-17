@@ -20,7 +20,7 @@ llm_model("ollama/gpt-oss:20b-cloud")
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-STRUCTURE_DIR          <- "./data_check/structure"
+OUTPUT_DIR             <- "./data_check/outputs"
 LLM_BATCH_SIZE         <- 20L   # shared constant — needed by llm_batch() in helper.R
 MAX_CODEBOOK_LLM_CALLS <- 3L    # max LLM calls per paper for codebook text parsing
 MAX_CODEBOOK_FILE_MB   <- 100   # codebook files larger than this (MB) are skipped
@@ -56,8 +56,8 @@ run_codebook_label <- function(paper_id) {
 
   # ── 1. Load inputs ──────────────────────────────────────────────────────────
 
-  structure_path <- file.path(STRUCTURE_DIR, paste0(paper_id, "_structure.csv"))
-  columns_path   <- file.path(STRUCTURE_DIR, paste0(paper_id, "_columns.csv"))
+  structure_path <- file.path(paper_output_dir(paper_id), "structure.csv")
+  columns_path   <- file.path(paper_output_dir(paper_id), "columns.csv")
 
   if (!file.exists(structure_path))
     stop("Structure file not found: ", structure_path,
@@ -134,7 +134,7 @@ run_codebook_label <- function(paper_id) {
 
   # ── 5. Write _labels.csv ─────────────────────────────────────────────────────
 
-  labels_out <- file.path(STRUCTURE_DIR, paste0(paper_id, "_labels.csv"))
+  labels_out <- file.path(paper_output_dir(paper_id), "labels.csv")
   write.csv(labels_df, labels_out, row.names = FALSE)
   n_labelled <- sum(labels_df$label_status == "labelled")
   message("── Saved labels → ", labels_out,
@@ -173,7 +173,7 @@ run_codebook_label <- function(paper_id) {
 
   # ── 7. Write _codebook_coverage.csv ──────────────────────────────────────────
 
-  coverage_out <- file.path(STRUCTURE_DIR, paste0(paper_id, "_codebook_coverage.csv"))
+  coverage_out <- file.path(paper_output_dir(paper_id), "codebook_coverage.csv")
   write.csv(coverage_df, coverage_out, row.names = FALSE)
   n_matched <- sum(coverage_df$match_status == "matched")
   message("── Saved coverage → ", coverage_out,

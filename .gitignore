@@ -24,6 +24,7 @@ pythonLevi/
 ./data_check/*.xlsx
 data_check/data/
 data_check/structure/
+data_check/outputs/*/
 
 
 ./output

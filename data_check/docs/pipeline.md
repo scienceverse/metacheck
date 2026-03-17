@@ -86,8 +86,8 @@ Paper ID (character string)
 └──────────┬──────────┘
            ▼
 ┌─────────────────────┐
-│  10. Write outputs  │  structure/<paper_id>_structure.csv  (one row per file)
-│                     │  structure/<paper_id>_columns.csv   (one row per column)
+│  10. Write outputs  │  outputs/<paper_id>/structure.csv  (one row per file)
+│                     │  outputs/<paper_id>/columns.csv   (one row per column)
 └──────────┬──────────┘
            ▼
 ┌─────────────────────┐
@@ -98,10 +98,10 @@ Paper ID (character string)
            ▼
 ┌─────────────────────┐
 │  12. Codebook       │  2_codebook_label.R  run_codebook_label(paper_id)
-│      labelling      │  Reads: _structure.csv (codebook/readme files)
-│                     │         _columns.csv (data columns to label)
-│                     │  Writes: _labels.csv        (one row per data column)
-│                     │          _codebook_coverage.csv (one row per codebook var)
+│      labelling      │  Reads: outputs/<paper_id>/structure.csv (codebook/readme files)
+│                     │         outputs/<paper_id>/columns.csv   (data columns to label)
+│                     │  Writes: outputs/<paper_id>/labels.csv        (one row per data column)
+│                     │          outputs/<paper_id>/codebook_coverage.csv (one row per codebook var)
 └─────────────────────┘
 ```
 
@@ -111,6 +111,7 @@ Paper ID (character string)
 
 | Constant | Value | Script | Purpose |
 |---|---|---|---|
+| `OUTPUT_DIR` | `./data_check/outputs` | `0_index.R`, `1_data_label.R`, `2_codebook_label.R` | Root directory for per-paper output subdirectories |
 | `LLM_BATCH_SIZE` | 20 | `0_index.R`, `2_codebook_label.R` | Paths per LLM call |
 | `N_DATA_READ` | 5 | `0_index.R` | Rows sampled per data file |
 | `MAX_COL_TYPE_LLM_CALLS` | 5 | `0_index.R` | Max LLM calls for column classification (= 100 columns max) |
