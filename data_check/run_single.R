@@ -16,6 +16,10 @@
 source("./data_check/0_index.R")
 source("./data_check/2_codebook_label.R")
 
+# Change these to the models you are actually using! I can recommend gpt-oss:20b
+llm_use(TRUE)
+llm_model("ollama/gpt-oss:20b-cloud")
+
 local({
 
   # ── Discover all papers ─────────────────────────────────────────────────────
