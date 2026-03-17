@@ -9,6 +9,8 @@ Auto-generated from all feature plans. Last updated: 2026-03-17
 - Extends `structure/<paper_id>_labels.csv` with new `label_method` column; no new files (006-llm-fuzzy-matching)
 - R (base R only, no new packages) + `metacheck`, `haven`, `readxl`, `jsonlite` — all already presen (007-per-id-output-structure)
 - CSV files on local filesystem; `outputs/<paper_id>/` directories (007-per-id-output-structure)
+- R (base R only, no new packages) + `metacheck`, `haven`, `readxl` — already present; `helper.R` (shared helpers) (008-bulk-label-runners)
+- CSV files on local filesystem; `outputs/<paper_id>/` directories (from feature 007) (008-bulk-label-runners)
 
 - R (base R, no new packages) + `helper.R` (`classify_col_type_rules()`), `0_index.R` (`COLUMN_TYPE_PROMPT`, `run_index()`) (004-reduce-unknown-coltypes)
 
@@ -28,9 +30,9 @@ tests/
 R (base R, no new packages): Follow standard conventions
 
 ## Recent Changes
+- 008-bulk-label-runners: Added R (base R only, no new packages) + `metacheck`, `haven`, `readxl` — already present; `helper.R` (shared helpers)
 - 007-per-id-output-structure: Added R (base R only, no new packages) + `metacheck`, `haven`, `readxl`, `jsonlite` — all already presen
 - 006-llm-fuzzy-matching: Added R (base R only — no new packages) + `llm()` from `metacheck`; `jsonlite::fromJSON`, `extract_json()` — all already presen
-- 005-codebook-column-labelling: Added R (base R only — no new packages; `haven`/`readxl`/`jsonlite` already present) + `llm_batch()`, `extract_json()` (existing helpers in `helper.R`); `jsonlite::fromJSON`
 
 
 <!-- MANUAL ADDITIONS START -->
@@ -54,6 +56,7 @@ The `docs/` directory contains the canonical documentation for this pipeline.
 - When adding a new error code → update the Error Codes table in `output-schemas.md`
 - When adding a new output CSV column → add it to the relevant schema table in `output-schemas.md`
 - When committing a new feature or writing a PR → add it to/update `progress.md`
+- All PRs MUST target `dev`, not `main`
 
 
 <!-- MANUAL ADDITIONS END -->

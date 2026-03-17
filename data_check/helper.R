@@ -434,7 +434,7 @@ parse_codebook <- function(path) {
   # ── Structured extraction (rule-based) ──────────────────────────────────────
   result <- tryCatch({
     switch(ext,
-      csv = , tsv = , txt = , dat = {
+      csv = , tsv = , dat = {
         sep <- if (ext == "tsv") "\t" else sniff_delimiter(path)
         df  <- read.delim(path, sep = sep, check.names = FALSE,
                           stringsAsFactors = FALSE)

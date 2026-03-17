@@ -12,6 +12,7 @@ source("./data_check/0_index.R")
 N_RUNS      <- Inf          # Inf = all papers; set an integer to cap
 SEED        <- NULL         # set an integer for reproducibility, or NULL
 SUMMARY_CSV <- "./data_check/bulk_summary.csv"
+DOWNLOAD    <- FALSE        # Whether the script should attempt downloads or not
 
 if (!is.null(SEED)) set.seed(SEED)
 
@@ -99,20 +100,20 @@ for (i in seq_along(remaining_ids)) {
               i, n_total, n_prior + i, n_prior + n_total, pid))
   cat("══════════════════════════════════════════════════════════════════════\n")
 
-  run_once <- function() {
+  run_once <- function(download = TRUE) {
     tryCatch(
-      run_index(paper_id = pid),
+      run_index(paper_id = pid, download = download),
       error = function(e) {
         msg <- conditionMessage(e)
-        # If the folder is empty, delete it and retry the download once
-        if (grepl("^empty_repo:", msg)) {
+        # If the folder is empty, delete it and retry the download once only if download = TRUE
+        if (grepl("^empty_repo:", msg) && download) {
           empty_dir <- file.path(DATA_DIR, pid)
           if (dir.exists(empty_dir)) {
             message("  empty_repo — deleting empty folder and retrying: ", empty_dir)
             unlink(empty_dir, recursive = TRUE)
           }
           tryCatch(
-            run_index(paper_id = pid),
+            run_index(paper_id = pid, download = download),
             error = function(e2) {
               message("  FAILED (retry): ", conditionMessage(e2))
               list(
@@ -150,7 +151,7 @@ for (i in seq_along(remaining_ids)) {
     )
   }
 
-  result <- run_once()
+  result <- run_once(download = DOWNLOAD)
 
   append_summary_row(result)
 }
@@ -182,7 +183,7 @@ if (n_fail > 0) {
 }
 
 if (n_ok > 0) {
-  ok_times <- summary_df$elapsed_sec[summary_df$success]
+  ok_times <- summary_df$elapsed_ms[summary_df$success] / 1000
   cat(sprintf(
     "\n── Elapsed time (successful runs):\n   mean=%.1fs  median=%.1fs  min=%.1fs  max=%.1fs\n",
     mean(ok_times), median(ok_times), min(ok_times), max(ok_times)
