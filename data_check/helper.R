@@ -604,7 +604,7 @@ parse_codebook <- function(path) {
 match_column_labels <- function(columns_df, codebook_vars_df,
                                 column_match_prompt = NULL,
                                 label_merge_prompt  = NULL) {
-  # Support both "group" (0_index schema) and "experiment_group" (1_data_label schema)
+  # Support both "group" and "experiment_group" column names (historic schema variants)
   col_group <- if ("group" %in% names(columns_df)) columns_df$group else
                if ("experiment_group" %in% names(columns_df)) columns_df$experiment_group else
                rep(NA_character_, nrow(columns_df))

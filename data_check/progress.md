@@ -4,6 +4,12 @@
 
 ### Completed ✅
 
+**011** — merge-columns-output (branch: `011-merge-columns-output`)
+- Delete `1_data_label.R` and `run_1_label_bulk.R` — stage 1 was overwriting stage 0's rich `columns.csv` (23 cols) with a thin 5-col version; stage 1 provided no unique value
+- Recovery: re-run `run_index(paper_id, download=FALSE)` for all 47 papers whose `columns.csv` was thinned by stage 1
+- Remove stale references to deleted files in `helper.R`, `2_codebook_label.R`, `run_2_codebook_bulk.R`
+- Update `docs/pipeline.md` — remove stage-1 rows from scripts table and constants table
+
 **010** — fix-label-ambiguity (branch: `010-fix-label-ambiguity`)
 - Add `normalize_label()` to `helper.R` — strips possessives, punctuation, and pluralising "s" for label comparison
 - Add two-tier conflict resolution in `match_column_labels()` (rule-based tier first, LLM merge tier second)

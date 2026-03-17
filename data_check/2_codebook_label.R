@@ -94,7 +94,7 @@ run_codebook_label <- function(paper_id) {
   columns_df   <- read.csv(columns_path,   stringsAsFactors = FALSE,
                             colClasses = c(paper_id = "character"))
 
-  # Support both "group" (0_index schema) and "experiment_group" (1_data_label schema)
+  # Support both "group" and "experiment_group" column names (historic schema variants)
   col_group <- if ("group" %in% names(columns_df)) columns_df$group else
                if ("experiment_group" %in% names(columns_df)) columns_df$experiment_group else
                rep(NA_character_, nrow(columns_df))
