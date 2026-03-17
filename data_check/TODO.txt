@@ -60,3 +60,9 @@ PIPELINE: general / future
       separate sheets of one workbook. Each sheet should be treated as a
       separate logical file, producing its own rows in the columns CSV.
       Location: read_data_head() in helper.R
+
+
+
+N unique voor sumstats
+
+Labels vanuit codebook kunnen beter verbatim, niet verklaeint/geinterpreteerd
