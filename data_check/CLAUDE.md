@@ -11,6 +11,7 @@ Auto-generated from all feature plans. Last updated: 2026-03-17
 - CSV files on local filesystem; `outputs/<paper_id>/` directories (007-per-id-output-structure)
 - R (base R only, no new packages) + `metacheck`, `haven`, `readxl` — already present; `helper.R` (shared helpers) (008-bulk-label-runners)
 - CSV files on local filesystem; `outputs/<paper_id>/` directories (from feature 007) (008-bulk-label-runners)
+- R (base R + already-installed packages: `officer`, `pdftools`, `haven`, `readxl`) + `officer` (DOCX), `pdftools` (PDF) — both already installed (009-multi-format-codebooks)
 
 - R (base R, no new packages) + `helper.R` (`classify_col_type_rules()`), `0_index.R` (`COLUMN_TYPE_PROMPT`, `run_index()`) (004-reduce-unknown-coltypes)
 
@@ -30,9 +31,9 @@ tests/
 R (base R, no new packages): Follow standard conventions
 
 ## Recent Changes
+- 009-multi-format-codebooks: Added R (base R + already-installed packages: `officer`, `pdftools`, `haven`, `readxl`) + `officer` (DOCX), `pdftools` (PDF) — both already installed
 - 008-bulk-label-runners: Added R (base R only, no new packages) + `metacheck`, `haven`, `readxl` — already present; `helper.R` (shared helpers)
 - 007-per-id-output-structure: Added R (base R only, no new packages) + `metacheck`, `haven`, `readxl`, `jsonlite` — all already presen
-- 006-llm-fuzzy-matching: Added R (base R only — no new packages) + `llm()` from `metacheck`; `jsonlite::fromJSON`, `extract_json()` — all already presen
 
 
 <!-- MANUAL ADDITIONS START -->

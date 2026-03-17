@@ -188,6 +188,12 @@ One row per column in each data file (parallel to `columns.csv`). Produced by `2
 | `no_codebook` | Paper has no codebook or readme files; entire paper is unlabelled |
 | `llm` | Matched by secondary LLM pass after rule-based matching found no match |
 
+### Codebook Parse Status (per-file, console warnings only — not in output CSVs)
+
+| Status | Meaning |
+|---|---|
+| `parse_failed` | File could not be read or yielded no extractable text (< 10 chars); emitted as a `warning()` and the file is skipped; other codebook files for the same paper are still attempted |
+
 ---
 
 ## `outputs/<paper_id>/codebook_coverage.csv`

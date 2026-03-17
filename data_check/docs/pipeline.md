@@ -106,6 +106,10 @@ Paper ID (character string)
 │                     │         outputs/<paper_id>/columns.csv   (data columns to label)
 │                     │  Writes: outputs/<paper_id>/labels.csv        (one row per data column)
 │                     │          outputs/<paper_id>/codebook_coverage.csv (one row per codebook var)
+│                     │  Codebook formats: csv/tsv/xlsx/xls/sav/dta (rule-based)
+│                     │                    docx/pdf/rtf/odt/doc (text extraction via officer/pdftools)
+│                     │                    plain text (LLM chunking)
+│                     │  Dependencies: officer (≥0.7.0), pdftools (≥3.0.0) — already installed
 └─────────────────────┘
 ```
 
