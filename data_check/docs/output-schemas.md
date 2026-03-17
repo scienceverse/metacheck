@@ -4,7 +4,7 @@ Five CSV files are produced per paper run (three from `0_index.R`, two from `2_c
 
 ---
 
-## `structure/<paper_id>_structure.csv`
+## `outputs/<paper_id>/structure.csv`
 
 One row per file discovered in the paper's OSF repository.
 
@@ -44,7 +44,7 @@ One row per file discovered in the paper's OSF repository.
 
 ---
 
-## `structure/<paper_id>_columns.csv`
+## `outputs/<paper_id>/columns.csv`
 
 One row per column in each data file classified as `type = "data"`.
 
@@ -53,7 +53,7 @@ One row per column in each data file classified as `type = "data"`.
 | `paper_id` | character | Paper identifier |
 | `source_file` | character | Relative path to the source data file |
 | `filename` | character | Basename of the source file |
-| `group` | character | Experiment group inherited from `_structure.csv` |
+| `group` | character | Experiment group inherited from `structure.csv` |
 | `column_name` | character | Column name as it appears in the data file |
 | `sample_values` | character | First up to 5 non-NA values, pipe-separated (`\|`) |
 | `col_type` | character | Classified column type — see [Column Types](#column-types) |
@@ -128,14 +128,14 @@ runner to resume after a crash.
 
 ---
 
-## `structure/<paper_id>_labels.csv`
+## `outputs/<paper_id>/labels.csv`
 
-One row per column in each data file (parallel to `_columns.csv`). Produced by `2_codebook_label.R`.
+One row per column in each data file (parallel to `columns.csv`). Produced by `2_codebook_label.R`.
 
 | Column | Type | Description |
 |---|---|---|
 | `paper_id` | character | Paper identifier (leading zeros preserved) |
-| `source_file` | character | Relative path to the source data file (join key to `_columns.csv`) |
+| `source_file` | character | Relative path to the source data file (join key to `columns.csv`) |
 | `column_name` | character | Column name as it appears in the data file |
 | `group` | character | Experiment group inherited from `_columns.csv` |
 | `label` | character | Human-readable label/description from the matched codebook variable; `NA` if unlabelled |
@@ -157,7 +157,7 @@ One row per column in each data file (parallel to `_columns.csv`). Produced by `
 
 ---
 
-## `structure/<paper_id>_codebook_coverage.csv`
+## `outputs/<paper_id>/codebook_coverage.csv`
 
 One row per variable extracted from any codebook/readme file. Produced by `2_codebook_label.R`.
 

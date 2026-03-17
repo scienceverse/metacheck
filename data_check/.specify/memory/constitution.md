@@ -1,18 +1,17 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: [template] → 1.0.0
-Modified principles: N/A (initial ratification — all principles are new)
-Added sections:
-  - Core Principles (I–V)
-  - Technical Standards
-  - Pipeline Workflow
-  - Governance
-Removed sections: None (template placeholders replaced)
+Version change: 1.0.0 → 1.0.1 (PATCH — wording update)
+Modified principles: None
+Changed sections:
+  - Pipeline Workflow step 7: output path updated from
+    `structure/<paper_id>_*.csv` to `outputs/<paper_id>/`
+    (reflects feature 007-per-id-output-structure)
+Removed sections: None
 Templates requiring updates:
-  - .specify/templates/plan-template.md  ✅ Constitution Check section present; gates align
-  - .specify/templates/spec-template.md  ✅ No principle-driven mandatory sections require changes
-  - .specify/templates/tasks-template.md ✅ Task phases compatible with pipeline workflow
+  - .specify/templates/plan-template.md  ✅ No change required
+  - .specify/templates/spec-template.md  ✅ No change required
+  - .specify/templates/tasks-template.md ✅ No change required
 Follow-up TODOs:
   - TODO(RATIFICATION_DATE): Original adoption date unknown — mark when first committed to main.
 -->
@@ -108,7 +107,7 @@ The canonical processing order for a single paper is:
    LLM call budget exceeded
 5. Read data heads via `read_data_head()` for files classified as `data`
 6. Extract column statistics
-7. Write `<paper_id>_structure.csv` and `<paper_id>_columns.csv` to `structure/`
+7. Write `structure.csv` and `columns.csv` to `outputs/<paper_id>/`
 8. Append result row to `bulk_summary.csv`
 
 Any deviation from this order MUST be documented in the relevant feature spec with justification.
@@ -130,4 +129,4 @@ require:
 
 All new features MUST be validated against Principles I–V before merging to `main`.
 
-**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): set when first committed to main | **Last Amended**: 2026-03-16
+**Version**: 1.0.1 | **Ratified**: TODO(RATIFICATION_DATE): set when first committed to main | **Last Amended**: 2026-03-17

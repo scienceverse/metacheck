@@ -11,7 +11,7 @@ library(metacheck)
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-STRUCTURE_DIR <- "./data_check/structure"
+OUTPUT_DIR <- "./data_check/outputs"
 
 
 # ── Input ─────────────────────────────────────────────────────────────────────
@@ -20,7 +20,7 @@ paper_id <- "09567976231220902"
 
 # ── 1. Load structure index ───────────────────────────────────────────────────
 
-structure_path <- file.path(STRUCTURE_DIR, paste0(paper_id, "_structure.csv"))
+structure_path <- file.path(paper_output_dir(paper_id), "structure.csv")
 
 if (!file.exists(structure_path)) {
   stop("Structure file not found: ", structure_path,
@@ -124,6 +124,6 @@ if (is.null(columns_df) || nrow(columns_df) == 0) {
 
 # ── 3. Save ───────────────────────────────────────────────────────────────────
 
-out_path <- file.path(STRUCTURE_DIR, paste0(paper_id, "_columns.csv"))
+out_path <- file.path(paper_output_dir(paper_id), "columns.csv")
 write.csv(columns_df, out_path, row.names = FALSE)
 message("── Saved column index (", nrow(columns_df), " rows) → ", out_path)

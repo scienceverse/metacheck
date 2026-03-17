@@ -20,7 +20,7 @@ llm_model("ollama/gpt-oss:20b-cloud")
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 DATA_DIR        <- "./data_check/data"
-STRUCTURE_DIR   <- "./data_check/structure"
+OUTPUT_DIR      <- "./data_check/outputs"
 ARCHIVE_EXTS    <- c("zip", "gz", "tar", "tgz", "bz2", "xz")
 LLM_BATCH_SIZE  <- 20
 N_DATA_READ     <- 5
@@ -129,7 +129,6 @@ run_index <- function(paper_id = NA, download = TRUE) {
   stopifnot(!is.null(paper$id))
 
   target_dir <- file.path(DATA_DIR, paper_id)
-  if (!dir.exists(STRUCTURE_DIR)) dir.create(STRUCTURE_DIR, recursive = TRUE)
 
   # ── 1. Download ─────────────────────────────────────────────────────────────
 
@@ -393,7 +392,7 @@ run_index <- function(paper_id = NA, download = TRUE) {
 
   # ── 8. Save structure ────────────────────────────────────────────────────────
 
-  structure_out <- file.path(STRUCTURE_DIR, paste0(paper_id, "_structure.csv"))
+  structure_out <- file.path(paper_output_dir(paper_id), "structure.csv")
   cat("\n── File inventory ──────────────────────────────\n")
   print(table(paste0(file_df$type, " / ", file_df$group)))
 
@@ -616,7 +615,7 @@ run_index <- function(paper_id = NA, download = TRUE) {
   message("── Saved structure → ", structure_out)
 
   if (!is.null(columns_df) && nrow(columns_df) > 0) {
-    columns_out   <- file.path(STRUCTURE_DIR, paste0(paper_id, "_columns.csv"))
+    columns_out   <- file.path(paper_output_dir(paper_id), "columns.csv")
     invalid_types <- setdiff(unique(columns_df$col_type), VALID_COL_TYPES)
     if (length(invalid_types) > 0)
       warning("Unknown col_type values: ", paste(invalid_types, collapse = ", "))

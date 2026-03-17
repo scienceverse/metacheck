@@ -1,5 +1,17 @@
 # Progress Log
 
+## 2026-03-17
+
+### In Progress 🔧
+
+**007** — per-id-output-structure (branch: `007-per-id-output-structure`)
+- Replace flat `structure/` output directory with `outputs/<paper_id>/` per-paper layout
+- Add `paper_output_dir()` helper to `helper.R` (centralised path + auto-create)
+- Update `0_index.R`, `1_data_label.R`, `2_codebook_label.R` to write to `outputs/<paper_id>/`
+- Migrate 59 existing CSVs from `structure/` → `outputs/<paper_id>/` via `migrate_structure.R`
+- Short filenames inside per-ID dirs (no paper-ID prefix): `structure.csv`, `columns.csv`, `labels.csv`, `codebook_coverage.csv`
+- `bulk_summary.csv` and resume logic unchanged
+
 ## 2026-03-16
 
 ### PRs Merged ✅
