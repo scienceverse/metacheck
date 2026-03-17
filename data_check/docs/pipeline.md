@@ -8,10 +8,8 @@ contents using an LLM, and extracts column-level statistics into structured CSVs
 | Script | Purpose |
 |---|---|
 | `run_index_bulk.R` | Process all papers through the index stage. Crash-resilient, auto-resumes from `bulk_summary.csv`. |
-| `run_label_bulk.R` | Run data-label stage across all papers with `structure.csv`. Auto-resumes from `label_summary.csv`. |
 | `run_codebook_bulk.R` | Run codebook-label stage across all papers with `columns.csv`. Auto-resumes from `codebook_summary.csv`. |
 | `0_index.R` (`run_index()`) | Process a single paper by ID. Called by the index bulk runner. |
-| `1_data_label.R` (`run_data_label()`) | Extract column names for a single paper. Called by the label bulk runner. |
 | `2_codebook_label.R` (`run_codebook_label()`) | Label columns against codebooks for a single paper. Called by the codebook bulk runner. |
 
 ---
@@ -123,7 +121,7 @@ Paper ID (character string)
 
 | Constant | Value | Script | Purpose |
 |---|---|---|---|
-| `OUTPUT_DIR` | `./data_check/outputs` | `0_index.R`, `1_data_label.R`, `2_codebook_label.R` | Root directory for per-paper output subdirectories |
+| `OUTPUT_DIR` | `./data_check/outputs` | `0_index.R`, `2_codebook_label.R` | Root directory for per-paper output subdirectories |
 | `LLM_BATCH_SIZE` | 20 | `0_index.R`, `2_codebook_label.R` | Paths per LLM call |
 | `N_DATA_READ` | 5 | `0_index.R` | Rows sampled per data file |
 | `MAX_COL_TYPE_LLM_CALLS` | 5 | `0_index.R` | Max LLM calls for column classification (= 100 columns max) |

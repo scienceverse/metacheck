@@ -28,7 +28,7 @@ eligible_ids <- all_ids[
 
 if (length(eligible_ids) == 0) {
   stop("No eligible papers found in ", outputs_root,
-       " — run run_label_bulk.R first to produce columns.csv files.")
+       " — run run_index_bulk.R first to produce columns.csv files.")
 }
 
 # ── Load prior progress ───────────────────────────────────────────────────────
