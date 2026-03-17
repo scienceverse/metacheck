@@ -58,6 +58,21 @@ Rules:
 - If no confident matches exist, return an empty array: []
 - Output ONLY the JSON array. No notes, no text outside the array.'
 
+LABEL_MERGE_PROMPT <- 'You are reviewing whether multiple label definitions for the same
+variable in a psychology research dataset are semantically equivalent.
+
+You will receive a JSON array of objects, each with "column" and "labels" fields.
+Return a JSON array — one object per input variable.
+Each object: {"column": "<column_name>", "equivalent": true/false, "canonical": "<best label or null>"}
+
+Rules:
+- equivalent: true if all listed labels describe the same construct (synonyms, different
+  phrasings, or value-coding notation for the same concept as a semantic label)
+- canonical: if equivalent=true, return the most human-readable, informative single label;
+  if equivalent=false, set to null
+- Do NOT mark as equivalent if labels describe genuinely different constructs or scales
+- Output ONLY the JSON array. No notes, no text outside the array.'
+
 # ── Pipeline function ─────────────────────────────────────────────────────────
 
 run_codebook_label <- function(paper_id) {
@@ -142,7 +157,8 @@ run_codebook_label <- function(paper_id) {
 
     # ── 4. Match columns against codebook ──────────────────────────────────────
     labels_df <- match_column_labels(columns_df, codebook_vars_df,
-                                     column_match_prompt = COLUMN_MATCH_PROMPT)
+                                     column_match_prompt = COLUMN_MATCH_PROMPT,
+                                     label_merge_prompt  = LABEL_MERGE_PROMPT)
   }
 
   # ── 5. Write _labels.csv ─────────────────────────────────────────────────────

@@ -109,6 +109,10 @@ Paper ID (character string)
 │                     │  Codebook formats: csv/tsv/xlsx/xls/sav/dta (rule-based)
 │                     │                    docx/pdf/rtf/odt/doc (text extraction via officer/pdftools)
 │                     │                    plain text (LLM chunking)
+│                     │  Conflict resolution: multi-label columns resolved by rule-based
+│                     │  normalisation first (normalize_label()), then LLM batch if still
+│                     │  conflicting (LABEL_MERGE_PROMPT, 1 call/paper) — sets
+│                     │  label_method = "merged_rules" or "merged_llm"
 │                     │  Dependencies: officer (≥0.7.0), pdftools (≥3.0.0) — already installed
 └─────────────────────┘
 ```

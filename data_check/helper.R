@@ -341,6 +341,21 @@ normalize_varname <- function(x) {
   x
 }
 
+# Normalise a label string for semantic-equivalence comparison.
+# Strips possessives, punctuation, pluralising "s", and extra whitespace so
+# that minor wording differences (e.g. "Participants' age" vs "Participant age")
+# normalise to the same string.
+normalize_label <- function(x) {
+  x <- tolower(x)
+  x <- gsub("'s|'s|\u2019s|\u2018s", "", x, perl = TRUE)  # strip possessives (straight + curly)
+  x <- gsub("[^a-z0-9 ]", " ", x)                          # non-alphanumeric → space
+  # Strip trailing "s" from words of ≥ 8 total chars (handles "participants" → "participant",
+  # "feelings" → "feeling", "responses" → "response") while leaving short words intact
+  x <- gsub("\\b([a-z]{7,})s\\b", "\\1", x, perl = TRUE)
+  x <- gsub("\\s+", " ", trimws(x))                        # collapse whitespace
+  x
+}
+
 # Scan a data.frame's column headers for a "variable name" column and a
 # "label/description" column.  Returns list(var_col, lab_col) or NULL.
 .find_codebook_cols <- function(col_names) {
@@ -587,7 +602,8 @@ parse_codebook <- function(path) {
 # Returns a _labels.csv-shaped data.frame covering every row of columns_df.
 # Handles experiment-group scoping and conflict detection.
 match_column_labels <- function(columns_df, codebook_vars_df,
-                                column_match_prompt = NULL) {
+                                column_match_prompt = NULL,
+                                label_merge_prompt  = NULL) {
   # Support both "group" (0_index schema) and "experiment_group" (1_data_label schema)
   col_group <- if ("group" %in% names(columns_df)) columns_df$group else
                if ("experiment_group" %in% names(columns_df)) columns_df$experiment_group else
@@ -649,11 +665,23 @@ match_column_labels <- function(columns_df, codebook_vars_df,
 
     distinct_labels <- unique(applicable$label)
     if (length(distinct_labels) > 1) {
-      # Same variable name, different definitions from different sources
-      status_out[i]  <- "conflicting_definition"
-      label_out[i]   <- paste(distinct_labels,                           collapse = " | ")
-      cbk_var_out[i] <- paste(unique(applicable$codebook_variable),     collapse = " | ")
-      src_out[i]     <- paste(unique(applicable$codebook_source),       collapse = " | ")
+      # Rule-based equivalence check: normalise labels and re-check uniqueness
+      norm_labels <- normalize_label(distinct_labels)
+      if (length(unique(norm_labels)) == 1) {
+        # All labels normalise to the same string — pick the longest original label
+        canonical <- distinct_labels[which.max(nchar(distinct_labels))]
+        status_out[i]        <- "labelled"
+        label_out[i]         <- canonical
+        cbk_var_out[i]       <- applicable$codebook_variable[1]
+        src_out[i]           <- paste(unique(applicable$codebook_source), collapse = " | ")
+        label_method_out[i]  <- "merged_rules"
+      } else {
+        # Labels differ semantically — flag for LLM resolution or leave as conflict
+        status_out[i]  <- "conflicting_definition"
+        label_out[i]   <- paste(distinct_labels,                           collapse = " | ")
+        cbk_var_out[i] <- paste(unique(applicable$codebook_variable),     collapse = " | ")
+        src_out[i]     <- paste(unique(applicable$codebook_source),       collapse = " | ")
+      }
     } else {
       status_out[i]  <- "labelled"
       label_out[i]   <- distinct_labels[1]
@@ -662,8 +690,54 @@ match_column_labels <- function(columns_df, codebook_vars_df,
     }
   }
 
-  # Set label_method for rule-matched rows
-  label_method_out[status_out == "labelled"] <- "rules"
+  # Set label_method for rule-matched rows (merged_rules already set above)
+  label_method_out[status_out == "labelled" & is.na(label_method_out)] <- "rules"
+
+  # ── LLM merge tier: resolve remaining conflicting_definition rows ─────────────
+  if (!is.null(label_merge_prompt)) {
+    conflict_idx <- which(status_out == "conflicting_definition")
+    if (length(conflict_idx) > 0) {
+      # Build batch input: one entry per unique conflicting column name
+      conflict_cols <- unique(columns_df$column_name[conflict_idx])
+      batch_input <- lapply(conflict_cols, function(cn) {
+        idx1     <- conflict_idx[columns_df$column_name[conflict_idx] == cn][1]
+        raw_labs <- strsplit(label_out[idx1], " | ", fixed = TRUE)[[1]]
+        list(column = cn, labels = raw_labs)
+      })
+      prompt_body <- paste0("Variables to check:\n",
+                            jsonlite::toJSON(batch_input, auto_unbox = TRUE))
+      merge_resp <- tryCatch(
+        llm(system_prompt = label_merge_prompt, text = prompt_body),
+        error = function(e) {
+          warning("LLM label-merge call failed: ", conditionMessage(e))
+          list(answer = "[]")
+        }
+      )
+      merge_pairs <- tryCatch({
+        parsed <- jsonlite::fromJSON(extract_json(merge_resp$answer),
+                                     simplifyDataFrame = TRUE)
+        if (is.data.frame(parsed) && nrow(parsed) > 0 &&
+            all(c("column", "equivalent", "canonical") %in% names(parsed)))
+          parsed else data.frame()
+      }, error = function(e) data.frame())
+
+      if (nrow(merge_pairs) > 0) {
+        for (k in seq_len(nrow(merge_pairs))) {
+          if (!isTRUE(merge_pairs$equivalent[k])) next
+          canonical <- as.character(merge_pairs$canonical[k])
+          if (is.na(canonical) || !nzchar(canonical)) next
+          apply_idx <- conflict_idx[
+            columns_df$column_name[conflict_idx] == merge_pairs$column[k]
+          ]
+          for (i in apply_idx) {
+            label_out[i]        <- canonical
+            status_out[i]       <- "labelled"
+            label_method_out[i] <- "merged_llm"
+          }
+        }
+      }
+    }
+  }
 
   # ── LLM secondary pass (T005–T009) ───────────────────────────────────────────
   if (!is.null(column_match_prompt)) {
