@@ -7,6 +7,7 @@
 llm(
   text,
   system_prompt,
+  type = NULL,
   text_col = "text",
   model = llm_model(),
   params = list()
@@ -17,6 +18,11 @@ llm(
 
 \item{system_prompt}{A system prompt to set the behavior of the assistant}
 
+\item{type}{An optional ellmer type specification for structured extraction
+(e.g., from \code{type_object()}, \code{type_from_schema()}). When provided, the
+provider enforces the schema and returns structured columns instead of
+free text.}
+
 \item{text_col}{The name of the text column if text is a data frame}
 
 \item{model}{the LLM model name (see \code{llm_model_list()}) in the format "provider" or "provider/model"}
@@ -24,10 +30,13 @@ llm(
 \item{params}{a named list to pass to \code{ellmer::params()}}
 }
 \value{
-a list of results
+a data frame of results
 }
 \description{
-Ask a large language model (LLM) any question you want about a vector of text or the text from a search_text().
+Ask a large language model (LLM) any question you want about a vector of
+text or the text from a search_text(). When \code{type} is provided, uses
+ellmer's structured output API to guarantee output conforming to the type
+spec; otherwise returns free-text responses in an \code{answer} column.
 }
 \details{
 You will need to get your own API key from \url{https://console.groq.com/keys}. To avoid having to type it out, add it to the .Renviron file in the following format (you can use \code{usethis::edit_r_environ()} to access the .Renviron file)
@@ -38,9 +47,15 @@ See \url{https://console.groq.com/docs} for more information
 }
 \examples{
 \dontrun{
+# Free-text query
 text <- c("hello", "number", "ten", 12)
 system_prompt <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
 is_number <- llm(text, system_prompt)
-is_number
+
+# Structured extraction
+type_spec <- ellmer::type_object(
+  is_number = ellmer::type_boolean("Whether the input is a number")
+)
+result <- llm(c("hello", "42"), "Classify the input.", type = type_spec)
 }
 }

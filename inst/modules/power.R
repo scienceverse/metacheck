@@ -88,7 +88,7 @@ power <- function(paper, seed = 8675309) {
       schema = jsonlite::fromJSON(schema_path, simplifyVector = FALSE)
     )
 
-    table <- llm_extract(
+    table <- llm(
       text = potential_power,
       system_prompt = system_prompt,
       type = type_power,
