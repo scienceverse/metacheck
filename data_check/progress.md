@@ -4,6 +4,14 @@
 
 ### In Progress 🔧
 
+**009** — multi-format-codebooks (branch: `009-multi-format-codebooks`)
+- Extend `parse_codebook()` in `helper.R` to support DOCX, PDF, RTF, ODT, DOC codebook files
+- Add `.extract_rich_text()` using `officer` (DOCX) and `pdftools` (PDF) — both already installed
+- Add `.strip_rtf()` for regex-based RTF text extraction (no new packages)
+- Add `.run_llm_chunk_loop()` shared helper to deduplicate LLM chunking logic
+- Graceful `parse_failed` for unreadable files (image-only PDFs, binary DOC); pipeline never aborts
+- No output schema changes; existing CSV/XLSX/SAV/DTA/plain-text behaviour unchanged
+
 **008** — bulk-label-runners (branch: `008-bulk-label-runners`)
 - Refactor `1_data_label.R` into `run_data_label(paper_id)` function (no top-level execution)
 - Confirm `2_codebook_label.R` already clean; update header comment with correct paths

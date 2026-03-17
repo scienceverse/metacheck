@@ -412,6 +412,48 @@ normalize_varname <- function(x) {
   }, character(1), USE.NAMES = FALSE)
 }
 
+# Strip RTF control codes from a character string, returning plain text.
+# Used internally by .extract_rich_text() for .rtf files.
+.strip_rtf <- function(text) {
+  text <- gsub("\\\\[a-z]+\\-?[0-9]*\\s?", " ", text)  # control words
+  text <- gsub("\\\\[^a-z\n]",             " ", text)  # control symbols
+  text <- gsub("[{}]",                      "",  text)  # braces
+  text <- gsub("\\s+",                      " ", text)  # collapse whitespace
+  trimws(text)
+}
+
+# Extract plain text from a rich-text or binary codebook file.
+# Returns a single character string (possibly empty) on any failure.
+# Supports: docx (officer), pdf (pdftools), rtf (regex strip), doc/odt (readLines).
+# officer >= 0.7.0 and pdftools >= 3.0.0 must be installed (both are already present).
+.extract_rich_text <- function(path, ext) {
+  tryCatch({
+    switch(ext,
+      docx = {
+        if (!requireNamespace("officer", quietly = TRUE)) return("")
+        doc  <- officer::read_docx(path)
+        summ <- officer::docx_summary(doc)
+        txt  <- as.character(summ$text)
+        paste(txt[nzchar(trimws(txt))], collapse = "\n")
+      },
+      pdf = {
+        if (!requireNamespace("pdftools", quietly = TRUE)) return("")
+        pages <- pdftools::pdf_text(path)
+        paste(pages, collapse = "\n")
+      },
+      rtf = {
+        lines <- readLines(path, warn = FALSE)
+        .strip_rtf(paste(lines, collapse = "\n"))
+      },
+      doc = , odt = {
+        lines <- readLines(path, warn = FALSE)
+        paste(lines, collapse = "\n")
+      },
+      ""  # unknown extension
+    )
+  }, error = function(e) "")
+}
+
 # Read a codebook file and return a data.frame of variable definitions with
 # columns: codebook_variable, label, codebook_source, group.
 # Returns NULL (with warning) on failure, oversized file, or no definitions found.
@@ -455,28 +497,50 @@ parse_codebook <- function(path) {
         df <- haven::read_dta(path)
         .extract_haven_labels(df, src)
       },
-      NULL  # unsupported extension — fall through to LLM
+      docx = , doc = , pdf = , rtf = , odt = {
+        text <- .extract_rich_text(path, ext)
+        if (nchar(trimws(text)) < 10) {
+          warning("No extractable text from ", src, " (", ext, ")")
+          return(NULL)
+        }
+        strsplit(text, "\n")[[1]]  # return lines vector; handled below
+      },
+      NULL  # unsupported extension — fall through to LLM via readLines
     )
   }, error = function(e) {
     warning("Structured codebook parse failed for ", src, ": ", conditionMessage(e))
     NULL
   })
 
-  if (!is.null(result) && nrow(result) > 0) {
+  # Rich-text formats return a character vector of lines (not a data.frame).
+  # Route them directly to the shared LLM chunk loop below.
+  rich_lines <- if (is.character(result) && !is.data.frame(result)) result else NULL
+
+  if (!is.null(result) && is.data.frame(result) && nrow(result) > 0) {
     result$group <- .infer_group(result$group)
     return(result)
   }
 
   # ── LLM fallback for unstructured / unparseable files ────────────────────────
-  lines <- tryCatch(
-    readLines(path, warn = FALSE),
-    error = function(e) {
-      warning("Cannot read ", src, " for LLM parsing: ", conditionMessage(e))
-      character(0)
-    }
-  )
+  lines <- if (!is.null(rich_lines)) {
+    rich_lines
+  } else {
+    tryCatch(
+      readLines(path, warn = FALSE),
+      error = function(e) {
+        warning("Cannot read ", src, " for LLM parsing: ", conditionMessage(e))
+        character(0)
+      }
+    )
+  }
   if (length(lines) == 0) return(NULL)
 
+  .run_llm_chunk_loop(lines, src)
+}
+
+# Shared LLM chunking loop used by parse_codebook() for both plain-text and
+# rich-text codebook sources.  Returns a data.frame or NULL.
+.run_llm_chunk_loop <- function(lines, src) {
   chunks    <- split(lines, ceiling(seq_along(lines) / 40))
   max_calls <- min(length(chunks), MAX_CODEBOOK_LLM_CALLS)
   all_vars  <- vector("list", max_calls)
