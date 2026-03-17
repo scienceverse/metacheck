@@ -226,16 +226,19 @@ test_paper <- function(text = LETTERS) {
 validate_paper <- function(paper) {
   json <- system.file("schema/paper.json", package = "metacheck")
   schema <- jsonlite::read_json(json)
+  error <- FALSE
+  warning <- FALSE
+  error_msg <- c()
+  warning_msg <- c()
 
-  paper_tables <- c("paper_id", "info", "authors",
-                    "bib", "equations", "figures",
-                    "links", "sections", "tables",
-                    "text","xrefs")
+  # check for required tables
+  paper_tables <- unlist(schema$required)
   if (!all(paper_tables %in% names(paper))) {
     missing <- setdiff(paper_tables, names(paper)) |>
       paste(collapse = ", ") |>
       paste("The following tables are missing:\n", x = _)
-    stop(missing)
+    error_msg <- c(error_msg, missing)
+    error <- TRUE
   }
 
   # check required and optional columns for non-bib tables
@@ -252,15 +255,17 @@ validate_paper <- function(paper) {
     if (!all(req %in% cols)) {
       missing <- setdiff(req, cols) |>
         paste(collapse = ", ") |>
-        sprintf("The %s table is missing required columns:\n%s", tbl, x =_)
-      stop(missing)
+        sprintf("The %s table is missing required columns:\n %s", tbl, x =_)
+      error_msg <<- c(error_msg, missing)
+      error <<- TRUE
     }
 
     if (!all(cols %in% ok)) {
       extra <- setdiff(cols, ok) |>
         paste(collapse = ", ") |>
-        sprintf("The %s table has extra columns:\n%s", tbl, x =_)
-      warning(extra)
+        sprintf("The %s table has extra columns:\n %s", tbl, x =_)
+      warning_msg <<- c(warning_msg, extra)
+      warning <<- TRUE
     }
   }, tbl = tbls, def = defs)
 
@@ -278,15 +283,25 @@ validate_paper <- function(paper) {
   if (!all(req %in% cols)) {
     missing <- setdiff(req, cols) |>
       paste(collapse = ", ") |>
-      sprintf("The bib table is missing required columns:\n%s", x =_)
-    stop(missing)
+      sprintf("The bib table is missing required columns:\n %s", x =_)
+    error_msg <- c(error_msg, missing)
+    error <- TRUE
   }
 
   if (!all(cols %in% ok)) {
     extra <- setdiff(cols, ok) |>
       paste(collapse = ", ") |>
-      sprintf("The bib table has extra columns:\n%s", x =_)
-    warning(extra)
+      sprintf("The bib table has extra columns:\n %s", x =_)
+    warning_msg <- c(warning_msg, extra)
+    warning <- TRUE
+  }
+
+  if (warning) {
+    warning(paste(warning_msg, collapse = "\n"))
+  }
+
+  if (error) {
+    stop(paste(error_msg, collapse = "\n"))
   }
 
   return(TRUE)
