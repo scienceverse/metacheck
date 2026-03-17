@@ -96,9 +96,7 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api")) {
   if (!curl::has_internet()) {
     return("no internet")
   }
-  resp <- httr2::request(osf_api) |>
-    osf_headers() |>
-    httr2::req_error(is_error = \(resp) FALSE) |>
+  resp <- osf_request(osf_api) |>
     httr2::req_perform()
   osf_api_calls_inc()
   status <- dplyr::case_match(
@@ -185,26 +183,8 @@ osf_retrieve <- function(osf_url, id_col = 1,
     return(table)
   }
 
-  # iterate over valid IDs
-  paste0(
-    "Starting OSF retrieval for ", length(valid_ids),
-    " URL", ifelse(length(valid_ids) == 1, "", "s"), "..."
-  )|>
-    list(what = _) |>
-    pb$tick(0, tokens = _)
-
-  id_info <- vector("list", length(valid_ids))
-  too_many <- FALSE
-  i <- 0
-  while (!too_many & i < length(valid_ids)) {
-    i <- i + 1
-    oi <- osf_info(valid_ids[[i]], pb = pb)
-    if ("too many requests" %in% oi$osf_type) too_many <- TRUE
-    id_info[[i]] <- oi
-  }
-
-  info <- id_info |>
-    do.call(dplyr::bind_rows, args = _) |>
+  # retrieve info for all valid IDs in parallel
+  info <- osf_info_parallel(valid_ids, pb = pb) |>
     dplyr::left_join(ids, by = "osf_id")
   if (!"project" %in% colnames(info)) {
     info$project <- rep(NA_character_, nrow(info))
@@ -275,6 +255,149 @@ osf_retrieve <- function(osf_url, id_col = 1,
 }
 
 
+#' Build an OSF API request
+#'
+#' Helper that constructs a standard OSF API request with headers,
+#' error suppression, and retry on 429.
+#'
+#' @param url the full API URL
+#'
+#' @returns an httr2 request object
+#' @keywords internal
+osf_request <- function(url) {
+  httr2::request(url) |>
+    osf_headers() |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_retry(
+      max_tries = 3,
+      is_transient = \(resp) httr2::resp_status(resp) == 429
+    )
+}
+
+#' Batch retrieve info from the OSF by ID (parallel)
+#'
+#' Retrieves info for multiple OSF IDs in parallel using
+#' `httr2::req_perform_parallel()`. 5-char GUIDs are resolved via the
+#' `guids/` endpoint; 24-char waterbutler IDs go to `files/` (with
+#' sequential fallback on 404).
+#'
+#' @param osf_ids a vector of valid, pre-checked OSF IDs
+#' @param pb a progress bar passed from another function
+#'
+#' @returns a data frame of information
+#' @export
+#' @keywords internal
+osf_info_parallel <- function(osf_ids, pb = NULL) {
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    on.exit(pb$terminate())
+  }
+
+  if (length(osf_ids) == 0) return(data.frame())
+
+  osf_api <- getOption("metacheck.osf.api")
+
+  # Separate 5-char GUIDs from 24-char waterbutler IDs
+  is_guid <- nchar(osf_ids) == 5
+  guid_ids <- osf_ids[is_guid]
+  wb_ids <- osf_ids[!is_guid]
+
+  # Build requests: GUIDs -> guids/ endpoint, waterbutler -> files/
+  guid_reqs <- lapply(guid_ids, \(id) {
+    osf_request(sprintf("%s/guids/%s", osf_api, id))
+  })
+  wb_reqs <- lapply(wb_ids, \(id) {
+    osf_request(sprintf("%s/files/%s", osf_api, id))
+  })
+
+  all_reqs <- c(guid_reqs, wb_reqs)
+  all_ids <- c(guid_ids, wb_ids)
+  all_req_types <- c(
+    rep("guids", length(guid_ids)),
+    rep("files", length(wb_ids))
+  )
+
+  paste0(
+    "Retrieving info for ", length(all_reqs), " OSF ID",
+    ifelse(length(all_reqs) == 1, "", "s"), "..."
+  ) |>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
+
+  # Fire all requests in parallel
+  resps <- httr2::req_perform_parallel(
+    all_reqs,
+    on_error = "continue",
+    progress = FALSE
+  )
+  osf_api_calls(osf_api_calls() + length(all_reqs))
+
+  # Process responses
+  results <- vector("list", length(resps))
+  for (i in seq_along(resps)) {
+    resp <- resps[[i]]
+    id <- all_ids[[i]]
+
+    results[[i]] <- tryCatch({
+      if (inherits(resp, "error")) {
+        warning(id, " resulted in an error", call. = FALSE)
+        data.frame(osf_id = id, osf_type = "error")
+      } else {
+        osf_parse_response(resp, id, all_req_types[[i]], pb)
+      }
+    }, error = \(e) {
+      data.frame(osf_id = id, osf_type = "error")
+    })
+  }
+
+  do.call(dplyr::bind_rows, results)
+}
+
+#' Parse an OSF API response into a data frame
+#'
+#' @param resp an httr2 response
+#' @param id the OSF ID that was requested
+#' @param req_type the endpoint type used ("guids" or "files")
+#' @param pb a progress bar
+#'
+#' @returns a single-row data frame
+#' @keywords internal
+osf_parse_response <- function(resp, id, req_type = "guids", pb = NULL) {
+  sc <- httr2::resp_status(resp)
+
+  if (sc == 200) {
+    content <- httr2::resp_body_json(resp, simplifyVector = TRUE)
+    data <- content$data
+    osf_type <- data$type
+
+    if (osf_type == "nodes") return(osf_node_data(data))
+    if (osf_type == "files") return(osf_file_data(data))
+    if (osf_type == "preprints") return(osf_preprint_data(data))
+    if (osf_type == "registrations") return(osf_reg_data(data))
+    if (osf_type == "users") return(osf_user_data(data))
+
+    warning(id, " has unknown type: ", osf_type, call. = FALSE)
+    return(data.frame(osf_id = id, osf_type = "unknown"))
+  }
+
+  if (sc %in% c(401, 403)) {
+    return(data.frame(osf_id = id, osf_type = "private", public = FALSE))
+  }
+
+  if (sc == 429) {
+    warning("Too many requests", call. = FALSE)
+    return(data.frame(osf_id = id, osf_type = "too many requests"))
+  }
+
+  if (sc == 404 && req_type == "files") {
+    # Waterbutler ID not a file — fall back to sequential lookup
+    return(osf_info(id, pb = pb))
+  }
+
+  warning(id, " could not be found", call. = FALSE)
+  data.frame(osf_id = id, osf_type = "unfound")
+}
+
 #' Retrieve info from the OSF by ID
 #'
 #' @param osf_id an OSF ID or URL
@@ -329,9 +452,7 @@ osf_info <- function(osf_id,
     content <- tryCatch(
       {
         url <- sprintf("%s/%s/%s", osf_api, osf_type, valid_id)
-        resp <- httr2::request(url) |>
-          osf_headers() |>
-          httr2::req_error(is_error = \(resp) FALSE) |>
+        resp <- osf_request(url) |>
           httr2::req_perform()
         osf_api_calls_inc()
         sc <- httr2::resp_status(resp)
@@ -750,9 +871,7 @@ osf_get_all_pages <- function(url, page_end = Inf) {
 
   content <- tryCatch(
     {
-      resp <- httr2::request(url) |>
-        osf_headers() |>
-        httr2::req_error(is_error = \(resp) FALSE) |>
+      resp <- osf_request(url) |>
         httr2::req_perform()
       osf_api_calls_inc()
       httr2::resp_body_json(resp, simplifyVector = TRUE)
