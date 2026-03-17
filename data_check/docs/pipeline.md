@@ -7,6 +7,7 @@ contents using an LLM, and extracts column-level statistics into structured CSVs
 
 | Script | Purpose |
 |---|---|
+| `run_single.R` | Run the full pipeline (index + codebook label) for one randomly selected paper. Dev/smoke-test entry point. |
 | `run_index_bulk.R` | Process all papers through the index stage. Crash-resilient, auto-resumes from `bulk_summary.csv`. |
 | `run_codebook_bulk.R` | Run codebook-label stage across all papers with `columns.csv`. Auto-resumes from `codebook_summary.csv`. |
 | `0_index.R` (`run_index()`) | Process a single paper by ID. Called by the index bulk runner. |

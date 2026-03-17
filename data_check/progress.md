@@ -4,6 +4,11 @@
 
 ### Completed ✅
 
+**012** — single-dataset-runner (branch: `012-single-dataset-runner`)
+- Add `run_single.R` — single-command entry point that runs the full pipeline (index + codebook label) for one randomly selected paper
+- Selects a random ID from `XML_DIR`, runs `run_index()` then `run_codebook_label()`, prints stage status and output path
+- Graceful error handling for all known error codes; Stage 2 auto-skipped if `columns.csv` absent
+
 **011** — merge-columns-output (branch: `011-merge-columns-output`)
 - Delete `1_data_label.R` and `run_1_label_bulk.R` — stage 1 was overwriting stage 0's rich `columns.csv` (23 cols) with a thin 5-col version; stage 1 provided no unique value
 - Recovery: re-run `run_index(paper_id, download=FALSE)` for all 47 papers whose `columns.csv` was thinned by stage 1
