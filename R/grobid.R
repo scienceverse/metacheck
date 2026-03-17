@@ -117,7 +117,7 @@ grobid_convert <- function(file_path, save_path = ".",
                        ignore.case = TRUE
     )
     if (length(pdfs) == 0) {
-      warning("There are no PDF files in the directory ", filename)
+      warning("There are no PDF files in the directory ", file_path)
     }
     xmls <- grobid_convert(pdfs, save_path, api_url)
     return(invisible(xmls))

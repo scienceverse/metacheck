@@ -840,6 +840,7 @@ add_bib_match <- function(paper, min_score = 50) {
   }
 
   # determine if container title is a journal or book
+  bibtypes <- bibtype_convert(cr_data$type) %||% NA_character_
   cr_data$journal <- ifelse(bibtypes %in% c("book", "inbook"),
                             NA, cr_data$`container-title` %||% NA_character_)
   cr_data$booktitle <- ifelse(bibtypes %in% c("book", "inbook"),
@@ -976,7 +977,7 @@ openalex_doi <- function(doi, select = NULL) {
 
   if (is_paper(doi) || is_paper_list(doi)) {
     papers <- doi
-    paper_table(papers, "info", "doi")$doi
+    doi <- paper_table(papers, "info", "doi")$doi
   }
 
   if (!online("api.openalex.org")) {

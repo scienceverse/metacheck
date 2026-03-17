@@ -376,7 +376,7 @@ osf_info <- function(osf_id,
       break
     }
 
-    if (!is.null(content) & is.null(content$errors)) {
+    if (!is.null(content) && is.null(content$errors)) {
       data <- content$data
       osf_type <- content$data$type
       break

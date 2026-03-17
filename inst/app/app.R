@@ -244,12 +244,15 @@ server <- function(input, output, session) {
   })
 
   output$paper_title <- renderUI({
+    req(input$paper_name, my_paper())
     h4(my_paper()[[input$paper_name]]$info$title)
   })
   output$paper_desc <- renderUI({
+    req(input$paper_name, my_paper())
     p(my_paper()[[input$paper_name]]$info$description)
   })
   output$paper_keywords <- renderText({
+    req(input$paper_name, my_paper())
     my_paper()[[input$paper_name]]$info$keywords |>
       paste(collapse = "; ")
   })
