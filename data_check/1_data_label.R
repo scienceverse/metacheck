@@ -4,7 +4,7 @@
 #
 # Extracts column names from every data file belonging to a paper and saves
 # them as a long-format index:
-#   paper_id | source_file | filename | experiment_group | column_name
+#   paper_id | source_file | filename | group | column_name
 #
 # Input:  paper_id (character)
 #         outputs/<paper_id>/structure.csv  (from 0_index.R)
@@ -110,7 +110,7 @@ run_data_label <- function(paper_id) {
         paper_id         = paper_id,
         source_file      = path,
         filename         = basename(path),
-        experiment_group = group,
+        group            = group,
         column_name      = col_names,
         stringsAsFactors = FALSE
       )

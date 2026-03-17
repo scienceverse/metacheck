@@ -524,12 +524,17 @@ parse_codebook <- function(path) {
 # Handles experiment-group scoping and conflict detection.
 match_column_labels <- function(columns_df, codebook_vars_df,
                                 column_match_prompt = NULL) {
+  # Support both "group" (0_index schema) and "experiment_group" (1_data_label schema)
+  col_group <- if ("group" %in% names(columns_df)) columns_df$group else
+               if ("experiment_group" %in% names(columns_df)) columns_df$experiment_group else
+               rep(NA_character_, nrow(columns_df))
+
   make_empty <- function() {
     data.frame(
       paper_id          = columns_df$paper_id,
       source_file       = columns_df$source_file,
       column_name       = columns_df$column_name,
-      group             = columns_df$group,
+      group             = col_group,
       label             = NA_character_,
       codebook_variable = NA_character_,
       label_source      = NA_character_,
@@ -554,7 +559,7 @@ match_column_labels <- function(columns_df, codebook_vars_df,
 
   for (i in seq_len(n)) {
     nc <- norm_col[i]
-    cg <- columns_df$group[i]
+    cg <- col_group[i]
 
     name_idx <- which(norm_var == nc)
     if (length(name_idx) == 0) next
@@ -683,7 +688,7 @@ match_column_labels <- function(columns_df, codebook_vars_df,
     paper_id          = columns_df$paper_id,
     source_file       = columns_df$source_file,
     column_name       = columns_df$column_name,
-    group             = columns_df$group,
+    group             = col_group,
     label             = label_out,
     codebook_variable = cbk_var_out,
     label_source      = src_out,
