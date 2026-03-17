@@ -277,7 +277,7 @@ test_that("osf_children", {
 
   osf_id <- "pngda"
   data <- osf_children(osf_id)
-  expect_equal(nrow(data), 3)
+  expect_equal(nrow(data), 4)
 
   osf_id <- "y6a34"
   data <- osf_children(osf_id)
