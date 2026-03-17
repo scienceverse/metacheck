@@ -50,6 +50,10 @@ llm <- function(text, system_prompt,
   }
 
   # Set up the llm ----
+  # default temperature to 0 for deterministic extraction/classification
+  if (is.null(params$temperature)) {
+    params$temperature <- 0
+  }
   tryCatch(
     {
       params <- do.call(ellmer::params, params)
