@@ -111,7 +111,7 @@ Output ONLY the JSON array. No notes, no text outside the array.'
 
 # ── Pipeline function ─────────────────────────────────────────────────────────
 
-run_index <- function(paper_id = NA) {
+run_index <- function(paper_id = NA, download = TRUE) {
 
   t_start <- proc.time()[["elapsed"]]
 
@@ -133,19 +133,19 @@ run_index <- function(paper_id = NA) {
 
   # ── 1. Download ─────────────────────────────────────────────────────────────
 
-  links        <- osf_links(paper)
-  unique_links <- setdiff(unique(links$text), BADGE_REPOS)
-
-  if (length(unique_links) == 0) {
-    stop("no_links: paper ", paper_id, " has no OSF data links")
-  }
-
-  download_attempted <- FALSE
   t_download_start <- proc.time()[["elapsed"]]
-  if (!dir.exists(target_dir)) {
-    download_attempted <- TRUE
-    osf_file_download(unique_links, download_to = target_dir,
-                      max_download_size = 10e9, max_file_size = NULL)
+  if (download) {
+    links        <- osf_links(paper)
+    unique_links <- setdiff(unique(links$text), BADGE_REPOS)
+
+    if (length(unique_links) == 0) {
+      stop("no_links: paper ", paper_id, " has no OSF data links")
+    }
+
+    if (!dir.exists(target_dir)) {
+      osf_file_download(unique_links, download_to = target_dir,
+                        max_download_size = 10e9, max_file_size = NULL)
+    }
   }
 
   # ── 2. Sanitize directory names ─────────────────────────────────────────────

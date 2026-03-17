@@ -23,7 +23,9 @@ pythonLevi/
 ./data_check/*.sav
 ./data_check/*.xlsx
 data_check/data/
+data_check/structure/
+
 
 ./output
-
+data_check/_old/
 ._*
