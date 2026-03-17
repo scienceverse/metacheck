@@ -1,4 +1,4 @@
-tbl_id,section_id,tbl_html
+table_id,section_id,html,contents
 1,12,"<table border=""1"" class=""dataframe"">
   <thead>
     <tr style=""text-align: right;"">
@@ -24,4 +24,4 @@ tbl_id,section_id,tbl_html
       <td>5.06</td>
     </tr>
   </tbody>
-</table>"
+</table>",

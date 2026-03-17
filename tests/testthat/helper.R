@@ -1,7 +1,7 @@
 # always executed by load_all() and at the beginning of automated testing
 # https://r-pkgs.org/testing-design.html#testthat-helper-files
 
-testthat::set_max_fails(1)
+testthat::set_max_fails(10)
 
 email("metacheck@scienceverse.org")
 

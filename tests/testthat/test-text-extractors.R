@@ -134,10 +134,9 @@ test_that("extract_equations", {
     2,        2,       "p",          "=",   ".023",
     3,        3,       "peta",       "=",   "2.3",
     3,        3,       "p",          ">",   ".05",
-    3,         3,       "95% CI",     "=",   "[2, 4]",
+    3,        3,       "95% CI",     "=",   "[2, 4]",
     4,        4,       "p-value",    ">=",  "0.2"
   )
-  exp$eq_type <- "stat"
   exp$paper_id <- paper$paper_id
 
   expect_equal(eq, exp)

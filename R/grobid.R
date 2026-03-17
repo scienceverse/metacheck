@@ -266,6 +266,7 @@ grobid_to_bibr <- function(xml_file,
   title <- xml_find1(xml, ".//titleStmt/title")
   abstract <- xml_find1(xml, ".//abstract")
   keywords <- xml_find(xml, ".//textClass/keywords/term")
+  if (keywords[[1]] == "") keywords <- c()
   doi <- xml_find1(xml, ".//idno[@type='DOI']")
 
   paper$info <- data.frame(
@@ -320,6 +321,24 @@ grobid_to_bibr <- function(xml_file,
   # bib ----
   pb$tick(0, list(step = "bib", what = what))
   paper$bib <- tei_bib(xml)
+
+  # append references to sections and text and replace with text_id
+  section_id <- max(c(0, paper$sections$section_id)) + 1
+  sec_add <- list(section_id = section_id,
+                 header = "References",
+                 section_type = "references")
+  paper$sections <- dplyr::bind_rows(paper$sections, sec_add)
+  text_ids <- max(c(0, paper$text$text_id)) + seq_along(paper$bib$bib_text)
+  p_ids <- max(c(0, paper$text$paragraph_id)) + seq_along(paper$bib$bib_text)
+  text_add <- data.frame(
+    text_id = text_ids,
+    paragraph_id = p_ids,
+    section_id = section_id,
+    text = paper$bib$bib_text
+  )
+  paper$text <- dplyr::bind_rows(paper$text, text_add)
+  paper$bib$text_id <- text_ids
+  paper$bib$bib_text <- NULL
 
   # xrefs ----
   pb$tick(0, list(step = "xrefs", what = what))
@@ -675,23 +694,30 @@ tei_bib <- function(xml) {
     bibs <- lapply(refs, xml2bib)
 
     bib_table$doi <- sapply(bibs, \(x) x$doi %||% NA_character_)
-    bib_table$type <- sapply(bibs, \(x) x$bibtype %||% NA_character_)
+    bib_table$bib_type <- sapply(bibs, \(x) x$bibtype %||% NA_character_)
     bib_table$title <- sapply(bibs, \(x) x$title %||% NA_character_)
-    bib_table$journal <- sapply(bibs, \(x) x$journal %||% NA_character_)
-    bib_table$year <- sapply(bibs, \(x) x$year %||% NA_integer_)
-    bib_table$author <- lapply(bibs, \(x) x$author %||% NA_character_) |>
-      sapply(paste, collapse = "; ")
+    bib_table$container <- sapply(bibs, \(x) x$journal %||% x$booktitle %||% NA_character_)
+    bib_table$publication_year <- sapply(bibs, \(x) x$year %||% NA_integer_)
+    bib_table$authors <- bibs |>
+      lapply(\(x) x$author) |>
+      lapply(\(x) lapply(x, unlist)) |>
+      lapply(\(x) lapply(x, as.list))
     bib_table$issue <- sapply(bibs, \(x) x$number %||% NA_character_)
     bib_table$first_page <- sapply(bibs, \(x) x$first_page %||% NA_character_)
     bib_table$last_page <- sapply(bibs, \(x) x$last_page %||% NA_character_)
-    bib_table$booktitle <- sapply(bibs, \(x) x$booktitle %||% NA_character_)
-    bib_table$editor <- sapply(bibs, \(x) paste(x$editor, collapse = "; ") %||% NA_character_)
+    bib_table$editors <- bibs |>
+      lapply(\(x) x$editor) |>
+      lapply(\(x) lapply(x, unlist)) |>
+      lapply(\(x) lapply(x, as.list))
     bib_table$publisher <- sapply(bibs, \(x) x$publisher %||% NA_character_)
   } else {
     bib_table <- data.frame(
       bib_id = character(0),
-      doi = character(0),
-      bib_text = character(0)
+      bib_text = character(0),
+      bib_type = character(0),
+      authors = character(0),
+      publication_year = integer(0),
+      doi = character(0)
     )
   }
 

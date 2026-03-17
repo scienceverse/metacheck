@@ -266,25 +266,57 @@ read_bibr <- function(file_path) {
 
   # temporary processing for format changes to be added to bibr ----
   paper$paper_id <- paper$info$file_hash
+  if ("tbl_id" %in% names(paper$tables)) {
+    names(paper$tables)[[1]] <- "table_id"
+    names(paper$tables)[[3]] <- "html"
+  }
+  names(paper$figures)[[1]] <- "figure_id"
+  paper$figures$caption <- NULL
+  paper$equations$eq_type <- NULL
 
-  # ## remove references from text table
-  # ref_section <- paper$sections[paper$sections$section_type == "references", ]$section_id
-  # refs <- paper$text$section_id %in% ref_section
-  # paper$text <- paper$text[!refs, ]
+  # append references to sections and text and replace with text_id
+  if ("bib_text" %in% paper$bib) {
+    section_id <- max(c(0, paper$sections$section_id)) + 1
+    sec_add <- list(section_id = section_id,
+                    header = "References",
+                    section_type = "references")
+    paper$sections <- dplyr::bind_rows(paper$sections, sec_add)
+    text_ids <- max(c(0, paper$text$text_id)) + seq_along(paper$bib$bib_text)
+    p_ids <- max(c(0, paper$text$paragraph_id)) + seq_along(paper$bib$bib_text)
+    text_add <- data.frame(
+      text_id = text_ids,
+      paragraph_id = p_ids,
+      section_id = section_id,
+      text = paper$bib$bib_text
+    )
+    paper$text <- dplyr::bind_rows(paper$text, text_add)
+    paper$bib$text_id <- text_ids
+    paper$bib$bib_text <- NULL
 
-  ## add bib_text
-  #if (all(is.na(paper$bib$bib_text))) {
-    # paper$bib$bib_text <- sprintf("%s (%s) %s. %s. %s",
-    #                               paper$bib$author,
-    #                               paper$bib$year,
-    #                               paper$bib$title,
-    #                               paper$bib$journal_title,
-    #                               paper$bib$doi)
-  #}
-  paper$bib$bib_text <- paper$bib$bib_text |>
-    gsub("</?table[^>]*>", "", x = _) |>
-    gsub("</?t(r|d)>", "", x = _) |>
-    trimws()
+    suppressWarnings({
+    paper$bib <- data.frame(
+      bib_id = paper$bib$bib_id,
+      bib_type = paper$bib$type,
+      doi = paper$bib$doi,
+      title = paper$bib$title,
+      authors = paper$bib$authors %||% paper$bib$author,
+      editors = paper$bib$editors %||% paper$bib$editor,
+      publisher = paper$bib$publisher,
+      publication_year = paper$bib$publication_year %||% paper$bib$year,
+      publication_date = NA_character_,
+      container = paper$bib$container %||% paper$bib$journal %||% paper$bib$booktitle,
+      volume = paper$bib$volume,
+      issue = paper$bib$number %||% paper$bib$issue,
+      first_page = paper$bib$first_page,
+      last_page = paper$bib$last_page,
+      edition = NA_character_,
+      version = NA_character_,
+      url = paper$bib$url %||% paper$bib$link,
+      text_id = paper$bib$text_id
+    )
+    })
+  }
+
 
   # fix urls with . at end
   paper$links$url <- gsub("\\.$", "", paper$links$url)

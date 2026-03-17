@@ -10,16 +10,29 @@ test_that("grobid_to_bibr", {
   paper <- grobid_to_bibr(xml_file, NULL)
 
   expect_s3_class(paper, "scivrs_paper")
-  text_cols <- c("text_id", "paragraph_id", "section_id", "text")
-  expect_in(names(paper$text), text_cols)
   expect_equal(paper$bib$doi[[4]], "10.0000/0123456789")
   expect_false("bib_match" %in% names(paper))
+  expect_true(validate_paper(paper))
 
   # 1 paper, save_path, no CR lookup
   save_path <- withr::local_tempdir()
   zip_path <- grobid_to_bibr(xml_file, save_path)
   paper2 <- read(zip_path)
-  suppressWarnings( expect_setequal(paper, paper2))
+  expect_true(validate_paper(paper2))
+  suppressWarnings({
+    expect_setequal(paper$info, paper2$info)
+    expect_setequal(paper$authors, paper2$authors)
+    paper$bib$authors <- NULL
+    paper2$bib$authors <- NULL # arrow reads in authors without names
+    expect_setequal(paper$bib, paper2$bib)
+    expect_setequal(paper$equations, paper2$equations)
+    expect_setequal(paper$figures, paper2$figures)
+    expect_setequal(paper$links, paper2$links)
+    expect_setequal(paper$sections, paper2$sections)
+    expect_setequal(paper$tables, paper2$tables)
+    expect_setequal(paper$text, paper2$text)
+    expect_setequal(paper$xrefs, paper2$xrefs)
+  })
 
   # multiple papers, NULL save_path, no CR lookup
   xml_file <- c(
@@ -61,6 +74,11 @@ test_that("grobid_to_bibr format", {
   xml_file <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
   paper <- grobid_to_bibr(xml_file, NULL)
   expect_true(validate_paper(paper))
+
+  expect_equal(paper$info$keywords[[1]], NULL)
+  expect_equal(paper$bib$authors[[1]][[1]]$family, "Eagly")
+  expect_equal(paper$bib$authors[[1]][[2]]$family, "Wood")
+  expect_equal(paper$bib$authors[[2]][[1]]$given, "F")
 })
 
 test_that("read", {

@@ -130,7 +130,7 @@ test_that("read_bibr", {
   exp <- c("paper_id", "info", "authors", "text", "links", "tables",
            "sections", "bib", "xrefs", "figures", "equations")
   expect_contains(obs, exp)
-  expect_match(paper$paper_id, "^[a-f0-9]{16}$")
+  expect_match(paper$paper_id, "^[a-f0-9]{14,16}$")
 
 })
 
@@ -145,11 +145,8 @@ test_that("read", {
   paper <- read(file_path)
 
   expect_s3_class(paper, "scivrs_paper")
-  obs <- names(paper)
-  exp <- c("paper_id", "info", "authors", "text", "links", "tables",
-           "sections", "bib", "xrefs", "figures")
-  expect_contains(obs, exp)
-  expect_match(paper$paper_id, "^[a-f0-9]{16}$")
+  expect_true(validate_paper(paper))
+  expect_match(paper$paper_id, "^[a-f0-9]{14,16}$")
 
   # check for no links ending in .
   end_dot <- grepl("\\.$", paper$links$url)

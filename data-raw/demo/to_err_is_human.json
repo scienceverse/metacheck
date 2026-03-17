@@ -4,6 +4,8 @@
     {
       "title": "To Err is Human: An Empirical Investigation",
       "description": "This paper demonstrates some good and poor practices for use with the {metacheck} R package. All data are simulated. The paper shows examples of (1) open and closed OSF links; (2a) citation of retracted papers, (2b) citations without a doi, (2c) citations with Pubpeer comments, (2d) citations in the FLoRA replication database, and (2e) missing/mismatched/incorrect citations and references; (3a) R files with code on GitHub that do not load libraries in one location, (3b) load files that are not shared in the repository, (3c) lack comments, and (3d) have absolute file paths; (4) imprecise reporting of non-significant p-values; (5) tests with and without effect sizes; (6) use of \"marginally significant\" to describe non-significant findings; (7) a power analysis reporting some of the essential attributes; and (8) retrieving information from preregistrations.",
+      "doi": null,
+      "keywords": null,
       "file_hash": "a26373a4f28e3718",
       "input_format": "pdf",
       "file_name": "to_err_is_human.pdf",
@@ -16,28 +18,344 @@
   ],
   "authors": [
     {
-      "X": 1,
       "author_id": 1,
       "given": "Daniel",
       "family": "Lakens",
       "corresponding": false,
-      "role": "<chr>"
+      "role": []
     },
     {
-      "X": 2,
       "author_id": 2,
       "given": "Lisa",
       "family": "DeBruine",
       "corresponding": false,
-      "role": "<chr>"
+      "role": []
     },
     {
-      "X": 3,
       "author_id": 3,
       "given": "Jakub",
       "family": "Werner",
       "corresponding": false,
-      "role": "<chr>"
+      "role": []
+    }
+  ],
+  "bib": [
+    {
+      "bib_id": 1,
+      "bib_type": "misc",
+      "doi": "10.5281/zenodo.2669586",
+      "title": "Faux: Simulation for Factorial Designs",
+      "authors": [{ "author_id" : 1, "given": "Lisa", "family": "DeBruine" }],
+      "publication_year": 2025,
+      "container": "",
+      "text_id": 29
+    },
+    {
+      "bib_id": 2,
+      "bib_type": "article",
+      "doi": "10.1037/0003-066x.54.6.408",
+      "title": "The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles",
+      "authors": [
+        { "author_id" : 1, "given": "Alice H.", "family": "Eagly" },
+        { "author_id" : 2, "given": "Wendy", "family": "Wood" }
+      ],
+      "publication_year": 1999,
+      "container": "American Psychologist",
+      "volume": 54,
+      "issue": 6,
+      "first_page": 408,
+      "last_page": 423,
+      "text_id": 30
+    },
+    {
+      "bib_id": 3,
+      "bib_type": "article",
+      "doi": "10.1177/0956797614520714",
+      "title": "Evil Genius? How Dishonesty Can Lead to Greater Creativity",
+      "authors": [
+        { "author_id" : 1, "given": "Francesca", "family": "Gino" },
+        { "author_id" : 2, "given": "Scott S.", "family": "Wiltermuth" }
+      ],
+      "publication_year": 2014,
+      "container": "Psychological Science",
+      "volume": 25,
+      "issue": 4,
+      "first_page": 973,
+      "last_page": 981,
+      "text_id": 31
+    },
+    {
+      "bib_id": 4,
+      "bib_type": "article",
+      "doi": "",
+      "title": "Equivalence Testing for Psychological Research",
+      "authors": [
+        { "author_id" : 1, "given": "DaniÃ«l", "family": "Lakens" }
+      ],
+      "publication_year": 2018,
+      "container": "Advances in Methods and Practices in Psychological Science",
+      "volume": 1,
+      "first_page": 259,
+      "last_page": 270,
+      "text_id": 32
+    },
+    {
+      "bib_id": 5,
+      "bib_type": "article",
+      "doi": "10.0000/0123456789",
+      "title": "Human Error Is a Symptom of a Poor Design",
+      "authors": "Smith, F.",
+      "publication_year": 2021,
+      "container": "Journal of Journals",
+      "text_id": 33
+    }
+  ],
+  "equations": [
+    {
+      "text_id": 19,
+      "grp_id": 1,
+      "lhs": "N",
+      "comp": "=",
+      "rhs": 50
+    },
+    {
+      "text_id": 21,
+      "grp_id": 2,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": 9.12
+    },
+    {
+      "text_id": 21,
+      "grp_id": 2,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": 10.9
+    },
+    {
+      "text_id": 21,
+      "grp_id": 2,
+      "lhs": "t(97.7)",
+      "comp": "=",
+      "rhs": 2.9
+    },
+    {
+      "text_id": 21,
+      "grp_id": 2,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": 0.005
+    },
+    {
+      "text_id": 21,
+      "grp_id": 2,
+      "lhs": "d",
+      "comp": "=",
+      "rhs": 0.59
+    },
+    {
+      "text_id": 22,
+      "grp_id": 3,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": 5.06
+    },
+    {
+      "text_id": 22,
+      "grp_id": 3,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": 4.5
+    },
+    {
+      "text_id": 22,
+      "grp_id": 3,
+      "lhs": "t(97.2)",
+      "comp": "=",
+      "rhs": -1.96
+    },
+    {
+      "text_id": 22,
+      "grp_id": 3,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": 0.152
+    },
+    {
+      "text_id": 23,
+      "grp_id": 4,
+      "lhs": "p",
+      "comp": ">",
+      "rhs": 0.05
+    }
+  ],
+  "figures": [
+    {
+      "figure_id": 1,
+      "section_id": 13
+    },
+    {
+      "figure_id": 2,
+      "section_id": 14
+    }
+  ],
+  "links": [
+    {
+      "url": "https://osf.io/48ncu",
+      "text_id": 11
+    },
+    {
+      "url": "https://aspredicted.org/by8i8v.pdf",
+      "text_id": 11
+    },
+    {
+      "url": "https://github.com/Lakens/to_err_is_human",
+      "text_id": 17
+    },
+    {
+      "url": "https://researchbox.org/4377",
+      "text_id": 17
+    },
+    {
+      "url": "https://osf.io/5tbm9",
+      "text_id": 18
+    },
+    {
+      "url": "https://osf.io/629bx",
+      "text_id": 18
+    },
+    {
+      "url": "https://doi.org/10.5281/zenodo.2669586",
+      "text_id": 29
+    },
+    {
+      "url": "https://doi.org/10.1037/0003-066x.54.6.408",
+      "text_id": 30
+    },
+    {
+      "url": "https://doi.org/10.1177/0956797614520714",
+      "text_id": 31
+    },
+    {
+      "url": "https://doi.org/10.0000/0123456789",
+      "text_id": 32
+    }
+  ],
+  "sections": [
+    {
+      "section_id": 1,
+      "header": "To Err is Human: An Empirical Investigation",
+      "parent_section_id": 0,
+      "section_type": "unknown"
+    },
+    {
+      "section_id": 2,
+      "header": "Abstract",
+      "parent_section_id": 1,
+      "section_type": "abstract"
+    },
+    {
+      "section_id": 3,
+      "header": "",
+      "parent_section_id": 1,
+      "section_type": "intro"
+    },
+    {
+      "section_id": 4,
+      "header": "Method",
+      "parent_section_id": 1,
+      "section_type": "method"
+    },
+    {
+      "section_id": 5,
+      "header": "Procedure",
+      "parent_section_id": 4,
+      "section_type": "method"
+    },
+    {
+      "section_id": 6,
+      "header": "Data Availability",
+      "parent_section_id": 4,
+      "section_type": "endnote"
+    },
+    {
+      "section_id": 7,
+      "header": "Power Analysis",
+      "parent_section_id": 4,
+      "section_type": "method"
+    },
+    {
+      "section_id": 8,
+      "header": "Results",
+      "parent_section_id": 1,
+      "section_type": "results"
+    },
+    {
+      "section_id": 9,
+      "header": "Discussion",
+      "parent_section_id": 1,
+      "section_type": "discussion"
+    },
+    {
+      "section_id": 10,
+      "header": "Author Notes",
+      "parent_section_id": 1,
+      "section_type": "acknowledgements"
+    },
+    {
+      "section_id": 11,
+      "header": "References",
+      "parent_section_id": 1,
+      "section_type": "references"
+    },
+    {
+      "section_id": 12,
+      "header": "Table 1",
+      "parent_section_id": 0,
+      "section_type": "tbl"
+    },
+    {
+      "section_id": 13,
+      "header": "Figure 1",
+      "parent_section_id": 0,
+      "section_type": "fig"
+    },
+    {
+      "section_id": 14,
+      "header": "Figure 2",
+      "parent_section_id": 0,
+      "section_type": "fig"
+    },
+    {
+      "section_id": 15,
+      "header": "Footnote 1",
+      "parent_section_id": 0,
+      "section_type": "footnote"
+    },
+    {
+      "section_id": 16,
+      "header": "Footnote 2",
+      "parent_section_id": 0,
+      "section_type": "footnote"
+    }
+  ],
+  "tables": [
+    {
+      "table_id": 1,
+      "section_id": 12,
+      "html": "<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th>0<\/th>\n      <th>1<\/th>\n      <th>2<\/th>\n    <\/tr>\n  <\/thead>\n  <tbody>\n    <tr>\n      <td>Condition<\/td>\n      <td>Mistakes<\/td>\n      <td>Usefulness<\/td>\n    <\/tr>\n    <tr>\n      <td>control<\/td>\n      <td>10.90<\/td>\n      <td>4.50<\/td>\n    <\/tr>\n    <tr>\n      <td>experimental<\/td>\n      <td>9.12<\/td>\n      <td>5.06<\/td>\n    <\/tr>\n  <\/tbody>\n<\/table>",
+      "contents": [
+        {
+          "Condition": "control",
+          "Mistakes": 10.9,
+          "Usefulness": 4.5
+        },
+        {
+          "Condition": "experimental",
+          "Mistakes": 9.12,
+          "Usefulness": 5.06
+        }
+      ]
     }
   ],
   "text": [
@@ -248,7 +566,7 @@
       "text_id": 30,
       "section_id": 11,
       "paragraph_id": 16,
-      "text": "Eagly, Alice H., and Wendy Wood. 1999. \"The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles.\" American Psychologist 54 (6): 408Ð23. https://doi.org/10.1037/0003-066x.54.6.408.",
+      "text": "Eagly, Alice H., and Wendy Wood. 1999. \"The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles.\" American Psychologist 54 (6): 408?23. https://doi.org/10.1037/0003-066x.54.6.408.",
       "page_number": 4
     },
     {
@@ -262,7 +580,7 @@
       "text_id": 32,
       "section_id": 11,
       "paragraph_id": 18,
-      "text": "Lakens, Dani‘l. 2018. \"Equivalence Testing for Psychological Research.\" Advances in Methods and Practices in Psychological Science 1: 259Ð70.",
+      "text": "Lakens, Dani?l. 2018. \"Equivalence Testing for Psychological Research.\" Advances in Methods and Practices in Psychological Science 1: 259?70.",
       "page_number": 4
     },
     {
@@ -315,216 +633,6 @@
       "page_number": 2
     }
   ],
-  "links": [
-    {
-      "url": "https://osf.io/48ncu",
-      "text_id": 11
-    },
-    {
-      "url": "https://aspredicted.org/by8i8v.pdf",
-      "text_id": 11
-    },
-    {
-      "url": "https://github.com/Lakens/to_err_is_human",
-      "text_id": 17
-    },
-    {
-      "url": "https://researchbox.org/4377",
-      "text_id": 17
-    },
-    {
-      "url": "https://osf.io/5tbm9",
-      "text_id": 18
-    },
-    {
-      "url": "https://osf.io/629bx",
-      "text_id": 18
-    },
-    {
-      "url": "https://doi.org/10.5281/zenodo.2669586",
-      "text_id": 29
-    },
-    {
-      "url": "https://doi.org/10.1037/0003-066x.54.6.408",
-      "text_id": 30
-    },
-    {
-      "url": "https://doi.org/10.1177/0956797614520714",
-      "text_id": 31
-    },
-    {
-      "url": "https://doi.org/10.0000/0123456789",
-      "text_id": 32
-    }
-  ],
-  "tables": [
-    {
-      "tbl_id": 1,
-      "section_id": 12,
-      "tbl_html": "<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th>0<\/th>\n      <th>1<\/th>\n      <th>2<\/th>\n    <\/tr>\n  <\/thead>\n  <tbody>\n    <tr>\n      <td>Condition<\/td>\n      <td>Mistakes<\/td>\n      <td>Usefulness<\/td>\n    <\/tr>\n    <tr>\n      <td>control<\/td>\n      <td>10.90<\/td>\n      <td>4.50<\/td>\n    <\/tr>\n    <tr>\n      <td>experimental<\/td>\n      <td>9.12<\/td>\n      <td>5.06<\/td>\n    <\/tr>\n  <\/tbody>\n<\/table>"
-    }
-  ],
-  "sections": [
-    {
-      "section_id": 1,
-      "header": "To Err is Human: An Empirical Investigation",
-      "parent_section_id": 0,
-      "section_type": "unknown"
-    },
-    {
-      "section_id": 2,
-      "header": "Abstract",
-      "parent_section_id": 1,
-      "section_type": "abstract"
-    },
-    {
-      "section_id": 3,
-      "header": "",
-      "parent_section_id": 1,
-      "section_type": "intro"
-    },
-    {
-      "section_id": 4,
-      "header": "Method",
-      "parent_section_id": 1,
-      "section_type": "method"
-    },
-    {
-      "section_id": 5,
-      "header": "Procedure",
-      "parent_section_id": 4,
-      "section_type": "method"
-    },
-    {
-      "section_id": 6,
-      "header": "Data Availability",
-      "parent_section_id": 4,
-      "section_type": "endnote"
-    },
-    {
-      "section_id": 7,
-      "header": "Power Analysis",
-      "parent_section_id": 4,
-      "section_type": "method"
-    },
-    {
-      "section_id": 8,
-      "header": "Results",
-      "parent_section_id": 1,
-      "section_type": "results"
-    },
-    {
-      "section_id": 9,
-      "header": "Discussion",
-      "parent_section_id": 1,
-      "section_type": "discussion"
-    },
-    {
-      "section_id": 10,
-      "header": "Author Notes",
-      "parent_section_id": 1,
-      "section_type": "acknowledgements"
-    },
-    {
-      "section_id": 11,
-      "header": "References",
-      "parent_section_id": 1,
-      "section_type": "references"
-    },
-    {
-      "section_id": 12,
-      "header": "Table 1",
-      "parent_section_id": 0,
-      "section_type": "tbl"
-    },
-    {
-      "section_id": 13,
-      "header": "Figure 1",
-      "parent_section_id": 0,
-      "section_type": "fig"
-    },
-    {
-      "section_id": 14,
-      "header": "Figure 2",
-      "parent_section_id": 0,
-      "section_type": "fig"
-    },
-    {
-      "section_id": 15,
-      "header": "Footnote 1",
-      "parent_section_id": 0,
-      "section_type": "footnote"
-    },
-    {
-      "section_id": 16,
-      "header": "Footnote 2",
-      "parent_section_id": 0,
-      "section_type": "footnote"
-    }
-  ],
-  "bib": [
-    {
-      "bib_id": 1,
-      "bib_type": "misc",
-      "doi": "10.5281/zenodo.2669586",
-      "title": "Faux: Simulation for Factorial Designs",
-      "authors": "DeBruine, Lisa",
-      "publication_year": 2025,
-      "container": "",
-      "text_id": 29
-    },
-    {
-      "bib_id": 2,
-      "bib_type": "article",
-      "doi": "10.1037/0003-066x.54.6.408",
-      "title": "The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles",
-      "authors": "Eagly, Alice H., and Wendy Wood",
-      "publication_year": 1999,
-      "container": "American Psychologist",
-      "volume": 54,
-      "issue": 6,
-      "first_page": 408,
-      "last_page": 423,
-      "text_id": 30
-    },
-    {
-      "bib_id": 3,
-      "bib_type": "article",
-      "doi": "10.1177/0956797614520714",
-      "title": "Evil Genius? How Dishonesty Can Lead to Greater Creativity",
-      "authors": "Gino, Francesca, and Scott S. Wiltermuth",
-      "publication_year": 2014,
-      "container": "Psychological Science",
-      "volume": 25,
-      "issue": 4,
-      "first_page": 973,
-      "last_page": 981,
-      "text_id": 31
-    },
-    {
-      "bib_id": 4,
-      "bib_type": "article",
-      "doi": "",
-      "title": "Equivalence Testing for Psychological Research",
-      "authors": "Lakens, Dani‘l",
-      "publication_year": 2018,
-      "container": "Advances in Methods and Practices in Psychological Science",
-      "volume": 1,
-      "first_page": 259,
-      "last_page": 270,
-      "text_id": 32
-    },
-    {
-      "bib_id": 5,
-      "bib_type": "article",
-      "doi": "10.0000/0123456789",
-      "title": "Human Error Is a Symptom of a Poor Design",
-      "authors": "Smith, F.",
-      "publication_year": 2021,
-      "container": "Journal of Journals",
-      "text_id": 33
-    }
-  ],
   "xrefs": [
     {
       "xref_id": 1,
@@ -574,95 +682,6 @@
       "text_id": 20
     }
   ],
-  "figures": [
-    {
-      "fig_id": 1,
-      "section_id": 13
-    },
-    {
-      "fig_id": 2,
-      "section_id": 14
-    }
-  ],
-  "equations": [
-    {
-      "text_id": 19,
-      "grp_id": 1,
-      "lhs": "N",
-      "comp": "=",
-      "rhs": 50
-    },
-    {
-      "text_id": 21,
-      "grp_id": 2,
-      "lhs": "M",
-      "comp": "=",
-      "rhs": 9.12
-    },
-    {
-      "text_id": 21,
-      "grp_id": 2,
-      "lhs": "M",
-      "comp": "=",
-      "rhs": 10.9
-    },
-    {
-      "text_id": 21,
-      "grp_id": 2,
-      "lhs": "t(97.7)",
-      "comp": "=",
-      "rhs": 2.9
-    },
-    {
-      "text_id": 21,
-      "grp_id": 2,
-      "lhs": "p",
-      "comp": "=",
-      "rhs": 0.005
-    },
-    {
-      "text_id": 21,
-      "grp_id": 2,
-      "lhs": "d",
-      "comp": "=",
-      "rhs": 0.59
-    },
-    {
-      "text_id": 22,
-      "grp_id": 3,
-      "lhs": "M",
-      "comp": "=",
-      "rhs": 5.06
-    },
-    {
-      "text_id": 22,
-      "grp_id": 3,
-      "lhs": "M",
-      "comp": "=",
-      "rhs": 4.5
-    },
-    {
-      "text_id": 22,
-      "grp_id": 3,
-      "lhs": "t(97.2)",
-      "comp": "=",
-      "rhs": -1.96
-    },
-    {
-      "text_id": 22,
-      "grp_id": 3,
-      "lhs": "p",
-      "comp": "=",
-      "rhs": 0.152
-    },
-    {
-      "text_id": 23,
-      "grp_id": 4,
-      "lhs": "p",
-      "comp": ">",
-      "rhs": 0.05
-    }
-  ],
   "bib_matches": [
     {
       "bib_id": 1,
@@ -672,7 +691,7 @@
       "bib_type": "misc",
       "doi": "10.32614/cran.package.faux",
       "title": "faux: Simulation for Factorial Designs",
-      "authors": "DeBruine, Lisa",
+      "authors": [{ "author_id" : 1, "given": "Lisa", "family": "DeBruine" }],
       "publisher": "The R Foundation",
       "publication_year": 2020,
       "container": "CRAN: Contributed Packages",
@@ -686,7 +705,10 @@
       "bib_type": "article",
       "doi": "10.1037/0003-066x.54.6.408",
       "title": "The origins of sex differences in human behavior: Evolved dispositions versus social roles.",
-      "authors": "Eagly, Alice H.; Wood, Wendy",
+      "authors": [
+        { "author_id" : 1, "given": "Alice H.", "family": "Eagly" },
+        { "author_id" : 2, "given": "Wendy", "family": "Wood" }
+      ],
       "publisher": "American Psychological Association (APA)",
       "publication_year": 1999,
       "container": "American Psychologist",
@@ -704,7 +726,10 @@
       "bib_type": "article",
       "doi": "10.1177/0956797614520714",
       "title": "Retracted: Evil Genius? How Dishonesty Can Lead to Greater Creativity",
-      "authors": "Gino, Francesca; Wiltermuth, Scott S.",
+      "authors": [
+        { "author_id" : 1, "given": "Francesca", "family": "Gino" },
+        { "author_id" : 2, "given": "Scott S.", "family": "Wiltermuth" }
+      ],
       "publisher": "SAGE Publications",
       "publication_year": 2014,
       "container": "Psychological Science",
@@ -722,7 +747,11 @@
       "bib_type": "article",
       "doi": "10.1177/2515245918770963",
       "title": "Equivalence Testing for Psychological Research: A Tutorial",
-      "authors": "Lakens, Daniel; Scheel, Anne M.; Isager, Peder Mortvedt",
+      "authors": [
+        { "author_id" : 1, "given": "Daniel", "family": "Lakens" },
+        { "author_id" : 2, "given": "Anne M.", "family": "Scheel" },
+        { "author_id" : 1, "given": "Peder Mortvedt", "family": "Isager" }
+      ],
       "publisher": "SAGE Publications",
       "publication_year": 2018,
       "container": "Advances in Methods and Practices in Psychological Science",
@@ -731,18 +760,6 @@
       "first_page": 259,
       "last_page": 269,
       "url": "https://doi.org/10.1177/2515245918770963"
-    }
-  ],
-  "table_1": [
-    {
-      "Condition": "control",
-      "Mistakes": 10.9,
-      "Usefulness": 4.5
-    },
-    {
-      "Condition": "experimental",
-      "Mistakes": 9.12,
-      "Usefulness": 5.06
     }
   ]
 }

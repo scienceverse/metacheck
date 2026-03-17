@@ -23,7 +23,7 @@ paper <- function(id = NULL, ...) {
     info = data.frame(
       title = character(0),
       description = character(0),
-      keywords = character(0),
+      keywords = I(list()),
       doi = character(0),
       file_hash = character(0),
       input_format = character(0),
@@ -45,36 +45,13 @@ paper <- function(id = NULL, ...) {
       orcid = character(0),
       role = character(0)
     ),
-    text = data.frame(
-      text_id = integer(0),
-      paragraph_id = integer(0),
-      section_id = integer(0),
-      text = character(0)
-    ),
-    links = data.frame(
-      url = character(0),
-      link_text = character(0),
-      text_id = integer(0)
-    ),
-    tables = data.frame(
-      tbl_id = integer(0),
-      section_id = integer(0),
-      contents = character(0)
-    ),
-    sections = data.frame(
-      section_id = integer(0),
-      header = character(0),
-      parent_section_id = integer(0),
-      section_type = character(0),
-      classification_score = double(0)
-    ),
     bib = data.frame(
       bib_id = integer(0),
       bib_type = character(0),
       doi = character(0),
       title = character(0),
-      authors = character(0),
-      editors = character(0),
+      authors = I(list()),
+      editors = I(list()),
       publisher = character(0),
       publication_year = integer(0),
       publication_date = character(0),
@@ -88,23 +65,47 @@ paper <- function(id = NULL, ...) {
       url = character(0),
       text_id = integer(0)
     ),
-    xrefs = data.frame(
-      xref_id = integer(0),
-      xref_type = character(0),
-      contents = character(0),
-      text_id = integer(0)
-    ),
-    figures = data.frame(
-      fig_id = integer(0),
-      section_id = integer(0),
-      image = character(0)
-    ),
     equations = data.frame(
       text_id = integer(0),
       grp_id = integer(0),
       lhs = character(0),
       comp = character(0),
       rhs = character(0)
+    ),
+    figures = data.frame(
+      figure_id = integer(0),
+      section_id = integer(0),
+      image = character(0)
+    ),
+    links = data.frame(
+      url = character(0),
+      link_text = character(0),
+      text_id = integer(0)
+    ),
+    sections = data.frame(
+      section_id = integer(0),
+      header = character(0),
+      parent_section_id = integer(0),
+      section_type = character(0),
+      classification_score = double(0)
+    ),
+    tables = data.frame(
+      table_id = integer(0),
+      section_id = integer(0),
+      html = character(0),
+      contents = I(list())
+    ),
+    text = data.frame(
+      text_id = integer(0),
+      paragraph_id = integer(0),
+      section_id = integer(0),
+      text = character(0)
+    ),
+    xrefs = data.frame(
+      xref_id = integer(0),
+      xref_type = character(0),
+      contents = character(0),
+      text_id = integer(0)
     )
   )
 
@@ -227,9 +228,9 @@ validate_paper <- function(paper) {
   schema <- jsonlite::read_json(json)
 
   paper_tables <- c("paper_id", "info", "authors",
-                    "text", "links", "sections",
-                    "bib", "xrefs",
-                    "tables", "figures", "equations")
+                    "bib", "equations", "figures",
+                    "links", "sections", "tables",
+                    "text","xrefs")
   if (!all(paper_tables %in% names(paper))) {
     missing <- setdiff(paper_tables, names(paper)) |>
       paste(collapse = ", ") |>
@@ -241,7 +242,7 @@ validate_paper <- function(paper) {
   tbls <- c("info", "authors", "text", "links", "sections",
             "xrefs", "tables", "figures", "equations")
   defs <- c("info", "author", "sentence", "link", "section",
-            "xref", "tbl", "fig", "equation")
+            "xref", "table", "figure", "equation")
 
   sink <- mapply(\(tbl, def) {
     cols <- names(paper[[tbl]])
@@ -259,12 +260,12 @@ validate_paper <- function(paper) {
       extra <- setdiff(cols, ok) |>
         paste(collapse = ", ") |>
         sprintf("The %s table has extra columns:\n%s", tbl, x =_)
-      stop(extra)
+      warning(extra)
     }
   }, tbl = tbls, def = defs)
 
   # bib table is a little more complex
-  cols <- names(paper[[tbl]])
+  cols <- names(paper$bib)
   ok <- c(
     schema$`$defs`$biblio$properties |> names(),
     schema$`$defs`$biblio_ref$allOf[[2]]$properties |> names()
@@ -285,7 +286,7 @@ validate_paper <- function(paper) {
     extra <- setdiff(cols, ok) |>
       paste(collapse = ", ") |>
       sprintf("The bib table has extra columns:\n%s", x =_)
-    stop(extra)
+    warning(extra)
   }
 
   return(TRUE)
@@ -477,6 +478,28 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
   for (tbl in names(paper)) {
     tryCatch({
       tbl_path <- file.path(zip_path, paste0(tbl, ".arrow"))
+
+      # fix list of table cols for arrow format
+      # if (nrow(paper[[tbl]]) > 0) {
+      #   list_cols <- (sapply(paper[[tbl]][1, ], typeof) == "list") |>
+      #     which() |> names()
+      #   for (list_col in list_cols) {
+      #     is_list <- paper[[tbl]][[list_col]][[1]] |> is.list()
+      #
+      #     if (is_list) {
+      #       paper[[tbl]][[list_col]] <- paper[[tbl]][[list_col]] |>
+      #         lapply(\(tb) {
+      #           n <- nrow(tb)
+      #           out <- vector("list", n)
+      #           for (i in seq_len(n)) {
+      #             out[[i]] <- as.list(tb[i, , drop = TRUE])
+      #           }
+      #           out
+      #         })
+      #     }
+      #   }
+      # }
+
       arrow::write_ipc_file(paper[[tbl]], tbl_path)
     }, error = \(e) {
       warning(tbl, " table could not be saved for ", paper_id)
