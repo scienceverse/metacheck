@@ -4,6 +4,12 @@
 
 ### In Progress 🔧
 
+**008** — bulk-label-runners (branch: `008-bulk-label-runners`)
+- Refactor `1_data_label.R` into `run_data_label(paper_id)` function (no top-level execution)
+- Confirm `2_codebook_label.R` already clean; update header comment with correct paths
+- Add `run_label_bulk.R` — crash-resilient bulk runner for data-label stage, auto-resumes via `label_summary.csv`
+- Add `run_codebook_bulk.R` — crash-resilient bulk runner for codebook-label stage, auto-resumes via `codebook_summary.csv`
+
 **007** — per-id-output-structure (branch: `007-per-id-output-structure`)
 - Replace flat `structure/` output directory with `outputs/<paper_id>/` per-paper layout
 - Add `paper_output_dir()` helper to `helper.R` (centralised path + auto-create)

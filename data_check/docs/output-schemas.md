@@ -128,6 +128,39 @@ runner to resume after a crash.
 
 ---
 
+## `label_summary.csv`
+
+One row per paper processed by `run_label_bulk.R`. Appended immediately after each paper. Used to auto-resume after a crash.
+
+| Column | Type | Description |
+|---|---|---|
+| `paper_id` | character | Paper identifier (leading zeros preserved) |
+| `success` | logical | `TRUE` if `columns.csv` was written successfully |
+| `error` | character | Error message if `success = FALSE`; `NA` otherwise |
+| `elapsed_ms` | integer | Wall-clock time in milliseconds |
+| `n_data_files` | integer | Data files found in `structure.csv` |
+| `n_columns` | integer | Columns written to `columns.csv` |
+
+---
+
+## `codebook_summary.csv`
+
+One row per paper processed by `run_codebook_bulk.R`. Appended immediately after each paper. Used to auto-resume after a crash.
+
+| Column | Type | Description |
+|---|---|---|
+| `paper_id` | character | Paper identifier (leading zeros preserved) |
+| `success` | logical | `TRUE` if `labels.csv` and `codebook_coverage.csv` were written |
+| `error` | character | Error message if `success = FALSE`; `NA` otherwise |
+| `elapsed_ms` | integer | Wall-clock time in milliseconds |
+| `n_labelled` | integer | Columns with `label_status = "labelled"` |
+| `n_unlabelled` | integer | Columns with `label_status = "unlabelled"` or `"no_codebook"` |
+| `n_codebook_vars` | integer | Total variables extracted from codebooks |
+| `n_matched_vars` | integer | Codebook variables matched to at least one data column |
+| `label_status` | character | Overall paper outcome: `"ok"`, `"no_match"`, or `"no_codebook"` |
+
+---
+
 ## `outputs/<paper_id>/labels.csv`
 
 One row per column in each data file (parallel to `columns.csv`). Produced by `2_codebook_label.R`.

@@ -1,15 +1,23 @@
 # 2_codebook_label.R
 # ─────────────────────────────────────────────────────────────────────────────
 # Reads codebook/README files for a paper and labels data columns accordingly.
-# Produces per-paper _labels.csv and _codebook_coverage.csv in structure/.
 #
 # Exports: run_codebook_label(paper_id)
 #
 # Input:  paper_id (character)
-#         data_check/structure/<paper_id>_structure.csv  (from 0_index.R)
-#         data_check/structure/<paper_id>_columns.csv   (from 0_index.R)
-# Output: data_check/structure/<paper_id>_labels.csv
-#         data_check/structure/<paper_id>_codebook_coverage.csv
+#         outputs/<paper_id>/structure.csv  (from 0_index.R)
+#         outputs/<paper_id>/columns.csv   (from 0_index.R)
+# Output: outputs/<paper_id>/labels.csv
+#         outputs/<paper_id>/codebook_coverage.csv
+#
+# Returns: list(
+#   labels_df, coverage_df,
+#   n_labelled, n_unlabelled,
+#   n_codebook_vars, n_matched_vars,
+#   label_status   # "ok" | "no_match" | "no_codebook"
+# )
+#
+# Sourcing this file defines run_codebook_label() only — no side effects.
 # ─────────────────────────────────────────────────────────────────────────────
 
 library(metacheck)
@@ -71,6 +79,11 @@ run_codebook_label <- function(paper_id) {
   columns_df   <- read.csv(columns_path,   stringsAsFactors = FALSE,
                             colClasses = c(paper_id = "character"))
 
+  # Support both "group" (0_index schema) and "experiment_group" (1_data_label schema)
+  col_group <- if ("group" %in% names(columns_df)) columns_df$group else
+               if ("experiment_group" %in% names(columns_df)) columns_df$experiment_group else
+               rep(NA_character_, nrow(columns_df))
+
   message("── Codebook labelling for paper ", paper_id)
   message("   ", nrow(columns_df), " data column(s) to label")
 
@@ -86,7 +99,7 @@ run_codebook_label <- function(paper_id) {
       paper_id          = columns_df$paper_id,
       source_file       = columns_df$source_file,
       column_name       = columns_df$column_name,
-      group             = columns_df$group,
+      group             = col_group,
       label             = NA_character_,
       codebook_variable = NA_character_,
       label_source      = NA_character_,
