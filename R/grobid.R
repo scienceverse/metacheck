@@ -33,11 +33,12 @@ grobid_convert <- function(file_path, save_path = ".",
   }
 
   # test if the server is up using the isalive endpoint, instead of sitedown
-  service_status_url <- httr::modify_url(api_url, path = "/api/isalive")
-
   resp <- tryCatch(
     {
-      httr::GET(service_status_url)
+      httr2::request(api_url) |>
+        httr2::req_url_path("/api/isalive") |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_perform()
     },
     error = function(e) {
       stop(
@@ -47,7 +48,7 @@ grobid_convert <- function(file_path, save_path = ".",
     }
   )
 
-  status <- httr::status_code(resp)
+  status <- httr2::resp_status(resp)
   if (status != 200) {
     stop("GROBID server does not appear up and running on the provided URL. Status: ", status)
   }
@@ -127,25 +128,26 @@ grobid_convert <- function(file_path, save_path = ".",
   }
 
   # grobid server
-  post_url <- httr::modify_url(api_url, path = "/api/processFulltextDocument")
-  args <- list(
-    input = httr::upload_file(file_path),
-    start = start,
-    end = end,
-    consolidateCitations = consolidate_citations,
-    consolidateHeader = consolidate_header,
-    consolidateFunders = consolidate_funders,
-    includeRawCitations = 1
-  )
-  resp <- httr::POST(post_url, body = args, encode = "multipart")
+  resp <- httr2::request(api_url) |>
+    httr2::req_url_path("/api/processFulltextDocument") |>
+    httr2::req_body_multipart(
+      input = curl::form_file(file_path),
+      start = as.character(start),
+      end = as.character(end),
+      consolidateCitations = as.character(consolidate_citations),
+      consolidateHeader = as.character(consolidate_header),
+      consolidateFunders = as.character(consolidate_funders),
+      includeRawCitations = "1"
+    ) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
   # Check if the request was successful
-  status <- httr::http_status(resp)
-  if (status$category != "Success") {
-    stop(status$reason)
+  if (httr2::resp_status(resp) >= 400) {
+    stop(httr2::resp_status_desc(resp))
   }
 
-  content <- httr::content(resp, as = "raw")
+  content <- httr2::resp_body_raw(resp)
 
   # save to save_path
   if (is.null(save_path)) {

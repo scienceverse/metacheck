@@ -79,12 +79,51 @@ doi_resolves <- function(doi, timeout = 10) {
   doi <- doi_clean(doi)
 
   if (length(doi) > 1) {
-    res <- vapply(doi, \(d) doi_resolves(d, timeout = timeout), logical(1))
-    names(res) <- NULL
+    # separate valid/invalid DOIs upfront
+    valid_format <- doi_valid_format(doi)
+    na_or_empty <- is.na(doi) | !nzchar(doi)
+    needs_check <- !na_or_empty & valid_format
+
+    res <- rep(NA, length(doi))
+    res[!na_or_empty & !valid_format] <- FALSE
+
+    if (any(needs_check)) {
+      check_dois <- doi[needs_check]
+      reqs <- lapply(check_dois, \(d) {
+        url <- paste0(
+          "https://doi.org/api/handles/",
+          utils::URLencode(d, reserved = TRUE),
+          "?type=URL"
+        )
+        httr2::request(url) |>
+          httr2::req_timeout(timeout) |>
+          httr2::req_throttle(rate = 10 / 1) |>
+          httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
+          httr2::req_error(is_error = \(resp) FALSE)
+      })
+
+      resps <- httr2::req_perform_parallel(reqs, on_error = "continue",
+                                            progress = FALSE)
+
+      check_res <- vapply(resps, \(resp) {
+        if (inherits(resp, "error")) return(NA)
+        body <- tryCatch(httr2::resp_body_json(resp), error = \(e) NULL)
+        code <- body$responseCode
+        if (is.null(code) || length(code) != 1L) return(NA)
+        if (code == 1L) return(TRUE)
+        if (code == 100L) return(FALSE)
+        if (code == 2L) return(NA)
+        if (code == 200L) return(FALSE)
+        NA
+      }, logical(1))
+
+      res[needs_check] <- check_res
+    }
+
     return(res)
   }
 
-  # check DOI is well-formed
+  # single DOI
   if (is.na(doi) || !nzchar(doi)) {
     return(NA)
   }
@@ -92,7 +131,6 @@ doi_resolves <- function(doi, timeout = 10) {
     return(FALSE)
   }
 
-  # check doi.org API
   url <- paste0(
     "https://doi.org/api/handles/",
     utils::URLencode(doi, reserved = TRUE),
@@ -117,19 +155,10 @@ doi_resolves <- function(doi, timeout = 10) {
     return(NA)
   }
 
-  # https://www.doi.org/doi-handbook/HTML/rest-api-response-format.html
-  if (code == 1L) {
-    return(TRUE)
-  } # handle found AND has URL
-  if (code == 100L) {
-    return(FALSE)
-  } # handle not found
-  if (code == 2L) {
-    return(NA)
-  } # internal error
-  if (code == 200L) {
-    return(FALSE)
-  } # handle exists but no URL of requested type
+  if (code == 1L) return(TRUE)
+  if (code == 100L) return(FALSE)
+  if (code == 2L) return(NA)
+  if (code == 200L) return(FALSE)
 
   NA
 }
@@ -150,38 +179,41 @@ doi_lookup <- function(doi) {
     return(data.frame(doi = character(0)))
   }
 
-  pb <- pb(length(doi), ":what [:bar] :current/:total")
-  bibdata <- lapply(doi, \(the_doi) {
-    if (is.na(the_doi)) {
-      pb$tick(1, list(what = "Skipping NA"))
-      return(list(doi = the_doi))
-    }
+  # build requests for non-NA DOIs, perform in parallel
+  cleaned <- doi_clean(doi)
+  is_valid <- !is.na(doi)
 
-    d <- doi_clean(the_doi)
-    pb$tick(0, list(what = d))
-    x <- tryCatch({
-      resp <- paste0("https://doi.org/", d) |>
-        httr2::request() |>
-        httr2::req_headers(Accept = "application/json") |>
-        httr2::req_perform()
-
-      ct <- httr2::resp_content_type(resp)
-
-      if (ct == "text/html") {
-        xml <- httr2::resp_body_html(resp)
-
-        xml2::xml_find_first(xml, '//*[@id="recordExportDownload"]') |>
-          xml2::xml_attr("data-formats") |>
-          jsonlite::fromJSON()
-      }
-
-      httr2::resp_body_json(resp)
-    }, error = \(e) {
-      return(NULL)
-    })
-    pb$tick(1, list(what = ""))
-    x
+  valid_idx <- which(is_valid)
+  valid_reqs <- lapply(valid_idx, \(i) {
+    paste0("https://doi.org/", cleaned[i]) |>
+      httr2::request() |>
+      httr2::req_headers(Accept = "application/json") |>
+      httr2::req_throttle(rate = 10 / 1) |>
+      httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
+      httr2::req_error(is_error = \(resp) FALSE)
   })
+
+  resps <- httr2::req_perform_parallel(valid_reqs, on_error = "continue",
+                                        progress = verbose())
+
+  # process responses
+  bibdata <- vector("list", length(doi))
+  for (i in seq_along(doi)) {
+    if (!is_valid[i]) {
+      bibdata[[i]] <- list(doi = doi[i])
+      next
+    }
+  }
+  for (j in seq_along(valid_idx)) {
+    i <- valid_idx[j]
+    bibdata[[i]] <- tryCatch({
+      resp <- resps[[j]]
+      if (inherits(resp, "error") || httr2::resp_status(resp) >= 400) {
+        return(NULL)
+      }
+      httr2::resp_body_json(resp)
+    }, error = \(e) NULL)
+  }
 
   bib_table <- lapply(bibdata, \(bd) {
     # pages
@@ -241,34 +273,44 @@ datacite_doi <- function(doi) {
     return(data.frame(doi = character(0)))
   }
 
-  pb <- pb(length(doi), ":what [:bar] :current/:total")
-  bibdata <- lapply(doi, \(the_doi) {
-    if (is.na(the_doi)) {
-      pb$tick(1, list(what = "Skipping NA"))
-      return(list(doi = the_doi))
+  # build requests for non-NA DOIs, perform in parallel
+  cleaned <- doi_clean(doi)
+  is_valid <- !is.na(doi)
+
+  valid_idx <- which(is_valid)
+  valid_reqs <- lapply(valid_idx, \(i) {
+    paste0("https://api.datacite.org/dois/", cleaned[i]) |>
+      httr2::request() |>
+      httr2::req_headers(Accept = "application/json") |>
+      httr2::req_throttle(rate = 10 / 1) |>
+      httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
+      httr2::req_error(is_error = \(resp) FALSE)
+  })
+
+  resps <- httr2::req_perform_parallel(valid_reqs, on_error = "continue",
+                                        progress = verbose())
+
+  bibdata <- vector("list", length(doi))
+  for (i in seq_along(doi)) {
+    if (!is_valid[i]) {
+      bibdata[[i]] <- list(doi = doi[i])
     }
-
-    d <- doi_clean(the_doi)
-    pb$tick(0, list(what = d))
-    x <- tryCatch({
-      resp <- paste0("https://api.datacite.org/dois/", d) |>
-        httr2::request() |>
-        httr2::req_headers(Accept = "application/json") |>
-        httr2::req_perform()
-
+  }
+  for (j in seq_along(valid_idx)) {
+    i <- valid_idx[j]
+    bibdata[[i]] <- tryCatch({
+      resp <- resps[[j]]
+      if (inherits(resp, "error") || httr2::resp_status(resp) >= 400) {
+        return(NULL)
+      }
       ct <- httr2::resp_content_type(resp)
-
       if (ct == "application/json") {
         httr2::resp_body_json(resp)
       } else {
         NULL
       }
-    }, error = \(e) {
-      return(NULL)
-    })
-    pb$tick(1, list(what = ""))
-    x
-  })
+    }, error = \(e) NULL)
+  }
 
   bib_table <- lapply(bibdata, \(bd) {
     att <- bd$data$attributes
@@ -410,16 +452,67 @@ crossref_doi <- function(doi, select = c(
     return(data.frame(DOI = doi, error = "offline"))
   }
 
-  ## vectorise ----
+  ## vectorise with parallel requests ----
   if (length(doi) > 1) {
-    pb <- pb(length(doi),
-      format = "Checking DOIs [:bar] :current/:total :elapsedfull"
-    )
-    table <- lapply(doi, \(d) {
-      pb$tick()
-      crossref_doi(d)
-    }) |>
-      do.call(dplyr::bind_rows, args = _)
+    cleaned <- doi_clean(doi)
+    valid <- doi_valid_format(cleaned)
+
+    # build requests only for valid DOIs
+    valid_idx <- which(valid)
+    invalid_idx <- which(!valid)
+
+    if (length(valid_idx) > 0) {
+      reqs <- lapply(valid_idx, \(i) {
+        url <- sprintf(
+          "https://api.labs.crossref.org/works/%s?mailto=%s",
+          utils::URLencode(cleaned[i], reserved = TRUE),
+          email()
+        )
+        httr2::request(url) |>
+          httr2::req_headers(Accept = "application/json") |>
+          httr2::req_throttle(rate = 30 / 1) |>
+          httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
+          httr2::req_error(is_error = \(resp) FALSE)
+      })
+
+      resps <- httr2::req_perform_parallel(reqs, on_error = "continue",
+                                            progress = verbose())
+
+      valid_results <- lapply(seq_along(valid_idx), \(j) {
+        tryCatch({
+          resp <- resps[[j]]
+          if (inherits(resp, "error")) {
+            return(data.frame(DOI = doi[valid_idx[j]], error = "connection error"))
+          }
+          if (httr2::resp_status(resp) >= 400) {
+            return(data.frame(DOI = doi[valid_idx[j]], error = paste("HTTP", httr2::resp_status(resp))))
+          }
+          item <- httr2::resp_body_json(resp)
+          if (item$status != "ok") {
+            return(data.frame(DOI = doi[valid_idx[j]], error = item$body$`message-type` %||% "unknown"))
+          }
+          .crossref_parse_item(item$message, select)
+        }, error = \(e) {
+          data.frame(DOI = doi[valid_idx[j]], error = e$message)
+        })
+      })
+    } else {
+      valid_results <- list()
+    }
+
+    invalid_results <- lapply(invalid_idx, \(i) {
+      data.frame(DOI = doi[i], error = "malformed")
+    })
+
+    # combine in original order
+    all_results <- vector("list", length(doi))
+    for (j in seq_along(valid_idx)) all_results[[valid_idx[j]]] <- valid_results[[j]]
+    for (j in seq_along(invalid_idx)) all_results[[invalid_idx[j]]] <- invalid_results[[j]]
+    # handle all-NA DOIs
+    na_idx <- which(is.na(doi))
+    for (i in na_idx) all_results[[i]] <- data.frame(DOI = NA_character_)
+
+    table <- do.call(dplyr::bind_rows, all_results)
     return(table)
   }
 
@@ -440,7 +533,11 @@ crossref_doi <- function(doi, select = c(
 
   item <- tryCatch(
     {
-      j <- jsonlite::read_json(url)
+      resp <- httr2::request(url) |>
+        httr2::req_headers(Accept = "application/json") |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_perform()
+      j <- httr2::resp_body_json(resp)
       if (j$status != "ok") {
         stop(j$body$`message-type`)
       }
@@ -454,7 +551,18 @@ crossref_doi <- function(doi, select = c(
     }
   )
 
-  # process item
+  .crossref_parse_item(item, select)
+}
+
+#' Parse a CrossRef item into a data frame row
+#' @param item a list from CrossRef API response
+#' @param select fields to select
+#' @returns a data frame
+#' @keywords internal
+.crossref_parse_item <- function(item, select = c("DOI", "type", "title",
+                                                    "container-title", "volume",
+                                                    "issue", "page", "URL",
+                                                    "abstract", "year", "error")) {
   if (length(item$title)) {
     item$title <- item$title[[1]]
   } else {
@@ -474,7 +582,6 @@ crossref_doi <- function(doi, select = c(
   item$published <- NULL
 
   authors <- lapply(item$author, \(a) {
-    # handle when parts are missing
     cols <- c("given", "family", "ORCID")
     suba <- a[cols]
     names(suba) <- cols
@@ -552,34 +659,63 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
   }
 
   if (length(ref) > 1 | is.list(ref)) {
-    # vectorise
-    pb <- pb(length(ref),
-      format = "Checking References [:bar] :current/:total :elapsedfull"
-    )
-    table <- lapply(ref, \(r) {
-      pb$tick()
-      tryCatch(crossref_query(r, min_score),
-        error = \(e) {
-          error_tbl <- data.frame(
-            ref = ref,
-            DOI = NA_character_,
-            error = e$message
-          )
-          return(error_tbl)
-        }
+    if (!online("api.crossref.org")) {
+      message("Crossref is offline")
+      return(data.frame(bib_text = ref, DOI = NA, error = "offline"))
+    }
+
+    # build requests in parallel
+    select_str <- c(select, "score") |> unique() |> paste(collapse = ",")
+    reqs <- lapply(ref, \(r) {
+      if (inherits(r, "bibentry") || is.data.frame(r)) {
+        title <- r$title
+        author <- r$author
+        container <- r$journal %||% r$booktitle
+        r <- paste(author, collapse = ", ") |>
+          paste(title, container, sep = "; ")
+      }
+      query <- utils::URLencode(r, reserved = TRUE) |>
+        gsub("%28", "(", x = _) |>
+        gsub("%29", ")", x = _)
+      url <- sprintf(
+        "https://api.crossref.org/works?mailto=%s&rows=%d&sort=score&select=%s&query.bibliographic=%s",
+        email(), rows, select_str, query
       )
-    }) |>
-      do.call(dplyr::bind_rows, args = _)
+      httr2::request(url) |>
+        httr2::req_headers(Accept = "application/json") |>
+        httr2::req_throttle(rate = 30 / 1) |>
+        httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
+        httr2::req_error(is_error = \(resp) FALSE)
+    })
+
+    resps <- httr2::req_perform_parallel(reqs, on_error = "continue",
+                                          progress = verbose())
+
+    table <- lapply(seq_along(ref), \(i) {
+      r <- if (is.character(ref[[i]])) ref[[i]] else paste(ref[[i]])
+      tryCatch({
+        resp <- resps[[i]]
+        if (inherits(resp, "error") || httr2::resp_status(resp) >= 400) {
+          return(data.frame(ref = r, DOI = NA_character_, error = "request failed"))
+        }
+        j <- httr2::resp_body_json(resp)
+        if (j$status != "ok") {
+          return(data.frame(ref = r, error = j$body$message %||% "unknown"))
+        }
+        .crossref_query_parse(j$message$items, r, min_score, select)
+      }, error = \(e) {
+        data.frame(ref = r, DOI = NA_character_, error = e$message)
+      })
+    }) |> do.call(dplyr::bind_rows, args = _)
     return(table)
   }
 
-  if (!online("api.labs.crossref.org")) {
+  if (!online("api.crossref.org")) {
     message("Crossref is offline")
     return(data.frame(bib_text = ref, DOI = NA, error = "offline"))
   }
 
   query <- utils::URLencode(ref, reserved = TRUE) |>
-    # fix problems with crossref's Lucene / Solr-style query parser
     gsub("%28", "(", x = _) |>
     gsub("%29", ")", x = _)
 
@@ -593,7 +729,11 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
 
   items <- tryCatch(
     {
-      j <- jsonlite::read_json(url)
+      resp <- httr2::request(url) |>
+        httr2::req_headers(Accept = "application/json") |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_perform()
+      j <- httr2::resp_body_json(resp)
       if (j$status != "ok") {
         stop(j$body$message)
       }
@@ -608,24 +748,30 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
     }
   )
 
+  .crossref_query_parse(items, ref, min_score, select)
+}
+
+#' Parse crossref query items into a table
+#' @param items list of items from CrossRef query response
+#' @param ref the original reference string
+#' @param min_score minimum score threshold
+#' @param select fields to select
+#' @returns a data frame
+#' @keywords internal
+.crossref_query_parse <- function(items, ref, min_score, select) {
   scores <- sapply(items, `[[`, "score")
   if (length(items) == 0 || all(scores < min_score)) {
-    table <- data.frame(ref = ref, DOI = NA_character_)
-    return(table)
-  } else {
-    items <- items[scores >= min_score]
+    return(data.frame(ref = ref, DOI = NA_character_))
   }
+  items <- items[scores >= min_score]
 
-  # parse the response into a table (works even if cols missing)
   parsed_items <- lapply(items, \(item) {
-    # item <- items[[1]] # for testing
     item$title <- item$title[[1]]
     item$`container-title` <- item$`container-title`[[1]]
     item$year <- item$published$`date-parts`[[1]][[1]]
     item$published <- NULL
 
     authors <- lapply(item$author, \(a) {
-      # handle when parts are missing
       cols <- c("given", "family", "ORCID")
       suba <- a[cols]
       names(suba) <- cols
@@ -635,7 +781,6 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
 
     ret <- data.frame(item, check.names = FALSE)
     ret$author <- list(authors)
-
     ret
   })
 
@@ -839,15 +984,48 @@ openalex_doi <- function(doi, select = NULL) {
     return(list(DOI = doi, error = "offline"))
   }
 
-  ## vectorise ----
+  ## vectorise with parallel requests ----
   if (length(doi) > 1) {
-    pb <- pb(length(doi),
-      format = "Checking DOIs [:bar] :current/:total :elapsedfull"
-    )
-    oa <- lapply(doi, \(d) {
-      pb$tick()
-      openalex_doi(d)
-    })
+    cleaned <- doi_clean(doi)
+    valid <- !is.na(doi) & doi_valid_format(cleaned)
+    valid_idx <- which(valid)
+
+    if (length(valid_idx) > 0) {
+      reqs <- lapply(valid_idx, \(i) {
+        url <- sprintf(
+          "https://api.openalex.org/works/https://doi.org/%s?mailto=%s",
+          cleaned[i], email()
+        )
+        httr2::request(url) |>
+          httr2::req_headers(Accept = "application/json") |>
+          httr2::req_throttle(rate = 10 / 1) |>
+          httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
+          httr2::req_error(is_error = \(resp) FALSE)
+      })
+
+      resps <- httr2::req_perform_parallel(reqs, on_error = "continue",
+                                            progress = verbose())
+    }
+
+    oa <- vector("list", length(doi))
+    for (i in seq_along(doi)) {
+      if (is.na(doi[i])) {
+        oa[[i]] <- list(DOI = doi[i])
+      } else if (!valid[i]) {
+        oa[[i]] <- list(DOI = doi[i], error = "malformed")
+      }
+    }
+    for (j in seq_along(valid_idx)) {
+      i <- valid_idx[j]
+      oa[[i]] <- tryCatch({
+        resp <- resps[[j]]
+        if (inherits(resp, "error") || httr2::resp_status(resp) >= 400) {
+          return(list(DOI = doi[i], error = "not found"))
+        }
+        info <- httr2::resp_body_json(resp)
+        .openalex_add_abstract(info)
+      }, error = \(e) list(DOI = doi[i], error = "not found"))
+    }
     return(oa)
   }
 
@@ -864,7 +1042,13 @@ openalex_doi <- function(doi, select = NULL) {
     doi, email()
   )
 
-  info <- tryCatch(suppressWarnings(jsonlite::read_json(url)),
+  info <- tryCatch({
+    resp <- httr2::request(url) |>
+      httr2::req_headers(Accept = "application/json") |>
+      httr2::req_error(is_error = \(resp) FALSE) |>
+      httr2::req_perform()
+    httr2::resp_body_json(resp)
+  },
     error = function(e) {
       if (verbose()) {
         warning(doi, " not found in OpenAlex", call. = FALSE)
@@ -872,15 +1056,22 @@ openalex_doi <- function(doi, select = NULL) {
       return(data.frame(DOI = doi, error = "not found"))
     }
   )
-  # convert inverted index to abstract
+
+  .openalex_add_abstract(info)
+}
+
+#' Add abstract from inverted index
+#' @param info OpenAlex response list
+#' @returns the info list with abstract field added
+#' @keywords internal
+.openalex_add_abstract <- function(info) {
   if (!is.null(info$abstract_inverted_index)) {
     aii <- info$abstract_inverted_index
     words <- rep(names(aii), sapply(aii, length))
     order <- unname(unlist(aii))
     info$abstract <- paste(words[order(order)], collapse = " ")
   }
-
-  return(info)
+  info
 }
 
 
@@ -925,17 +1116,19 @@ openalex_query <- function(title, source = NA, authors = NA, strict = TRUE) {
     "&select=", fields
   )
 
-  j <- tryCatch(jsonlite::read_json(url),
+  j <- tryCatch({
+    resp <- httr2::request(url) |>
+      httr2::req_headers(Accept = "application/json") |>
+      httr2::req_error(is_error = \(resp) FALSE) |>
+      httr2::req_perform()
+    httr2::resp_body_json(resp)
+  },
     error = \(e) {
-      "error"
-    },
-    warning = \(w) {
-      if (grepl(
-        "Couldn't resolve host name",
-        w$message
-      )) {
+      if (grepl("Couldn't resolve host name|Could not resolve host",
+                e$message)) {
         return("offline")
       }
+      "error"
     }
   )
 

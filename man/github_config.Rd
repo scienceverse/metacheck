@@ -4,12 +4,15 @@
 \alias{github_config}
 \title{GitHub Configuration}
 \usage{
-github_config()
+github_config(req)
+}
+\arguments{
+\item{req}{an httr2 request object}
 }
 \value{
-a list of config items to use in httr::GET()
+the modified request
 }
 \description{
-GitHub Configuration
+Adds GitHub auth and accept headers to an httr2 request.
 }
 \keyword{internal}

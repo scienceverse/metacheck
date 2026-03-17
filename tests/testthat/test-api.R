@@ -10,8 +10,11 @@ api_url <- "http://localhost:2005"
 # Helper function to check if API is running
 api_is_running <- function() {
   tryCatch({
-    response <- GET(paste0(api_url, "/health"), httr::timeout(2))
-    httr::status_code(response) == 200
+    resp <- httr2::request(paste0(api_url, "/health")) |>
+      httr2::req_timeout(2) |>
+      httr2::req_error(is_error = \(resp) FALSE) |>
+      httr2::req_perform()
+    httr2::resp_status(resp) == 200
   }, error = function(e) FALSE)
 }
 
@@ -28,11 +31,13 @@ skip_if_no_api <- function() {
 test_that("Health endpoint returns 200 and proper response", {
   skip_if_no_api()
 
-  response <- httr::GET(paste0(api_url, "/health"))
+  resp <- httr2::request(paste0(api_url, "/health")) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
-  expect_equal(httr::status_code(response), 200)
+  expect_equal(httr2::resp_status(resp), 200)
 
-  content <- httr::content(response, as = "parsed")
+  content <- httr2::resp_body_json(resp)
   expect_true("status" %in% names(content))
   # content$status may be a list with one element or a character vector
   expect_equal(as.character(content$status), "ok")
@@ -43,15 +48,14 @@ test_that("Health endpoint returns 200 and proper response", {
 test_that("/paper/info returns paper info", {
   skip_if_no_api()
 
-  response <- httr::POST(
-    paste0(api_url, "/paper/info"),
-    body = list(file = httr::upload_file(test_xml)),
-    encode = "multipart"
-  )
+  resp <- httr2::request(paste0(api_url, "/paper/info")) |>
+    httr2::req_body_multipart(file = curl::form_file(test_xml)) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
-  expect_equal(status_code(response), 200)
+  expect_equal(httr2::resp_status(resp), 200)
 
-  content <- httr::content(response, as = "parsed")
+  content <- httr2::resp_body_json(resp)
   expect_type(content, "list")
   # Should have some paper metadata
   expect_true(length(content) > 0)
@@ -62,15 +66,14 @@ test_that("/paper/info returns paper info", {
 test_that("/paper/authors returns author table", {
   skip_if_no_api()
 
-  response <- httr::POST(
-    paste0(api_url, "/paper/authors"),
-    body = list(file = httr::upload_file(test_xml)),
-    encode = "multipart"
-  )
+  resp <- httr2::request(paste0(api_url, "/paper/authors")) |>
+    httr2::req_body_multipart(file = curl::form_file(test_xml)) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
-  expect_equal(httr::status_code(response), 200)
+  expect_equal(httr2::resp_status(resp), 200)
 
-  content <- httr::content(response, as = "parsed")
+  content <- httr2::resp_body_json(resp)
   expect_type(content, "list")
   expect_equal(content[[1]]$name.surname, "Lakens")
 })
@@ -79,15 +82,14 @@ test_that("/paper/authors returns author table", {
 test_that("/paper/references returns references", {
   skip_if_no_api()
 
-  response <- httr::POST(
-    paste0(api_url, "/paper/references"),
-    body = list(file = httr::upload_file(test_xml)),
-    encode = "multipart"
-  )
+  resp <- httr2::request(paste0(api_url, "/paper/references")) |>
+    httr2::req_body_multipart(file = curl::form_file(test_xml)) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
-  expect_equal(httr::status_code(response), 200)
+  expect_equal(httr2::resp_status(resp), 200)
 
-  content <- httr::content(response, as = "parsed")
+  content <- httr2::resp_body_json(resp)
   expect_type(content, "list")
   expect_equal(content[[1]]$title, "A brief note on one-tailed tests.")
 })
@@ -96,15 +98,14 @@ test_that("/paper/references returns references", {
 test_that("/paper/cross-references returns cross-references", {
   skip_if_no_api()
 
-  response <- httr::POST(
-    paste0(api_url, "/paper/cross-references"),
-    body = list(file = httr::upload_file(test_xml)),
-    encode = "multipart"
-  )
+  resp <- httr2::request(paste0(api_url, "/paper/cross-references")) |>
+    httr2::req_body_multipart(file = curl::form_file(test_xml)) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
-  expect_equal(httr::status_code(response), 200)
+  expect_equal(httr2::resp_status(resp), 200)
 
-  content <- httr::content(response, as = "parsed")
+  content <- httr2::resp_body_json(resp)
   expect_type(content, "list")
 })
 
@@ -112,18 +113,17 @@ test_that("/paper/cross-references returns cross-references", {
 test_that("/paper/search finds text in paper", {
   skip_if_no_api()
 
-  response <- httr::POST(
-    paste0(api_url, "/paper/search"),
-    body = list(
-      file = httr::upload_file(test_xml),
+  resp <- httr2::request(paste0(api_url, "/paper/search")) |>
+    httr2::req_body_multipart(
+      file = curl::form_file(test_xml),
       pattern = "pre-register"
-    ),
-    encode = "multipart"
-  )
+    ) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
-  expect_equal(httr::status_code(response), 200)
+  expect_equal(httr2::resp_status(resp), 200)
 
-  content <- httr::content(response, as = "parsed")
+  content <- httr2::resp_body_json(resp)
   expect_type(content, "list")
 })
 
@@ -131,15 +131,14 @@ test_that("/paper/search finds text in paper", {
 test_that("/paper/search requires query parameter", {
   skip_if_no_api()
 
-  response <- httr::POST(
-    paste0(api_url, "/paper/search"),
-    body = list(file = httr::upload_file(test_xml)),
-    encode = "multipart"
-  )
+  resp <- httr2::request(paste0(api_url, "/paper/search")) |>
+    httr2::req_body_multipart(file = curl::form_file(test_xml)) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
-  expect_equal(httr::status_code(response), 400)
+  expect_equal(httr2::resp_status(resp), 400)
 
-  content <- httr::content(response, as = "parsed")
+  content <- httr2::resp_body_json(resp)
   expect_true("error" %in% names(content))
 })
 
@@ -147,14 +146,13 @@ test_that("/paper/search requires query parameter", {
 test_that("Endpoints return 400 when no file is uploaded", {
   skip_if_no_api()
 
-  response <- httr::POST(
-    paste0(api_url, "/paper/info"),
-    encode = "multipart"
-  )
+  resp <- httr2::request(paste0(api_url, "/paper/info")) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
-  expect_equal(httr::status_code(response), 400)
+  expect_equal(httr2::resp_status(resp), 400)
 
-  content <- httr::content(response, as = "parsed")
+  content <- httr2::resp_body_json(resp)
   expect_true("error" %in% names(content))
 })
 
@@ -166,15 +164,13 @@ test_that("Endpoints return 400 for invalid XML", {
   tmp_file <- withr::local_tempfile(fileext = ".txt")
   writeLines("This is not XML", tmp_file)
 
-  response <-httr:: POST(
-    paste0(api_url, "/paper/info"),
-    body = list(file = httr::upload_file(tmp_file)),
-    encode = "multipart"
-  )
+  resp <- httr2::request(paste0(api_url, "/paper/info")) |>
+    httr2::req_body_multipart(file = curl::form_file(tmp_file)) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
-  expect_equal(httr::status_code(response), 400)
+  expect_equal(httr2::resp_status(resp), 400)
 
-  content <- httr::content(response, as = "parsed")
+  content <- httr2::resp_body_json(resp)
   expect_true("error" %in% names(content))
 })
-

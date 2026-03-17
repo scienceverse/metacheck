@@ -1,17 +1,24 @@
 #' OSF Headers
 #'
-#' @returns a header list
+#' Adds OSF auth and accept headers to an httr2 request.
+#'
+#' @param req an httr2 request object
+#'
+#' @returns the modified request
 #' @export
 #' @keywords internal
-osf_headers <- function() {
-  headers <- list(`User-Agent` = "metacheck")
+osf_headers <- function(req) {
+  req <- req |>
+    httr2::req_headers(
+      `User-Agent` = "metacheck",
+      Accept = "application/vnd.api+json"
+    )
   osf_pat <- Sys.getenv("OSF_PAT")
-  if (!is.null(osf_pat)) {
-    headers$Authorization <- sprintf("Bearer %s", osf_pat)
+  if (nzchar(osf_pat)) {
+    req <- req |>
+      httr2::req_headers(Authorization = sprintf("Bearer %s", osf_pat))
   }
-  headers$`Accept-Header` <- "application/vnd.api+json"
-
-  return(headers)
+  return(req)
 }
 
 #' Find OSF Links in Papers
@@ -89,10 +96,13 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api")) {
   if (!curl::has_internet()) {
     return("no internet")
   }
-  h <- httr::GET(osf_api, osf_headers())
+  resp <- httr2::request(osf_api) |>
+    osf_headers() |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
   osf_api_calls_inc()
   status <- dplyr::case_match(
-    h$status_code,
+    httr2::resp_status(resp),
     200 ~ "ok",
     204 ~ "no content",
     400 ~ "bad request",
@@ -319,15 +329,19 @@ osf_info <- function(osf_id,
     content <- tryCatch(
       {
         url <- sprintf("%s/%s/%s", osf_api, osf_type, valid_id)
-        node_get <- httr::GET(url, osf_headers())
+        resp <- httr2::request(url) |>
+          osf_headers() |>
+          httr2::req_error(is_error = \(resp) FALSE) |>
+          httr2::req_perform()
         osf_api_calls_inc()
-        if (node_get$status_code == 200) {
-          jsonlite::fromJSON(rawToChar(node_get$content))
-        } else if (node_get$status_code == 404) {
+        sc <- httr2::resp_status(resp)
+        if (sc == 200) {
+          httr2::resp_body_json(resp, simplifyVector = TRUE)
+        } else if (sc == 404) {
           NULL
         } else {
           warning <- dplyr::case_match(
-            node_get$status_code,
+            sc,
             200 ~ "ok",
             204 ~ "no content",
             400 ~ "bad request",
@@ -339,7 +353,7 @@ osf_info <- function(osf_id,
             410 ~ "gone",
             429 ~ "too many requests",
             500:599 ~ "server error",
-            .default = paste("error", node_get$status_code)
+            .default = paste("error", sc)
           )
 
           NULL
@@ -632,7 +646,19 @@ osf_check_id <- function(osf_id) {
   sapply(clean_id, \(id) {
     tryCatch(
       {
-        path <- httr::parse_url(id)$path |>
+        # for plain IDs (not URLs), check directly
+        if (grepl("^[a-z0-9]{5}(_v\\d+)?$", id)) {
+          return(id)
+        }
+        if (nchar(id) == 24 && grepl("^[a-z0-9]+$", id)) {
+          return(id)
+        }
+
+        # for URLs, parse and extract the path
+        parsed <- tryCatch(httr2::url_parse(id), error = \(e) NULL)
+        if (is.null(parsed)) stop()
+
+        path <- parsed$path |>
           fs::path_split() |>
           sapply(utils::tail, 1)
 
@@ -724,9 +750,12 @@ osf_get_all_pages <- function(url, page_end = Inf) {
 
   content <- tryCatch(
     {
-      node_get <- httr::GET(url, osf_headers())
+      resp <- httr2::request(url) |>
+        osf_headers() |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_perform()
       osf_api_calls_inc()
-      jsonlite::fromJSON(rawToChar(node_get$content))
+      httr2::resp_body_json(resp, simplifyVector = TRUE)
     },
     error = function(e) {
       return(NULL)
@@ -1094,23 +1123,33 @@ osf_file_download <- function(osf_id,
     dir.create(temppath)
 
     files_to_download <- which(files$kind == "file")
-    pb <- pb(
-      total = length(files_to_download),
-      format = "Downloading files [:bar] :current/:total :elapsedfull"
+
+    # build requests for parallel download
+    reqs <- lapply(files_to_download, \(i) {
+      httr2::request(files$download_url[[i]]) |>
+        httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
+        httr2::req_error(is_error = \(resp) FALSE)
+    })
+
+    resps <- httr2::req_perform_parallel(
+      reqs,
+      on_error = "continue",
+      progress = verbose()
     )
 
-    for (i in files_to_download) {
+    # save downloaded content to temp files
+    for (j in seq_along(files_to_download)) {
+      i <- files_to_download[[j]]
       tryCatch(
         {
-          write_loc <- file.path(temppath, files$osf_id[[i]]) |>
-            httr::write_disk(overwrite = TRUE)
-          response <- httr::GET(files$download_url[[i]], write_loc)
-
-          # TODO: deal with errors
+          resp <- resps[[j]]
+          if (!inherits(resp, "error") && httr2::resp_status(resp) == 200) {
+            writeBin(httr2::resp_body_raw(resp),
+                     file.path(temppath, files$osf_id[[i]]))
+          }
         },
         error = \(e) {}
       )
-      pb$tick()
     }
 
     trunc_warning <- FALSE

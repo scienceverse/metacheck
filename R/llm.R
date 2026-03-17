@@ -276,18 +276,14 @@ llm_model_list <- function(platform = NULL) {
 models_groq <- function() {
   API_KEY <- Sys.getenv("GROQ_API_KEY")
   url <- "https://api.groq.com/openai/v1/models"
-  config <- httr::add_headers(
-    Authorization = paste("Bearer", API_KEY)
-  )
 
-  response <- httr::GET(
-    url, config,
-    encode = "json"
-  )
+  resp <- httr2::request(url) |>
+    httr2::req_headers(Authorization = paste("Bearer", API_KEY)) |>
+    httr2::req_perform()
 
   models <- do.call(
     dplyr::bind_rows,
-    httr::content(response)$data
+    httr2::resp_body_json(resp)$data
   ) |>
     data.frame()
 

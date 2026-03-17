@@ -106,8 +106,9 @@ test_that("osf_api_check", {
 })
 
 test_that("osf_headers", {
-  header <- osf_headers()
-  expect_equal(header$`User-Agent`, "metacheck")
+  req <- osf_headers(httr2::request("https://api.osf.io"))
+  expect_s3_class(req, "httr2_request")
+  expect_equal(req$headers$`User-Agent`, "metacheck")
 })
 
 test_that("osf_links", {

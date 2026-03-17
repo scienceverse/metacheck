@@ -10,7 +10,6 @@ apis <- normalizePath("apis")
 httptest::.mockPaths(apis)
 
 skip_api <- function(host = "google.com") {
-  skip("Uses External API")
   skip_on_cran()
   skip_on_covr()
   skip_if_offline(host)
@@ -18,26 +17,24 @@ skip_api <- function(host = "google.com") {
 
 # adjust to run LLM tests where wanted
 skip_llm <- function() {
-  skip("LLM")
-
-  # skips tests if contraindicated
   skip_on_cran()
   skip_on_covr()
   skip_if_offline()
+  skip_if(!nzchar(Sys.getenv("GROQ_API_KEY")), "No GROQ_API_KEY set")
 }
 
 # skip if requires OSF API
 skip_osf <- function() {
-  skip("Requires OSF") # skips all tests that require API
-
-  # skips tests if contraindicated
-  skip_if_offline()
   skip_on_cran()
   skip_on_covr()
-  skip_if_not(osf_api_check() == "ok")
+  skip_if_offline()
+  skip_if_not(osf_api_check() == "ok", "OSF API unavailable")
 }
 
 # skip when running quick checks
 skip_if_quick <- function() {
-  skip("Too long")
+  skip_if(
+    identical(Sys.getenv("METACHECK_QUICK"), "true"),
+    "Quick mode — skipping slow tests"
+  )
 }

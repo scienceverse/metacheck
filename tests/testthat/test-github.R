@@ -52,8 +52,8 @@ test_that("github_config", {
   expect_true(is.function(metacheck::github_config))
   expect_no_error(helplist <- help(github_config, metacheck))
 
-  h <- github_config()
-  expect_equal(class(h), "request")
+  h <- github_config(httr2::request("https://api.github.com"))
+  expect_s3_class(h, "httr2_request")
 })
 
 test_that("github_repo", {

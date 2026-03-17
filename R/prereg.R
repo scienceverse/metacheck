@@ -130,17 +130,19 @@ aspredicted_info <- function(ap_url) {
     ap_url = ap_url
   )
   # get website
-  res <- httr::GET(ap_url)
+  resp <- httr2::request(ap_url) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
   # handle missing file
-  if (res$status_code != 200) {
+  if (httr2::resp_status(resp) != 200) {
     warning(ap_url, " could not be found", call. = FALSE)
     obj$error <- "unfound"
     return(obj)
   }
 
   # Read the content with specified encoding
-  html <- httr::content(res, "text", encoding = "UTF-8") |>
+  html <- httr2::resp_body_string(resp) |>
     xml2::read_html()
 
   body <- xml2::xml_find_all(html, "//body") |>

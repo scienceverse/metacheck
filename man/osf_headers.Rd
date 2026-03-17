@@ -4,12 +4,15 @@
 \alias{osf_headers}
 \title{OSF Headers}
 \usage{
-osf_headers()
+osf_headers(req)
+}
+\arguments{
+\item{req}{an httr2 request object}
 }
 \value{
-a header list
+the modified request
 }
 \description{
-OSF Headers
+Adds OSF auth and accept headers to an httr2 request.
 }
 \keyword{internal}
