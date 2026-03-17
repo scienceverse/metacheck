@@ -7,7 +7,7 @@ test_that("add_bib_match", {
   # no refs
   paper <- test_paper("No refs")
   paper_bm <- add_bib_match(paper)
-  expect_null(paper_bm$bib_match)
+  expect_equal(nrow(paper_bm$bib_matches), 0)
 
   skip_api("api.labs.crossref.org")
 
@@ -20,8 +20,8 @@ test_that("add_bib_match", {
     journal = c("Journal of Journals")
   )
   paper_bm <- add_bib_match(paper)
-  expect_equal(paper_bm$bib_match$bib_id, 1)
-  expect_equal(paper_bm$bib_match$match_score, NA_real_)
+  expect_equal(paper_bm$bib_matches$bib_id, 1)
+  expect_equal(paper_bm$bib_matches$match_score, NA_real_)
 
   # make paper with 2 refs
   paper <- test_paper("LDB test papers")
@@ -34,14 +34,14 @@ test_that("add_bib_match", {
   )
   paper_bm <- add_bib_match(paper, 0)
 
-  expect_equal(paper_bm$bib_match$bib_id, 1:2)
-  expect_equal(paper_bm$bib_match$doi, c("10.1098/rspb.2002.2034",
+  expect_equal(paper_bm$bib_matches$bib_id, 1:2)
+  expect_equal(paper_bm$bib_matches$doi, c("10.1098/rspb.2002.2034",
                                          "10.1098/rspb.2004.3003"))
 
   # set threshold between two papers
-  min_score <- mean(paper_bm$bib_match$match_score)
+  min_score <- mean(paper_bm$bib_matches$match_score)
   paper_bm2 <- add_bib_match(paper, min_score)
-  expect_equal(paper_bm2$bib_match$doi, c("10.1098/rspb.2002.2034", NA))
+  expect_equal(paper_bm2$bib_matches$doi, c("10.1098/rspb.2002.2034", NA))
 })
 
 test_that("doi_lookup", {

@@ -12,7 +12,7 @@
     "info": {
       "$ref": "#/$defs/info"
     },
-    "authors": {
+    "author": {
       "type": "array",
       "items": { "$ref": "#/$defs/author" },
       "uniqueItems": true
@@ -27,26 +27,31 @@
       "items": { "$ref": "#/$defs/biblio_match"},
       "uniqueItems": true
     },
-    "equations": {
+    "eq": {
       "type": "array",
       "items": { "$ref": "#/$defs/equation" }
     },
-    "figures": {
+    "fig": {
       "type": "array",
       "items": { "$ref": "#/$defs/figure" },
       "uniqueItems": true
     },
-    "links": {
+    "url": {
       "type": "array",
       "items": { "$ref": "#/$defs/link" },
       "uniqueItems": true
     },
-    "sections": {
+    "section": {
       "type": "array",
       "items": { "$ref": "#/$defs/section" },
       "uniqueItems": true
     },
-    "tables": {
+    "study": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/study" },
+      "uniqueItems": true
+    },
+    "table": {
       "type": "array",
       "items": { "$ref": "#/$defs/table" },
       "uniqueItems": true
@@ -56,7 +61,7 @@
       "items": { "$ref": "#/$defs/sentence" },
       "uniqueItems": true
     },
-    "xrefs": {
+    "xref": {
       "type": "array",
       "items": { "$ref": "#/$defs/xref" },
       "uniqueItems": true
@@ -66,15 +71,15 @@
   "required": [
     "paper_id",
     "info",
-    "authors",
+    "author",
     "bib",
-    "equations",
-    "figures",
-    "links",
-    "sections",
-    "tables",
+    "eq",
+    "fig",
+    "url",
+    "section",
+    "table",
     "text",
-    "xrefs"
+    "xref"
   ],
 
   "additionalProperties": false,
@@ -84,7 +89,7 @@
       "type": "object",
       "required": [
         "title",
-        "description",
+        "abstract",
         "keywords",
         "doi",
         "file_hash",
@@ -94,7 +99,7 @@
       ],
       "properties": {
         "title": { "type": "string" },
-        "description": { "type": ["string", "null"] },
+        "abstract": { "type": ["string", "null"] },
         "keywords": {
           "type": "array",
           "items": { "type": "string" }
@@ -371,33 +376,45 @@
         "rhs": {
            "description": "Right-hand side of the equation",
           "type": "string"
+        },
+        "study_id": {
+          "description": "Study ID for multi-study papers",
+          "type": ["integer", "null"]
         }
       }
     },
     "figure": {
       "type": "object",
-      "required": [ "figure_id", "section_id"],
+      "required": [ "fig_id", "section_id"],
       "properties": {
-        "figure_id": {
+        "fig_id": {
           "description": "A unique ID for each figure",
           "type": "integer"
         },
         "section_id": {
-          "description": "The ID from the sections table for this figure",
+          "description": "The ID from the section table for this figure",
           "type": "integer"
         },
         "image": {
           "description": "The base64 image or reference to it (undecided)",
           "type": "string",
           "contentEncoding": "base64"
+        },
+        "page_number": {
+          "type": ["integer", "null"],
+          "description": "The page number of the original document"
+        },
+        "study_id": {
+          "description": "Study ID for multi-study papers",
+          "type": ["integer", "null"]
         }
       }
     },
     "link": {
       "type": "object",
-      "required": ["url", "text_id"],
+      "required": ["href", "text_id"],
       "properties": {
-        "url": {
+        "href": {
           "type": "string",
           "format": "uri"
         },
@@ -439,6 +456,25 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1
+        },
+        "study_id": {
+          "description": "Study ID for multi-study papers",
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "study": {
+      "type": "object",
+      "required": ["study_id", "label"],
+      "properties": {
+        "study_id": {
+          "type": "integer"
+        },
+        "label": {
+          "type": "string"
+        },
+        "root_section_id": {
+          "type": ["integer", "null"]
         }
       }
     },
@@ -451,8 +487,12 @@
         "paragraph_id": { "type": "integer" },
         "text": { "type": "string" },
         "page_number": {
-          "type": "integer",
+          "type": ["integer", "null"],
           "description": "The page number of the original document where the sentence starts"
+        },
+        "study_id": {
+          "description": "Study ID for multi-study papers",
+          "type": ["integer", "null"]
         }
       }
     },
@@ -465,7 +505,7 @@
           "type": "integer"
         },
         "section_id": {
-          "description": "The ID from the sections table for this table",
+          "description": "The ID from the section table for this table",
           "type": "integer"
         },
         "html": {
@@ -479,6 +519,14 @@
             "type": "array",
             "items": { "type": ["string", "number", "boolean", "null"] }
           }
+        },
+        "page_number": {
+          "type": ["integer", "null"],
+          "description": "The page number of the original document"
+        },
+        "study_id": {
+          "description": "Study ID for multi-study papers",
+          "type": ["integer", "null"]
         }
       }
     },
@@ -488,7 +536,7 @@
       "properties": {
         "xref_id": {
           "type": "integer",
-          "description": "The ID from the bib, tables, figures, or sections table (for footnotes)"
+          "description": "The ID from the bib, table, fig, or section table (for footnotes)"
         },
         "xref_type": {
           "type": "string",
@@ -503,9 +551,12 @@
         "text_id": {
           "type": "integer",
           "description": "The ID from the text table for the sentence containing the cross-reference."
+        },
+        "study_id": {
+          "description": "Study ID for multi-study papers",
+          "type": ["integer", "null"]
         }
       }
     }
   }
 }
-

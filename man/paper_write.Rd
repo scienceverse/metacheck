@@ -11,13 +11,13 @@ paper_write(paper, file_name = NULL, save_path = ".")
 
 \item{file_name}{the name of the file (if NULL, defaults to the paper_id)}
 
-\item{save_path}{the directory to save the zip file in}
+\item{save_path}{the directory to save the JSON file in}
 }
 \value{
-the path to the zip file
+the path to the JSON file
 }
 \description{
-Save a paper as a bibr zip file. The zip file consist of a manifest.json file and arrow files for each table in the paper object.
+Save a paper as a JSON file.
 }
 \examples{
 dontrun{

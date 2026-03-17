@@ -11,10 +11,10 @@ test_that("bibr_convert", {
   file_name <- "to_err_is_human.pdf"
   file_path <- test_path("fixtures", "formats", file_name)
   save_dir <- withr::local_tempdir()
-  zip_path <- bibr_convert(file_path, save_dir)
-  expect_match(zip_path, "to_err_is_human\\.zip")
-  expect_true(file.exists(zip_path) |> all())
-  pdf <- read_bibr(zip_path)
+  json_path <- bibr_convert(file_path, save_dir)
+  expect_match(json_path, "to_err_is_human\\.json")
+  expect_true(file.exists(json_path) |> all())
+  pdf <- read_bibr(json_path)
   expect_equal(pdf$info$file_name, file_name)
   expect_match(pdf$paper_id, "^[a-f0-9]{16}$")
 
@@ -22,10 +22,10 @@ test_that("bibr_convert", {
   file_name <- "to_err_is_human.docx"
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
-  zip_path <- bibr_convert(file_path, save_path)
-  expect_true(file.exists(zip_path) |> all())
-  expect_match(zip_path, "to_err_is_human\\.zip")
-  docx <- read_bibr(zip_path)
+  json_path <- bibr_convert(file_path, save_path)
+  expect_true(file.exists(json_path) |> all())
+  expect_match(json_path, "to_err_is_human\\.json")
+  docx <- read_bibr(json_path)
   expect_equal(docx$info$file_name, file_name)
   expect_match(docx$paper_id, "^[a-f0-9]{16}$")
 
@@ -33,32 +33,21 @@ test_that("bibr_convert", {
   file_name <- "to_err_is_human.doc"
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
-  zip_path <- bibr_convert(file_path, save_path)
-  expect_true(file.exists(zip_path) |> all())
-  expect_match(zip_path, "to_err_is_human\\.zip")
-  doc <- read_bibr(zip_path)
+  json_path <- bibr_convert(file_path, save_path)
+  expect_true(file.exists(json_path) |> all())
+  expect_match(json_path, "to_err_is_human\\.json")
+  doc <- read_bibr(json_path)
   expect_equal(doc$info$file_name, file_name)
   expect_match(doc$paper_id, "^[a-f0-9]{16}$")
-
-  # html
-  # file_name <- "to_err_is_human.html"
-  # file_path <- test_path("fixtures", "formats", file_name)
-  # save_path <- withr::local_tempdir()
-  # zip_path <- bibr_convert(file_path, save_path)
-  # expect_true(file.exists(zip_path) |> all())
-  # expect_match(zip_path, "to_err_is_human\\.zip")
-  # html <- read_bibr(zip_path)
-  # expect_equal(html$info$file_name, file_name)
-  # expect_match(html$paper_id, "^[a-f0-9]{14}$")
 
   # multiple files
   file_name <- c("to_err_is_human.pdf", "published.pdf")
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
-  zip_path <- bibr_convert(file_path, save_path)
-  expect_match(zip_path[[1]], "to_err_is_human\\.zip")
-  expect_match(zip_path[[2]], "published\\.zip")
-  expect_true(file.exists(zip_path) |> all())
+  json_path <- bibr_convert(file_path, save_path)
+  expect_match(json_path[[1]], "to_err_is_human\\.json")
+  expect_match(json_path[[2]], "published\\.json")
+  expect_true(file.exists(json_path) |> all())
 })
 
 
@@ -75,10 +64,10 @@ test_that("platform_bibr_convert", {
   file_name <- "to_err_is_human.pdf"
   file_path <- test_path("fixtures", "formats", file_name)
   save_dir <- withr::local_tempdir()
-  zip_path <- platform_bibr_convert(file_path, save_dir)
-  expect_match(zip_path, "to_err_is_human\\.zip")
-  expect_true(file.exists(zip_path) |> all())
-  pdf <- read_bibr(zip_path)
+  json_path <- platform_bibr_convert(file_path, save_dir)
+  expect_match(json_path, "to_err_is_human\\.json")
+  expect_true(file.exists(json_path) |> all())
+  pdf <- read_bibr(json_path)
   expect_equal(pdf$info$file_name, file_name)
   expect_match(pdf$paper_id, "^[a-f0-9]{16}$")
 
@@ -86,10 +75,10 @@ test_that("platform_bibr_convert", {
   file_name <- "to_err_is_human.docx"
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
-  zip_path <- platform_bibr_convert(file_path, save_path)
-  expect_true(file.exists(zip_path) |> all())
-  expect_match(zip_path, "to_err_is_human\\.zip")
-  docx <- read_bibr(zip_path)
+  json_path <- platform_bibr_convert(file_path, save_path)
+  expect_true(file.exists(json_path) |> all())
+  expect_match(json_path, "to_err_is_human\\.json")
+  docx <- read_bibr(json_path)
   expect_equal(docx$info$file_name, file_name)
   expect_match(docx$paper_id, "^[a-f0-9]{16}$")
 
@@ -97,10 +86,10 @@ test_that("platform_bibr_convert", {
   file_name <- "to_err_is_human.doc"
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
-  zip_path <- platform_bibr_convert(file_path, save_path)
-  expect_true(file.exists(zip_path) |> all())
-  expect_match(zip_path, "to_err_is_human\\.zip")
-  doc <- read_bibr(zip_path)
+  json_path <- platform_bibr_convert(file_path, save_path)
+  expect_true(file.exists(json_path) |> all())
+  expect_match(json_path, "to_err_is_human\\.json")
+  doc <- read_bibr(json_path)
   expect_equal(doc$info$file_name, file_name)
   expect_match(doc$paper_id, "^[a-f0-9]{16}$")
 
@@ -108,10 +97,10 @@ test_that("platform_bibr_convert", {
   file_name <- c("to_err_is_human.pdf", "published.pdf")
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
-  zip_path <- platform_bibr_convert(file_path, save_path)
-  expect_match(zip_path[[1]], "to_err_is_human\\.zip")
-  expect_match(zip_path[[2]], "published\\.zip")
-  expect_true(file.exists(zip_path) |> all())
+  json_path <- platform_bibr_convert(file_path, save_path)
+  expect_match(json_path[[1]], "to_err_is_human\\.json")
+  expect_match(json_path[[2]], "published\\.json")
+  expect_true(file.exists(json_path) |> all())
 })
 
 
@@ -121,14 +110,14 @@ test_that("read_bibr", {
 
   expect_error(read_bibr(bad_arg))
 
-  # single paper
-  file_path <- test_path("fixtures", "bibr", "to_err_is_human.zip")
+  # single paper from legacy zip
+  file_path <- test_path("fixtures", "bibr", "to_err_is_human.json")
   paper <- read_bibr(file_path)
 
   expect_s3_class(paper, "scivrs_paper")
   obs <- names(paper)
-  exp <- c("paper_id", "info", "authors", "text", "links", "tables",
-           "sections", "bib", "xrefs", "figures", "equations")
+  exp <- c("paper_id", "info", "author", "text", "url", "table",
+           "section", "bib", "xref", "fig", "eq")
   expect_contains(obs, exp)
   expect_match(paper$paper_id, "^[a-f0-9]{14,16}$")
 
@@ -140,22 +129,22 @@ test_that("read", {
 
   expect_error(read(bad_arg))
 
-  # single paper
-  file_path <- test_path("fixtures", "bibr", "to_err_is_human.zip")
+  # single paper from legacy zip
+  file_path <- test_path("fixtures", "bibr", "to_err_is_human.json")
   paper <- read(file_path)
 
   expect_s3_class(paper, "scivrs_paper")
   expect_true(validate_paper(paper))
   expect_match(paper$paper_id, "^[a-f0-9]{14,16}$")
 
-  # check for no links ending in .
-  end_dot <- grepl("\\.$", paper$links$url)
+  # check for no urls ending in .
+  end_dot <- grepl("\\.$", paper$url$href)
   expect_true(all(!end_dot))
 
   # vector of paths
   file_path <- c(
-    test_path("fixtures", "formats", "to_err_is_human.zip"),
-    test_path("fixtures", "psychsci", "0956797613520608.zip")
+    test_path("fixtures", "formats", "to_err_is_human.json"),
+    test_path("fixtures", "psychsci", "0956797613520608.json")
   )
   papers <- read(file_path)
   expect_s3_class(papers, "scivrs_paperlist")

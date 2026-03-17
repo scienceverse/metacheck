@@ -22,7 +22,7 @@ paper <- function(id = NULL, ...) {
     paper_id = id,
     info = data.frame(
       title = character(0),
-      description = character(0),
+      abstract = character(0),
       keywords = I(list()),
       doi = character(0),
       file_hash = character(0),
@@ -35,7 +35,7 @@ paper <- function(id = NULL, ...) {
       oecd_l2 = character(0),
       oecd_confidence = numeric(0)
     ),
-    authors = data.frame(
+    author = data.frame(
       author_id = integer(0),
       given = character(0),
       family = character(0),
@@ -65,47 +65,75 @@ paper <- function(id = NULL, ...) {
       url = character(0),
       text_id = integer(0)
     ),
-    equations = data.frame(
+    eq = data.frame(
       text_id = integer(0),
       grp_id = integer(0),
       lhs = character(0),
       comp = character(0),
-      rhs = character(0)
+      rhs = character(0),
+      study_id = integer(0)
     ),
-    figures = data.frame(
-      figure_id = integer(0),
+    fig = data.frame(
+      fig_id = integer(0),
       section_id = integer(0),
-      image = character(0)
+      image = character(0),
+      page_number = integer(0),
+      study_id = integer(0)
     ),
-    links = data.frame(
-      url = character(0),
+    url = data.frame(
+      href = character(0),
       link_text = character(0),
       text_id = integer(0)
     ),
-    sections = data.frame(
+    section = data.frame(
       section_id = integer(0),
       header = character(0),
       parent_section_id = integer(0),
       section_type = character(0),
-      classification_score = double(0)
+      classification_score = double(0),
+      study_id = integer(0)
     ),
-    tables = data.frame(
+    study = data.frame(
+      study_id = integer(0),
+      label = character(0),
+      root_section_id = integer(0)
+    ),
+    table = data.frame(
       table_id = integer(0),
       section_id = integer(0),
       html = character(0),
-      contents = I(list())
+      contents = I(list()),
+      page_number = integer(0),
+      study_id = integer(0)
     ),
     text = data.frame(
       text_id = integer(0),
       paragraph_id = integer(0),
       section_id = integer(0),
-      text = character(0)
+      text = character(0),
+      page_number = integer(0),
+      study_id = integer(0)
     ),
-    xrefs = data.frame(
+    xref = data.frame(
       xref_id = integer(0),
       xref_type = character(0),
       contents = character(0),
-      text_id = integer(0)
+      text_id = integer(0),
+      study_id = integer(0)
+    ),
+    bib_matches = data.frame(
+      bib_id = integer(0),
+      source = character(0),
+      source_id = character(0),
+      match_score = numeric(0),
+      bib_type = character(0),
+      doi = character(0),
+      title = character(0),
+      authors = character(0),
+      publisher = character(0),
+      publication_year = integer(0),
+      container = character(0),
+      url = character(0)
     )
   )
 
@@ -191,7 +219,7 @@ test_paper <- function(text = LETTERS) {
     text = as.character(text)
   )
 
-  p$sections <- data.frame(
+  p$section <- data.frame(
     section_id = 0,
     header = "Test",
     parent_section_id = NA,
@@ -242,8 +270,8 @@ validate_paper <- function(paper) {
   }
 
   # check required and optional columns for non-bib tables
-  tbls <- c("info", "authors", "text", "links", "sections",
-            "xrefs", "tables", "figures", "equations")
+  tbls <- c("info", "author", "text", "url", "section",
+            "xref", "table", "fig", "eq")
   defs <- c("info", "author", "sentence", "link", "section",
             "xref", "table", "figure", "equation")
 
@@ -358,10 +386,10 @@ print.scivrs_paper <- function(x, ...) {
     "%s\n%s\n%s\n\n%s\n\n* Sections: %d\n* Sentences: %d\n* Bibliography: %d\n* X-Refs: %d\n\n",
     underline, x$paper_id, underline,
     x$info$title %||% "{No title}",
-    nrow(x$sections),
+    nrow(x$section),
     nrow(x$text),
     nrow(x$bib),
-    nrow(x$xrefs)
+    nrow(x$xref)
   )
 
   cat(txt)
@@ -401,7 +429,7 @@ print.scivrs_paperlist <- function(x, ...) {
 #' @examples
 #' paper <- demopaper()
 demopaper <- function() {
-  file_path <- system.file("demo/to_err_is_human.zip",
+  file_path <- system.file("demo/to_err_is_human.json",
                            package = "metacheck")
 
   read_bibr(file_path)
@@ -409,7 +437,7 @@ demopaper <- function() {
 
 #' Paper tables
 #'
-#' Return a table from a paper object or Cconcatenate tables across a list of paper objects.
+#' Return a table from a paper object or concatenate tables across a list of paper objects.
 #'
 #' @param paper a paper or paperlist
 #' @param table a table name
@@ -420,7 +448,7 @@ demopaper <- function() {
 #'
 #' @examples
 #' biblio <- paper_table(psychsci[1:10], "bib")
-#' xrefs <- paper_table(psychsci[1:10], "xrefs")
+#' xrefs <- paper_table(psychsci[1:10], "xref")
 paper_table <- function(paper, table, cols = NULL) {
   if (!is_paper_list(paper)) paper <- list(paper)
 
@@ -446,13 +474,13 @@ paper_table <- function(paper, table, cols = NULL) {
 
 #' Write paper
 #'
-#' Save a paper as a bibr zip file. The zip file consist of a manifest.json file and arrow files for each table in the paper object.
+#' Save a paper as a JSON file.
 #'
 #' @param paper a paper object
 #' @param file_name the name of the file (if NULL, defaults to the paper_id)
-#' @param save_path the directory to save the zip file in
+#' @param save_path the directory to save the JSON file in
 #'
-#' @returns the path to the zip file
+#' @returns the path to the JSON file
 #' @export
 #'
 #' @examples
@@ -469,78 +497,20 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
     if (is.null(file_name)) file_name <- names(paper)
     pb <- pb(length(paper), ":what [:bar] :current/:total")
     pb$tick(0, list(what = "Saving..."))
-    zip_paths <- mapply(\(p, f, s) {
-      zp <- paper_write(p, f, s)
+    json_paths <- mapply(\(p, f, s) {
+      jp <- paper_write(p, f, s)
       pb$tick(1, list(what = f))
-      zp
+      jp
     }, paper, file_name, save_path)
 
-    return(zip_paths)
+    return(json_paths)
   }
 
-  # create temp directory to zip
   if (is.null(file_name)) file_name <- paper$paper_id
-  file_name <- gsub("\\.zip$", "", x = file_name)
-  zip_path <- file.path(tempdir(), file_name)
-  unlink(zip_path, recursive = TRUE)
-  dir.create(zip_path, showWarnings = FALSE)
-  on.exit(unlink(zip_path, recursive = TRUE))
+  file_name <- gsub("\\.(json|zip)$", "", x = file_name)
+  json_path <- file.path(save_path, paste0(file_name, ".json"))
 
-  paper_id <- paper$paper_id
-  paper$paper_id <- NULL
+  jsonlite::write_json(paper, json_path, auto_unbox = TRUE, pretty = TRUE)
 
-  # write arrow tables
-  for (tbl in names(paper)) {
-    tryCatch({
-      tbl_path <- file.path(zip_path, paste0(tbl, ".arrow"))
-
-      # fix list of table cols for arrow format
-      # if (nrow(paper[[tbl]]) > 0) {
-      #   list_cols <- (sapply(paper[[tbl]][1, ], typeof) == "list") |>
-      #     which() |> names()
-      #   for (list_col in list_cols) {
-      #     is_list <- paper[[tbl]][[list_col]][[1]] |> is.list()
-      #
-      #     if (is_list) {
-      #       paper[[tbl]][[list_col]] <- paper[[tbl]][[list_col]] |>
-      #         lapply(\(tb) {
-      #           n <- nrow(tb)
-      #           out <- vector("list", n)
-      #           for (i in seq_len(n)) {
-      #             out[[i]] <- as.list(tb[i, , drop = TRUE])
-      #           }
-      #           out
-      #         })
-      #     }
-      #   }
-      # }
-
-      arrow::write_ipc_file(paper[[tbl]], tbl_path)
-    }, error = \(e) {
-      warning(tbl, " table could not be saved for ", paper_id)
-      logger("paper_write", list(paper_id = paper_id, table = tbl, error = e$message))
-    })
-  }
-
-  # create manifest
-  tables <- list.files(zip_path) |> gsub("\\.arrow$", "", x = _)
-  dynamic <- grepl("^(table|figure)_", tables)
-  manifest <- list(
-    bibr_version = paper$info$bibr_version,
-    tables =  tables[!dynamic],
-    dynamic_tables =  tables[dynamic]
-  )
-  manifest_path <- file.path(zip_path, "manifest.json")
-  jsonlite::write_json(manifest, manifest_path)
-
-  # zip the files
-  old_wd <- getwd()
-  on.exit(setwd(old_wd))
-  setwd(dirname(zip_path))
-  zipfile <- file_name |>
-    paste0(".zip") |>
-    file.path(save_path, x = _)
-  utils::zip(zipfile, file_name, flags   = "-rq9X") # zip quietly
-
-  return(zipfile)
+  return(json_path)
 }

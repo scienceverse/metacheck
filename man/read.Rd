@@ -2,16 +2,16 @@
 % Please edit documentation in R/bibr.R
 \name{read}
 \alias{read}
-\title{Read in grobis XML or bibr ZIP}
+\title{Read in grobid XML or bibr JSON}
 \usage{
 read(file_path)
 }
 \arguments{
-\item{file_path}{path to a directory containing XML and/or zip files, or a vector of paths to XML or zip files}
+\item{file_path}{path to a directory containing XML and/or JSON files, or a vector of paths}
 }
 \value{
 a paper or paperlist
 }
 \description{
-Read in grobis XML or bibr ZIP
+Read in grobid XML or bibr JSON
 }

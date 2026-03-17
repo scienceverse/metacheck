@@ -97,7 +97,7 @@ test_that("paper_table", {
   # select columns
   paper <- demopaper()
   cols <- c("given", "family")
-  authors <- paper_table(paper, "authors", cols)
+  authors <- paper_table(paper, "author", cols)
   expect_equal(names(authors), c(cols, "paper_id"))
 
   # concat 1 paper empty table
@@ -167,9 +167,9 @@ test_that("paper_write", {
   # save an exact copy
   paper <- demopaper()
   save_path <- withr::local_tempdir()
-  zip_path <- paper_write(paper, NULL, save_path)
-  expect_true(file.exists(zip_path))
-  paper2 <- read(zip_path)
+  json_path <- paper_write(paper, NULL, save_path)
+  expect_true(file.exists(json_path))
+  paper2 <- read(json_path)
   expect_setequal(names(paper), names(paper2))
 
   # save changes
@@ -177,8 +177,8 @@ test_that("paper_write", {
   paper$info$title <- "New paper"
   paper$bib <- paper$bib[1:2, ]
   save_path <- withr::local_tempdir()
-  zip_path <- paper_write(paper, NULL, save_path)
-  expect_true(file.exists(zip_path))
-  paper2 <- read(zip_path)
+  json_path <- paper_write(paper, NULL, save_path)
+  expect_true(file.exists(json_path))
+  paper2 <- read(json_path)
   expect_setequal(names(paper), names(paper2))
 })

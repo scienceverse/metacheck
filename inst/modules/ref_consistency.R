@@ -19,11 +19,11 @@
 ref_consistency <- function(paper) {
   # detailed table of results ----
   bibs <- paper_table(paper, "bib")
-  xrefs <- paper_table(paper, "xrefs")
+  xrefs <- paper_table(paper, "xref")
   xrefs <- xrefs[xrefs$xref_type == "bib", ]
 
   missing_refs <- dplyr::anti_join(bibs, xrefs, by = c("paper_id", "bib_id" = "xref_id"))
-  missing_refs$missing <- rep("xrefs", nrow(missing_refs))
+  missing_refs$missing <- rep("xref", nrow(missing_refs))
   missing_bib <- dplyr::anti_join(xrefs, bibs, by = c("paper_id", "xref_id" = "bib_id"))
   missing_bib$missing <- rep("bib", nrow(missing_bib))
   names(missing_bib) <- names(missing_bib) |> sub("text", "bib_text", x = _)

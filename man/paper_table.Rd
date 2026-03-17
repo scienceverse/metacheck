@@ -17,9 +17,9 @@ paper_table(paper, table, cols = NULL)
 a merged table
 }
 \description{
-Return a table from a paper object or Cconcatenate tables across a list of paper objects.
+Return a table from a paper object or concatenate tables across a list of paper objects.
 }
 \examples{
 biblio <- paper_table(psychsci[1:10], "bib")
-xrefs <- paper_table(psychsci[1:10], "xrefs")
+xrefs <- paper_table(psychsci[1:10], "xref")
 }

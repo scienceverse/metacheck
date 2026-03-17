@@ -16,7 +16,7 @@ platform_bibr_convert(
 \arguments{
 \item{file_path}{Path to the document file, or a directory of documents}
 
-\item{save_dir}{Path to a directory in which to save the zip file}
+\item{save_dir}{Path to a directory in which to save the JSON file}
 
 \item{api_url}{Base URL of the Scienceverse platform API}
 
@@ -28,7 +28,7 @@ Defaults to the \code{PLATFORM_API_KEY} environment variable.}
 \item{timeout}{Maximum seconds to wait for processing (default 600)}
 }
 \value{
-Path(s) to the saved zip file(s)
+Path(s) to the saved JSON file(s)
 }
 \description{
 Submits a document to the Scienceverse platform queue for extraction.

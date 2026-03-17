@@ -68,7 +68,7 @@ search_text <- function(paper, pattern = ".*",
     text <- paper_table(paper, "text")
 
     # add headers and section types
-    sections <- paper_table(paper, "sections")
+    sections <- paper_table(paper, "section")
     cols <- c("section_id", "paper_id", "header", "section_type")
     if (all(cols %in% names(sections))) {
       text <- dplyr::left_join(

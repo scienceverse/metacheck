@@ -158,7 +158,7 @@ function(req, res) {
         return(error_response(res, 500, paper_obj$error))
     }
 
-    paper_obj$paper$xrefs
+    paper_obj$paper$xref
 }
 
 #* Search text in a paper
@@ -325,7 +325,7 @@ function(req, res) {
     logger::log_info("Paper processed successfully, extracting metadata: {request_id}")
     authors <- author_table(paper_obj$paper)
     references <- paper_obj$paper$bib
-    cross_references <- paper_obj$paper$xrefs
+    cross_references <- paper_obj$paper$xref
 
     logger::log_info("Running {length(modules)} module(s): {paste(modules, collapse = ', ')} - {request_id}")
     # Run all requested modules using module_run
@@ -366,7 +366,7 @@ function(req, res) {
     list(
         paper_info = info_table(
             paper_obj$paper,
-            c("title", "description", "keywords", "doi", "submission", "received", "accepted")
+            c("title", "abstract", "keywords", "doi", "submission", "received", "accepted")
         ),
         authors = authors,
         references = references,

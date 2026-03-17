@@ -6,14 +6,14 @@
 #' direct bibr API access without the queue.
 #'
 #' @param file_path Path to the document file, or a directory of documents
-#' @param save_dir Path to a directory in which to save the zip file
+#' @param save_dir Path to a directory in which to save the JSON file
 #' @param api_url Base URL of the Scienceverse platform API
 #' @param api_key Platform API key (Bearer token, starts with \code{sv_}).
 #'   Defaults to the \code{PLATFORM_API_KEY} environment variable.
 #' @param poll_interval Seconds between status polls (default 2)
 #' @param timeout Maximum seconds to wait for processing (default 600)
 #'
-#' @return Path(s) to the saved zip file(s)
+#' @return Path(s) to the saved JSON file(s)
 #' @export
 #'
 #' @examples
@@ -48,7 +48,7 @@ platform_bibr_convert <- function(file_path,
 
   if (length(file_path) > 1) {
     pb <- pb(length(file_path), "Converting :current/:total [:bar] (:what)")
-    zip_paths <- sapply(file_path, \(fp) {
+    json_paths <- sapply(file_path, \(fp) {
       pb$tick(1, list(what = basename(fp)))
       tryCatch(
         platform_bibr_convert(file_path = fp,
@@ -62,7 +62,7 @@ platform_bibr_convert <- function(file_path,
           return(NULL)
       })
     })
-    return(zip_paths)
+    return(json_paths)
   }
 
   # submit job ----
@@ -126,7 +126,6 @@ platform_bibr_convert <- function(file_path,
   # download result ----
   result_req <- httr2::request(api_url) |>
     httr2::req_url_path_append("jobs", job_id, "result") |>
-    httr2::req_url_query(format = "arrow") |>
     httr2::req_auth_bearer_token(api_key) |>
     httr2::req_timeout(120)
 
@@ -138,20 +137,20 @@ platform_bibr_convert <- function(file_path,
 
   contents <- httr2::resp_body_raw(result_resp)
   dir.create(save_dir, showWarnings = FALSE, recursive = TRUE)
-  zip_path <- basename(file_path) |>
-    gsub("\\..{1,4}$", "\\.zip", x = _) |>
+  json_path <- basename(file_path) |>
+    gsub("\\..{1,4}$", "\\.json", x = _) |>
     file.path(save_dir, x = _)
-  writeBin(contents, zip_path)
+  writeBin(contents, json_path)
 
-  pb$tick(0, list(what = zip_path))
-  zip_path
+  pb$tick(0, list(what = json_path))
+  json_path
 }
 
 
 #' Process a paper using the bibr API
 #'
 #' @param file_path Path to the document file, or a directory of documents
-#' @param save_dir Path to a directory in which to save the zip file
+#' @param save_dir Path to a directory in which to save the JSON file
 #' @param api_url Base URL of the API
 #' @param api_key Key to access bibr
 #' @param start_page First page of the file to extract
@@ -176,7 +175,7 @@ bibr_convert <- function(file_path,
 
   if (length(file_path) > 1) {
     pb <- pb(length(file_path), "Converting :current/:total [:bar] (:what)")
-    zip_paths <- sapply(file_path, \(fp) {
+    json_paths <- sapply(file_path, \(fp) {
       pb$tick(1, list(what = basename(fp)))
       tryCatch(
         bibr_convert(file_path = fp,
@@ -190,7 +189,7 @@ bibr_convert <- function(file_path,
           return(NULL)
       })
     })
-    return(zip_paths)
+    return(json_paths)
   }
 
   # change to zero-based values
@@ -200,27 +199,24 @@ bibr_convert <- function(file_path,
   # Make the POST request ----
   req <- httr2::request(api_url) |>
     httr2::req_auth_basic("thesanogoeffect", api_key) |>
-    httr2::req_url_path_append("papers", "extract", "arrow") |>
+    httr2::req_url_path_append("papers", "extract") |>
     httr2::req_body_multipart(
       file = curl::form_file(file_path)
-      #start_page = zb_start_page
-      # end_page = zb_end_page
     ) |>
     httr2::req_timeout(300)
 
   resp <- httr2::req_perform(req)
 
   # Check if the request was successful
-  if (httr2::resp_status(resp) == 200 &&
-      httr2::resp_content_type(resp) == "application/zip") {
+  if (httr2::resp_status(resp) == 200) {
     contents <- httr2::resp_body_raw(resp)
 
     # Write to file
     dir.create(save_dir, showWarnings = FALSE, recursive = TRUE)
-    zip_path <- basename(file_path) |>
-      gsub("\\..{1,4}$", "\\.zip", x = _) |>
+    json_path <- basename(file_path) |>
+      gsub("\\..{1,4}$", "\\.json", x = _) |>
       file.path(save_dir, x = _)
-    writeBin(contents, zip_path)
+    writeBin(contents, json_path)
 
   } else {
     code <- httr2::resp_status(resp)
@@ -230,103 +226,142 @@ bibr_convert <- function(file_path,
     )
   }
 
-  zip_path
+  json_path
 }
 
 
-#' Read Bibr zip file
+#' Read bibr JSON file
 #'
-#' @param file_path path to the zip file
+#' @param file_path path to the JSON file (or legacy ZIP file)
 #'
 #' @returns a paper object
 #' @export
 #'
 #' @keywords internal
 read_bibr <- function(file_path) {
-  # temp dir for unzip and cleanup ----
-  exdir <- file.path(
-    tempdir(),
-    basename(file_path) |> gsub("\\.zip$", "", x = _)
-  )
-  on.exit(unlink(exdir, recursive = TRUE))
+  # legacy ZIP support
+  if (grepl("\\.zip$", file_path, ignore.case = TRUE)) {
+    return(.read_bibr_zip(file_path))
+  }
 
-  # unzip and check manifest ----
-  unzipped_files <- utils::unzip(file_path, exdir = exdir)
-  # manifest <- grep("manifest\\.json$", unzipped_files, value = TRUE) |>
-  #   jsonlite::read_json()
+  # read JSON ----
+  data <- jsonlite::read_json(file_path, simplifyVector = TRUE)
 
-  # read in arrow tables -----
   paper <- paper()
-  # all_tables <- c(manifest$tables, manifest$dynamic_tables)
-  all_tables <- grep("\\.arrow$", unzipped_files, value = TRUE)
-  for (tbl_path in all_tables) {
-    table_name <- basename(tbl_path) |> gsub("\\.arrow$", "", x = _)
-    paper[[table_name]] <- arrow::read_ipc_file(tbl_path)
+  paper$paper_id <- data$paper_id
+
+  # info ----
+  info <- data$info
+  if (is.data.frame(info)) {
+    paper$info <- info
+  } else {
+    paper$info <- as.data.frame(info, stringsAsFactors = FALSE)
   }
 
-  # temporary processing for format changes to be added to bibr ----
-  paper$paper_id <- paper$info$file_hash
-  if ("tbl_id" %in% names(paper$tables)) {
-    names(paper$tables)[[1]] <- "table_id"
-    names(paper$tables)[[3]] <- "html"
-  }
-  names(paper$figures)[[1]] <- "figure_id"
-  paper$figures$caption <- NULL
-  paper$equations$eq_type <- NULL
-
-  # append references to sections and text and replace with text_id
-  if ("bib_text" %in% paper$bib) {
-    section_id <- max(c(0, paper$sections$section_id)) + 1
-    sec_add <- list(section_id = section_id,
-                    header = "References",
-                    section_type = "references")
-    paper$sections <- dplyr::bind_rows(paper$sections, sec_add)
-    text_ids <- max(c(0, paper$text$text_id)) + seq_along(paper$bib$bib_text)
-    p_ids <- max(c(0, paper$text$paragraph_id)) + seq_along(paper$bib$bib_text)
-    text_add <- data.frame(
-      text_id = text_ids,
-      paragraph_id = p_ids,
-      section_id = section_id,
-      text = paper$bib$bib_text
-    )
-    paper$text <- dplyr::bind_rows(paper$text, text_add)
-    paper$bib$text_id <- text_ids
-    paper$bib$bib_text <- NULL
-
-    suppressWarnings({
-    paper$bib <- data.frame(
-      bib_id = paper$bib$bib_id,
-      bib_type = paper$bib$type,
-      doi = paper$bib$doi,
-      title = paper$bib$title,
-      authors = paper$bib$authors %||% paper$bib$author,
-      editors = paper$bib$editors %||% paper$bib$editor,
-      publisher = paper$bib$publisher,
-      publication_year = paper$bib$publication_year %||% paper$bib$year,
-      publication_date = NA_character_,
-      container = paper$bib$container %||% paper$bib$journal %||% paper$bib$booktitle,
-      volume = paper$bib$volume,
-      issue = paper$bib$number %||% paper$bib$issue,
-      first_page = paper$bib$first_page,
-      last_page = paper$bib$last_page,
-      edition = NA_character_,
-      version = NA_character_,
-      url = paper$bib$url %||% paper$bib$link,
-      text_id = paper$bib$text_id
-    )
-    })
+  # author ----
+  if (!is.null(data$author) && length(data$author) > 0) {
+    paper$author <- as.data.frame(data$author, stringsAsFactors = FALSE)
   }
 
+  # bib ----
+  if (!is.null(data$bib) && length(data$bib) > 0) {
+    paper$bib <- as.data.frame(data$bib, stringsAsFactors = FALSE)
+  }
+
+  # eq ----
+  if (!is.null(data$eq) && length(data$eq) > 0) {
+    paper$eq <- as.data.frame(data$eq, stringsAsFactors = FALSE)
+  }
+
+  # fig ----
+  if (!is.null(data$fig) && length(data$fig) > 0) {
+    paper$fig <- as.data.frame(data$fig, stringsAsFactors = FALSE)
+  }
+
+  # url ----
+  if (!is.null(data$url) && length(data$url) > 0) {
+    paper$url <- as.data.frame(data$url, stringsAsFactors = FALSE)
+  }
+
+  # section ----
+  if (!is.null(data$section) && length(data$section) > 0) {
+    paper$section <- as.data.frame(data$section, stringsAsFactors = FALSE)
+  }
+
+  # study ----
+  if (!is.null(data$study) && length(data$study) > 0) {
+    paper$study <- as.data.frame(data$study, stringsAsFactors = FALSE)
+  }
+
+  # table ----
+  if (!is.null(data$table) && length(data$table) > 0) {
+    paper$table <- as.data.frame(data$table, stringsAsFactors = FALSE)
+  }
+
+  # text ----
+  if (!is.null(data$text) && length(data$text) > 0) {
+    paper$text <- as.data.frame(data$text, stringsAsFactors = FALSE)
+  }
+
+  # xref ----
+  if (!is.null(data$xref) && length(data$xref) > 0) {
+    paper$xref <- as.data.frame(data$xref, stringsAsFactors = FALSE)
+  }
+
+  # bib_matches ----
+  if (!is.null(data$bib_matches) && length(data$bib_matches) > 0) {
+    paper$bib_matches <- as.data.frame(data$bib_matches, stringsAsFactors = FALSE)
+  }
+
+  # ensure all expected columns exist and have correct types
+  # (JSON may drop all-NA columns or read them back as logical)
+  template <- paper()
+  for (slot_name in names(template)) {
+    tmpl <- template[[slot_name]]
+    slot <- paper[[slot_name]]
+    if (is.data.frame(tmpl) && is.data.frame(slot) && nrow(slot) > 0) {
+      for (col in names(tmpl)) {
+        if (!col %in% names(slot)) {
+          # add missing column with appropriate NA type
+          slot[[col]] <- NA
+        }
+        # coerce all-NA logical columns to the template type
+        if (is.logical(slot[[col]]) && all(is.na(slot[[col]]))) {
+          tmpl_type <- typeof(tmpl[[col]])
+          if (tmpl_type == "integer") slot[[col]] <- NA_integer_
+          else if (tmpl_type == "double") slot[[col]] <- NA_real_
+          else if (tmpl_type == "character") slot[[col]] <- NA_character_
+        }
+      }
+      paper[[slot_name]] <- slot
+    }
+  }
 
   # fix urls with . at end
-  paper$links$url <- gsub("\\.$", "", paper$links$url)
+  if (nrow(paper$url) > 0) {
+    paper$url$href <- gsub("\\.$", "", paper$url$href)
+  }
 
   paper
 }
 
-#' Read in grobis XML or bibr ZIP
+
+#' Read legacy bibr ZIP file (Arrow format)
 #'
-#' @param file_path path to a directory containing XML and/or zip files, or a vector of paths to XML or zip files
+#' @param file_path path to the zip file
+#'
+#' @returns a paper object
+#' @keywords internal
+.read_bibr_zip <- function(file_path) {
+  stop("Arrow ZIP format is no longer supported. ",
+       "Please re-process your paper with bibr to produce a JSON file, ",
+       "or use an older version of metacheck.",
+       call. = FALSE)
+}
+
+#' Read in grobid XML or bibr JSON
+#'
+#' @param file_path path to a directory containing XML and/or JSON files, or a vector of paths
 #'
 #' @returns a paper or paperlist
 #' @export
@@ -335,7 +370,7 @@ read <- function(file_path) {
   if (length(file_path) == 1 && dir.exists(file_path)) {
     dir_path <- file_path
     file_path <- list.files(dir_path,
-                            pattern = "\\.(zip|xml)$",
+                            pattern = "\\.(json|xml)$",
                             full.names = TRUE)
   }
 
@@ -343,7 +378,7 @@ read <- function(file_path) {
   papers <- lapply(file_path, \(fp) {
     pb$tick(1, list(what = basename(fp)))
     tryCatch({
-      if (grepl("\\.zip$", fp, ignore.case = TRUE)) {
+      if (grepl("\\.json$", fp, ignore.case = TRUE)) {
         read_bibr(file_path = fp)
       } else if (grepl("\\.xml$", fp, ignore.case = TRUE)) {
         .grobid_to_bibr(fp)

@@ -1,0 +1,3482 @@
+{
+  "text": [
+    {
+      "text_id": 1,
+      "paragraph_id": 1,
+      "section_id": 0,
+      "text": "Humans, like other socialized species, must work together to manage the exploitation of valuable but finite resources (Committee on the Human Dimensions of Global Change, 2002;Ostrom, 2009)."
+    },
+    {
+      "text_id": 2,
+      "paragraph_id": 1,
+      "section_id": 0,
+      "text": "Supplies such as fresh water, fish, or fossil fuels may form the basis for survival, and a sustainable balance between exploitation and conservation must be found."
+    },
+    {
+      "text_id": 3,
+      "paragraph_id": 1,
+      "section_id": 0,
+      "text": "Game-theory formulations typically assume that such dilemmas pit the self-interested objectives of individuals against the interests of their community (Burke, 2001;Hardin, 1968;Kollock, 1998)."
+    },
+    {
+      "text_id": 4,
+      "paragraph_id": 1,
+      "section_id": 0,
+      "text": "Such approaches tend to highlight outcomes illustrating the tragedy of the commons, in which resources are eventually exhausted, to the disadvantage of both individuals and their social groups (Hardin, 1968)."
+    },
+    {
+      "text_id": 5,
+      "paragraph_id": 1,
+      "section_id": 0,
+      "text": "Field studies, however, demonstrate that community members typically find ways to manage resource-harvesting behaviors through simple coordination, regulation, or sanctions (Feeny, Berkes, McCay, & Acheson, 1990;Ostrom, 2000;Rankin, Bargum, & Kokko, 2007)."
+    },
+    {
+      "text_id": 6,
+      "paragraph_id": 1,
+      "section_id": 0,
+      "text": "In the study reported here, we examined the neurochemical mechanisms that mediate how individuals interact with others to manage common-pool resources."
+    },
+    {
+      "text_id": 7,
+      "paragraph_id": 2,
+      "section_id": 0,
+      "text": "One neurochemical that might modulate the way that individuals solve resource dilemmas is serotonin."
+    },
+    {
+      "text_id": 8,
+      "paragraph_id": 2,
+      "section_id": 0,
+      "text": "Increased serotonin activity-achieved by administration of the amino acid tryptophan in vervet monkeys (Raleigh, McGuire, Brammer, Pollack, & Yuwiler, 1991) and the 527830P SSXXX10.1177/0956797614527830Bilderbeck et al.Serotonin and the Tragedy of the Commons research-article2014"
+    },
+    {
+      "text_id": 9,
+      "paragraph_id": 4,
+      "section_id": 1,
+      "text": "selective serotonin reuptake inhibitor paroxetine in humans (Knutson et al., 1998)-can facilitate affiliative behaviors."
+    },
+    {
+      "text_id": 10,
+      "paragraph_id": 4,
+      "section_id": 1,
+      "text": "By contrast, reduced serotonin activity (achieved by tryptophan depletion) blocks reciprocal altruism in humans (Wood, Rilling, Sanfey, Bhagwagar, & Rogers, 2006) and facilitates the punishment of unfairness in ways comparable with focal lesions of the ventromedial prefrontal cortex, a cortical region that receives dense serotonergic innervation (Crockett, Clark, Tabibnia, Lieberman, & Robbins, 2008;Koenigs & Tranel, 2007)."
+    },
+    {
+      "text_id": 11,
+      "paragraph_id": 4,
+      "section_id": 1,
+      "text": "Reduced serotonin activity also diminishes the reward value of fairness, but enhances the tendency to punish unfairness, via modulated activity within the ventral and dorsal striatum, respectively (Crockett et al., 2013)."
+    },
+    {
+      "text_id": 12,
+      "paragraph_id": 4,
+      "section_id": 1,
+      "text": "Taken together, these data suggest that serotonin activity regulates a tension between fairness and norm-enforcing retaliation to influence how people work to meet groupbased objectives, such as managing resources."
+    },
+    {
+      "text_id": 13,
+      "paragraph_id": 5,
+      "section_id": 1,
+      "text": "We tested the effects of diminishing central serotonin activity (through tryptophan depletion; Moore et al., 2000) on the capacity of healthy adults to solve resource dilemmas within small social groups."
+    },
+    {
+      "text_id": 14,
+      "paragraph_id": 5,
+      "section_id": 1,
+      "text": "Participants were introduced to three people (in fact, experimental confederates), and the four-player group was given access to a resource of nominal value (points) that could be harvested and, after the experiment, converted into monetary payoffs."
+    },
+    {
+      "text_id": 15,
+      "paragraph_id": 5,
+      "section_id": 1,
+      "text": "On each harvesting opportunity, group members decided how much to harvest from the resource, which was reduced by the total value of the group's harvests but then replenished."
+    },
+    {
+      "text_id": 16,
+      "paragraph_id": 6,
+      "section_id": 1,
+      "text": "Our focus was the role of serotonin in descriptive social norms."
+    },
+    {
+      "text_id": 17,
+      "paragraph_id": 6,
+      "section_id": 1,
+      "text": "Comparisons with social partners' behavior may be important in resource-management problems (Biel & Thøgersen, 2007;Fischbacher & Gächter, 2010;Thøgersen, 2008), as when people are nudged into reducing their energy consumption by being told that they are using more energy than their neighbors (Nolan, Schultz, Cialdini, Goldstein, & Griskevicius, 2008)."
+    },
+    {
+      "text_id": 18,
+      "paragraph_id": 6,
+      "section_id": 1,
+      "text": "People can also be highly sensitive to their ranked position within distributions of behavior (here called social norms; Boyce, Brown, & Moore, 2010;Melrose, Brown, & Wood, 2012;Wood, Boyce, Moore, & Brown, 2012)."
+    },
+    {
+      "text_id": 19,
+      "paragraph_id": 6,
+      "section_id": 1,
+      "text": "We hypothesized that social ranks would be important when people chose how much to harvest from a shared resource."
+    },
+    {
+      "text_id": 20,
+      "paragraph_id": 6,
+      "section_id": 1,
+      "text": "We tested the hypotheses that people would adjust their current harvests (in an upward or downward direction) on the basis of the (ranked) position of their previous harvests within the social norm represented by the distribution of group members' harvests, and that these adjustments would be influenced by central serotonin activity."
+    },
+    {
+      "text_id": 21,
+      "paragraph_id": 7,
+      "section_id": 1,
+      "text": "To vary the social norms, we manipulated the harvesting behavior of the other players (i.e., confederates) at different points in the resource-dilemma game."
+    },
+    {
+      "text_id": 22,
+      "paragraph_id": 7,
+      "section_id": 1,
+      "text": "Sometimes, other players adopted aggressive overharvesting strategies that depleted the resource and that would, if prolonged, have exhausted the resource completely."
+    },
+    {
+      "text_id": 23,
+      "paragraph_id": 7,
+      "section_id": 1,
+      "text": "At other times, other players adopted conservative underharvesting strategies that increased the resource (early in the game) or tended to sustain its value (toward the end of the game)."
+    },
+    {
+      "text_id": 24,
+      "paragraph_id": 7,
+      "section_id": 1,
+      "text": "This experimentally induced variation in other people's harvesting behavior allowed us to assess participants' use of social norms."
+    },
+    {
+      "text_id": 25,
+      "paragraph_id": 9,
+      "section_id": 2,
+      "text": "The experiment was approved by a National Health Service (England) research ethics committee."
+    },
+    {
+      "text_id": 26,
+      "paragraph_id": 9,
+      "section_id": 2,
+      "text": "Participants provided informed consent after reading an information sheet indicating that the experiment would involve making decisions as part of a small group but not specifying all the details of, or the rationale for playing, the multiplayer resource-dilemma game."
+    },
+    {
+      "text_id": 27,
+      "paragraph_id": 11,
+      "section_id": 3,
+      "text": "Rapid dietary tryptophan depletion diminishes central serotonin activity reliably and safely in healthy adult volunteers (Moore et al., 2000)."
+    },
+    {
+      "text_id": 28,
+      "paragraph_id": 11,
+      "section_id": 3,
+      "text": "Thirty-two healthy adults were recruited from Oxford University and the local community; 24 were full-time students."
+    },
+    {
+      "text_id": 29,
+      "paragraph_id": 11,
+      "section_id": 3,
+      "text": "All participants followed a low-protein diet for 24 hr before ingesting an amino-acid drink on the morning of the experiment."
+    },
+    {
+      "text_id": 30,
+      "paragraph_id": 11,
+      "section_id": 3,
+      "text": "The drink consumed by 16 of the participants contained tryptophan (the T+ group), and the drink consumed by the other 16 did not contain tryptophan (the T-group; see the Supplemental Material available online for details)."
+    },
+    {
+      "text_id": 31,
+      "paragraph_id": 11,
+      "section_id": 3,
+      "text": "Five hours later, participants played the multiplayer resource-dilemma game."
+    },
+    {
+      "text_id": 32,
+      "paragraph_id": 11,
+      "section_id": 3,
+      "text": "The participants, experimenter, and confederates were all unaware of which treatment participants received."
+    },
+    {
+      "text_id": 33,
+      "paragraph_id": 13,
+      "section_id": 4,
+      "text": "In an initial session, all participants were assessed using a semistructured interview from the Structured Clinical Interview for DSM-IV-TR Axis I Disorders (First, Spitzer, Gibbon, & Williams, 2002)."
+    },
+    {
+      "text_id": 34,
+      "paragraph_id": 13,
+      "section_id": 4,
+      "text": "Exclusion criteria included the presence or history of serious physical or psychiatric illness, including mood and addictive disorders."
+    },
+    {
+      "text_id": 35,
+      "paragraph_id": 13,
+      "section_id": 4,
+      "text": "Participants completed measures of cognitive ability (Raven's Standard Progressive Matrices Sets A, B, C, D, & E;Raven, 1996) and impulsivity (Barratt Impulsiveness Scale; Patton, Stanford, & Barratt, 1995)."
+    },
+    {
+      "text_id": 36,
+      "paragraph_id": 14,
+      "section_id": 4,
+      "text": "On the morning of the experiment, participants arrived at the laboratory at 8:30 a.m. and completed self-report measures of state affect using the Positive and Negative Affect Schedule (PANAS; Watson, Clark, & Tellegen, 1988)."
+    },
+    {
+      "text_id": 37,
+      "paragraph_id": 14,
+      "section_id": 4,
+      "text": "Blood samples (6 ml) were taken for baseline measurements of plasma tryptophan."
+    },
+    {
+      "text_id": 38,
+      "paragraph_id": 14,
+      "section_id": 4,
+      "text": "Participants then drank the amino-acid drinks over 30 min and occupied themselves with reading or watching television."
+    },
+    {
+      "text_id": 39,
+      "paragraph_id": 14,
+      "section_id": 4,
+      "text": "Five hours later, immediately prior to the start of the resourcedilemma game, follow-up measures of state affect were taken, as well as a second blood sample."
+    },
+    {
+      "text_id": 40,
+      "paragraph_id": 15,
+      "section_id": 4,
+      "text": "All four players (i.e., the participant and three confederates) sat at separate workstations around a pentagonal table, with each person's position identified by labels (A, B, C, and D)."
+    },
+    {
+      "text_id": 41,
+      "paragraph_id": 15,
+      "section_id": 4,
+      "text": "The experimenter sat at the fifth workstation (Fig. 1a)."
+    },
+    {
+      "text_id": 42,
+      "paragraph_id": 15,
+      "section_id": 4,
+      "text": "Each workstation contained a computer terminal, and dividers concealed other players' displays and keyboard finger movements (Fig. 1b) but not their faces."
+    },
+    {
+      "text_id": 43,
+      "paragraph_id": 15,
+      "section_id": 4,
+      "text": "First names of players, but no other information, were known among the group before the game began."
+    },
+    {
+      "text_id": 44,
+      "paragraph_id": 15,
+      "section_id": 4,
+      "text": "To enhance the deception that the other three players of the game were genuine, we trained participants alongside one opposite-gender confederate but informed them that the two remaining players (one male, one female) were being trained elsewhere."
+    },
+    {
+      "text_id": 45,
+      "paragraph_id": 15,
+      "section_id": 4,
+      "text": "This procedure avoided both the possibly unhelpful effects of being instructed as During the harvesting phase (left panel), participants had 5 s to choose how much to harvest from the resource and enter that amount in the box marked \"Select your take:.\""
+    },
+    {
+      "text_id": 46,
+      "paragraph_id": 15,
+      "section_id": 4,
+      "text": "This was followed by the 1.5-s observation phase (middle panel), in which the amount each player chose was displayed in red next to his or her identifying letter, and then the participant's chosen amount was added to his or her total points."
+    },
+    {
+      "text_id": 47,
+      "paragraph_id": 15,
+      "section_id": 4,
+      "text": "The resource was then partially replenished (right panel)."
+    },
+    {
+      "text_id": 48,
+      "paragraph_id": 15,
+      "section_id": 4,
+      "text": "Replenishment was signaled by a mauve border appearing around the pentagon and the sounding of a 0.5-s tone."
+    },
+    {
+      "text_id": 49,
+      "paragraph_id": 16,
+      "section_id": 4,
+      "text": "part of a larger group (e.g., by making it easier for participants to ask questions) and improved the believability of the game by making participants aware of confederates' involvement before they took their seats for the game proper."
+    },
+    {
+      "text_id": 50,
+      "paragraph_id": 16,
+      "section_id": 4,
+      "text": "All groups included two male and two female players."
+    },
+    {
+      "text_id": 51,
+      "paragraph_id": 17,
+      "section_id": 4,
+      "text": "Participants and confederates were given access to a resource, initially of 230 points."
+    },
+    {
+      "text_id": 52,
+      "paragraph_id": 17,
+      "section_id": 4,
+      "text": "On every harvesting opportunity, each player took up to 20 points from the resource."
+    },
+    {
+      "text_id": 53,
+      "paragraph_id": 17,
+      "section_id": 4,
+      "text": "Participants were told that these points, accumulated over the whole game, could be exchanged for a real monetary reward at the end of the experiment (up to a maximum value of £15)."
+    },
+    {
+      "text_id": 54,
+      "paragraph_id": 18,
+      "section_id": 4,
+      "text": "Participants made their harvesting decisions privately, but subsequently observed all other players' harvests."
+    },
+    {
+      "text_id": 55,
+      "paragraph_id": 18,
+      "section_id": 4,
+      "text": "Participants could see their own (but not others') total number of accumulated points at all times during the game."
+    },
+    {
+      "text_id": 56,
+      "paragraph_id": 18,
+      "section_id": 4,
+      "text": "Players were explicitly told that the group as a whole, and they as individuals, would make more points if the group were able to find a way to sustain the resource over the course of the game."
+    },
+    {
+      "text_id": 57,
+      "paragraph_id": 18,
+      "section_id": 4,
+      "text": "They were also told that the game would terminate when either the resource was reduced to 0 or an unknown time interval had elapsed."
+    },
+    {
+      "text_id": 58,
+      "paragraph_id": 18,
+      "section_id": 4,
+      "text": "In fact, the game terminated automatically after 109 consecutive harvests."
+    },
+    {
+      "text_id": 59,
+      "paragraph_id": 19,
+      "section_id": 4,
+      "text": "Figure 1c shows a typical display sequence."
+    },
+    {
+      "text_id": 60,
+      "paragraph_id": 19,
+      "section_id": 4,
+      "text": "Throughout the game, the current value of the resource was shown in the center of a light-blue pentagon."
+    },
+    {
+      "text_id": 61,
+      "paragraph_id": 19,
+      "section_id": 4,
+      "text": "The value participants selected for the current harvest was shown below the pentagon."
+    },
+    {
+      "text_id": 62,
+      "paragraph_id": 19,
+      "section_id": 4,
+      "text": "On each harvesting opportunity, participants were allowed to harvest points by pressing the uparrow and down-arrow keys of a keyboard to scroll through integer values."
+    },
+    {
+      "text_id": 63,
+      "paragraph_id": 19,
+      "section_id": 4,
+      "text": "(The confederates pretended to harvest points in the same manner, although their harvests were actually decided by the computer.)"
+    },
+    {
+      "text_id": 64,
+      "paragraph_id": 19,
+      "section_id": 4,
+      "text": "The harvest was the value selected 5 s after the appearance of the display."
+    },
+    {
+      "text_id": 65,
+      "paragraph_id": 19,
+      "section_id": 4,
+      "text": "Two seconds later, the value of the participant's harvest was added to his or her accumulated total points."
+    },
+    {
+      "text_id": 66,
+      "paragraph_id": 19,
+      "section_id": 4,
+      "text": "One second after that, all four players' harvests were displayed in red alongside the letters that indicated their position around the table."
+    },
+    {
+      "text_id": 67,
+      "paragraph_id": 19,
+      "section_id": 4,
+      "text": "The resource was updated 1.5 s later by subtracting the summed value of all harvests, and then the resource was at least partially replenished (see the next paragraph)."
+    },
+    {
+      "text_id": 68,
+      "paragraph_id": 19,
+      "section_id": 4,
+      "text": "This event was signaled by changing the pentagon color border to mauve and playing a 0.5-s tone."
+    },
+    {
+      "text_id": 69,
+      "paragraph_id": 19,
+      "section_id": 4,
+      "text": "Harvesting opportunities were separated by 1.5-s intervals."
+    },
+    {
+      "text_id": 70,
+      "paragraph_id": 20,
+      "section_id": 4,
+      "text": "The replenishment operated as follows."
+    },
+    {
+      "text_id": 71,
+      "paragraph_id": 20,
+      "section_id": 4,
+      "text": "First, the resource was increased by a number of points drawn from a rectangular distribution of integers between 17% and 23% of the resource that remained following all players' harvests."
+    },
+    {
+      "text_id": 72,
+      "paragraph_id": 20,
+      "section_id": 4,
+      "text": "Second, the value of the replenished resource was weighted by one-third of the previous resource value."
+    },
+    {
+      "text_id": 73,
+      "paragraph_id": 20,
+      "section_id": 4,
+      "text": "This running-total mechanism dampened fluctuations in resource value over the course of the game, increased the number of harvesting opportunities that participants were likely to complete in a game, and facilitated the emergence of stable resource-management strategies (see the Supplemental Material for an example replenishment)."
+    },
+    {
+      "text_id": 74,
+      "paragraph_id": 21,
+      "section_id": 4,
+      "text": "Communication between playing partners was not allowed during the game, and confederates maintained their focus of attention on the game displays throughout."
+    },
+    {
+      "text_id": 75,
+      "paragraph_id": 21,
+      "section_id": 4,
+      "text": "All players were told to press the space bar on their keyboards to start the game."
+    },
+    {
+      "text_id": 76,
+      "paragraph_id": 21,
+      "section_id": 4,
+      "text": "In fact, the computer controlling the experiment responded only to the participants' button responses."
+    },
+    {
+      "text_id": 77,
+      "paragraph_id": 21,
+      "section_id": 4,
+      "text": "All players wore headphones, which provided sound effects for the game and background music (Mozart concertos) to reduce possible noise distractions."
+    },
+    {
+      "text_id": 78,
+      "paragraph_id": 22,
+      "section_id": 4,
+      "text": "The over-and underharvesting behavior of confederates instantiated four social environments (see the Supplemental Material for details)."
+    },
+    {
+      "text_id": 79,
+      "paragraph_id": 22,
+      "section_id": 4,
+      "text": "In the one-overharvester environment, a single confederate overharvested the resource (e.g., Fig. 1c); in the two-overharvesters environment, two confederates overharvested the resource."
+    },
+    {
+      "text_id": 80,
+      "paragraph_id": 22,
+      "section_id": 4,
+      "text": "By contrast, in the one-underharvester environment, one confederate underharvested the resource, whereas, in the two-underharvesters environment, two confederates underharvested the resource."
+    },
+    {
+      "text_id": 81,
+      "paragraph_id": 22,
+      "section_id": 4,
+      "text": "Overharvesting by confederates was geared (assuming that the harvests of the remaining players had no impact) to diminish the resource, whereas underharvesting behavior was geared to increase the resource."
+    },
+    {
+      "text_id": 82,
+      "paragraph_id": 22,
+      "section_id": 4,
+      "text": "Therefore, the value of the resource available to the players tended to decrease in the overharvesting environments but increase in the underharvesting environments."
+    },
+    {
+      "text_id": 83,
+      "paragraph_id": 22,
+      "section_id": 4,
+      "text": "In each social environment, all other players (i.e., any confederates who were not saliently over-or underharvesting) harvested amounts that, by themselves, placed a gentle downward pressure on the value of the resource."
+    },
+    {
+      "text_id": 84,
+      "paragraph_id": 22,
+      "section_id": 4,
+      "text": "(Extensive pilot studies suggested that healthy adults tend to overharvest from a shared resource, other things being equal, and we wanted participants to be required to manage resources that were under a mild threat of exhaustion.)"
+    },
+    {
+      "text_id": 85,
+      "paragraph_id": 22,
+      "section_id": 4,
+      "text": "There were 13 consecutive harvesting opportunities in each of the four harvesting environments."
+    },
+    {
+      "text_id": 86,
+      "paragraph_id": 22,
+      "section_id": 4,
+      "text": "The four environments were presented in a pseudorandom order over the 109 harvests of the game (up to two repetitions of each environment)."
+    },
+    {
+      "text_id": 87,
+      "paragraph_id": 22,
+      "section_id": 4,
+      "text": "One-overharvester environments never immediately preceded or followed two-overharvesters environments; one-underharvester environments never immediately preceded or followed two-underharvesters environments."
+    },
+    {
+      "text_id": 88,
+      "paragraph_id": 22,
+      "section_id": 4,
+      "text": "The first five harvests of the game were warm-ups, in which the harvests of playing partners maintained the resource at roughly its initial level."
+    },
+    {
+      "text_id": 89,
+      "paragraph_id": 23,
+      "section_id": 4,
+      "text": "After finishing the resource-dilemma game, participants completed a postgame questionnaire to measure their satisfaction with the game and the strategies that they employed."
+    },
+    {
+      "text_id": 90,
+      "paragraph_id": 23,
+      "section_id": 4,
+      "text": "Participants rated three items: \"How happy were you with the outcome of the game?\""
+    },
+    {
+      "text_id": 91,
+      "paragraph_id": 23,
+      "section_id": 4,
+      "text": "\"How much did you feel that you wanted to act in your own benefit when selecting your 'take'?\""
+    },
+    {
+      "text_id": 92,
+      "paragraph_id": 23,
+      "section_id": 4,
+      "text": "and \"How much did you feel that you thought of the best outcome for the group when selecting your 'take'?\""
+    },
+    {
+      "text_id": 93,
+      "paragraph_id": 23,
+      "section_id": 4,
+      "text": "Responses were made using 7-point Likert scales, with the anchors not at all (0) and very much (6) and a midpoint of somewhat (3)."
+    },
+    {
+      "text_id": 94,
+      "paragraph_id": 25,
+      "section_id": 5,
+      "text": "There were no significant differences in the age, cognitive ability, trait affect, or impulsivity of T-and T+ participants (Table 1), -1.26 (SE = 1.43) < βs < 4.71 (SE = 2.96)."
+    },
+    {
+      "text_id": 95,
+      "paragraph_id": 25,
+      "section_id": 5,
+      "text": "As expected (Moore et al., 2000), plasma (total) tryptophan between baseline (immediately before receiving the amino-acid drink) and 5 hr later was reduced following the T-treatment but increased following the T+ treatment (see Table S1 in the Supplemental Material), β = -14.66 (SE = 1.26), p < .0001."
+    },
+    {
+      "text_id": 96,
+      "paragraph_id": 25,
+      "section_id": 5,
+      "text": "Plasma tryptophan was reduced in the T-compared with the T+ participants just before participants began the resourcedilemma game, β = -14.38 (SE = 1.08), p < .0001."
+    },
+    {
+      "text_id": 97,
+      "paragraph_id": 25,
+      "section_id": 5,
+      "text": "Consistent with previous findings (Booij et al., 2002;Ruhe, Mason, & Schene, 2007), results showed that the T-treatment did not produce marked changes in state positive or negative affect (Table S1 in the Supplemental Material), -1.88 (SE = 3.20) < βs < -0.94 (SE = 0.86)."
+    },
+    {
+      "text_id": 98,
+      "paragraph_id": 25,
+      "section_id": 5,
+      "text": "All participants reported being deceived about the veracity of the confederates' behavior, as indicated by scores of 4 or higher on the measure of deception."
+    },
+    {
+      "text_id": 99,
+      "paragraph_id": 25,
+      "section_id": 5,
+      "text": "Deception scores for T+ participants (M = 6.71, SE = 0.18) and T-participants (M = 6.33, SE = 0.33) were not significantly different, β = 0.40 (SE = 0.41)."
+    },
+    {
+      "text_id": 100,
+      "paragraph_id": 27,
+      "section_id": 6,
+      "text": "First, we compared the outcomes of the resourcedilemma game and the total points harvested by the T-participants and the T+ participants."
+    },
+    {
+      "text_id": 101,
+      "paragraph_id": 27,
+      "section_id": 6,
+      "text": "Eight of the T-participants (50% of the group) exhausted the resource completely, compared with only 2 of the T+ participants (12.5%), χ 2 (1, N = 32) = 5.24, p = .022."
+    },
+    {
+      "text_id": 102,
+      "paragraph_id": 27,
+      "section_id": 6,
+      "text": "The T-participants also accumulated fewer points by the end of the game (Fig. 2a), β = -294.06 (SE = 79.39), p = .0002, and finished the game with smaller final resource values than the T+ participants (see Fig. 2b), β = -122.42 (SE = 43.06), p = .0045."
+    },
+    {
+      "text_id": 103,
+      "paragraph_id": 28,
+      "section_id": 6,
+      "text": "Thus, reductions in serotonin activity, achieved by tryptophan depletion, induced a bias toward aggressive harvesting behaviors that, in extremis, exhausted the shared resource completely."
+    },
+    {
+      "text_id": 104,
+      "paragraph_id": 28,
+      "section_id": 6,
+      "text": "Overall, there was little evidence that the resource outcomes were consistently related to total or subscale scores of motor, attentional, and nonplanning impulsivity in either treatment group (-.25 < rs < .44); however, T-participants with higher nonplanning impulsivity scores did tend to accumulate larger totals of reward by the end of the game (r = .57, p = .02, uncorrected for the eight Pearson's correlation tests conducted)."
+    },
+    {
+      "text_id": 105,
+      "paragraph_id": 30,
+      "section_id": 7,
+      "text": "To explore the effects of social norms further, we constructed regression models of the structural (and social) features of the game that influenced how participants adjusted their harvests from one harvesting opportunity to the next (Table 2; see the Supplemental Material for further details)."
+    },
+    {
+      "text_id": 106,
+      "paragraph_id": 30,
+      "section_id": 7,
+      "text": "Regressors included terms to code (a) the value of participants' own immediately preceding harvests; (b) the current value of the available resource; (c) the presence of one or two other players who were overharvesting, modeled as a binary indicator (with the presence of one or two other players who were underharvesting as the referent); (d) the rank of participants' last harvest within the distribution of all four players' last harvests (i.e., their position within the social norms; see Fig. 3); and (e) the T-treatment, modeled as a binary indicator with the T+ treatment as the referent."
+    },
+    {
+      "text_id": 107,
+      "paragraph_id": 30,
+      "section_id": 7,
+      "text": "(Statistical significance was tested against a threshold of p < .05; bootstrapped models that provided 95% confidence intervals for the coefficients described below can be found in Table S2 in the Supplemental Material.)"
+    },
+    {
+      "text_id": 108,
+      "paragraph_id": 30,
+      "section_id": 7,
+      "text": "Model 1 showed that T+ participants tended to harvest more from higher value resources than from lower value resources (Table 2), β = 0.02 (SE = 0.001), p < .0001, and this behavior was not markedly altered in the T-compared with the T+ participants, β = 0.001 (SE = 0.002)."
+    },
+    {
+      "text_id": 109,
+      "paragraph_id": 30,
+      "section_id": 7,
+      "text": "However, tryptophan depletion did diminish the conditionality of cooperation seen in other commonpool problems (Fischbacher, Gächter, & Fehr, 2001)."
+    },
+    {
+      "text_id": 110,
+      "paragraph_id": 30,
+      "section_id": 7,
+      "text": "Specifically, the T+ participants tended to reduce their harvests when they had taken larger harvests on the preceding harvesting opportunity, β = -0.69 (SE = 0.03), p < .0001, but then tended to increase their harvests when one or two other players were overharvesting, β = 0.88 (SE = 0.15), p < .0001."
+    },
+    {
+      "text_id": 111,
+      "paragraph_id": 30,
+      "section_id": 7,
+      "text": "These behaviors indicate that the T+ participants' willingness to moderate their own harvesting was, in general, limited by the aggressive harvesting of other players."
+    },
+    {
+      "text_id": 112,
+      "paragraph_id": 30,
+      "section_id": 7,
+      "text": "By contrast, the tendency to reduce, or self-correct, harvests immediately following larger harvests was attenuated in the T-participants, β = 0.07 (SE = 0.03), p = .02."
+    },
+    {
+      "text_id": 113,
+      "paragraph_id": 30,
+      "section_id": 7,
+      "text": "These observations, together with the fact that a greater number of T-compared with T+ participants exhausted the resource completely, indicates that temporary reduction of serotonin activity induces aggressive but less flexible harvesting strategies when people manage valuable resources."
+    },
+    {
+      "text_id": 114,
+      "paragraph_id": 31,
+      "section_id": 7,
+      "text": "Of particular interest was whether participants' harvests were sensitive to the ranked position of their own harvest amounts within the social norms and whether this sensitivity can be disrupted by temporary disruptions of serotonergic neuromodulation."
+    },
+    {
+      "text_id": 115,
+      "paragraph_id": 31,
+      "section_id": 7,
+      "text": "We hypothesized that participants used the value of all four players' previous harvests to estimate the social norm currently operating within the resource-dilemma game."
+    },
+    {
+      "text_id": 116,
+      "paragraph_id": 31,
+      "section_id": 7,
+      "text": "These social norms were modeled as beta distributions; that is, we fitted beta distributions, scaled between 0 and 20, to each set of four harvests from each harvesting opportunity, and we used that distribution to represent the social norm."
+    },
+    {
+      "text_id": 117,
+      "paragraph_id": 31,
+      "section_id": 7,
+      "text": "Figure 3 illustrates this process in an overharvesting (Fig. 3a) and an underharvesting (Fig. 3b) environment (see also Fig."
+    },
+    {
+      "text_id": 118,
+      "paragraph_id": 31,
+      "section_id": 7,
+      "text": "S1 in the Supplemental Material)."
+    },
+    {
+      "text_id": 119,
+      "paragraph_id": 32,
+      "section_id": 7,
+      "text": "We found exactly this predicted pattern."
+    },
+    {
+      "text_id": 120,
+      "paragraph_id": 32,
+      "section_id": 7,
+      "text": "Figure 4 shows the adjustment in participants' harvests from one harvesting opportunity to the next, ΔHarvest, as a function of the rank of their last harvest, separately for each participant."
+    },
+    {
+      "text_id": 121,
+      "paragraph_id": 32,
+      "section_id": 7,
+      "text": "Our prediction was clearly confirmed in the behavior of the majority of the T+ participants."
+    },
+    {
+      "text_id": 122,
+      "paragraph_id": 32,
+      "section_id": 7,
+      "text": "Moreover, Model 2 showed that the relationship between the two factors tended to be markedly nonlinear, as indicated by significant regression coefficients for the three elements of a polynomial (Table 2), β = -6.56 (SE = 3.33), β = 18.28 (SE = 7.35), β = -13.11 (SE = 4.83), all ps < .05."
+    },
+    {
+      "text_id": 123,
+      "paragraph_id": 32,
+      "section_id": 7,
+      "text": "The T+ participants made the largest upward and downward adjustments to their harvests when the value of their last harvest fell toward the bottom or top of the distributions of other players' harvests, respectively."
+    },
+    {
+      "text_id": 124,
+      "paragraph_id": 32,
+      "section_id": 7,
+      "text": "By comparison, the T-participants' harvests tended to rank toward the top of these distributions and showed only inconsistent use of the social norms in adjusting subsequent harvests (Table 2), β = 10.14 (SE = 4.66), β = -23.73 (SE = 10.39), β = 15.66 (SE = 6.68), all ps < .03."
+    },
+    {
+      "text_id": 125,
+      "paragraph_id": 34,
+      "section_id": 8,
+      "text": "Treatment-related changes in resource management or in the sensitivity to social comparisons following tryptophan depletion could not be attributed to heightened motor impulsivity."
+    },
+    {
+      "text_id": 126,
+      "paragraph_id": 34,
+      "section_id": 8,
+      "text": "Neither the speed of the first harvesting response (T-participants: M = 0.20 s, SE = 0.046; 0 0.5 1 -20 -10 0 10 20 Subject 1 0 0.5 1 -20 -10 0 10 20 Subject 2 0 0.5 1 -20 -10 0 10 20 Subject 3 0 0.5 1 -20 -10 0 10 20 Subject 4 0 0.5 1 -20 -10 0 10 20 Subject 5 0 0.5 1 -20 -10 0 10 20 Subject 6 0 0.5 1 -20 -10 0 10 20 Subject 7 0 0.5 1 -20 -10 0 10 20 E-R Subject 8 0 0.5 1 -20 -10 0 10 20 Subject 9 0 0.5 1 -20 -10 0 10 20 Subject 10 0 0.5 1 -20 -10 0 10 20 Subject 11 0 0.5 1 -20 -10 0 10 20 Subject 12 0 0.5 1 -20 -10 0 10 20 E-R Subject 13 0 0.5 1 -20 -10 0 10 20 Subject 14 0 0.5 1 -20 -10 0 10 20 Subject 15 0 0.5 1 -20 -10 0 10 20 Subject 16 0 0.5 1 -20 -10 0 10 20 E-R Subject 17 0 0.5 1 -20 -10 0 10 20 E-R Subject 18 0 0.5 1 -20 -10 0 10 20 Subject 19 0 0.5 1 -20 -10 0 10 20 Subject 20 0 0.5 1 -20 -10 0 10 20 Subject 21 0 1 -20 -10 0 10 20 Subject 22 0 0.5 1 -20 -10 0 10 20 Subject 23 0 0.5 1 -20 -10 0 10 20 Subject 24 0 0.5 1 -20 -10 0 10 20 E-R Subject 25 0 0.5 1 -20 -10 0 10 20 Subject 26 0 0.5 1 -20 -10 0 10 20 E-R Subject 27 0 0.5 1 -20 -10 0 10 20 E-R Subject 28 0 0.5 1 -20 -10 0 10 20 Subject 29 0 0.5 1 -20 -10 0 10 20 E-R Subject 30 0 0.5 1 -20 -10 0 10 20 E-R Subject 31 0 0.5 1 -20 -10 0 10 20 E-R Subject 32 T-Participants T+ Participants b a ∆Harvest ∆Harvest ∆Harvest ∆Harvest"
+    },
+    {
+      "text_id": 127,
+      "paragraph_id": 35,
+      "section_id": 8,
+      "text": "Fig."
+    },
+    {
+      "text_id": 128,
+      "paragraph_id": 35,
+      "section_id": 8,
+      "text": "4."
+    },
+    {
+      "text_id": 129,
+      "paragraph_id": 35,
+      "section_id": 8,
+      "text": "Adjustments in harvests from one harvesting opportunity to the next (ΔHarvest) as a function of the rank of participants' last harvest within the beta distributions of all four players' last harvests (i.e., their position within the social norms; Rank n-1 )."
+    },
+    {
+      "text_id": 130,
+      "paragraph_id": 35,
+      "section_id": 8,
+      "text": "Results are shown separately for each of the 16 participants in each treatment group."
+    },
+    {
+      "text_id": 131,
+      "paragraph_id": 35,
+      "section_id": 8,
+      "text": "Lines represent best-fitting third-order polynomials; the \"E-R\" notation identifies participants who exhausted the resource."
+    },
+    {
+      "text_id": 132,
+      "paragraph_id": 36,
+      "section_id": 8,
+      "text": "T+ participants: M = 0.22 s, SE = 0.05) nor the number of button presses per harvest opportunity (T-participants: M = 2.89, SE = 0.21; T+ participants: M = 2.75, SE = 0.25) were significantly altered as a function of treatment condition, -0.04 (SE = 0.06) < βs < 0.09 (SE = 0.320)."
+    },
+    {
+      "text_id": 133,
+      "paragraph_id": 40,
+      "section_id": 10,
+      "text": "In the present experiment, we used a laboratory multiplayer resource-dilemma game and tryptophan depletion to demonstrate that reduced central serotonin activity compromises people's sensitivity to descriptive social norms while they are managing valuable but depletable resources within small social groups."
+    },
+    {
+      "text_id": 134,
+      "paragraph_id": 40,
+      "section_id": 10,
+      "text": "Individuals who received the T-treatment tended to deplete the shared resources to a significantly greater extent, and accumulate fewer rewards over the course of the game, than individuals who received the T+ treatment."
+    },
+    {
+      "text_id": 135,
+      "paragraph_id": 40,
+      "section_id": 10,
+      "text": "At its most dramatic, this behavior involved aggressive overharvesting that exhausted groups' resources completely."
+    },
+    {
+      "text_id": 136,
+      "paragraph_id": 40,
+      "section_id": 10,
+      "text": "We tested the hypothesis that people use their own and others' harvesting behavior to construct distributions that specify the social norms within resource dilemmas and then use the ranks of their own harvests within these distributions to guide decisions about how much to take from the resource."
+    },
+    {
+      "text_id": 137,
+      "paragraph_id": 40,
+      "section_id": 10,
+      "text": "Our data support this hypothesis: T+ participants increased the amount they harvested when the value of their last harvest was ranked toward the lower tail of these distributions, but decreased the amount they harvested when the value of their last harvest was ranked toward the upper tail."
+    },
+    {
+      "text_id": 138,
+      "paragraph_id": 40,
+      "section_id": 10,
+      "text": "The use of rank-based social norms, however, tended to be disrupted in the T-participants, whose harvests clustered at high ranks toward the upper end of the estimated distributions of other peoples' harvests, with only inconsistent (downward) adjustments in their subsequent harvests."
+    },
+    {
+      "text_id": 139,
+      "paragraph_id": 40,
+      "section_id": 10,
+      "text": "Our results do not reflect changes in state affect or motor impulsivity following tryptophan depletion (Moore et al., 2000)."
+    },
+    {
+      "text_id": 140,
+      "paragraph_id": 40,
+      "section_id": 10,
+      "text": "Thus, to the best of our knowledge, these data constitute the first evidence of a neurochemical-specifically, serotonergicmechanism underpinning resource management in human groups."
+    },
+    {
+      "text_id": 141,
+      "paragraph_id": 41,
+      "section_id": 10,
+      "text": "Converging evidence that tryptophan depletion suppressed the regulation of harvesting through diminished sensitivity to social norms is provided by the observation that, whereas the T-and T+ participants were equally happy with the outcomes of their resource-dilemma games and reported acting for their own benefit to a very similar extent, the T-participants reported significantly less concern about the best outcome for the wider group of players than the T+ participants."
+    },
+    {
+      "text_id": 142,
+      "paragraph_id": 41,
+      "section_id": 10,
+      "text": "This suggests that their relatively poor performance, in being more likely to exhaust the resource completely, was paralleled by a reduction in the evaluated worth of the group objective of managing the resource effectively for the collective good."
+    },
+    {
+      "text_id": 143,
+      "paragraph_id": 42,
+      "section_id": 10,
+      "text": "Further research will be needed to identify the precise psychological mechanisms modulated by serotonin to influence resource management."
+    },
+    {
+      "text_id": 144,
+      "paragraph_id": 42,
+      "section_id": 10,
+      "text": "Our data provided only very limited evidence that tryptophan depletion altered resource-management outcomes to a greater extent in participants with higher psychometric scores of impulsivity."
+    },
+    {
+      "text_id": 145,
+      "paragraph_id": 42,
+      "section_id": 10,
+      "text": "However, the tendency to overharvest following tryptophan depletion may still reflect enhanced temporal discounting (Schweighofer et al., 2008;Tanaka et al., 2007), leading to preferences for larger immediate harvests at the expense of preserving the resources for the long term."
+    },
+    {
+      "text_id": 146,
+      "paragraph_id": 42,
+      "section_id": 10,
+      "text": "Overharvesting in the T-participants, irrespective of social norms, may also be linked to the broader aggressive behaviors sometimes observed following tryptophan depletion, although such effects are strongest in samples specifically selected for high-trait aggression (Dougherty, Bjork, Marsh, & Moeller, 1999)."
+    },
+    {
+      "text_id": 147,
+      "paragraph_id": 42,
+      "section_id": 10,
+      "text": "Finally, our sample consisted predominantly of students (both domestic and international), which raises the possibility that their behavior in our resource-dilemma game (following the T+ or T-treatments) was conditioned by cultural factors (Zhu, Gigerenzer, & Huangfu, 2013)."
+    },
+    {
+      "text_id": 148,
+      "paragraph_id": 43,
+      "section_id": 10,
+      "text": "Our laboratory multiplayer resource-dilemma game was also only very approximate model of real-world resource dilemmas, as it involved no immediate survival or economic imperatives (Committee on the Human Dimensions of Global Change, 2002;Gardiner, 2001;Ostrom, 2009) or sanctions known to promote socially cooperative behavior in common-pool problems (Fehr & Gächter, 2002)."
+    },
+    {
+      "text_id": 149,
+      "paragraph_id": 43,
+      "section_id": 10,
+      "text": "Our game also afforded complete information about the harvesting behavior of other players, which allowed participants to estimate social norms accurately."
+    },
+    {
+      "text_id": 150,
+      "paragraph_id": 43,
+      "section_id": 10,
+      "text": "In real-world resource dilemmas, the value of resources harvested by social partners can be uncertain, which can potentially increase the salience of other sources of information-such as fluctuations in the resource value over time-in decisions about harvesting strategies ( Jager, Janssen, & Vlek, 2002)."
+    },
+    {
+      "text_id": 151,
+      "paragraph_id": 43,
+      "section_id": 10,
+      "text": "However, as in previous experiments (Barclay, 2004;Campbell, Bush, Brunell, & Shelton, 2005), our game was intended to model only some of the psychosocial processes-in this instance, the social norms-that influence the way that people cope with real-life resource-management problems and to demonstrate how these processes are modulated by serotonergic activity."
+    },
+    {
+      "text_id": 152,
+      "paragraph_id": 44,
+      "section_id": 10,
+      "text": "In summary, notwithstanding the preceding limitations, our findings indicate that serotonin activity is implicated in the ability of human adults to use social norms to manage, as part of an interdependent group, finite but valuable resources."
+    },
+    {
+      "text_id": 153,
+      "paragraph_id": 46,
+      "section_id": 11,
+      "text": "This work was supported by the Medical Research Council (Grant No."
+    },
+    {
+      "text_id": 154,
+      "paragraph_id": 46,
+      "section_id": 11,
+      "text": "G0700410) and the Economic and Social Research Council (Grant No."
+    },
+    {
+      "text_id": 155,
+      "paragraph_id": 46,
+      "section_id": 11,
+      "text": "ES/K002201/1)."
+    },
+    {
+      "text_id": 156,
+      "paragraph_id": 50,
+      "section_id": 13,
+      "text": "The authors declared that they had no conflicts of interest with respect to their authorship or the publication of this article."
+    },
+    {
+      "text_id": 157,
+      "paragraph_id": 52,
+      "section_id": 14,
+      "text": "Additional supporting information may be found at http://pss .sagepub.com/content/by/supplemental-data"
+    },
+    {
+      "text_id": 158,
+      "paragraph_id": 53,
+      "section_id": 15,
+      "text": "Trustworthiness and competitive altruism can also solve the \"tragedy of the commons PBarclay Evolution and Human Behavior 25 2004"
+    },
+    {
+      "text_id": 159,
+      "paragraph_id": 54,
+      "section_id": 15,
+      "text": "Activation of social norms in social dilemmas: A review of the evidence and reflections on the implications for environmental behaviour ABiel JThøgersen Journal of Economic Psychology 28 2007"
+    },
+    {
+      "text_id": 160,
+      "paragraph_id": 55,
+      "section_id": 15,
+      "text": "Van der Kloot LBooij WVan Der Does CBenkelfat JDBremner PJCowen MFava Predictors of mood response to acute tryptophan depletion: A reanalysis 2002 27"
+    },
+    {
+      "text_id": 161,
+      "paragraph_id": 56,
+      "section_id": 15,
+      "text": "Money and happiness: Rank of income, not income, affects life satisfaction CJBoyce GD ABrown SCMoore Psychological Science 21 2010"
+    },
+    {
+      "text_id": 162,
+      "paragraph_id": 57,
+      "section_id": 15,
+      "text": "Hardin revisited: A critical look at perception and the logic of the commons BEBurke Human Ecology 29 2001"
+    },
+    {
+      "text_id": 163,
+      "paragraph_id": 58,
+      "section_id": 15,
+      "text": "Understanding the social costs of narcissism: The case of the tragedy of the commons WKCampbell CPBush ABBrunell JShelton Personality and Social Psychology Bulletin 31 2005"
+    },
+    {
+      "text_id": 164,
+      "paragraph_id": 59,
+      "section_id": 15,
+      "text": "Committee on the Human Dimensions of Global Change The drama of the commons EOstrom TDietz NDolsak PCStern Washington, DC National Academies Press 2002"
+    },
+    {
+      "text_id": 165,
+      "paragraph_id": 60,
+      "section_id": 15,
+      "text": "Serotonin modulates striatal responses to fairness and retaliation in humans MJCrockett AApergis-Schoute BHerrmann MLieberman UMüller TWRobbins LClark Journal of Neuroscience 33 2013"
+    },
+    {
+      "text_id": 166,
+      "paragraph_id": 61,
+      "section_id": 15,
+      "text": "Serotonin modulates behavioral reactions to unfairness MJCrockett LClark GTabibnia MDLieberman TWRobbins Science 320 1739 2008"
+    },
+    {
+      "text_id": 167,
+      "paragraph_id": 62,
+      "section_id": 15,
+      "text": "Influence of trait hostility on tryptophan depletioninduced laboratory aggression DMDougherty JMBjork DMMarsh FGMoeller Psychiatry Research 88 1999"
+    },
+    {
+      "text_id": 168,
+      "paragraph_id": 63,
+      "section_id": 15,
+      "text": "The tragedy of the commons: Twenty-two years later DFeeny FBerkes BJMccay JMAcheson Human Ecology 18 1990"
+    },
+    {
+      "text_id": 169,
+      "paragraph_id": 64,
+      "section_id": 15,
+      "text": "Altruistic punishment in humans EFehr SGächter Nature 415 2002"
+    },
+    {
+      "text_id": 170,
+      "paragraph_id": 65,
+      "section_id": 15,
+      "text": "MBFirst RLSpitzer MGibbon JB WWilliams Structured Clinical Interview for DSM-IV-TR Axis I Disorders-Patient edition New York, NY Biometrics Research 2002 research version"
+    },
+    {
+      "text_id": 171,
+      "paragraph_id": 66,
+      "section_id": 15,
+      "text": "Social preferences, beliefs, and the dynamics of free riding in public good experiments UFischbacher SGächter American Economic Review 100 2010"
+    },
+    {
+      "text_id": 172,
+      "paragraph_id": 67,
+      "section_id": 15,
+      "text": "Are people conditionally cooperative? Evidence from a public goods experiment UFischbacher SGächter EFehr Economics Letters 71 2001"
+    },
+    {
+      "text_id": 173,
+      "paragraph_id": 68,
+      "section_id": 15,
+      "text": "The real tragedy of the commons SMGardiner Philosophy & Public Affairs 30 2001"
+    },
+    {
+      "text_id": 174,
+      "paragraph_id": 69,
+      "section_id": 15,
+      "text": "The tragedy of the commons GHardin Science 162 1968"
+    },
+    {
+      "text_id": 175,
+      "paragraph_id": 70,
+      "section_id": 15,
+      "text": "How uncertainty stimulates over-harvesting in a resource dilemma: Three possible explanations WJager MAJanssen CA JVlek Journal of Environmental Psychology 22 2002"
+    },
+    {
+      "text_id": 176,
+      "paragraph_id": 71,
+      "section_id": 15,
+      "text": "Selective alteration of personality and social behavior by serotonergic intervention BKnutson OMWolkowitz SWCole TChan EAMoore RCJohnson ..Reus VI American Journal of Psychiatry 155 1998"
+    },
+    {
+      "text_id": 177,
+      "paragraph_id": 72,
+      "section_id": 15,
+      "text": "Irrational economic decisionmaking after ventromedial prefrontal damage: Evidence from the ultimatum game MKoenigs DTranel Journal of Neuroscience 27 2007"
+    },
+    {
+      "text_id": 178,
+      "paragraph_id": 73,
+      "section_id": 15,
+      "text": "Social dilemmas: The anatomy of cooperation PKollock Annual Review of Sociology 24 1998"
+    },
+    {
+      "text_id": 179,
+      "paragraph_id": 74,
+      "section_id": 15,
+      "text": "Am I abnormal? Relative rank and social norm effects in judgments of anxiety and depression symptom severity KLMelrose GD ABrown AMWood Journal of Behavioral Decision Making 26 2012"
+    },
+    {
+      "text_id": 180,
+      "paragraph_id": 75,
+      "section_id": 15,
+      "text": "Clinical and physiological consequences of rapid tryptophan depletion PMoore HPLandolt ESeifritz CClark TBhatti JKelsoe ..Gillin JC Neuropsychopharmacology 23 2000"
+    },
+    {
+      "text_id": 181,
+      "paragraph_id": 76,
+      "section_id": 15,
+      "text": "Normative social influence is underdetected JMNolan PWSchultz RBCialdini NJGoldstein VGriskevicius Personality and Social Psychology Bulletin 34 2008"
+    },
+    {
+      "text_id": 182,
+      "paragraph_id": 77,
+      "section_id": 15,
+      "text": "Reformulating the commons EOstrom Swiss Political Science Review 6 1 2000"
+    },
+    {
+      "text_id": 183,
+      "paragraph_id": 78,
+      "section_id": 15,
+      "text": "A general framework for analyzing sustainability of social-ecological systems EOstrom Science 325 2009"
+    },
+    {
+      "text_id": 184,
+      "paragraph_id": 79,
+      "section_id": 15,
+      "text": "Factor structure of the Barratt Impulsiveness Scale JHPatton MSStanford ESBarratt Journal of Clinical Psychology 51 1995"
+    },
+    {
+      "text_id": 185,
+      "paragraph_id": 80,
+      "section_id": 15,
+      "text": "Serotonergic mechanisms promote dominance acquisition in adult male vervet monkeys MJRaleigh MTMcguire GLBrammer DBPollack AYuwiler Brain Research 559 1991"
+    },
+    {
+      "text_id": 186,
+      "paragraph_id": 81,
+      "section_id": 15,
+      "text": "The tragedy of the commons in evolutionary biology DJRankin KBargum HKokko Trends in Ecology & Evolution 22 2007"
+    },
+    {
+      "text_id": 187,
+      "paragraph_id": 82,
+      "section_id": 15,
+      "text": "Standard progressive matrices sets JRaven B C D EOxford England 1996 Oxford Psychologists Press"
+    },
+    {
+      "text_id": 188,
+      "paragraph_id": 83,
+      "section_id": 15,
+      "text": "Mood is indirectly related to serotonin, norepinephrine and dopamine levels in humans: A meta-analysis of monoamine depletion studies HGRuhe NSMason AHSchene Molecular Psychiatry 12 2007"
+    },
+    {
+      "text_id": 189,
+      "paragraph_id": 84,
+      "section_id": 15,
+      "text": "Low-serotonin levels increase delayed reward discounting in humans NSchweighofer MBertin KShishida YOkamoto SCTanaka SYamawaki KDoya Journal of Neuroscience 28 2008"
+    },
+    {
+      "text_id": 190,
+      "paragraph_id": 85,
+      "section_id": 15,
+      "text": "Serotonin differentially regulates short-and long-term prediction of rewards in the ventral and dorsal striatum SCTanaka NSchweighofer SAsahi KShishida YOkamoto SYamawaki KDoya 1371%2Fjournal.pone.0001333 PLoS ONE 2 12 2007. 1333"
+    },
+    {
+      "text_id": 191,
+      "paragraph_id": 86,
+      "section_id": 15,
+      "text": "Social norms and cooperation in reallife social dilemmas JThøgersen Journal of Economic Psychology 29 2008"
+    },
+    {
+      "text_id": 192,
+      "paragraph_id": 87,
+      "section_id": 15,
+      "text": "Development and validation of brief measures of positive and negative affect: The PANAS scales DWatson LAClark ATellegen Journal of Personality and Social Psychology 54 1988"
+    },
+    {
+      "text_id": 193,
+      "paragraph_id": 88,
+      "section_id": 15,
+      "text": "An evolutionary based social rank explanation of why low income predicts mental distress: A 17 year cohort study of 30,000 people AMWood CJBoyce SCMoore GD ABrown Journal of Affective Disorders 136 2012"
+    },
+    {
+      "text_id": 194,
+      "paragraph_id": 89,
+      "section_id": 15,
+      "text": "Effects of tryptophan depletion on the performance of an iterated prisoner's dilemma game in healthy adults RMWood JKRilling AGSanfey ZBhagwagar RDRogers Neuropsychopharmacology 31 2006"
+    },
+    {
+      "text_id": 195,
+      "paragraph_id": 90,
+      "section_id": 15,
+      "text": "Psychological traces of China's socio-economic reforms in the ultimatum and dictator games LZhu GGigerenzer GHuangfu 1371%2Fjournal.pone.0070769 PLoS ONE 8 8 2013"
+    }
+  ],
+  "section": [
+    {
+      "section_id": 0,
+      "header": "Abstract",
+      "parent_section_id": null,
+      "section_type": "abstract",
+      "classification_score": null
+    },
+    {
+      "section_id": 1,
+      "header": "[div-01]",
+      "parent_section_id": null,
+      "section_type": "intro",
+      "classification_score": null
+    },
+    {
+      "section_id": 2,
+      "header": "Method",
+      "parent_section_id": null,
+      "section_type": "method",
+      "classification_score": null
+    },
+    {
+      "section_id": 3,
+      "header": "Participants",
+      "parent_section_id": null,
+      "section_type": "method",
+      "classification_score": null
+    },
+    {
+      "section_id": 4,
+      "header": "Procedure",
+      "parent_section_id": null,
+      "section_type": "method",
+      "classification_score": null
+    },
+    {
+      "section_id": 5,
+      "header": "Results",
+      "parent_section_id": null,
+      "section_type": "results",
+      "classification_score": null
+    },
+    {
+      "section_id": 6,
+      "header": "Tryptophan depletion and resourcedilemma outcomes",
+      "parent_section_id": null,
+      "section_type": "results",
+      "classification_score": null
+    },
+    {
+      "section_id": 7,
+      "header": "Tryptophan depletion and sensitivity to social norms",
+      "parent_section_id": null,
+      "section_type": "results",
+      "classification_score": null
+    },
+    {
+      "section_id": 8,
+      "header": "Effects of treatment on motor responding",
+      "parent_section_id": null,
+      "section_type": "results",
+      "classification_score": null
+    },
+    {
+      "section_id": 10,
+      "header": "Discussion",
+      "parent_section_id": null,
+      "section_type": "discussion",
+      "classification_score": null
+    },
+    {
+      "section_id": 11,
+      "header": "Funding",
+      "parent_section_id": null,
+      "section_type": "funding",
+      "classification_score": null
+    },
+    {
+      "section_id": 13,
+      "header": "Declaration of Conflicting Interests",
+      "parent_section_id": null,
+      "section_type": "annex",
+      "classification_score": null
+    },
+    {
+      "section_id": 14,
+      "header": "Supplemental Material",
+      "parent_section_id": null,
+      "section_type": "annex",
+      "classification_score": null
+    },
+    {
+      "section_id": 15,
+      "header": "References",
+      "parent_section_id": null,
+      "section_type": "references",
+      "classification_score": null
+    }
+  ],
+  "table": [],
+  "author": [
+    {
+      "author_id": 1,
+      "given": "Robert",
+      "family": "Rogers",
+      "affiliation": "School of Psychology Bangor University",
+      "email": "r.rogers@bangor.ac.uk",
+      "corresponding": false,
+      "orcid": "",
+      "role": null
+    },
+    {
+      "author_id": 2,
+      "given": "Amy",
+      "family": "Bilderbeck",
+      "affiliation": "Department of Psychiatry University of Oxford",
+      "email": "",
+      "corresponding": false,
+      "orcid": "",
+      "role": null
+    },
+    {
+      "author_id": 3,
+      "given": "Gordon",
+      "family": "Brown",
+      "affiliation": "Department of Psychology University of Warwick 3 Nuffield",
+      "email": "",
+      "corresponding": false,
+      "orcid": "",
+      "role": null
+    },
+    {
+      "author_id": 4,
+      "given": "Judi",
+      "family": "Read",
+      "affiliation": "",
+      "email": "",
+      "corresponding": false,
+      "orcid": "",
+      "role": null
+    },
+    {
+      "author_id": 5,
+      "given": "Mark",
+      "family": "Woolrich",
+      "affiliation": "Department of Primary Healthcare Sciences Oxford Centre for Human Brain Activity University of Oxford University of Oxford",
+      "email": "",
+      "corresponding": false,
+      "orcid": "",
+      "role": null
+    },
+    {
+      "author_id": 6,
+      "given": "Phillip",
+      "family": "Cowen",
+      "affiliation": "Department of Psychiatry University of Oxford",
+      "email": "",
+      "corresponding": false,
+      "orcid": "",
+      "role": null
+    },
+    {
+      "author_id": 7,
+      "given": "Tim",
+      "family": "Behrens",
+      "affiliation": "Oxford Centre for Functional MRI of the Brain University of Oxford",
+      "email": "",
+      "corresponding": false,
+      "orcid": "",
+      "role": null
+    }
+  ],
+  "bib": [
+    {
+      "bib_id": 0,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Trustworthiness and competitive altruism can also solve the \"tragedy of the commons",
+      "container": "Evolution and Human Behavior",
+      "publication_year": "2004",
+      "authors": [
+        [
+          "P",
+          "Barclay"
+        ]
+      ],
+      "issue": null,
+      "first_page": "209",
+      "last_page": "220",
+      "editors": [],
+      "publisher": null,
+      "text_id": 158
+    },
+    {
+      "bib_id": 1,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Activation of social norms in social dilemmas: A review of the evidence and reflections on the implications for environmental behaviour",
+      "container": "Journal of Economic Psychology",
+      "publication_year": "2007",
+      "authors": [
+        [
+          "A",
+          "Biel"
+        ],
+        [
+          "J",
+          "Thøgersen"
+        ]
+      ],
+      "issue": null,
+      "first_page": "93",
+      "last_page": "112",
+      "editors": [],
+      "publisher": null,
+      "text_id": 159
+    },
+    {
+      "bib_id": 2,
+      "doi": null,
+      "bib_type": "Misc",
+      "title": "Van der Kloot",
+      "container": "Predictors of mood response to acute tryptophan depletion: A reanalysis",
+      "publication_year": "2002",
+      "authors": [
+        [
+          "L",
+          "Booij"
+        ],
+        [
+          "W",
+          "Van Der Does"
+        ],
+        [
+          "C",
+          "Benkelfat"
+        ],
+        [
+          "J D",
+          "Bremner"
+        ],
+        [
+          "P J",
+          "Cowen"
+        ],
+        [
+          "M",
+          "Fava"
+        ]
+      ],
+      "issue": null,
+      "first_page": "852",
+      "last_page": "861",
+      "editors": [],
+      "publisher": null,
+      "text_id": 160
+    },
+    {
+      "bib_id": 3,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Money and happiness: Rank of income, not income, affects life satisfaction",
+      "container": "Psychological Science",
+      "publication_year": "2010",
+      "authors": [
+        [
+          "C J",
+          "Boyce"
+        ],
+        [
+          "G D A",
+          "Brown"
+        ],
+        [
+          "S C",
+          "Moore"
+        ]
+      ],
+      "issue": null,
+      "first_page": "471",
+      "last_page": "475",
+      "editors": [],
+      "publisher": null,
+      "text_id": 161
+    },
+    {
+      "bib_id": 4,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Hardin revisited: A critical look at perception and the logic of the commons",
+      "container": "Human Ecology",
+      "publication_year": "2001",
+      "authors": [
+        [
+          "B E",
+          "Burke"
+        ]
+      ],
+      "issue": null,
+      "first_page": "449",
+      "last_page": "476",
+      "editors": [],
+      "publisher": null,
+      "text_id": 162
+    },
+    {
+      "bib_id": 5,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Understanding the social costs of narcissism: The case of the tragedy of the commons",
+      "container": "Personality and Social Psychology Bulletin",
+      "publication_year": "2005",
+      "authors": [
+        [
+          "W K",
+          "Campbell"
+        ],
+        [
+          "C P",
+          "Bush"
+        ],
+        [
+          "A B",
+          "Brunell"
+        ],
+        [
+          "J",
+          "Shelton"
+        ]
+      ],
+      "issue": null,
+      "first_page": "1358",
+      "last_page": "1368",
+      "editors": [],
+      "publisher": null,
+      "text_id": 163
+    },
+    {
+      "bib_id": 6,
+      "doi": null,
+      "bib_type": "Misc",
+      "title": "Committee on the Human Dimensions of Global Change",
+      "container": "The drama of the commons",
+      "publication_year": "2002",
+      "authors": [],
+      "issue": null,
+      "first_page": null,
+      "last_page": null,
+      "editors": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "publisher": "National Academies Press",
+      "text_id": 164
+    },
+    {
+      "bib_id": 7,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Serotonin modulates striatal responses to fairness and retaliation in humans",
+      "container": "Journal of Neuroscience",
+      "publication_year": "2013",
+      "authors": [
+        [
+          "M J",
+          "Crockett"
+        ],
+        [
+          "A",
+          "Apergis-Schoute"
+        ],
+        [
+          "B",
+          "Herrmann"
+        ],
+        [
+          "M",
+          "Lieberman"
+        ],
+        [
+          "U",
+          "Müller"
+        ],
+        [
+          "T W",
+          "Robbins"
+        ],
+        [
+          "L",
+          "Clark"
+        ]
+      ],
+      "issue": null,
+      "first_page": "3505",
+      "last_page": "3513",
+      "editors": [],
+      "publisher": null,
+      "text_id": 165
+    },
+    {
+      "bib_id": 8,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Serotonin modulates behavioral reactions to unfairness",
+      "container": "Science",
+      "publication_year": "2008",
+      "authors": [
+        [
+          "M J",
+          "Crockett"
+        ],
+        [
+          "L",
+          "Clark"
+        ],
+        [
+          "G",
+          "Tabibnia"
+        ],
+        [
+          "M D",
+          "Lieberman"
+        ],
+        [
+          "T W",
+          "Robbins"
+        ]
+      ],
+      "issue": null,
+      "first_page": "1739",
+      "last_page": null,
+      "editors": [],
+      "publisher": null,
+      "text_id": 166
+    },
+    {
+      "bib_id": 9,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Influence of trait hostility on tryptophan depletioninduced laboratory aggression",
+      "container": "Psychiatry Research",
+      "publication_year": "1999",
+      "authors": [
+        [
+          "D M",
+          "Dougherty"
+        ],
+        [
+          "J M",
+          "Bjork"
+        ],
+        [
+          "D M",
+          "Marsh"
+        ],
+        [
+          "F G",
+          "Moeller"
+        ]
+      ],
+      "issue": null,
+      "first_page": "227",
+      "last_page": "232",
+      "editors": [],
+      "publisher": null,
+      "text_id": 167
+    },
+    {
+      "bib_id": 10,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "The tragedy of the commons: Twenty-two years later",
+      "container": "Human Ecology",
+      "publication_year": "1990",
+      "authors": [
+        [
+          "D",
+          "Feeny"
+        ],
+        [
+          "F",
+          "Berkes"
+        ],
+        [
+          "B J",
+          "Mccay"
+        ],
+        [
+          "J M",
+          "Acheson"
+        ]
+      ],
+      "issue": null,
+      "first_page": "1",
+      "last_page": "19",
+      "editors": [],
+      "publisher": null,
+      "text_id": 168
+    },
+    {
+      "bib_id": 11,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Altruistic punishment in humans",
+      "container": "Nature",
+      "publication_year": "2002",
+      "authors": [
+        [
+          "E",
+          "Fehr"
+        ],
+        [
+          "S",
+          "Gächter"
+        ]
+      ],
+      "issue": null,
+      "first_page": "137",
+      "last_page": "140",
+      "editors": [],
+      "publisher": null,
+      "text_id": 169
+    },
+    {
+      "bib_id": 12,
+      "doi": null,
+      "bib_type": "Misc",
+      "title": null,
+      "container": "Structured Clinical Interview for DSM-IV-TR Axis I Disorders-Patient edition",
+      "publication_year": "2002",
+      "authors": [
+        [
+          "M B",
+          "First"
+        ],
+        [
+          "R L",
+          "Spitzer"
+        ],
+        [
+          "M",
+          "Gibbon"
+        ],
+        [
+          "J B W",
+          "Williams"
+        ]
+      ],
+      "issue": null,
+      "first_page": null,
+      "last_page": null,
+      "editors": [],
+      "publisher": "Biometrics Research",
+      "text_id": 170
+    },
+    {
+      "bib_id": 13,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Social preferences, beliefs, and the dynamics of free riding in public good experiments",
+      "container": "American Economic Review",
+      "publication_year": "2010",
+      "authors": [
+        [
+          "U",
+          "Fischbacher"
+        ],
+        [
+          "S",
+          "Gächter"
+        ]
+      ],
+      "issue": null,
+      "first_page": "541",
+      "last_page": "556",
+      "editors": [],
+      "publisher": null,
+      "text_id": 171
+    },
+    {
+      "bib_id": 14,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Are people conditionally cooperative? Evidence from a public goods experiment",
+      "container": "Economics Letters",
+      "publication_year": "2001",
+      "authors": [
+        [
+          "U",
+          "Fischbacher"
+        ],
+        [
+          "S",
+          "Gächter"
+        ],
+        [
+          "E",
+          "Fehr"
+        ]
+      ],
+      "issue": null,
+      "first_page": "397",
+      "last_page": "404",
+      "editors": [],
+      "publisher": null,
+      "text_id": 172
+    },
+    {
+      "bib_id": 15,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "The real tragedy of the commons",
+      "container": "Philosophy & Public Affairs",
+      "publication_year": "2001",
+      "authors": [
+        [
+          "S M",
+          "Gardiner"
+        ]
+      ],
+      "issue": null,
+      "first_page": "387",
+      "last_page": "416",
+      "editors": [],
+      "publisher": null,
+      "text_id": 173
+    },
+    {
+      "bib_id": 16,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "The tragedy of the commons",
+      "container": "Science",
+      "publication_year": "1968",
+      "authors": [
+        [
+          "G",
+          "Hardin"
+        ]
+      ],
+      "issue": null,
+      "first_page": "1243",
+      "last_page": "1248",
+      "editors": [],
+      "publisher": null,
+      "text_id": 174
+    },
+    {
+      "bib_id": 17,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "How uncertainty stimulates over-harvesting in a resource dilemma: Three possible explanations",
+      "container": "Journal of Environmental Psychology",
+      "publication_year": "2002",
+      "authors": [
+        [
+          "W",
+          "Jager"
+        ],
+        [
+          "M A",
+          "Janssen"
+        ],
+        [
+          "C A J",
+          "Vlek"
+        ]
+      ],
+      "issue": null,
+      "first_page": "247",
+      "last_page": "263",
+      "editors": [],
+      "publisher": null,
+      "text_id": 175
+    },
+    {
+      "bib_id": 18,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Selective alteration of personality and social behavior by serotonergic intervention",
+      "container": "American Journal of Psychiatry",
+      "publication_year": "1998",
+      "authors": [
+        [
+          "B",
+          "Knutson"
+        ],
+        [
+          "O M",
+          "Wolkowitz"
+        ],
+        [
+          "S W",
+          "Cole"
+        ],
+        [
+          "T",
+          "Chan"
+        ],
+        [
+          "E A",
+          "Moore"
+        ],
+        [
+          "R C",
+          "Johnson"
+        ],
+        [
+          ". .",
+          "Reus"
+        ],
+        [
+          "V I"
+        ]
+      ],
+      "issue": null,
+      "first_page": "373",
+      "last_page": "379",
+      "editors": [],
+      "publisher": null,
+      "text_id": 176
+    },
+    {
+      "bib_id": 19,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Irrational economic decisionmaking after ventromedial prefrontal damage: Evidence from the ultimatum game",
+      "container": "Journal of Neuroscience",
+      "publication_year": "2007",
+      "authors": [
+        [
+          "M",
+          "Koenigs"
+        ],
+        [
+          "D",
+          "Tranel"
+        ]
+      ],
+      "issue": null,
+      "first_page": "951",
+      "last_page": "956",
+      "editors": [],
+      "publisher": null,
+      "text_id": 177
+    },
+    {
+      "bib_id": 20,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Social dilemmas: The anatomy of cooperation",
+      "container": "Annual Review of Sociology",
+      "publication_year": "1998",
+      "authors": [
+        [
+          "P",
+          "Kollock"
+        ]
+      ],
+      "issue": null,
+      "first_page": "183",
+      "last_page": "214",
+      "editors": [],
+      "publisher": null,
+      "text_id": 178
+    },
+    {
+      "bib_id": 21,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Am I abnormal? Relative rank and social norm effects in judgments of anxiety and depression symptom severity",
+      "container": "Journal of Behavioral Decision Making",
+      "publication_year": "2012",
+      "authors": [
+        [
+          "K L",
+          "Melrose"
+        ],
+        [
+          "G D A",
+          "Brown"
+        ],
+        [
+          "A M",
+          "Wood"
+        ]
+      ],
+      "issue": null,
+      "first_page": "174",
+      "last_page": "184",
+      "editors": [],
+      "publisher": null,
+      "text_id": 179
+    },
+    {
+      "bib_id": 22,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Clinical and physiological consequences of rapid tryptophan depletion",
+      "container": "Neuropsychopharmacology",
+      "publication_year": "2000",
+      "authors": [
+        [
+          "P",
+          "Moore"
+        ],
+        [
+          "H P",
+          "Landolt"
+        ],
+        [
+          "E",
+          "Seifritz"
+        ],
+        [
+          "C",
+          "Clark"
+        ],
+        [
+          "T",
+          "Bhatti"
+        ],
+        [
+          "J",
+          "Kelsoe"
+        ],
+        [
+          ". .",
+          "Gillin"
+        ],
+        [
+          "J C"
+        ]
+      ],
+      "issue": null,
+      "first_page": "601",
+      "last_page": "622",
+      "editors": [],
+      "publisher": null,
+      "text_id": 180
+    },
+    {
+      "bib_id": 23,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Normative social influence is underdetected",
+      "container": "Personality and Social Psychology Bulletin",
+      "publication_year": "2008",
+      "authors": [
+        [
+          "J M",
+          "Nolan"
+        ],
+        [
+          "P W",
+          "Schultz"
+        ],
+        [
+          "R B",
+          "Cialdini"
+        ],
+        [
+          "N J",
+          "Goldstein"
+        ],
+        [
+          "V",
+          "Griskevicius"
+        ]
+      ],
+      "issue": null,
+      "first_page": "913",
+      "last_page": "923",
+      "editors": [],
+      "publisher": null,
+      "text_id": 181
+    },
+    {
+      "bib_id": 24,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Reformulating the commons",
+      "container": "Swiss Political Science Review",
+      "publication_year": "2000",
+      "authors": [
+        [
+          "E",
+          "Ostrom"
+        ]
+      ],
+      "issue": "1",
+      "first_page": "29",
+      "last_page": "52",
+      "editors": [],
+      "publisher": null,
+      "text_id": 182
+    },
+    {
+      "bib_id": 25,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "A general framework for analyzing sustainability of social-ecological systems",
+      "container": "Science",
+      "publication_year": "2009",
+      "authors": [
+        [
+          "E",
+          "Ostrom"
+        ]
+      ],
+      "issue": null,
+      "first_page": "419",
+      "last_page": "422",
+      "editors": [],
+      "publisher": null,
+      "text_id": 183
+    },
+    {
+      "bib_id": 26,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Factor structure of the Barratt Impulsiveness Scale",
+      "container": "Journal of Clinical Psychology",
+      "publication_year": "1995",
+      "authors": [
+        [
+          "J H",
+          "Patton"
+        ],
+        [
+          "M S",
+          "Stanford"
+        ],
+        [
+          "E S",
+          "Barratt"
+        ]
+      ],
+      "issue": null,
+      "first_page": "768",
+      "last_page": "774",
+      "editors": [],
+      "publisher": null,
+      "text_id": 184
+    },
+    {
+      "bib_id": 27,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Serotonergic mechanisms promote dominance acquisition in adult male vervet monkeys",
+      "container": "Brain Research",
+      "publication_year": "1991",
+      "authors": [
+        [
+          "M J",
+          "Raleigh"
+        ],
+        [
+          "M T",
+          "Mcguire"
+        ],
+        [
+          "G L",
+          "Brammer"
+        ],
+        [
+          "D B",
+          "Pollack"
+        ],
+        [
+          "A",
+          "Yuwiler"
+        ]
+      ],
+      "issue": null,
+      "first_page": "181",
+      "last_page": "190",
+      "editors": [],
+      "publisher": null,
+      "text_id": 185
+    },
+    {
+      "bib_id": 28,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "The tragedy of the commons in evolutionary biology",
+      "container": "Trends in Ecology & Evolution",
+      "publication_year": "2007",
+      "authors": [
+        [
+          "D J",
+          "Rankin"
+        ],
+        [
+          "K",
+          "Bargum"
+        ],
+        [
+          "H",
+          "Kokko"
+        ]
+      ],
+      "issue": null,
+      "first_page": "643",
+      "last_page": "651",
+      "editors": [],
+      "publisher": null,
+      "text_id": 186
+    },
+    {
+      "bib_id": 29,
+      "doi": null,
+      "bib_type": "Misc",
+      "title": null,
+      "container": "Standard progressive matrices sets",
+      "publication_year": "1996",
+      "authors": [
+        [
+          "J",
+          "Raven"
+        ],
+        [
+          "B"
+        ],
+        [
+          "C"
+        ],
+        [
+          "D"
+        ],
+        [
+          "E",
+          "Oxford"
+        ],
+        [
+          "England"
+        ]
+      ],
+      "issue": null,
+      "first_page": null,
+      "last_page": null,
+      "editors": [],
+      "publisher": "Oxford Psychologists Press",
+      "text_id": 187
+    },
+    {
+      "bib_id": 30,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Mood is indirectly related to serotonin, norepinephrine and dopamine levels in humans: A meta-analysis of monoamine depletion studies",
+      "container": "Molecular Psychiatry",
+      "publication_year": "2007",
+      "authors": [
+        [
+          "H G",
+          "Ruhe"
+        ],
+        [
+          "N S",
+          "Mason"
+        ],
+        [
+          "A H",
+          "Schene"
+        ]
+      ],
+      "issue": null,
+      "first_page": "331",
+      "last_page": "359",
+      "editors": [],
+      "publisher": null,
+      "text_id": 188
+    },
+    {
+      "bib_id": 31,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Low-serotonin levels increase delayed reward discounting in humans",
+      "container": "Journal of Neuroscience",
+      "publication_year": "2008",
+      "authors": [
+        [
+          "N",
+          "Schweighofer"
+        ],
+        [
+          "M",
+          "Bertin"
+        ],
+        [
+          "K",
+          "Shishida"
+        ],
+        [
+          "Y",
+          "Okamoto"
+        ],
+        [
+          "S C",
+          "Tanaka"
+        ],
+        [
+          "S",
+          "Yamawaki"
+        ],
+        [
+          "K",
+          "Doya"
+        ]
+      ],
+      "issue": null,
+      "first_page": "4528",
+      "last_page": "4532",
+      "editors": [],
+      "publisher": null,
+      "text_id": 189
+    },
+    {
+      "bib_id": 32,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Serotonin differentially regulates short-and long-term prediction of rewards in the ventral and dorsal striatum",
+      "container": "PLoS ONE",
+      "publication_year": "2007. 1333",
+      "authors": [
+        [
+          "S C",
+          "Tanaka"
+        ],
+        [
+          "N",
+          "Schweighofer"
+        ],
+        [
+          "S",
+          "Asahi"
+        ],
+        [
+          "K",
+          "Shishida"
+        ],
+        [
+          "Y",
+          "Okamoto"
+        ],
+        [
+          "S",
+          "Yamawaki"
+        ],
+        [
+          "K",
+          "Doya"
+        ]
+      ],
+      "issue": "12",
+      "first_page": null,
+      "last_page": null,
+      "editors": [],
+      "publisher": null,
+      "text_id": 190
+    },
+    {
+      "bib_id": 33,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Social norms and cooperation in reallife social dilemmas",
+      "container": "Journal of Economic Psychology",
+      "publication_year": "2008",
+      "authors": [
+        [
+          "J",
+          "Thøgersen"
+        ]
+      ],
+      "issue": null,
+      "first_page": "458",
+      "last_page": "472",
+      "editors": [],
+      "publisher": null,
+      "text_id": 191
+    },
+    {
+      "bib_id": 34,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Development and validation of brief measures of positive and negative affect: The PANAS scales",
+      "container": "Journal of Personality and Social Psychology",
+      "publication_year": "1988",
+      "authors": [
+        [
+          "D",
+          "Watson"
+        ],
+        [
+          "L A",
+          "Clark"
+        ],
+        [
+          "A",
+          "Tellegen"
+        ]
+      ],
+      "issue": null,
+      "first_page": "1063",
+      "last_page": "1070",
+      "editors": [],
+      "publisher": null,
+      "text_id": 192
+    },
+    {
+      "bib_id": 35,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "An evolutionary based social rank explanation of why low income predicts mental distress: A 17 year cohort study of 30,000 people",
+      "container": "Journal of Affective Disorders",
+      "publication_year": "2012",
+      "authors": [
+        [
+          "A M",
+          "Wood"
+        ],
+        [
+          "C J",
+          "Boyce"
+        ],
+        [
+          "S C",
+          "Moore"
+        ],
+        [
+          "G D A",
+          "Brown"
+        ]
+      ],
+      "issue": null,
+      "first_page": "882",
+      "last_page": "888",
+      "editors": [],
+      "publisher": null,
+      "text_id": 193
+    },
+    {
+      "bib_id": 36,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Effects of tryptophan depletion on the performance of an iterated prisoner's dilemma game in healthy adults",
+      "container": "Neuropsychopharmacology",
+      "publication_year": "2006",
+      "authors": [
+        [
+          "R M",
+          "Wood"
+        ],
+        [
+          "J K",
+          "Rilling"
+        ],
+        [
+          "A G",
+          "Sanfey"
+        ],
+        [
+          "Z",
+          "Bhagwagar"
+        ],
+        [
+          "R D",
+          "Rogers"
+        ]
+      ],
+      "issue": null,
+      "first_page": "1075",
+      "last_page": "1084",
+      "editors": [],
+      "publisher": null,
+      "text_id": 194
+    },
+    {
+      "bib_id": 37,
+      "doi": null,
+      "bib_type": "Article",
+      "title": "Psychological traces of China's socio-economic reforms in the ultimatum and dictator games",
+      "container": "PLoS ONE",
+      "publication_year": "2013",
+      "authors": [
+        [
+          "L",
+          "Zhu"
+        ],
+        [
+          "G",
+          "Gigerenzer"
+        ],
+        [
+          "G",
+          "Huangfu"
+        ]
+      ],
+      "issue": "8",
+      "first_page": null,
+      "last_page": null,
+      "editors": [],
+      "publisher": null,
+      "text_id": 195
+    }
+  ],
+  "eq": [
+    {
+      "text_id": 94,
+      "grp_id": 1,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "1.43"
+    },
+    {
+      "text_id": 94,
+      "grp_id": 1,
+      "lhs": "βs",
+      "comp": "<",
+      "rhs": "4.71"
+    },
+    {
+      "text_id": 94,
+      "grp_id": 1,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "2.96"
+    },
+    {
+      "text_id": 95,
+      "grp_id": 2,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "-14.66"
+    },
+    {
+      "text_id": 95,
+      "grp_id": 2,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "1.26"
+    },
+    {
+      "text_id": 95,
+      "grp_id": 2,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".0001"
+    },
+    {
+      "text_id": 96,
+      "grp_id": 3,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "-14.38"
+    },
+    {
+      "text_id": 96,
+      "grp_id": 3,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "1.08"
+    },
+    {
+      "text_id": 96,
+      "grp_id": 3,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".0001"
+    },
+    {
+      "text_id": 97,
+      "grp_id": 4,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "3.20"
+    },
+    {
+      "text_id": 97,
+      "grp_id": 4,
+      "lhs": "βs",
+      "comp": "<",
+      "rhs": "-0.94"
+    },
+    {
+      "text_id": 97,
+      "grp_id": 4,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.86"
+    },
+    {
+      "text_id": 99,
+      "grp_id": 5,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "6.71"
+    },
+    {
+      "text_id": 99,
+      "grp_id": 5,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.18"
+    },
+    {
+      "text_id": 99,
+      "grp_id": 5,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "6.33"
+    },
+    {
+      "text_id": 99,
+      "grp_id": 5,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.33"
+    },
+    {
+      "text_id": 99,
+      "grp_id": 5,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "0.40"
+    },
+    {
+      "text_id": 99,
+      "grp_id": 5,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.41"
+    },
+    {
+      "text_id": 101,
+      "grp_id": 6,
+      "lhs": "2 (1, N",
+      "comp": "=",
+      "rhs": "32)"
+    },
+    {
+      "text_id": 101,
+      "grp_id": 6,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".022"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 7,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "-294.06"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 7,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "79.39"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 7,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".0002"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 7,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "-122.42"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 7,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "43.06"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 7,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".0045"
+    },
+    {
+      "text_id": 104,
+      "grp_id": 8,
+      "lhs": "rs",
+      "comp": "<",
+      "rhs": ".44"
+    },
+    {
+      "text_id": 104,
+      "grp_id": 8,
+      "lhs": "r",
+      "comp": "=",
+      "rhs": ".57"
+    },
+    {
+      "text_id": 104,
+      "grp_id": 8,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".02"
+    },
+    {
+      "text_id": 108,
+      "grp_id": 9,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "0.02"
+    },
+    {
+      "text_id": 108,
+      "grp_id": 9,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.001"
+    },
+    {
+      "text_id": 108,
+      "grp_id": 9,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".0001"
+    },
+    {
+      "text_id": 108,
+      "grp_id": 9,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "0.001"
+    },
+    {
+      "text_id": 108,
+      "grp_id": 9,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.002"
+    },
+    {
+      "text_id": 110,
+      "grp_id": 10,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "-0.69"
+    },
+    {
+      "text_id": 110,
+      "grp_id": 10,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.03"
+    },
+    {
+      "text_id": 110,
+      "grp_id": 10,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".0001"
+    },
+    {
+      "text_id": 110,
+      "grp_id": 10,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "0.88"
+    },
+    {
+      "text_id": 110,
+      "grp_id": 10,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.15"
+    },
+    {
+      "text_id": 110,
+      "grp_id": 10,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".0001"
+    },
+    {
+      "text_id": 112,
+      "grp_id": 11,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "0.07"
+    },
+    {
+      "text_id": 112,
+      "grp_id": 11,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.03"
+    },
+    {
+      "text_id": 112,
+      "grp_id": 11,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".02"
+    },
+    {
+      "text_id": 122,
+      "grp_id": 12,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "-6.56"
+    },
+    {
+      "text_id": 122,
+      "grp_id": 12,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "3.33"
+    },
+    {
+      "text_id": 122,
+      "grp_id": 12,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "18.28"
+    },
+    {
+      "text_id": 122,
+      "grp_id": 12,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "7.35"
+    },
+    {
+      "text_id": 122,
+      "grp_id": 12,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "-13.11"
+    },
+    {
+      "text_id": 122,
+      "grp_id": 12,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "4.83"
+    },
+    {
+      "text_id": 122,
+      "grp_id": 12,
+      "lhs": "ps",
+      "comp": "<",
+      "rhs": ".05"
+    },
+    {
+      "text_id": 124,
+      "grp_id": 13,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "10.14"
+    },
+    {
+      "text_id": 124,
+      "grp_id": 13,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "4.66"
+    },
+    {
+      "text_id": 124,
+      "grp_id": 13,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "-23.73"
+    },
+    {
+      "text_id": 124,
+      "grp_id": 13,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "10.39"
+    },
+    {
+      "text_id": 124,
+      "grp_id": 13,
+      "lhs": "β",
+      "comp": "=",
+      "rhs": "15.66"
+    },
+    {
+      "text_id": 124,
+      "grp_id": 13,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "6.68"
+    },
+    {
+      "text_id": 124,
+      "grp_id": 13,
+      "lhs": "ps",
+      "comp": "<",
+      "rhs": ".03"
+    },
+    {
+      "text_id": 126,
+      "grp_id": 14,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "0.20"
+    },
+    {
+      "text_id": 126,
+      "grp_id": 14,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.046"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 15,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "0.22"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 15,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.05"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 15,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "2.89"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 15,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.21"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 15,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "2.75"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 15,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.25"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 15,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.06"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 15,
+      "lhs": "βs",
+      "comp": "<",
+      "rhs": "0.09"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 15,
+      "lhs": "SE",
+      "comp": "=",
+      "rhs": "0.320"
+    },
+    {
+      "text_id": 107,
+      "grp_id": 16,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".05"
+    }
+  ],
+  "url": [
+    {
+      "href": "sagepub.com/content/by/supplemental-data",
+      "link_text": null,
+      "text_id": 157
+    },
+    {
+      "href": "2Fjournal.pone",
+      "link_text": null,
+      "text_id": 190
+    },
+    {
+      "href": "2Fjournal.pone",
+      "link_text": null,
+      "text_id": 195
+    }
+  ],
+  "info": [
+    {
+      "title": "Serotonin and Social Norms: Tryptophan Depletion Impairs Social Comparison and Leads to Resource Depletion in a Multiplayer Harvesting Game",
+      "abstract": "Humans, like other socialized species, must work together to manage the exploitation of valuable but finite resources (Committee on the Human Dimensions of Global Change, 2002;Ostrom, 2009). Supplies such as fresh water, fish, or fossil fuels may form the basis for survival, and a sustainable balance between exploitation and conservation must be found. Game-theory formulations typically assume that such dilemmas pit the self-interested objectives of individuals against the interests of their community (Burke, 2001;Hardin, 1968;Kollock, 1998). Such approaches tend to highlight outcomes illustrating the tragedy of the commons, in which resources are eventually exhausted, to the disadvantage of both individuals and their social groups (Hardin, 1968). Field studies, however, demonstrate that community members typically find ways to manage resource-harvesting behaviors through simple coordination, regulation, or sanctions (Feeny, Berkes, McCay, & Acheson, 1990;Ostrom, 2000;Rankin, Bargum, & Kokko, 2007). In the study reported here, we examined the neurochemical mechanisms that mediate how individuals interact with others to manage common-pool resources.One neurochemical that might modulate the way that individuals solve resource dilemmas is serotonin. Increased serotonin activity-achieved by administration of the amino acid tryptophan in vervet monkeys (Raleigh, McGuire, Brammer, Pollack, & Yuwiler, 1991) and the 527830P SSXXX10.1177/0956797614527830Bilderbeck et al.Serotonin and the Tragedy of the Commons research-article2014",
+      "keywords": ["social behavior", "social influences", "neurotransmitters"],
+      "doi": "10.1177/0956797614527830",
+      "file_hash": "c739d91122e35aa0",
+      "input_format": "TEI XML",
+      "file_name": "data-raw/psychsci/grobid_0.8.2/0956797614527830.xml",
+      "bibr_version": "5.6",
+      "paper_type": "unknown",
+      "paper_type_confidence": 0,
+      "oecd_l1": null,
+      "oecd_l2": null,
+      "oecd_confidence": null
+    }
+  ],
+  "fig": [],
+  "xref": [
+    {
+      "xref_id": 0,
+      "xref_type": "bib",
+      "contents": "(Barclay, 2004;",
+      "text_id": 151
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "bib",
+      "contents": "(Biel & Thøgersen, 2007;",
+      "text_id": 17
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "(Booij et al., 2002;",
+      "text_id": 95
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "(Booij et al., 2002;",
+      "text_id": 97
+    },
+    {
+      "xref_id": 3,
+      "xref_type": "bib",
+      "contents": "Boyce, Brown, & Moore, 2010;",
+      "text_id": 17
+    },
+    {
+      "xref_id": 3,
+      "xref_type": "bib",
+      "contents": "Boyce, Brown, & Moore, 2010;",
+      "text_id": 18
+    },
+    {
+      "xref_id": 4,
+      "xref_type": "bib",
+      "contents": "(Burke, 2001;",
+      "text_id": 3
+    },
+    {
+      "xref_id": 5,
+      "xref_type": "bib",
+      "contents": "Campbell, Bush, Brunell, & Shelton, 2005)",
+      "text_id": 151
+    },
+    {
+      "xref_id": 7,
+      "xref_type": "bib",
+      "contents": "(Crockett et al., 2013)",
+      "text_id": 11
+    },
+    {
+      "xref_id": 8,
+      "xref_type": "bib",
+      "contents": "(Crockett, Clark, Tabibnia, Lieberman, & Robbins, 2008;",
+      "text_id": 10
+    },
+    {
+      "xref_id": 9,
+      "xref_type": "bib",
+      "contents": "(Dougherty, Bjork, Marsh, & Moeller, 1999)",
+      "text_id": 146
+    },
+    {
+      "xref_id": 10,
+      "xref_type": "bib",
+      "contents": "(Feeny, Berkes, McCay, & Acheson, 1990;",
+      "text_id": 5
+    },
+    {
+      "xref_id": 11,
+      "xref_type": "bib",
+      "contents": "(Fehr & Gächter, 2002)",
+      "text_id": 148
+    },
+    {
+      "xref_id": 12,
+      "xref_type": "bib",
+      "contents": "(First, Spitzer, Gibbon, & Williams, 2002)",
+      "text_id": 33
+    },
+    {
+      "xref_id": 13,
+      "xref_type": "bib",
+      "contents": "Fischbacher & Gächter, 2010;",
+      "text_id": 17
+    },
+    {
+      "xref_id": 14,
+      "xref_type": "bib",
+      "contents": "(Fischbacher, Gächter, & Fehr, 2001)",
+      "text_id": 109
+    },
+    {
+      "xref_id": 15,
+      "xref_type": "bib",
+      "contents": "Gardiner, 2001;",
+      "text_id": 148
+    },
+    {
+      "xref_id": 16,
+      "xref_type": "bib",
+      "contents": "Hardin, 1968;",
+      "text_id": 3
+    },
+    {
+      "xref_id": 16,
+      "xref_type": "bib",
+      "contents": "Hardin, 1968;",
+      "text_id": 4
+    },
+    {
+      "xref_id": 16,
+      "xref_type": "bib",
+      "contents": "(Hardin, 1968)",
+      "text_id": 3
+    },
+    {
+      "xref_id": 16,
+      "xref_type": "bib",
+      "contents": "(Hardin, 1968)",
+      "text_id": 4
+    },
+    {
+      "xref_id": 17,
+      "xref_type": "bib",
+      "contents": "( Jager, Janssen, & Vlek, 2002)",
+      "text_id": 150
+    },
+    {
+      "xref_id": 18,
+      "xref_type": "bib",
+      "contents": "(Knutson et al., 1998)",
+      "text_id": 9
+    },
+    {
+      "xref_id": 19,
+      "xref_type": "bib",
+      "contents": "Koenigs & Tranel, 2007)",
+      "text_id": 10
+    },
+    {
+      "xref_id": 20,
+      "xref_type": "bib",
+      "contents": "Kollock, 1998)",
+      "text_id": 3
+    },
+    {
+      "xref_id": 21,
+      "xref_type": "bib",
+      "contents": "Melrose, Brown, & Wood, 2012;",
+      "text_id": 18
+    },
+    {
+      "xref_id": 22,
+      "xref_type": "bib",
+      "contents": "Moore et al., 2000)",
+      "text_id": 13
+    },
+    {
+      "xref_id": 22,
+      "xref_type": "bib",
+      "contents": "(Moore et al., 2000)",
+      "text_id": 27
+    },
+    {
+      "xref_id": 22,
+      "xref_type": "bib",
+      "contents": "(Moore et al., 2000)",
+      "text_id": 95
+    },
+    {
+      "xref_id": 22,
+      "xref_type": "bib",
+      "contents": "(Moore et al., 2000)",
+      "text_id": 139
+    },
+    {
+      "xref_id": 23,
+      "xref_type": "bib",
+      "contents": "(Nolan, Schultz, Cialdini, Goldstein, & Griskevicius, 2008)",
+      "text_id": 17
+    },
+    {
+      "xref_id": 24,
+      "xref_type": "bib",
+      "contents": "Ostrom, 2000;",
+      "text_id": 5
+    },
+    {
+      "xref_id": 25,
+      "xref_type": "bib",
+      "contents": "Ostrom, 2009)",
+      "text_id": null
+    },
+    {
+      "xref_id": 25,
+      "xref_type": "bib",
+      "contents": "Ostrom, 2009)",
+      "text_id": 148
+    },
+    {
+      "xref_id": 26,
+      "xref_type": "bib",
+      "contents": "Patton, Stanford, & Barratt, 1995)",
+      "text_id": 35
+    },
+    {
+      "xref_id": 27,
+      "xref_type": "bib",
+      "contents": "(Raleigh, McGuire, Brammer, Pollack, & Yuwiler, 1991)",
+      "text_id": 8
+    },
+    {
+      "xref_id": 28,
+      "xref_type": "bib",
+      "contents": "Rankin, Bargum, & Kokko, 2007)",
+      "text_id": 5
+    },
+    {
+      "xref_id": 29,
+      "xref_type": "bib",
+      "contents": "Raven, 1996)",
+      "text_id": 35
+    },
+    {
+      "xref_id": 30,
+      "xref_type": "bib",
+      "contents": "Ruhe, Mason, & Schene, 2007)",
+      "text_id": 97
+    },
+    {
+      "xref_id": 31,
+      "xref_type": "bib",
+      "contents": "(Schweighofer et al., 2008;",
+      "text_id": 145
+    },
+    {
+      "xref_id": 32,
+      "xref_type": "bib",
+      "contents": "Tanaka et al., 2007)",
+      "text_id": 145
+    },
+    {
+      "xref_id": 33,
+      "xref_type": "bib",
+      "contents": "Thøgersen, 2008)",
+      "text_id": 17
+    },
+    {
+      "xref_id": 34,
+      "xref_type": "bib",
+      "contents": "Watson, Clark, & Tellegen, 1988)",
+      "text_id": 36
+    },
+    {
+      "xref_id": 35,
+      "xref_type": "bib",
+      "contents": "Wood, Boyce, Moore, & Brown, 2012)",
+      "text_id": 18
+    },
+    {
+      "xref_id": 36,
+      "xref_type": "bib",
+      "contents": "(Wood, Rilling, Sanfey, Bhagwagar, & Rogers, 2006)",
+      "text_id": 10
+    },
+    {
+      "xref_id": 37,
+      "xref_type": "bib",
+      "contents": "(Zhu, Gigerenzer, & Huangfu, 2013)",
+      "text_id": 147
+    },
+    {
+      "xref_id": null,
+      "xref_type": "bib",
+      "contents": "(Raven's Standard Progressive Matrices Sets A, B, C, D, & E;",
+      "text_id": 35
+    },
+    {
+      "xref_id": null,
+      "xref_type": "bib",
+      "contents": "Change, 2002;",
+      "text_id": 148
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "1a",
+      "text_id": 41
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "1a",
+      "text_id": 42
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "1b",
+      "text_id": 41
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "1b",
+      "text_id": 42
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "1c",
+      "text_id": 59
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "1c",
+      "text_id": 79
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "S1",
+      "text_id": null
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "2a",
+      "text_id": 102
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "2b",
+      "text_id": 102
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "3",
+      "text_id": 106
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "3",
+      "text_id": null
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "3a",
+      "text_id": null
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "3b",
+      "text_id": null
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "4",
+      "text_id": 120
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "4",
+      "text_id": 122
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "4",
+      "text_id": 124
+    },
+    {
+      "xref_id": null,
+      "xref_type": "fig",
+      "contents": "4",
+      "text_id": null
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "1",
+      "text_id": 94
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "1",
+      "text_id": 95
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "1",
+      "text_id": 97
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "S1",
+      "text_id": 94
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "S1",
+      "text_id": 95
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "S1",
+      "text_id": 97
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "2",
+      "text_id": 105
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "2",
+      "text_id": 107
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "2",
+      "text_id": 108
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "S2",
+      "text_id": 105
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "S2",
+      "text_id": 107
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "S2",
+      "text_id": 108
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "2",
+      "text_id": 122
+    },
+    {
+      "xref_id": null,
+      "xref_type": "tbl",
+      "contents": "2",
+      "text_id": 124
+    }
+  ],
+  "paper_id": "c739d91122e35aa0",
+  "study": [],
+  "bib_matches": []
+}

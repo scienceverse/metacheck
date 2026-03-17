@@ -804,9 +804,9 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
 #' @examples
 #' dontrun{
 #' paper <- demopaper()
-#' paper$bib_match <- NULL # remove existing
+#' paper$bib_matches <- NULL # remove existing
 #' paper2 <- add_bib_match(paper)
-#' paper2$bib_match
+#' paper2$bib_matches
 #' }
 add_bib_match <- function(paper, min_score = 50) {
   bib <- paper_table(paper, "bib")
@@ -879,12 +879,12 @@ add_bib_match <- function(paper, min_score = 50) {
   # add bib_match table to paper object(s)
   if (is_paper(paper)) {
     bib_match_table$paper_id <- NULL
-    paper$bib_match <- bib_match_table
+    paper$bib_matches <- bib_match_table
   } else if (is_paper_list(paper)) {
     paper <- lapply(paper, \(p) {
       bib_match_i <- bib_match[bib_match$paper_id == p$paper_id, ]
       bib_match_i$paper_id <- NULL
-      p$bib_match <- bib_match_i
+      p$bib_matches <- bib_match_i
       p
     }) |> paperlist()
   }

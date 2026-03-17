@@ -238,7 +238,7 @@ server <- function(input, output, session) {
 
     #updateTextInput(session, "paper_title", value = info$title)
     # updateTextAreaInput(session, "paper_desc",
-    #                     value = info$description)
+    #                     value = info$abstract)
     # updateTextInput(session, "paper_keywords",
     #                 value = paste(info$keywords, collapse = "; "))
   })
@@ -249,7 +249,7 @@ server <- function(input, output, session) {
   })
   output$paper_desc <- renderUI({
     req(input$paper_name, my_paper())
-    p(my_paper()[[input$paper_name]]$info$description)
+    p(my_paper()[[input$paper_name]]$info$abstract)
   })
   output$paper_keywords <- renderText({
     req(input$paper_name, my_paper())

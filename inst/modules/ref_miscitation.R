@@ -25,7 +25,7 @@ ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.R
     unique()
 
   # consolidate xrefs, filter, and expand
-  xrefs <- paper_table(paper, "xrefs") |>
+  xrefs <- paper_table(paper, "xref") |>
     dplyr::right_join(bibs, by = c("xref_id", "paper_id")) |>
     # expand_text(paper, expand_to = "paragraph")
     unique()

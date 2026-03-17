@@ -227,8 +227,8 @@ grobid_to_bibr <- function(xml_file,
     return(paper)
   } else {
     file_name <- basename(xml_file) |> gsub("\\.xml$", "", x = _)
-    zip_paths <- paper_write(paper, file_name, save_path)
-    return(zip_paths)
+    json_paths <- paper_write(paper, file_name, save_path)
+    return(json_paths)
   }
 }
 
@@ -273,7 +273,7 @@ grobid_to_bibr <- function(xml_file,
 
   paper$info <- data.frame(
     title = title %||% "",
-    description = abstract,
+    abstract = abstract,
     keywords = I(list(keywords)),
     doi = doi,
     file_hash = file_hash,
@@ -287,9 +287,9 @@ grobid_to_bibr <- function(xml_file,
     oecd_confidence = NA_real_
   )
 
-  # authors ----
-  pb$tick(0, list(step = "authors", what = what))
-  paper$authors <- tei_authors(xml)
+  # author ----
+  pb$tick(0, list(step = "author", what = what))
+  paper$author <- tei_authors(xml)
 
   # text ----
   pb$tick(0, list(step = "text"))
@@ -298,8 +298,8 @@ grobid_to_bibr <- function(xml_file,
   ft <- process_full_text(ft)
 
   # TODO: figures and tables
-  # paper$tables <- ft[ft$section == "tab", ]
-  # paper$figures <- ft[ft$section == "fig", ]
+  # paper$table <- ft[ft$section == "tab", ]
+  # paper$fig <- ft[ft$section == "fig", ]
   ft <- ft[!ft$section %in% c("fig", "tab"), ]
   ft <- ft[ft$text != ft$header, ]
 
@@ -310,9 +310,9 @@ grobid_to_bibr <- function(xml_file,
     text = ft$text
   )
 
-  # sections ----
+  # section ----
   sec <- dplyr::count(ft, div, header, section)
-  paper$sections <- data.frame(
+  paper$section <- data.frame(
     section_id = sec$div,
     header = sec$header,
     parent_section_id = rep(NA_integer_, nrow(sec)),
@@ -324,13 +324,13 @@ grobid_to_bibr <- function(xml_file,
   pb$tick(0, list(step = "bib", what = what))
   paper$bib <- tei_bib(xml)
 
-  # append references to sections and text and replace with text_id
+  # append references to section and text and replace with text_id
   if (nrow(paper$bib) > 0) {
-    section_id <- max(c(0, paper$sections$section_id)) + 1
+    section_id <- max(c(0, paper$section$section_id)) + 1
     sec_add <- list(section_id = section_id,
                    header = "References",
                    section_type = "references")
-    paper$sections <- dplyr::bind_rows(paper$sections, sec_add)
+    paper$section <- dplyr::bind_rows(paper$section, sec_add)
     text_ids <- max(c(0, paper$text$text_id)) + seq_along(paper$bib$bib_text)
     p_ids <- max(c(0, paper$text$paragraph_id)) + seq_along(paper$bib$bib_text)
     text_add <- data.frame(
@@ -344,23 +344,23 @@ grobid_to_bibr <- function(xml_file,
   }
   paper$bib$bib_text <- NULL
 
-  # xrefs ----
-  pb$tick(0, list(step = "xrefs", what = what))
-  paper$xrefs <- tei_xrefs(xml, text_table = paper$text)
+  # xref ----
+  pb$tick(0, list(step = "xref", what = what))
+  paper$xref <- tei_xrefs(xml, text_table = paper$text)
 
-  # links ----
-  pb$tick(0, list(step = "links", what = what))
+  # url ----
+  pb$tick(0, list(step = "url", what = what))
   links <- extract_urls(paper)
-  paper$links <- data.frame(
-    url = links$text,
+  paper$url <- data.frame(
+    href = links$text,
     link_text = rep(NA_character_, nrow(links)),
     text_id = links$text_id
   )
 
-  # equations ----
-  pb$tick(0, list(step = "equations", what = what))
-  paper$equations <- extract_equations(paper)
-  paper$equations$paper_id <- NULL
+  # eq ----
+  pb$tick(0, list(step = "eq", what = what))
+  paper$eq <- extract_equations(paper)
+  paper$eq$paper_id <- NULL
 
   pb$tick(0, list(step = "complete", what = what))
   return(paper)

@@ -2,17 +2,17 @@
 % Please edit documentation in R/bibr.R
 \name{read_bibr}
 \alias{read_bibr}
-\title{Read Bibr zip file}
+\title{Read bibr JSON file}
 \usage{
 read_bibr(file_path)
 }
 \arguments{
-\item{file_path}{path to the zip file}
+\item{file_path}{path to the JSON file (or legacy ZIP file)}
 }
 \value{
 a paper object
 }
 \description{
-Read Bibr zip file
+Read bibr JSON file
 }
 \keyword{internal}

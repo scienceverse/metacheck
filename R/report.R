@@ -265,9 +265,9 @@ report_qmd <- function(module_output, paper = list()) {
 
   # get authors
   author_text <- ""
-  if (nrow(paper$authors) > 0) {
-    names <- paste(paper$authors$given,
-                   paper$authors$family)
+  if (nrow(paper$author) > 0) {
+    names <- paste(paper$author$given,
+                   paper$author$family)
     last <- utils::tail(names, 1)
     first <- setdiff(names, last)
     if (length(first)) first <- paste(first, collapse = ", ")

@@ -16,7 +16,7 @@ bibr_convert(
 \arguments{
 \item{file_path}{Path to the document file, or a directory of documents}
 
-\item{save_dir}{Path to a directory in which to save the zip file}
+\item{save_dir}{Path to a directory in which to save the JSON file}
 
 \item{api_url}{Base URL of the API}
 
