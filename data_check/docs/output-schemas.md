@@ -175,13 +175,13 @@ One row per column in each data file (parallel to `columns.csv`). Produced by `2
 | `codebook_variable` | character | Variable name as written in the codebook; `NA` if unlabelled; pipe-separated if multiple candidates |
 | `label_source` | character | Basename of the codebook file that provided the label; `NA` if unlabelled; pipe-separated if multiple sources |
 | `label_status` | character | Labelling outcome — see [Label Status Values](#label-status-values) |
-| `label_method` | character | How the label was determined: `"rules"` = normalized string match; `"llm"` = secondary LLM pass; `NA` = column is unlabelled |
+| `label_method` | character | How the label was determined: `"rules"` = normalized string match; `"llm"` = secondary LLM pass; `"merged_rules"` = multiple candidate labels collapsed by rule-based normalization; `"merged_llm"` = multiple candidate labels confirmed equivalent by LLM; `NA` = column is unlabelled |
 
 ### Label Status Values
 
 | Value | Meaning |
 |---|---|
-| `labelled` | Column matched exactly one codebook variable with no conflicts |
+| `labelled` | Column matched exactly one codebook variable with no conflicts; also used when multiple candidate labels were determined to be semantically equivalent and merged (see `label_method`) |
 | `unlabelled` | Column has no matching codebook variable |
 | `conflicting_definition` | Column matched a variable present in multiple codebooks with different definitions; all candidates pipe-concatenated in `label` |
 | `ambiguous_experiment` | Column name exists only in a different experiment group's codebook; candidates pipe-concatenated |

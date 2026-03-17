@@ -2,6 +2,19 @@
 
 ## 2026-03-17
 
+### Completed ✅
+
+**010** — fix-label-ambiguity (branch: `010-fix-label-ambiguity`)
+- Add `normalize_label()` to `helper.R` — strips possessives, punctuation, and pluralising "s" for label comparison
+- Add two-tier conflict resolution in `match_column_labels()` (rule-based tier first, LLM merge tier second)
+- Rule tier: normalise all candidate labels; if they collapse to one string, pick the longest original label; `label_method = "merged_rules"`
+- LLM tier: batch remaining `conflicting_definition` columns into single call with `LABEL_MERGE_PROMPT`; equivalent labels merged with `label_method = "merged_llm"`; genuinely conflicting labels preserved as `conflicting_definition`
+- New optional argument `label_merge_prompt = NULL` on `match_column_labels()` — fully backward-compatible
+- Add `LABEL_MERGE_PROMPT` constant to `2_codebook_label.R`; wire up in `run_codebook_label()`
+- Update `docs/output-schemas.md` — new `label_method` values `merged_rules`, `merged_llm`; note `labelled` status covers merged rows
+- Update `docs/pipeline.md` — document conflict resolution sub-step in codebook labelling stage
+- BIS misplaced-label (0956797617716929): investigated and confirmed correct per source codebook — no code change needed
+
 ### In Progress 🔧
 
 **009** — multi-format-codebooks (branch: `009-multi-format-codebooks`)
