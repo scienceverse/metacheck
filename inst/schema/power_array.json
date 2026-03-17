@@ -1,0 +1,118 @@
+{
+  "type": "object",
+  "properties": {
+    "power_analyses": {
+      "type": "array",
+      "description": "Power analyses found in the text. Empty array if none found.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "description": "The specific text that contains all of the information used to determine this object's properties.",
+            "type": ["string", "null"]
+          },
+          "power_type": {
+            "description": "The type of power analysis. An 'apriori' power analysis is used to calculate the required sample size to achieve a desired level of statistical power given an effect size, statistical test, and alpha level. A 'sensitivity' analysis is used to estimate, given a sample size, which effect sizes a design has sufficient power (e.g., 80% or 90%) to detect, given a statistical test and alpha level. A 'posthoc' power analysis (also referred to as observed power, or retrospective power) uses an empirically observed effect size, and computes the achieved power for that empirically observed effect size, given a statistical test and alpha level.",
+            "type": ["string", "null"],
+            "enum": ["apriori", "sensitivity", "posthoc", "none", null]
+          },
+          "statistical_test": {
+            "description": "The statistical test used. Use null if unclear.",
+            "type": ["string", "null"],
+            "enum": [
+              "paired t-test",
+              "unpaired t-test",
+              "one-sample t-test",
+              "1-way ANOVA",
+              "2-way ANOVA",
+              "3-way ANOVA",
+              "MANOVA",
+              "regression",
+              "chi-square",
+              "correlation",
+              "other",
+              null
+            ]
+          },
+          "statistical_test_other": {
+            "description": "Free-text description if statistical_test is 'other', otherwise null.",
+            "type": ["string", "null"]
+          },
+          "sample_size": {
+            "description": "The sample size determined by or used in the power analysis. Give the total number if this is expressed as number per group.",
+            "type": ["number", "null"],
+            "minimum": 0
+          },
+          "alpha_level": {
+            "description": "The alpha threshold used to determine significance.",
+            "type": ["number", "null"],
+            "exclusiveMinimum": 0,
+            "maximum": 1
+          },
+          "power": {
+            "description": "The statistical power, expressed as a number between 0 and 1.",
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "effect_size": {
+            "description": "The numeric effect size used in or determined from the power analysis.",
+            "type": ["number", "null"]
+          },
+          "effect_size_metric": {
+            "description": "The effect size metric. Use 'unstandardised' for raw/non-standardized effects.",
+            "type": ["string", "null"],
+            "enum": [
+              "Cohen's d",
+              "Hedges' g",
+              "Cohen's f",
+              "partial eta squared",
+              "eta squared",
+              "unstandardised",
+              "other",
+              null
+            ]
+          },
+          "effect_size_metric_other": {
+            "description": "Free-text description if effect_size_metric is 'other', otherwise null.",
+            "type": ["string", "null"]
+          },
+          "software": {
+            "description": "The software used to conduct the power analysis.",
+            "type": ["string", "null"],
+            "enum": [
+              "G*Power",
+              "Superpower",
+              "Pangea",
+              "Morepower",
+              "PASS",
+              "pwr",
+              "simr",
+              "PowerUpR",
+              "simulation",
+              "InteractionPoweR",
+              "pwrss",
+              "other",
+              null
+            ]
+          }
+        },
+        "required": [
+          "power_type",
+          "statistical_test",
+          "statistical_test_other",
+          "sample_size",
+          "alpha_level",
+          "power",
+          "effect_size",
+          "effect_size_metric",
+          "effect_size_metric_other",
+          "software"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["power_analyses"],
+  "additionalProperties": false
+}

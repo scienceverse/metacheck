@@ -80,22 +80,21 @@ power <- function(paper, seed = 8675309) {
   if (nrow(potential_power) > 0 && llm_use()) {
     ## use LLM ----
 
-    # define system prompt from JSON schema
-    preface <- "Identify and classify power analyses from exerpts of scientific manuscripts. Use null when information is missing, do not invent values. Only use 'other' if a value not in the enumerated options can be identified. There may be no power analysis in the text, or more than one. Return an array of objects as defined by the JSON schema below, bracketed by ```json and ```."
-    # schema also defined below
-    schema <- readLines("https://scienceverse.org/schema/power.json") |>
-      paste(collapse = "\n")
-    system_prompt <- paste(preface, schema, sep = "\n\n")
+    system_prompt <- "Identify and classify power analyses from excerpts of scientific manuscripts. Use null when information is missing, do not invent values. Only use 'other' if a value not in the enumerated options can be identified. There may be no power analysis in the text, or more than one."
 
-    llm_results <- llm(
-      text = potential_power,
-      system_prompt = system_prompt,
-      text_col = "text",
-      params = list(seed = seed)
+    # structured type spec from JSON schema (guarantees valid output)
+    schema_path <- system.file("schema/power_array.json", package = "metacheck")
+    type_power <- ellmer::type_from_schema(
+      schema = jsonlite::fromJSON(schema_path, simplifyVector = FALSE)
     )
 
-    table <- llm_results |>
-      json_expand(suffix = c("", ".power")) |>
+    table <- llm_extract(
+      text = potential_power,
+      system_prompt = system_prompt,
+      type = type_power,
+      text_col = "text",
+      params = list(seed = seed)
+    ) |>
       dplyr::rowwise() |>
       dplyr::mutate(complete = !any(dplyr::across(dplyr::any_of(llm_cols), is.na))) |>
       dplyr::ungroup()
@@ -255,128 +254,3 @@ power <- function(paper, seed = 8675309) {
   )
 }
 
-# schema ----
-
-schema <- r"({
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://scienceverse.org/schema/power.json",
-  "title": "Power Analyses",
-  "description": "A power analysis.",
-  "type": "object",
-  "properties": {
-    "text": {
-      "description": "The specific text that contains all of the information used to determine this object's properties.",
-      "type": ["string", "null"]
-    },
-
-    "power_type": {
-      "description": "The type of power analysis. An 'apriori' power analysis is used to calculate the required sample size to achieve a desired level of statistical power given an effect size, statistical test, and alpha level. A 'sensitivity' analysis is used to estimate, given a sample size, which effect sizes a design has sufficient power (e.g., 80% or 90%) to detect, given a statistical test and alpha level. A 'posthoc' power analysis (also referred to as observed power, or retrospective power) uses an empirically observed effect size, and computes the achieved power for that empirically observed effect size, given a statistical test and alpha level.",
-      "type": ["string", "null"],
-      "enum": ["apriori", "sensitivity", "posthoc", null]
-    },
-
-    "statistical_test": {
-      "description": "The statistical test used. Use null if unclear.",
-      "type": ["string", "null"],
-      "enum": [
-        "paired t-test",
-        "unpaired t-test",
-        "one-sample t-test",
-        "1-way ANOVA",
-        "2-way ANOVA",
-        "3-way ANOVA",
-        "MANOVA",
-        "regression",
-        "chi-square",
-        "correlation",
-        "other",
-        null
-      ]
-    },
-
-    "statistical_test_other": {
-      "description": "Free-text description if statistical_test is 'other', otherwise null.",
-      "type": ["string", "null"]
-    },
-
-    "sample_size": {
-      "description": "The sample size determined by or used in the power analysis. Give the total number if this is expressed as number per group.",
-      "type": ["number", "null"],
-      "minimum": 0
-    },
-
-    "alpha_level": {
-      "description": "The alpha threshold used to determine significance.",
-      "type": ["number", "null"],
-     search_text "exclusiveMinimum": 0,
-      "maximum": 1
-    },
-
-    "power": {
-      "description" : "The statistical power, expressed as a number between 0 and 1.",
-      "type": ["number", "null"],
-      "minimum": 0,
-      "maximum": 1
-    },
-
-    "effect_size": {
-      "description": "The numeric effect size used in or determined from the power analysis.",
-      "type": ["number", "null"]
-    },
-
-    "effect_size_metric": {
-      "description": "The effect size metric. Use 'unstandardised' for raw/non-standardized effects.",
-      "type": ["string", "null"],
-      "enum": [
-        "Cohen's d",
-        "Hedges' g",
-        "Cohen's f",
-        "partial eta squared",
-        "eta squared",
-        "unstandardised",
-        "other",
-        null
-      ]
-    },
-
-    "effect_size_metric_other": {
-      "description": "Free-text description if effect_size_metric is 'other', otherwise null.",
-      "type": ["string", "null"]
-    },
-
-    "software": {
-      "description": "The software used to conduct the power analysis.",
-      "type": ["string", "null"],
-      "enum": [
-        "G*Power",
-        "Superpower",
-        "Pangea",
-        "Morepower",
-        "PASS",
-        "pwr",
-        "simr",
-        "PowerUpR",
-        "simulation",
-        "InteractionPoweR",
-        "pwrss",
-        "other",
-        null
-      ]
-    }
-  },
-
-  "required": [
-    "power_type",
-    "statistical_test",
-    "statistical_test_other",
-    "sample_size",
-    "alpha_level",
-    "power",
-    "effect_size",
-    "effect_size_metric",
-    "effect_size_metric_other",
-    "software"
-  ],
-
-  "additionalProperties": false
-})"
