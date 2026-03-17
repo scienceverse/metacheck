@@ -313,9 +313,9 @@ grobid_to_bibr <- function(xml_file,
   paper$sections <- data.frame(
     section_id = sec$div,
     header = sec$header,
-    parent_section_id = NA_integer_,
+    parent_section_id = rep(NA_integer_, nrow(sec)),
     section_type = sec$section,
-    classification_score = NA_real_
+    classification_score = rep(NA_real_, nrow(sec))
   )
 
   # bib ----
@@ -323,21 +323,23 @@ grobid_to_bibr <- function(xml_file,
   paper$bib <- tei_bib(xml)
 
   # append references to sections and text and replace with text_id
-  section_id <- max(c(0, paper$sections$section_id)) + 1
-  sec_add <- list(section_id = section_id,
-                 header = "References",
-                 section_type = "references")
-  paper$sections <- dplyr::bind_rows(paper$sections, sec_add)
-  text_ids <- max(c(0, paper$text$text_id)) + seq_along(paper$bib$bib_text)
-  p_ids <- max(c(0, paper$text$paragraph_id)) + seq_along(paper$bib$bib_text)
-  text_add <- data.frame(
-    text_id = text_ids,
-    paragraph_id = p_ids,
-    section_id = section_id,
-    text = paper$bib$bib_text
-  )
-  paper$text <- dplyr::bind_rows(paper$text, text_add)
-  paper$bib$text_id <- text_ids
+  if (nrow(paper$bib) > 0) {
+    section_id <- max(c(0, paper$sections$section_id)) + 1
+    sec_add <- list(section_id = section_id,
+                   header = "References",
+                   section_type = "references")
+    paper$sections <- dplyr::bind_rows(paper$sections, sec_add)
+    text_ids <- max(c(0, paper$text$text_id)) + seq_along(paper$bib$bib_text)
+    p_ids <- max(c(0, paper$text$paragraph_id)) + seq_along(paper$bib$bib_text)
+    text_add <- data.frame(
+      text_id = text_ids,
+      paragraph_id = p_ids,
+      section_id = section_id,
+      text = paper$bib$bib_text
+    )
+    paper$text <- dplyr::bind_rows(paper$text, text_add)
+    paper$bib$text_id <- text_ids
+  }
   paper$bib$bib_text <- NULL
 
   # xrefs ----

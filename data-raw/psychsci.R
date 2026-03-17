@@ -15,9 +15,9 @@ list.files(bibr, full.names = T)[1:3] |>
 
 
 # grobid to bibr ----
-xml_file <- "data-raw/psychsci/grobid_0.8.2"
+xml_file <- list.files("data-raw/psychsci/grobid_0.8.2", full.names = T)
 save_path <- "data-raw/psychsci/bibr_from_grobid_0.8.2"
-zip_paths <- grobid_to_bibr(xml_file, save_path, FALSE)
+zip_paths <- grobid_to_bibr(xml_file[211:250], save_path, FALSE)
 bibr_files <- list.files(save_path, full.names = T)
 psychsci <- read(save_path)
 usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")

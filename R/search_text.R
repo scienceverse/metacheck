@@ -66,11 +66,15 @@ search_text <- function(paper, pattern = ".*",
     text <- paper
   } else if (is_paper(paper) || is_paper_list(paper)) {
     text <- paper_table(paper, "text")
+
+    # add headers and section types
     sections <- paper_table(paper, "sections")
-    sections$classification_score <- NULL
-    sections$parent_section_id <- NULL
-    if (all(c("section_id", "paper_id") %in% names(sections))) {
-      text <- dplyr::left_join(text, sections, by = c("section_id", "paper_id"))
+    cols <- c("section_id", "paper_id", "header", "section_type")
+    if (all(cols %in% names(sections))) {
+      text <- dplyr::left_join(
+        text, sections[, cols],
+        by = cols[1:2]
+      )
     }
   } else if (is.vector(paper) && is.character(paper)) {
     text <- data.frame(text = paper)
