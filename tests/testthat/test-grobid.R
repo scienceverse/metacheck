@@ -67,7 +67,7 @@ test_that("1 paper, save_path, no CR lookup", {
     compare_shared(paper1$info,    paper2$info)
     compare_shared(paper1$author,  paper2$author)
     compare_shared(paper1$eq,      paper2$eq)
-    compare_shared(paper1$fig,     paper2$fig)
+    compare_shared(paper1$figure,  paper2$figure)
     compare_shared(paper1$url,     paper2$url)
     compare_shared(paper1$section, paper2$section)
     compare_shared(paper1$table,   paper2$table)

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://scienceverse.org/schema/paper.json",
   "title": "Bibr Paper",
-  "description": "A research paper, as processed by bibr (v8.0)",
+  "description": "A research paper, as processed by bibr (v9.0)",
   "type": "object",
   "properties": {
     "paper_id": {
@@ -43,7 +43,7 @@
       "items": { "$ref": "#/$defs/xref" },
       "uniqueItems": true
     },
-    "fig": {
+    "figure": {
       "type": "array",
       "items": { "$ref": "#/$defs/figure" },
       "uniqueItems": true
@@ -56,11 +56,6 @@
     "eq": {
       "type": "array",
       "items": { "$ref": "#/$defs/equation" }
-    },
-    "study": {
-      "description": "Detected study boundaries within multi-study papers",
-      "type": "array",
-      "items": { "$ref": "#/$defs/study" }
     }
   },
 
@@ -73,10 +68,9 @@
     "url",
     "bib",
     "xref",
-    "fig",
+    "figure",
     "table",
-    "eq",
-    "study"
+    "eq"
   ],
 
   "additionalProperties": false,
@@ -86,7 +80,6 @@
       "type": "object",
       "required": [
         "title",
-        "abstract",
         "keywords",
         "doi",
         "file_hash",
@@ -96,10 +89,6 @@
       ],
       "properties": {
         "title": { "type": ["string", "null"] },
-        "abstract": {
-          "description": "Concatenated text from the abstract section",
-          "type": ["string", "null"]
-        },
         "keywords": {
           "type": "array",
           "items": { "type": "string" }
@@ -252,10 +241,6 @@
         "page_number": {
           "type": ["integer", "null"],
           "description": "The page number of the original document where the sentence starts (1-based)"
-        },
-        "study_id": {
-          "description": "Which study this sentence belongs to in a multi-study paper",
-          "type": ["integer", "null"]
         }
       }
     },
@@ -287,7 +272,7 @@
             "endnote",
             "footnote",
             "table",
-            "fig",
+            "figure",
             "unknown",
             null
           ]
@@ -296,10 +281,6 @@
           "type": ["number", "null"],
           "minimum": 0,
           "maximum": 1
-        },
-        "study_id": {
-          "description": "Which study this section belongs to in a multi-study paper",
-          "type": ["integer", "null"]
         }
       }
     },
@@ -449,14 +430,14 @@
       "properties": {
         "xref_id": {
           "type": "integer",
-          "description": "The ID from the bib, table, fig, or section table (for footnotes)"
+          "description": "The ID from the bib, table, figure, or section table (for footnotes)"
         },
         "xref_type": {
           "type": "string",
           "enum": [
             "bib",
             "table",
-            "fig",
+            "figure",
             "foot"
           ]
         },
@@ -464,18 +445,15 @@
         "text_id": {
           "type": "integer",
           "description": "The ID from the text table for the sentence containing the cross-reference"
-        },
-        "study_id": {
-          "type": ["integer", "null"]
         }
       }
     },
 
     "figure": {
       "type": "object",
-      "required": ["fig_id", "section_id"],
+      "required": ["figure_id", "section_id"],
       "properties": {
-        "fig_id": {
+        "figure_id": {
           "description": "A unique ID for each figure (1-based)",
           "type": "integer"
         },
@@ -491,9 +469,6 @@
         "page_number": {
           "type": ["integer", "null"],
           "description": "Source page (1-based)"
-        },
-        "study_id": {
-          "type": ["integer", "null"]
         }
       }
     },
@@ -525,9 +500,6 @@
         "page_number": {
           "type": ["integer", "null"],
           "description": "Source page (1-based)"
-        },
-        "study_id": {
-          "type": ["integer", "null"]
         }
       }
     },
@@ -555,29 +527,6 @@
         "rhs": {
           "description": "Right-hand side of the equation",
           "type": "string"
-        },
-        "study_id": {
-          "type": ["integer", "null"]
-        }
-      }
-    },
-
-    "study": {
-      "description": "A detected study boundary within a multi-study paper",
-      "type": "object",
-      "required": ["study_id", "label", "root_section_id"],
-      "properties": {
-        "study_id": {
-          "description": "1-based study identifier",
-          "type": "integer"
-        },
-        "label": {
-          "description": "Original label, e.g. \"Study 1\", \"Experiment A\"",
-          "type": "string"
-        },
-        "root_section_id": {
-          "description": "Section where this study begins",
-          "type": "integer"
         }
       }
     }

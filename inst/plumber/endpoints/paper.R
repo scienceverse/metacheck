@@ -366,7 +366,7 @@ function(req, res) {
     list(
         paper_info = info_table(
             paper_obj$paper,
-            c("title", "abstract", "keywords", "doi", "submission", "received", "accepted")
+            c("title", "keywords", "doi", "submission", "received", "accepted")
         ),
         authors = authors,
         references = references,

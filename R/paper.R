@@ -22,7 +22,6 @@ paper <- function(id = NULL, ...) {
     paper_id = id,
     info = data.frame(
       title = character(0),
-      abstract = character(0),
       keywords = I(list()),
       doi = character(0),
       file_hash = character(0),
@@ -71,15 +70,13 @@ paper <- function(id = NULL, ...) {
       grp_id = integer(0),
       lhs = character(0),
       comp = character(0),
-      rhs = character(0),
-      study_id = integer(0)
+      rhs = character(0)
     ),
-    fig = data.frame(
-      fig_id = integer(0),
+    figure = data.frame(
+      figure_id = integer(0),
       section_id = integer(0),
       image = character(0),
-      page_number = integer(0),
-      study_id = integer(0)
+      page_number = integer(0)
     ),
     url = data.frame(
       href = character(0),
@@ -91,36 +88,27 @@ paper <- function(id = NULL, ...) {
       header = character(0),
       parent_section_id = integer(0),
       section_type = character(0),
-      classification_score = double(0),
-      study_id = integer(0)
-    ),
-    study = data.frame(
-      study_id = integer(0),
-      label = character(0),
-      root_section_id = integer(0)
+      classification_score = double(0)
     ),
     table = data.frame(
       table_id = integer(0),
       section_id = integer(0),
       html = character(0),
       contents = I(list()),
-      page_number = integer(0),
-      study_id = integer(0)
+      page_number = integer(0)
     ),
     text = data.frame(
       text_id = integer(0),
       paragraph_id = integer(0),
       section_id = integer(0),
       text = character(0),
-      page_number = integer(0),
-      study_id = integer(0)
+      page_number = integer(0)
     ),
     xref = data.frame(
       xref_id = integer(0),
       xref_type = character(0),
       contents = character(0),
-      text_id = integer(0),
-      study_id = integer(0)
+      text_id = integer(0)
     )#,
     # bib_matches = data.frame(
     #   bib_id = integer(0),
@@ -283,7 +271,7 @@ paper_validate <- function(paper) {
     warning_msg <- c(warning_msg, extra)
   }
 
-  # check required and optional columns for non-bib tables
+  # check required and optional columns
   tbls <- setdiff(ok_tables, c("paper_id")) |>
     intersect(names(paper))
 
