@@ -266,6 +266,10 @@ read_bibr <- function(file_path) {
   # bib ----
   if (!is.null(data$bib) && length(data$bib) > 0) {
     paper$bib <- as.data.frame(data$bib, stringsAsFactors = FALSE)
+    paper$bib$authors <- .coerce_bib_authors(paper$bib$authors)
+    if ("editors" %in% names(paper$bib)) {
+      paper$bib$editors <- .coerce_bib_authors(paper$bib$editors)
+    }
   }
 
   # eq ----
@@ -311,6 +315,12 @@ read_bibr <- function(file_path) {
   # bib_matches ----
   if (!is.null(data$bib_matches) && length(data$bib_matches) > 0) {
     paper$bib_matches <- as.data.frame(data$bib_matches, stringsAsFactors = FALSE)
+    if ("authors" %in% names(paper$bib_matches)) {
+      paper$bib_matches$authors <- .coerce_bib_authors(paper$bib_matches$authors)
+    }
+    if ("editors" %in% names(paper$bib_matches)) {
+      paper$bib_matches$editors <- .coerce_bib_authors(paper$bib_matches$editors)
+    }
   }
 
   # ensure all expected columns exist and have correct types
@@ -323,7 +333,11 @@ read_bibr <- function(file_path) {
       for (col in names(tmpl)) {
         if (!col %in% names(slot)) {
           # add missing column with appropriate NA type
-          slot[[col]] <- NA
+          if (is.list(tmpl[[col]])) {
+            slot[[col]] <- I(replicate(nrow(slot), NULL, simplify = FALSE))
+          } else {
+            slot[[col]] <- NA
+          }
         }
         # coerce all-NA logical columns to the template type
         if (is.logical(slot[[col]]) && all(is.na(slot[[col]]))) {
@@ -331,6 +345,9 @@ read_bibr <- function(file_path) {
           if (tmpl_type == "integer") slot[[col]] <- NA_integer_
           else if (tmpl_type == "double") slot[[col]] <- NA_real_
           else if (tmpl_type == "character") slot[[col]] <- NA_character_
+          else if (tmpl_type == "list") {
+            slot[[col]] <- I(replicate(nrow(slot), NULL, simplify = FALSE))
+          }
         }
       }
       paper[[slot_name]] <- slot
@@ -394,4 +411,122 @@ read <- function(file_path) {
   return(papers)
 }
 
+
+#' Format Bib Authors
+#'
+#' Formats a structured author list (data frame with given/family columns)
+#' as a display string.
+#'
+#' @param authors a data frame with \code{given} and \code{family} columns,
+#'   or a list of such data frames
+#'
+#' @returns a character string (or vector) of formatted author names
+#' @export
+#'
+#' @examples
+#' authors <- data.frame(given = c("Alice H.", "Wendy"),
+#'                       family = c("Eagly", "Wood"))
+#' format_bib_authors(authors)
+format_bib_authors <- function(authors) {
+  if (is.list(authors) && !is.data.frame(authors)) {
+    return(sapply(authors, format_bib_authors))
+  }
+  if (is.null(authors) || (is.data.frame(authors) && nrow(authors) == 0)) {
+    return(NA_character_)
+  }
+  if (is.character(authors)) return(authors)
+  paste(authors$family, authors$given, sep = ", ", collapse = "; ")
+}
+
+
+#' Coerce bib authors column to list of data frames
+#'
+#' Handles mixed input: structured \code{[{given, family}]} arrays (read as
+#' data frames by jsonlite) and legacy pipe-separated strings. Returns a list
+#' column suitable for storing in a data frame.
+#'
+#' @param col a list column (from jsonlite) or character vector of authors
+#'
+#' @returns a list where each element is a data frame with \code{given}/\code{family}
+#' @keywords internal
+.coerce_bib_authors <- function(col) {
+  if (is.null(col)) return(col)
+
+  # jsonlite may simplify a column of empty arrays into a 0-column data frame;
+
+  # convert to a list of NULLs so lapply iterates over rows
+  if (is.data.frame(col) && ncol(col) == 0) {
+    col <- replicate(nrow(col), NULL, simplify = FALSE)
+  }
+
+  I(lapply(col, \(x) {
+    if (is.null(x) || (is.atomic(x) && length(x) == 1 && is.na(x))) {
+      return(data.frame(given = character(0), family = character(0)))
+    }
+    if (is.data.frame(x)) {
+      # keep only given/family columns
+      x[, intersect(c("given", "family"), names(x)), drop = FALSE]
+    } else if (is.matrix(x)) {
+      # legacy format: matrix with columns [given, family]
+      data.frame(given = x[, 1], family = x[, 2], stringsAsFactors = FALSE)
+    } else if (is.character(x) && length(x) == 1) {
+      .parse_author_string(x)
+    } else {
+      data.frame(given = character(0), family = character(0))
+    }
+  }))
+}
+
+
+#' Parse a legacy author string into a data frame
+#'
+#' Handles formats like "Family, Given; Family2, Given2" or
+#' "Family, Given, and Given2 Family2".
+#'
+#' @param s a character string of authors
+#'
+#' @returns a data frame with \code{given} and \code{family} columns
+#' @keywords internal
+.parse_author_string <- function(s) {
+  if (is.na(s) || nchar(trimws(s)) == 0) {
+    return(data.frame(given = character(0), family = character(0)))
+  }
+
+  # try semicolon-separated first: "Family, Given; Family2, Given2"
+  if (grepl(";", s)) {
+    parts <- trimws(strsplit(s, ";")[[1]])
+    parsed <- lapply(parts, \(p) {
+      fg <- trimws(strsplit(p, ",")[[1]])
+      if (length(fg) >= 2) {
+        data.frame(given = fg[[2]], family = fg[[1]])
+      } else {
+        data.frame(given = "", family = fg[[1]])
+      }
+    })
+    return(do.call(rbind, parsed))
+  }
+
+  # try "and"-separated: "Family, Given, and Given2 Family2"
+  # or simple "Family, Given"
+  parts <- trimws(strsplit(s, "\\band\\b|&")[[1]])
+  parsed <- lapply(parts, \(p) {
+    # "Family, Given" pattern
+    fg <- trimws(strsplit(p, ",")[[1]])
+    if (length(fg) >= 2) {
+      data.frame(given = trimws(fg[[2]]), family = trimws(fg[[1]]))
+    } else {
+      # "Given Family" pattern (space-separated, last word is family)
+      words <- trimws(strsplit(trimws(p), "\\s+")[[1]])
+      if (length(words) >= 2) {
+        data.frame(given = paste(words[-length(words)], collapse = " "),
+                   family = words[[length(words)]])
+      } else if (length(words) == 1) {
+        data.frame(given = "", family = words[[1]])
+      } else {
+        data.frame(given = character(0), family = character(0))
+      }
+    }
+  })
+  do.call(rbind, parsed)
+}
 

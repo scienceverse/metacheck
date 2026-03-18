@@ -63,7 +63,7 @@ ref_accuracy <- function(paper) {
   ## other mismatches ----
   aut_title <- dplyr::select(all_bib,
     paper_id, bib_id,
-    orig_authors = author,
+    orig_authors = authors,
     orig_title = title
   )
   table <- dplyr::left_join(table, aut_title, by = c("paper_id", "bib_id"))
@@ -94,8 +94,16 @@ ref_accuracy <- function(paper) {
         return(FALSE)
       }
       cr_auth <- clean(table$author[[i]]$family)
-      bib_auth <- clean(table$orig_authors[[i]])
-      in_auth <- sapply(cr_auth, grepl, x = bib_auth)
+      orig <- table$orig_authors[[i]]
+      if (is.data.frame(orig) && nrow(orig) > 0) {
+        bib_auth <- clean(orig$family)
+        in_auth <- sapply(cr_auth, \(ca) any(ca == bib_auth))
+      } else if (is.character(orig)) {
+        bib_auth <- clean(orig)
+        in_auth <- sapply(cr_auth, grepl, x = bib_auth)
+      } else {
+        return(FALSE)
+      }
 
       !all(in_auth)
     })
@@ -149,7 +157,10 @@ ref_accuracy <- function(paper) {
     author_table$cr <- sapply(author_table$author, \(a) {
       paste(substr(a$given, 1, 1), a$family, collapse = ", ")
     })
-    author_table <- author_table[, c("orig_authors", "cr", "bib_text")]
+    author_table$orig <- sapply(author_table$orig_authors, \(a) {
+      if (is.data.frame(a)) format_bib_authors(a) else a
+    })
+    author_table <- author_table[, c("orig", "cr", "bib_text")]
     names(author_table) <- c("Original Authors", "CrossRef Authors", "Reference")
   }
 

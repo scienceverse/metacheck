@@ -48,11 +48,7 @@
       "doi": "10.5281/zenodo.2669586",
       "title": "Faux: Simulation for Factorial Designs",
       "authors": [
-        {
-          "author_id": 1,
-          "given": "Lisa",
-          "family": "DeBruine"
-        }
+        { "given": "Lisa", "family": "DeBruine" }
       ],
       "publication_year": 2025,
       "container": "",
@@ -64,16 +60,8 @@
       "doi": "10.1037/0003-066x.54.6.408",
       "title": "The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles",
       "authors": [
-        {
-          "author_id": 1,
-          "given": "Alice H.",
-          "family": "Eagly"
-        },
-        {
-          "author_id": 2,
-          "given": "Wendy",
-          "family": "Wood"
-        }
+        { "given": "Alice H.", "family": "Eagly" },
+        { "given": "Wendy", "family": "Wood" }
       ],
       "publication_year": 1999,
       "container": "American Psychologist",
@@ -89,16 +77,8 @@
       "doi": "10.1177/0956797614520714",
       "title": "Evil Genius? How Dishonesty Can Lead to Greater Creativity",
       "authors": [
-        {
-          "author_id": 1,
-          "given": "Francesca",
-          "family": "Gino"
-        },
-        {
-          "author_id": 2,
-          "given": "Scott S.",
-          "family": "Wiltermuth"
-        }
+        { "given": "Francesca", "family": "Gino" },
+        { "given": "Scott S.", "family": "Wiltermuth" }
       ],
       "publication_year": 2014,
       "container": "Psychological Science",
@@ -114,11 +94,7 @@
       "doi": "",
       "title": "Equivalence Testing for Psychological Research",
       "authors": [
-        {
-          "author_id": 1,
-          "given": "Daniël",
-          "family": "Lakens"
-        }
+        { "given": "Daniël", "family": "Lakens" }
       ],
       "publication_year": 2018,
       "container": "Advances in Methods and Practices in Psychological Science",
@@ -132,7 +108,9 @@
       "bib_type": "article",
       "doi": "10.0000/0123456789",
       "title": "Human Error Is a Symptom of a Poor Design",
-      "authors": "Smith, F.",
+      "authors": [
+        { "given": "F.", "family": "Smith" }
+      ],
       "publication_year": 2021,
       "container": "Journal of Journals",
       "text_id": 33
@@ -800,11 +778,7 @@
       "doi": "10.32614/cran.package.faux",
       "title": "faux: Simulation for Factorial Designs",
       "authors": [
-        {
-          "author_id": 1,
-          "given": "Lisa",
-          "family": "DeBruine"
-        }
+        { "given": "Lisa", "family": "DeBruine" }
       ],
       "publisher": "The R Foundation",
       "publication_year": 2020,
@@ -820,16 +794,8 @@
       "doi": "10.1037/0003-066x.54.6.408",
       "title": "The origins of sex differences in human behavior: Evolved dispositions versus social roles.",
       "authors": [
-        {
-          "author_id": 1,
-          "given": "Alice H.",
-          "family": "Eagly"
-        },
-        {
-          "author_id": 2,
-          "given": "Wendy",
-          "family": "Wood"
-        }
+        { "given": "Alice H.", "family": "Eagly" },
+        { "given": "Wendy", "family": "Wood" }
       ],
       "publisher": "American Psychological Association (APA)",
       "publication_year": 1999,
@@ -849,16 +815,8 @@
       "doi": "10.1177/0956797614520714",
       "title": "Retracted: Evil Genius? How Dishonesty Can Lead to Greater Creativity",
       "authors": [
-        {
-          "author_id": 1,
-          "given": "Francesca",
-          "family": "Gino"
-        },
-        {
-          "author_id": 2,
-          "given": "Scott S.",
-          "family": "Wiltermuth"
-        }
+        { "given": "Francesca", "family": "Gino" },
+        { "given": "Scott S.", "family": "Wiltermuth" }
       ],
       "publisher": "SAGE Publications",
       "publication_year": 2014,
@@ -878,21 +836,9 @@
       "doi": "10.1177/2515245918770963",
       "title": "Equivalence Testing for Psychological Research: A Tutorial",
       "authors": [
-        {
-          "author_id": 1,
-          "given": "Daniel",
-          "family": "Lakens"
-        },
-        {
-          "author_id": 2,
-          "given": "Anne M.",
-          "family": "Scheel"
-        },
-        {
-          "author_id": 1,
-          "given": "Peder Mortvedt",
-          "family": "Isager"
-        }
+        { "given": "Daniel", "family": "Lakens" },
+        { "given": "Anne M.", "family": "Scheel" },
+        { "given": "Peder Mortvedt", "family": "Isager" }
       ],
       "publisher": "SAGE Publications",
       "publication_year": 2018,

@@ -129,10 +129,15 @@ paper <- function(id = NULL, ...) {
       bib_type = character(0),
       doi = character(0),
       title = character(0),
-      authors = character(0),
+      authors = I(list()),
+      editors = I(list()),
       publisher = character(0),
       publication_year = integer(0),
       container = character(0),
+      volume = character(0),
+      issue = character(0),
+      first_page = character(0),
+      last_page = character(0),
       url = character(0)
     )
   )

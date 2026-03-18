@@ -704,15 +704,33 @@ tei_bib <- function(xml) {
     bib_table$publication_year <- sapply(bibs, \(x) x$year %||% NA_integer_)
     bib_table$authors <- bibs |>
       lapply(\(x) x$author) |>
-      lapply(\(x) lapply(x, unlist)) |>
-      lapply(\(x) lapply(x, as.list))
+      lapply(\(x) {
+        rows <- lapply(x, \(a) {
+          a <- unlist(a)
+          data.frame(
+            given = a[["given"]] %||% NA_character_,
+            family = a[["family"]] %||% NA_character_
+          )
+        })
+        if (length(rows)) do.call(rbind, rows)
+        else data.frame(given = character(0), family = character(0))
+      })
     bib_table$issue <- sapply(bibs, \(x) x$number %||% NA_character_)
     bib_table$first_page <- sapply(bibs, \(x) x$first_page %||% NA_character_)
     bib_table$last_page <- sapply(bibs, \(x) x$last_page %||% NA_character_)
     bib_table$editors <- bibs |>
       lapply(\(x) x$editor) |>
-      lapply(\(x) lapply(x, unlist)) |>
-      lapply(\(x) lapply(x, as.list))
+      lapply(\(x) {
+        rows <- lapply(x, \(a) {
+          a <- unlist(a)
+          data.frame(
+            given = a[["given"]] %||% NA_character_,
+            family = a[["family"]] %||% NA_character_
+          )
+        })
+        if (length(rows)) do.call(rbind, rows)
+        else data.frame(given = character(0), family = character(0))
+      })
     bib_table$publisher <- sapply(bibs, \(x) x$publisher %||% NA_character_)
   } else {
     bib_table <- data.frame(

@@ -240,6 +240,16 @@
         }
       }
     },
+    "bib_author": {
+      "description": "Lightweight author representation for bibliography entries",
+      "type": "object",
+      "required": ["given", "family"],
+      "properties": {
+        "given": { "type": "string" },
+        "family": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
     "biblio": {
       "type": "object",
       "required": [
@@ -274,14 +284,14 @@
         },
         "title": { "type": "string" },
         "authors": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/author" },
-          "uniqueItems": true
+          "description": "Structured author list",
+          "type": ["array", "null"],
+          "items": { "$ref": "#/$defs/bib_author" }
         },
         "editors": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/author" },
-          "uniqueItems": true
+          "description": "Structured editor list",
+          "type": ["array", "null"],
+          "items": { "$ref": "#/$defs/bib_author" }
         },
         "publisher": {
           "type": "string"

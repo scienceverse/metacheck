@@ -415,7 +415,9 @@
       "bib_type": "misc",
       "doi": "10.5281/zenodo.2669586",
       "title": "Faux: Simulation for Factorial Designs",
-      "authors": "DeBruine, Lisa",
+      "authors": [
+        { "given": "Lisa", "family": "DeBruine" }
+      ],
       "publication_year": "2025",
       "container": "Zenodo",
       "text_id": 30
@@ -425,7 +427,10 @@
       "bib_type": "article",
       "doi": "10.1037/0003-066x.54.6.408",
       "title": "The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles",
-      "authors": "Eagly, Alice H., and Wendy Wood",
+      "authors": [
+        { "given": "Alice H.", "family": "Eagly" },
+        { "given": "Wendy", "family": "Wood" }
+      ],
       "publication_year": "1999",
       "container": "American Psychologist",
       "text_id": 31
@@ -435,7 +440,10 @@
       "bib_type": "article",
       "doi": "10.1177/0956797614520714",
       "title": "Evil Genius? How Dishonesty Can Lead to Greater Creativity",
-      "authors": "Gino, Francesca, and Scott S. Wiltermuth",
+      "authors": [
+        { "given": "Francesca", "family": "Gino" },
+        { "given": "Scott S.", "family": "Wiltermuth" }
+      ],
       "publication_year": "2014",
       "container": "Psychological Science",
       "text_id": 32
@@ -445,7 +453,9 @@
       "bib_type": "article",
       "doi": null,
       "title": "Equivalence Testing for Psychological Research",
-      "authors": "Lakens, Daniël",
+      "authors": [
+        { "given": "Daniël", "family": "Lakens" }
+      ],
       "publication_year": "2018",
       "container": "Advances in Methods and Practices in Psychological Science",
       "text_id": 33
@@ -455,7 +465,9 @@
       "bib_type": "article",
       "doi": "10.0000/0123456789",
       "title": "Human Error Is a Symptom of a Poor Design",
-      "authors": "Smith, F.",
+      "authors": [
+        { "given": "F.", "family": "Smith" }
+      ],
       "publication_year": "2021",
       "container": "Journal of Journals",
       "text_id": 34
