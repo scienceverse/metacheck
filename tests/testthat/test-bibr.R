@@ -111,16 +111,11 @@ test_that("read_bibr", {
   expect_error(read_bibr(bad_arg))
 
   # single paper from legacy zip
-  file_path <- test_path("fixtures", "bibr", "to_err_is_human.json")
+  file_path <- test_path("fixtures", "formats", "to_err_is_human.json")
   paper <- read_bibr(file_path)
 
-  expect_s3_class(paper, "scivrs_paper")
-  obs <- names(paper)
-  exp <- c("paper_id", "info", "author", "text", "url", "table",
-           "section", "bib", "xref", "fig", "eq")
-  expect_contains(obs, exp)
+  expect_true(paper_validate(paper))
   expect_match(paper$paper_id, "^[a-f0-9]{14,16}$")
-
 })
 
 test_that("read", {
@@ -130,11 +125,11 @@ test_that("read", {
   expect_error(read(bad_arg))
 
   # single paper from legacy zip
-  file_path <- test_path("fixtures", "bibr", "to_err_is_human.json")
+  file_path <- test_path("fixtures", "formats", "to_err_is_human.json")
   paper <- read(file_path)
 
   expect_s3_class(paper, "scivrs_paper")
-  expect_true(validate_paper(paper))
+  expect_true(paper_validate(paper))
   expect_match(paper$paper_id, "^[a-f0-9]{14,16}$")
 
   # check for no urls ending in .

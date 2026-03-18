@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://scienceverse.org/schema/paper.json",
   "title": "Bibr Paper",
-  "description": "A research paper, as processed by bibr",
+  "description": "A research paper, as processed by bibr (v8.0)",
   "type": "object",
   "properties": {
     "paper_id": {
-      "description": "A unique ID for each paper (usually the bibr file_hash)",
+      "description": "A unique ID for each paper (user-supplied > DOI > file_name)",
       "type": ["string", "null"]
     },
     "info": {
@@ -17,28 +17,9 @@
       "items": { "$ref": "#/$defs/author" },
       "uniqueItems": true
     },
-    "bib": {
+    "text": {
       "type": "array",
-      "items": { "$ref": "#/$defs/biblio_ref"},
-      "uniqueItems": true
-    },
-    "bib_matches": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/biblio_match"},
-      "uniqueItems": true
-    },
-    "eq": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/equation" }
-    },
-    "fig": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/figure" },
-      "uniqueItems": true
-    },
-    "url": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/link" },
+      "items": { "$ref": "#/$defs/sentence" },
       "uniqueItems": true
     },
     "section": {
@@ -46,9 +27,25 @@
       "items": { "$ref": "#/$defs/section" },
       "uniqueItems": true
     },
-    "study": {
+    "url": {
+      "description": "Hyperlinks found in the paper text",
       "type": "array",
-      "items": { "$ref": "#/$defs/study" },
+      "items": { "$ref": "#/$defs/link" },
+      "uniqueItems": true
+    },
+    "bib": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/bib_entry" },
+      "uniqueItems": true
+    },
+    "xref": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/xref" },
+      "uniqueItems": true
+    },
+    "fig": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/figure" },
       "uniqueItems": true
     },
     "table": {
@@ -56,15 +53,14 @@
       "items": { "$ref": "#/$defs/table" },
       "uniqueItems": true
     },
-    "text": {
+    "eq": {
       "type": "array",
-      "items": { "$ref": "#/$defs/sentence" },
-      "uniqueItems": true
+      "items": { "$ref": "#/$defs/equation" }
     },
-    "xref": {
+    "study": {
+      "description": "Detected study boundaries within multi-study papers",
       "type": "array",
-      "items": { "$ref": "#/$defs/xref" },
-      "uniqueItems": true
+      "items": { "$ref": "#/$defs/study" }
     }
   },
 
@@ -72,14 +68,15 @@
     "paper_id",
     "info",
     "author",
-    "bib",
-    "eq",
-    "fig",
-    "url",
-    "section",
-    "table",
     "text",
-    "xref"
+    "section",
+    "url",
+    "bib",
+    "xref",
+    "fig",
+    "table",
+    "eq",
+    "study"
   ],
 
   "additionalProperties": false,
@@ -98,8 +95,11 @@
         "bibr_version"
       ],
       "properties": {
-        "title": { "type": "string" },
-        "abstract": { "type": ["string", "null"] },
+        "title": { "type": ["string", "null"] },
+        "abstract": {
+          "description": "Concatenated text from the abstract section",
+          "type": ["string", "null"]
+        },
         "keywords": {
           "type": "array",
           "items": { "type": "string" }
@@ -116,30 +116,26 @@
           "type": "string",
           "enum": [
             "pdf",
-            "html",
             "docx",
-            "doc",
-            "md",
             "unknown"
           ]
         },
-        "file_name": {  "type": "string" },
+        "file_name": { "type": "string" },
         "bibr_version": { "type": "string" },
         "paper_type": {
-          "type": "string",
+          "type": ["string", "null"],
           "enum": [
             "empirical",
             "review",
             "commentary",
             "meta-analysis",
-            "methods",
-            "data",
-            "software",
-            "unknown"
+            "case-study",
+            "unknown",
+            null
           ]
         },
         "paper_type_confidence": {
-          "type": "number",
+          "type": ["number", "null"],
           "minimum": 0,
           "maximum": 1
         },
@@ -152,7 +148,7 @@
             "Medical and Health Sciences",
             "Agricultural and Veterinary Sciences",
             "Social Sciences",
-            "Humanities and the arts",
+            "Humanities and the Arts",
             null
           ]
         },
@@ -161,56 +157,52 @@
           "type": ["string", "null"],
           "enum": [
             "Mathematics",
-            "Computer and information sciences",
-            "Physical sciences",
-            "Chemical sciences",
-            "Earth and related environmental sciences",
-            "Biological sciences",
-            "Other natural sciences",
-            "Civil engineering",
-            "Electrical engineering, electronic engineering, information engineering",
-            "Mechanical engineering",
-            "Chemical engineering",
-            "Materials engineering",
-            "Medical engineering",
-            "Environmental engineering",
-            "Environmental biotechnology",
-            "Industrial biotechnology",
+            "Computer and Information Sciences",
+            "Physical Sciences",
+            "Chemical Sciences",
+            "Earth and Related Environmental Sciences",
+            "Biological Sciences",
+            "Civil Engineering",
+            "Electrical Engineering, Electronic Engineering, Information Engineering",
+            "Mechanical Engineering",
+            "Chemical Engineering",
+            "Materials Engineering",
+            "Medical Engineering",
+            "Environmental Engineering",
+            "Environmental Biotechnology",
+            "Industrial Biotechnology",
             "Nano-technology",
-            "Other engineering and technologies",
-            "Basic medical research",
-            "Clinical medicine",
-            "Health sciences",
-            "Medical biotechnology",
-            "Other medical science",
-            "Agriculture, forestry, fisheries",
-            "Animal and dairy science",
-            "Veterinary science",
-            "Other agricultural science",
-            "Psychology and cognitive science",
-            "Economics and business",
-            "Educational sciences",
+            "Basic Medicine",
+            "Clinical Medicine",
+            "Health Sciences",
+            "Medical Biotechnology",
+            "Agriculture, Forestry, and Fisheries",
+            "Animal and Dairy Science",
+            "Veterinary Science",
+            "Agricultural Biotechnology",
+            "Psychology and Cognitive Sciences",
+            "Economics and Business",
+            "Education",
             "Sociology",
             "Law",
-            "Political science",
-            "Social and economic geography",
-            "Media and communication",
-            "Other social sciences",
-            "History and archeology",
-            "Languages and literature",
-            "Philosophy, ethics and religion",
-            "Art",
-            "Other Humanities",
+            "Political Science",
+            "Social and Economic Geography",
+            "Media and Communications",
+            "History and Archaeology",
+            "Languages and Literature",
+            "Philosophy, Ethics and Religion",
+            "Arts (arts, history of arts, performing arts, music)",
             null
           ]
         },
         "oecd_confidence": {
-          "type": "number",
+          "type": ["number", "null"],
           "minimum": 0,
           "maximum": 1
         }
       }
     },
+
     "author": {
       "type": "object",
       "required": [
@@ -224,15 +216,16 @@
         },
         "given": { "type": ["string", "null"] },
         "family": { "type": ["string", "null"] },
-        "affiliation": { "type": "string" },
+        "affiliation": { "type": ["string", "null"] },
         "email": {
-          "type": ["string"],
+          "type": ["string", "null"],
           "format": "email"
         },
         "corresponding": { "type": "boolean" },
         "orcid": {
-          "type": "string",
-          "pattern": "^\\d{4}-\\d{4}-\\d{4}-\\d{3}[\\dX]$"
+          "description": "ORCID in canonical URI form: https://orcid.org/XXXX-XXXX-XXXX-XXXX",
+          "type": ["string", "null"],
+          "pattern": "^https://orcid\\.org/\\d{4}-\\d{4}-\\d{4}-\\d{3}[\\dX]$"
         },
         "role": {
           "type": "array",
@@ -240,186 +233,77 @@
         }
       }
     },
-    "bib_author": {
-      "description": "Lightweight author representation for bibliography entries",
+
+    "sentence": {
       "type": "object",
-      "required": ["given", "family"],
+      "required": ["text_id", "section_id", "paragraph_id", "text"],
       "properties": {
-        "given": { "type": "string" },
-        "family": { "type": "string" }
-      },
-      "additionalProperties": false
-    },
-    "biblio": {
-      "type": "object",
-      "required": [
-        "bib_id",
-        "bib_type",
-        "title",
-        "authors",
-        "publication_year"
-      ],
-      "properties": {
-        "bib_id": {
-          "type": "integer",
-          "description": "Paper-specific ID"
-        },
-        "bib_type": {
-          "type": "string",
-          "enum": [
-            "journal_article",
-            "book",
-            "book_chapter",
-            "dataset",
-            "software",
-            "preprint",
-            "conference_paper",
-            "report",
-            "other"
-          ]
-        },
-        "doi": {
-          "type": ["string", "null"],
-          "pattern": "^10\\.\\d{4,9}/\\S+$"
-        },
-        "title": { "type": "string" },
-        "authors": {
-          "description": "Structured author list",
-          "type": ["array", "null"],
-          "items": { "$ref": "#/$defs/bib_author" }
-        },
-        "editors": {
-          "description": "Structured editor list",
-          "type": ["array", "null"],
-          "items": { "$ref": "#/$defs/bib_author" }
-        },
-        "publisher": {
-          "type": "string"
-        },
-        "publication_year": {
-          "type": "integer"
-        },
-        "publication_date": {
-          "type": "string",
-          "format": "date"
-        },
-        "container": {
-          "type": "string",
-          "description": "Journal or book title"
-        },
-        "volume": { "type": "string" },
-        "issue": { "type": "string" },
-        "first_page": { "type": "string" },
-        "last_page": { "type": "string" },
-        "edition": { "type": "string" },
-        "version": { "type": "string" },
-        "url": {
-          "type": "string",
-          "format": "uri"
-        }
-      }
-    },
-    "biblio_ref": {
-      "type": "object",
-      "allOf": [
-        { "$ref": "#/$defs/biblio" },
-        {
-          "type": "object",
-          "required": ["text_id"],
-          "properties": {
-            "text_id": {
-              "type": "integer",
-              "description": "The text table ID of the reference exactly as written in the paper"
-            }
-          }
-        }
-      ]
-    },
-    "biblio_match": {
-      "type": "object",
-      "allOf": [
-        { "$ref": "#/$defs/biblio" },
-        {
-          "type": "object",
-          "required": ["source"],
-          "properties": {
-            "source": {
-              "type": "string",
-              "description": "Metadata source",
-              "enum": [
-                "crossref",
-                "datacite",
-                "openalex",
-                "manual"
-              ]
-            },
-            "match_score": {
-               "description": "A score describing the match between the original reference and the entry from source",
-              "type": "number",
-              "minimum": 0,
-              "maximum": 100
-            }
-          }
-        }
-      ]
-    },
-    "equation": {
-      "type": "object",
-      "required": ["text_id", "grp_id", "lhs", "comp", "rhs"],
-      "properties": {
-        "text_id": {
-          "description": "ID from the text table for the source of the equation",
-          "type": "integer"
-        },
-        "grp_id": {
-          "description": "Grouping within a sentence (e.g., multiple equations that are grouped by brackets) or table",
-          "type": "integer"
-        },
-        "lhs": {
-          "description": "Left-hand side of the equation",
-          "type": "string"
-        },
-        "comp": {
-           "description": "Comparator symbol(s)",
-          "type": "string"
-        },
-        "rhs": {
-           "description": "Right-hand side of the equation",
-          "type": "string"
-        },
-        "study_id": {
-          "description": "Study ID for multi-study papers",
-          "type": ["integer", "null"]
-        }
-      }
-    },
-    "figure": {
-      "type": "object",
-      "required": [ "fig_id", "section_id"],
-      "properties": {
-        "fig_id": {
-          "description": "A unique ID for each figure",
-          "type": "integer"
-        },
+        "text_id": { "type": "integer" },
         "section_id": {
-          "description": "The ID from the section table for this figure",
-          "type": "integer"
+          "description": "References section table; null when sentence belongs to root (pre-first-heading)",
+          "type": ["integer", "null"]
         },
-        "image": {
-          "description": "The base64 image or reference to it (undecided)",
-          "type": "string",
-          "contentEncoding": "base64"
+        "paragraph_id": { "type": "integer" },
+        "text": { "type": "string" },
+        "raw_text": {
+          "description": "Original text before placeholder substitution (e.g. raw LaTeX for display math). Null when text is unmodified.",
+          "type": ["string", "null"]
         },
         "page_number": {
           "type": ["integer", "null"],
-          "description": "The page number of the original document"
+          "description": "The page number of the original document where the sentence starts (1-based)"
         },
         "study_id": {
-          "description": "Study ID for multi-study papers",
+          "description": "Which study this sentence belongs to in a multi-study paper",
           "type": ["integer", "null"]
         }
       }
     },
+
+    "section": {
+      "type": "object",
+      "required": ["section_id", "header", "parent_section_id", "section_type"],
+      "properties": {
+        "section_id": {
+          "type": "integer",
+          "description": "1-based unique section ID (section_id=0 is Root sentinel, excluded from export)"
+        },
+        "header": { "type": "string" },
+        "parent_section_id": {
+          "description": "ID of the containing section; null for top-level sections",
+          "type": ["integer", "null"]
+        },
+        "section_type": {
+          "type": ["string", "null"],
+          "enum": [
+            "abstract",
+            "intro",
+            "method",
+            "results",
+            "discussion",
+            "references",
+            "acknowledgment",
+            "funding",
+            "endnote",
+            "footnote",
+            "table",
+            "fig",
+            "unknown",
+            null
+          ]
+        },
+        "classification_score": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "study_id": {
+          "description": "Which study this section belongs to in a multi-study paper",
+          "type": ["integer", "null"]
+        }
+      }
+    },
+
     "link": {
       "type": "object",
       "required": ["href", "text_id"],
@@ -432,114 +316,133 @@
         "text_id": { "type": "integer" }
       }
     },
-    "section": {
+
+    "bib_author": {
+      "description": "Lightweight author representation for bibliography entries",
       "type": "object",
-      "required": ["section_id",
-                   "header",
-                   "parent_section_id",
-                   "section_type"],
+      "required": ["given", "family"],
       "properties": {
-        "section_id": {
-          "type": "integer"
+        "given": { "type": "string" },
+        "family": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "external_match": {
+      "description": "Enrichment data from an external service for a bibliography entry",
+      "type": ["object", "null"],
+      "properties": {
+        "id": {
+          "description": "External identifier (DOI, OpenAlex ID, etc.)",
+          "type": ["string", "null"]
         },
-        "header": { "type": "string" },
-        "parent_section_id": { "type": "integer" },
-        "section_type": {
-          "type": "string",
+        "score": {
+          "description": "Match confidence score",
+          "type": ["number", "null"]
+        },
+        "title": { "type": ["string", "null"] },
+        "authors": {
+          "type": ["array", "null"],
+          "items": { "$ref": "#/$defs/bib_author" }
+        },
+        "publication_year": { "type": ["integer", "null"] },
+        "container": {
+          "description": "Journal or book title",
+          "type": ["string", "null"]
+        },
+        "volume": { "type": ["string", "null"] },
+        "issue": { "type": ["string", "null"] },
+        "first_page": { "type": ["string", "null"] },
+        "last_page": { "type": ["string", "null"] },
+        "publisher": { "type": ["string", "null"] },
+        "editors": {
+          "type": ["array", "null"],
+          "items": { "$ref": "#/$defs/bib_author" }
+        },
+        "doi": { "type": ["string", "null"] },
+        "bib_type": { "type": ["string", "null"] },
+        "url": { "type": ["string", "null"] },
+        "publication_date": { "type": ["string", "null"] },
+        "edition": { "type": ["string", "null"] },
+        "version": { "type": ["string", "null"] }
+      }
+    },
+
+    "bib_entry": {
+      "type": "object",
+      "required": ["bib_id", "title", "authors", "text_id"],
+      "properties": {
+        "bib_id": {
+          "type": "integer",
+          "description": "1-based positional ID within the paper"
+        },
+        "bib_type": {
+          "type": ["string", "null"],
           "enum": [
-            "abstract",
-            "intro",
-            "method",
-            "results",
-            "discussion",
-            "references",
-            "acknowledgment",
-            "funding",
-            "endnote",
-            "footnote",
-            "tbl_cap",
-            "fig_cap",
-            "unknown"
+            "journal_article",
+            "book",
+            "book_chapter",
+            "dataset",
+            "software",
+            "preprint",
+            "conference_paper",
+            "report",
+            "other",
+            null
           ]
         },
-        "classification_score": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1
+        "doi": {
+          "type": ["string", "null"],
+          "pattern": "^10\\.\\d{4,9}/\\S+$"
         },
-        "study_id": {
-          "description": "Study ID for multi-study papers",
-          "type": ["integer", "null"]
-        }
-      }
-    },
-    "study": {
-      "type": "object",
-      "required": ["study_id", "label"],
-      "properties": {
-        "study_id": {
-          "type": "integer"
+        "title": { "type": ["string", "null"] },
+        "authors": {
+          "description": "Structured author list",
+          "type": ["array", "null"],
+          "items": { "$ref": "#/$defs/bib_author" }
         },
-        "label": {
-          "type": "string"
+        "editors": {
+          "description": "Structured editor list",
+          "type": ["array", "null"],
+          "items": { "$ref": "#/$defs/bib_author" }
         },
-        "root_section_id": {
-          "type": ["integer", "null"]
-        }
-      }
-    },
-    "sentence": {
-      "type": "object",
-      "required": ["text_id", "section_id", "paragraph_id", "text"],
-      "properties": {
-        "text_id": { "type": "integer" },
-        "section_id": { "type": "integer" },
-        "paragraph_id": { "type": "integer" },
-        "text": { "type": "string" },
-        "page_number": {
+        "publisher": { "type": ["string", "null"] },
+        "publication_year": { "type": ["integer", "null"] },
+        "publication_date": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "container": {
+          "type": ["string", "null"],
+          "description": "Journal or book title"
+        },
+        "volume": { "type": ["string", "null"] },
+        "issue": { "type": ["string", "null"] },
+        "first_page": { "type": ["string", "null"] },
+        "last_page": { "type": ["string", "null"] },
+        "edition": { "type": ["string", "null"] },
+        "version": { "type": ["string", "null"] },
+        "url": {
+          "type": ["string", "null"],
+          "format": "uri"
+        },
+        "text_id": {
           "type": ["integer", "null"],
-          "description": "The page number of the original document where the sentence starts"
+          "description": "The text table ID of the reference as written in the paper"
         },
-        "study_id": {
-          "description": "Study ID for multi-study papers",
-          "type": ["integer", "null"]
+        "match": {
+          "description": "External enrichment results, keyed by service",
+          "type": "object",
+          "properties": {
+            "crossref": { "$ref": "#/$defs/external_match" },
+            "openalex": { "$ref": "#/$defs/external_match" },
+            "openlibrary": { "$ref": "#/$defs/external_match" }
+          },
+          "additionalProperties": false
         }
       }
     },
-    "table": {
-      "type": "object",
-      "required": [ "table_id", "section_id"],
-      "properties": {
-        "table_id": {
-          "description": "A unique ID for each table",
-          "type": "integer"
-        },
-        "section_id": {
-          "description": "The ID from the section table for this table",
-          "type": "integer"
-        },
-        "html": {
-          "description": "The table contents as html",
-          "type": "string"
-        },
-        "contents": {
-          "description": "The table contents as tabular data",
-          "type": "array",
-          "items": {
-            "type": "array",
-            "items": { "type": ["string", "number", "boolean", "null"] }
-          }
-        },
-        "page_number": {
-          "type": ["integer", "null"],
-          "description": "The page number of the original document"
-        },
-        "study_id": {
-          "description": "Study ID for multi-study papers",
-          "type": ["integer", "null"]
-        }
-      }
-    },
+
     "xref": {
       "type": "object",
       "required": ["xref_id", "xref_type", "contents", "text_id"],
@@ -553,18 +456,128 @@
           "enum": [
             "bib",
             "table",
-            "figure",
-            "footnote"
+            "fig",
+            "foot"
           ]
         },
         "contents": { "type": ["string", "null"] },
         "text_id": {
           "type": "integer",
-          "description": "The ID from the text table for the sentence containing the cross-reference."
+          "description": "The ID from the text table for the sentence containing the cross-reference"
         },
         "study_id": {
-          "description": "Study ID for multi-study papers",
           "type": ["integer", "null"]
+        }
+      }
+    },
+
+    "figure": {
+      "type": "object",
+      "required": ["fig_id", "section_id"],
+      "properties": {
+        "fig_id": {
+          "description": "A unique ID for each figure (1-based)",
+          "type": "integer"
+        },
+        "section_id": {
+          "description": "The ID from the section table for this figure's caption section",
+          "type": ["integer", "null"]
+        },
+        "image": {
+          "description": "Base64-encoded JPEG of the cropped figure region",
+          "type": ["string", "null"],
+          "contentEncoding": "base64"
+        },
+        "page_number": {
+          "type": ["integer", "null"],
+          "description": "Source page (1-based)"
+        },
+        "study_id": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+
+    "table": {
+      "type": "object",
+      "required": ["table_id", "section_id"],
+      "properties": {
+        "table_id": {
+          "description": "A unique ID for each table (1-based)",
+          "type": "integer"
+        },
+        "section_id": {
+          "description": "The ID from the section table for this table's caption section",
+          "type": ["integer", "null"]
+        },
+        "html": {
+          "description": "The table contents as HTML",
+          "type": ["string", "null"]
+        },
+        "contents": {
+          "description": "The table contents as tabular data: [headers_row, ...data_rows], all values stringified",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "page_number": {
+          "type": ["integer", "null"],
+          "description": "Source page (1-based)"
+        },
+        "study_id": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+
+    "equation": {
+      "type": "object",
+      "required": ["text_id", "grp_id", "lhs", "comp", "rhs"],
+      "properties": {
+        "text_id": {
+          "description": "ID from the text table for the source sentence",
+          "type": "integer"
+        },
+        "grp_id": {
+          "description": "Globally unique group ID (1-based); groups related equations within a sentence or table",
+          "type": "integer"
+        },
+        "lhs": {
+          "description": "Left-hand side of the equation",
+          "type": "string"
+        },
+        "comp": {
+          "description": "Comparator symbol(s)",
+          "type": "string"
+        },
+        "rhs": {
+          "description": "Right-hand side of the equation",
+          "type": "string"
+        },
+        "study_id": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+
+    "study": {
+      "description": "A detected study boundary within a multi-study paper",
+      "type": "object",
+      "required": ["study_id", "label", "root_section_id"],
+      "properties": {
+        "study_id": {
+          "description": "1-based study identifier",
+          "type": "integer"
+        },
+        "label": {
+          "description": "Original label, e.g. \"Study 1\", \"Experiment A\"",
+          "type": "string"
+        },
+        "root_section_id": {
+          "description": "Section where this study begins",
+          "type": "integer"
         }
       }
     }

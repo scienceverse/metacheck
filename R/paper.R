@@ -41,9 +41,9 @@ paper <- function(id = NULL, ...) {
       family = character(0),
       affiliation = character(0),
       email = character(0),
-      corresponding = character(0),
+      corresponding = logical(0),
       orcid = character(0),
-      role = character(0)
+      role = I(list())
     ),
     bib = data.frame(
       bib_id = integer(0),
@@ -63,7 +63,8 @@ paper <- function(id = NULL, ...) {
       edition = character(0),
       version = character(0),
       url = character(0),
-      text_id = integer(0)
+      text_id = integer(0),
+      match = I(list())
     ),
     eq = data.frame(
       text_id = integer(0),
@@ -120,26 +121,26 @@ paper <- function(id = NULL, ...) {
       contents = character(0),
       text_id = integer(0),
       study_id = integer(0)
-    ),
-    bib_matches = data.frame(
-      bib_id = integer(0),
-      source = character(0),
-      source_id = character(0),
-      match_score = numeric(0),
-      bib_type = character(0),
-      doi = character(0),
-      title = character(0),
-      authors = I(list()),
-      editors = I(list()),
-      publisher = character(0),
-      publication_year = integer(0),
-      container = character(0),
-      volume = character(0),
-      issue = character(0),
-      first_page = character(0),
-      last_page = character(0),
-      url = character(0)
-    )
+    )#,
+    # bib_matches = data.frame(
+    #   bib_id = integer(0),
+    #   source = character(0),
+    #   source_id = character(0),
+    #   match_score = numeric(0),
+    #   bib_type = character(0),
+    #   doi = character(0),
+    #   title = character(0),
+    #   authors = I(list()),
+    #   editors = I(list()),
+    #   publisher = character(0),
+    #   publication_year = integer(0),
+    #   container = character(0),
+    #   volume = character(0),
+    #   issue = character(0),
+    #   first_page = character(0),
+    #   last_page = character(0),
+    #   url = character(0)
+    # )
   )
 
   class(paper) <- c("scivrs_paper", "list")
@@ -253,92 +254,148 @@ test_paper <- function(text = LETTERS) {
 #'
 #' @examples
 #' paper <- list(paper_id = "Not a paper object")
-#' validate_paper(paper)
+#' paper_validate(paper)
 #'
 #' paper <- demopaper()
-#' validate_paper(paper)
-validate_paper <- function(paper) {
+#' paper_validate(paper)
+paper_validate <- function(paper) {
   json <- system.file("schema/paper.json", package = "metacheck")
-  schema <- jsonlite::read_json(json)
-  error <- FALSE
-  warning <- FALSE
+  schema <- jsonlite::read_json(json, simplifyVector = TRUE)
   error_msg <- c()
   warning_msg <- c()
 
   # check for required tables
-  paper_tables <- unlist(schema$required)
-  if (!all(paper_tables %in% names(paper))) {
-    missing <- setdiff(paper_tables, names(paper)) |>
+  req_tables <- schema$required
+  ok_tables <- names(schema$properties)
+  paper_tables <- names(paper)
+
+  if (!all(req_tables %in% paper_tables)) {
+    missing <- setdiff(req_tables, paper_tables) |>
       paste(collapse = ", ") |>
-      paste("The following tables are missing:\n", x = _)
+      sprintf("The following tables are missing:\n %s", x = _)
     error_msg <- c(error_msg, missing)
-    error <- TRUE
+  }
+
+  if (!all(paper_tables %in% ok_tables)) {
+    extra <- setdiff(paper_tables, ok_tables) |>
+      paste(collapse = ", ") |>
+      sprintf("The paper has extra tables:\n %s", x =_)
+    warning_msg <- c(warning_msg, extra)
   }
 
   # check required and optional columns for non-bib tables
-  tbls <- c("info", "author", "text", "url", "section",
-            "xref", "table", "fig", "eq")
-  defs <- c("info", "author", "sentence", "link", "section",
-            "xref", "table", "figure", "equation")
+  tbls <- setdiff(ok_tables, c("paper_id")) |>
+    intersect(names(paper))
 
-  sink <- mapply(\(tbl, def) {
+  type_map <- list(
+    "string" = "character",
+    "integer" = "integer",
+    "number" = "double",
+    "boolean" = "logical",
+    "array" = "list",
+    "object" = "list"
+  )
+
+  sink <- lapply(tbls, \(tbl) {
+    ref <- schema$properties[[tbl]]$`$ref` %||%
+      schema$properties[[tbl]]$items$`$ref`
+    def <- strsplit(ref, "/")[[1]][[3]]
+
     cols <- names(paper[[tbl]])
+    req <- schema$`$defs`[[def]]$required
     ok <- schema$`$defs`[[def]]$properties |> names()
-    req <- schema$`$defs`[[def]]$required |> unlist()
 
+    # error on required cols
     if (!all(req %in% cols)) {
       missing <- setdiff(req, cols) |>
         paste(collapse = ", ") |>
         sprintf("The %s table is missing required columns:\n %s", tbl, x =_)
       error_msg <<- c(error_msg, missing)
-      error <<- TRUE
     }
 
+    # warn on cols not in schema
     if (!all(cols %in% ok)) {
       extra <- setdiff(cols, ok) |>
         paste(collapse = ", ") |>
         sprintf("The %s table has extra columns:\n %s", tbl, x =_)
       warning_msg <<- c(warning_msg, extra)
-      warning <<- TRUE
     }
-  }, tbl = tbls, def = defs)
 
-  # bib table is a little more complex
-  cols <- names(paper$bib)
-  ok <- c(
-    schema$`$defs`$biblio$properties |> names(),
-    schema$`$defs`$biblio_ref$allOf[[2]]$properties |> names()
-  )
-  req <- c(
-    schema$`$defs`$biblio$required |> unlist(),
-    schema$`$defs`$biblio_ref$allOf[[2]]$required |> unlist()
-  )
+    # check column types
+    types <- schema$`$defs`[[def]]$properties |>
+      sapply(\(x) x$type[[1]])
 
-  if (!all(req %in% cols)) {
-    missing <- setdiff(req, cols) |>
-      paste(collapse = ", ") |>
-      sprintf("The bib table is missing required columns:\n %s", x =_)
-    error_msg <- c(error_msg, missing)
-    error <- TRUE
-  }
+    for (col in intersect(cols, ok)) {
+      schema_type <- types[[col]]
+      col_type <- typeof(paper[[tbl]][[col]])
 
-  if (!all(cols %in% ok)) {
-    extra <- setdiff(cols, ok) |>
-      paste(collapse = ", ") |>
-      sprintf("The bib table has extra columns:\n %s", x =_)
-    warning_msg <- c(warning_msg, extra)
-    warning <- TRUE
-  }
+      if (!type_map[[schema_type]] %in% col_type) {
+        type_mismatch <- sprintf(
+          "The %s column of the %s table is a %s type, but should be a %s type",
+          col, tbl, col_type, type_map[[schema_type]])
+        warning_msg <<- c(warning_msg, type_mismatch)
+      }
+    }
+  })
 
-  if (warning) {
+  if (length(warning_msg)) {
     warning(paste(warning_msg, collapse = "\n"))
   }
 
-  if (error) {
+  if (length(error_msg)) {
     stop(paste(error_msg, collapse = "\n"))
   }
 
+  # paper_check <- paper_coerce(paper)
+  # identical(paper, paper_check)
+
   return(TRUE)
+}
+
+
+#' Coerce paper object types
+#'
+#' Convert columns to the correct type
+#'
+#' @param paper  a paper object
+#'
+#' @returns a paper object
+#' @export
+paper_coerce <- function(paper) {
+  json <- system.file("schema/paper.json", package = "metacheck")
+  schema <- jsonlite::read_json(json, simplifyVector = TRUE)
+
+  type_func <- list(
+    "string" = as.character,
+    "integer" = as.integer,
+    "number" = as.double,
+    "boolean" =  as.logical
+  )
+
+  schema_tables <- names(schema$properties)
+  paper_tables <- names(paper)
+
+  schema_type <- schema$properties$paper_id$type |> setdiff("null")
+  paper$paper_id <- type_func[[schema_type]](paper$paper_id)
+
+  tbls <- intersect(paper_tables, schema_tables) |>
+    setdiff(c("paper_id"))
+
+  for (tbl in tbls) {
+    ref <- schema$properties[[tbl]]$`$ref` %||%
+      schema$properties[[tbl]]$items$`$ref`
+    def <- strsplit(ref, "/")[[1]][[3]]
+    prop <- schema$`$defs`[[def]]$properties
+    cols <- intersect(names(paper[[tbl]]), names(prop))
+    for (col in cols) {
+      schema_type <- prop[[col]]$type[[1]]
+      if (schema_type %in% names(type_func)) {
+        paper[[tbl]][[col]] <- type_func[[schema_type]](paper[[tbl]][[col]])
+      }
+    }
+  }
+
+  return(paper)
 }
 
 #' Detect a paper object

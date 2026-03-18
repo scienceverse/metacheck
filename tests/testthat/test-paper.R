@@ -7,20 +7,36 @@ test_that("paper", {
   paper <- paper()
   expect_s3_class(paper, "scivrs_paper")
   expect_match(paper$paper_id, "^[a-f0-9]{14}$")
-  expect_true(validate_paper(paper))
+  expect_true(paper_validate(paper))
 })
 
-test_that("validate_paper", {
-  expect_true(is.function(metacheck::validate_paper))
-  expect_no_error(helplist <- help(validate_paper, metacheck))
+test_that("paper_coerce", {
+  paper <- paper()
+  paper$info <- data.frame(
+    title = 1,
+    oecd_confidence = "20",
+    keywords = I(list(c("A", "B")))
+  )
+  paper$text$text_id <- double(0)
+  cpaper <- paper_coerce(paper)
 
-  expect_error(validate_paper(bad_arg))
+  expect_equal("character", typeof(cpaper$info$title))
+  expect_equal("double", typeof(cpaper$info$oecd_confidence))
+  expect_equal("integer", typeof(cpaper$text$text_id))
+  expect_equal("list", typeof(cpaper$info$keywords))
+})
+
+test_that("paper_validate", {
+  expect_true(is.function(metacheck::paper_validate))
+  expect_no_error(helplist <- help(paper_validate, metacheck))
+
+  expect_error(paper_validate(bad_arg))
 
   paper <- paper()
-  expect_true(validate_paper(paper))
+  expect_true(paper_validate(paper))
 
   paper <- list(paper_id = "not a paper")
-  expect_error(validate_paper(paper))
+  expect_error(paper_validate(paper))
 })
 
 
@@ -77,6 +93,7 @@ test_that("demo paper", {
   paper <- demopaper()
   expect_s3_class(paper, "scivrs_paper")
   expect_match(paper$info$title, "^To Err is Human")
+  expect_true(paper_validate(paper))
 })
 
 test_that("paper_table", {

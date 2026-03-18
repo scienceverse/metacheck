@@ -30,7 +30,7 @@ test_that("1 paper, NULL save_path, no CR lookup", {
   expect_s3_class(paper, "scivrs_paper")
   expect_equal(paper$bib$doi[[4]], "10.0000/0123456789")
   expect_false("bib_match" %in% names(paper))
-  expect_true(validate_paper(paper))
+  expect_true(paper_validate(paper))
 
   expect_equal(paper$info$keywords[[1]], NULL)
   expect_equal(paper$bib$authors[[1]]$family, c("Eagly", "Wood"))
@@ -46,7 +46,7 @@ test_that("1 paper, save_path, no CR lookup", {
   save_path <- withr::local_tempdir()
   json_path <- grobid_to_bibr(xml_file2, save_path)
   paper2 <- read(json_path)
-  expect_true(validate_paper(paper2))
+  expect_true(paper_validate(paper2))
   # JSON round-trip may add template columns, change int/numeric types,
   # or convert list columns to different representations
   compare_shared <- function(a, b) {
@@ -89,8 +89,8 @@ test_that("multiple papers, NULL save_path, no CR lookup", {
   )
   papers <- grobid_to_bibr(xml_file, save_path = NULL)
   expect_s3_class(papers, "scivrs_paperlist")
-  expect_true(validate_paper(papers[[1]]))
-  expect_true(validate_paper(papers[[2]]))
+  expect_true(paper_validate(papers[[1]]))
+  expect_true(paper_validate(papers[[2]]))
 })
 
 

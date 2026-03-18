@@ -239,33 +239,31 @@ bibr_convert <- function(file_path,
 #'
 #' @keywords internal
 read_bibr <- function(file_path) {
-  # legacy ZIP support
-  if (grepl("\\.zip$", file_path, ignore.case = TRUE)) {
-    return(.read_bibr_zip(file_path))
-  }
-
   # read JSON ----
-  data <- jsonlite::read_json(file_path, simplifyVector = TRUE)
+  data <- jsonlite::read_json(file_path,
+                              simplifyVector = TRUE,
+                              simplifyDataFrame = TRUE)
 
   paper <- paper()
   paper$paper_id <- data$paper_id
 
   # info ----
   info <- data$info
-  if (is.data.frame(info)) {
-    paper$info <- info
-  } else {
-    paper$info <- as.data.frame(info, stringsAsFactors = FALSE)
-  }
+  keywords <- info$keywords
+  info$keywords <- NA
+  zeros <- sapply(info, length) == 0
+  info[zeros] <- NA
+  paper$info <- as.data.frame(info)
+  paper$info$keywords <- I(list(as.vector(keywords)))
 
   # author ----
   if (!is.null(data$author) && length(data$author) > 0) {
-    paper$author <- as.data.frame(data$author, stringsAsFactors = FALSE)
+    paper$author <- as.data.frame(data$author)
   }
 
   # bib ----
   if (!is.null(data$bib) && length(data$bib) > 0) {
-    paper$bib <- as.data.frame(data$bib, stringsAsFactors = FALSE)
+    paper$bib <- as.data.frame(data$bib)
     paper$bib$authors <- .coerce_bib_authors(paper$bib$authors)
     if ("editors" %in% names(paper$bib)) {
       paper$bib$editors <- .coerce_bib_authors(paper$bib$editors)
@@ -274,85 +272,86 @@ read_bibr <- function(file_path) {
 
   # eq ----
   if (!is.null(data$eq) && length(data$eq) > 0) {
-    paper$eq <- as.data.frame(data$eq, stringsAsFactors = FALSE)
+    paper$eq <- as.data.frame(data$eq)
   }
 
   # fig ----
   if (!is.null(data$fig) && length(data$fig) > 0) {
-    paper$fig <- as.data.frame(data$fig, stringsAsFactors = FALSE)
+    paper$fig <- as.data.frame(data$fig)
   }
 
   # url ----
   if (!is.null(data$url) && length(data$url) > 0) {
-    paper$url <- as.data.frame(data$url, stringsAsFactors = FALSE)
+    paper$url <- as.data.frame(data$url)
   }
 
   # section ----
   if (!is.null(data$section) && length(data$section) > 0) {
-    paper$section <- as.data.frame(data$section, stringsAsFactors = FALSE)
+    paper$section <- as.data.frame(data$section)
   }
 
   # study ----
   if (!is.null(data$study) && length(data$study) > 0) {
-    paper$study <- as.data.frame(data$study, stringsAsFactors = FALSE)
+    paper$study <- as.data.frame(data$study)
   }
 
   # table ----
   if (!is.null(data$table) && length(data$table) > 0) {
-    paper$table <- as.data.frame(data$table, stringsAsFactors = FALSE)
+    paper$table <- as.data.frame(data$table)
   }
 
   # text ----
   if (!is.null(data$text) && length(data$text) > 0) {
-    paper$text <- as.data.frame(data$text, stringsAsFactors = FALSE)
+    paper$text <- as.data.frame(data$text)
   }
 
   # xref ----
   if (!is.null(data$xref) && length(data$xref) > 0) {
-    paper$xref <- as.data.frame(data$xref, stringsAsFactors = FALSE)
+    paper$xref <- as.data.frame(data$xref)
   }
 
   # bib_matches ----
-  if (!is.null(data$bib_matches) && length(data$bib_matches) > 0) {
-    paper$bib_matches <- as.data.frame(data$bib_matches, stringsAsFactors = FALSE)
-    if ("authors" %in% names(paper$bib_matches)) {
-      paper$bib_matches$authors <- .coerce_bib_authors(paper$bib_matches$authors)
-    }
-    if ("editors" %in% names(paper$bib_matches)) {
-      paper$bib_matches$editors <- .coerce_bib_authors(paper$bib_matches$editors)
-    }
-  }
+  # if (!is.null(data$bib_matches) && length(data$bib_matches) > 0) {
+  #   paper$bib_matches <- as.data.frame(data$bib_matches)
+  #   if ("authors" %in% names(paper$bib_matches)) {
+  #     paper$bib_matches$authors <- .coerce_bib_authors(paper$bib_matches$authors)
+  #   }
+  #   if ("editors" %in% names(paper$bib_matches)) {
+  #     paper$bib_matches$editors <- .coerce_bib_authors(paper$bib_matches$editors)
+  #   }
+  # }
 
   # ensure all expected columns exist and have correct types
   # (JSON may drop all-NA columns or read them back as logical)
-  template <- paper()
-  for (slot_name in names(template)) {
-    tmpl <- template[[slot_name]]
-    slot <- paper[[slot_name]]
-    if (is.data.frame(tmpl) && is.data.frame(slot) && nrow(slot) > 0) {
-      for (col in names(tmpl)) {
-        if (!col %in% names(slot)) {
-          # add missing column with appropriate NA type
-          if (is.list(tmpl[[col]])) {
-            slot[[col]] <- I(replicate(nrow(slot), NULL, simplify = FALSE))
-          } else {
-            slot[[col]] <- NA
-          }
-        }
-        # coerce all-NA logical columns to the template type
-        if (is.logical(slot[[col]]) && all(is.na(slot[[col]]))) {
-          tmpl_type <- typeof(tmpl[[col]])
-          if (tmpl_type == "integer") slot[[col]] <- NA_integer_
-          else if (tmpl_type == "double") slot[[col]] <- NA_real_
-          else if (tmpl_type == "character") slot[[col]] <- NA_character_
-          else if (tmpl_type == "list") {
-            slot[[col]] <- I(replicate(nrow(slot), NULL, simplify = FALSE))
-          }
-        }
-      }
-      paper[[slot_name]] <- slot
-    }
-  }
+  paper <- paper_coerce(paper)
+  # template <- paper()
+  # for (slot_name in names(template)) {
+  #   tmpl <- template[[slot_name]]
+  #   slot <- paper[[slot_name]]
+  #   if (is.data.frame(tmpl) && is.data.frame(slot) && nrow(slot) > 0) {
+  #     for (col in names(tmpl)) {
+  #       if (!col %in% names(slot)) {
+  #         # add missing column with appropriate NA type
+  #         if (is.list(tmpl[[col]])) {
+  #           slot[[col]] <- I(replicate(nrow(slot), NULL, simplify = FALSE))
+  #         } else {
+  #           slot[[col]] <- NA
+  #         }
+  #       }
+  #       # coerce all-NA logical columns to the template type
+  #       if (is.logical(slot[[col]]) && all(is.na(slot[[col]]))) {
+  #         tmpl_type <- typeof(tmpl[[col]])
+  #         if (tmpl_type == "integer") slot[[col]] <- NA_integer_
+  #         else if (tmpl_type == "double") slot[[col]] <- NA_real_
+  #         else if (tmpl_type == "character") slot[[col]] <- NA_character_
+  #         else if (tmpl_type == "list") {
+  #           slot[[col]] <- I(replicate(nrow(slot), NULL, simplify = FALSE))
+  #         }
+  #       }
+  #     }
+  #     paper[[slot_name]] <- slot
+  #   }
+  # }
 
   # fix urls with . at end
   if (nrow(paper$url) > 0) {
@@ -362,19 +361,6 @@ read_bibr <- function(file_path) {
   paper
 }
 
-
-#' Read legacy bibr ZIP file (Arrow format)
-#'
-#' @param file_path path to the zip file
-#'
-#' @returns a paper object
-#' @keywords internal
-.read_bibr_zip <- function(file_path) {
-  stop("Arrow ZIP format is no longer supported. ",
-       "Please re-process your paper with bibr to produce a JSON file, ",
-       "or use an older version of metacheck.",
-       call. = FALSE)
-}
 
 #' Read in grobid XML or bibr JSON
 #'
