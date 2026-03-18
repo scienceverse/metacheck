@@ -16,9 +16,9 @@ test_that("add_bib_match", {
   paper$bib <- data.frame(
     bib_id = 1,
     title = c("Not a real paper"),
-    author = "Not A Realname",
-    journal = c("Journal of Journals")
+    container = c("Journal of Journals")
   )
+  paper$bib$authors <- list(data.frame(given = "Not A", family = "Realname"))
   paper_bm <- add_bib_match(paper)
   expect_equal(paper_bm$bib_matches$bib_id, 1)
   expect_equal(paper_bm$bib_matches$match_score, NA_real_)
@@ -29,8 +29,11 @@ test_that("add_bib_match", {
     bib_id = 1:2,
     title = c("Facial resemblance enhances trust",
               "Trustworthy but not Lustworthy"),
-    author = "Lisa DeBruine",
-    journal = c("Proceedings of the Royal Society of London B")
+    container = c("Proceedings of the Royal Society of London B")
+  )
+  paper$bib$authors <- list(
+    data.frame(given = "Lisa", family = "DeBruine"),
+    data.frame(given = "Lisa", family = "DeBruine")
   )
   paper_bm <- add_bib_match(paper, 0)
 

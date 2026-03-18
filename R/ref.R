@@ -651,8 +651,8 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
   if (inherits(ref, "bibentry") || is.data.frame(ref)) {
     # TODO: take advantage of query.title, query.author, query.container-title
     title <- ref$title
-    author <- ref$author
-    container <- ref$journal %||% ref$booktitle
+    author <- format_bib_authors(ref$authors) %||% ref$author
+    container <- ref$container %||% ref$journal %||% ref$booktitle
 
     ref <- paste(author, collapse = ", ") |>
       paste(title, container, sep = "; ")
@@ -818,8 +818,8 @@ add_bib_match <- function(paper, min_score = 50) {
   # get search string, deduplicate, and look up
   refs <- paste(
     bib$title,
-    bib$author,
-    bib$journal %||% bib$booktitle,
+    format_bib_authors(bib$authors),
+    bib$container,
     sep = "; "
   )
   cr_data <- crossref_query(unique(refs), min_score = min_score)
@@ -831,40 +831,46 @@ add_bib_match <- function(paper, min_score = 50) {
     )
   }
 
+  # convert CrossRef author list to list of given/family data.frames
   if (is.null(cr_data$author)) {
-    authors <- NA_character_
+    authors <- replicate(nrow(cr_data),
+      data.frame(given = character(0), family = character(0)),
+      simplify = FALSE
+    )
   } else {
-    authors <- sapply(cr_data$author, \(a) {
-      paste(a$family, a$given, sep = ", ", collapse = "; ")
+    authors <- lapply(cr_data$author, \(a) {
+      if (is.null(a) || nrow(a) == 0) {
+        data.frame(given = character(0), family = character(0))
+      } else {
+        data.frame(
+          given = a$given %||% NA_character_,
+          family = a$family %||% NA_character_
+        )
+      }
     })
   }
 
-  # determine if container title is a journal or book
-  bibtypes <- bibtype_convert(cr_data$type) %||% NA_character_
-  cr_data$journal <- ifelse(bibtypes %in% c("book", "inbook"),
-                            NA, cr_data$`container-title` %||% NA_character_)
-  cr_data$booktitle <- ifelse(bibtypes %in% c("book", "inbook"),
-                              cr_data$`container-title` %||% NA_character_, NA)
-
   bib_match <- data.frame(
-    ref            = unique(refs),
-    source         = "crossref",
-    source_id      = "",
-    match_score    = cr_data$score %||% NA_real_,
-    type           = bibtype_convert(cr_data$type) %||% NA_character_,
-    doi            = cr_data$DOI %||% NA_character_,
-    title          = cr_data$title %||% NA_character_,
-    author         = authors %||% NA_character_,
-    journal        = cr_data$journal %||% NA_character_,
-    year           = cr_data$year %||% NA_real_,
-    volume         = cr_data$volume %||% NA_character_,
-    issue          = cr_data$issue %||% NA_character_,
-    first_page     = cr_data$first_page %||% NA_character_,
-    last_page      = cr_data$last_page %||% NA_character_,
-    booktitle      = cr_data$booktitle %||% NA_character_,
-    editor         = cr_data$editor %||% NA_character_,
-    publisher      = cr_data$publisher %||% NA_character_,
-    url            = cr_data$URL %||% NA_character_
+    ref              = unique(refs),
+    source           = "crossref",
+    source_id        = "",
+    match_score      = cr_data$score %||% NA_real_,
+    bib_type         = bibtype_convert(cr_data$type) %||% NA_character_,
+    doi              = cr_data$DOI %||% NA_character_,
+    title            = cr_data$title %||% NA_character_,
+    publisher        = cr_data$publisher %||% NA_character_,
+    publication_year = cr_data$year %||% NA_integer_,
+    container        = cr_data$`container-title` %||% NA_character_,
+    volume           = cr_data$volume %||% NA_character_,
+    issue            = cr_data$issue %||% NA_character_,
+    first_page       = cr_data$first_page %||% NA_character_,
+    last_page        = cr_data$last_page %||% NA_character_,
+    url              = cr_data$URL %||% NA_character_
+  )
+  bib_match$authors <- authors
+  bib_match$editors <- replicate(nrow(bib_match),
+    data.frame(given = character(0), family = character(0)),
+    simplify = FALSE
   )
 
   # re-duplicate and add IDs
@@ -1327,7 +1333,7 @@ bib_add_dois <- function(bib, strict = TRUE) {
       expr = {
         info <- openalex_query(
           title = bib$title[[i]],
-          source = bib$journal[[i]],
+          source = bib$container[[i]],
           authors = bib$authors[[i]],
           strict = strict
         )
