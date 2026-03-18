@@ -63,6 +63,8 @@ read_data_head <- function(path, n_rows = 3) {
       NULL   # unsupported
     )
   }, error = function(e) {
+    # Re-throw time-limit errors so callers can detect and report timeouts.
+    if (grepl("time limit", conditionMessage(e), ignore.case = TRUE)) stop(e)
     warning("Could not read ", basename(path), ": ", conditionMessage(e))
     NULL
   })

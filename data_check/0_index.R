@@ -41,6 +41,7 @@ AGGREGATE_EXT_OVERRIDE <- c(
 LLM_BATCH_SIZE  <- 20
 N_DATA_READ     <- 5
 MAX_TOTAL_DATA_MB <- 10 * 1024  # 10 GB total data read cap per paper across all data files
+MAX_FILE_READ_SEC <- 5 * 60    # per-file read timeout (seconds); file is skipped if exceeded
 VALID_COL_TYPES <- c("continuous", "binary", "categorical", "ordinal", "date", "id",
                      "text", "continuous_comma_decimal", "continuous_outliers_excluded",
                      "empty", "unknown")
@@ -488,7 +489,20 @@ run_index <- function(paper_id = NA, download = TRUE) {
       }
       return(NULL)
     }
-    df <- read_data_head(path, n_rows = Inf)
+    timed_out <- FALSE
+    df <- tryCatch({
+      setTimeLimit(elapsed = MAX_FILE_READ_SEC, transient = TRUE)
+      result <- read_data_head(path, n_rows = Inf)
+      setTimeLimit(elapsed = Inf, transient = FALSE)
+      result
+    }, error = function(e) {
+      setTimeLimit(elapsed = Inf, transient = FALSE)
+      timed_out <<- TRUE
+      message("  skipping (timed out after ", round(MAX_FILE_READ_SEC / 60), " min): ",
+              basename(path))
+      NULL
+    })
+    if (timed_out) return(NULL)
     if (is.null(df) || ncol(df) == 0) {
       message("  skipping (unreadable or empty): ", basename(path))
       return(NULL)
