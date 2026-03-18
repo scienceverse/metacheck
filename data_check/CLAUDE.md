@@ -1,6 +1,6 @@
 # data_check Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-03-17
+Auto-generated from all feature plans. Last updated: 2026-03-18
 
 ## Active Technologies
 - R (base R only — no new packages; `haven`/`readxl`/`jsonlite` already present) + `llm_batch()`, `extract_json()` (existing helpers in `helper.R`); `jsonlite::fromJSON` (005-codebook-column-labelling)
@@ -17,6 +17,8 @@ Auto-generated from all feature plans. Last updated: 2026-03-17
 - CSV files; `outputs/<paper_id>/columns.csv` restored in-place (011-merge-columns-output)
 - R (base R only — no new packages) + `0_index.R`, `2_codebook_label.R`, `helper.R` — all already presen (012-single-dataset-runner)
 - CSV files on local filesystem under `data_check/outputs/<paper_id>/` (012-single-dataset-runner)
+- R (base R only — no new packages) + `0_index.R`, `helper.R` — both already present; no external packages added (013-fix-r-file-misclassification)
+- CSV files on local filesystem (`outputs/<paper_id>/`) (013-fix-r-file-misclassification)
 
 - R (base R, no new packages) + `helper.R` (`classify_col_type_rules()`), `0_index.R` (`COLUMN_TYPE_PROMPT`, `run_index()`) (004-reduce-unknown-coltypes)
 
@@ -36,9 +38,9 @@ tests/
 R (base R, no new packages): Follow standard conventions
 
 ## Recent Changes
+- 013-fix-r-file-misclassification: Added R (base R only — no new packages) + `0_index.R`, `helper.R` — both already present; no external packages added
 - 012-single-dataset-runner: Added R (base R only — no new packages) + `0_index.R`, `2_codebook_label.R`, `helper.R` — all already presen
 - 010-fix-label-ambiguity: Added R (base R only, no new packages) + `metacheck` (`llm()`), `jsonlite` (`fromJSON`, `extract_json`) — all already presen
-- 009-multi-format-codebooks: Added R (base R + already-installed packages: `officer`, `pdftools`, `haven`, `readxl`) + `officer` (DOCX), `pdftools` (PDF) — both already installed
 
 
 <!-- MANUAL ADDITIONS START -->

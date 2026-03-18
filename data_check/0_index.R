@@ -22,8 +22,26 @@ llm_model("ollama/gpt-oss:20b-cloud")
 DATA_DIR        <- "./data_check/data"
 OUTPUT_DIR      <- "./data_check/outputs"
 ARCHIVE_EXTS    <- c("zip", "gz", "tar", "tgz", "bz2", "xz")
+# Extension-based type overrides applied after aggregate sentinel expansion.
+# Maps lowercase file extension → definitive type for unambiguous file kinds.
+# Extensions absent from this map (e.g. txt, dat, rda) retain the sentinel's
+# inherited type unchanged.
+AGGREGATE_EXT_OVERRIDE <- c(
+  r = "code", rmd = "code", qmd = "code", py = "code", m = "code",
+  do = "code", sps = "code", jl = "code", js = "code", sh = "code",
+  bash = "code", pl = "code", rb = "code", cpp = "code", c = "code",
+  h = "code", java = "code", scala = "code", sql = "code",
+  jpg = "asset", jpeg = "asset", png = "asset", gif = "asset",
+  bmp = "asset", tiff = "asset", tif = "asset", svg = "asset",
+  mp4 = "asset", avi = "asset", mov = "asset", mp3 = "asset",
+  wav = "asset", flac = "asset",
+  csv = "data", sav = "data", dta = "data", sas7bdat = "data",
+  xlsx = "data", xls = "data", rds = "data"
+)
 LLM_BATCH_SIZE  <- 20
 N_DATA_READ     <- 5
+MAX_TOTAL_DATA_MB <- 10 * 1024  # 10 GB total data read cap per paper across all data files
+MAX_FILE_READ_SEC <- 5 * 60    # per-file read timeout (seconds); file is skipped if exceeded
 VALID_COL_TYPES <- c("continuous", "binary", "categorical", "ordinal", "date", "id",
                      "text", "continuous_comma_decimal", "continuous_outliers_excluded",
                      "empty", "unknown")
@@ -151,6 +169,7 @@ run_index <- function(paper_id = NA, download = TRUE) {
 
   sanitize_name <- function(name) {
     words <- strsplit(trimws(name), "\\s+")[[1]]
+    words <- gsub("[^A-Za-z0-9_\\-]", "", words)  # strip ; : ? and other special chars
     words <- words[nchar(words) > 0]
     paste(head(words, MAX_DIR_WORDS), collapse = "_")
   }
@@ -163,7 +182,7 @@ run_index <- function(paper_id = NA, download = TRUE) {
       d <- all_dirs[i]
       if (!dir.exists(d)) next
       dname <- basename(d)
-      if (!grepl(" ", dname)) next
+      if (!grepl("[^A-Za-z0-9_.\\-]", dname)) next  # skip if already clean
       new_name <- sanitize_name(dname)
       new_path <- file.path(dirname(d), new_name)
       if (new_path != d && !file.exists(new_path)) {
@@ -241,6 +260,42 @@ run_index <- function(paper_id = NA, download = TRUE) {
     # Refresh file list after explosion
     files <- drop_git(list.files(target_dir, full.names = TRUE, recursive = TRUE))
     files <- files[!(tolower(tools::file_ext(files)) %in% ARCHIVE_EXTS)]
+  }
+
+  # ── 3c. Remove duplicate files ──────────────────────────────────────────────
+  # Files with the same basename AND byte-size are candidate duplicates.
+  # For text-based formats (csv/tsv/txt/dat), confirm by comparing the first
+  # 3 lines; for other formats, name+size alone is treated as sufficient.
+  # Duplicates are dropped from 'files' before LLM classification so they
+  # don't consume LLM calls or column-extraction time. Only the first
+  # occurrence of each duplicate group is kept.
+  finfo       <- file.info(files)
+  dedup_key   <- paste(basename(files), finfo$size, sep = "\01")
+  is_dup_cand <- duplicated(dedup_key) | duplicated(dedup_key, fromLast = TRUE)
+
+  if (any(is_dup_cand)) {
+    text_exts <- c("csv", "tsv", "txt", "dat")
+    dup_files <- character(0)
+
+    for (k in unique(dedup_key[is_dup_cand])) {
+      group <- files[dedup_key == k]
+      ext   <- tolower(tools::file_ext(group[1]))
+      if (ext %in% text_exts) {
+        fingerprints <- vapply(group, function(p) {
+          tryCatch(paste(readLines(p, n = 3L, warn = FALSE), collapse = "\n"),
+                   error = function(e) "")
+        }, character(1))
+        dup_files <- c(dup_files, group[duplicated(fingerprints)])
+      } else {
+        dup_files <- c(dup_files, group[-1L])   # keep first, discard rest
+      }
+    }
+
+    if (length(dup_files) > 0) {
+      message("── Removed ", length(dup_files), " duplicate file(s) (same name, size",
+              ", and content)")
+      files <- setdiff(files, dup_files)
+    }
   }
 
   # ── 4. Build relative-path tree ─────────────────────────────────────────────
@@ -371,6 +426,13 @@ run_index <- function(paper_id = NA, download = TRUE) {
       )
     })
     agg_expanded_df <- do.call(rbind, agg_expanded)
+    # Apply extension-based type correction for files expanded from aggregates.
+    # Files with unambiguous extensions (e.g. .R → code, .jpeg → asset) get the
+    # correct type regardless of what the LLM assigned to the sentinel.
+    agg_ext  <- tolower(tools::file_ext(agg_expanded_df$rel_path))
+    override <- AGGREGATE_EXT_OVERRIDE[agg_ext]
+    to_override <- !is.na(override)
+    agg_expanded_df$type[to_override] <- override[to_override]
   } else {
     agg_expanded_df <- NULL
   }
@@ -406,17 +468,47 @@ run_index <- function(paper_id = NA, download = TRUE) {
 
   MAX_FILE_MB <- 500  # skip data files larger than this
 
+  # Mutable accumulator — tracks cumulative MB read so far for this paper.
+  # Using an environment so the closure inside extract_column_info can update it.
+  .read_state <- new.env(parent = emptyenv())
+  .read_state$mb_read   <- 0
+  .read_state$limit_hit <- FALSE
+
   extract_column_info <- function(path, rel_path, group) {
     file_mb <- file.info(path)$size / 1048576
     if (!is.na(file_mb) && file_mb > MAX_FILE_MB) {
       message("  skipping (too large: ", round(file_mb), " MB): ", basename(path))
       return(NULL)
     }
-    df <- read_data_head(path, n_rows = Inf)
+    # Aggregate data cap: skip this file if adding it would exceed the per-paper limit.
+    if (!is.na(file_mb) && (.read_state$mb_read + file_mb) > MAX_TOTAL_DATA_MB) {
+      if (!.read_state$limit_hit) {
+        message("  stopping column extraction: total data read would exceed ",
+                round(MAX_TOTAL_DATA_MB / 1024, 0), " GB limit (",
+                round(.read_state$mb_read / 1024, 1), " GB already read)")
+        .read_state$limit_hit <- TRUE
+      }
+      return(NULL)
+    }
+    timed_out <- FALSE
+    df <- tryCatch({
+      setTimeLimit(elapsed = MAX_FILE_READ_SEC, transient = TRUE)
+      result <- read_data_head(path, n_rows = Inf)
+      setTimeLimit(elapsed = Inf, transient = FALSE)
+      result
+    }, error = function(e) {
+      setTimeLimit(elapsed = Inf, transient = FALSE)
+      timed_out <<- TRUE
+      message("  skipping (timed out after ", round(MAX_FILE_READ_SEC / 60), " min): ",
+              basename(path))
+      NULL
+    })
+    if (timed_out) return(NULL)
     if (is.null(df) || ncol(df) == 0) {
       message("  skipping (unreadable or empty): ", basename(path))
       return(NULL)
     }
+    if (!is.na(file_mb)) .read_state$mb_read <- .read_state$mb_read + file_mb
 
     auto_named <- grepl("^\\.\\.\\.\\d+$", names(df))
     if (mean(auto_named) > 0.5) {
