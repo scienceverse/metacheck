@@ -62,8 +62,14 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
   }
 
   ## get DOIs from crossref ----
-  table <- crossref_query(bib$bib_text[dois_to_look_up], crossref_min_score)
-  table$bib_text <- bib$bib_text[dois_to_look_up]
+  ref_strings <- paste(
+    bib$title[dois_to_look_up],
+    format_bib_authors(bib$authors[dois_to_look_up]),
+    bib$container[dois_to_look_up],
+    sep = "; "
+  )
+  table <- crossref_query(ref_strings, crossref_min_score)
+  table$ref_string <- ref_strings
   table$paper_id <- bib$paper_id[dois_to_look_up]
   table$bib_id <- bib$bib_id[dois_to_look_up]
 
@@ -82,7 +88,7 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
   # summary_table ----
   summary_table <- dplyr::summarise(table,
     .by = paper_id,
-    refs_checked = sum(!is.na(bib_text)),
+    refs_checked = sum(!is.na(ref_string)),
     doi_found = sum(doi_found)
   )
 
@@ -105,10 +111,10 @@ ref_doi_check <- function(paper, crossref_min_score = 50) {
   ## found table ----
 
   if (any(table$doi_found)) {
-    found_table <- table[table$doi_found, c("DOI", "score", "bib_text"), drop = FALSE]
+    found_table <- table[table$doi_found, c("DOI", "score", "ref_string"), drop = FALSE]
     found_table$score <- round(found_table$score)
     found_table$DOI <- link(found_table$DOI, type = "doi")
-    names(found_table) <- c("Found DOI", "Match Score", "Original Reference")
+    names(found_table) <- c("Found DOI", "Match Score", "Reference")
   } else {
     found_table <- NULL
   }
