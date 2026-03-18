@@ -286,7 +286,6 @@ grobid_to_bibr <- function(xml_file,
 
   paper$info <- data.frame(
     title = title %||% "",
-    abstract = abstract,
     keywords = I(list(keywords)),
     doi = doi,
     file_hash = file_hash,
@@ -670,7 +669,7 @@ tei_xrefs <- function(xml, text_table) {
     dplyr::select(xref_id, xref_type, contents, text_id, text) |>
     dplyr::mutate(xref_type = dplyr::case_match(xref_type,
                                                 "bibr" ~ "bib",
-                                                "figure" ~ "fig",
+                                                "figure" ~ "figure",
                                                 "table" ~ "tbl"),
                   xref_id = suppressWarnings(gsub("[a-z]", "", xref_id) |>
                                                as.integer()))

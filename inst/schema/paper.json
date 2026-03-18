@@ -31,7 +31,7 @@
       "type": "array",
       "items": { "$ref": "#/$defs/equation" }
     },
-    "fig": {
+    "figure": {
       "type": "array",
       "items": { "$ref": "#/$defs/figure" },
       "uniqueItems": true
@@ -44,11 +44,6 @@
     "section": {
       "type": "array",
       "items": { "$ref": "#/$defs/section" },
-      "uniqueItems": true
-    },
-    "study": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/study" },
       "uniqueItems": true
     },
     "table": {
@@ -74,7 +69,7 @@
     "author",
     "bib",
     "eq",
-    "fig",
+    "figure",
     "url",
     "section",
     "table",
@@ -89,7 +84,6 @@
       "type": "object",
       "required": [
         "title",
-        "abstract",
         "keywords",
         "doi",
         "file_hash",
@@ -99,7 +93,6 @@
       ],
       "properties": {
         "title": { "type": "string" },
-        "abstract": { "type": ["string", "null"] },
         "keywords": {
           "type": "array",
           "items": { "type": "string" }
@@ -386,18 +379,14 @@
         "rhs": {
            "description": "Right-hand side of the equation",
           "type": "string"
-        },
-        "study_id": {
-          "description": "Study ID for multi-study papers",
-          "type": ["integer", "null"]
         }
       }
     },
     "figure": {
       "type": "object",
-      "required": [ "fig_id", "section_id"],
+      "required": [ "figure_id", "section_id"],
       "properties": {
-        "fig_id": {
+        "figure_id": {
           "description": "A unique ID for each figure",
           "type": "integer"
         },
@@ -413,10 +402,6 @@
         "page_number": {
           "type": ["integer", "null"],
           "description": "The page number of the original document"
-        },
-        "study_id": {
-          "description": "Study ID for multi-study papers",
-          "type": ["integer", "null"]
         }
       }
     },
@@ -466,25 +451,6 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1
-        },
-        "study_id": {
-          "description": "Study ID for multi-study papers",
-          "type": ["integer", "null"]
-        }
-      }
-    },
-    "study": {
-      "type": "object",
-      "required": ["study_id", "label"],
-      "properties": {
-        "study_id": {
-          "type": "integer"
-        },
-        "label": {
-          "type": "string"
-        },
-        "root_section_id": {
-          "type": ["integer", "null"]
         }
       }
     },
@@ -499,10 +465,6 @@
         "page_number": {
           "type": ["integer", "null"],
           "description": "The page number of the original document where the sentence starts"
-        },
-        "study_id": {
-          "description": "Study ID for multi-study papers",
-          "type": ["integer", "null"]
         }
       }
     },
@@ -533,10 +495,6 @@
         "page_number": {
           "type": ["integer", "null"],
           "description": "The page number of the original document"
-        },
-        "study_id": {
-          "description": "Study ID for multi-study papers",
-          "type": ["integer", "null"]
         }
       }
     },
@@ -561,10 +519,6 @@
         "text_id": {
           "type": "integer",
           "description": "The ID from the text table for the sentence containing the cross-reference."
-        },
-        "study_id": {
-          "description": "Study ID for multi-study papers",
-          "type": ["integer", "null"]
         }
       }
     }

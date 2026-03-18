@@ -117,7 +117,7 @@ test_that("read_bibr", {
   expect_s3_class(paper, "scivrs_paper")
   obs <- names(paper)
   exp <- c("paper_id", "info", "author", "text", "url", "table",
-           "section", "bib", "xref", "fig", "eq")
+           "section", "bib", "xref", "figure", "eq")
   expect_contains(obs, exp)
   expect_match(paper$paper_id, "^[a-f0-9]{14,16}$")
 

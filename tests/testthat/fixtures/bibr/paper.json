@@ -47,9 +47,9 @@
       "items": { "$ref": "#/$defs/xref" }, 
       "uniqueItems": true
     },
-    "figs": {
+    "figure": {
       "type": "array",
-      "items": { "$ref": "#/$defs/fig" }, 
+      "items": { "$ref": "#/$defs/figure" },
       "uniqueItems": true
     },
     "tbls": {
@@ -73,7 +73,7 @@
     "bib",
     "bib_matches",
     "xrefs",
-    "figs",
+    "figure",
     "tbls",
     "equations"
   ],
@@ -278,7 +278,7 @@
             "endnote",
             "footnote",
             "tbl_cap",
-            "fig_cap",
+            "figure",
             "unknown"
           ]
         }, 
@@ -307,14 +307,14 @@
       "properties": {
         "xref_id": { 
           "type": "integer", 
-          "description": "The ID from the bib, tbl, fig, or section table (for footnotes)"
+          "description": "The ID from the bib, tbl, figure, or section table (for footnotes)"
         }, 
-        "xref_type": { 
+        "xref_type": {
           "type": "string",
           "enum": [
             "bib",
             "tbl",
-            "fig",
+            "figure",
             "footnote"
           ]
         }, 
@@ -458,13 +458,13 @@
         }
       }
     },
-    "fig": {
+    "figure": {
       "type": "object",
-      "required": [ "fig_id", "section_id"],
+      "required": [ "figure_id", "section_id"],
       "properties": {
-        "fig_id": {
+        "figure_id": {
           "description": "A unique ID for each figure",
-          "type": "integer" 
+          "type": "integer"
         },
         "section_id": {
           "description": "The ID from the sections table for this figure",

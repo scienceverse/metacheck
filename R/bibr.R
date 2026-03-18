@@ -277,9 +277,9 @@ read_bibr <- function(file_path) {
     paper$eq <- as.data.frame(data$eq, stringsAsFactors = FALSE)
   }
 
-  # fig ----
-  if (!is.null(data$fig) && length(data$fig) > 0) {
-    paper$fig <- as.data.frame(data$fig, stringsAsFactors = FALSE)
+  # figure ----
+  if (!is.null(data$figure) && length(data$figure) > 0) {
+    paper$figure <- as.data.frame(data$figure, stringsAsFactors = FALSE)
   }
 
   # url ----
@@ -290,11 +290,6 @@ read_bibr <- function(file_path) {
   # section ----
   if (!is.null(data$section) && length(data$section) > 0) {
     paper$section <- as.data.frame(data$section, stringsAsFactors = FALSE)
-  }
-
-  # study ----
-  if (!is.null(data$study) && length(data$study) > 0) {
-    paper$study <- as.data.frame(data$study, stringsAsFactors = FALSE)
   }
 
   # table ----
