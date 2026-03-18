@@ -13,13 +13,15 @@ paper_output_dir <- function(paper_id) {
 # Sniff the delimiter of a text file by counting candidate characters in the
 # first non-empty line.  Returns the most frequent one, defaulting to ",".
 sniff_delimiter <- function(path) {
-  line <- ""
+  line <- character(0)
   con  <- file(path, "r")
   on.exit(close(con))
   for (i in seq_len(10)) {
     line <- readLines(con, n = 1, warn = FALSE)
-    if (nchar(trimws(line)) > 0) break
+    if (length(line) == 0) break          # EOF: empty file
+    if (nchar(trimws(line)) > 0) break    # found a non-blank line
   }
+  if (length(line) == 0) return(",")     # empty file — return safe default
   candidates <- c(",", ";", "\t", "|")
   counts     <- vapply(candidates, function(d)
     nchar(line) - nchar(gsub(d, "", line, fixed = TRUE)), integer(1))
@@ -37,8 +39,10 @@ read_data_head <- function(path, n_rows = 3) {
       tsv  = ,
       dat  = {
         sep <- if (ext == "tsv") "\t" else sniff_delimiter(path)
-        read.delim(path, sep = sep, nrows = n_rows, check.names = FALSE,
-                   stringsAsFactors = FALSE)
+        suppressWarnings(
+          read.delim(path, sep = sep, nrows = n_rows, check.names = FALSE,
+                     stringsAsFactors = FALSE)
+        )
       },
       xlsx = ,
       xls  = readxl::read_excel(path, n_max = n_rows),

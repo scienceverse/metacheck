@@ -1,5 +1,17 @@
 # Progress Log
 
+## 2026-03-18
+
+### Completed ✅
+
+**013** — fix-r-file-misclassification (branch: `013-fix-r-file-misclassification`)
+- Add `AGGREGATE_EXT_OVERRIDE` constant to `0_index.R`: named vector mapping 40 file extensions to their definitive type (`code`, `asset`, or `data`)
+- Apply override after aggregate sentinel expansion in Step 7 of `run_index()`: files with unambiguous extensions (`.R`→code, `.jpeg`→asset, `.csv`→data, etc.) get the correct type regardless of what the LLM assigned to the sentinel
+- Root cause: sentinel type was inherited verbatim by all files in a collapsed aggregate folder; for paper `09567976211040491` this caused 378 files (incl. `.R` scripts and `.jpeg` images) to reach column extraction; fixed to 340 true data files
+- Fix `sniff_delimiter()` in `helper.R`: guard against `character(0)` returned by `readLines` on empty files — prevents "argument is of length zero" error on zero-byte CSVs (e.g. `PickupsBehavProf.csv`)
+- Suppress "incomplete final line" cosmetic warning from `read.table` inside `read_data_head()` with `suppressWarnings()`
+- Update `docs/pipeline.md` Step 5 and constants table
+
 ## 2026-03-17
 
 ### Completed ✅

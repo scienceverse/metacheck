@@ -46,9 +46,12 @@ Paper ID (character string)
            │  >200 paths (10 LLM calls × 20 batch size) → error: too_large
            ▼
 ┌─────────────────────┐
-│  5. LLM file        │  llm_batch() + classify_by_rules() in helper.R
+│  5. LLM file        │  llm_batch() in helper.R
 │     classification  │  Assigns: type (data/codebook/code/supplemental/doc/readme/asset/other)
 │                     │           group (ex1/ex2/pilot1/other/na)
+│                     │  Post-expansion override: after aggregate sentinels are expanded back
+│                     │  to individual files, AGGREGATE_EXT_OVERRIDE (0_index.R) corrects
+│                     │  inherited types for unambiguous extensions (.R→code, .jpg→asset, etc.)
 └──────────┬──────────┘
            │  only files with type = "data" continue
            ▼
@@ -127,6 +130,7 @@ Paper ID (character string)
 | `N_DATA_READ` | 5 | `0_index.R` | Rows sampled per data file |
 | `MAX_COL_TYPE_LLM_CALLS` | 5 | `0_index.R` | Max LLM calls for column classification (= 100 columns max) |
 | `AGGREGATE_THRESHOLD` | 50 | `0_index.R` | Files per folder above which a sentinel row replaces individual paths |
+| `AGGREGATE_EXT_OVERRIDE` | named vector | `0_index.R` | Extension → type map applied after sentinel expansion to correct inherited types |
 | `MAX_DIR_WORDS` | 5 | `0_index.R` | Directory name word limit before truncation |
 | `MAX_CODEBOOK_LLM_CALLS` | 3 | `2_codebook_label.R` | Max LLM calls per paper for codebook text parsing |
 | `MAX_CODEBOOK_FILE_MB` | 100 | `2_codebook_label.R` | Codebook files larger than this (MB) are skipped |
