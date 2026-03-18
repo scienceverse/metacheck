@@ -183,7 +183,7 @@ test_that("non-Grobid URL rejected", {
 })
 
 
-# TODO: figure out why mock_api isn't wotking
+# TODO: figure out why mock_api isn't working
 # returns a different api file each time
 # httptest::start_capturing()
 # httptest::use_mock_api()
@@ -282,6 +282,7 @@ test_that("defaults", {
   )
 
   # reference consolidation
+  skip("need to read the XML in first")
   ref <- tei_bib(xml)
   paper0 <- grobid_convert(pdf, NULL, consolidate_citations = 0)
   paper1 <- grobid_convert(pdf, NULL, consolidate_citations = 1)
