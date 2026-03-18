@@ -4,8 +4,24 @@ test_that("grobid_to_bibr", {
   expect_no_error(helplist <- help(grobid_to_bibr, metacheck))
 
   expect_error(grobid_to_bibr(NULL))
+})
 
-  # 1 paper, NULL save_path, no CR lookup
+test_that("1 paper, fails", {
+  xml_file <- test_path("fixtures", "problems", "corrupt.xml")
+  expect_error( paper <- grobid_to_bibr(xml_file, NULL) )
+})
+
+test_that("multiple paper, one fails", {
+  xml_file <- c(
+    test_path("fixtures", "formats", "preprint.pdf.tei.xml"),
+    test_path("fixtures", "problems", "corrupt.xml")
+  )
+  expect_warning( paper <- grobid_to_bibr(xml_file, NULL) )
+  expect_equal(length(paper), 1)
+})
+
+
+test_that("1 paper, NULL save_path, no CR lookup", {
   xml_file <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
   paper <- grobid_to_bibr(xml_file, NULL)
 
@@ -14,9 +30,19 @@ test_that("grobid_to_bibr", {
   expect_false("bib_match" %in% names(paper))
   expect_true(validate_paper(paper))
 
-  # 1 paper, save_path, no CR lookup
+  expect_equal(paper$info$keywords[[1]], NULL)
+  expect_equal(paper$bib$authors[[1]]$family, c("Eagly", "Wood"))
+  expect_equal(paper$bib$authors[[2]]$given, c("F", "S S"))
+})
+
+
+test_that("1 paper, save_path, no CR lookup", {
+  xml_file1 <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
+  paper1 <- grobid_to_bibr(xml_file1, NULL)
+
+  xml_file2 <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
   save_path <- withr::local_tempdir()
-  json_path <- grobid_to_bibr(xml_file, save_path)
+  json_path <- grobid_to_bibr(xml_file2, save_path)
   paper2 <- read(json_path)
   expect_true(validate_paper(paper2))
   # JSON round-trip may add template columns, change int/numeric types,
@@ -36,30 +62,37 @@ test_that("grobid_to_bibr", {
     expect_setequal(a, b)
   }
   suppressWarnings({
-    compare_shared(paper$info, paper2$info)
-    compare_shared(paper$author, paper2$author)
-    p1bib <- paper$bib; p2bib <- paper2$bib
+    compare_shared(paper1$info,    paper2$info)
+    compare_shared(paper1$author,  paper2$author)
+    compare_shared(paper1$eq,      paper2$eq)
+    compare_shared(paper1$fig,     paper2$fig)
+    compare_shared(paper1$url,     paper2$url)
+    compare_shared(paper1$section, paper2$section)
+    compare_shared(paper1$table,   paper2$table)
+    compare_shared(paper1$text,    paper2$text)
+    compare_shared(paper1$xref,    paper2$xref)
+
+    # authors not converting right yet?
+    p1bib <- paper1$bib; p2bib <- paper2$bib
     p1bib$authors <- NULL; p2bib$authors <- NULL
     compare_shared(p1bib, p2bib)
-    compare_shared(paper$eq, paper2$eq)
-    compare_shared(paper$fig, paper2$fig)
-    compare_shared(paper$url, paper2$url)
-    compare_shared(paper$section, paper2$section)
-    compare_shared(paper$table, paper2$table)
-    compare_shared(paper$text, paper2$text)
-    compare_shared(paper$xref, paper2$xref)
   })
+})
 
-  # multiple papers, NULL save_path, no CR lookup
+
+test_that("multiple papers, NULL save_path, no CR lookup", {
   xml_file <- c(
     test_path("fixtures", "formats", "preprint.pdf.tei.xml"),
     test_path("fixtures", "formats", "published.pdf.tei.xml")
   )
   papers <- grobid_to_bibr(xml_file, save_path = NULL)
   expect_s3_class(papers, "scivrs_paperlist")
+  expect_true(validate_paper(papers[[1]]))
+  expect_true(validate_paper(papers[[2]]))
+})
 
 
-  # multiple papers, save_path, no CR lookup
+test_that("multiple papers, save_path, no CR lookup", {
   xml_file <- c(
     test_path("fixtures", "formats", "preprint.pdf.tei.xml"),
     test_path("fixtures", "formats", "published.pdf.tei.xml")
@@ -69,14 +102,18 @@ test_that("grobid_to_bibr", {
   expect_equal(length(zip_path), 2)
   papers <- read(zip_path)
   expect_s3_class(papers, "scivrs_paperlist")
+})
 
-  # 1 paper, NULL save_path, CR lookup
+
+test_that("1 paper, NULL save_path, CR lookup", {
   skip_api("api.labs.crossref.org")
   xml_file <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
   paper_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
   expect_contains(names(paper_cr$bib_matches), c("doi", "source"))
+})
 
-  # multiple papers, NULL save_path, CR lookup
+
+test_that("multiple papers, NULL save_path, CR lookup", {
   xml_file <- c(
     test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml"),
     test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
@@ -86,16 +123,6 @@ test_that("grobid_to_bibr", {
   expect_contains(names(papers_cr[[2]]$bib_matches), c("doi", "source"))
 })
 
-test_that("grobid_to_bibr format", {
-  xml_file <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
-  paper <- grobid_to_bibr(xml_file, NULL)
-  expect_true(validate_paper(paper))
-
-  expect_equal(paper$info$keywords[[1]], NULL)
-  expect_equal(paper$bib$authors[[1]][[1]]$family, "Eagly")
-  expect_equal(paper$bib$authors[[1]][[2]]$family, "Wood")
-  expect_equal(paper$bib$authors[[2]][[1]]$given, "F")
-})
 
 test_that("read", {
   expect_true(is.function(metacheck::read))

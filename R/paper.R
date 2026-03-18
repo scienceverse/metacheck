@@ -177,6 +177,7 @@ paperlist <- function(..., merge_duplicates = FALSE) {
     if (all(is_paperlist)) {
       paperlist <- do.call(c, dots)
     } else {
+      print(dots)
       stop("The arguments must be paper objects or lists of paper objects")
     }
   }

@@ -204,18 +204,31 @@ grobid_to_bibr <- function(xml_file,
 
   if (length(xml_file) > 1) {
     pb <- pb(length(xml_file), "Converting :step [:bar] (:what) :current/:total")
+    errors <- 0
     paper <- lapply(xml_file, \(xml_file1) {
       what <- basename(xml_file1)
       pb$tick(0, list(step = "", what = what))
       p <- tryCatch(
         .grobid_to_bibr(xml_file = xml_file1, pb),
         error = \(e) {
+          errors <<- errors + 1
           logger("grobid_to_bibr", e$message)
           return(NULL)
         })
       pb$tick(1, list(step = "complete", what = what))
       p
-    }) |> paperlist()
+    })
+
+    if (errors > 0) {
+      warning("There ", plural(errors, "was", "were"), " ",
+              errors, " error", plural(errors),
+              "; use lastlog(", errors, ") to see them.")
+
+      # remove NULLS
+      paper <- Filter(Negate(is.null), paper)
+    }
+
+    paper <- paperlist(paper)
   } else {
     paper <- .grobid_to_bibr(xml_file)
   }
@@ -706,10 +719,10 @@ tei_bib <- function(xml) {
       lapply(\(x) x$author) |>
       lapply(\(x) {
         rows <- lapply(x, \(a) {
-          a <- unlist(a)
+          a <- unlist(a) |> as.list()
           data.frame(
-            given = a[["given"]] %||% NA_character_,
-            family = a[["family"]] %||% NA_character_
+            given = a$given %||% NA_character_,
+            family = a$family %||% NA_character_
           )
         })
         if (length(rows)) do.call(rbind, rows)

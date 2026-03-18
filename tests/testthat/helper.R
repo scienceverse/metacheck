@@ -10,6 +10,7 @@ apis <- normalizePath("apis")
 httptest::.mockPaths(apis)
 
 skip_api <- function(host = "google.com") {
+  skip("API")
   skip_on_cran()
   skip_on_covr()
   skip_if_offline(host)
@@ -17,6 +18,7 @@ skip_api <- function(host = "google.com") {
 
 # adjust to run LLM tests where wanted
 skip_llm <- function() {
+  skip("LLM")
   skip_on_cran()
   skip_on_covr()
   skip_if_offline()
@@ -25,6 +27,7 @@ skip_llm <- function() {
 
 # skip if requires OSF API
 skip_osf <- function() {
+  skip("OSF")
   skip_on_cran()
   skip_on_covr()
   skip_if_offline()
