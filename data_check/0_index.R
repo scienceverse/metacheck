@@ -169,6 +169,7 @@ run_index <- function(paper_id = NA, download = TRUE) {
 
   sanitize_name <- function(name) {
     words <- strsplit(trimws(name), "\\s+")[[1]]
+    words <- gsub("[^A-Za-z0-9_\\-]", "", words)  # strip ; : ? and other special chars
     words <- words[nchar(words) > 0]
     paste(head(words, MAX_DIR_WORDS), collapse = "_")
   }
@@ -181,7 +182,7 @@ run_index <- function(paper_id = NA, download = TRUE) {
       d <- all_dirs[i]
       if (!dir.exists(d)) next
       dname <- basename(d)
-      if (!grepl(" ", dname)) next
+      if (!grepl("[^A-Za-z0-9_.\\-]", dname)) next  # skip if already clean
       new_name <- sanitize_name(dname)
       new_path <- file.path(dirname(d), new_name)
       if (new_path != d && !file.exists(new_path)) {
