@@ -187,7 +187,11 @@ run_index <- function(paper_id = NA, download = TRUE) {
       new_path <- file.path(dirname(d), new_name)
       if (new_path != d && !file.exists(new_path)) {
         file.rename(d, new_path)
-        all_dirs <- sub(paste0("^", d, "/"), paste0(new_path, "/"), all_dirs)
+        old_prefix <- paste0(d, "/")
+        new_prefix <- paste0(new_path, "/")
+        needs_update <- startsWith(all_dirs, old_prefix)
+        all_dirs[needs_update] <- paste0(new_prefix,
+          substr(all_dirs[needs_update], nchar(old_prefix) + 1L, nchar(all_dirs[needs_update])))
       }
     }
   }

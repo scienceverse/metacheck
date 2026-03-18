@@ -12,6 +12,7 @@
 - Suppress "incomplete final line" cosmetic warning from `read.table` inside `read_data_head()` with `suppressWarnings()`
 - Update `docs/pipeline.md` Step 5 and constants table
 - Fix `sanitize_name()` in `0_index.R`: strip non-alphanumeric characters (`;`, `:`, `?`, etc.) from each word token after splitting on whitespace, so folder names like `I Hear My Voice; Therefore` → `I_Hear_My_Voice_Therefore` instead of `I_Hear_My_Voice;_Therefore`; also extend the trigger condition to fire for folders containing special characters even if they have no spaces
+- Fix regex crash in sanitize loop: `sub(paste0("^", d, "/"), ...)` used the folder path as a regex pattern, causing "Missing ')'" errors when folder names contained parentheses (e.g. `Follow-up_2020-05a_(Constructs_related_to`); replaced with `startsWith` + `substr` string operations
 
 ## 2026-03-17
 
