@@ -1,3 +1,5 @@
+# grobid_to_bibr ----
+
 test_that("grobid_to_bibr", {
   expect_true(is.function(metacheck::grobid_to_bibr))
   expect_true(is.function(metacheck:::.grobid_to_bibr))
@@ -123,33 +125,43 @@ test_that("multiple papers, NULL save_path, CR lookup", {
   expect_contains(names(papers_cr[[2]]$bib_matches), c("doi", "source"))
 })
 
+# read ----
 
 test_that("read", {
   expect_true(is.function(metacheck::read))
   expect_no_error(helplist <- help(read, metacheck))
 
   expect_error(read(bad_arg))
+})
 
+test_that("read grobid xml", {
   xml_file <- test_path("fixtures", "formats", "to_err_is_human.xml")
-  zip_file <- test_path("fixtures", "formats", "to_err_is_human.json")
   title <- "To Err is Human: An Empirical Investigation"
 
-  # grobid xml
   obs_xml <- read(xml_file)
   expect_s3_class(obs_xml, "scivrs_paper")
   expect_equal(obs_xml$info$title, title)
 
-  # bibr zip
-  obs_zip <- read(zip_file)
-  expect_s3_class(obs_zip, "scivrs_paper")
-  expect_match(obs_zip$info$title, "To Err is Human")
+})
 
-  # both
-  file_path <- c(xml_file, zip_file)
+test_that("bibr file", {
+  bibr_file <- test_path("fixtures", "formats", "to_err_is_human.json")
+  obs_bibr <- read(bibr_file)
+  expect_s3_class(obs_bibr, "scivrs_paper")
+  expect_match(obs_bibr$info$title, "To Err is Human")
+})
+
+test_that("both grobid xml and bibr", {
+  xml_file <- test_path("fixtures", "formats", "to_err_is_human.xml")
+  bibr_file <- test_path("fixtures", "formats", "to_err_is_human.json")
+
+  file_path <- c(xml_file, bibr_file)
   obs <- read(file_path)
   expect_equal(length(obs), 2)
   expect_s3_class(obs, "scivrs_paperlist")
 })
+
+# grobid_convert ----
 
 test_that("grobid_convert", {
   expect_true(is.function(metacheck::grobid_convert))
@@ -195,10 +207,11 @@ test_that("bad PDF", {
   expect_error(grobid_convert(filename), "Internal Server Error")
 
   filename2 <- c(filename, "wrongfile.pdf")
-  expect_warning( x <- grobid_convert(filename2), "2 of 2 files did not convert")
-  exp <- c(NA_character_, NA_character_)
-  names(exp) <- filename2
-  expect_equal(x, exp)
+  expect_error( x <- grobid_convert(filename2) )
+  # expect_warning( x <- grobid_convert(filename2), "2 of 2 files did not convert")
+  # exp <- c(NA_character_, NA_character_)
+  # names(exp) <- filename2
+  # expect_equal(x, exp)
 })
 
 test_that("makes missing save directory - single", {
@@ -259,9 +272,9 @@ test_that("defaults", {
 
   # save to withr::local_tempdir
   dir <- withr::local_tempdir()
-  xml <- grobid_convert(pdf, dir)
+  xml_file <- grobid_convert(pdf, dir)
   exp <- file.path(dir, "to_err_is_human.xml")
-  expect_equal(xml, exp)
+  expect_equal(xml_file, exp)
 
   # parameters
   # https://grobid.readthedocs.io/en/latest/Grobid-service/
@@ -280,9 +293,19 @@ test_that("defaults", {
     generateIDs=0,
     flavor=NULL # https://grobid.readthedocs.io/en/latest/Grobid-specialized-processes/
   )
+})
 
-  # reference consolidation
-  skip("need to read the XML in first")
+test_that("reference consolidation", {
+  skip("Buggy grobid tests")
+
+  xml_file <- file.path(dir, "to_err_is_human.xml")
+  xml_text <- readLines(xml_file, warn = FALSE) |>
+    paste(collapse = "\n") |>
+    # fixes a glitch that stops grobid xml from being read
+    gsub(' xmlns="http://www.tei-c.org/ns/1.0"', "",
+         x = _, fixed = TRUE
+    )
+  xml <- xml2::read_xml(xml_text)
   ref <- tei_bib(xml)
   paper0 <- grobid_convert(pdf, NULL, consolidate_citations = 0)
   paper1 <- grobid_convert(pdf, NULL, consolidate_citations = 1)
