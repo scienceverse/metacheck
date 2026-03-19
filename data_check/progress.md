@@ -4,6 +4,15 @@
 
 ### Completed ✅
 
+**015** — verbatim-codebook-labels (branch: `015-verbatim-codebook-labels`)
+- Update `CODEBOOK_PARSE_PROMPT` in `2_codebook_label.R` to instruct the LLM to copy label text verbatim from the codebook source rather than paraphrasing or summarising it; add explicit no-rephrase rule and no-fabrication rule for variables without a description
+
+## 2026-03-18
+
+### Completed ✅
+**Fix**
+- Increased LLM call count in codebooks to fully parse pdf's
+
 **fix** — latin1 encoding fallback in `read_data_head()` (branch: `dev`)
 - `read_data_head()` in `helper.R`: after reading csv/tsv/txt/dat with default encoding, detect invalid UTF-8 bytes via `iconv(..., from="UTF-8", to="UTF-8")`; if any character column has invalid bytes, re-read the file with `fileEncoding="latin1"`
 - Fixes crash `invalid multibyte string` when processing Windows-1252 encoded CSV files

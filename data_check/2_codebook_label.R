@@ -36,13 +36,14 @@ CODEBOOK_TYPES         <- c("codebook", "readme")
 
 CODEBOOK_PARSE_PROMPT <- 'You are extracting variable definitions from a psychology research codebook or README.
 Return a JSON array — one object per variable found.
-Each object: {"variable_name": "<exact variable name>", "label": "<human-readable description>", "experiment_context": "<experiment or study name if stated, else null>"}
+Each object: {"variable_name": "<exact variable name>", "label": "<verbatim description text copied from the codebook>", "experiment_context": "<experiment or study name if stated, else null>"}
 
 Rules:
 - variable_name: the exact code/name used in the data file (e.g. "rt", "subj_id", "condition")
-- label: a concise human-readable description of what the variable measures
+- label: copy the description text exactly as it appears in the codebook — do NOT paraphrase, summarise, or infer; preserve the original wording
+- Do NOT rephrase or summarise; if no description text is present for a variable, omit that variable entirely
 - experiment_context: if the variable is described under a heading like "Experiment 1" or "Study 2a", include that heading verbatim; otherwise null
-- Only include variables that have both a name and a description
+- Only include variables that have both a name and a description present in the source text
 - If the text contains no variable definitions, return an empty array: []
 - Output ONLY the JSON array. No notes, no text outside the array.'
 
