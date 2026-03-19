@@ -19,6 +19,8 @@ Auto-generated from all feature plans. Last updated: 2026-03-18
 - CSV files on local filesystem under `data_check/outputs/<paper_id>/` (012-single-dataset-runner)
 - R (base R only — no new packages) + `0_index.R`, `helper.R` — both already present; no external packages added (013-fix-r-file-misclassification)
 - CSV files on local filesystem (`outputs/<paper_id>/`) (013-fix-r-file-misclassification)
+- R (base R only — no new packages) + `readxl` (already present), `haven` (already present) — `read_data_head()` in `helper.R` unchanged (014-fix-multilevel-csv-headers)
+- CSV files on local filesystem — `outputs/<paper_id>/columns.csv`, `outputs/<paper_id>/structure.csv` (014-fix-multilevel-csv-headers)
 
 - R (base R, no new packages) + `helper.R` (`classify_col_type_rules()`), `0_index.R` (`COLUMN_TYPE_PROMPT`, `run_index()`) (004-reduce-unknown-coltypes)
 
@@ -38,9 +40,8 @@ tests/
 R (base R, no new packages): Follow standard conventions
 
 ## Recent Changes
+- 014-fix-multilevel-csv-headers: Added R (base R only — no new packages) + `readxl` (already present), `haven` (already present) — `read_data_head()` in `helper.R` unchanged
 - 013-fix-r-file-misclassification: Added R (base R only — no new packages) + `0_index.R`, `helper.R` — both already present; no external packages added
-- 012-single-dataset-runner: Added R (base R only — no new packages) + `0_index.R`, `2_codebook_label.R`, `helper.R` — all already presen
-- 010-fix-label-ambiguity: Added R (base R only, no new packages) + `metacheck` (`llm()`), `jsonlite` (`fromJSON`, `extract_json`) — all already presen
 
 
 <!-- MANUAL ADDITIONS START -->

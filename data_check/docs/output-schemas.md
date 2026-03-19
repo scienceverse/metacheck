@@ -54,7 +54,8 @@ One row per column in each data file classified as `type = "data"`.
 | `source_file` | character | Relative path to the source data file |
 | `filename` | character | Basename of the source file |
 | `group` | character | Experiment group inherited from `structure.csv` |
-| `column_name` | character | Column name as it appears in the data file |
+| `col_header_group` | character (nullable) | Condition/group label from the first header row, forward-filled across the span it covers. `NA` for files without multi-level headers or for columns preceding the first group label. |
+| `column_name` | character | Column name as it appears in the data file (sub-header row value for resolved multi-level files; original name otherwise) |
 | `sample_values` | character | First up to 5 non-NA values, pipe-separated (`\|`) |
 | `col_type` | character | Classified column type — see [Column Types](#column-types) |
 | `n_coerced` | integer | Values excluded during comma-decimal normalisation; `NA` when not applicable |

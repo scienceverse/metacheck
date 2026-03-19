@@ -48,6 +48,8 @@ VALID_COL_TYPES <- c("continuous", "binary", "categorical", "ordinal", "date", "
 MAX_COL_TYPE_LLM_CALLS <- 5L
 # Folders with more than this many files are treated as aggregate datasets
 AGGREGATE_THRESHOLD <- 50
+# Max rows to scan below row 1 for a usable sub-header in multi-level CSV files
+MULTILEVEL_HEADER_LOOKAHEAD <- 3L
 # Directory names longer than this many words are truncated; spaces → underscores
 MAX_DIR_WORDS   <- 5
 
@@ -515,10 +517,68 @@ run_index <- function(paper_id = NA, download = TRUE) {
     if (!is.na(file_mb)) .read_state$mb_read <- .read_state$mb_read + file_mb
 
     auto_named <- grepl("^\\.\\.\\.\\d+$", names(df))
+
+    # ── Multi-level header recovery ────────────────────────────────────────────
+    # Initialise col_header_group as all-NA (default when no multi-level structure).
+    col_header_group <- rep(NA_character_, ncol(df))
+
     if (mean(auto_named) > 0.5) {
-      message("  skipping (no proper header row, >50% auto-named columns): ",
-              basename(path))
-      return(NULL)
+      # Extract group labels from row-1 names and forward-fill across spans.
+      # "SHAM...3" → prefix "SHAM"; "...4" → "" → NA → filled from last real prefix.
+      row1_names   <- names(df)
+      raw_prefixes <- sub("\\.\\.\\.\\d+$", "", row1_names)
+      raw_prefixes[!nzchar(raw_prefixes)] <- NA_character_
+      last_grp <- NA_character_
+      col_header_group <- vapply(raw_prefixes, function(p) {
+        if (!is.na(p)) last_grp <<- p
+        last_grp
+      }, character(1))
+
+      # Branch 1: scan for a better sub-header row.
+      sub_header_row    <- NULL
+      current_auto_frac <- mean(auto_named)
+      for (i in seq_len(min(MULTILEVEL_HEADER_LOOKAHEAD, nrow(df)))) {
+        candidate      <- as.character(df[i, ])
+        cand_auto_frac <- mean(grepl("^\\.\\.\\.\\d+$", candidate))
+        # A real sub-header cell must be non-empty, non-NA, non-...N, and non-numeric.
+        # Pure numeric rows are data rows, not label rows.
+        has_real       <- any(!is.na(candidate) & nzchar(candidate) &
+                              candidate != "NA" &
+                              !grepl("^\\.\\.\\.\\d+$", candidate) &
+                              is.na(suppressWarnings(as.numeric(candidate))))
+        if (cand_auto_frac < current_auto_frac && has_real) {
+          sub_header_row <- i
+          break
+        }
+      }
+
+      if (!is.null(sub_header_row)) {
+        # Use sub-header values as column names.
+        # NA or empty cells fall back to the original ...N name (preserves uniqueness).
+        new_names           <- as.character(df[sub_header_row, ])
+        fallback            <- is.na(new_names) | !nzchar(new_names)
+        new_names[fallback] <- row1_names[fallback]
+        new_names           <- make.unique(new_names)
+        df                  <- df[(sub_header_row + 1):nrow(df), , drop = FALSE]
+        names(df)           <- new_names
+        # col_header_group is aligned column-wise; row slicing above does not affect it.
+        message("  multi-level header resolved (used row ", sub_header_row + 1,
+                " as header): ", basename(path))
+      } else {
+        # Branch 2: no sub-header found — group context not meaningful without a sub-header.
+        col_header_group <- rep(NA_character_, ncol(df))
+        has_any_real     <- any(!auto_named)
+        if (has_any_real) {
+          message("  multi-level header detected (partial labels retained): ",
+                  basename(path))
+          # proceed with df as-is
+        } else {
+          # skip: entirely placeholder header with no recoverable sub-header
+          message("  skipping (multi-level header, no usable sub-header found): ",
+                  basename(path))
+          return(NULL)
+        }
+      }
     }
 
     sample_vals <- vapply(df, function(col) {
@@ -615,6 +675,7 @@ run_index <- function(paper_id = NA, download = TRUE) {
         source_file          = rel_path,
         filename             = basename(path),
         group                = group,
+        col_header_group     = col_header_group,
         column_name          = names(df),
         sample_values        = sample_vals,
         col_type             = col_types,

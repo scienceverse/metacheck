@@ -4,6 +4,21 @@
 
 ### Completed ✅
 
+**014** — fix-multilevel-csv-headers (branch: `014-fix-multilevel-csv-headers`)
+- Replace the blanket `>50% ...N` skip rule with a two-branch recovery strategy in `extract_column_info()` in `0_index.R`
+- Branch 1 (sub-header found): scan first `MULTILEVEL_HEADER_LOOKAHEAD = 3` rows for a row with lower `...N` fraction AND non-numeric text labels; use its values as `column_name`; NA/empty sub-header cells fall back to the original `...N` placeholder; apply `make.unique()` for duplicate names
+- Branch 2 (partial labels, no sub-header): proceed with original column names as-is; `col_header_group = NA`
+- Skip only when header is entirely `...N` and no sub-header is found (genuinely headerless)
+- Add `col_header_group` column to `columns.csv`: forward-filled condition/group label from row-1 name prefixes (e.g. `SHAM...3` → `SHAM`); `NA` for all non-multi-level files
+- `column_name` is always the resolved raw variable name, enabling direct codebook matching with zero changes to `match_column_labels()`
+- Add `MULTILEVEL_HEADER_LOOKAHEAD <- 3L` constant to the constants block
+- Fix numeric-data-row false positive: sub-header candidate cells must contain non-numeric text (added `is.na(suppressWarnings(as.numeric(candidate)))` check)
+- Recovers 4 previously-skipped files across 2 papers (`09567976221147259`, `09567976231151581`)
+- Update `docs/output-schemas.md` — add `col_header_group` to `columns.csv` schema
+- Update `docs/pipeline.md` — add `MULTILEVEL_HEADER_LOOKAHEAD` to Key Constants table
+
+### Completed ✅
+
 **013** — fix-r-file-misclassification (branch: `013-fix-r-file-misclassification`)
 - Add `AGGREGATE_EXT_OVERRIDE` constant to `0_index.R`: named vector mapping 40 file extensions to their definitive type (`code`, `asset`, or `data`)
 - Apply override after aggregate sentinel expansion in Step 7 of `run_index()`: files with unambiguous extensions (`.R`→code, `.jpeg`→asset, `.csv`→data, etc.) get the correct type regardless of what the LLM assigned to the sentinel

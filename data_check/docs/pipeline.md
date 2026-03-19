@@ -134,6 +134,7 @@ Paper ID (character string)
 | `MAX_DIR_WORDS` | 5 | `0_index.R` | Directory name word limit before truncation |
 | `MAX_CODEBOOK_LLM_CALLS` | 3 | `2_codebook_label.R` | Max LLM calls per paper for codebook text parsing |
 | `MAX_CODEBOOK_FILE_MB` | 100 | `2_codebook_label.R` | Codebook files larger than this (MB) are skipped |
+| `MULTILEVEL_HEADER_LOOKAHEAD` | 3L | `0_index.R` | Max rows to scan below row 1 for a usable sub-header row in multi-level CSV files |
 
 ## Resource Limits
 
