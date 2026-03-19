@@ -59,6 +59,9 @@ Paper ID (character string)
 │  6. Read data       │  read_data_head(path, n_rows = 5) in helper.R
 │     heads           │  Formats: csv/tsv/txt/dat/xlsx/xls/sav/dta/sas7bdat/rds/rda/rdata
 │                     │  Limit: 500 MB per file; ggplot objects → NULL (skipped)
+│                     │  Encoding: csv/tsv/txt/dat read with default encoding; if any
+│                     │  character column contains invalid UTF-8 bytes, file is re-read
+│                     │  with fileEncoding="latin1" (handles Windows-1252 encoded files)
 └──────────┬──────────┘
            ▼
 ┌─────────────────────┐

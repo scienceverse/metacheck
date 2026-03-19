@@ -1,5 +1,14 @@
 # Progress Log
 
+## 2026-03-19
+
+### Completed ✅
+
+**fix** — latin1 encoding fallback in `read_data_head()` (branch: `dev`)
+- `read_data_head()` in `helper.R`: after reading csv/tsv/txt/dat with default encoding, detect invalid UTF-8 bytes via `iconv(..., from="UTF-8", to="UTF-8")`; if any character column has invalid bytes, re-read the file with `fileEncoding="latin1"`
+- Fixes crash `invalid multibyte string` when processing Windows-1252 encoded CSV files
+- Updated `docs/pipeline.md` step 6 to document the encoding fallback behaviour
+
 ## 2026-03-18
 
 ### Completed ✅

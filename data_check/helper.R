@@ -39,10 +39,22 @@ read_data_head <- function(path, n_rows = 3) {
       tsv  = ,
       dat  = {
         sep <- if (ext == "tsv") "\t" else sniff_delimiter(path)
-        suppressWarnings(
+        df  <- suppressWarnings(
           read.delim(path, sep = sep, nrows = n_rows, check.names = FALSE,
                      stringsAsFactors = FALSE)
         )
+        # If any character column contains invalid UTF-8 bytes (e.g. Windows-1252
+        # encoded files), retry with latin1 so downstream string ops don't crash.
+        has_invalid <- any(vapply(df, function(col) {
+          is.character(col) && any(is.na(iconv(col, from = "UTF-8", to = "UTF-8")))
+        }, logical(1)))
+        if (has_invalid) {
+          df <- suppressWarnings(
+            read.delim(path, sep = sep, nrows = n_rows, check.names = FALSE,
+                       stringsAsFactors = FALSE, fileEncoding = "latin1")
+          )
+        }
+        df
       },
       xlsx = ,
       xls  = readxl::read_excel(path, n_max = n_rows),
