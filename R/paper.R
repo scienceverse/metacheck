@@ -565,3 +565,29 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
 
   return(json_path)
 }
+
+
+#' View a figure image
+#'
+#' @param paper a paper object
+#' @param figure_id the id for the figure to show
+#'
+#' @returns plots the figure
+#' @export
+#'
+#' @examples
+#' paper <- demopaper()
+#' fig_image_view(paper, 1)
+#' fig_image_view(paper, 2)
+fig_image_view <- function(paper, figure_id = 1) {
+  figs <- paper$figure
+  b64 <- figs[figs$figure_id == figure_id[[1]], "image"]
+
+  if (length(b64) == 0 || is.na(b64)) return(NULL)
+
+  img_binary <- sub("^data:image/[^;]+;base64,", "", b64) |>
+    base64enc::base64decode()
+
+  img <- jpeg::readJPEG(img_binary)
+  plot(grDevices::as.raster(img))
+}

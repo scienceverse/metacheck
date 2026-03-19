@@ -124,8 +124,9 @@ test_that("read", {
   expect_no_error(helplist <- help(read, metacheck))
 
   expect_error(read(bad_arg))
+})
 
-  # single paper from legacy zip
+test_that("read - single paper", {
   file_path <- test_path("fixtures", "formats", "to_err_is_human.json")
   paper <- read(file_path)
 
@@ -137,23 +138,40 @@ test_that("read", {
   end_dot <- grepl("\\.$", paper$url$href)
   expect_true(all(!end_dot))
 
-  # vector of paths
+  expect_true(all(!is.na(paper$figure$image)))
+})
+
+test_that("read - no images", {
+  file_path <- test_path("fixtures", "formats", "to_err_is_human.json")
+  paper <- read(file_path, include_images = FALSE)
+
+  expect_true(paper_validate(paper))
+  expect_true(all(is.na(paper$figure$image)))
+})
+
+test_that("read - vector of paths", {
+  file_path <- test_path("fixtures", "formats", "to_err_is_human.json")
+  paper <- read(file_path)
+
   file_path <- c(
     test_path("fixtures", "formats", "to_err_is_human.json"),
     test_path("fixtures", "psychsci", "0956797613520608.json")
   )
   papers <- read(file_path)
   expect_s3_class(papers, "scivrs_paperlist")
-  expect_s3_class(papers[[1]], "scivrs_paper")
-  expect_s3_class(papers[[2]], "scivrs_paper")
+  expect_true(paper_validate(papers[[1]]))
+  expect_true(paper_validate(papers[[2]]))
 
   expect_equal(paper, papers[[1]])
   expect_equal(names(papers),
                c(papers[[1]]$paper_id, papers[[2]]$paper_id))
+})
 
-  # directory
+test_that("read - directory", {
   file_path <- test_path("fixtures", "psychsci")
-  ps <- read(file_path)
-  expect_s3_class(ps, "scivrs_paperlist")
-  expect_s3_class(ps[[1]], "scivrs_paper")
+  papers <- read(file_path)
+  expect_s3_class(papers, "scivrs_paperlist")
+  expect_true(paper_validate(papers[[1]]))
+  expect_true(paper_validate(papers[[2]]))
+  expect_true(paper_validate(papers[[3]]))
 })

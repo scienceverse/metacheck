@@ -233,12 +233,13 @@ bibr_convert <- function(file_path,
 #' Read bibr JSON file
 #'
 #' @param file_path path to the JSON file (or legacy ZIP file)
+#' @param include_images whether to include images in the figures table of the paper object (they make file size larger)
 #'
 #' @returns a paper object
 #' @export
 #'
 #' @keywords internal
-read_bibr <- function(file_path) {
+read_bibr <- function(file_path, include_images = TRUE) {
   # read JSON ----
   data <- jsonlite::read_json(file_path,
                               simplifyVector = TRUE,
@@ -279,6 +280,9 @@ read_bibr <- function(file_path) {
   # figure ----
   if (!is.null(data$figure) && length(data$figure) > 0) {
     paper$figure <- as.data.frame(data$figure)
+    if (!include_images) {
+      paper$figure$image <- NA_character_
+    }
   }
 
   # url ----
@@ -361,10 +365,11 @@ read_bibr <- function(file_path) {
 #' Read in grobid XML or bibr JSON
 #'
 #' @param file_path path to a directory containing XML and/or JSON files, or a vector of paths
+#' @param include_images whether to include images in the figures table of the paper object (they make file size larger)
 #'
 #' @returns a paper or paperlist
 #' @export
-read <- function(file_path) {
+read <- function(file_path, include_images = TRUE) {
   # handle directory or multiple files ----
   if (length(file_path) == 1 && dir.exists(file_path)) {
     dir_path <- file_path
@@ -378,7 +383,7 @@ read <- function(file_path) {
     pb$tick(1, list(what = basename(fp)))
     tryCatch({
       if (grepl("\\.json$", fp, ignore.case = TRUE)) {
-        read_bibr(file_path = fp)
+        read_bibr(fp, include_images)
       } else if (grepl("\\.xml$", fp, ignore.case = TRUE)) {
         .grobid_to_bibr(fp)
       }
