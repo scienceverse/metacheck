@@ -30,7 +30,7 @@ llm_model("ollama/gpt-oss:20b-cloud")
 
 OUTPUT_DIR             <- "./data_check/outputs"
 LLM_BATCH_SIZE         <- 20L   # shared constant — needed by llm_batch() in helper.R
-MAX_CODEBOOK_LLM_CALLS <- 3L    # max LLM calls per paper for codebook text parsing
+MAX_CODEBOOK_LLM_CALLS <- 10L   # max LLM calls per codebook file for text parsing
 MAX_CODEBOOK_FILE_MB   <- 100   # codebook files larger than this (MB) are skipped
 CODEBOOK_TYPES         <- c("codebook", "readme")
 

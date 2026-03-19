@@ -562,7 +562,7 @@ parse_codebook <- function(path) {
 # Shared LLM chunking loop used by parse_codebook() for both plain-text and
 # rich-text codebook sources.  Returns a data.frame or NULL.
 .run_llm_chunk_loop <- function(lines, src) {
-  chunks    <- split(lines, ceiling(seq_along(lines) / 40))
+  chunks    <- split(lines, ceiling(seq_along(lines) / 100))
   max_calls <- min(length(chunks), MAX_CODEBOOK_LLM_CALLS)
   all_vars  <- vector("list", max_calls)
 
