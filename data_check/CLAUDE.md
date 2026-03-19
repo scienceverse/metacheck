@@ -23,6 +23,8 @@ Auto-generated from all feature plans. Last updated: 2026-03-19
 - CSV files on local filesystem — `outputs/<paper_id>/columns.csv`, `outputs/<paper_id>/structure.csv` (014-fix-multilevel-csv-headers)
 - R (base R, no new packages) + `metacheck` (`llm()`), `jsonlite` — already presen (015-verbatim-codebook-labels)
 - CSV files on local filesystem — `outputs/<paper_id>/labels.csv`, `outputs/<paper_id>/codebook_coverage.csv` (015-verbatim-codebook-labels)
+- R (base R only — no new packages) + `haven`, `readxl`, `jsonlite` — all already present; not needed for this feature (read-only CSV reporting) (016-pipeline-quality-report)
+- CSV files on local filesystem — `bulk_summary.csv`, `codebook_summary.csv`, `outputs/<paper_id>/columns.csv`, `outputs/<paper_id>/codebook_coverage.csv` (016-pipeline-quality-report)
 
 - R (base R, no new packages) + `helper.R` (`classify_col_type_rules()`), `0_index.R` (`COLUMN_TYPE_PROMPT`, `run_index()`) (004-reduce-unknown-coltypes)
 
@@ -42,9 +44,9 @@ tests/
 R (base R, no new packages): Follow standard conventions
 
 ## Recent Changes
+- 016-pipeline-quality-report: Added R (base R only — no new packages) + `haven`, `readxl`, `jsonlite` — all already present; not needed for this feature (read-only CSV reporting)
+- 016-pipeline-quality-report: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 015-verbatim-codebook-labels: Added R (base R, no new packages) + `metacheck` (`llm()`), `jsonlite` — already presen
-- 014-fix-multilevel-csv-headers: Added R (base R only — no new packages) + `readxl` (already present), `haven` (already present) — `read_data_head()` in `helper.R` unchanged
-- 013-fix-r-file-misclassification: Added R (base R only — no new packages) + `0_index.R`, `helper.R` — both already present; no external packages added
 
 
 <!-- MANUAL ADDITIONS START -->

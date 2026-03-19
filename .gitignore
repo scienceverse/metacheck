@@ -1,4 +1,5 @@
 .Rproj.user
+data_check/quality_report_*.md
 inst/doc
 .Rhistory
 .Rdata
