@@ -254,7 +254,7 @@ read_bibr <- function(file_path) {
   zeros <- sapply(info, length) == 0
   info[zeros] <- NA
   paper$info <- as.data.frame(info)
-  paper$info$keywords <- I(list(as.vector(keywords)))
+  paper$info$keywords <- I(list(keywords))
 
   # author ----
   if (!is.null(data$author) && length(data$author) > 0) {

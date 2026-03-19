@@ -116,13 +116,14 @@ test_that("1 paper, NULL save_path, CR lookup", {
 
 
 test_that("multiple papers, NULL save_path, CR lookup", {
+  skip_api()
   xml_file <- c(
     test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml"),
     test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
   )
   papers_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
-  expect_contains(names(papers_cr[[1]]$bib_matches), c("doi", "source"))
-  expect_contains(names(papers_cr[[2]]$bib_matches), c("doi", "source"))
+  expect_contains(names(papers_cr[[1]]$bib$match), c("crossref"))
+  expect_contains(names(papers_cr[[2]]$bib$match), c("crossref"))
 })
 
 # read ----
