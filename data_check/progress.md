@@ -10,17 +10,14 @@
 ## 2026-03-18
 
 ### Completed ✅
-**Fix**
-- Increased LLM call count in codebooks to fully parse pdf's
+
+**fix** — increased LLM call count in codebooks
+- Increased LLM call count in codebooks to fully parse PDFs
 
 **fix** — latin1 encoding fallback in `read_data_head()` (branch: `dev`)
 - `read_data_head()` in `helper.R`: after reading csv/tsv/txt/dat with default encoding, detect invalid UTF-8 bytes via `iconv(..., from="UTF-8", to="UTF-8")`; if any character column has invalid bytes, re-read the file with `fileEncoding="latin1"`
 - Fixes crash `invalid multibyte string` when processing Windows-1252 encoded CSV files
 - Updated `docs/pipeline.md` step 6 to document the encoding fallback behaviour
-
-## 2026-03-18
-
-### Completed ✅
 
 **014** — fix-multilevel-csv-headers (branch: `014-fix-multilevel-csv-headers`)
 - Replace the blanket `>50% ...N` skip rule with a two-branch recovery strategy in `extract_column_info()` in `0_index.R`
@@ -34,8 +31,6 @@
 - Recovers 4 previously-skipped files across 2 papers (`09567976221147259`, `09567976231151581`)
 - Update `docs/output-schemas.md` — add `col_header_group` to `columns.csv` schema
 - Update `docs/pipeline.md` — add `MULTILEVEL_HEADER_LOOKAHEAD` to Key Constants table
-
-### Completed ✅
 
 **013** — fix-r-file-misclassification (branch: `013-fix-r-file-misclassification`)
 - Add `AGGREGATE_EXT_OVERRIDE` constant to `0_index.R`: named vector mapping 40 file extensions to their definitive type (`code`, `asset`, or `data`)
