@@ -4,7 +4,7 @@
 pdf <- "data-raw/psychsci/pdf"
 files <- list.files(pdf, full.names = T)
 bibr <- "data-raw/psychsci/bibr"
-file_paths <- platform_bibr_convert(files[61:250], bibr)
+file_paths <- platform_bibr_convert(files, bibr)
 
 psychsci <- read(bibr, include_images = FALSE)
 usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")

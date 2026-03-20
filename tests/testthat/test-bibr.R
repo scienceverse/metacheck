@@ -1,5 +1,4 @@
 test_that("bibr_convert", {
-  skip()
   expect_true(is.function(metacheck::bibr_convert))
   expect_no_error(helplist <- help(bibr_convert, metacheck))
 

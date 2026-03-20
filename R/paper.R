@@ -357,7 +357,9 @@ paper_coerce <- function(paper) {
     "string" = as.character,
     "integer" = as.integer,
     "number" = as.double,
-    "boolean" =  as.logical
+    "boolean" =  as.logical,
+    "object" = as.data.frame,
+    "array" = as.list
   )
 
   schema_tables <- names(schema$properties)
