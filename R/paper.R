@@ -371,6 +371,9 @@ paper_coerce <- function(paper) {
   tbls <- intersect(paper_tables, schema_tables) |>
     setdiff(c("paper_id"))
 
+  # count logged errors/warnings
+  logs <- 0
+
   for (tbl in tbls) {
     ref <- schema$properties[[tbl]]$`$ref` %||%
       schema$properties[[tbl]]$items$`$ref`
@@ -380,10 +383,46 @@ paper_coerce <- function(paper) {
     for (col in cols) {
       schema_type <- prop[[col]]$type[[1]]
       if (schema_type %in% names(type_func)) {
-        paper[[tbl]][[col]] <- type_func[[schema_type]](paper[[tbl]][[col]])
+        paper[[tbl]][[col]] <- tryCatch(
+          type_func[[schema_type]](paper[[tbl]][[col]]),
+          error = \(e) {
+            logger(label = "paper_coerce",
+                   list(table = tbl,
+                        column = col,
+                        error = e$message)
+            )
+            stop(e)
+          },
+          warning = \(w) {
+            orig <- paper[[tbl]][[col]]
+            x <- suppressWarnings(
+              type_func[[schema_type]](orig)
+            )
+            convert_problems <- which(is.na(orig == x) & !is.na(orig))
+
+            logs <<- logs + 1
+            logger(label = "paper_coerce",
+                   list(paper_id = paper$paper_id,
+                        table = tbl,
+                        column = col,
+                        rows = paste(convert_problems, collapse = ", "),
+                        example = paper[[tbl]][[col]][[convert_problems[1]]],
+                        warning = w$message)
+            )
+
+            # convert and return anyways
+            return(x)
+          }
+        )
       }
     }
   }
+
+  # if (logs > 0) {
+  #   message("There ", plural(logs, "was", "were"),
+  #           " ", logs, " warning", plural(logs),
+  #           "; check lastlog(1:", logs, ")")
+  # }
 
   return(paper)
 }
@@ -563,7 +602,11 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
   file_name <- gsub("\\.(json|zip)$", "", x = file_name)
   json_path <- file.path(save_path, paste0(file_name, ".json"))
 
-  jsonlite::write_json(paper, json_path, auto_unbox = TRUE, pretty = TRUE)
+  jsonlite::write_json(paper, json_path,
+                       na = "null",
+                       null = "null",
+                       auto_unbox = TRUE,
+                       pretty = TRUE)
 
   return(json_path)
 }

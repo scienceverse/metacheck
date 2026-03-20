@@ -255,7 +255,7 @@ grobid_to_bibr <- function(xml_file,
 #' @export
 #' @keywords internal
 .grobid_to_bibr <- function(xml_file, pb = NULL) {
-  bibr_version = "5.6"
+  bibr_version = "9.0"
   what <- basename(xml_file)
 
   if (is.null(pb)) {
@@ -373,6 +373,8 @@ grobid_to_bibr <- function(xml_file,
   pb$tick(0, list(step = "eq", what = what))
   paper$eq <- extract_equations(paper)
   paper$eq$paper_id <- NULL
+
+  paper <- paper_coerce(paper)
 
   pb$tick(0, list(step = "complete", what = what))
   return(paper)
@@ -603,7 +605,7 @@ tei_authors <- function(xml) {
       email = email,
       corresponding = FALSE,
       orcid = orcid,
-      role = list(NULL)
+      role = list(character(0))
     )
   })
 
