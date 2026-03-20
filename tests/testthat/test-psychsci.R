@@ -62,7 +62,8 @@ test_that("psychsci components", {
 
   # check abstracts ----
   bibr_abst <- search_text(psychsci, section = "abstract", return = "section") |>
-    dplyr::select(DOI = paper_id, bibr_abst = text)
+    dplyr::select(DOI = paper_id, bibr_abst = text) |>
+    dplyr::mutate(DOI = gsub("www.psychologicalscience.org/PS", "", DOI, fixed = TRUE))
 
   abst_check <- cr_info |>
     dplyr::select(DOI, cr_abst = abstract) |>
@@ -76,11 +77,12 @@ test_that("psychsci components", {
     )
 
   expect_true(all(abst_check$bibr_same_cr))
-  # so many abstract mismatches! could be due to bad labelling in the text table?
 
+  # Could be due to bad labelling in the text table?
   # get all sentences and check if they're in the CR abstract
   all_text <- search_text(psychsci) |>
-    dplyr::select(DOI = paper_id, text, text_id, section_type) |>
+    dplyr::select(DOI = paper_id, text, text_id, section_type)|>
+    dplyr::mutate(DOI = gsub("www.psychologicalscience.org/PS", "", DOI, fixed = TRUE)) |>
     dplyr::filter(nchar(text) > 1) |>
     dplyr::left_join(cr_info, by = "DOI") |>
     dplyr::select(-title) |>
@@ -95,4 +97,37 @@ test_that("psychsci components", {
 
   papers_with_some_abstract_text <- unique(all_text$DOI) |> length()
   expect_equal(papers_with_some_abstract_text, length(psychsci))
+})
+
+
+test_that("urls", {
+  bibr_url <- paper_table(psychsci, "url") |>
+    dplyr::mutate(bibr = TRUE,
+                  # remove trailing slashes
+                  href = gsub("/$", "", href),
+                  href = tolower(href))
+
+  # compare extract_urls() function in metacheck with bibr urls
+  mc_url <- extract_urls(psychsci) |>
+    dplyr::select(paper_id, text_id, href = text) |>
+    dplyr::mutate(mc = TRUE,
+                  href = gsub("/$", "", href),
+                  href = tolower(href))
+
+  url_comp <- mc_url |>
+    dplyr::full_join(bibr_url, by = c("paper_id", "text_id", "href")) |>
+    dplyr::arrange(paper_id, text_id)
+
+  dplyr::count(url_comp, mc, bibr)
+
+  mc_only <- dplyr::filter(url_comp, mc, is.na(bibr)) |>
+    dplyr::select(paper_id, text_id, mc = href)
+  bibr_only <- dplyr::filter(url_comp, bibr, is.na(mc)) |>
+    dplyr::select(paper_id, text_id, bibr = href)
+
+  # mismatches with the same paper_id:text_id
+  url_mismatch <- dplyr::inner_join(
+    mc_only, bibr_only,
+    by = c("paper_id", "text_id")) |>
+    expand_text(psychsci)
 })
