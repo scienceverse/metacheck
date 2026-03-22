@@ -212,7 +212,7 @@ grobid_to_bibr <- function(xml_file,
         .grobid_to_bibr(xml_file = xml_file1, pb),
         error = \(e) {
           errors <<- errors + 1
-          logger("grobid_to_bibr", e$message)
+          logger("grobid_to_bibr", list(xml_path = xml_file1, error = e$message))
           return(NULL)
         })
       pb$tick(1, list(step = "complete", what = what))
@@ -222,7 +222,7 @@ grobid_to_bibr <- function(xml_file,
     if (errors > 0) {
       warning("There ", plural(errors, "was", "were"), " ",
               errors, " error", plural(errors),
-              "; use lastlog(", errors, ") to see them.")
+              "; use lastlog(1:", errors, ")")
 
       # remove NULLS
       paper <- Filter(Negate(is.null), paper)
@@ -259,12 +259,11 @@ grobid_to_bibr <- function(xml_file,
   what <- basename(xml_file)
 
   if (is.null(pb)) {
-    pb <- pb(NA, "(:spin) Converting :step (:what)")
+    pb <- pb(NA, "(:spin) Converting (:what)")
     on.exit(pb$terminate())
     pb$tick(0, list(step = "", what = what))
   }
 
-  pb$tick(0, list(step = "XML", what = what))
   xml_text <- readLines(xml_file, warn = FALSE) |>
     paste(collapse = "\n") |>
     # fixes a glitch that stops grobid xml from being read
@@ -277,7 +276,6 @@ grobid_to_bibr <- function(xml_file,
   paper <- paper(file_hash)
 
   # info ----
-  pb$tick(0, list(step = "info", what = what))
   title <- xml_find1(xml, ".//titleStmt/title")
   abstract <- xml_find1(xml, ".//abstract")
   keywords <- xml_find(xml, ".//textClass/keywords/term")
@@ -300,11 +298,9 @@ grobid_to_bibr <- function(xml_file,
   )
 
   # author ----
-  pb$tick(0, list(step = "author", what = what))
   paper$author <- tei_authors(xml)
 
   # text ----
-  pb$tick(0, list(step = "text"))
   ft <- tei_text(xml)
   ft$p <- seq_along(ft$p)
   ft <- process_full_text(ft)
@@ -333,7 +329,6 @@ grobid_to_bibr <- function(xml_file,
   )
 
   # bib ----
-  pb$tick(0, list(step = "bib", what = what))
   paper$bib <- tei_bib(xml)
 
   # append references to section and text and replace with text_id
@@ -357,11 +352,9 @@ grobid_to_bibr <- function(xml_file,
   paper$bib$bib_text <- NULL
 
   # xref ----
-  pb$tick(0, list(step = "xref", what = what))
   paper$xref <- tei_xrefs(xml, text_table = paper$text)
 
   # url ----
-  pb$tick(0, list(step = "url", what = what))
   links <- extract_urls(paper)
   paper$url <- data.frame(
     href = links$text,
@@ -370,13 +363,11 @@ grobid_to_bibr <- function(xml_file,
   )
 
   # eq ----
-  pb$tick(0, list(step = "eq", what = what))
   paper$eq <- extract_equations(paper)
   paper$eq$paper_id <- NULL
 
   paper <- paper_coerce(paper)
 
-  pb$tick(0, list(step = "complete", what = what))
   return(paper)
 }
 
@@ -715,7 +706,11 @@ tei_bib <- function(xml) {
     bib_table$bib_type <- sapply(bibs, \(x) x$bibtype %||% NA_character_)
     bib_table$title <- sapply(bibs, \(x) x$title %||% NA_character_)
     bib_table$container <- sapply(bibs, \(x) x$journal %||% x$booktitle %||% NA_character_)
-    bib_table$publication_year <- sapply(bibs, \(x) x$year %||% NA_integer_)
+
+    # extract first occurrence of year from string
+    bib_table$publication_year <- sapply(bibs, \(x) {
+      sub(".*?(\\b[12][0-9]{3}\\b).*", "\\1", x$year) %||% NA_integer_
+    })
     bib_table$authors <- bibs |>
       lapply(\(x) x$author) |>
       lapply(\(x) {
@@ -736,7 +731,7 @@ tei_bib <- function(xml) {
       lapply(\(x) x$editor) |>
       lapply(\(x) {
         rows <- lapply(x, \(a) {
-          a <- unlist(a)
+          a <- unlist(a) |> as.list()
           data.frame(
             given = a[["given"]] %||% NA_character_,
             family = a[["family"]] %||% NA_character_

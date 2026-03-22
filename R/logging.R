@@ -89,9 +89,9 @@ lastlog <- function(i = 1, logpath = NULL) {
   }
 
   logpath <- logpath %||% logpath()
-  log <- logpath |>
-    jsonlite::read_json() |>
-    _[i]
+  full_log <- jsonlite::read_json(logpath)
+  if (length(full_log) == 0) return(NULL)
+  log <- full_log[intersect(i, seq_along(full_log))]
 
   if (length(log) == 1) {
     log <- log[[1]]

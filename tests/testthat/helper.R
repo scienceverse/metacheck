@@ -9,6 +9,14 @@ httptest::.mockPaths(NULL)
 apis <- normalizePath("apis")
 httptest::.mockPaths(apis)
 
+# change fancy quotes to straight for text matching with crossref
+fix_fancy <- function(x) {
+  x |>
+    gsub("[\u2018\u2019\u0060]", "'", x = _) |>
+    gsub("[\u201C\u201D]", "\"", x = _) |>
+    gsub("–", "-", x = _)
+}
+
 skip_api <- function(host = "google.com") {
   skip("API")
   skip_on_cran()

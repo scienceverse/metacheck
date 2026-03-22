@@ -24,6 +24,25 @@ test_that("paper_coerce", {
   expect_equal("double", typeof(cpaper$info$oecd_confidence))
   expect_equal("integer", typeof(cpaper$text$text_id))
   expect_equal("list", typeof(cpaper$info$keywords))
+
+  # NAs introduced by coercion
+  paper <- paper()
+  paper$info <- data.frame(
+    oecd_confidence = "NO",
+    keywords = "kw"
+  )
+  expect_warning(cpaper <- paper_coerce(paper))
+  expect_equal(cpaper$info$oecd_confidence, NA_real_)
+  expect_equal(cpaper$info$keywords, list("kw"))
+
+  # check log
+  ll <- lastlog(1)
+  expect_equal(ll$label, "paper_coerce")
+  expect_equal(ll$paper_id, paper$paper_id)
+  expect_equal(ll$table, "info")
+  expect_equal(ll$column, "oecd_confidence")
+  expect_equal(ll$rows, "1")
+  expect_equal(ll$example, "NO")
 })
 
 test_that("paper_validate", {

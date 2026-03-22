@@ -87,7 +87,9 @@ test_that("multiple papers, NULL save_path, no CR lookup", {
     test_path("fixtures", "formats", "preprint.pdf.tei.xml"),
     test_path("fixtures", "formats", "published.pdf.tei.xml")
   )
-  papers <- grobid_to_bibr(xml_file, save_path = NULL)
+  expect_warning(
+    papers <- grobid_to_bibr(xml_file, save_path = NULL)
+  )
   expect_s3_class(papers, "scivrs_paperlist")
   expect_true(paper_validate(papers[[1]]))
   expect_true(paper_validate(papers[[2]]))

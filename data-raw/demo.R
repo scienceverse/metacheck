@@ -7,6 +7,8 @@ quarto::quarto_render(qmd, "docx")
 pdf <- "data-raw/demo/to_err_is_human.pdf"
 bibr <- platform_bibr_convert(pdf, "data-raw/demo")
 demopaper <- read(bibr)
+demopaper$table$caption <- NULL
+demopaper$figure$caption <- NULL
 paper_validate(demopaper)
 
 # copy to inst

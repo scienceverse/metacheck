@@ -398,15 +398,20 @@ paper_coerce <- function(paper) {
             x <- suppressWarnings(
               type_func[[schema_type]](orig)
             )
-            convert_problems <- which(is.na(orig == x) & !is.na(orig))
+            convert_problems <- suppressWarnings(
+              which(is.na(orig == x) & !is.na(orig))
+            )
 
             logs <<- logs + 1
+            example <- orig[[convert_problems[1]]]
+            if (length(example) == 0) example <- ""
+
             logger(label = "paper_coerce",
                    list(paper_id = paper$paper_id,
                         table = tbl,
                         column = col,
                         rows = paste(convert_problems, collapse = ", "),
-                        example = paper[[tbl]][[col]][[convert_problems[1]]],
+                        example = example,
                         warning = w$message)
             )
 
@@ -418,11 +423,11 @@ paper_coerce <- function(paper) {
     }
   }
 
-  # if (logs > 0) {
-  #   message("There ", plural(logs, "was", "were"),
-  #           " ", logs, " warning", plural(logs),
-  #           "; check lastlog(1:", logs, ")")
-  # }
+  if (logs > 0) {
+    warning("There ", plural(logs, "was", "were"),
+            " ", logs, " warning", plural(logs),
+            "; check lastlog(1:", logs, ")")
+  }
 
   return(paper)
 }
