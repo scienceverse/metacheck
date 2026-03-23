@@ -20,8 +20,8 @@ Match table from bib table
 \examples{
 dontrun{
 paper <- demopaper()
-paper$bib_matches <- NULL # remove existing
+paper$bib$match <- NULL # remove existing
 paper2 <- add_bib_match(paper)
-paper2$bib_matches
+paper2$bib$match$crossref
 }
 }
