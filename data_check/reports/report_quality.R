@@ -137,6 +137,14 @@ load_all_coverage <- function(outputs_dir) {
   })
   frames <- Filter(Negate(is.null), frames)
   if (length(frames) == 0) return(NULL)
+  # Fill columns that may be absent in older files (e.g. parse_method added in 018)
+  all_cols <- unique(unlist(lapply(frames, names)))
+  frames <- lapply(frames, function(df) {
+    missing <- setdiff(all_cols, names(df))
+    for (col in missing)
+      df[[col]] <- if (nrow(df) == 0) character(0) else NA_character_
+    df[, all_cols, drop = FALSE]
+  })
   do.call(rbind, frames)
 }
 

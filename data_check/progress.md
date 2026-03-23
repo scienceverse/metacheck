@@ -4,6 +4,15 @@
 
 ### Completed ✅
 
+**018** — fix-csv-codebook-parsing (branch: `018-fix-csv-codebook-parsing`)
+- Extend `.find_codebook_cols()` in `helper.R` to recognise additional column-name variants: `variable_label`, `var_label`, `item` (variable column); `label_text`, `question`, `question_text`, `variable_description` (description column)
+- Replace fixed-header CSV read in `parse_codebook()` with header-row lookahead: reads file without header, scans rows 1–`CODEBOOK_HEADER_LOOKAHEAD` (default 5) for a row matching the codebook-column patterns; handles multi-level / merged-header CSVs
+- Add latin1 encoding fallback to CSV codebook reading (mirrors existing `read_data_head()` pattern); retries with `fileEncoding = "latin1"` when UTF-8 produces invalid bytes
+- Update `sniff_delimiter()` to skip comment rows (lines starting with `#`) in addition to blank lines when probing for the delimiter
+- Add `parse_method` column (`"structured"` or `"llm"`) to the data.frame returned by `parse_codebook()` and `.run_llm_chunk_loop()`; propagated to `codebook_coverage.csv` via `coverage_df` construction in `2_codebook_label.R`
+- Add `CODEBOOK_HEADER_LOOKAHEAD <- 5L` constant to `2_codebook_label.R`
+- Update `docs/output-schemas.md` with `parse_method` column definition
+
 **refactor** — repo restructure (branch: `017-llm-temperature-testing`)
 - Move all R source files from `data_check/` root into purpose-grouped subdirectories: `pipeline/` (core modules), `runners/` (entry-point scripts), `reports/` (report generators)
 - Move generated summary CSVs (`bulk_summary.csv`, `codebook_summary.csv`) to `results/`

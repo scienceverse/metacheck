@@ -208,4 +208,5 @@ One row per variable extracted from any codebook/readme file. Produced by `2_cod
 | `label` | character | Human-readable label/description |
 | `codebook_source` | character | Basename of the codebook file |
 | `group` | character | Experiment group scope inferred from codebook context; `NA` if no scope detected (applicable to all groups) |
+| `parse_method` | character | How the codebook was parsed: `structured` — rule-based header/column detection; `llm` — LLM chunk parsing fallback |
 | `match_status` | character | `matched` — variable found in at least one data column; `unmatched_in_data` — not found in any data column |

@@ -18,8 +18,9 @@ sniff_delimiter <- function(path) {
   on.exit(close(con))
   for (i in seq_len(10)) {
     line <- readLines(con, n = 1, warn = FALSE)
-    if (length(line) == 0) break          # EOF: empty file
-    if (nchar(trimws(line)) > 0) break    # found a non-blank line
+    if (length(line) == 0) break                         # EOF: empty file
+    l <- trimws(line)
+    if (nchar(l) > 0 && !startsWith(l, "#")) break      # found a non-blank, non-comment line
   }
   if (length(line) == 0) return(",")     # empty file — return safe default
   candidates <- c(",", ";", "\t", "|")
@@ -379,11 +380,13 @@ normalize_label <- function(x) {
 # "label/description" column.  Returns list(var_col, lab_col) or NULL.
 .find_codebook_cols <- function(col_names) {
   var_col <- grep(
-    "(?i)^(var(iable)?|name|column|field|variable_?name|varname)$",
+    paste0("(?i)^(var(iable)?|name|column|field|variable_?name|varname|",
+           "variable[_ ]?label|var[_ ]?label|item)$"),
     col_names, perl = TRUE, value = TRUE
   )[1]
   lab_col <- grep(
-    "(?i)^(label|description|desc|definition|meaning|explanation|text)$",
+    paste0("(?i)^(label|description|desc|definition|meaning|explanation|text|",
+           "label[_ ]?text|question|question[_ ]?text|variable[_ ]?description)$"),
     col_names, perl = TRUE, value = TRUE
   )[1]
   if (is.na(var_col) || is.na(lab_col)) return(NULL)
@@ -542,8 +545,40 @@ parse_codebook <- function(path) {
     switch(ext,
       csv = , tsv = , dat = {
         sep <- if (ext == "tsv") "\t" else sniff_delimiter(path)
-        df  <- read.delim(path, sep = sep, check.names = FALSE,
-                          stringsAsFactors = FALSE)
+        # Read without treating any row as a header so we can scan for it.
+        raw <- tryCatch(
+          read.delim(path, sep = sep, header = FALSE, check.names = FALSE,
+                     stringsAsFactors = FALSE),
+          error = function(e) NULL
+        )
+        if (is.null(raw) || nrow(raw) == 0) return(NULL)
+        # Retry with latin1 if UTF-8 produces invalid bytes (mirrors read_data_head).
+        has_invalid <- any(vapply(raw, function(col) {
+          is.character(col) && any(is.na(iconv(col, from = "UTF-8", to = "UTF-8")))
+        }, logical(1)))
+        if (has_invalid) {
+          raw <- tryCatch(
+            read.delim(path, sep = sep, header = FALSE, check.names = FALSE,
+                       stringsAsFactors = FALSE, fileEncoding = "latin1"),
+            error = function(e) NULL
+          )
+          if (is.null(raw) || nrow(raw) == 0) return(NULL)
+        }
+        # Scan rows 1..CODEBOOK_HEADER_LOOKAHEAD for a row whose values match the
+        # expected codebook column patterns.
+        header_row <- NA_integer_
+        lookahead  <- min(nrow(raw), CODEBOOK_HEADER_LOOKAHEAD)
+        for (k in seq_len(lookahead)) {
+          candidate <- trimws(as.character(raw[k, ]))
+          if (!is.null(.find_codebook_cols(candidate))) {
+            header_row <- k
+            break
+          }
+        }
+        if (is.na(header_row)) return(NULL)
+        names(raw) <- trimws(as.character(raw[header_row, ]))
+        df <- raw[seq(header_row + 1L, nrow(raw)), , drop = FALSE]
+        rownames(df) <- NULL
         .extract_structured_codebook(df, src)
       },
       xlsx = , xls = {
@@ -581,7 +616,8 @@ parse_codebook <- function(path) {
   rich_lines <- if (is.character(result) && !is.data.frame(result)) result else NULL
 
   if (!is.null(result) && is.data.frame(result) && nrow(result) > 0) {
-    result$group <- .infer_group(result$group)
+    result$group        <- .infer_group(result$group)
+    result$parse_method <- "structured"
     return(result)
   }
 
@@ -646,6 +682,7 @@ parse_codebook <- function(path) {
     message("  no variables extracted from: ", src)
     return(NULL)
   }
+  result$parse_method <- "llm"
   result
 }
 

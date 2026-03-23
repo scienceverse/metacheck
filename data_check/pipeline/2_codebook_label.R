@@ -30,8 +30,9 @@ llm_model("ollama/gpt-oss:20b-cloud")
 
 OUTPUT_DIR             <- "./data_check/outputs"
 LLM_BATCH_SIZE         <- 20L   # shared constant — needed by llm_batch() in helper.R
-MAX_CODEBOOK_LLM_CALLS <- 10L   # max LLM calls per codebook file for text parsing
-MAX_CODEBOOK_FILE_MB   <- 100   # codebook files larger than this (MB) are skipped
+MAX_CODEBOOK_LLM_CALLS    <- 10L   # max LLM calls per codebook file for text parsing
+MAX_CODEBOOK_FILE_MB      <- 100   # codebook files larger than this (MB) are skipped
+CODEBOOK_HEADER_LOOKAHEAD <- 5L    # max rows to scan for header in multi-level CSV codebooks
 CODEBOOK_TYPES         <- c("codebook", "readme")
 
 CODEBOOK_PARSE_PROMPT <- 'You are extracting variable definitions from a psychology research codebook or README.
@@ -188,6 +189,7 @@ run_codebook_label <- function(paper_id, output_dir = NULL) {
       label             = codebook_vars_df$label,
       codebook_source   = codebook_vars_df$codebook_source,
       group             = codebook_vars_df$group,
+      parse_method      = codebook_vars_df$parse_method,
       match_status      = ifelse(
         normalize_varname(codebook_vars_df$codebook_variable) %in% matched_norm,
         "matched", "unmatched_in_data"
@@ -201,6 +203,7 @@ run_codebook_label <- function(paper_id, output_dir = NULL) {
       label             = character(0),
       codebook_source   = character(0),
       group             = character(0),
+      parse_method      = character(0),
       match_status      = character(0),
       stringsAsFactors  = FALSE
     )
