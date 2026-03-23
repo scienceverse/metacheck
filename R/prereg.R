@@ -11,7 +11,7 @@ aspredicted_links <- function(paper) {
   text <- NULL
 
   # search for "aspredicted"
-  RGX_ASPREDICTED <- "/aspredicted>?\\s*\\.org"
+  RGX_ASPREDICTED <- "/aspredicted>?\\s*\\.?org"
   found_ap <- search_text(paper, RGX_ASPREDICTED)
 
   # fix blind.php? with x=abcdef in the next sentence

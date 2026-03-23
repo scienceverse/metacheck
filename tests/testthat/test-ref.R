@@ -7,7 +7,7 @@ test_that("add_bib_match", {
   # no refs
   paper <- test_paper("No refs")
   paper_bm <- add_bib_match(paper)
-  expect_equal(nrow(paper_bm$bib_matches), 0)
+  expect_equal(nrow(paper_bm$bib), 0)
 
   skip_api("api.labs.crossref.org")
 
@@ -20,8 +20,8 @@ test_that("add_bib_match", {
   )
   paper$bib$authors <- list(data.frame(given = "Not A", family = "Realname"))
   paper_bm <- add_bib_match(paper)
-  expect_equal(paper_bm$bib_matches$bib_id, 1)
-  expect_equal(paper_bm$bib_matches$match_score, NA_real_)
+  expect_equal(paper_bm$bib$bib_id, 1)
+  expect_equal(paper_bm$bib$match, NA_real_)
 
   # make paper with 2 refs
   paper <- test_paper("LDB test papers")

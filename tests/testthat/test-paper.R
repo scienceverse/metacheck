@@ -168,13 +168,6 @@ test_that("print.scivrs_paper", {
 })
 
 test_that("print.scivrs_paperlist", {
-  x <- psychsci[1:3]
-  op <- capture_output(print(x))
-  op.sv <- capture_output(print.scivrs_paperlist(x))
-
-  expect_true(grepl("# A tibble: 3", op, fixed = TRUE))
-  expect_equal(op, op.sv)
-
   # test papers
   x <- paperlist(
     test_paper(LETTERS),

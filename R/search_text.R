@@ -73,7 +73,9 @@ search_text <- function(paper, pattern = ".*",
     if (all(cols %in% names(sections))) {
       text <- dplyr::left_join(
         text, sections[, cols],
-        by = cols[1:2]
+        by = cols[1:2],
+        # TODO: figure out why this is needed
+        relationship = "many-to-many" # quiet some warnings?
       )
     }
   } else if (is.vector(paper) && is.character(paper)) {

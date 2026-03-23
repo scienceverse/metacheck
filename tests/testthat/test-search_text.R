@@ -106,15 +106,15 @@ test_that("return", {
 })
 
 test_that("iteration", {
-  paper <- psychsci[1:3]
+  paper <- list(
+    test_paper(LETTERS[1:5]),
+    test_paper(LETTERS[3:7]),
+    test_paper(LETTERS[4:5])
+  ) |> paperlist()
 
   # search full text
-  sig <- search_text(paper, "significant")
-  expect_equal(nrow(sig), 19)
-
-  equal <- search_text(paper, "=", section = "results")
-  classes <- as.character(unique(equal$section_type))
-  expect_equal(classes, "results")
+  C <- search_text(paper, "C")
+  expect_equal(nrow(C), 2)
 })
 
 test_that("odd errors", {

@@ -283,6 +283,7 @@ read_bibr <- function(file_path, include_images = TRUE) {
     if (!include_images) {
       paper$figure$image <- NA_character_
     }
+    paper$figure$caption <- NULL #tempfix
   }
 
   # url ----
@@ -298,6 +299,7 @@ read_bibr <- function(file_path, include_images = TRUE) {
   # table ----
   if (!is.null(data$table) && length(data$table) > 0) {
     paper$table <- as.data.frame(data$table)
+    paper$table$caption <- NULL #tempfix
   }
 
   # text ----

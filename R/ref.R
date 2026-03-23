@@ -804,9 +804,9 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
 #' @examples
 #' dontrun{
 #' paper <- demopaper()
-#' paper$bib_matches <- NULL # remove existing
+#' paper$bib$match <- NULL # remove existing
 #' paper2 <- add_bib_match(paper)
-#' paper2$bib_matches
+#' paper2$bib$match$crossref
 #' }
 add_bib_match <- function(paper, min_score = 50) {
   bib <- paper_table(paper, "bib")
@@ -852,20 +852,24 @@ add_bib_match <- function(paper, min_score = 50) {
 
   bib_match <- data.frame(
     ref              = unique(refs),
-    source           = "crossref",
-    source_id        = "",
-    match_score      = cr_data$score %||% NA_real_,
-    bib_type         = bibtype_convert(cr_data$type) %||% NA_character_,
-    doi              = cr_data$DOI %||% NA_character_,
+    id               = "",
+    score            = cr_data$score %||% NA_real_,
     title            = cr_data$title %||% NA_character_,
-    publisher        = cr_data$publisher %||% NA_character_,
+    authors          = NA,
     publication_year = cr_data$year %||% NA_integer_,
     container        = cr_data$`container-title` %||% NA_character_,
     volume           = cr_data$volume %||% NA_character_,
     issue            = cr_data$issue %||% NA_character_,
     first_page       = cr_data$first_page %||% NA_character_,
     last_page        = cr_data$last_page %||% NA_character_,
-    url              = cr_data$URL %||% NA_character_
+    publisher        = cr_data$publisher %||% NA_character_,
+    editors          = NA,
+    doi              = cr_data$DOI %||% NA_character_,
+    bib_type         = bibtype_convert(cr_data$type) %||% NA_character_,
+    url              = cr_data$URL %||% NA_character_,
+    publication_date = NA_character_,
+    edition          = NA_character_,
+    version          = NA_character_
   )
   bib_match$authors <- authors
   bib_match$editors <- replicate(nrow(bib_match),
@@ -885,12 +889,22 @@ add_bib_match <- function(paper, min_score = 50) {
   # add bib_match table to paper object(s)
   if (is_paper(paper)) {
     bib_match_table$paper_id <- NULL
-    paper$bib_matches <- bib_match_table
+    bib_match_table$bib_id <- NULL
+    paper$bib$match <- data.frame(
+      crossref = I(bib_match_table),
+      openalex = NA,
+      openlibrary = NA
+    )
   } else if (is_paper_list(paper)) {
     paper <- lapply(paper, \(p) {
       bib_match_i <- bib_match[bib_match$paper_id == p$paper_id, ]
       bib_match_i$paper_id <- NULL
-      p$bib_matches <- bib_match_i
+      bib_match_i$bib_id <- NULL
+      p$bib$match <- data.frame(
+        crossref = I(bib_match_i),
+        openalex = NA,
+        openlibrary = NA
+      )
       p
     }) |> paperlist()
   }
