@@ -388,6 +388,14 @@ run_index <- function(paper_id = NA, download = TRUE, output_dir = NULL) {
   }
 
   non_agg_relpaths <- rel_paths[!is_aggregate]
+  # If every file fell into an aggregate folder there is nothing left to process
+  # individually — sentinel offers no benefit here and would leave non_agg empty.
+  # Cancel the sentinel and process all paths normally; the MAX_LLM_CALLS guard
+  # still prevents runaway for genuinely oversized repos.
+  if (length(non_agg_relpaths) == 0) {
+    aggregate_df     <- NULL
+    non_agg_relpaths <- rel_paths
+  }
   llm_paths        <- c(non_agg_relpaths,
                         if (!is.null(aggregate_df)) aggregate_df$rel_path)
 
@@ -426,6 +434,10 @@ run_index <- function(paper_id = NA, download = TRUE, output_dir = NULL) {
       } else {
         members <- rel_paths[top_dirs == parent_dir]
       }
+      if (length(members) == 0) {
+        warning("Aggregate sentinel has no members: ", parent_dir)
+        return(NULL)
+      }
       data.frame(
         path        = file.path(norm_base, members),
         rel_path    = members,
@@ -436,14 +448,16 @@ run_index <- function(paper_id = NA, download = TRUE, output_dir = NULL) {
         stringsAsFactors = FALSE
       )
     })
-    agg_expanded_df <- do.call(rbind, agg_expanded)
+    agg_expanded_df <- do.call(rbind, Filter(Negate(is.null), agg_expanded))
     # Apply extension-based type correction for files expanded from aggregates.
     # Files with unambiguous extensions (e.g. .R → code, .jpeg → asset) get the
     # correct type regardless of what the LLM assigned to the sentinel.
-    agg_ext  <- tolower(tools::file_ext(agg_expanded_df$rel_path))
-    override <- AGGREGATE_EXT_OVERRIDE[agg_ext]
-    to_override <- !is.na(override)
-    agg_expanded_df$type[to_override] <- override[to_override]
+    if (!is.null(agg_expanded_df) && nrow(agg_expanded_df) > 0) {
+      agg_ext  <- tolower(tools::file_ext(agg_expanded_df$rel_path))
+      override <- AGGREGATE_EXT_OVERRIDE[agg_ext]
+      to_override <- !is.na(override)
+      agg_expanded_df$type[to_override] <- override[to_override]
+    }
   } else {
     agg_expanded_df <- NULL
   }
@@ -640,7 +654,7 @@ run_index <- function(paper_id = NA, download = TRUE, output_dir = NULL) {
                     p25 = NA, p75 = NA, iqr = NA, skewness = NA, kurtosis = NA))
       }
 
-      x_comp <- x_for_stats[!is.na(x_for_stats)]
+      x_comp <- as.numeric(x_for_stats[!is.na(x_for_stats)])
       n      <- length(x_comp)
       n_miss <- sum(is.na(x_for_stats))
       if (n == 0) {

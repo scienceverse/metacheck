@@ -46,6 +46,9 @@ Paper ID (character string)
 ┌─────────────────────┐
 │  4. Build file      │  Walk directory tree, collect all paths
 │     tree            │  Sentinel collapse: folders with >50 files → single placeholder row
+│                     │  Exception: if ALL files fall into aggregate folders (no non-aggregate
+│                     │  paths remain), sentinel is cancelled and all files are processed
+│                     │  individually — the 10-call limit still guards runaway repos
 └──────────┬──────────┘
            │  >200 paths (10 LLM calls × 20 batch size) → error: too_large
            ▼

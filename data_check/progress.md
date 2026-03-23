@@ -4,6 +4,11 @@
 
 ### Completed ✅
 
+**019** — fix-index-labelled-stats (branch: `019-fix-index-labelled-stats`)
+- Fix `Can't convert from 'value' <labelled<double>> to <labelled<double>> due to loss of precision` error: add `as.numeric()` coercion at `x_comp` assignment in `0_index.R` so haven-labelled type metadata is stripped before statistics computation — prevents vctrs rbind from encountering incompatible label mappings across columns
+- Fix `arguments imply differing number of rows: 0, 1` error: cancel the sentinel mechanism when all files fall into aggregate folders — set `aggregate_df = NULL` and process all paths individually so `non_agg_relpaths` is never empty; the existing 10-call limit still guards runaway repos
+- Remove 3 affected papers (`0956797618772822`, `09567976231158570`, `0956797618773095`) from `bulk_summary.csv` for reprocessing
+
 **018** — fix-csv-codebook-parsing (branch: `018-fix-csv-codebook-parsing`)
 - Extend `.find_codebook_cols()` in `helper.R` to recognise additional column-name variants: `variable_label`, `var_label`, `item` (variable column); `label_text`, `question`, `question_text`, `variable_description` (description column)
 - Replace fixed-header CSV read in `parse_codebook()` with header-row lookahead: reads file without header, scans rows 1–`CODEBOOK_HEADER_LOOKAHEAD` (default 5) for a row matching the codebook-column patterns; handles multi-level / merged-header CSVs
