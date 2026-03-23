@@ -5,13 +5,13 @@
 # crashes. On restart, already-completed (or failed) papers are skipped.
 # ─────────────────────────────────────────────────────────────────────────────
 
-source("./data_check/2_codebook_label.R")
+source("data_check/pipeline/2_codebook_label.R")
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
 N_RUNS      <- Inf          # Inf = all eligible papers; set an integer to cap
 SEED        <- NULL         # set an integer for reproducibility, or NULL
-SUMMARY_CSV <- "./data_check/codebook_summary.csv"
+SUMMARY_CSV <- "./data_check/results/codebook_summary.csv"
 
 if (!is.null(SEED)) set.seed(SEED)
 

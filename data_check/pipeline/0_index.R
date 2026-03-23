@@ -12,7 +12,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 library(metacheck)
-source("./data_check/helper.R")
+source("data_check/pipeline/helper.R")
 
 llm_use(TRUE)
 llm_model("ollama/gpt-oss:20b-cloud")
@@ -53,7 +53,7 @@ MULTILEVEL_HEADER_LOOKAHEAD <- 3L
 # Directory names longer than this many words are truncated; spaces → underscores
 MAX_DIR_WORDS   <- 5
 
-XML_DIR <- "./data-raw/psychsci/grobid_0.8.2"
+XML_DIR <- "./data-raw/psychsci/grobid_0.8.2-full"
 
 BADGE_REPOS <- c("tvyxz", "osf.io/tvyxz/", "osf.io/tvyxz")
 
@@ -131,7 +131,7 @@ Output ONLY the JSON array. No notes, no text outside the array.'
 
 # ── Pipeline function ─────────────────────────────────────────────────────────
 
-run_index <- function(paper_id = NA, download = TRUE) {
+run_index <- function(paper_id = NA, download = TRUE, output_dir = NULL) {
 
   t_start <- proc.time()[["elapsed"]]
 
@@ -143,6 +143,11 @@ run_index <- function(paper_id = NA, download = TRUE) {
     paper_id  <- tools::file_path_sans_ext(sample(xml_files, 1))
     message("── Randomly selected paper: ", paper_id)
   }
+
+  eff_dir <- if (!is.null(output_dir)) {
+    dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+    output_dir
+  } else paper_output_dir(paper_id)
 
   xml_path <- file.path(XML_DIR, paste0(paper_id, ".xml"))
   paper    <- read(xml_path)
@@ -460,7 +465,7 @@ run_index <- function(paper_id = NA, download = TRUE) {
 
   # ── 8. Save structure ────────────────────────────────────────────────────────
 
-  structure_out <- file.path(paper_output_dir(paper_id), "structure.csv")
+  structure_out <- file.path(eff_dir, "structure.csv")
   cat("\n── File inventory ──────────────────────────────\n")
   print(table(paste0(file_df$type, " / ", file_df$group)))
 
@@ -772,7 +777,7 @@ run_index <- function(paper_id = NA, download = TRUE) {
   message("── Saved structure → ", structure_out)
 
   if (!is.null(columns_df) && nrow(columns_df) > 0) {
-    columns_out   <- file.path(paper_output_dir(paper_id), "columns.csv")
+    columns_out   <- file.path(eff_dir, "columns.csv")
     invalid_types <- setdiff(unique(columns_df$col_type), VALID_COL_TYPES)
     if (length(invalid_types) > 0)
       warning("Unknown col_type values: ", paste(invalid_types, collapse = ", "))

@@ -28,6 +28,7 @@ data_check/codebook_summary.csv
 data_check/data/
 data_check/structure/
 data_check/outputs/*/
+data_check/sweep_results/
 
 
 ./output

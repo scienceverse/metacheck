@@ -12,6 +12,10 @@ contents using an LLM, and extracts column-level statistics into structured CSVs
 | `run_codebook_bulk.R` | Run codebook-label stage across all papers with `columns.csv`. Auto-resumes from `codebook_summary.csv`. |
 | `0_index.R` (`run_index()`) | Process a single paper by ID. Called by the index bulk runner. |
 | `2_codebook_label.R` (`run_codebook_label()`) | Label columns against codebooks for a single paper. Called by the codebook bulk runner. |
+| `run_sweep.R` | Temperature stability sweep for a single paper. Runs full pipeline at N temperatures × R repeats; crash-resilient via per-paper `sweep_log.csv`. |
+| `run_sweep_bulk.R` | Bulk temperature sweep across all papers in `XML_DIR`. Paper-level resume via `sweep_results/sweep_bulk_log.csv`; calls `run_paper_sweep()`. |
+| `report_sweep.R` | Single-paper sweep report: stability (pairwise col_type + label agreement), quality proxies, weighted recommendation. Writes `sweep_report_YYYY-MM-DD.md`. |
+| `report_sweep_grand.R` | Grand cross-paper report: flat CSV with one row per (paper_id × temperature × pipeline stage). No aggregation — post-processing friendly. |
 
 ---
 
@@ -112,7 +116,9 @@ Paper ID (character string)
 │                     │  Writes: outputs/<paper_id>/labels.csv        (one row per data column)
 │                     │          outputs/<paper_id>/codebook_coverage.csv (one row per codebook var)
 │                     │  Codebook formats: csv/tsv/xlsx/xls/sav/dta (rule-based)
-│                     │                    docx/pdf/rtf/odt/doc (text extraction via officer/pdftools)
+│                     │                    docx (officer), pdf (pdftools), rtf (regex strip)
+│                     │                    doc (textutil, macOS system binary — no install)
+│                     │                    odt (unzip content.xml + XML tag strip, base R)
 │                     │                    plain text (LLM chunking)
 │                     │  Conflict resolution: multi-label columns resolved by rule-based
 │                     │  normalisation first (normalize_label()), then LLM batch if still

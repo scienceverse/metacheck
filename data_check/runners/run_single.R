@@ -13,8 +13,8 @@
 
 `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
 
-source("./data_check/0_index.R")
-source("./data_check/2_codebook_label.R")
+source("data_check/pipeline/0_index.R")
+source("data_check/pipeline/2_codebook_label.R")
 
 # Change these to the models you are actually using! I can recommend gpt-oss:20b
 llm_use(TRUE)

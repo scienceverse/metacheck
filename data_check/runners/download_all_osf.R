@@ -9,7 +9,7 @@ library(metacheck)
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 DATA_DIR          <- "./data_check/data"
-XML_DIR           <- "./data-raw/psychsci/grobid_0.8.2"
+XML_DIR           <- "./data-raw/psychsci/grobid_0.8.2-full"
 PROGRESS_CSV      <- "./data_check/download_progress.csv"
 BADGE_REPOS       <- c("tvyxz", "osf.io/tvyxz/", "osf.io/tvyxz")
 DOWNLOAD_TIMEOUT_SEC <- 10 * 60  # 10 minutes; set to NULL to disable

@@ -5,13 +5,13 @@
 # papers are skipped automatically.
 # ─────────────────────────────────────────────────────────────────────────────
 
-source("./data_check/0_index.R")
+source("data_check/pipeline/0_index.R")
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
 N_RUNS      <- Inf          # Inf = all papers; set an integer to cap
 SEED        <- NULL         # set an integer for reproducibility, or NULL
-SUMMARY_CSV <- "./data_check/bulk_summary.csv"
+SUMMARY_CSV <- "./data_check/results/bulk_summary.csv"
 DOWNLOAD    <- FALSE        # Whether the script should attempt downloads or not
 
 if (!is.null(SEED)) set.seed(SEED)

@@ -1,6 +1,6 @@
 # data_check Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-03-19
+Auto-generated from all feature plans. Last updated: 2026-03-20
 
 ## Active Technologies
 - R (base R only — no new packages; `haven`/`readxl`/`jsonlite` already present) + `llm_batch()`, `extract_json()` (existing helpers in `helper.R`); `jsonlite::fromJSON` (005-codebook-column-labelling)
@@ -25,6 +25,8 @@ Auto-generated from all feature plans. Last updated: 2026-03-19
 - CSV files on local filesystem — `outputs/<paper_id>/labels.csv`, `outputs/<paper_id>/codebook_coverage.csv` (015-verbatim-codebook-labels)
 - R (base R only — no new packages) + `haven`, `readxl`, `jsonlite` — all already present; not needed for this feature (read-only CSV reporting) (016-pipeline-quality-report)
 - CSV files on local filesystem — `bulk_summary.csv`, `codebook_summary.csv`, `outputs/<paper_id>/columns.csv`, `outputs/<paper_id>/codebook_coverage.csv` (016-pipeline-quality-report)
+- R (base R only — no new packages) + `metacheck` (`llm()`), `haven`, `readxl`, `jsonlite` — all already installed; `helper.R`, `0_index.R`, `2_codebook_label.R` sourced at runtime (017-llm-temperature-testing)
+- CSV files on local filesystem under `sweep_results/<paper_id>/`; new `sweep_bulk_log.csv` at `sweep_results/sweep_bulk_log.csv` (017-llm-temperature-testing)
 
 - R (base R, no new packages) + `helper.R` (`classify_col_type_rules()`), `0_index.R` (`COLUMN_TYPE_PROMPT`, `run_index()`) (004-reduce-unknown-coltypes)
 
@@ -44,6 +46,9 @@ tests/
 R (base R, no new packages): Follow standard conventions
 
 ## Recent Changes
+- 017-llm-temperature-testing: Added R (base R only — no new packages) + `metacheck` (`llm()`), `haven`, `readxl`, `jsonlite` — all already installed; `helper.R`, `0_index.R`, `2_codebook_label.R` sourced at runtime
+- 017-llm-temperature-testing: Added R (base R only — no new packages) + `metacheck` (`llm()`), `haven`, `readxl`, `jsonlite` — all already installed; `helper.R`, `0_index.R`, `2_codebook_label.R` sourced at runtime
+- 017-llm-temperature-testing: Added R (base R only — no new packages) + `metacheck` (`llm()`), `ellmer` (temperature via `params`) — both already installed; sweep runner (`run_sweep.R`) + report (`report_sweep.R`); `options(llm_temperature)` for per-run temperature control; `output_dir` param added to `run_index()` and `run_codebook_label()` for output isolation; `sweep_results/<paper_id>/` directory layout; crash-resilient via `sweep_log.csv`
 - 016-pipeline-quality-report: Added R (base R only — no new packages) + `haven`, `readxl`, `jsonlite` — all already present; not needed for this feature (read-only CSV reporting)
 - 016-pipeline-quality-report: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 015-verbatim-codebook-labels: Added R (base R, no new packages) + `metacheck` (`llm()`), `jsonlite` — already presen

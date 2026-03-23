@@ -21,7 +21,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 library(metacheck)
-source("./data_check/helper.R")
+source("data_check/pipeline/helper.R")
 
 llm_use(TRUE)
 llm_model("ollama/gpt-oss:20b-cloud")
@@ -76,12 +76,17 @@ Rules:
 
 # ── Pipeline function ─────────────────────────────────────────────────────────
 
-run_codebook_label <- function(paper_id) {
+run_codebook_label <- function(paper_id, output_dir = NULL) {
+
+  eff_dir <- if (!is.null(output_dir)) {
+    dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+    output_dir
+  } else paper_output_dir(paper_id)
 
   # ── 1. Load inputs ──────────────────────────────────────────────────────────
 
-  structure_path <- file.path(paper_output_dir(paper_id), "structure.csv")
-  columns_path   <- file.path(paper_output_dir(paper_id), "columns.csv")
+  structure_path <- file.path(eff_dir, "structure.csv")
+  columns_path   <- file.path(eff_dir, "columns.csv")
 
   if (!file.exists(structure_path))
     stop("Structure file not found: ", structure_path,
@@ -164,7 +169,7 @@ run_codebook_label <- function(paper_id) {
 
   # ── 5. Write _labels.csv ─────────────────────────────────────────────────────
 
-  labels_out <- file.path(paper_output_dir(paper_id), "labels.csv")
+  labels_out <- file.path(eff_dir, "labels.csv")
   write.csv(labels_df, labels_out, row.names = FALSE)
   n_labelled <- sum(labels_df$label_status == "labelled")
   message("── Saved labels → ", labels_out,
@@ -203,7 +208,7 @@ run_codebook_label <- function(paper_id) {
 
   # ── 7. Write _codebook_coverage.csv ──────────────────────────────────────────
 
-  coverage_out <- file.path(paper_output_dir(paper_id), "codebook_coverage.csv")
+  coverage_out <- file.path(eff_dir, "codebook_coverage.csv")
   write.csv(coverage_df, coverage_out, row.names = FALSE)
   n_matched <- sum(coverage_df$match_status == "matched")
   message("── Saved coverage → ", coverage_out,

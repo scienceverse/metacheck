@@ -1,8 +1,40 @@
 # Progress Log
 
+## 2026-03-23
+
+### Completed ✅
+
+**refactor** — repo restructure (branch: `017-llm-temperature-testing`)
+- Move all R source files from `data_check/` root into purpose-grouped subdirectories: `pipeline/` (core modules), `runners/` (entry-point scripts), `reports/` (report generators)
+- Move generated summary CSVs (`bulk_summary.csv`, `codebook_summary.csv`) to `results/`
+- Update all `source()` calls and path constants (`DATA_DIR`, `OUTPUT_DIR`, `SUMMARY_CSV`, `SWEEP_DIR`, `BULK_LOG`, `PROGRESS_CSV`) to resolve correctly when scripts are run from `data_check/` root
+- Update `report_quality.R` to write `quality_report_*.md` to `results/` instead of root
+- Update defaults in `report_quality.R` and `report_sweep_grand.R` to point at `results/` for input CSVs and output paths
+- Archive `descriptive_statistics.R` to `_old/` (broken external deps, exploratory only)
+- Delete scratch files: `0_result.txt`, `2_result.txt`, `quality_report_2026-03-19.md`
+- All scripts still invoked from `data_check/` root (e.g. `Rscript runners/run_single.R`)
+
+---
+
 ## 2026-03-19
 
 ### Completed ✅
+
+**017** — llm-temperature-testing (branch: `017-llm-temperature-testing`)
+- Add `run_sweep.R`: CLI tool to run a paper through the full pipeline N times at M temperatures, saving each (temperature, repeat) to an isolated output directory; crash-resilient via `sweep_log.csv` with resume support; exports `run_paper_sweep()` for use by bulk runner
+- Add `run_sweep_bulk.R`: sequential bulk sweep across all papers in `XML_DIR`; paper-level crash-resilient log (`sweep_results/sweep_bulk_log.csv`); `N_PAPERS` cap; auto-resumes on restart; tracks `n_no_data` separately from `n_failed`
+- Add `report_sweep.R`: reports pairwise col_type / label stability per temperature, quality proxies (known-type rate, codebook coverage, non-empty label rate), weighted recommendation, and always writes `sweep_report_YYYY-MM-DD.md`; exports `compute_stability()` / `compute_quality()` for grand report
+- Add `report_sweep_grand.R`: grand flat CSV report across all swept papers; one row per (paper_id × temperature × pipeline stage); `no_data` temperatures emit NA metrics (not "failed"); no aggregation — post-processing friendly
+- Modify `llm_batch()` in `helper.R` and three standalone `llm()` calls in `2_codebook_label.R`: read `getOption("llm_temperature")` and pass as `params = list(temperature = X)` when set
+- Add `output_dir = NULL` param to `run_index()` in `0_index.R`: when non-NULL, writes outputs to specified path instead of `paper_output_dir(paper_id)`
+- Add `output_dir = NULL` param to `run_codebook_label()` in `2_codebook_label.R`: same isolation pattern as `run_index()`
+- Add `no_data` end state: `run_one()` detects when `columns.csv` is absent/empty after index; logs `status = "no_data"`, skips codebook stage, counts as completed for resume (not a failure)
+- Add `data_check/sweep_results/` to `.gitignore`
+
+**016** — pipeline-quality-report (branch: `016-pipeline-quality-report`)
+- Add `report_quality.R`: single-script CLI report over `bulk_summary.csv`, `codebook_summary.csv`, per-paper `columns.csv`, and `codebook_coverage.csv`; four sections (bulk overview, col-type distribution, codebook coverage, timing); always writes `quality_report_YYYY-MM-DD.md`
+- N/A for absent codebook file vs 0% for present-but-empty file
+- Add `data_check/quality_report_*.md` to `.gitignore`
 
 **015** — verbatim-codebook-labels (branch: `015-verbatim-codebook-labels`)
 - Update `CODEBOOK_PARSE_PROMPT` in `2_codebook_label.R` to instruct the LLM to copy label text verbatim from the codebook source rather than paraphrasing or summarising it; add explicit no-rephrase rule and no-fabrication rule for variables without a description
