@@ -18,8 +18,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' filename <- demoxml()
-#' paper <- read(filename)
+#' paper <- demopaper()
 #' report(paper)
 #' }
 report <- function(paper,
@@ -350,8 +349,7 @@ report_qmd <- function(module_output, paper = list()) {
 #' @export
 #'
 #' @examples
-#' filename <- demoxml()
-#' paper <- read(filename)
+#' paper <- demopaper()
 #' op <- module_run(paper, "stat_p_exact")
 #' module_report(op) |> cat()
 module_report <- function(module_output,

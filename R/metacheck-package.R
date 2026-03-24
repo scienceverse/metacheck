@@ -24,3 +24,15 @@ svutils::`%||%`
 #' @export
 #' @importFrom svutils message
 svutils::message
+
+#' @export
+#' @importFrom svutils online
+svutils::online
+
+#' @export
+#' @importFrom svutils xml_find
+svutils::xml_find
+
+#' @export
+#' @importFrom svutils xml_find1
+svutils::xml_find1

@@ -27,22 +27,6 @@ test_that(".onAttach", {
 })
 
 
-
-test_that("verbose", {
-  expect_equal(verbose(FALSE), FALSE)
-  expect_equal(verbose(), FALSE)
-  expect_equal(verbose(TRUE), TRUE)
-  expect_equal(verbose(), TRUE)
-  expect_equal(verbose(0), FALSE)
-  expect_equal(verbose("FALSE"), FALSE)
-  expect_equal(verbose(1), TRUE)
-  expect_equal(verbose("TRUE"), TRUE)
-
-  expect_error(verbose("G"))
-  expect_invisible(verbose(FALSE))
-  expect_visible(verbose())
-})
-
 test_that("llm_use", {
   expect_true(is.function(metacheck::llm_use))
   expect_no_error(helplist <- help(llm_use, metacheck))
@@ -76,17 +60,4 @@ test_that("email", {
   expect_visible(email())
   email(orig)
 })
-
-test_that("online", {
-  skip_if_offline("google.com")
-
-  expect_true(online())
-  expect_true(online("google.com"))
-  expect_true(online("http://google.com"))
-  expect_true(online("https://google.com"))
-  expect_true(online("https://google.com/images"))
-
-  expect_false(online("notasite"))
-})
-
 

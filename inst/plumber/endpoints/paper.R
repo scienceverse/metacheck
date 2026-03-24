@@ -92,7 +92,7 @@ function(req, res) {
         return(error_response(res, 500, paper_obj$error))
     }
 
-    author_table(paper_obj$paper)
+    paper_table(paper_obj$paper, "author")
 }
 
 #* Get references from a paper
@@ -323,7 +323,7 @@ function(req, res) {
     }
 
     logger::log_info("Paper processed successfully, extracting metadata: {request_id}")
-    authors <- author_table(paper_obj$paper)
+    authors <- paper_table(paper_obj$paper, "author")
     references <- paper_obj$paper$bib
     cross_references <- paper_obj$paper$xref
 

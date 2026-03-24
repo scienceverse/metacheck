@@ -1,9 +1,7 @@
 #' Power Analysis Check
 #'
 #' @description
-#' This module uses a large language module (LLM) to extract information reported in power analyses, including the statistical test, sample size, alpha level, desired level of power,and magnitude and type of effect size.
-#'
-#' If you have not set llm_use(TRUE) and supplied a groq API, the module will return paragraphs that potentially contain power analyses, based on a regular expression search.
+#' This module uses a large language module (LLM) to extract information reported in power analyses, including the statistical test, sample size, alpha level, desired level of power,and magnitude and type of effect size. If you have not set llm_use(TRUE) and supplied an LLM API, the module will return paragraphs that potentially contain power analyses, based on a regular expression search.
 #'
 #' @details
 #' The Power Analysis Check module uses regular expressions to identify sentences that contain a statistical power analysis. Without the use of an LMM, the module uses regular expressions to classify the power analysis as a-priori, sensitivity or post-hoc. With the use of an LMM, it checks if the power analysis is reported with all required information.

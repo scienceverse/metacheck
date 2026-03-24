@@ -7,6 +7,9 @@
 \alias{verbose}
 \alias{\%||\%}
 \alias{message}
+\alias{online}
+\alias{xml_find}
+\alias{xml_find1}
 \title{Objects exported from other packages}
 \keyword{internal}
 \description{
@@ -14,6 +17,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{svutils}{\code{\link[svutils:op-null-default]{\%||\%}}, \code{\link[svutils]{message}}, \code{\link[svutils]{pb}}, \code{\link[svutils]{verbose}}}
+  \item{svutils}{\code{\link[svutils:op-null-default]{\%||\%}}, \code{\link[svutils]{message}}, \code{\link[svutils]{online}}, \code{\link[svutils]{pb}}, \code{\link[svutils]{verbose}}, \code{\link[svutils]{xml_find}}, \code{\link[svutils]{xml_find1}}}
 }}
 

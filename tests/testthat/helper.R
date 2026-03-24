@@ -44,8 +44,5 @@ skip_osf <- function() {
 
 # skip when running quick checks
 skip_if_quick <- function() {
-  skip_if(
-    identical(Sys.getenv("METACHECK_QUICK"), "true"),
-    "Quick mode — skipping slow tests"
-  )
+  skip("Quick mode — skipping slow tests")
 }

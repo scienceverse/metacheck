@@ -40,8 +40,7 @@ Pass arguments to modules in a named list of lists, using the same names as the 
 }
 \examples{
 \dontrun{
-filename <- demoxml()
-paper <- read(filename)
+paper <- demopaper()
 report(paper)
 }
 }

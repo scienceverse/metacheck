@@ -42,8 +42,6 @@ a data frame of matches
 Search the text of a paper or list of paper objects. Also works on the table results of a \code{search_text()} call.
 }
 \examples{
-filename <- demoxml()
-paper <- read(filename)
-
+paper <- demopaper()
 search_text(paper, "p\\\\s*(=|<)\\\\s*[0-9\\\\.]+", return = "match")
 }

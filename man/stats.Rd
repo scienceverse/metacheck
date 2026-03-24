@@ -18,7 +18,6 @@ a table of statistics
 Check Stats
 }
 \examples{
-filename <- demoxml()
-papers <- read(filename)
-stats(papers)
+paper <- demopaper()
+stats(paper)
 }

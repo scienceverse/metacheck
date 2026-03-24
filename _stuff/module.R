@@ -8,8 +8,7 @@
 #' @export
 #'
 #' @examples
-#' filename <- demoxml()
-#' paper <- read(filename)
+#' paper <- demopaper()
 #' module_run(paper, "stat_p_exact")
 module_run <- function(paper, module, ...) {
   module_path <- module_find(module)

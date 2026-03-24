@@ -7,9 +7,8 @@
 #' @export
 #'
 #' @examples
-#' filename <- demoxml()
-#' papers <- read(filename)
-#' stats(papers)
+#' paper <- demopaper()
+#' stats(paper)
 stats <- function(text, ...) {
   # lines with stats must have at least one number
   text <- search_text(text, "[0-9]")

@@ -327,14 +327,14 @@ print.metacheck_module_list <- function(x, ...) {
       return(NULL)
     }
     items <- paste0("* ", sub$name, ": ", sub$description, "\n")
-    title <- sprintf("\n*** %s ***\n", toupper(s))
+    title <- sprintf("\n*** %s ***\n\n", toupper(s))
 
     c(title, items)
   })
   txt <- unlist(txt)
 
   # txt <- paste0("* ", x$name, ": ", x$description, "\n")
-  cat("", txt, "\nUse `module_help(\"module_name\")` for help with a specific module\n")
+  cat("", txt, "\nUse `module_help(\"module_name\")` for help with a specific module\n", sep = "")
 }
 
 #' Print Module Output

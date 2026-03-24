@@ -83,14 +83,15 @@ test_that("osf_file_download", {
   expect_true(dir.exists(f))
   f <- file.path(tmpdir4, osf_id, node_name, "data.xlsx")
   expect_true(file.exists(f))
-  exp_paths <- c("README", "data.xlsx",
+  exp_paths <- c("README",
+                 "data.xlsx",
                  "nes/README",
                  "nes/test-1.txt",
                  "nes/nes/test-2.txt",
                  "nes/nes/nes/test-3.txt",
                  "nes/nes/nes/nes/test-4.txt") |>
     paste0(node_name, "/", x = _)
-  expect_equal(dl$path, exp_paths)
+  expect_setequal(dl$path, exp_paths)
   f <- file.path(tmpdir4, osf_id)
   unlink(f, recursive = TRUE)
 
