@@ -396,7 +396,10 @@ format_bib_authors <- function(authors) {
   if (is.null(authors) || (is.data.frame(authors) && nrow(authors) == 0)) {
     return(NA_character_)
   }
-  if (is.character(authors)) return(authors)
+  if (is.character(authors)) {
+    a <- paste(authors, collapse = "; ")
+    return(a)
+  }
   paste(authors$family, authors$given, sep = ", ", collapse = "; ")
 }
 

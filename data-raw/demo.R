@@ -6,6 +6,7 @@ quarto::quarto_render(qmd, "docx")
 # convert newest PDF to bibr
 pdf <- "data-raw/demo/to_err_is_human.pdf"
 bibr <- platform_bibr_convert(pdf, "data-raw/demo")
+bibr <- "data-raw/demo/to_err_is_human.json"
 demopaper <- read(bibr)
 
 # fixes for schema

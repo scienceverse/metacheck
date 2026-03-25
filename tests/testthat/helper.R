@@ -38,7 +38,7 @@ skip_osf <- function() {
   skip("OSF")
   skip_on_cran()
   skip_on_covr()
-  skip_if_offline()
+  skip_if_offline("api.osf.io")
   skip_if_not(osf_api_check() == "ok", "OSF API unavailable")
 }
 

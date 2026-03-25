@@ -8,10 +8,8 @@ inst/doc
 
 inst/python/constants.py
 inst/modules/sample-size*
-tests/testthat/pdf
 /doc/
 /Meta/
-/tests/testthat/grobid-test/pdf/
 /data-raw/psychsci/pdf/
 /data-raw/psychsci/*_consolidated
 /data-raw/psychsci/bibr_from_*

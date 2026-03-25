@@ -261,7 +261,7 @@ doi_lookup <- function(doi) {
 #'
 #' @param doi the DOI(s) to get info for
 #'
-#' @return data frame with DOIs and info
+#' @return bib_match data frame
 #' @export
 #' @examples
 #' doi <- "10.5281/zenodo.2669586"
@@ -270,7 +270,12 @@ doi_lookup <- function(doi) {
 #' }
 datacite_doi <- function(doi) {
   if (length(doi) == 0) {
-    return(data.frame(doi = character(0)))
+    return(data.frame(
+      service = character(0),
+      title = character(0),
+      authors = I(list()),
+      doi = character(0)
+    ))
   }
 
   # build requests for non-NA DOIs, perform in parallel
@@ -316,28 +321,40 @@ datacite_doi <- function(doi) {
     att <- bd$data$attributes
 
     # authors
-    authors <- att$creators |>
-      sapply(\(a) {
-        paste(a$familyName, a$givenName, sep = ", ")
-      }) |>
-      paste(collapse = "; ")
+    authors <- lapply(att$creators, \(a) {
+      if (is.null(a) || length(a) == 0) {
+        data.frame(given = character(0), family = character(0))
+      } else {
+        data.frame(
+          given = a$givenName %||% NA_character_,
+          family = a$familyName %||% NA_character_
+        )
+      }
+    }) |> dplyr::bind_rows()
 
     info <- list(
+      service    = "datacite",
+      service_id = bd$data$id %||% NA_character_,
+      score      = NA_real_,
       doi        = att$doi %||% NA_character_,
-      type       = att$types$bibtex %||% NA_character_,
+      bib_type   = att$types$bibtex %||% NA_character_,
       title      = unlist(att$titles)[[1]] %||% NA_character_,
+      authors    = NA,
       container  = unlist(att$container)[[1]] %||% NA_character_,
-      year       = att$publicationYear %||% NA_real_,
-      author     = authors %||% NA_character_,
       publisher  = att[["publisher"]] %||% NA_character_,
+      year       = att$publicationYear %||% NA_real_,
+      date       = unlist(att$dates)[[1]] %||% NA_character_,
       url        = att[["url"]] %||% NA_character_,
       version    = att[["version"]] %||% NA_character_
     )
 
-    lapply(info, \(i) {
+    info <- lapply(info, \(i) {
       if (length(i) == 1 & is.atomic(i)) return(i[[1]])
       unlist(i) |> paste(sep = ", ", collapse = "; ")
     })
+
+    info$authors <- list(authors)
+    info
   }) |> dplyr::bind_rows()
 
   bib_table
@@ -658,8 +675,7 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
     author <- format_bib_authors(ref$authors) %||% ref$author
     container <- ref$container %||% ref$journal %||% ref$booktitle
 
-    ref <- paste(author, collapse = ", ") |>
-      paste(title, container, sep = "; ")
+    ref <- paste(title, author, container, sep = "; ")
   }
 
   if (length(ref) > 1 | is.list(ref)) {
@@ -858,7 +874,6 @@ add_bib_match <- function(paper, min_score = 50) {
     ref              = unique(refs),
     service          = "crossref",
     service_id       = NA_character_,
-    bib_id           = NA_integer_,
     score            = cr_data$score %||% NA_real_,
     bib_type         = bibtype_convert(cr_data$type) %||% NA_character_,
     doi              = cr_data$DOI %||% NA_character_,
@@ -891,26 +906,17 @@ add_bib_match <- function(paper, min_score = 50) {
   ) |>
     dplyr::left_join(bib_match, by = "ref")
   bib_match_table$ref <- NULL
+  bib_match_table <- bib_match_table[!is.na(bib_match_table$score), ]
 
   # add bib_match table to paper object(s)
   if (is_paper(paper)) {
     bib_match_table$paper_id <- NULL
-    bib_match_table$bib_id <- NULL
-    paper$bib$match <- data.frame(
-      crossref = I(bib_match_table),
-      openalex = NA,
-      openlibrary = NA
-    )
+    paper$bib_match <- bib_match_table
   } else if (is_paper_list(paper)) {
     paper <- lapply(paper, \(p) {
       bib_match_i <- bib_match[bib_match$paper_id == p$paper_id, ]
       bib_match_i$paper_id <- NULL
-      bib_match_i$bib_id <- NULL
-      p$bib$match <- data.frame(
-        crossref = I(bib_match_i),
-        openalex = NA,
-        openlibrary = NA
-      )
+      p$bib_match <- bib_match_i
       p
     }) |> paperlist()
   }

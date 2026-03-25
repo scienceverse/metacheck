@@ -174,3 +174,58 @@ test_that("read - directory", {
   expect_true(paper_validate(papers[[2]]))
   expect_true(paper_validate(papers[[3]]))
 })
+
+test_that("format_bib_authors", {
+  expect_true(is.function(metacheck::format_bib_authors))
+  expect_no_error(helplist <- help(format_bib_authors, metacheck))
+
+  expect_error(format_bib_authors(bad_arg))
+
+  # NULL
+  authors <- NULL
+  obs <- format_bib_authors(authors)
+  exp <- NA_character_
+  expect_equal(obs, exp)
+
+  # empty df
+  authors <- data.frame(given = character(0),
+                        family = character(0))
+  obs <- format_bib_authors(authors)
+  exp <- NA_character_
+  expect_equal(obs, exp)
+
+  # 1 df
+  authors <- data.frame(given = c("Alice H.", "Wendy"),
+                        family = c("Eagly", "Wood"))
+  obs <- format_bib_authors(authors)
+  exp <- "Eagly, Alice H.; Wood, Wendy"
+  expect_equal(obs, exp)
+
+  # list of dfs
+  authors <- list(
+    data.frame(given = c("Alice H.", "Wendy"),
+               family = c("Eagly", "Wood")),
+    data.frame(given = "Lisa",
+               family = "DeBruine")
+  )
+  obs <- format_bib_authors(authors)
+  exp <- c("Eagly, Alice H.; Wood, Wendy",
+           "DeBruine, Lisa")
+  expect_equal(obs, exp)
+
+  # character vector
+  authors <- c("DeBruine, L", "Lakens, D")
+  obs <- format_bib_authors(authors)
+  exp <- c("DeBruine, L; Lakens, D")
+  expect_equal(obs, exp)
+
+  # list of character vectors
+  authors <- list(
+    c("DeBruine, L", "Lakens, D"),
+    "Werner, J"
+  )
+  obs <- format_bib_authors(authors)
+  exp <- c("DeBruine, L; Lakens, D", "Werner, J")
+  expect_equal(obs, exp)
+})
+

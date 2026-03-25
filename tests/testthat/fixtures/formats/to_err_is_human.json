@@ -6,7 +6,9 @@
       "keywords": [
         [
           [
-            []
+            [
+              []
+            ]
           ]
         ]
       ],
@@ -528,7 +530,9 @@
       "title": "The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles.",
       "first_page": "408",
       "volume": "54",
-      "authors": [],
+      "authors": [
+        ["Eagly, Alice H.", "Wood, Wendy"]
+      ],
       "container": "American Psychologist",
       "doi": "10.1037/0003-066x.54.6.408",
       "bib_type": "journal_article",
@@ -548,7 +552,9 @@
       "title": "Evil Genius? How Dishonesty Can Lead to Greater Creativity.",
       "first_page": "973",
       "volume": "25",
-      "authors": [],
+      "authors": [
+        ["Gino, Francesca", "Wiltermuth, Scott S."]
+      ],
       "container": "Psychological Science",
       "doi": "10.1177/0956797614520714",
       "bib_type": "journal_article",
