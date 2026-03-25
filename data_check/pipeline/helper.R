@@ -925,3 +925,90 @@ match_column_labels <- function(columns_df, codebook_vars_df,
     stringsAsFactors  = FALSE
   )
 }
+
+# ── PsychDS helpers ───────────────────────────────────────────────────────────
+
+# Apply ground-truth overrides to a structure data frame.
+# Reads ground_truth/<paper_id>.csv if present; for each validated row whose
+# rel_path matches, overwrites type/group/is_raw with type_gt/group_gt/is_raw_gt
+# and sets ground_truth_validated = TRUE.  Returns structure_df unchanged (with
+# ground_truth_validated = FALSE for all rows) when no GT file exists.
+# paper_id must be a character string (leading zeros are meaningful).
+apply_ground_truth <- function(structure_df, paper_id) {
+  structure_df$ground_truth_validated <- FALSE
+  gt_path <- file.path("./data_check/ground_truth",
+                       paste0(paper_id, ".csv"))
+  if (!file.exists(gt_path)) return(structure_df)
+  gt <- tryCatch(
+    read.csv(gt_path, stringsAsFactors = FALSE,
+             colClasses = c(paper_id = "character")),
+    error = function(e) {
+      warning("apply_ground_truth: failed to read ", gt_path, ": ",
+              conditionMessage(e))
+      NULL
+    }
+  )
+  if (is.null(gt) || nrow(gt) == 0) return(structure_df)
+  for (i in seq_len(nrow(gt))) {
+    idx <- which(structure_df$rel_path == gt$rel_path[i])
+    if (length(idx) == 0) next
+    if (!is.na(gt$type_gt[i])    && nzchar(gt$type_gt[i]))
+      structure_df$type[idx]   <- gt$type_gt[i]
+    if (!is.na(gt$group_gt[i])   && nzchar(gt$group_gt[i]))
+      structure_df$group[idx]  <- gt$group_gt[i]
+    if (!is.na(gt$is_raw_gt[i]))
+      structure_df$is_raw[idx] <- as.logical(gt$is_raw_gt[i])
+    structure_df$ground_truth_validated[idx] <- TRUE
+    # Store raw GT fields for provenance output
+    structure_df$gt_type_gt[idx]       <- gt$type_gt[i]
+    structure_df$gt_group_gt[idx]      <- gt$group_gt[i]
+    structure_df$gt_is_raw_gt[idx]     <- gt$is_raw_gt[i]
+    if ("validated_at" %in% names(gt))
+      structure_df$gt_validated_at[idx] <- gt$validated_at[i]
+    if ("annotator" %in% names(gt))
+      structure_df$gt_annotator[idx]   <- gt$annotator[i]
+  }
+  structure_df
+}
+
+# Sanitise a string for use as a PsychDS keyword value.
+# Steps: remove extension → remove non-alphanumeric → truncate.
+# Returns "" for inputs that become empty after sanitisation.
+# max_chars: maximum length of the returned string (default 60).
+sanitise_keyword_value <- function(x, max_chars = 60L) {
+  x <- tools::file_path_sans_ext(as.character(x))  # remove extension
+  x <- gsub("[^a-zA-Z0-9]", "", x)                 # alphanumeric only
+  if (nchar(x) > max_chars) x <- substr(x, 1L, max_chars)
+  x
+}
+
+# Extract plain text from a documentation file for machine processing.
+# Supported extensions: pdf (pdftools), docx (officer), rtf (regex strip).
+# Returns a character string on success — may be empty for image-only PDFs.
+# Returns NULL for unsupported extensions OR if extraction throws an error;
+# this lets callers distinguish "empty text" (image PDF) from "error".
+# Both pdftools >= 3.0.0 and officer >= 0.7.0 are already installed.
+extract_plain_text <- function(path) {
+  ext <- tolower(tools::file_ext(path))
+  if (!ext %in% c("pdf", "docx", "rtf")) return(NULL)
+  tryCatch(
+    switch(ext,
+      pdf = {
+        if (!requireNamespace("pdftools", quietly = TRUE)) return(NULL)
+        paste(pdftools::pdf_text(path), collapse = "\n")
+      },
+      docx = {
+        if (!requireNamespace("officer", quietly = TRUE)) return(NULL)
+        doc  <- officer::read_docx(path)
+        summ <- officer::docx_summary(doc)
+        txt  <- as.character(summ$text)
+        paste(txt[nzchar(trimws(txt))], collapse = "\n")
+      },
+      rtf = {
+        lines <- readLines(path, warn = FALSE)
+        .strip_rtf(paste(lines, collapse = "\n"))
+      }
+    ),
+    error = function(e) NULL
+  )
+}

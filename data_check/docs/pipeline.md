@@ -16,6 +16,9 @@ contents using an LLM, and extracts column-level statistics into structured CSVs
 | `run_sweep_bulk.R` | Bulk temperature sweep across all papers in `XML_DIR`. Paper-level resume via `sweep_results/sweep_bulk_log.csv`; calls `run_paper_sweep()`. |
 | `report_sweep.R` | Single-paper sweep report: stability (pairwise col_type + label agreement), quality proxies, weighted recommendation. Writes `sweep_report_YYYY-MM-DD.md`. |
 | `report_sweep_grand.R` | Grand cross-paper report: flat CSV with one row per (paper_id × temperature × pipeline stage). No aggregation — post-processing friendly. |
+| `runners/run_psychds_single.R` | Convert one paper to PsychDS format. Dev/smoke-test entry point. Accepts `paper_id` as CLI arg or pre-set variable; falls back to random paper from `results/bulk_summary.csv`. |
+| `runners/run_psychds_bulk.R` | Batch-convert all successfully indexed papers to PsychDS format. Crash-resilient, auto-resumes from `psychds/conversion_summary.csv`. |
+| `pipeline/3_psychds_convert.R` (`convert_psychds()`) | Convert a single paper by ID to PsychDS format. Returns list of per-study result rows. |
 
 ---
 
@@ -128,6 +131,34 @@ Paper ID (character string)
 │                     │  conflicting (LABEL_MERGE_PROMPT, 1 call/paper) — sets
 │                     │  label_method = "merged_rules" or "merged_llm"
 │                     │  Dependencies: officer (≥0.7.0), pdftools (≥3.0.0) — already installed
+└──────────┬──────────┘
+           │  (optional post-processing step)
+           ▼
+┌─────────────────────┐
+│  13. PsychDS        │  pipeline/3_psychds_convert.R  convert_psychds(paper_id)
+│      conversion     │  Reads: outputs/<paper_id>/structure.csv
+│                     │         outputs/<paper_id>/columns.csv
+│                     │         outputs/<paper_id>/labels.csv
+│                     │         outputs/<paper_id>/codebook_coverage.csv
+│                     │         ground_truth/<paper_id>.csv (optional)
+│                     │         data_check/data/<paper_id>/grobid/*.xml (optional)
+│                     │  Writes: psychds/<paper_id>/dataset_description.json
+│                     │          psychds/<paper_id>/data/<name>_data.csv
+│                     │          psychds/<paper_id>/data/<name>_data.json (sidecar)
+│                     │          psychds/<paper_id>/data/raw/ (oversized/raw files)
+│                     │          psychds/<paper_id>/materials/, documentation/, code/
+│                     │          psychds/<paper_id>/documentation/txt/ (plaintext copies)
+│                     │          psychds/<paper_id>/provenance.json
+│                     │  Multi-study layout: psychds/<paper_id>/study-<group>/
+│                     │  Oversized files (>500 MB): raw copy only, no CSV conversion
+│                     │  Sentinel expansion: aggregate placeholder rows replaced with
+│                     │  individual file records before conversion
+│                     │  Ground truth: ground_truth/<paper_id>.csv overrides type/group/is_raw
+│                     │  Paper metadata: populated from GROBID TEI XML if present (xml2)
+│                     │  Plaintext extraction: doc/codebook files with .pdf/.docx/.rtf
+│                     │  extension produce a .txt copy in documentation/txt/ via
+│                     │  extract_plain_text() in helper.R (pdftools/officer/RTF strip);
+│                     │  image-only PDFs and errors are flagged in provenance.json only
 └─────────────────────┘
 ```
 
@@ -147,6 +178,8 @@ Paper ID (character string)
 | `MAX_CODEBOOK_LLM_CALLS` | 3 | `2_codebook_label.R` | Max LLM calls per paper for codebook text parsing |
 | `MAX_CODEBOOK_FILE_MB` | 100 | `2_codebook_label.R` | Codebook files larger than this (MB) are skipped |
 | `MULTILEVEL_HEADER_LOOKAHEAD` | 3L | `0_index.R` | Max rows to scan below row 1 for a usable sub-header row in multi-level CSV files |
+| `PSYCHDS_OUT_DIR` | `./data_check/psychds` | `3_psychds_convert.R` | Root directory for PsychDS output directories |
+| `DATA_SIZE_LIMIT_MB` | 500 | `3_psychds_convert.R` | Max data file size (MB) for CSV conversion; oversized files are raw-copied only |
 
 ## Resource Limits
 

@@ -1,5 +1,29 @@
 # Progress Log
 
+## 2026-03-25
+
+### Completed ✅
+
+**021** — psychds-conversion (branch: `021-psychds-conversion`)
+- Add `pipeline/3_psychds_convert.R` with `convert_psychds(paper_id)` — converts pipeline outputs to PsychDS-compliant directory structure; returns list of per-study result rows
+- Produces `dataset_description.json` (Schema.org JSON-LD with `schema:variableMeasured` PropertyValues), `*_data.csv` (UTF-8, sanitised filenames), `*_data.json` sidecars, `provenance.json`
+- Multi-study layout: `study-<group>/` subdirectories when multiple experiment groups detected; co-location heuristic assigns `group=na/other` files to a study or `shared/` directory
+- Non-data file placement: `materials/`, `documentation/`, `code/`, `assets/` subdirectories by file type
+- Binary format conversion: SPSS (`.sav`), Stata (`.dta`), SAS (`.sas7bdat`), Excel (`.xlsx`/`.xls`), R objects (`.rds`/`.rda`/`.rdata`) — reads via `haven`/`readxl`; strips labels with `haven::zap_labels()` while preserving value mappings in sidecar
+- Oversized files (>500 MB): raw-copy to `data/raw/` only; skip-sidecar with `metacheck:conversion_skipped = TRUE`
+- `row_id` uniqueness enforcement: column renamed to `original_row_id` if values not unique (FR-015b)
+- Sentinel row expansion: aggregate placeholder rows replaced with individual file records using `AGGREGATE_EXT_OVERRIDE` extension classification
+- Ground truth integration: `ground_truth/<paper_id>.csv` overrides `type`/`group`/`is_raw` for validated rows
+- Paper metadata from GROBID TEI XML when present (`xml2`): title, authors, abstract, DOI, date, keywords
+- Crash resilience: `append_conversion_summary()` appends to `psychds/conversion_summary.csv` immediately after each paper
+- Add `apply_ground_truth()` and `sanitise_keyword_value()` helpers to `pipeline/helper.R`
+- Add `runners/run_psychds_single.R` — dev/smoke-test entry point; accepts `paper_id` as CLI arg or pre-set variable; falls back to random paper from `results/bulk_summary.csv`
+- Add `runners/run_psychds_bulk.R` — batch conversion of all successfully indexed papers; crash-resilient auto-resume via `psychds/conversion_summary.csv`
+- Update `docs/pipeline.md` — add step 13 (PsychDS conversion), new entry points, new constants
+- Update `docs/output-schemas.md` — add `psychds/conversion_summary.csv` schema and new error codes `pipeline_failed`/`no_data_files`
+
+---
+
 ## 2026-03-23
 
 ### Completed ✅

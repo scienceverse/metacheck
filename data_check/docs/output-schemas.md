@@ -126,6 +126,39 @@ runner to resume after a crash.
 | `download_failed` | Network or OSF API error during download |
 | `empty_repo` | Downloaded repository contains no usable files after unpacking (retried once) |
 | `too_large` | Exceeded download size limit (10 GB) or file path count limit (200 paths) |
+| `pipeline_failed` | Paper's `structure.csv` is absent or `success` column indicates an earlier pipeline stage failed |
+| `no_data_files` | `structure.csv` exists and pipeline succeeded, but no files with `type = "data"` were found |
+
+---
+
+## `psychds/conversion_summary.csv`
+
+One row per study group per paper, appended immediately after each paper completes. Used by the bulk PsychDS runner to auto-resume after a crash.
+
+| Column | Type | Description |
+|---|---|---|
+| `paper_id` | character | Paper identifier (leading zeros preserved) |
+| `study_group` | character | Study/experiment group label (e.g. `ex1`, `ex2`); `"single"` for single-study papers |
+| `success` | logical | `TRUE` if the study group converted without error |
+| `error` | character | Error code or message if `success = FALSE`; `NA` otherwise |
+| `n_data_files` | integer | Data files converted to PsychDS CSV format |
+| `n_raw_files` | integer | Files copied to `data/raw/` only (oversized, raw-flagged, or non-convertible) |
+| `n_variables` | integer | Total variables written to `variableMeasured` in `dataset_description.json` |
+| `n_labelled` | integer | Variables with a matched codebook label |
+| `has_paper_metadata` | logical | `TRUE` if GROBID TEI XML was found and metadata was extracted |
+| `has_ground_truth` | logical | `TRUE` if `ground_truth/<paper_id>.csv` was applied |
+| `output_path` | character | Absolute path to the output directory for this study group |
+
+### TXT extraction fields in `provenance.json`
+
+Present only on entries where TXT extraction was attempted (i.e., files with `pipeline_type` of `"doc"` or `"codebook"` and extension `.pdf`, `.docx`, or `.rtf`):
+
+| Field | Type | Description |
+|---|---|---|
+| `txt_extraction_attempted` | boolean | `true` when `extract_plain_text()` was called for this file |
+| `txt_extraction_skipped` | boolean | `true` if no `.txt` file was written (empty result or error) |
+| `txt_skip_reason` | string | `"no_extractable_text"` (empty result, e.g. image-only PDF) or `"extraction_error"` (exception during extraction); absent when not skipped |
+| `txt_psychds_path` | string | Relative path of the written `.txt` file (e.g. `"documentation/txt/codebook.txt"`); absent when skipped |
 
 ---
 
