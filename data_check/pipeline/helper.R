@@ -380,13 +380,13 @@ normalize_label <- function(x) {
 # "label/description" column.  Returns list(var_col, lab_col) or NULL.
 .find_codebook_cols <- function(col_names) {
   var_col <- grep(
-    paste0("(?i)^(var(iable)?|name|column|field|variable_?name|varname|",
-           "variable[_ ]?label|var[_ ]?label|item)$"),
+    paste0("(?i)^(var(iable)?|name|column|field|variable[_ ]?name|varname|item)$"),
     col_names, perl = TRUE, value = TRUE
   )[1]
   lab_col <- grep(
     paste0("(?i)^(label|description|desc|definition|meaning|explanation|text|",
-           "label[_ ]?text|question|question[_ ]?text|variable[_ ]?description)$"),
+           "label[_ ]?text|question|question[_ ]?text|variable[_ ]?description|",
+           "variable[_ ]?label|var[_ ]?label)$"),
     col_names, perl = TRUE, value = TRUE
   )[1]
   if (is.na(var_col) || is.na(lab_col)) return(NULL)
