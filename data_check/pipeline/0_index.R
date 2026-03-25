@@ -53,7 +53,8 @@ MULTILEVEL_HEADER_LOOKAHEAD <- 3L
 # Directory names longer than this many words are truncated; spaces → underscores
 MAX_DIR_WORDS   <- 5
 
-XML_DIR <- "./data-raw/psychsci/grobid_0.8.2-full"
+# Local repository of more xmls. Remove to fallback to psychsci.
+XML_DIR <- "/Volumes/Models/expanded_xml" #"./data-raw/psychsci/grobid_0.8.2-full"
 
 BADGE_REPOS <- c("tvyxz", "osf.io/tvyxz/", "osf.io/tvyxz")
 

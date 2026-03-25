@@ -29,6 +29,7 @@ data_check/data/
 data_check/structure/
 data_check/outputs/*/
 data_check/sweep_results/
+data_check/ground_truth/
 
 
 ./output

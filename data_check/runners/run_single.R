@@ -32,7 +32,7 @@ local({
   if (length(all_ids) == 0) stop("No paper IDs found in ", XML_DIR)
 
   # IDs must stay as character strings — no numeric coercion
-  pid <- sample(all_ids, 1L)
+  pid <- #sample(all_ids, 1L)
 
   cat("\n══════════════════════════════════════════════════════════════════════\n")
   cat(sprintf("  Paper: %s\n", pid))

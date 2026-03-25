@@ -31,6 +31,8 @@ Auto-generated from all feature plans. Last updated: 2026-03-23
 - CSV files on local filesystem — `outputs/<paper_id>/codebook_coverage.csv` (018-fix-csv-codebook-parsing)
 - R (base R only, no new packages) + `haven` (already installed) — source of the labelled type; vctrs (transitively via haven) — source of the precision error on rbind (019-fix-index-labelled-stats)
 - CSV files — `outputs/<paper_id>/columns.csv`, `results/bulk_summary.csv` (019-fix-index-labelled-stats)
+- R (base R + already-installed packages: `shiny`, `bslib`, `haven`, + `shiny` (UI + server), `bslib` (layout/theming), `haven`/`readxl` (020-validation-gui)
+- Local CSV files; `ground_truth/<paper_id>.csv` per paper; no database (020-validation-gui)
 
 - R (base R, no new packages) + `helper.R` (`classify_col_type_rules()`), `0_index.R` (`COLUMN_TYPE_PROMPT`, `run_index()`) (004-reduce-unknown-coltypes)
 
@@ -50,8 +52,8 @@ tests/
 R (base R, no new packages): Follow standard conventions
 
 ## Recent Changes
+- 020-validation-gui: Added R (base R + already-installed packages: `shiny`, `bslib`, `haven`, + `shiny` (UI + server), `bslib` (layout/theming), `haven`/`readxl`
 - 018-fix-csv-codebook-parsing: Added R (base R, no new packages) + `haven`, `readxl`, `jsonlite` — all already installed; `helper.R` (shared helpers), `2_codebook_label.R` (coverage output)
-- 017-llm-temperature-testing: Added R (base R only — no new packages) + `metacheck` (`llm()`), `haven`, `readxl`, `jsonlite` — all already installed; `helper.R`, `0_index.R`, `2_codebook_label.R` sourced at runtime
 - 017-llm-temperature-testing: Added R (base R only — no new packages) + `metacheck` (`llm()`), `haven`, `readxl`, `jsonlite` — all already installed; `helper.R`, `0_index.R`, `2_codebook_label.R` sourced at runtime
 
 

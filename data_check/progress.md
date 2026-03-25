@@ -4,6 +4,17 @@
 
 ### Completed ✅
 
+**020** — validation-gui (branch: `020-validation-gui`)
+- Local Shiny application for human ground-truth labelling of `structure.csv` outputs
+- Keyboard-optimised: number keys `1`–`8` select file type, `R` toggles `is_raw`, `G` focuses group field, `⌘↩` saves, `Tab` skips, `⌘[` goes back, `⌘/` shows help overlay
+- Type-appropriate file preview: raw text (CSV/script), structured preview via `read_data_head()`, R object summary, PDF/DOCX text extraction, inline image, archive member list
+- Ground-truth saved to `ground_truth/<paper_id>.csv` immediately on each save; fully resumable across sessions
+- Folder-tree view and sibling list give repo context per file
+- `is_raw` toggle auto-disabled and forced `FALSE` for non-data file types
+- Startup annotator name dialog; console session summary on exit
+- New files: `tools/validation_gui/app.R`, `tools/validation_gui/gt_store.R`, `tools/validation_gui/preview.R`
+- New directory: `ground_truth/` (version-controlled dataset, not pipeline output)
+
 **019** — fix-index-labelled-stats (branch: `019-fix-index-labelled-stats`)
 - Fix `Can't convert from 'value' <labelled<double>> to <labelled<double>> due to loss of precision` error: add `as.numeric()` coercion at `x_comp` assignment in `0_index.R` so haven-labelled type metadata is stripped before statistics computation — prevents vctrs rbind from encountering incompatible label mappings across columns
 - Fix `arguments imply differing number of rows: 0, 1` error: cancel the sentinel mechanism when all files fall into aggregate folders — set `aggregate_df = NULL` and process all paths individually so `non_agg_relpaths` is never empty; the existing 10-call limit still guards runaway repos

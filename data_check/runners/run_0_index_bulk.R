@@ -12,7 +12,7 @@ source("data_check/pipeline/0_index.R")
 N_RUNS      <- Inf          # Inf = all papers; set an integer to cap
 SEED        <- NULL         # set an integer for reproducibility, or NULL
 SUMMARY_CSV <- "./data_check/results/bulk_summary.csv"
-DOWNLOAD    <- FALSE        # Whether the script should attempt downloads or not
+DOWNLOAD    <- TRUE        # Whether the script should attempt downloads or not
 
 if (!is.null(SEED)) set.seed(SEED)
 
