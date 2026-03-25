@@ -24,6 +24,12 @@ if (length(args) >= 1 && nzchar(args[1])) {
   paper_id <- as.character(args[1])
 }
 
+# If paper_id was auto-selected by a previous source() run, clear it so
+# re-sourcing without an explicit paper_id picks a fresh random paper.
+if (exists(".psychds_paper_id_was_random") && .psychds_paper_id_was_random) {
+  rm(paper_id, .psychds_paper_id_was_random)
+}
+
 # If paper_id is not defined (interactive use without setting it), pick randomly
 if (!exists("paper_id") || is.null(paper_id) || !nzchar(paper_id)) {
   bulk_path <- "./data_check/results/bulk_summary.csv"
@@ -37,6 +43,7 @@ if (!exists("paper_id") || is.null(paper_id) || !nzchar(paper_id)) {
   if (length(ok) == 0)
     stop("No successfully indexed papers found in bulk_summary.csv.")
   paper_id <- sample(ok, 1)
+  .psychds_paper_id_was_random <- TRUE
   message("No paper_id set — randomly selected: ", paper_id)
 }
 
