@@ -7,8 +7,45 @@ quarto::quarto_render(qmd, "docx")
 pdf <- "data-raw/demo/to_err_is_human.pdf"
 bibr <- platform_bibr_convert(pdf, "data-raw/demo")
 demopaper <- read(bibr)
+
+# fixes for schema
 demopaper$table$caption <- NULL
 demopaper$figure$caption <- NULL
+demopaper$text$raw_text <- NULL
+
+demopaper$bib$authors <- lapply(demopaper$bib$authors, \(a) {
+  paste(a$family, a$given, sep = ", ")
+})
+
+demopaper$bib$editors <- lapply(demopaper$bib$editors, \(a) {
+  paste(a$family, a$given, sep = ", ")
+})
+
+if (is.null(demopaper$bib_match)) {
+  demopaper$bib_match <- demopaper$bib$match$crossref
+  demopaper$bib$match <- NULL
+  demopaper$bib_match$bib_id <- demopaper$bib$bib_id
+  demopaper$bib_match$service <- "crossref"
+  demopaper$bib_match$service_id <- demopaper$bib_match$id
+  demopaper$bib_match$id <- NULL
+
+  demopaper$bib$year <- demopaper$bib$publication_year
+  demopaper$bib$date <- demopaper$bib$publication_date
+  demopaper$bib$publication_year <- NULL
+  demopaper$bib$publication_date <- NULL
+
+  demopaper$bib_match$year <- demopaper$bib_match$publication_year
+  demopaper$bib_match$date <- demopaper$bib_match$publication_date
+  demopaper$bib_match$publication_year <- NULL
+  demopaper$bib_match$publication_date <- NULL
+}
+
+# coerce data and write
+demopaper <- paper_coerce(demopaper)
+
+# read in and check
+paper_write(demopaper, bibr)
+demopaper <- read(bibr)
 paper_validate(demopaper)
 
 # copy to inst

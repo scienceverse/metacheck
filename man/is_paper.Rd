@@ -13,6 +13,6 @@ is_paper(paper)
 logical
 }
 \description{
-Detect a paper object
+Lightweight check if an object is a paper vs paperlist. Use \code{paper_validate()} for a thorough check.
 }
 \keyword{internal}

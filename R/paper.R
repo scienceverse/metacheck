@@ -1,3 +1,20 @@
+#' Get paper schema
+#'
+#' Read in the JSON schema for bibr formatted paper objects
+#'
+#' @returns The schema as a list
+#' @export
+#'
+#' @examples
+#' schema <- paper_schema()
+#' schema$`$defs`$info$required
+paper_schema <- function() {
+  json <- system.file("schema/paper.json", package = "metacheck")
+  schema <- jsonlite::read_json(json, simplifyVector = TRUE)
+
+  return(schema)
+}
+
 #' Create a paper object
 #'
 #' Create a new paper object or load a paper from PDF or XML
@@ -19,119 +36,25 @@ paper <- function(id = NULL, ...) {
   }
 
   paper <- list(
-    paper_id = id,
-    info = data.frame(
-      title = character(0),
-      keywords = I(list()),
-      doi = character(0),
-      file_hash = character(0),
-      input_format = character(0),
-      file_name = character(0),
-      bibr_version = character(0),
-      paper_type = character(0),
-      paper_type_confidence = numeric(0),
-      oecd_l1 = character(0),
-      oecd_l2 = character(0),
-      oecd_confidence = numeric(0)
-    ),
-    author = data.frame(
-      author_id = integer(0),
-      given = character(0),
-      family = character(0),
-      affiliation = character(0),
-      email = character(0),
-      corresponding = logical(0),
-      orcid = character(0),
-      role = I(list())
-    ),
-    bib = data.frame(
-      bib_id = integer(0),
-      bib_type = character(0),
-      doi = character(0),
-      title = character(0),
-      authors = I(list()),
-      editors = I(list()),
-      publisher = character(0),
-      publication_year = integer(0),
-      publication_date = character(0),
-      container = character(0),
-      volume = character(0),
-      issue = character(0),
-      first_page = character(0),
-      last_page = character(0),
-      edition = character(0),
-      version = character(0),
-      url = character(0),
-      text_id = integer(0),
-      match = I(list())
-    ),
-    eq = data.frame(
-      text_id = integer(0),
-      grp_id = integer(0),
-      lhs = character(0),
-      comp = character(0),
-      rhs = character(0)
-    ),
-    figure = data.frame(
-      figure_id = integer(0),
-      section_id = integer(0),
-      image = character(0),
-      page_number = integer(0)
-    ),
-    url = data.frame(
-      href = character(0),
-      link_text = character(0),
-      text_id = integer(0)
-    ),
-    section = data.frame(
-      section_id = integer(0),
-      header = character(0),
-      parent_section_id = integer(0),
-      section_type = character(0),
-      classification_score = double(0)
-    ),
-    table = data.frame(
-      table_id = integer(0),
-      section_id = integer(0),
-      html = character(0),
-      contents = I(list()),
-      page_number = integer(0)
-    ),
-    text = data.frame(
-      text_id = integer(0),
-      paragraph_id = integer(0),
-      section_id = integer(0),
-      text = character(0),
-      page_number = integer(0)
-    ),
-    xref = data.frame(
-      xref_id = integer(0),
-      xref_type = character(0),
-      contents = character(0),
-      text_id = integer(0)
-    )#,
-    # bib_matches = data.frame(
-    #   bib_id = integer(0),
-    #   source = character(0),
-    #   source_id = character(0),
-    #   match_score = numeric(0),
-    #   bib_type = character(0),
-    #   doi = character(0),
-    #   title = character(0),
-    #   authors = I(list()),
-    #   editors = I(list()),
-    #   publisher = character(0),
-    #   publication_year = integer(0),
-    #   container = character(0),
-    #   volume = character(0),
-    #   issue = character(0),
-    #   first_page = character(0),
-    #   last_page = character(0),
-    #   url = character(0)
-    # )
+    paper_id = id
   )
-
   class(paper) <- c("scivrs_paper", "list")
+
+  schema <- paper_schema()
+
+  for (tbl in setdiff(schema$required, "paper_id")) {
+    ref <- schema$properties[[tbl]]$`$ref` %||%
+      schema$properties[[tbl]]$items$`$ref`
+    def <- strsplit(ref, "/")[[1]][[3]]
+    cols <- schema$`$defs`[[def]]$properties |> names()
+
+    paper[[tbl]] <- data.frame()
+    for (col in cols) {
+      paper[[tbl]][[col]] <- character(0)
+    }
+  }
+
+  paper <- paper_coerce(paper)
 
   invisible(paper)
 }
@@ -217,7 +140,7 @@ test_paper <- function(text = LETTERS) {
   p$section <- data.frame(
     section_id = 0,
     header = "Test",
-    parent_section_id = NA,
+    parent_section_id = NA_integer_,
     section_type = "unknown",
     classification_score = 0
   )
@@ -247,8 +170,7 @@ test_paper <- function(text = LETTERS) {
 #' paper <- demopaper()
 #' paper_validate(paper)
 paper_validate <- function(paper) {
-  json <- system.file("schema/paper.json", package = "metacheck")
-  schema <- jsonlite::read_json(json, simplifyVector = TRUE)
+  schema <- paper_schema()
   error_msg <- c()
   warning_msg <- c()
 
@@ -274,15 +196,6 @@ paper_validate <- function(paper) {
   # check required and optional columns
   tbls <- setdiff(ok_tables, c("paper_id")) |>
     intersect(names(paper))
-
-  type_map <- list(
-    "string" = "character",
-    "integer" = "integer",
-    "number" = "double",
-    "boolean" = "logical",
-    "array" = "list",
-    "object" = "list"
-  )
 
   sink <- lapply(tbls, \(tbl) {
     ref <- schema$properties[[tbl]]$`$ref` %||%
@@ -310,6 +223,15 @@ paper_validate <- function(paper) {
     }
 
     # check column types
+    type_map <- list(
+      "string" = "character",
+      "integer" = "integer",
+      "number" = "double",
+      "boolean" = "logical",
+      "array" = "list",
+      "object" = "list"
+    )
+
     types <- schema$`$defs`[[def]]$properties |>
       sapply(\(x) x$type[[1]])
 
@@ -350,8 +272,13 @@ paper_validate <- function(paper) {
 #' @returns a paper object
 #' @export
 paper_coerce <- function(paper) {
-  json <- system.file("schema/paper.json", package = "metacheck")
-  schema <- jsonlite::read_json(json, simplifyVector = TRUE)
+  if (is_paper_list(paper)) {
+    papers <- lapply(paper, paper_coerce) |>
+      paperlist()
+    return(papers)
+  }
+
+  schema <- paper_schema()
 
   type_func <- list(
     "string" = as.character,
@@ -433,6 +360,8 @@ paper_coerce <- function(paper) {
 }
 
 #' Detect a paper object
+#'
+#' Lightweight check if an object is a paper vs paperlist. Use `paper_validate()` for a thorough check.
 #'
 #' @param paper the object to test
 #'

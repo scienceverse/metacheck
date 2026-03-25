@@ -9,7 +9,9 @@ test_that("psychsci", {
 
   # check all tables can be combined ----
   tbls <- names(psychsci[[1]]) |> setdiff("paper_id")
-  tables <- sapply(tbls, \(tbl) paper_table(psychsci, tbl))
+  expect_no_error(
+    tables <- sapply(tbls, \(tbl) paper_table(psychsci, tbl))
+  )
 
   skip("Failures expected")
 
@@ -28,8 +30,10 @@ test_that("psychsci", {
     # get info from crossref
     cr_info <- crossref_doi(dois, c("title", "abstract", "DOI"))
     cr_info$abstract <- cr_info$abstract |>
-      gsub("</jats:p>", "", x = _, fixed = TRUE) |>
-      gsub("<jats:p>", "", x = _, fixed = TRUE) |>
+      gsub("<\\/?jats[^>]*>", "", x = _) |>
+      gsub("\\(\\s+", "(", x = _) |>
+      gsub("\\s+", " ", x = _) |>
+      gsub("(\\S)- ", "\\1-", x = _) |> # e.g., "1- SD"
       trimws()
 
     readr::write_csv(cr_info, file_path)
@@ -45,7 +49,7 @@ test_that("psychsci components", {
   cr_info <- readr::read_csv(file_path, show_col_types = FALSE)
   cr_info$paper_id <- gsub("10.1177/", "", cr_info$DOI, fixed = TRUE)
 
-  bibr_info <- paper_table(psychsci2, "info")
+  bibr_info <- paper_table(psychsci, "info")
 
   bibr_title_mismatch <- cr_info[, c("paper_id", "title")] |>
     dplyr::mutate(bibr_title = bibr_info$title,
@@ -77,23 +81,39 @@ test_that("psychsci components", {
   # get all sentences and check if they're in the CR abstract
   bibr_all_text <- search_text(psychsci) |>
     dplyr::select(paper_id, text, text_id, section_type) |>
-    dplyr::filter(nchar(text) > 1) |>
+    dplyr::filter(nchar(text) > 1,
+                  (section_type %in% "abstract" | text_id < 50)) |>
     dplyr::left_join(cr_info, by = "paper_id") |>
     dplyr::select(-title) |>
     dplyr::rowwise() |>
     dplyr::mutate(
-      text = fix_fancy(text),
-      abstract = fix_fancy(abstract),
-      in_abstract = grepl(tolower(text), tolower(abstract), fixed = TRUE)
+      text = fix_fancy(text) |>
+        gsub("-", "", x = _),
+      abstract = fix_fancy(abstract) |>
+        gsub("-", "", x = _),
+      in_abstract = agrepl(text, tolower(abstract), fixed = TRUE)
     ) |>
     dplyr::ungroup() |>
     dplyr::filter(in_abstract)
 
-  bibr_some_abs<- unique(bibr_all_text$paper_id) |> length()
+  bibr_abs_text <- bibr_all_text |>
+    dplyr::summarise(text = paste(text, collapse = " "),
+                     .by = c("paper_id", "abstract")) |>
+    dplyr::mutate(
+      abst_identical = text == abstract
+    ) |>
+    dplyr::rowwise() |>
+    dplyr::mutate(
+      adist = utils::adist(text, abstract)[[1]]
+    )
 
   # report/test
   cat("\n- bibr title mismatches:", nrow(bibr_title_mismatch),
-      "\n- bibr papers with some abstract text:", bibr_some_abs)
+      "\n- bibr papers with some abstract text:", nrow(bibr_abs_text),
+      "\n- bibr papers with all abstract text:", sum(bibr_abs_text$abst_identical),
+      "\n- bibr papers with all adist < 10:", sum(bibr_abs_text$adist < 10)
+
+  )
 
   expect_equal( nrow(bibr_title_mismatch), 0)
   # most of the title mismatches are spaces after the second - when there are two hyphenated words (check sub vs gsub?)
@@ -205,24 +225,40 @@ test_that("psychsci2 components", {
   # Could be due to bad labelling in the text table?
   # get all sentences and check if they're in the CR abstract
   grobid_all_text <- search_text(psychsci2) |>
-    dplyr::select(paper_id, text, text_id, section_type)|>
-    dplyr::filter(nchar(text) > 1) |>
+    dplyr::select(paper_id, text, text_id, section_type) |>
+    dplyr::filter(nchar(text) > 1,
+                  (section_type %in% "abstract" | text_id < 50)) |>
     dplyr::left_join(cr_info, by = "paper_id") |>
     dplyr::select(-title) |>
     dplyr::rowwise() |>
     dplyr::mutate(
-      text = fix_fancy(text),
-      abstract = fix_fancy(abstract),
-      in_abstract = grepl(tolower(text), tolower(abstract), fixed = TRUE)
+      text = fix_fancy(text) |>
+        gsub("-", "", x = _),
+      abstract = fix_fancy(abstract) |>
+        gsub("-", "", x = _),
+      in_abstract = agrepl(text, tolower(abstract), fixed = TRUE)
     ) |>
     dplyr::ungroup() |>
     dplyr::filter(in_abstract)
 
-  grobid_some_abs <- unique(grobid_all_text$paper_id) |> length()
+  grobid_abs_text <- grobid_all_text |>
+    dplyr::summarise(text = paste(text, collapse = " "),
+                     .by = c("paper_id", "abstract")) |>
+    dplyr::mutate(
+      abst_identical = text == abstract
+    ) |>
+    dplyr::rowwise() |>
+    dplyr::mutate(
+      adist = utils::adist(text, abstract)[[1]]
+    )
 
   # report/test
   cat("\n- grobid title mismatches:", nrow(grobid_title_mismatch),
-      "\n- grobid papers with some abstract text:", grobid_some_abs)
+      "\n- grobid papers with some abstract text:", nrow(grobid_abs_text),
+      "\n- grobid papers with all abstract text:", sum(grobid_abs_text$abst_identical),
+      "\n- grobid papers with all adist < 10:", sum(grobid_abs_text$adist < 10)
+
+  )
 
   expect_equal( nrow(grobid_title_mismatch), 0)
   # most of the title mismatches are spaces after the second - when there are two hyphenated words (check sub vs gsub?)

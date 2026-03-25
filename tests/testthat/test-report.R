@@ -37,12 +37,12 @@ test_that("errors", {
 test_that("rendering error", {
   # should give a warning and return the path to the saved qmd
   paper <- demopaper()
-  modules <- c("bad-report")
+  modules <- test_path("modules", "bad-report.R")
   output_format <- "html"
 
   # qmd fails to render
   output_file <- withr::local_tempfile(fileext = paste0(".", output_format))
-  expect_warning(rep<- report(paper, modules, output_file, output_format),
+  expect_warning(rep <- report(paper, modules, output_file, output_format),
                  "There was an error rendering your report")
 
   exp <- sub("html$", "qmd", output_file)
@@ -115,8 +115,10 @@ test_that("render qmd", {
 })
 
 test_that("render html", {
-  skip_if_not_installed("quarto")
+  skip_if_quick()
+  skip_on_ci()
   skip_on_cran()
+  skip_if_not_installed("quarto")
 
   paper <- demopaper()
   modules <- c("stat_p_exact", "marginal")
@@ -154,6 +156,7 @@ test_that("report pass args", {
 })
 
 test_that("detected", {
+  skip_if_quick()
   skip_on_ci()
   skip_on_cran()
   skip_if_not_installed("quarto")

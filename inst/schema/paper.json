@@ -6,7 +6,7 @@
   "type": "object",
   "properties": {
     "paper_id": {
-      "description": "A unique ID for each paper (user-supplied > DOI > file_name)",
+      "description": "A unique ID for each paper (user-supplied > file_name)",
       "type": ["string", "null"]
     },
     "info": {
@@ -19,7 +19,7 @@
     },
     "text": {
       "type": "array",
-      "items": { "$ref": "#/$defs/sentence" },
+      "items": { "$ref": "#/$defs/text" },
       "uniqueItems": true
     },
     "section": {
@@ -30,12 +30,12 @@
     "url": {
       "description": "Hyperlinks found in the paper text",
       "type": "array",
-      "items": { "$ref": "#/$defs/link" },
+      "items": { "$ref": "#/$defs/url" },
       "uniqueItems": true
     },
     "bib": {
       "type": "array",
-      "items": { "$ref": "#/$defs/bib_entry" },
+      "items": { "$ref": "#/$defs/bib" },
       "uniqueItems": true
     },
     "xref": {
@@ -55,7 +55,12 @@
     },
     "eq": {
       "type": "array",
-      "items": { "$ref": "#/$defs/equation" }
+      "items": { "$ref": "#/$defs/eq" }
+    },
+    "bib_match": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/bib_match" },
+      "uniqueItems": true
     }
   },
 
@@ -223,21 +228,17 @@
       }
     },
 
-    "sentence": {
+    "text": {
       "type": "object",
       "required": ["text_id", "section_id", "paragraph_id", "text"],
       "properties": {
         "text_id": { "type": "integer" },
         "section_id": {
-          "description": "References section table; null when sentence belongs to root (pre-first-heading)",
+          "description": "References the section table; null when sentence belongs to root (pre-first-heading)",
           "type": ["integer", "null"]
         },
         "paragraph_id": { "type": "integer" },
         "text": { "type": "string" },
-        "raw_text": {
-          "description": "Original text before placeholder substitution (e.g. raw LaTeX for display math). Null when text is unmodified.",
-          "type": ["string", "null"]
-        },
         "page_number": {
           "type": ["integer", "null"],
           "description": "The page number of the original document where the sentence starts (1-based)"
@@ -285,7 +286,7 @@
       }
     },
 
-    "link": {
+    "url": {
       "type": "object",
       "required": ["href", "text_id"],
       "properties": {
@@ -303,59 +304,23 @@
       "type": "object",
       "required": ["given", "family"],
       "properties": {
-        "given": { "type": "string" },
-        "family": { "type": "string" }
+        "given": { "type": ["string", "null"] },
+        "family": { "type": ["string", "null"] }
       },
       "additionalProperties": false
     },
 
-    "external_match": {
-      "description": "Enrichment data from an external service for a bibliography entry",
-      "type": ["object", "null"],
-      "properties": {
-        "id": {
-          "description": "External identifier (DOI, OpenAlex ID, etc.)",
-          "type": ["string", "null"]
-        },
-        "score": {
-          "description": "Match confidence score",
-          "type": ["number", "null"]
-        },
-        "title": { "type": ["string", "null"] },
-        "authors": {
-          "type": ["array", "null"],
-          "items": { "$ref": "#/$defs/bib_author" }
-        },
-        "publication_year": { "type": ["integer", "null"] },
-        "container": {
-          "description": "Journal or book title",
-          "type": ["string", "null"]
-        },
-        "volume": { "type": ["string", "null"] },
-        "issue": { "type": ["string", "null"] },
-        "first_page": { "type": ["string", "null"] },
-        "last_page": { "type": ["string", "null"] },
-        "publisher": { "type": ["string", "null"] },
-        "editors": {
-          "type": ["array", "null"],
-          "items": { "$ref": "#/$defs/bib_author" }
-        },
-        "doi": { "type": ["string", "null"] },
-        "bib_type": { "type": ["string", "null"] },
-        "url": { "type": ["string", "null"] },
-        "publication_date": { "type": ["string", "null"] },
-        "edition": { "type": ["string", "null"] },
-        "version": { "type": ["string", "null"] }
-      }
-    },
-
-    "bib_entry": {
+    "bib": {
       "type": "object",
-      "required": ["bib_id", "title", "authors", "text_id"],
+      "required": ["bib_id", "text_id"],
       "properties": {
         "bib_id": {
           "type": "integer",
           "description": "1-based positional ID within the paper"
+        },
+        "text_id": {
+          "type": ["integer", "null"],
+          "description": "The text table ID of the reference as written in the paper"
         },
         "bib_type": {
           "type": ["string", "null"],
@@ -378,18 +343,18 @@
         },
         "title": { "type": ["string", "null"] },
         "authors": {
-          "description": "Structured author list",
+          "description": "Array of author names, as formatted in the reference string",
           "type": ["array", "null"],
-          "items": { "$ref": "#/$defs/bib_author" }
+          "items": { "type": "string" }
         },
         "editors": {
-          "description": "Structured editor list",
+          "description": "Array of editor names, as formatted in the reference string",
           "type": ["array", "null"],
-          "items": { "$ref": "#/$defs/bib_author" }
+          "items": { "type": "string" }
         },
         "publisher": { "type": ["string", "null"] },
-        "publication_year": { "type": ["integer", "null"] },
-        "publication_date": {
+        "year": { "type": ["integer", "null"] },
+        "date": {
           "type": ["string", "null"],
           "format": "date"
         },
@@ -406,20 +371,71 @@
         "url": {
           "type": ["string", "null"],
           "format": "uri"
+        }
+      }
+    },
+    
+    "bib_match": {
+      "description": "Enrichment data from an external service for a bibliography entry",
+      "type": ["object", "null"],
+      "required": ["service", "title", "authors"],
+      "properties": {
+        "service": {
+          "type": ["string"],
+          "enum": [
+            "crossref",
+            "openalex",
+            "manual",
+            "other"
+          ]
         },
-        "text_id": {
-          "type": ["integer", "null"],
-          "description": "The text table ID of the reference as written in the paper"
+        "bib_id": {
+          "description": "Reference to the bib_id from the bib table",
+          "type": ["integer"]
         },
-        "match": {
-          "description": "External enrichment results, keyed by service",
-          "type": "object",
-          "properties": {
-            "crossref": { "$ref": "#/$defs/external_match" },
-            "openalex": { "$ref": "#/$defs/external_match" },
-            "openlibrary": { "$ref": "#/$defs/external_match" }
-          },
-          "additionalProperties": false
+        "service_id": {
+          "description": "External identifier (DOI, OpenAlex ID, etc.)",
+          "type": ["string", "null"]
+        },
+        "score": {
+          "description": "Match confidence score",
+          "type": ["number", "null"]
+        },
+        "bib_type": { "type": ["string", "null"] },
+        "doi": {
+          "type": ["string", "null"],
+          "pattern": "^10\\.\\d{4,9}/\\S+$"
+        },
+        "title": { "type": ["string", "null"] },
+        "authors": {
+          "description": "Structured author list",
+          "type": ["array", "null"],
+          "items": { "$ref": "#/$defs/bib_author" }
+        },
+        "editors": {
+          "description": "Structured editor list",
+          "type": ["array", "null"],
+          "items": { "$ref": "#/$defs/bib_author" }
+        },
+        "publisher": { "type": ["string", "null"] },
+        "year": { "type": ["integer", "null"] },
+        "date": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "container": {
+          "type": ["string", "null"],
+          "description": "Journal or book title"
+        },
+        "volume": { "type": ["string", "null"] },
+        "issue": { "type": ["string", "null"] },
+        "first_page": { "type": ["string", "null"] },
+        "last_page": { "type": ["string", "null"] },
+        "edition": { "type": ["string", "null"] },
+        "version": { "type": ["string", "null"] },
+        "url": {
+          "type": ["string", "null"],
+          "format": "uri"
         }
       }
     },
@@ -504,7 +520,7 @@
       }
     },
 
-    "equation": {
+    "eq": {
       "type": "object",
       "required": ["text_id", "grp_id", "lhs", "comp", "rhs"],
       "properties": {

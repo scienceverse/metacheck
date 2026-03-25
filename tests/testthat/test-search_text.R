@@ -21,17 +21,30 @@ test_that("default", {
   expect_true(all(grepl("significant", sig$text)))
   expect_equal(nrow(sig), 3)
 
-  # section
-  res <- search_text(paper, "significant", "results")
-  expect_equal(nrow(res), 2)
-  expect_true(all(res$section_type == "results"))
-
   # multiple matches in a sentence
   equal <- search_text(paper, "[a-zA-Z][a-zA-Z\\(\\)]*\\s*=\\s*[\\.0-9-]*\\d",
                        section = "results",
                        return = "match")
   any_dupes <- duplicated(equal$text_id) |> any()
   expect_true(any_dupes)
+})
+
+test_that("sections", {
+  paper <- demopaper()
+
+  # default excludes tables, figures and refs
+  text <- search_text(paper)
+  excluded_sections <- c("figure", "table", "references")
+  expect_disjoint(text$section_type, excluded_sections)
+
+  # 1 section
+  res <- search_text(paper, section = "results")
+  expect_setequal(res$section_type, "results")
+
+  # 2 sections
+  sections <- c("results", "table")
+  sec2 <- search_text(paper, section = sections)
+  expect_setequal(sec2$section_type, sections)
 })
 
 test_that("test papers (no section table)", {

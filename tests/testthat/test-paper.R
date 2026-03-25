@@ -3,14 +3,39 @@ test_that("exists", {
   expect_true(is.function(metacheck::paperlist))
 })
 
+test_that("paper_schema", {
+  expect_true(is.function(metacheck:::paper_schema))
+  expect_error(paper_schema(bad_arg))
+
+  schema <- paper_schema()
+  expect_contains(names(schema), c("$schema", "$defs"))
+
+  # check the same version as online
+  skip_if_offline("scienceverse.org")
+  skip_on_cran()
+  url <- "https://scienceverse.org/schema/paper.json"
+  sv_schema <- jsonlite::read_json(url, simplifyVector = TRUE)
+  expect_equal(schema, sv_schema)
+})
+
+
 test_that("paper", {
   paper <- paper()
   expect_s3_class(paper, "scivrs_paper")
   expect_match(paper$paper_id, "^[a-f0-9]{14}$")
   expect_true(paper_validate(paper))
+
+  expect_equal(class(paper$author$role), "list")
+  expect_equal(class(paper$text$section_id), "integer")
+  expect_equal(class(paper$info$keywords), "list")
 })
 
 test_that("paper_coerce", {
+  expect_true(is.function(metacheck::paper_coerce))
+  expect_no_error(helplist <- help(paper_coerce, metacheck))
+
+  expect_error(paper_coerce("no"))
+
   paper <- paper()
   paper$info <- data.frame(
     title = 1,
@@ -43,6 +68,20 @@ test_that("paper_coerce", {
   expect_equal(ll$column, "oecd_confidence")
   expect_equal(ll$rows, "1")
   expect_equal(ll$example, "NO")
+
+  # handle paper_list
+  paper <- psychsci[1:3]
+  paper[[1]]$info$file_name <- 10
+  paper[[2]]$bib$bib_id <- as.character(paper[[2]]$bib$bib_id)
+
+  x <- paper_coerce(paper)
+  expect_equal(names(x), names(paper))
+  expect_true(paper_validate(x[[1]]))
+  expect_true(paper_validate(x[[2]]))
+  expect_true(paper_validate(x[[3]]))
+
+  expect_equal(x[[1]]$info$file_name, "10")
+  expect_equal(x[[2]]$bib$bib_id, 1:26)
 })
 
 test_that("paper_validate", {
@@ -113,6 +152,7 @@ test_that("demo paper", {
   expect_s3_class(paper, "scivrs_paper")
   expect_match(paper$info$title, "^To Err is Human")
   expect_true(paper_validate(paper))
+  expect_true(!is.null(paper$bib_match))
 })
 
 test_that("paper_table", {

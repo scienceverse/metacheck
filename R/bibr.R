@@ -239,7 +239,7 @@ bibr_convert <- function(file_path,
 #' @export
 #'
 #' @keywords internal
-read_bibr <- function(file_path, include_images = TRUE) {
+read_bibr <- function(file_path, include_images = FALSE) {
   # read JSON ----
   data <- jsonlite::read_json(file_path,
                               simplifyVector = TRUE,
@@ -265,10 +265,10 @@ read_bibr <- function(file_path, include_images = TRUE) {
   # bib ----
   if (!is.null(data$bib) && length(data$bib) > 0) {
     paper$bib <- as.data.frame(data$bib)
-    paper$bib$authors <- .coerce_bib_authors(paper$bib$authors)
-    if ("editors" %in% names(paper$bib)) {
-      paper$bib$editors <- .coerce_bib_authors(paper$bib$editors)
-    }
+    # paper$bib$authors <- .coerce_bib_authors(paper$bib$authors)
+    # if ("editors" %in% names(paper$bib)) {
+    #   paper$bib$editors <- .coerce_bib_authors(paper$bib$editors)
+    # }
   }
 
   # eq ----
@@ -312,48 +312,21 @@ read_bibr <- function(file_path, include_images = TRUE) {
     paper$xref <- as.data.frame(data$xref)
   }
 
-  # bib_matches ----
-  # if (!is.null(data$bib_matches) && length(data$bib_matches) > 0) {
-  #   paper$bib_matches <- as.data.frame(data$bib_matches)
-  #   if ("authors" %in% names(paper$bib_matches)) {
-  #     paper$bib_matches$authors <- .coerce_bib_authors(paper$bib_matches$authors)
-  #   }
-  #   if ("editors" %in% names(paper$bib_matches)) {
-  #     paper$bib_matches$editors <- .coerce_bib_authors(paper$bib_matches$editors)
-  #   }
-  # }
+  # bib_match ----
+  if (!is.null(data$bib_match) && length(data$bib_match) > 0) {
+    paper$bib_match <- as.data.frame(data$bib_match)
+    # TODO: check if this is needed
+    # if ("authors" %in% names(paper$bib_match)) {
+    #   paper$bib_match$authors <- .coerce_bib_authors(paper$bib_match$authors)
+    # }
+    # if ("editors" %in% names(paper$bib_match)) {
+    #   paper$bib_match$editors <- .coerce_bib_authors(paper$bib_match$editors)
+    # }
+  }
 
   # ensure all expected columns exist and have correct types
   # (JSON may drop all-NA columns or read them back as logical)
   paper <- paper_coerce(paper)
-  # template <- paper()
-  # for (slot_name in names(template)) {
-  #   tmpl <- template[[slot_name]]
-  #   slot <- paper[[slot_name]]
-  #   if (is.data.frame(tmpl) && is.data.frame(slot) && nrow(slot) > 0) {
-  #     for (col in names(tmpl)) {
-  #       if (!col %in% names(slot)) {
-  #         # add missing column with appropriate NA type
-  #         if (is.list(tmpl[[col]])) {
-  #           slot[[col]] <- I(replicate(nrow(slot), NULL, simplify = FALSE))
-  #         } else {
-  #           slot[[col]] <- NA
-  #         }
-  #       }
-  #       # coerce all-NA logical columns to the template type
-  #       if (is.logical(slot[[col]]) && all(is.na(slot[[col]]))) {
-  #         tmpl_type <- typeof(tmpl[[col]])
-  #         if (tmpl_type == "integer") slot[[col]] <- NA_integer_
-  #         else if (tmpl_type == "double") slot[[col]] <- NA_real_
-  #         else if (tmpl_type == "character") slot[[col]] <- NA_character_
-  #         else if (tmpl_type == "list") {
-  #           slot[[col]] <- I(replicate(nrow(slot), NULL, simplify = FALSE))
-  #         }
-  #       }
-  #     }
-  #     paper[[slot_name]] <- slot
-  #   }
-  # }
 
   # fix urls with . at end
   if (nrow(paper$url) > 0) {

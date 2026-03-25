@@ -109,7 +109,6 @@ test_that("multiple papers, save_path, no CR lookup", {
 
 
 test_that("1 paper, NULL save_path, CR lookup", {
-  skip("broken until bib_matches fixed")
   skip_api("api.labs.crossref.org")
   xml_file <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
   paper_cr <- grobid_to_bibr(xml_file, NULL, TRUE)

@@ -315,7 +315,8 @@ grobid_to_bibr <- function(xml_file,
     text_id = seq_along(ft$text),
     paragraph_id = ft$p,
     section_id = ft$div,
-    text = ft$text
+    text = ft$text,
+    page_number = rep(NA_integer_, nrow(ft))
   )
 
   # section ----
@@ -344,7 +345,8 @@ grobid_to_bibr <- function(xml_file,
       text_id = text_ids,
       paragraph_id = p_ids,
       section_id = section_id,
-      text = paper$bib$bib_text
+      text = paper$bib$bib_text,
+      page_number = NA_integer_
     )
     paper$text <- dplyr::bind_rows(paper$text, text_add)
     paper$bib$text_id <- text_ids
@@ -708,7 +710,7 @@ tei_bib <- function(xml) {
     bib_table$container <- sapply(bibs, \(x) x$journal %||% x$booktitle %||% NA_character_)
 
     # extract first occurrence of year from string
-    bib_table$publication_year <- sapply(bibs, \(x) {
+    bib_table$year <- sapply(bibs, \(x) {
       sub(".*?(\\b[12][0-9]{3}\\b).*", "\\1", x$year) %||% NA_integer_
     })
     bib_table$authors <- bibs |>
@@ -747,7 +749,7 @@ tei_bib <- function(xml) {
       bib_text = character(0),
       bib_type = character(0),
       authors = character(0),
-      publication_year = integer(0),
+      year = integer(0),
       doi = character(0)
     )
   }

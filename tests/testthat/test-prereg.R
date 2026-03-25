@@ -95,6 +95,8 @@ test_that("aspredicted_info proj", {
 
 
 test_that("aspredicted_info pdf", {
+  skip_api("aspredicted.org")
+
   ap_url <- "https://aspredicted.org/ve2qn.pdf"
   suppressMessages( info <- aspredicted_info(ap_url) )
   title <- "How infants encode unexpected events: a SSVEP study"
@@ -110,6 +112,8 @@ test_that("aspredicted_info pdf", {
 })
 
 test_that("aspredicted_info blind", {
+  skip_api("aspredicted.org")
+
   ap_url <- "https://aspredicted.org/blind.php?x=nq4xa3"
   suppressMessages( info <- aspredicted_info(ap_url) )
   title <- "Depre_ctrl_elicit [3x2] [N800 MT]"

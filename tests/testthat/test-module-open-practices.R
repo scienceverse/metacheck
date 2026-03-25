@@ -5,6 +5,8 @@ test_that("open_practices", {
 })
 
 test_that("single paper", {
+  skip_if_quick()
+
   module <- "open_practices"
   paper <- demopaper()
   mo <- module_run(paper, module)
@@ -46,6 +48,8 @@ test_that("open_practices paperlist", {
 
 
 test_that("open_practices only open data", {
+  skip_if_quick()
+
   # examples from https://authorservices.taylorandfrancis.com/data-sharing-policies/open-data/
   module <- "open_practices"
   paper <- test_paper("Data for all experiments have been made publicly available on OSF at https://osf.io/hk4yq/.")
@@ -59,6 +63,8 @@ test_that("open_practices only open data", {
 })
 
 test_that("open_practices only open code", {
+  skip_if_quick()
+
   statements <- c("The computer code for the analyses reported here can be accessed at the Open Science Framework (https://osf.io/geq9x/).",
                   "All analysis code for this study has been made publicly available via the Open Science Framework and can be accessed at https://osf.io/geq9x/.")
 

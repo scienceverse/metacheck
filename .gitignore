@@ -14,6 +14,7 @@ tests/testthat/pdf
 /tests/testthat/grobid-test/pdf/
 /data-raw/psychsci/pdf/
 /data-raw/psychsci/*_consolidated
+/data-raw/psychsci/bibr_from_*
 _stuff/modules-old/sample-size*
 _stuff/check_correct_citations/pdfs_lakens
 _stuff/check_correct_citations/xmls_lakens
@@ -21,3 +22,5 @@ _stuff/report-demo/
 
 .claude/
 CLAUDE.md
+
+

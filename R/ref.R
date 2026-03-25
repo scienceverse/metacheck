@@ -608,6 +608,8 @@ crossref_doi <- function(doi, select = c(
 #' - a vector of text or bibentry objects
 #' - a paper object (the bib table will be extracted)
 #'
+#' Valid selects for this route are: abstract, URL, resource, member, posted, score, created, degree, update-policy, short-title, license, ISSN, container-title, issued, update-to, issue, prefix, approved, indexed, article-number, clinical-trial-number, accepted, author, group-title, DOI, is-referenced-by-count, updated-by, event, chair, standards-body, original-title, funder, translator, published, archive, published-print, alternative-id, subject, subtitle, published-online, publisher-location, content-domain, reference, title, link, type, publisher, volume, references-count, ISBN, issn-type, assertion, deposited, page, content-created, short-container-title, relation, editor
+#'
 #' @param ref the full text reference of the paper to get info for, see Details
 #' @param min_score minimal score that is taken to be a reliable match (default 50)
 #' @param rows the maximum number of rows to return per reference (default 1)
@@ -631,6 +633,8 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
                              "type",
                              "title",
                              "author",
+                             "editor",
+                             "publisher",
                              "container-title",
                              "published",
                              "volume",
@@ -670,7 +674,7 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
       if (inherits(r, "bibentry") || is.data.frame(r)) {
         title <- r$title
         author <- r$author
-        container <- r$journal %||% r$booktitle
+        container <- r$container %||% r$journal %||% r$booktitle
         r <- paste(author, collapse = ", ") |>
           paste(title, container, sep = "; ")
       }
@@ -852,24 +856,26 @@ add_bib_match <- function(paper, min_score = 50) {
 
   bib_match <- data.frame(
     ref              = unique(refs),
-    id               = "",
+    service          = "crossref",
+    service_id       = NA_character_,
+    bib_id           = NA_integer_,
     score            = cr_data$score %||% NA_real_,
+    bib_type         = bibtype_convert(cr_data$type) %||% NA_character_,
+    doi              = cr_data$DOI %||% NA_character_,
     title            = cr_data$title %||% NA_character_,
     authors          = NA,
-    publication_year = cr_data$year %||% NA_integer_,
+    editors          = NA,
+    publisher        = cr_data$publisher %||% NA_character_,
+    year             = cr_data$year %||% NA_integer_,
+    date             = NA_character_,
     container        = cr_data$`container-title` %||% NA_character_,
     volume           = cr_data$volume %||% NA_character_,
     issue            = cr_data$issue %||% NA_character_,
     first_page       = cr_data$first_page %||% NA_character_,
     last_page        = cr_data$last_page %||% NA_character_,
-    publisher        = cr_data$publisher %||% NA_character_,
-    editors          = NA,
-    doi              = cr_data$DOI %||% NA_character_,
-    bib_type         = bibtype_convert(cr_data$type) %||% NA_character_,
-    url              = cr_data$URL %||% NA_character_,
-    publication_date = NA_character_,
     edition          = NA_character_,
-    version          = NA_character_
+    version          = NA_character_,
+    url              = cr_data$URL %||% NA_character_
   )
   bib_match$authors <- authors
   bib_match$editors <- replicate(nrow(bib_match),

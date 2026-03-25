@@ -17,7 +17,7 @@ test_that("rbox_links", {
 httptest::use_mock_api()
 
 test_that("rbox_info", {
-  skip_if_offline("researchbox.org")
+  skip_api("researchbox.org")
 
   url <- "https://researchbox.org/801"
   info <- rbox_info(url)
@@ -49,7 +49,8 @@ test_that("rbox_info", {
 })
 
 test_that("rbox_retrieve", {
-  skip_if_offline("researchbox.org")
+  skip_if_quick()
+  skip_api("researchbox.org")
 
   paper <- test_paper(c(
     "https://researchbox.org/4377",

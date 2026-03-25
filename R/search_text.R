@@ -89,10 +89,12 @@ search_text <- function(paper, pattern = ".*",
   text[missing_cols] <- NA
 
   # filter full text by section ----
-  section_filter <- seq_along(text$section_type)
-  if (!is.null(section)) {
-    section_filter <- text$section_type %in% section
+  if (is.null(section)) {
+    # exclude figures, tables, and references by default
+    section <- unique(text$section_type) |>
+      setdiff(c("figure", "table", "references"))
   }
+  section_filter <- text$section_type %in% section
   ft <- text[section_filter, ]
 
   # get all rows with a text match ----
