@@ -85,6 +85,7 @@ search_text <- function(paper, pattern = ".*",
     }
   } else if (is.vector(paper) && is.character(paper)) {
     text <- data.frame(text = paper)
+    section <- c(section, NA)
   } else {
     stop("The paper argument doesn't seem to be a scivrs_paper object or a list of paper objects")
   }
@@ -94,6 +95,8 @@ search_text <- function(paper, pattern = ".*",
                      "paper_id", "header", "section_type")
   missing_cols <- setdiff(required_cols, names(text))
   text[missing_cols] <- NA
+  if ("section_type" %in% missing_cols) section <- c(section, NA)
+  if ("text" %in% missing_cols) text$text <- text[[1]]
 
   # filter full text by section ----
   if (is.null(section)) {
@@ -103,7 +106,7 @@ search_text <- function(paper, pattern = ".*",
   }
   section_filter <- text$section_type %in% section |
     grepl(section[[1]], text$section_type, perl = TRUE)
-  if (all(!section_filter)) {
+  if (nrow(text) > 0 && all(!section_filter)) {
     warning("The section filter matched no text")
   }
 
@@ -191,8 +194,8 @@ search_text <- function(paper, pattern = ".*",
     ft_match_all$text <- gsub("\\s+", " ", ft_match_all$text)
     ft_match_all$text <- gsub(" , ", ", ", ft_match_all$text)
     ft_match_all$text <- gsub(paragraph_marker, "\n\n", ft_match_all$text)
-    missing_cols <- setdiff(all_cols, names(ft_match_all))
-    for (mc in missing_cols) {
+    missing_match_cols <- setdiff(all_cols, names(ft_match_all))
+    for (mc in missing_match_cols) {
       ft_match_all[[mc]] <- NA
       # ft_match_all[[mc]] <- methods::as(ft_match_all[[mc]], typeof(ft[[mc]]))
     }
@@ -207,6 +210,18 @@ search_text <- function(paper, pattern = ".*",
   } else {
     ft_match_unique <- unique(ft_match_all) |> dplyr::tibble()
   }
+
+  # remove all-NA columns
+  # for (n in names(ft_match_unique)) {
+  #   if (all(is.na(ft_match_unique[[n]]))) {
+  #     ft_match_unique[[n]] <- NULL
+  #   }
+  # }
+
+  # remove text if read from first column
+  if ("text" %in% missing_cols) ft_match_unique$text <- NULL
+
+  if (is.atomic(paper)) ft_match_unique <- ft_match_unique$text
 
   return(ft_match_unique)
 }

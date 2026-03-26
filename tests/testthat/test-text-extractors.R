@@ -26,7 +26,7 @@ test_that("extract_urls", {
 
   paper <- test_paper(invalid_urls)
   urls <- extract_urls(paper)
-  expect_equal(urls$text, character(0))
+  expect_equal(nrow(urls), 0)
 
   # paperlist
   paper <- psychsci[1:10]

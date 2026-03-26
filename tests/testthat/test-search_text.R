@@ -11,6 +11,10 @@ test_that("search_text", {
 
   expect_warning(search_text(paper, "test", fixed = TRUE),
                "argument 'ignore.case = TRUE' will be ignored")
+
+  paper <- paper("no text")
+  expect_no_warning(x <- search_text(paper))
+  expect_equal(x$text, character(0))
 })
 
 test_that("default", {
@@ -107,12 +111,12 @@ test_that("return", {
   expect_equal(res_p$paragraph_id, 2:6)
   expect_equal(res_p$header, c("Method", "Participants", "Participants", "Measures", "Measures"))
   expect_equal(res_p$text[3], paste("Part", 1:3, collapse = " "))
-  expect_equal(res_p$text_id, c(NA, NA, NA, NA, NA))
+  expect_true(all(is.na(res_p$text_id)))
 
   expect_equal(res_div$header, c("Method", "Participants", "Measures"))
   expect_equal(res_div$text[2], "Participants\n\nPart 1 Part 2 Part 3")
-  expect_equal(res_div$paragraph_id, c(NA, NA, NA))
-  expect_equal(res_div$text_id, c(NA, NA, NA))
+  expect_true(all(is.na(res_div$paragraph_id)))
+  expect_true(all(is.na(res_div$text_id)))
 
   # expect_equal(res_sec$section_type, "method")
   # expect_equal(res_sec$div, NA)
@@ -123,11 +127,6 @@ test_that("return", {
   expect_equal(res_m$text, paste("Part", 1:3))
 
   expect_equal(res_id$text, "Introduction\n\nMethod\n\nParticipants\n\nPart 1 Part 2 Part 3\n\nMeasures\n\nMeasures 1 Measures 2 Measures 3 Measures 4")
-  expect_equal(NA, res_id$section_type)
-  expect_equal(NA, res_id$section_id)
-  expect_equal(NA, res_id$header)
-  expect_equal(NA, res_id$paragraph_id)
-  expect_equal(NA, res_id$text_id)
 })
 
 test_that("iteration", {
@@ -155,9 +154,7 @@ test_that("odd errors", {
   pattern <- "significant"
   x <- search_text(paper, pattern, perl = TRUE, return = "match")
   expect_equal(nrow(x), 0)
-  exp <- c("text_id", "section_id", "paragraph_id",
-           "text", "paper_id", "header", "section_type")
-  expect_contains(names(x), exp)
+  expect_contains(names(x), "text")
 })
 
 test_that("exclude", {
@@ -198,6 +195,22 @@ test_that("multiple patterns", {
   pattern <- c("apple", "banana")
   x <- search_text(paper, pattern, exclude = TRUE)
   expect_equal(x$text, text[4])
+})
+
+test_that("vectors and non-table DFs", {
+  paper <- LETTERS
+  x <- search_text(paper, "[A-C]")
+  expect_equal(x, LETTERS[1:3])
+
+  paper <- data.frame(x = LETTERS)
+  x <- search_text(paper, "[A-C]")
+  expect_equal(x$x, LETTERS[1:3])
+  expect_contains(names(x), "text_id")
+
+  paper <- data.frame(x = LETTERS, y = rev(letters))
+  x <- search_text(paper, "[A-C]")
+  expect_equal(x$x, LETTERS[1:3])
+  expect_equal(x$y, rev(letters)[1:3])
 })
 
 # test_that("search_header", {
