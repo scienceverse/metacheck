@@ -27,40 +27,9 @@ test_that("default", {
 
   # multiple matches in a sentence
   equal <- search_text(paper, "[a-zA-Z][a-zA-Z\\(\\)]*\\s*=\\s*[\\.0-9-]*\\d",
-                       section = "results",
                        return = "match")
   any_dupes <- duplicated(equal$text_id) |> any()
   expect_true(any_dupes)
-})
-
-test_that("sections", {
-  paper <- demopaper()
-
-  # default excludes tables, figures and refs
-  text <- search_text(paper)
-  excluded_sections <- c("figure", "table", "references")
-  expect_disjoint(text$section_type, excluded_sections)
-
-  # 1 section
-  res <- search_text(paper, section = "results")
-  expect_setequal(res$section_type, "results")
-
-  # 2 sections
-  section <- c("results", "table")
-  sec2 <- search_text(paper, section = section)
-  expect_setequal(sec2$section_type, section)
-
-  # all sections
-  section <- c(".*")
-  sec <- search_text(paper, section = section)
-  search_types <- unique(sec$section_type)
-  sec_types <- unique(paper$section$section_type)
-  expect_setequal(search_types, sec_types)
-
-  # no sections exist
-  section <- c("notasectiontype")
-  expect_warning(sec <- search_text(paper, section = section))
-  expect_equal(nrow(sec), 0)
 })
 
 test_that("test papers (no section table)", {
@@ -97,32 +66,25 @@ test_that("return", {
     header = rep(c("", "Method", "Participants", "Measures"), c(1, 1, 4, 5))
   )
 
-  res_s1 <- search_text(s, section = "method")
-  res_s2 <- search_text(s, section = "method", return = "sentence")
-  res_p <- search_text(s, section = "method", return = "paragraph")
-  res_div <- search_text(s, section = "method", return = "header")
-  # res_sec <- search_text(s, section = "method", return = "section")
-  res_m <- search_text(s, "Part [0-9]", section = "method", return = "match")
+  res_s1 <- search_text(s)
+  res_s2 <- search_text(s, return = "sentence")
+  res_p <- search_text(s, return = "paragraph")
+  res_div <- search_text(s, return = "header")
+  res_m <- search_text(s, "Part [0-9]", return = "match")
   res_id <- search_text(s, return = "paper_id")
 
   expect_equal(res_s1$text, res_s2$text)
-  expect_equal(res_s1$text, s$text[2:11])
+  expect_equal(res_s1$text, s$text)
 
-  expect_equal(res_p$paragraph_id, 2:6)
-  expect_equal(res_p$header, c("Method", "Participants", "Participants", "Measures", "Measures"))
-  expect_equal(res_p$text[3], paste("Part", 1:3, collapse = " "))
+  expect_equal(res_p$paragraph_id, 1:6)
+  expect_equal(res_p$header, c("", "Method", "Participants", "Participants", "Measures", "Measures"))
+  expect_equal(res_p$text[4], paste("Part", 1:3, collapse = " "))
   expect_true(all(is.na(res_p$text_id)))
 
-  expect_equal(res_div$header, c("Method", "Participants", "Measures"))
-  expect_equal(res_div$text[2], "Participants\n\nPart 1 Part 2 Part 3")
+  expect_equal(res_div$header, c("", "Method", "Participants", "Measures"))
+  expect_equal(res_div$text[3], "Participants\n\nPart 1 Part 2 Part 3")
   expect_true(all(is.na(res_div$paragraph_id)))
   expect_true(all(is.na(res_div$text_id)))
-
-  # expect_equal(res_sec$section_type, "method")
-  # expect_equal(res_sec$div, NA)
-  # expect_equal(res_sec$p, NA)
-  # expect_equal(res_sec$s, NA)
-  # expect_equal(res_sec$header, NA)
 
   expect_equal(res_m$text, paste("Part", 1:3))
 

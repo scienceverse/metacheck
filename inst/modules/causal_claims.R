@@ -99,7 +99,8 @@ causal_claims <- function(paper) {
 
 
   # causal claims ----
-  table <- search_text(paper, pattern = ".*", section = "abstract")
+  table <- search_text(paper) |>
+    dplyr::filter(section_type == "abstract")
   causal_title <- causal_relations(paper$info$title)
   causal_abstract <- causal_relations(table$text)
 

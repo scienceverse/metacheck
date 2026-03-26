@@ -7,13 +7,13 @@
 #'
 #' @param paper a paper object or a list of paper objects
 #' @param pattern the regex pattern to search for, if a vector with length > 1, the patterns will be searched separately and combined
-#' @param section the section type(s) to search in, see details
 #' @param return the kind of text to return, the full sentence, paragraph, header, or section that the text is in, or just the (regex) match, or all body text for a paper (paper_id)
 #' @param ignore.case whether to ignore case when text searching
 #' @param fixed logical. If TRUE, pattern is a string to be matched as is. Overrides all conflicting arguments.
 #' @param perl logical. Should Perl-compatible regexps be used?
 #' @param exclude should matches be included or excluded
 #' @param search_header also search the header
+#' @param include_refs whether to include the reference section in the search
 #'
 #' @return a data frame of matches
 #' @export
@@ -22,24 +22,25 @@
 #' paper <- demopaper()
 #' all_text <- search_text(paper)
 #' study <- search_text(paper, "study")
-#' method <- search_text(paper, section = "method")
 #' equations <- search_text(paper, "\\b\\S+\\s*(=|<)\\s*[0-9\\.]+", return = "match")
 #' no_numbers <- search_text(paper, "\\d", exclude = TRUE)
 search_text <- function(paper, pattern = ".*",
-                        section = "^(?!(references|table|figure)).*",
                         return = c("sentence", "paragraph", "section", "header", "match", "paper_id"),
                         ignore.case = TRUE,
                         fixed = FALSE,
                         perl = FALSE,
                         exclude = FALSE,
-                        search_header = FALSE) {
+                        search_header = FALSE,
+                        include_refs = FALSE) {
   return <- match.arg(return)
   text <- NULL # hack to stop cmdcheck warning :(
 
   # iterate and combine if multiple patterns ----
   if (length(pattern) > 1) {
     matches <- lapply(pattern, \(p) {
-      search_text(paper, p, section, return, ignore.case, fixed, perl, exclude, search_header)
+      search_text(paper, p, return,
+                  ignore.case, fixed, perl,
+                  exclude, search_header, include_refs)
     })
 
     if (exclude) {
@@ -85,7 +86,6 @@ search_text <- function(paper, pattern = ".*",
     }
   } else if (is.vector(paper) && is.character(paper)) {
     text <- data.frame(text = paper)
-    section <- c(section, NA)
   } else {
     stop("The paper argument doesn't seem to be a scivrs_paper object or a list of paper objects")
   }
@@ -95,21 +95,14 @@ search_text <- function(paper, pattern = ".*",
                      "paper_id", "header", "section_type")
   missing_cols <- setdiff(required_cols, names(text))
   text[missing_cols] <- NA
-  if ("section_type" %in% missing_cols) section <- c(section, NA)
   if ("text" %in% missing_cols) text$text <- text[[1]]
 
-  # filter full text by section ----
-  if (is.null(section)) {
-    # exclude figures, tables, and references by default
-    section <- unique(text$section_type) |>
-      setdiff(c("figure", "table", "references"))
+  # filter reference section ----
+  if (include_refs) {
+    section_filter <- rep(TRUE, nrow(text))
+  } else {
+    section_filter <- !text$section_type %in% "references"
   }
-  section_filter <- text$section_type %in% section |
-    grepl(section[[1]], text$section_type, perl = TRUE)
-  if (nrow(text) > 0 && all(!section_filter)) {
-    warning("The section filter matched no text")
-  }
-
   ft <- text[section_filter, ]
 
   # get all rows with a text match ----
@@ -221,6 +214,7 @@ search_text <- function(paper, pattern = ".*",
   # remove text if read from first column
   if ("text" %in% missing_cols) ft_match_unique$text <- NULL
 
+  # return vector if input is vector
   if (is.atomic(paper)) ft_match_unique <- ft_match_unique$text
 
   return(ft_match_unique)

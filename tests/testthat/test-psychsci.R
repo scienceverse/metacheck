@@ -62,7 +62,8 @@ test_that("psychsci components", {
     dplyr::filter(tolower(cr_title) != tolower(bibr_title))
 
   # check abstracts ----
-  bibr_abst <- search_text(psychsci, section = "abstract", return = "section") |>
+  bibr_abst <- search_text(psychsci, return = "section") |>
+    dplyr::filter(section_type == "abstract") |>
     dplyr::select(paper_id, bibr_abst = text)
 
   bibr_abst_check <- cr_info |>
@@ -208,7 +209,8 @@ test_that("psychsci2 components", {
 
 
   # check abstracts ----
-  grobid_abst <- search_text(psychsci2, section = "abstract", return = "section") |>
+  grobid_abst <- search_text(psychsci2, return = "section") |>
+    dplyr::filter(section_type == "abstract") |>
     dplyr::select(paper_id, grobid_abst = text)
 
   abst_check <- cr_info |>
