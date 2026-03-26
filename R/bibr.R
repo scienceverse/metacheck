@@ -270,44 +270,10 @@ bibr_convert <- function(file_path,
   json_path
 }
 
-
-#' Convert documents using the Scienceverse platform
-#'
-#' @description
-#' `r lifecycle::badge("deprecated")`
-#'
-#' Use [bibr_convert()] with `backend = "scivrs"` instead.
-#'
-#' @inheritParams bibr_convert
-#'
-#' @return Path(s) to the saved JSON file(s)
-#' @export
-#' @keywords internal
-platform_bibr_convert <- function(file_path,
-                       save_dir = ".",
-                       api_url = "https://platform.metacheck.app",
-                       api_key = Sys.getenv("SCIVRS_API_KEY"),
-                       include_figures = FALSE,
-                       poll_interval = 2,
-                       timeout = 600) {
-  .Deprecated("bibr_convert")
-  bibr_convert(
-    file_path = file_path,
-    save_dir = save_dir,
-    backend = "scivrs",
-    api_key = api_key,
-    api_url = api_url,
-    include_figures = include_figures,
-    poll_interval = poll_interval,
-    timeout = timeout
-  )
-}
-
-
 #' Read bibr JSON file
 #'
-#' @param file_path path to the JSON file (or legacy ZIP file)
-#' @param include_images whether to include images in the figures table of the paper object (they make file size larger)
+#' @param file_path path to the JSON file
+#' @param include_images whether to include images in the figures table of the paper object (they make object size larger)
 #'
 #' @returns a paper object
 #' @export
@@ -414,11 +380,11 @@ read_bibr <- function(file_path, include_images = FALSE) {
 #' Read in grobid XML or bibr JSON
 #'
 #' @param file_path path to a directory containing XML and/or JSON files, or a vector of paths
-#' @param include_images whether to include images in the figures table of the paper object (they make file size larger)
+#' @param include_images whether to include images in the figures table of the paper object (they make object size larger, only relevant to bibr imports)
 #'
 #' @returns a paper or paperlist
 #' @export
-read <- function(file_path, include_images = TRUE) {
+read <- function(file_path, include_images = FALSE) {
   # handle directory or multiple files ----
   if (length(file_path) == 1 && dir.exists(file_path)) {
     dir_path <- file_path

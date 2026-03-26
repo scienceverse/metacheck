@@ -9,7 +9,7 @@ test_that("bibr_convert selfhosted backend", {
 
   # pdf
   file_name <- "to_err_is_human.pdf"
-  file_path <- test_path("fixtures", "formats", file_name)
+  file_path <- system.file("demo", file_name, package = "metacheck")
   save_dir <- withr::local_tempdir()
   json_path <- bibr_convert(file_path, save_dir, backend = "selfhosted")
   expect_match(json_path, "to_err_is_human\\.json")
@@ -20,7 +20,7 @@ test_that("bibr_convert selfhosted backend", {
 
   # docx
   file_name <- "to_err_is_human.docx"
-  file_path <- test_path("fixtures", "formats", file_name)
+  file_path <- system.file("demo", file_name, package = "metacheck")
   save_path <- withr::local_tempdir()
   json_path <- bibr_convert(file_path, save_path, backend = "selfhosted")
   expect_true(file.exists(json_path) |> all())
@@ -31,7 +31,7 @@ test_that("bibr_convert selfhosted backend", {
 
   # doc
   file_name <- "to_err_is_human.doc"
-  file_path <- test_path("fixtures", "formats", file_name)
+  file_path <- system.file("demo", file_name, package = "metacheck")
   save_path <- withr::local_tempdir()
   json_path <- bibr_convert(file_path, save_path, backend = "selfhosted")
   expect_true(file.exists(json_path) |> all())
@@ -41,18 +41,18 @@ test_that("bibr_convert selfhosted backend", {
   expect_match(doc$paper_id, "^[a-f0-9]{16}$")
 
   # multiple files
-  file_name <- c("to_err_is_human.pdf", "published.pdf")
-  file_path <- test_path("fixtures", "formats", file_name)
+  file_name <- c("preprint.pdf", "published.pdf")
+  file_path <- c(test_path("fixtures", "formats", file_name))
   save_path <- withr::local_tempdir()
   json_path <- bibr_convert(file_path, save_path, backend = "selfhosted")
-  expect_match(json_path[[1]], "to_err_is_human\\.json")
+  expect_match(json_path[[1]], "preprint\\.json")
   expect_match(json_path[[2]], "published\\.json")
   expect_true(file.exists(json_path) |> all())
 
 })
 
 test_that("bibr_convert selfhosted sends include_figures in request", {
-  file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  file_path <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
 
   captured_body <- NULL
   httr2::local_mocked_responses(function(req) {
@@ -78,7 +78,7 @@ test_that("bibr_convert selfhosted sends include_figures in request", {
 })
 
 test_that("bibr_convert selfhosted sends page params in request", {
-  file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  file_path <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
 
   captured_body <- NULL
   httr2::local_mocked_responses(function(req) {
@@ -167,7 +167,7 @@ test_that("bibr_convert scivrs backend", {
 })
 
 test_that("bibr_convert scivrs sends include_figures in request", {
-  file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  file_path <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
 
   captured_body <- NULL
   httr2::local_mocked_responses(function(req) {
@@ -200,7 +200,7 @@ test_that("bibr_convert scivrs sends include_figures in request", {
 })
 
 test_that("bibr_convert scivrs sends page params in request", {
-  file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  file_path <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
 
   captured_body <- NULL
   httr2::local_mocked_responses(function(req) {
@@ -255,7 +255,7 @@ test_that("bibr_convert auto-detects backend", {
       httr2::response_json(body = list(status = "complete"))
     }
   })
-  file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  file_path <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
   save_dir <- withr::local_tempdir()
 
   # no key set -> selfhosted (no auth needed)
@@ -278,30 +278,6 @@ test_that("bibr_convert auto-detects backend", {
   expect_true(startsWith(captured_url, scivrs_url))
 })
 
-test_that("platform_bibr_convert is deprecated", {
-  expect_true(is.function(metacheck::platform_bibr_convert))
-  withr::local_envvar(SCIVRS_API_KEY = "sv_test_key")
-  httr2::local_mocked_responses(function(req) {
-    if (grepl("/jobs$", req$url)) {
-      httr2::response_json(body = list(job_id = "test-job"))
-    } else if (grepl("/result$", req$url)) {
-      httr2::response_json(body = list(text = "mock"))
-    } else {
-      httr2::response_json(body = list(status = "complete"))
-    }
-  })
-  file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
-  save_dir <- withr::local_tempdir()
-  expect_warning(
-    tryCatch(
-      platform_bibr_convert(file_path, save_dir),
-      error = function(e) NULL
-    ),
-    "deprecated"
-  )
-})
-
-
 test_that("read_bibr", {
   expect_true(is.function(metacheck::read_bibr))
   expect_no_error(helplist <- help(read_bibr, metacheck))
@@ -309,7 +285,7 @@ test_that("read_bibr", {
   expect_error(read_bibr(bad_arg))
 
   # single paper from legacy zip
-  file_path <- test_path("fixtures", "formats", "to_err_is_human.json")
+  file_path <- system.file("demo/to_err_is_human.json", package = "metacheck")
   paper <- read_bibr(file_path)
 
   expect_true(paper_validate(paper))
@@ -324,34 +300,32 @@ test_that("read", {
 })
 
 test_that("read - single paper", {
-  file_path <- test_path("fixtures", "formats", "to_err_is_human.json")
+  file_path <- system.file("demo/to_err_is_human.json", package = "metacheck")
   paper <- read(file_path)
 
   expect_s3_class(paper, "scivrs_paper")
   expect_true(paper_validate(paper))
-  #expect_match(paper$paper_id, "^[a-f0-9]{14,16}$")
 
   # check for no urls ending in .
   end_dot <- grepl("\\.$", paper$url$href)
   expect_true(all(!end_dot))
-
-  #expect_true(all(!is.na(paper$figure$image)))
-})
-
-test_that("read - no images", {
-  file_path <- test_path("fixtures", "formats", "to_err_is_human.json")
-  paper <- read(file_path, include_images = FALSE)
-
-  expect_true(paper_validate(paper))
   expect_true(all(is.na(paper$figure$image)))
 })
 
+# test_that("read - images", {
+#   file_path <- system.file("demo/to_err_is_human.json", package = "metacheck")
+#   paper <- read(file_path, include_images = TRUE)
+#
+#   expect_true(paper_validate(paper))
+#   expect_true(all(!is.na(paper$figure$image)))
+# })
+
 test_that("read - vector of paths", {
-  file_path <- test_path("fixtures", "formats", "to_err_is_human.json")
+  file_path <- system.file("demo/to_err_is_human.json", package = "metacheck")
   paper <- read(file_path)
 
   file_path <- c(
-    test_path("fixtures", "formats", "to_err_is_human.json"),
+    system.file("demo/to_err_is_human.json", package = "metacheck"),
     test_path("fixtures", "psychsci", "0956797613520608.json")
   )
   papers <- read(file_path)

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://scienceverse.org/schema/paper.json",
   "title": "Bibr Paper",
-  "description": "A research paper, as processed by bibr (v9.0)",
+  "description": "A research paper, as processed by bibr (v10.0)",
   "type": "object",
   "properties": {
     "paper_id": {
@@ -239,6 +239,10 @@
         },
         "paragraph_id": { "type": "integer" },
         "text": { "type": "string" },
+        "formatted": {
+          "description": "Original OCR representation for display formulas (e.g. LaTeX); null for regular text",
+          "type": ["string", "null"]
+        },
         "page_number": {
           "type": ["integer", "null"],
           "description": "The page number of the original document where the sentence starts (1-based)"
@@ -343,17 +347,19 @@
         },
         "title": { "type": ["string", "null"] },
         "authors": {
-          "description": "Array of author names, as formatted in the reference string",
-          "type": ["array", "null"],
-          "items": { "type": "string" }
+          "description": "Author names as they appear in the reference string",
+          "type": ["string", "null"]
         },
         "editors": {
-          "description": "Array of editor names, as formatted in the reference string",
-          "type": ["array", "null"],
-          "items": { "type": "string" }
+          "description": "Editor names as they appear in the reference string",
+          "type": ["string", "null"]
         },
         "publisher": { "type": ["string", "null"] },
         "year": { "type": ["integer", "null"] },
+        "year_suffix": {
+          "description": "Disambiguator for same-author-year citations, e.g. 'a' in DeBruine (2005a)",
+          "type": ["string", "null"]
+        },
         "date": {
           "type": ["string", "null"],
           "format": "date"
@@ -374,17 +380,18 @@
         }
       }
     },
-    
+
     "bib_match": {
       "description": "Enrichment data from an external service for a bibliography entry",
       "type": ["object", "null"],
-      "required": ["service", "title", "authors"],
+      "required": ["bib_id", "service"],
       "properties": {
         "service": {
           "type": ["string"],
           "enum": [
             "crossref",
             "openalex",
+            "openlibrary",
             "manual",
             "other"
           ]
@@ -454,7 +461,10 @@
             "bib",
             "table",
             "figure",
-            "foot"
+            "foot",
+            "supplementary",
+            "equation",
+            "section"
           ]
         },
         "contents": { "type": ["string", "null"] },

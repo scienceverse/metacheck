@@ -24,7 +24,7 @@ test_that("multiple paper, one fails", {
 
 
 test_that("1 paper, NULL save_path, no CR lookup", {
-  xml_file <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
+  xml_file <- system.file("demo/to_err_is_human.xml", package = "metacheck")
   paper <- grobid_to_bibr(xml_file, NULL)
 
   expect_s3_class(paper, "scivrs_paper")
@@ -39,10 +39,10 @@ test_that("1 paper, NULL save_path, no CR lookup", {
 
 
 test_that("1 paper, save_path, no CR lookup", {
-  xml_file1 <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
+  xml_file1 <- system.file("demo/to_err_is_human.xml", package = "metacheck")
   paper1 <- grobid_to_bibr(xml_file1, NULL)
 
-  xml_file2 <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
+  xml_file2 <- system.file("demo/to_err_is_human.xml", package = "metacheck")
   save_path <- withr::local_tempdir()
   json_path <- grobid_to_bibr(xml_file2, save_path)
   paper2 <- read(json_path)
@@ -110,7 +110,7 @@ test_that("multiple papers, save_path, no CR lookup", {
 
 test_that("1 paper, NULL save_path, CR lookup", {
   skip_api("api.labs.crossref.org")
-  xml_file <- test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
+  xml_file <- system.file("demo/to_err_is_human.xml", package = "metacheck")
   paper_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
   expect_contains(names(paper_cr$bib_matches), c("doi", "source"))
 })
@@ -120,8 +120,8 @@ test_that("multiple papers, NULL save_path, CR lookup", {
   skip("broken until bib_matches fixed")
   skip_api()
   xml_file <- c(
-    test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml"),
-    test_path("fixtures", "formats", "to_err_is_human.pdf.tei.xml")
+    system.file("demo/to_err_is_human.xml", package = "metacheck"),
+    system.file("demo/to_err_is_human.xml", package = "metacheck")
   )
   papers_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
   expect_contains(names(papers_cr[[1]]$bib$match), c("crossref"))
@@ -138,7 +138,7 @@ test_that("read", {
 })
 
 test_that("read grobid xml", {
-  xml_file <- test_path("fixtures", "formats", "to_err_is_human.xml")
+  xml_file <- system.file("demo/to_err_is_human.xml", package = "metacheck")
   title <- "To Err is Human: An Empirical Investigation"
 
   obs_xml <- read(xml_file)
@@ -148,15 +148,15 @@ test_that("read grobid xml", {
 })
 
 test_that("bibr file", {
-  bibr_file <- test_path("fixtures", "formats", "to_err_is_human.json")
+  bibr_file <- system.file("demo/to_err_is_human.json", package = "metacheck")
   obs_bibr <- read(bibr_file)
   expect_s3_class(obs_bibr, "scivrs_paper")
   expect_match(obs_bibr$info$title, "To Err is Human")
 })
 
 test_that("both grobid xml and bibr", {
-  xml_file <- test_path("fixtures", "formats", "to_err_is_human.xml")
-  bibr_file <- test_path("fixtures", "formats", "to_err_is_human.json")
+  xml_file <- system.file("demo/to_err_is_human.xml", package = "metacheck")
+  bibr_file <- system.file("demo/to_err_is_human.json", package = "metacheck")
 
   file_path <- c(xml_file, bibr_file)
   obs <- read(file_path)
@@ -180,7 +180,7 @@ test_that("grobid_convert", {
 })
 
 test_that("invalid URL error", {
-  filename <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  filename <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
   expect_error(grobid_convert(filename, api_url = "notawebsite"),
                "api_url must be a valid URL, starting with http or https!")
 
@@ -193,7 +193,7 @@ test_that("invalid URL error", {
 test_that("non-Grobid URL rejected", {
   skip_if_offline("google.com")
 
-  filename <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  filename <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
   expect_error(grobid_convert(filename, api_url = "https://google.com"))
 })
 
@@ -224,7 +224,7 @@ test_that("makes missing save directory - single", {
 
   # single file, path with uncreated dir
   save_path <- file.path(newdir, "file.xml")
-  filename <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  filename <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
   obs_path <- grobid_convert(filename, save_path = save_path)
   expect_true(dir.exists(newdir))
   expect_equal(obs_path, save_path)
@@ -269,7 +269,7 @@ test_that("makes missing save directory - specific", {
 test_that("defaults", {
   skip_api("kermitt2-grobid.hf.space")
 
-  pdf <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  pdf <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
   paper <- grobid_convert(pdf, NULL)
   expect_s3_class(paper, "scivrs_paper")
 
@@ -374,7 +374,7 @@ test_that("local", {
   skip_if_offline("localhost:8070")
 
   local_url <- "http://localhost:8070"
-  filename <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  filename <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
   xml <- grobid_convert(filename, NULL, local_url)
   expect_s3_class(xml, "xml_document")
 
