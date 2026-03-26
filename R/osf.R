@@ -228,7 +228,7 @@ osf_retrieve <- function(osf_url, id_col = 1,
 
     # get all new node IDs to search for files
     all_nodes <- dplyr::bind_rows(info, child_collector)
-    node_type <- all_nodes$osf_type == "nodes"
+    node_type <- all_nodes$osf_type %in% c("nodes", "registrations")
     if ("kind" %in% names(all_nodes)) {
       node_type <- node_type | all_nodes$kind == "folder"
     }
@@ -791,11 +791,15 @@ osf_files <- function(osf_id,
 
   if (nchar(node_id) == 5) {
     url <- sprintf("%s/nodes/%s/files/", osf_api, node_id)
+    storage <- osf_get_all_pages(url)
+    if (is.null(storage) || length(storage) == 0) {
+      url <- sprintf("%s/registrations/%s/files/", osf_api, node_id)
+      storage <- osf_get_all_pages(url)
+    }
   } else {
     url <- sprintf("%s/files/%s/", osf_api, node_id)
+    storage <- osf_get_all_pages(url)
   }
-
-  storage <- osf_get_all_pages(url)
   file_links <- storage$relationships$files$links$related$href
 
   obj <- lapply(file_links, \(url) {
