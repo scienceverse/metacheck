@@ -4,12 +4,12 @@
 \alias{read}
 \title{Read in grobid XML or bibr JSON}
 \usage{
-read(file_path, include_images = TRUE)
+read(file_path, include_images = FALSE)
 }
 \arguments{
 \item{file_path}{path to a directory containing XML and/or JSON files, or a vector of paths}
 
-\item{include_images}{whether to include images in the figures table of the paper object (they make file size larger)}
+\item{include_images}{whether to include images in the figures table of the paper object (they make object size larger, only relevant to bibr imports)}
 }
 \value{
 a paper or paperlist

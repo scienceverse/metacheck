@@ -7,9 +7,9 @@
 read_bibr(file_path, include_images = FALSE)
 }
 \arguments{
-\item{file_path}{path to the JSON file (or legacy ZIP file)}
+\item{file_path}{path to the JSON file}
 
-\item{include_images}{whether to include images in the figures table of the paper object (they make file size larger)}
+\item{include_images}{whether to include images in the figures table of the paper object (they make object size larger)}
 }
 \value{
 a paper object
