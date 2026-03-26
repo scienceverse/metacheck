@@ -824,9 +824,9 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
 #' @examples
 #' dontrun{
 #' paper <- demopaper()
-#' paper$bib$match <- NULL # remove existing
+#' paper$bib_match <- NULL # remove existing
 #' paper2 <- add_bib_match(paper)
-#' paper2$bib$match$crossref
+#' paper2$bib_match
 #' }
 add_bib_match <- function(paper, min_score = 50) {
   bib <- paper_table(paper, "bib")

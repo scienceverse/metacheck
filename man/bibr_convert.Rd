@@ -9,6 +9,7 @@ bibr_convert(
   save_dir = ".",
   api_url = "https://api.bibr.metacheck.app",
   api_key = Sys.getenv("BIBR_API"),
+  include_figures = FALSE,
   start_page = 1,
   end_page = Inf
 )
@@ -21,6 +22,9 @@ bibr_convert(
 \item{api_url}{Base URL of the API}
 
 \item{api_key}{Key to access bibr}
+
+\item{include_figures}{Whether to include base64-encoded figure images
+in the output (default FALSE)}
 
 \item{start_page}{First page of the file to extract}
 

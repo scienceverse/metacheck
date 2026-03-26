@@ -9,6 +9,7 @@ platform_bibr_convert(
   save_dir = ".",
   api_url = "https://platform.metacheck.app",
   api_key = Sys.getenv("PLATFORM_API_KEY"),
+  include_figures = FALSE,
   poll_interval = 2,
   timeout = 600
 )
@@ -22,6 +23,9 @@ platform_bibr_convert(
 
 \item{api_key}{Platform API key (Bearer token, starts with \code{sv_}).
 Defaults to the \code{PLATFORM_API_KEY} environment variable.}
+
+\item{include_figures}{Whether to include base64-encoded figure images
+in the output (default FALSE)}
 
 \item{poll_interval}{Seconds between status polls (default 2)}
 

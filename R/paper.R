@@ -76,7 +76,7 @@ paper <- function(id = NULL, ...) {
 #' plist <- paperlist(p1, p2)
 #'
 #' merged <- paperlist(psychsci[1:2], psychsci[2:3],
-#'.                    merge_duplicates = TRUE)
+#'                     merge_duplicates = TRUE)
 paperlist <- function(..., merge_duplicates = FALSE) {
   dots <- list(...)
 
