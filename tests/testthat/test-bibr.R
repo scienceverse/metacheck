@@ -48,6 +48,31 @@ test_that("bibr_convert", {
   expect_match(json_path[[1]], "to_err_is_human\\.json")
   expect_match(json_path[[2]], "published\\.json")
   expect_true(file.exists(json_path) |> all())
+
+})
+
+test_that("bibr_convert sends include_figures in request", {
+  file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+
+  captured_body <- NULL
+  httr2::local_mocked_responses(function(req) {
+    captured_body <<- req$body$data
+    httr2::response_json(body = list(status = "ok"))
+  })
+
+  save_dir <- withr::local_tempdir()
+  tryCatch(
+    bibr_convert(file_path, save_dir, include_figures = TRUE),
+    error = function(e) NULL
+  )
+  expect_equal(captured_body$include_figures, "true")
+
+  captured_body <- NULL
+  tryCatch(
+    bibr_convert(file_path, save_dir, include_figures = FALSE),
+    error = function(e) NULL
+  )
+  expect_equal(captured_body$include_figures, "false")
 })
 
 
@@ -101,6 +126,32 @@ test_that("platform_bibr_convert", {
   expect_match(json_path[[1]], "to_err_is_human\\.json")
   expect_match(json_path[[2]], "published\\.json")
   expect_true(file.exists(json_path) |> all())
+
+})
+
+test_that("platform_bibr_convert sends include_figures in request", {
+  file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+
+  captured_body <- NULL
+  httr2::local_mocked_responses(function(req) {
+    captured_body <<- req$body$data
+    httr2::response_json(body = list(status = "ok"))
+  })
+
+  save_dir <- withr::local_tempdir()
+  withr::local_envvar(PLATFORM_API_KEY = "sv_test_key")
+  tryCatch(
+    platform_bibr_convert(file_path, save_dir, include_figures = TRUE),
+    error = function(e) NULL
+  )
+  expect_equal(captured_body$include_figures, "true")
+
+  captured_body <- NULL
+  tryCatch(
+    platform_bibr_convert(file_path, save_dir, include_figures = FALSE),
+    error = function(e) NULL
+  )
+  expect_equal(captured_body$include_figures, "false")
 })
 
 

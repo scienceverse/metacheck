@@ -10,6 +10,8 @@
 #' @param api_url Base URL of the Scienceverse platform API
 #' @param api_key Platform API key (Bearer token, starts with \code{sv_}).
 #'   Defaults to the \code{PLATFORM_API_KEY} environment variable.
+#' @param include_figures Whether to include base64-encoded figure images
+#'   in the output (default FALSE)
 #' @param poll_interval Seconds between status polls (default 2)
 #' @param timeout Maximum seconds to wait for processing (default 600)
 #'
@@ -30,6 +32,7 @@ platform_bibr_convert <- function(file_path,
                        save_dir = ".",
                        api_url = "https://platform.metacheck.app",
                        api_key = Sys.getenv("PLATFORM_API_KEY"),
+                       include_figures = FALSE,
                        poll_interval = 2,
                        timeout = 600) {
   if (nchar(api_key) == 0) {
@@ -55,6 +58,7 @@ platform_bibr_convert <- function(file_path,
                               save_dir = save_dir,
                               api_url = api_url,
                               api_key = api_key,
+                              include_figures = include_figures,
                               poll_interval = poll_interval,
                               timeout = timeout),
         error = \(e) {
@@ -70,7 +74,8 @@ platform_bibr_convert <- function(file_path,
     httr2::req_url_path_append("jobs") |>
     httr2::req_auth_bearer_token(api_key) |>
     httr2::req_body_multipart(
-      file = curl::form_file(file_path)
+      file = curl::form_file(file_path),
+      include_figures = tolower(as.character(include_figures))
     ) |>
     httr2::req_timeout(60)
 
@@ -153,6 +158,8 @@ platform_bibr_convert <- function(file_path,
 #' @param save_dir Path to a directory in which to save the JSON file
 #' @param api_url Base URL of the API
 #' @param api_key Key to access bibr
+#' @param include_figures Whether to include base64-encoded figure images
+#'   in the output (default FALSE)
 #' @param start_page First page of the file to extract
 #' @param end_page Last page of the file to extract
 #'
@@ -163,6 +170,7 @@ bibr_convert <- function(file_path,
                          save_dir = ".",
                          api_url = "https://api.bibr.metacheck.app",
                          api_key = Sys.getenv("BIBR_API"),
+                         include_figures = FALSE,
                          start_page = 1,
                          end_page = Inf) {
   # handle directory or multiple files ----
@@ -182,6 +190,7 @@ bibr_convert <- function(file_path,
                      save_dir = save_dir,
                      api_url = api_url,
                      api_key = api_key,
+                     include_figures = include_figures,
                      start_page = start_page,
                      end_page = end_page),
         error = \(e) {
@@ -201,7 +210,8 @@ bibr_convert <- function(file_path,
     httr2::req_auth_basic("thesanogoeffect", api_key) |>
     httr2::req_url_path_append("papers", "extract") |>
     httr2::req_body_multipart(
-      file = curl::form_file(file_path)
+      file = curl::form_file(file_path),
+      include_figures = tolower(as.character(include_figures))
     ) |>
     httr2::req_timeout(300)
 
