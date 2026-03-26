@@ -210,32 +210,31 @@ osf_retrieve <- function(osf_url, id_col = 1,
 
     while (nrow(children) > 0) {
       node_ids <- children[children$osf_type == "nodes", "osf_id"]
-
       children <- osf_children(node_ids, pb = pb)
-
       child_collector <- dplyr::bind_rows(child_collector, children)
     }
 
     # get all new node IDs to search for files
     all_nodes <- dplyr::bind_rows(info, child_collector)
-    node_type <- all_nodes$osf_type == "nodes"
+    node_type <- all_nodes$osf_type %in% c("nodes", "registrations")
     if ("kind" %in% names(all_nodes)) {
       node_type <- node_type | all_nodes$kind == "folder"
     }
     node_type <- sapply(node_type, isTRUE)
 
-    folders <- all_nodes[node_type, c("osf_id", "project")] |> unique()
+    folders <- all_nodes[node_type, c("osf_id", "osf_type", "project")] |> unique()
 
     file_collector <- data.frame()
     while (nrow(folders) > 0) {
-      subfiles <- mapply(\(f, proj_id) {
-        dat <- osf_files(f, pb = pb)
+      subfiles <- mapply(\(f, osf_type, proj_id) {
+        dat <- osf_files(f, osf_type, pb = pb)
         dat$project <- rep(proj_id, nrow(dat))
         dat
-      }, folders$osf_id, folders$project, SIMPLIFY = FALSE) |>
+      }, folders$osf_id, folders$osf_type, folders$project, SIMPLIFY = FALSE) |>
         do.call(dplyr::bind_rows, args = _)
+
       if (nrow(subfiles) > 0 && "kind" %in% names(subfiles)) {
-        folders <- subfiles[subfiles$kind == "folder", c("osf_id", "project")]
+        folders <- subfiles[subfiles$kind == "folder", c("osf_id", "osf_type", "project")]
         # folders <- folders[!is.na(folders$osf_id), ]
       } else {
         folders <- data.frame()
@@ -918,12 +917,14 @@ osf_get_all_pages <- function(url, page_end = Inf) {
 #' List Files in an OSF Component
 #'
 #' @param osf_id an OSF ID
+#' @param osf_type the osf component type (usually nodes, registrations, or files)
 #' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame with file info
 #' @export
 #' @keywords internal
 osf_files <- function(osf_id,
+                      osf_type = NULL,
                       pb = NULL) {
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")
@@ -938,7 +939,8 @@ osf_files <- function(osf_id,
     pb$tick(0, tokens = _)
 
   if (nchar(node_id) == 5) {
-    url <- sprintf("%s/nodes/%s/files/", osf_api, node_id)
+    if (is.null(osf_type)) osf_type <- osf_type(node_id)
+    url <- sprintf("%s/%s/%s/files/", osf_api, osf_type, node_id)
   } else {
     url <- sprintf("%s/files/%s/", osf_api, node_id)
   }

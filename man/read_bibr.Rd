@@ -4,7 +4,7 @@
 \alias{read_bibr}
 \title{Read bibr JSON file}
 \usage{
-read_bibr(file_path, include_images = TRUE)
+read_bibr(file_path, include_images = FALSE)
 }
 \arguments{
 \item{file_path}{path to the JSON file (or legacy ZIP file)}

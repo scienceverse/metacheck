@@ -256,11 +256,24 @@ test_that("osf_get_all_pages", {
 })
 
 test_that("osf_files", {
+  expect_true(is.function(metacheck::osf_files))
+  expect_no_error(helplist <- help(osf_files, metacheck))
+
   skip_osf()
 
   osf_id <- "pngda"
   data <- osf_files(osf_id)
   expect_equal(nrow(data), 3)
+
+  # explicit nodes
+  osf_id <- "pngda"
+  data <- osf_files(osf_id, "nodes")
+  expect_equal(nrow(data), 3)
+
+  # wrong type
+  osf_id <- "pngda"
+  data <- osf_files(osf_id, "registrations")
+  expect_equal(nrow(data), 0)
 
   osf_id <- "yt32c"
   data <- osf_files(osf_id)
@@ -270,6 +283,15 @@ test_that("osf_files", {
   osf_id <- "y6a34"
   data <- osf_files(osf_id)
   expect_equal(nrow(data), 0)
+
+  # registration
+  osf_id <- "jqkg7"
+  files <- osf_files(osf_id, osf_type = "registrations")
+  expect_equal(files$osf_id, "5922fed2b83f69024e8f7aef")
+
+  # look up osf_type
+  files <- osf_files(osf_id)
+  expect_equal(files$osf_id, "5922fed2b83f69024e8f7aef")
 })
 
 test_that("osf_children", {

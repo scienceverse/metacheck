@@ -205,3 +205,14 @@ test_that("osf_file_download issue 99", {
 
   unlink(destdir, recursive = TRUE)
 })
+
+test_that("osf_file_download registrations", {
+  skip_osf()
+
+  # https://github.com/scienceverse/metacheck/issues/249
+
+  skip_if_quick()
+
+  contents <- osf_retrieve(osf_id, recursive = TRUE)
+  expect_contains(contents$kind, c("folder", "file"))
+})

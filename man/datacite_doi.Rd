@@ -10,7 +10,7 @@ datacite_doi(doi)
 \item{doi}{the DOI(s) to get info for}
 }
 \value{
-data frame with DOIs and info
+bib_match data frame
 }
 \description{
 Doi.org Info from DataCite
