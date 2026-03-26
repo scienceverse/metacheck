@@ -2,9 +2,12 @@
 #'
 #' Search the text of a paper or list of paper objects. Also works on the table results of a `search_text()` call.
 #'
+#' @details
+#' The section argument can take a vector of section names, or a PERL regular expression (use ".*" to match all sections). Possible section types are abstract, intro, method, results, discussion, references, acknowledgment, funding, endnote, footnote, table, figure, and unknown. The default includes all sections except references, tables and figures.
+#'
 #' @param paper a paper object or a list of paper objects
 #' @param pattern the regex pattern to search for, if a vector with length > 1, the patterns will be searched separately and combined
-#' @param section the section(s) to search in
+#' @param section the section type(s) to search in, see details
 #' @param return the kind of text to return, the full sentence, paragraph, header, or section that the text is in, or just the (regex) match, or all body text for a paper (paper_id)
 #' @param ignore.case whether to ignore case when text searching
 #' @param fixed logical. If TRUE, pattern is a string to be matched as is. Overrides all conflicting arguments.
@@ -17,9 +20,13 @@
 #'
 #' @examples
 #' paper <- demopaper()
-#' search_text(paper, "p\\s*(=|<)\\s*[0-9\\.]+", return = "match")
+#' all_text <- search_text(paper)
+#' study <- search_text(paper, "study")
+#' method <- search_text(paper, section = "method")
+#' equations <- search_text(paper, "\\b\\S+\\s*(=|<)\\s*[0-9\\.]+", return = "match")
+#' no_numbers <- search_text(paper, "\\d", exclude = TRUE)
 search_text <- function(paper, pattern = ".*",
-                        section = NULL,
+                        section = "^(?!(references|table|figure)).*",
                         return = c("sentence", "paragraph", "section", "header", "match", "paper_id"),
                         ignore.case = TRUE,
                         fixed = FALSE,
@@ -94,7 +101,12 @@ search_text <- function(paper, pattern = ".*",
     section <- unique(text$section_type) |>
       setdiff(c("figure", "table", "references"))
   }
-  section_filter <- text$section_type %in% section
+  section_filter <- text$section_type %in% section |
+    grepl(section[[1]], text$section_type, perl = TRUE)
+  if (all(!section_filter)) {
+    warning("The section filter matched no text")
+  }
+
   ft <- text[section_filter, ]
 
   # get all rows with a text match ----

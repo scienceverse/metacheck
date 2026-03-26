@@ -42,9 +42,21 @@ test_that("sections", {
   expect_setequal(res$section_type, "results")
 
   # 2 sections
-  sections <- c("results", "table")
-  sec2 <- search_text(paper, section = sections)
-  expect_setequal(sec2$section_type, sections)
+  section <- c("results", "table")
+  sec2 <- search_text(paper, section = section)
+  expect_setequal(sec2$section_type, section)
+
+  # all sections
+  section <- c(".*")
+  sec <- search_text(paper, section = section)
+  search_types <- unique(sec$section_type)
+  sec_types <- unique(paper$section$section_type)
+  expect_setequal(search_types, sec_types)
+
+  # no sections exist
+  section <- c("notasectiontype")
+  expect_warning(sec <- search_text(paper, section = section))
+  expect_equal(nrow(sec), 0)
 })
 
 test_that("test papers (no section table)", {
