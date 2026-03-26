@@ -2,16 +2,19 @@
 % Please edit documentation in R/bibr.R
 \name{bibr_convert}
 \alias{bibr_convert}
-\title{Process a paper using the bibr API}
+\title{Convert documents using bibr}
 \usage{
 bibr_convert(
   file_path,
   save_dir = ".",
-  api_url = "https://api.bibr.metacheck.app",
-  api_key = Sys.getenv("BIBR_API"),
+  backend = c("auto", "scivrs", "selfhosted"),
+  api_key = NULL,
+  api_url = NULL,
   include_figures = FALSE,
   start_page = 1,
-  end_page = Inf
+  end_page = Inf,
+  poll_interval = 2,
+  timeout = 600
 )
 }
 \arguments{
@@ -19,21 +22,62 @@ bibr_convert(
 
 \item{save_dir}{Path to a directory in which to save the JSON file}
 
-\item{api_url}{Base URL of the API}
+\item{backend}{Which backend to use: \code{"auto"} (default) detects from
+the available API key, \code{"scivrs"} uses the Scienceverse platform,
+\code{"selfhosted"} uses a direct bibr API instance.}
 
-\item{api_key}{Key to access bibr}
+\item{api_key}{API key (scivrs backend only). A Bearer token starting with
+\code{sv_}, defaults to the \code{SCIVRS_API_KEY} env var. Ignored for
+the \code{"selfhosted"} backend, which requires no authentication.}
+
+\item{api_url}{Base URL of the API. Defaults to the appropriate URL for
+the selected backend.}
 
 \item{include_figures}{Whether to include base64-encoded figure images
 in the output (default FALSE)}
 
-\item{start_page}{First page of the file to extract}
+\item{start_page}{First page of the file to extract (default 1)}
 
-\item{end_page}{Last page of the file to extract}
+\item{end_page}{Last page of the file to extract (default Inf for all pages)}
+
+\item{poll_interval}{Seconds between status polls, scivrs backend only
+(default 2)}
+
+\item{timeout}{Maximum seconds to wait for processing, scivrs backend only
+(default 600)}
 }
 \value{
-A list of parsed information
+Path(s) to the saved JSON file(s)
 }
 \description{
-Process a paper using the bibr API
+Converts document files (PDF, DOC, DOCX) to structured JSON using the bibr
+extraction service. Supports two backends: the Scienceverse platform
+(\code{"scivrs"}) which uses a job queue with load balancing, and a
+self-hosted bibr instance (\code{"selfhosted"}) for direct API access.
 }
-\keyword{internal}
+\details{
+When \code{backend = "auto"} (the default), the \code{"scivrs"} backend is
+used if \code{api_key} is provided or the \code{SCIVRS_API_KEY} environment
+variable is set. Otherwise, \code{"selfhosted"} is used (no authentication
+required).
+}
+\examples{
+\dontrun{
+# Auto-detect backend from environment variables
+pdf <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
+bibr_convert(pdf)
+
+# Explicitly use Scienceverse platform
+bibr_convert(pdf, backend = "scivrs")
+
+# Use self-hosted bibr instance
+bibr_convert(pdf, backend = "selfhosted")
+
+# Extract specific pages
+bibr_convert(pdf, start_page = 1, end_page = 10)
+
+# Directory of papers
+dir <- system.file("demo", package = "metacheck")
+bibr_convert(dir, save_dir = "results/")
+}
+}

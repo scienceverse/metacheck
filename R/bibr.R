@@ -1,44 +1,93 @@
-#' Process a paper using the Scienceverse platform API
+#' Convert documents using bibr
 #'
-#' Submits a document to the Scienceverse platform queue for extraction.
-#' The platform runs bibr behind Arq workers with load balancing, and is
-#' the recommended way to process papers. Use \code{\link{bibr_convert}} for
-#' direct bibr API access without the queue.
+#' Converts document files (PDF, DOC, DOCX) to structured JSON using the bibr
+#' extraction service. Supports two backends: the Scienceverse platform
+#' (\code{"scivrs"}) which uses a job queue with load balancing, and a
+#' self-hosted bibr instance (\code{"selfhosted"}) for direct API access.
+#'
+#' When \code{backend = "auto"} (the default), the \code{"scivrs"} backend is
+#' used if \code{api_key} is provided or the \code{SCIVRS_API_KEY} environment
+#' variable is set. Otherwise, \code{"selfhosted"} is used (no authentication
+#' required).
 #'
 #' @param file_path Path to the document file, or a directory of documents
 #' @param save_dir Path to a directory in which to save the JSON file
-#' @param api_url Base URL of the Scienceverse platform API
-#' @param api_key Platform API key (Bearer token, starts with \code{sv_}).
-#'   Defaults to the \code{PLATFORM_API_KEY} environment variable.
+#' @param backend Which backend to use: \code{"auto"} (default) detects from
+#'   the available API key, \code{"scivrs"} uses the Scienceverse platform,
+#'   \code{"selfhosted"} uses a direct bibr API instance.
+#' @param api_key API key (scivrs backend only). A Bearer token starting with
+#'   \code{sv_}, defaults to the \code{SCIVRS_API_KEY} env var. Ignored for
+#'   the \code{"selfhosted"} backend, which requires no authentication.
+#' @param api_url Base URL of the API. Defaults to the appropriate URL for
+#'   the selected backend.
 #' @param include_figures Whether to include base64-encoded figure images
 #'   in the output (default FALSE)
-#' @param poll_interval Seconds between status polls (default 2)
-#' @param timeout Maximum seconds to wait for processing (default 600)
+#' @param start_page First page of the file to extract (default 1)
+#' @param end_page Last page of the file to extract (default Inf for all pages)
+#' @param poll_interval Seconds between status polls, scivrs backend only
+#'   (default 2)
+#' @param timeout Maximum seconds to wait for processing, scivrs backend only
+#'   (default 600)
 #'
 #' @return Path(s) to the saved JSON file(s)
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' # Single file
+#' # Auto-detect backend from environment variables
 #' pdf <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
-#' platform_bibr_convert(pdf)
+#' bibr_convert(pdf)
+#'
+#' # Explicitly use Scienceverse platform
+#' bibr_convert(pdf, backend = "scivrs")
+#'
+#' # Use self-hosted bibr instance
+#' bibr_convert(pdf, backend = "selfhosted")
+#'
+#' # Extract specific pages
+#' bibr_convert(pdf, start_page = 1, end_page = 10)
 #'
 #' # Directory of papers
 #' dir <- system.file("demo", package = "metacheck")
-#' platform_bibr_convert(dir, save_dir = "results/")
+#' bibr_convert(dir, save_dir = "results/")
 #' }
-platform_bibr_convert <- function(file_path,
-                       save_dir = ".",
-                       api_url = "https://platform.metacheck.app",
-                       api_key = Sys.getenv("PLATFORM_API_KEY"),
-                       include_figures = FALSE,
-                       poll_interval = 2,
-                       timeout = 600) {
-  if (nchar(api_key) == 0) {
-    stop("Platform API key not set. ",
-         "Set the PLATFORM_API_KEY environment variable or pass api_key directly.",
-         call. = FALSE)
+bibr_convert <- function(file_path,
+                         save_dir = ".",
+                         backend = c("auto", "scivrs", "selfhosted"),
+                         api_key = NULL,
+                         api_url = NULL,
+                         include_figures = FALSE,
+                         start_page = 1,
+                         end_page = Inf,
+                         poll_interval = 2,
+                         timeout = 600) {
+  backend <- match.arg(backend)
+
+  # auto-detect backend ----
+  if (backend == "auto") {
+    if (!is.null(api_key) || nchar(Sys.getenv("SCIVRS_API_KEY")) > 0) {
+      backend <- "scivrs"
+    } else {
+      backend <- "selfhosted"
+    }
+  }
+
+  # resolve API key (scivrs only) ----
+  if (backend == "scivrs" && is.null(api_key)) {
+    api_key <- Sys.getenv("SCIVRS_API_KEY")
+    if (nchar(api_key) == 0) {
+      stop("API key not set. ",
+           "Set the SCIVRS_API_KEY environment variable or pass api_key directly.",
+           call. = FALSE)
+    }
+  }
+
+  # resolve API URL ----
+  if (is.null(api_url)) {
+    api_url <- switch(backend,
+      scivrs = "https://platform.metacheck.app",
+      selfhosted = "http://localhost:8000"
+    )
   }
 
   # handle directory or multiple files ----
@@ -54,29 +103,65 @@ platform_bibr_convert <- function(file_path,
     json_paths <- sapply(file_path, \(fp) {
       pb$tick(1, list(what = basename(fp)))
       tryCatch(
-        platform_bibr_convert(file_path = fp,
-                              save_dir = save_dir,
-                              api_url = api_url,
-                              api_key = api_key,
-                              include_figures = include_figures,
-                              poll_interval = poll_interval,
-                              timeout = timeout),
+        bibr_convert(file_path = fp,
+                     save_dir = save_dir,
+                     backend = backend,
+                     api_key = api_key,
+                     api_url = api_url,
+                     include_figures = include_figures,
+                     start_page = start_page,
+                     end_page = end_page,
+                     poll_interval = poll_interval,
+                     timeout = timeout),
         error = \(e) {
-          logger("platform_bibr_convert", e$message)
+          logger("bibr_convert", e$message)
           return(NULL)
       })
     })
     return(json_paths)
   }
 
+
+  # convert page values to zero-based (NULL = omit from request) ----
+  zb_start_page <- if (start_page > 1) start_page - 1 else NULL
+  zb_end_page <- if (is.finite(end_page)) end_page - 1 else NULL
+
+  # dispatch to backend ----
+  contents <- switch(backend,
+    scivrs = .bibr_request_scivrs(
+      file_path, api_url, api_key, include_figures,
+      zb_start_page, zb_end_page, poll_interval, timeout
+    ),
+    selfhosted = .bibr_request_selfhosted(
+      file_path, api_url, include_figures,
+      zb_start_page, zb_end_page
+    )
+  )
+
+  # save result ----
+  .bibr_save_result(contents, file_path, save_dir)
+}
+
+
+#' Submit and poll a job on the Scienceverse platform
+#' @noRd
+.bibr_request_scivrs <- function(file_path, api_url, api_key,
+                                  include_figures, start_page, end_page,
+                                  poll_interval, timeout) {
   # submit job ----
   submit_req <- httr2::request(api_url) |>
     httr2::req_url_path_append("jobs") |>
-    httr2::req_auth_bearer_token(api_key) |>
-    httr2::req_body_multipart(
-      file = curl::form_file(file_path),
-      include_figures = tolower(as.character(include_figures))
-    ) |>
+    httr2::req_auth_bearer_token(api_key)
+
+  body <- list(
+    .req = submit_req,
+    file = curl::form_file(file_path),
+    include_figures = tolower(as.character(include_figures))
+  )
+  if (!is.null(start_page)) body$start_page <- as.character(start_page)
+  if (!is.null(end_page)) body$end_page <- as.character(end_page)
+
+  submit_req <- do.call(httr2::req_body_multipart, body) |>
     httr2::req_timeout(60)
 
   submit_resp <- httr2::req_perform(submit_req)
@@ -93,7 +178,6 @@ platform_bibr_convert <- function(file_path,
   status_url <- paste0(api_url, "/jobs/", job_id)
   elapsed <- 0
 
-  # set up progress bar ----
   pb <- pb(NA, "(:spin) :elapsed :what")
   on.exit(pb$terminate())
   pb$tick(0, list(what = "submitted"))
@@ -140,103 +224,83 @@ platform_bibr_convert <- function(file_path,
          call. = FALSE)
   }
 
-  contents <- httr2::resp_body_raw(result_resp)
+  httr2::resp_body_raw(result_resp)
+}
+
+
+#' Send a direct request to a self-hosted bibr instance
+#' @noRd
+.bibr_request_selfhosted <- function(file_path, api_url,
+                                      include_figures, start_page, end_page) {
+  req <- httr2::request(api_url) |>
+    httr2::req_url_path_append("papers", "extract")
+
+  body <- list(
+    .req = req,
+    file = curl::form_file(file_path),
+    include_figures = tolower(as.character(include_figures))
+  )
+  if (!is.null(start_page)) body$start_page <- as.character(start_page)
+  if (!is.null(end_page)) body$end_page <- as.character(end_page)
+
+  req <- do.call(httr2::req_body_multipart, body) |>
+    httr2::req_timeout(300)
+
+  resp <- httr2::req_perform(req)
+
+  if (httr2::resp_status(resp) != 200) {
+    code <- httr2::resp_status(resp)
+    msg <- httr2::resp_status_desc(resp)
+    stop("Bibr request failed with status code: ", code, "\n", msg,
+         call. = FALSE)
+  }
+
+  httr2::resp_body_raw(resp)
+}
+
+
+#' Save raw bibr result to a JSON file
+#' @noRd
+.bibr_save_result <- function(contents, file_path, save_dir) {
   dir.create(save_dir, showWarnings = FALSE, recursive = TRUE)
   json_path <- basename(file_path) |>
     gsub("\\..{1,4}$", "\\.json", x = _) |>
     file.path(save_dir, x = _)
   writeBin(contents, json_path)
-
-  pb$tick(0, list(what = json_path))
   json_path
 }
 
 
-#' Process a paper using the bibr API
+#' Convert documents using the Scienceverse platform
 #'
-#' @param file_path Path to the document file, or a directory of documents
-#' @param save_dir Path to a directory in which to save the JSON file
-#' @param api_url Base URL of the API
-#' @param api_key Key to access bibr
-#' @param include_figures Whether to include base64-encoded figure images
-#'   in the output (default FALSE)
-#' @param start_page First page of the file to extract
-#' @param end_page Last page of the file to extract
+#' @description
+#' `r lifecycle::badge("deprecated")`
 #'
-#' @return A list of parsed information
+#' Use [bibr_convert()] with `backend = "scivrs"` instead.
+#'
+#' @inheritParams bibr_convert
+#'
+#' @return Path(s) to the saved JSON file(s)
 #' @export
 #' @keywords internal
-bibr_convert <- function(file_path,
-                         save_dir = ".",
-                         api_url = "https://api.bibr.metacheck.app",
-                         api_key = Sys.getenv("BIBR_API"),
-                         include_figures = FALSE,
-                         start_page = 1,
-                         end_page = Inf) {
-  # handle directory or multiple files ----
-  if (length(file_path) == 1 && dir.exists(file_path)) {
-    dir_path <- file_path
-    file_path <- list.files(dir_path,
-                            pattern = "\\.(docx?|pdf)$",
-                            full.names = TRUE)
-  }
-
-  if (length(file_path) > 1) {
-    pb <- pb(length(file_path), "Converting :current/:total [:bar] (:what)")
-    json_paths <- sapply(file_path, \(fp) {
-      pb$tick(1, list(what = basename(fp)))
-      tryCatch(
-        bibr_convert(file_path = fp,
-                     save_dir = save_dir,
-                     api_url = api_url,
-                     api_key = api_key,
-                     include_figures = include_figures,
-                     start_page = start_page,
-                     end_page = end_page),
-        error = \(e) {
-          logger("bibr_convert", e$message)
-          return(NULL)
-      })
-    })
-    return(json_paths)
-  }
-
-  # change to zero-based values
-  zb_start_page <- start_page - 1
-  zb_end_page <- ifelse(end_page == Inf, -1, end_page - 1)
-
-  # Make the POST request ----
-  req <- httr2::request(api_url) |>
-    httr2::req_auth_basic("thesanogoeffect", api_key) |>
-    httr2::req_url_path_append("papers", "extract") |>
-    httr2::req_body_multipart(
-      file = curl::form_file(file_path),
-      include_figures = tolower(as.character(include_figures))
-    ) |>
-    httr2::req_timeout(300)
-
-  resp <- httr2::req_perform(req)
-
-  # Check if the request was successful
-  if (httr2::resp_status(resp) == 200) {
-    contents <- httr2::resp_body_raw(resp)
-
-    # Write to file
-    dir.create(save_dir, showWarnings = FALSE, recursive = TRUE)
-    json_path <- basename(file_path) |>
-      gsub("\\..{1,4}$", "\\.json", x = _) |>
-      file.path(save_dir, x = _)
-    writeBin(contents, json_path)
-
-  } else {
-    code <- httr2::resp_status(resp)
-    msg <- httr2::resp_status_desc(resp)
-    stop(
-      "Bibr request failed with status code: ", code, "\n", msg
-    )
-  }
-
-  json_path
+platform_bibr_convert <- function(file_path,
+                       save_dir = ".",
+                       api_url = "https://platform.metacheck.app",
+                       api_key = Sys.getenv("SCIVRS_API_KEY"),
+                       include_figures = FALSE,
+                       poll_interval = 2,
+                       timeout = 600) {
+  .Deprecated("bibr_convert")
+  bibr_convert(
+    file_path = file_path,
+    save_dir = save_dir,
+    backend = "scivrs",
+    api_key = api_key,
+    api_url = api_url,
+    include_figures = include_figures,
+    poll_interval = poll_interval,
+    timeout = timeout
+  )
 }
 
 
@@ -504,4 +568,3 @@ format_bib_authors <- function(authors) {
   })
   do.call(rbind, parsed)
 }
-
