@@ -1,17 +1,17 @@
-test_that("bibr_convert", {
+test_that("bibr_convert selfhosted backend", {
   expect_true(is.function(metacheck::bibr_convert))
   expect_no_error(helplist <- help(bibr_convert, metacheck))
 
   expect_error(bibr_convert(bad_arg))
 
-  skip_api("api.bibr.metacheck.app")
+  skip_api("localhost:8000")
   skip_if_quick()
 
   # pdf
   file_name <- "to_err_is_human.pdf"
   file_path <- test_path("fixtures", "formats", file_name)
   save_dir <- withr::local_tempdir()
-  json_path <- bibr_convert(file_path, save_dir)
+  json_path <- bibr_convert(file_path, save_dir, backend = "selfhosted")
   expect_match(json_path, "to_err_is_human\\.json")
   expect_true(file.exists(json_path) |> all())
   pdf <- read_bibr(json_path)
@@ -22,7 +22,7 @@ test_that("bibr_convert", {
   file_name <- "to_err_is_human.docx"
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
-  json_path <- bibr_convert(file_path, save_path)
+  json_path <- bibr_convert(file_path, save_path, backend = "selfhosted")
   expect_true(file.exists(json_path) |> all())
   expect_match(json_path, "to_err_is_human\\.json")
   docx <- read_bibr(json_path)
@@ -33,7 +33,7 @@ test_that("bibr_convert", {
   file_name <- "to_err_is_human.doc"
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
-  json_path <- bibr_convert(file_path, save_path)
+  json_path <- bibr_convert(file_path, save_path, backend = "selfhosted")
   expect_true(file.exists(json_path) |> all())
   expect_match(json_path, "to_err_is_human\\.json")
   doc <- read_bibr(json_path)
@@ -44,14 +44,14 @@ test_that("bibr_convert", {
   file_name <- c("to_err_is_human.pdf", "published.pdf")
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
-  json_path <- bibr_convert(file_path, save_path)
+  json_path <- bibr_convert(file_path, save_path, backend = "selfhosted")
   expect_match(json_path[[1]], "to_err_is_human\\.json")
   expect_match(json_path[[2]], "published\\.json")
   expect_true(file.exists(json_path) |> all())
 
 })
 
-test_that("bibr_convert sends include_figures in request", {
+test_that("bibr_convert selfhosted sends include_figures in request", {
   file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
 
   captured_body <- NULL
@@ -62,26 +62,63 @@ test_that("bibr_convert sends include_figures in request", {
 
   save_dir <- withr::local_tempdir()
   tryCatch(
-    bibr_convert(file_path, save_dir, include_figures = TRUE),
+    bibr_convert(file_path, save_dir, backend = "selfhosted",
+                 include_figures = TRUE),
     error = function(e) NULL
   )
   expect_equal(captured_body$include_figures, "true")
 
   captured_body <- NULL
   tryCatch(
-    bibr_convert(file_path, save_dir, include_figures = FALSE),
+    bibr_convert(file_path, save_dir, backend = "selfhosted",
+                 include_figures = FALSE),
     error = function(e) NULL
   )
   expect_equal(captured_body$include_figures, "false")
 })
 
+test_that("bibr_convert selfhosted sends page params in request", {
+  file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
 
-test_that("platform_bibr_convert", {
-  expect_true(is.function(metacheck::platform_bibr_convert))
-  expect_no_error(helplist <- help(platform_bibr_convert, metacheck))
+  captured_body <- NULL
+  httr2::local_mocked_responses(function(req) {
+    captured_body <<- req$body$data
+    httr2::response_json(body = list(status = "ok"))
+  })
 
-  expect_error(platform_bibr_convert(bad_arg))
+  save_dir <- withr::local_tempdir()
+  tryCatch(
+    bibr_convert(file_path, save_dir, backend = "selfhosted",
+                 start_page = 3, end_page = 10),
+    error = function(e) NULL
+  )
+  # zero-based: start_page 3 -> 2, end_page 10 -> 9
+  expect_equal(captured_body$start_page, "2")
+  expect_equal(captured_body$end_page, "9")
 
+  # defaults omit page fields entirely
+  captured_body <- NULL
+  tryCatch(
+    bibr_convert(file_path, save_dir, backend = "selfhosted",
+),
+    error = function(e) NULL
+  )
+  expect_null(captured_body$start_page)
+  expect_null(captured_body$end_page)
+
+  # start_page = 1 is default, still omitted
+  captured_body <- NULL
+  tryCatch(
+    bibr_convert(file_path, save_dir, backend = "selfhosted",
+                 start_page = 1, end_page = 5),
+    error = function(e) NULL
+  )
+  expect_null(captured_body$start_page)
+  expect_equal(captured_body$end_page, "4")
+})
+
+
+test_that("bibr_convert scivrs backend", {
   skip_api("platform.metacheck.app")
   skip_if_quick()
 
@@ -89,7 +126,7 @@ test_that("platform_bibr_convert", {
   file_name <- "to_err_is_human.pdf"
   file_path <- test_path("fixtures", "formats", file_name)
   save_dir <- withr::local_tempdir()
-  json_path <- platform_bibr_convert(file_path, save_dir)
+  json_path <- bibr_convert(file_path, save_dir, backend = "scivrs")
   expect_match(json_path, "to_err_is_human\\.json")
   expect_true(file.exists(json_path) |> all())
   pdf <- read_bibr(json_path)
@@ -100,7 +137,7 @@ test_that("platform_bibr_convert", {
   file_name <- "to_err_is_human.docx"
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
-  json_path <- platform_bibr_convert(file_path, save_path)
+  json_path <- bibr_convert(file_path, save_path, backend = "scivrs")
   expect_true(file.exists(json_path) |> all())
   expect_match(json_path, "to_err_is_human\\.json")
   docx <- read_bibr(json_path)
@@ -111,7 +148,7 @@ test_that("platform_bibr_convert", {
   file_name <- "to_err_is_human.doc"
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
-  json_path <- platform_bibr_convert(file_path, save_path)
+  json_path <- bibr_convert(file_path, save_path, backend = "scivrs")
   expect_true(file.exists(json_path) |> all())
   expect_match(json_path, "to_err_is_human\\.json")
   doc <- read_bibr(json_path)
@@ -122,37 +159,146 @@ test_that("platform_bibr_convert", {
   file_name <- c("to_err_is_human.pdf", "published.pdf")
   file_path <- test_path("fixtures", "formats", file_name)
   save_path <- withr::local_tempdir()
-  json_path <- platform_bibr_convert(file_path, save_path)
+  json_path <- bibr_convert(file_path, save_path, backend = "scivrs")
   expect_match(json_path[[1]], "to_err_is_human\\.json")
   expect_match(json_path[[2]], "published\\.json")
   expect_true(file.exists(json_path) |> all())
 
 })
 
-test_that("platform_bibr_convert sends include_figures in request", {
-  skip("?")
+test_that("bibr_convert scivrs sends include_figures in request", {
   file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
 
   captured_body <- NULL
   httr2::local_mocked_responses(function(req) {
-    captured_body <<- req$body$data
-    httr2::response_json(body = list(status = "ok"))
+    if (!is.null(req$body$data)) {
+      captured_body <<- req$body$data
+    }
+    if (grepl("/jobs$", req$url)) {
+      httr2::response_json(body = list(job_id = "test-job"))
+    } else if (grepl("/result$", req$url)) {
+      httr2::response_json(body = list(text = "mock"))
+    } else {
+      httr2::response_json(body = list(status = "complete"))
+    }
   })
 
   save_dir <- withr::local_tempdir()
-  withr::local_envvar(PLATFORM_API_KEY = "sv_test_key")
+  withr::local_envvar(SCIVRS_API_KEY = "sv_test_key")
   tryCatch(
-    platform_bibr_convert(file_path, save_dir, include_figures = TRUE),
+    bibr_convert(file_path, save_dir, backend = "scivrs", include_figures = TRUE),
     error = function(e) NULL
   )
   expect_equal(captured_body$include_figures, "true")
 
   captured_body <- NULL
   tryCatch(
-    platform_bibr_convert(file_path, save_dir, include_figures = FALSE),
+    bibr_convert(file_path, save_dir, backend = "scivrs", include_figures = FALSE),
     error = function(e) NULL
   )
   expect_equal(captured_body$include_figures, "false")
+})
+
+test_that("bibr_convert scivrs sends page params in request", {
+  file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+
+  captured_body <- NULL
+  httr2::local_mocked_responses(function(req) {
+    if (!is.null(req$body$data)) {
+      captured_body <<- req$body$data
+    }
+    if (grepl("/jobs$", req$url)) {
+      httr2::response_json(body = list(job_id = "test-job"))
+    } else if (grepl("/result$", req$url)) {
+      httr2::response_json(body = list(text = "mock"))
+    } else {
+      httr2::response_json(body = list(status = "complete"))
+    }
+  })
+
+  save_dir <- withr::local_tempdir()
+  withr::local_envvar(SCIVRS_API_KEY = "sv_test_key")
+  tryCatch(
+    bibr_convert(file_path, save_dir, backend = "scivrs",
+                 start_page = 2, end_page = 5),
+    error = function(e) NULL
+  )
+  # zero-based: start_page 2 -> 1, end_page 5 -> 4
+  expect_equal(captured_body$start_page, "1")
+  expect_equal(captured_body$end_page, "4")
+
+  # defaults omit page fields
+  captured_body <- NULL
+  tryCatch(
+    bibr_convert(file_path, save_dir, backend = "scivrs"),
+    error = function(e) NULL
+  )
+  expect_null(captured_body$start_page)
+  expect_null(captured_body$end_page)
+})
+
+test_that("bibr_convert auto-detects backend", {
+  withr::local_envvar(SCIVRS_API_KEY = "")
+
+  # match the default URLs resolved inside bibr_convert()
+  scivrs_url <- "https://platform.metacheck.app"
+  selfhosted_url <- "http://localhost:8000"
+
+  captured_url <- NULL
+  httr2::local_mocked_responses(function(req) {
+    captured_url <<- req$url
+    if (grepl("/jobs$", req$url)) {
+      httr2::response_json(body = list(job_id = "test-job"))
+    } else if (grepl("/result$", req$url)) {
+      httr2::response_json(body = list(text = "mock"))
+    } else {
+      httr2::response_json(body = list(status = "complete"))
+    }
+  })
+  file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  save_dir <- withr::local_tempdir()
+
+  # no key set -> selfhosted (no auth needed)
+  tryCatch(bibr_convert(file_path, save_dir), error = function(e) NULL)
+  expect_true(startsWith(captured_url, selfhosted_url))
+
+  # SCIVRS_API_KEY set -> scivrs
+  withr::local_envvar(SCIVRS_API_KEY = "sv_test")
+  captured_url <- NULL
+  tryCatch(bibr_convert(file_path, save_dir), error = function(e) NULL)
+  expect_true(startsWith(captured_url, scivrs_url))
+
+  # explicit api_key -> scivrs
+  withr::local_envvar(SCIVRS_API_KEY = "")
+  captured_url <- NULL
+  tryCatch(
+    bibr_convert(file_path, save_dir, api_key = "sv_explicit"),
+    error = function(e) NULL
+  )
+  expect_true(startsWith(captured_url, scivrs_url))
+})
+
+test_that("platform_bibr_convert is deprecated", {
+  expect_true(is.function(metacheck::platform_bibr_convert))
+  withr::local_envvar(SCIVRS_API_KEY = "sv_test_key")
+  httr2::local_mocked_responses(function(req) {
+    if (grepl("/jobs$", req$url)) {
+      httr2::response_json(body = list(job_id = "test-job"))
+    } else if (grepl("/result$", req$url)) {
+      httr2::response_json(body = list(text = "mock"))
+    } else {
+      httr2::response_json(body = list(status = "complete"))
+    }
+  })
+  file_path <- test_path("fixtures", "formats", "to_err_is_human.pdf")
+  save_dir <- withr::local_tempdir()
+  expect_warning(
+    tryCatch(
+      platform_bibr_convert(file_path, save_dir),
+      error = function(e) NULL
+    ),
+    "deprecated"
+  )
 })
 
 
@@ -280,4 +426,3 @@ test_that("format_bib_authors", {
   exp <- c("DeBruine, L; Lakens, D", "Werner, J")
   expect_equal(obs, exp)
 })
-

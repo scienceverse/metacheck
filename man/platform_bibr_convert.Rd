@@ -2,13 +2,14 @@
 % Please edit documentation in R/bibr.R
 \name{platform_bibr_convert}
 \alias{platform_bibr_convert}
-\title{Process a paper using the Scienceverse platform API}
+\title{Convert documents using the Scienceverse platform}
 \usage{
 platform_bibr_convert(
   file_path,
   save_dir = ".",
   api_url = "https://platform.metacheck.app",
-  api_key = Sys.getenv("PLATFORM_API_KEY"),
+  api_key = Sys.getenv("SCIVRS_API_KEY"),
+  include_figures = FALSE,
   poll_interval = 2,
   timeout = 600
 )
@@ -18,32 +19,28 @@ platform_bibr_convert(
 
 \item{save_dir}{Path to a directory in which to save the JSON file}
 
-\item{api_url}{Base URL of the Scienceverse platform API}
+\item{api_url}{Base URL of the API. Defaults to the appropriate URL for
+the selected backend.}
 
-\item{api_key}{Platform API key (Bearer token, starts with \code{sv_}).
-Defaults to the \code{PLATFORM_API_KEY} environment variable.}
+\item{api_key}{API key (scivrs backend only). A Bearer token starting with
+\code{sv_}, defaults to the \code{SCIVRS_API_KEY} env var. Ignored for
+the \code{"selfhosted"} backend, which requires no authentication.}
 
-\item{poll_interval}{Seconds between status polls (default 2)}
+\item{include_figures}{Whether to include base64-encoded figure images
+in the output (default FALSE)}
 
-\item{timeout}{Maximum seconds to wait for processing (default 600)}
+\item{poll_interval}{Seconds between status polls, scivrs backend only
+(default 2)}
+
+\item{timeout}{Maximum seconds to wait for processing, scivrs backend only
+(default 600)}
 }
 \value{
 Path(s) to the saved JSON file(s)
 }
 \description{
-Submits a document to the Scienceverse platform queue for extraction.
-The platform runs bibr behind Arq workers with load balancing, and is
-the recommended way to process papers. Use \code{\link{bibr_convert}} for
-direct bibr API access without the queue.
-}
-\examples{
-\dontrun{
-# Single file
-pdf <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
-platform_bibr_convert(pdf)
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 
-# Directory of papers
-dir <- system.file("demo", package = "metacheck")
-platform_bibr_convert(dir, save_dir = "results/")
+Use \code{\link[=bibr_convert]{bibr_convert()}} with \code{backend = "scivrs"} instead.
 }
-}
+\keyword{internal}
