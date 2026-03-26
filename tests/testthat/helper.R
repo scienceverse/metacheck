@@ -1,7 +1,10 @@
 # always executed by load_all() and at the beginning of automated testing
 # https://r-pkgs.org/testing-design.html#testthat-helper-files
 
-testthat::set_max_fails(1)
+# if TRUE, skip slow tests and those that need external connections
+quick <- TRUE
+
+testthat::set_max_fails(Inf)
 
 email("metacheck@scienceverse.org")
 
@@ -18,7 +21,7 @@ fix_fancy <- function(x) {
 }
 
 skip_api <- function(host = "google.com") {
-  skip("API")
+  if (quick) skip("API")
   skip_on_cran()
   skip_on_covr()
   skip_if_offline(host)
@@ -26,7 +29,7 @@ skip_api <- function(host = "google.com") {
 
 # adjust to run LLM tests where wanted
 skip_llm <- function() {
-  skip("LLM")
+  if (quick) skip("LLM")
   skip_on_cran()
   skip_on_covr()
   skip_if_offline()
@@ -35,7 +38,7 @@ skip_llm <- function() {
 
 # skip if requires OSF API
 skip_osf <- function() {
-  skip("OSF")
+  if (quick) skip("OSF")
   skip_on_cran()
   skip_on_covr()
   skip_if_offline("api.osf.io")
@@ -44,5 +47,5 @@ skip_osf <- function() {
 
 # skip when running quick checks
 skip_if_quick <- function() {
-  skip("Quick mode — skipping slow tests")
+  if (quick) skip("Quick mode")
 }
