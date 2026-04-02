@@ -1,0 +1,22 @@
+table_id,section_id,html,contents,page_number
+1,12,"<table>
+  <thead>
+    <tr>
+      <th>Condition</th>
+      <th>Mistakes</th>
+      <th>Usefulness</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>control</td>
+      <td>10.90</td>
+      <td>4.50</td>
+    </tr>
+    <tr>
+      <td>experimental</td>
+      <td>9.12</td>
+      <td>5.06</td>
+    </tr>
+  </tbody>
+</table>",,3

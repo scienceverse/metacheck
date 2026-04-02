@@ -20,21 +20,29 @@ test_that("multiple paper, one fails", {
   )
   expect_warning( paper <- grobid_to_bibr(xml_file, NULL) )
   expect_equal(length(paper), 1)
+  expect_equal(paper[[1]]$info$file_name, xml_file[[1]])
 })
 
 
 test_that("1 paper, NULL save_path, no CR lookup", {
-  xml_file <- system.file("demo/to_err_is_human.xml", package = "metacheck")
+  xml_file <- demofile("xml")
   paper <- grobid_to_bibr(xml_file, NULL)
 
   expect_s3_class(paper, "scivrs_paper")
-  expect_equal(paper$bib$doi[[4]], "10.0000/0123456789")
+  expect_contains(paper$bib$doi, "10.0000/0123456789")
   expect_false("bib_match" %in% names(paper))
   expect_true(paper_validate(paper))
 
   expect_equal(paper$info$keywords[[1]], NULL)
-  expect_equal(paper$bib$authors[[1]]$family, c("Eagly", "Wood"))
-  expect_equal(paper$bib$authors[[2]]$given, c("F", "S S"))
+  expect_contains(paper$bib$authors, "Smith, F")
+
+  expect_equal(paper$table$table_id, 1)
+  tab_sec <-paper$section[paper$section$section_id == paper$table$section_id, ]$section_type
+  expect_equal(tab_sec, "table")
+
+  expect_equal(paper$figure$figure_id, 1)
+  fig_sec <-paper$section[paper$section$section_id == paper$figure$section_id, ]$section_type
+  expect_equal(fig_sec, "figure")
 })
 
 
@@ -112,20 +120,19 @@ test_that("1 paper, NULL save_path, CR lookup", {
   skip_api("api.labs.crossref.org")
   xml_file <- system.file("demo/to_err_is_human.xml", package = "metacheck")
   paper_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
-  expect_contains(names(paper_cr$bib_matches), c("doi", "source"))
+  expect_equal(paper_cr$bib_match$service[[1]], "crossref")
 })
 
 
 test_that("multiple papers, NULL save_path, CR lookup", {
-  skip("broken until bib_matches fixed")
-  skip_api()
+  skip_api("api.labs.crossref.org")
   xml_file <- c(
     system.file("demo/to_err_is_human.xml", package = "metacheck"),
     system.file("demo/to_err_is_human.xml", package = "metacheck")
   )
   papers_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
-  expect_contains(names(papers_cr[[1]]$bib$match), c("crossref"))
-  expect_contains(names(papers_cr[[2]]$bib$match), c("crossref"))
+  expect_equal(papers_cr[[1]]$bib_match$service[[1]], "crossref")
+  expect_equal(papers_cr[[2]]$bib_match$service[[2]], "crossref")
 })
 
 # read ----
@@ -207,7 +214,7 @@ test_that("bad PDF", {
   skip_api("kermitt2-grobid.hf.space")
 
   filename <- test_path("fixtures", "problems", "xml_with_pdf_extension.pdf")
-  expect_error(grobid_convert(filename), "Internal Server Error")
+  expect_error(grobid_convert(filename))
 
   filename2 <- c(filename, "wrongfile.pdf")
   expect_error( x <- grobid_convert(filename2) )

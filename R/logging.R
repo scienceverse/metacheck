@@ -45,6 +45,12 @@ logger <- function(label = "", contents = list(), logpath = NULL) {
     contents <- list(error = contents)
   }
 
+  # make sure character contents are UTF-8
+  contents <- lapply(contents, \(v) {
+    if (!is.character(v)) return(v)
+    iconv(v, to = "UTF-8")
+  })
+
   logpath <- logpath %||% logpath()
   if (!file.exists(logpath)) {
     jsonlite::write_json(list(), logpath)

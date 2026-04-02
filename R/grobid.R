@@ -255,7 +255,9 @@ grobid_to_bibr <- function(xml_file,
 #' @export
 #' @keywords internal
 .grobid_to_bibr <- function(xml_file, pb = NULL) {
-  bibr_version = "9.0"
+  schema <- paper_schema()
+  m <- regexec("(?<=\\(v)[\\d\\.]+", schema$description, perl = TRUE)
+  bibr_version = regmatches(schema$description, m)[[1]]
   what <- basename(xml_file)
 
   if (is.null(pb)) {
@@ -269,11 +271,17 @@ grobid_to_bibr <- function(xml_file,
     # fixes a glitch that stops grobid xml from being read
     gsub(' xmlns="http://www.tei-c.org/ns/1.0"', "",
          x = _, fixed = TRUE
-    )
+    ) |>
+    gsub("Fig\\. (\\d{1,2})(\\s*\\.)?", "Fig \\1", x = _) |>
+    gsub("Figure\\. (\\d{1,2})(\\s*\\.)?", "Figure \\1", x = _) |>
+    gsub("Tab\\. (\\d{1,2})(\\s*\\.)?", "Tab \\1", x = _) |>
+    gsub("Table\\. (\\d{1,2})(\\s*\\.)?", "Table \\1", x = _)
+
   xml <- xml2::read_xml(xml_text)
 
   file_hash <- substr(tools::md5sum(xml_file), 1, 16)[[1]]
-  paper <- paper(file_hash)
+  paper_id <- basename(xml_file) |> sub("\\.xml", "", x = _)
+  paper <- paper(paper_id)
 
   # info ----
   title <- xml_find1(xml, ".//titleStmt/title")
@@ -301,33 +309,49 @@ grobid_to_bibr <- function(xml_file,
   paper$author <- tei_authors(xml)
 
   # text ----
-  ft <- tei_text(xml)
-  ft$p <- seq_along(ft$p)
-  ft <- process_full_text(ft)
-
-  # TODO: figures and tables
-  # paper$table <- ft[ft$section == "tab", ]
-  # paper$fig <- ft[ft$section == "fig", ]
-  ft <- ft[!ft$section %in% c("fig", "tab"), ]
-  ft <- ft[ft$text != ft$header, ]
-
-  paper$text <- data.frame(
-    text_id = seq_along(ft$text),
-    paragraph_id = ft$p,
-    section_id = ft$div,
-    text = ft$text,
-    page_number = rep(NA_integer_, nrow(ft))
-  )
+  paper$text  <- tei_text(xml)
 
   # section ----
-  sec <- dplyr::count(ft, div, header, section)
+  sec <- dplyr::count(paper$text, section_id, header, section_type)
+  paper$text$header <- NULL
+  paper$text$section_type <- NULL
+
   paper$section <- data.frame(
-    section_id = sec$div,
+    section_id = sec$section_id,
     header = sec$header,
     parent_section_id = rep(NA_integer_, nrow(sec)),
-    section_type = sec$section,
+    section_type = sec$section_type,
     classification_score = rep(NA_real_, nrow(sec))
   )
+
+  # figure ----
+  fig_sec <- paper$section[paper$section$section_type == "figure", ]$section_id
+  paper$figure <- data.frame(
+    figure_id = seq_along(fig_sec),
+    section_id = fig_sec,
+    image = rep(NA_character_, length(fig_sec)),
+    page_number = rep(NA_integer_, length(fig_sec))
+  )
+
+  # table ----
+  tab_sec <- paper$section[paper$section$section_type == "table", ]$section_id
+  paper$table <- data.frame(
+    table_id = seq_along(tab_sec),
+    section_id = tab_sec,
+    html = rep(NA_character_, length(tab_sec)),
+    contents = rep(NA_character_, length(tab_sec)),
+    page_number = rep(NA_integer_, length(tab_sec))
+  )
+
+  # add html
+  tabs <- xml2::xml_find_all(xml, "//figure[@type='table']")
+  if (length(tabs) == nrow(paper$table)) {
+    for (i in seq_along(tabs)) {
+      html <- xml2::xml_find_first(tabs[[i]], ".//table") |>
+        paste()
+      paper$table$html[[i]] <- html
+    }
+  }
 
   # bib ----
   paper$bib <- tei_bib(xml)
@@ -568,7 +592,32 @@ tei_text <- function(xml) {
       notetbl
     )
   )
-  full_text <- do.call(dplyr::bind_rows, all_tables)
+  ft <- do.call(dplyr::bind_rows, all_tables)
+
+  # re-number p and div
+  ft$p <- seq_along(ft$p)
+  figtab <- ft[ft$section %in% c("fig", "tab"), ]
+  nofigtab <- ft[!ft$section %in% c("fig", "tab"), ]
+  divmax <- ifelse(nrow(nofigtab), max(nofigtab$div), 0)
+  figtab$div <- divmax + seq_along(figtab$div)
+  ft <- dplyr::bind_rows(nofigtab, figtab)
+
+  ft$section[ft$section == "tab"] <- "table"
+  ft$section[ft$section == "fig"] <- "figure"
+
+  # split sentences and get rid of headers in text column
+  ft <- process_full_text(ft)
+  ft <- ft[ft$text != ft$header, ]
+
+  full_text <- data.frame(
+    text_id = seq_along(ft$text),
+    paragraph_id = ft$p,
+    section_id = ft$div,
+    text = ft$text,
+    page_number = rep(NA_integer_, nrow(ft)),
+    header = ft$header,
+    section_type = ft$section
+  )
 
   return(full_text)
 }
@@ -665,7 +714,7 @@ tei_xrefs <- function(xml, text_table) {
     dplyr::mutate(xref_type = dplyr::case_match(xref_type,
                                                 "bibr" ~ "bib",
                                                 "figure" ~ "figure",
-                                                "table" ~ "tbl"),
+                                                "table" ~ "table"),
                   xref_id = suppressWarnings(gsub("[a-z]", "", xref_id) |>
                                                as.integer()))
 
@@ -693,64 +742,30 @@ tei_bib <- function(xml) {
   refs <- xml2::xml_find_all(xml, "//listBibl //biblStruct")
 
   if (length(refs) > 0) {
-    bib_table <- data.frame(
-      bib_id = xml2::xml_attr(refs, "id") |>
-        gsub("b", "", x = _) |>
-        as.integer(),
-      bib_text = xml2::xml_text(refs) |>
-        gsub("\\s+", " ", x = _) |>
-        trimws()
-    )
+    bib_table <- lapply(refs, xml2bib) |>
+      dplyr::bind_rows()
 
-    bibs <- lapply(refs, xml2bib)
+    bib_table$bib_id <- xml2::xml_attr(refs, "id") |>
+      gsub("b", "", x = _) |>
+      as.integer()
 
-    bib_table$doi <- sapply(bibs, \(x) x$doi %||% NA_character_)
-    bib_table$bib_type <- sapply(bibs, \(x) x$bibtype %||% NA_character_)
-    bib_table$title <- sapply(bibs, \(x) x$title %||% NA_character_)
-    bib_table$container <- sapply(bibs, \(x) x$journal %||% x$booktitle %||% NA_character_)
+    bib_table$bib_text <- xml_find(refs, ".//note[@type='raw_reference']") |>
+      gsub("\\s+", " ", x = _) |>
+      trimws()
 
     # extract first occurrence of year from string
-    bib_table$year <- sapply(bibs, \(x) {
-      sub(".*?(\\b[12][0-9]{3}\\b).*", "\\1", x$year) %||% NA_integer_
+    year <- sapply(bib_table$year, \(x) {
+      m <- regexpr("\\b[12]\\d{3}[a-z]?\\b", x)
+      y <- regmatches(x, m)
+      ifelse(length(y), y[[1]], NA_character_)
     })
-    bib_table$authors <- bibs |>
-      lapply(\(x) x$author) |>
-      lapply(\(x) {
-        rows <- lapply(x, \(a) {
-          a <- unlist(a) |> as.list()
-          data.frame(
-            given = a$given %||% NA_character_,
-            family = a$family %||% NA_character_
-          )
-        })
-        if (length(rows)) do.call(rbind, rows)
-        else data.frame(given = character(0), family = character(0))
-      })
-    bib_table$issue <- sapply(bibs, \(x) x$number %||% NA_character_)
-    bib_table$first_page <- sapply(bibs, \(x) x$first_page %||% NA_character_)
-    bib_table$last_page <- sapply(bibs, \(x) x$last_page %||% NA_character_)
-    bib_table$editors <- bibs |>
-      lapply(\(x) x$editor) |>
-      lapply(\(x) {
-        rows <- lapply(x, \(a) {
-          a <- unlist(a) |> as.list()
-          data.frame(
-            given = a[["given"]] %||% NA_character_,
-            family = a[["family"]] %||% NA_character_
-          )
-        })
-        if (length(rows)) do.call(rbind, rows)
-        else data.frame(given = character(0), family = character(0))
-      })
-    bib_table$publisher <- sapply(bibs, \(x) x$publisher %||% NA_character_)
+
+    bib_table$year <- gsub("\\D", "", year) |> as.integer()
+    bib_table$year_suffix <- gsub("\\d", "", year)
   } else {
     bib_table <- data.frame(
       bib_id = character(0),
-      bib_text = character(0),
-      bib_type = character(0),
-      authors = character(0),
-      year = integer(0),
-      doi = character(0)
+      bib_text = character(0)
     )
   }
 
@@ -768,35 +783,27 @@ tei_bib <- function(xml) {
 #' @export
 #' @keywords internal
 xml2bib <- function(ref) {
-  b <- list(bibtype = "misc")
+  b <- list(bib_type = "misc")
 
   b$doi <- xml_find1(ref, ".//idno[@type='DOI']")
 
   b$title <- xml_find1(ref, ".//title[@level='a']")
 
-  b$author <- xml2::xml_find_all(ref, ".//author //persName") |>
+  b$authors <- xml2::xml_find_all(ref, ".//author //persName") |>
     lapply(\(a) {
       forename <- xml_find(a, ".//forename", join = " ")
       surname <- xml_find(a, ".//surname", join = " ")
 
-      utils::person(
-        given = forename,
-        family = surname
-      )
-    }) |>
-    do.call(base::c, args = _)
+      paste0(surname, ", ", forename)
+    }) |> paste(collapse = "; ")
 
-  b$editor <- xml2::xml_find_all(ref, ".//editor //persName") |>
+  b$editors <- xml2::xml_find_all(ref, ".//editor //persName") |>
     lapply(\(a) {
       forename <- xml_find(a, ".//forename", join = " ")
       surname <- xml_find(a, ".//surname", join = " ")
 
-      utils::person(
-        given = forename,
-        family = surname
-      )
-    }) |>
-    do.call(base::c, args = _)
+      paste0(surname, ", ", forename)
+    }) |> paste(collapse = "; ")
 
   b$journal <- xml_find1(ref, ".//title[@level='j']")
 
@@ -807,7 +814,7 @@ xml2bib <- function(ref) {
   b$publisher <- xml_find1(imprint, ".//publisher")
   b$year <- xml_find1(imprint, ".//date[@type='published']")
   b$volume <- xml_find1(imprint, ".//biblScope[@unit='volume']")
-  b$number <- xml_find1(imprint, ".//biblScope[@unit='issue']")
+  b$issue <- xml_find1(imprint, ".//biblScope[@unit='issue']")
   page_unit <- xml2::xml_find_first(imprint, ".//biblScope[@unit='page']")
   if (!is.na(page_unit)) {
     pages <- xml2::xml_text(page_unit)
@@ -826,32 +833,26 @@ xml2bib <- function(ref) {
 
   b[is.na(b)] <- NULL
   if (!is.null(b$journal)) {
-    b$bibtype <- "article"
+    b$bib_type <- "article"
+    b$container <- b$journal
     if (is.null(b$year)) {
       # b$bibtype <- "unpublished"
       note <- xml2::xml_find_first(ref, ".//note") |> xml2::xml_text()
       b$year <- note %||% "no year"
     }
   } else if (!is.null(b$booktitle)) {
-    b$bibtype <- "incollection"
     if (is.null(b$title)) {
-      b$bibtype <- "book"
+      b$bib_type <- "book"
       b$title <- b$booktitle
-      b$booktitle <- NULL
+    } else {
+      b$bib_type <- "incollection"
+      b$container <- b$booktitle
     }
   }
 
-  bib <- tryCatch(do.call(utils::bibentry, b),
-                  error = function(e) {
-                    b$bibtype <- "misc"
-                    bib <- do.call(utils::bibentry, b)
-                    return(bib)
+  b$booktitle <- NULL
+  b$journal <- NULL
+  b$pages <- NULL
 
-                    # TODO: fix more types
-                    # warning(e$message, "\\n")
-                    # return(txt)
-                  }
-  )
-
-  bib
+  return(b)
 }

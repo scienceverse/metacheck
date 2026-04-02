@@ -461,6 +461,25 @@ demopaper <- function() {
   read_bibr(file_path)
 }
 
+#' Get a demo file
+#'
+#' Return the file path for various versions of the demo paper. Use `demopaper()` to directly read it as a paper object from the json file.
+#'
+#' @return file path
+#' @export
+#'
+#' @examples
+#' json <- demofile()
+#' pdf <- demofile("pdf")
+demofile <- function(ext = c("json", "pdf", "docx", "doc", "xml", "qmd")) {
+  ext <- match.arg(ext)
+
+  file_path <- paste0("demo/to_err_is_human.", ext) |>
+    system.file(package = "metacheck")
+
+  return(file_path)
+}
+
 #' Paper tables
 #'
 #' Return a table from a paper object or concatenate tables across a list of paper objects.

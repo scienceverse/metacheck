@@ -296,6 +296,7 @@ read_bibr <- function(file_path, include_images = FALSE) {
   info[zeros] <- NA
   paper$info <- as.data.frame(info)
   paper$info$keywords <- I(list(keywords))
+  paper$info$abstract <- NULL # TODO: remove after bibr fixed
 
   # author ----
   if (!is.null(data$author) && length(data$author) > 0) {

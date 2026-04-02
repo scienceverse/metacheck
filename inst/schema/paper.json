@@ -391,6 +391,8 @@
           "enum": [
             "crossref",
             "openalex",
+            "datacite",
+            "doi.org",
             "openlibrary",
             "manual",
             "other"
@@ -452,8 +454,8 @@
       "required": ["xref_id", "xref_type", "contents", "text_id"],
       "properties": {
         "xref_id": {
-          "type": "integer",
-          "description": "The ID from the bib, table, figure, or section table (for footnotes)"
+          "type": ["integer", "null"],
+          "description": "The ID from the bib, table, figure, or section table (for footnotes). Can be null if an xref does not match any bib/table/figure/footnote."
         },
         "xref_type": {
           "type": "string",

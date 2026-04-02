@@ -62,4 +62,19 @@ test_that("lastlog", {
   expect_equal(log2$label, "test A")
 })
 
+test_that("UTF-8 conversion", {
+  latin1 <- iconv("\x96", from = "latin1", to = "latin1")
+  utf8 <- iconv(latin1, from = "latin1", to = "UTF-8")
+  logger("test1", latin1)
+  obs <- lastlog(1)
+  expect_equal(obs$label, "test1")
+  expect_equal(obs$error, utf8)
+
+  logger("test2", latin1)
+  obs <- lastlog(1:2)
+  expect_equal(obs$label[[1]], "test2")
+  expect_equal(obs$error[[1]], utf8)
+  expect_equal(obs$label[[2]], "test1")
+  expect_equal(obs$error[[2]], utf8)
+})
 

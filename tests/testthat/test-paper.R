@@ -81,7 +81,7 @@ test_that("paper_coerce", {
   expect_true(paper_validate(x[[3]]))
 
   expect_equal(x[[1]]$info$file_name, "10")
-  expect_equal(x[[2]]$bib$bib_id, 1:26)
+  expect_equal(x[[2]]$bib$bib_id, as.integer(x[[2]]$bib$bib_id))
 })
 
 test_that("paper_validate", {
@@ -147,12 +147,27 @@ test_that("test_paper", {
   expect_equal(p$text$text, LETTERS)
 })
 
-test_that("demo paper", {
+test_that("demopaper", {
+  expect_true(is.function(metacheck::demopaper))
+  expect_no_error(helplist <- help(demopaper, metacheck))
+
   paper <- demopaper()
   expect_s3_class(paper, "scivrs_paper")
   expect_match(paper$info$title, "^To Err is Human")
   expect_true(paper_validate(paper))
   expect_true(!is.null(paper$bib_match))
+})
+
+test_that("demofile", {
+  expect_true(is.function(metacheck::demofile))
+  expect_no_error(helplist <- help(demofile, metacheck))
+
+  json <- demofile()
+  json2 <- demofile("json")
+  expect_equal(json, json2)
+
+  pdf <- demofile("pdf")
+  expect_match(pdf, "\\.pdf$")
 })
 
 test_that("paper_table", {

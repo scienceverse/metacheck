@@ -283,17 +283,9 @@ datacite_doi <- function(doi) {
   is_valid <- !is.na(doi)
 
   valid_idx <- which(is_valid)
-  valid_reqs <- lapply(valid_idx, \(i) {
-    paste0("https://api.datacite.org/dois/", cleaned[i]) |>
-      httr2::request() |>
-      httr2::req_headers(Accept = "application/json") |>
-      httr2::req_throttle(rate = 10 / 1) |>
-      httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
-      httr2::req_error(is_error = \(resp) FALSE)
-  })
+  urls <- paste0("https://api.datacite.org/dois/", cleaned[valid_idx])
 
-  resps <- httr2::req_perform_parallel(valid_reqs, on_error = "continue",
-                                        progress = verbose())
+  resps <- .crossref_batch_query(urls)
 
   bibdata <- vector("list", length(doi))
   for (i in seq_along(doi)) {
@@ -444,6 +436,7 @@ crossref_doi <- function(doi, select = c(
                            "DOI",
                            "type",
                            "title",
+                           "author",
                            "container-title",
                            "volume",
                            "issue",
@@ -470,105 +463,102 @@ crossref_doi <- function(doi, select = c(
   }
 
   ## vectorise with parallel requests ----
-  if (length(doi) > 1) {
-    cleaned <- doi_clean(doi)
-    valid <- doi_valid_format(cleaned)
+  cleaned <- doi_clean(doi)
+  valid <- doi_valid_format(cleaned)
 
-    # build requests only for valid DOIs
-    valid_idx <- which(valid)
-    invalid_idx <- which(!valid)
+  # build requests only for valid DOIs
+  valid_idx <- which(valid)
+  invalid_idx <- which(!valid)
 
-    if (length(valid_idx) > 0) {
-      reqs <- lapply(valid_idx, \(i) {
-        url <- sprintf(
-          "https://api.labs.crossref.org/works/%s?mailto=%s",
-          utils::URLencode(cleaned[i], reserved = TRUE),
-          email()
-        )
-        httr2::request(url) |>
-          httr2::req_headers(Accept = "application/json") |>
-          httr2::req_throttle(rate = 30 / 1) |>
-          httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
-          httr2::req_error(is_error = \(resp) FALSE)
+  if (length(valid_idx) > 0) {
+    urls <- sprintf(
+      "https://api.labs.crossref.org/works/%s?mailto=%s",
+      utils::URLencode(cleaned[valid_idx], reserved = TRUE),
+      email()
+    )
+
+    resps <- .crossref_batch_query(urls)
+
+    valid_results <- lapply(seq_along(valid_idx), \(j) {
+      tryCatch({
+        resp <- resps[[j]]
+        if (inherits(resp, "error")) {
+          return(data.frame(DOI = doi[valid_idx[j]], error = "connection error"))
+        }
+        if (httr2::resp_status(resp) >= 400) {
+          return(data.frame(DOI = doi[valid_idx[j]], error = paste("HTTP", httr2::resp_status(resp))))
+        }
+        item <- httr2::resp_body_json(resp)
+        if (item$status != "ok") {
+          return(data.frame(DOI = doi[valid_idx[j]], error = item$body$`message-type` %||% "unknown"))
+        }
+        .crossref_parse_item(item$message, select)
+      }, error = \(e) {
+        data.frame(DOI = doi[valid_idx[j]], error = e$message)
       })
-
-      resps <- httr2::req_perform_parallel(reqs, on_error = "continue",
-                                            progress = verbose())
-
-      valid_results <- lapply(seq_along(valid_idx), \(j) {
-        tryCatch({
-          resp <- resps[[j]]
-          if (inherits(resp, "error")) {
-            return(data.frame(DOI = doi[valid_idx[j]], error = "connection error"))
-          }
-          if (httr2::resp_status(resp) >= 400) {
-            return(data.frame(DOI = doi[valid_idx[j]], error = paste("HTTP", httr2::resp_status(resp))))
-          }
-          item <- httr2::resp_body_json(resp)
-          if (item$status != "ok") {
-            return(data.frame(DOI = doi[valid_idx[j]], error = item$body$`message-type` %||% "unknown"))
-          }
-          .crossref_parse_item(item$message, select)
-        }, error = \(e) {
-          data.frame(DOI = doi[valid_idx[j]], error = e$message)
-        })
-      })
-    } else {
-      valid_results <- list()
-    }
-
-    invalid_results <- lapply(invalid_idx, \(i) {
-      data.frame(DOI = doi[i], error = "malformed")
     })
-
-    # combine in original order
-    all_results <- vector("list", length(doi))
-    for (j in seq_along(valid_idx)) all_results[[valid_idx[j]]] <- valid_results[[j]]
-    for (j in seq_along(invalid_idx)) all_results[[invalid_idx[j]]] <- invalid_results[[j]]
-    # handle all-NA DOIs
-    na_idx <- which(is.na(doi))
-    for (i in na_idx) all_results[[i]] <- data.frame(DOI = NA_character_)
-
-    table <- do.call(dplyr::bind_rows, all_results)
-    return(table)
+  } else {
+    valid_results <- list()
   }
 
-  ## single DOI checks ----
-  doi <- doi_clean(doi)
+  invalid_results <- lapply(invalid_idx, \(i) {
+    data.frame(DOI = doi[i], error = "malformed")
+  })
 
-  # check for well-formed DOI
-  if (!doi_valid_format(doi)) {
-    message(doi, " is not a well-formed DOI\\n")
-    return(data.frame(DOI = doi, error = "malformed"))
+  # combine in original order
+  all_results <- vector("list", length(doi))
+  for (j in seq_along(valid_idx)) all_results[[valid_idx[j]]] <- valid_results[[j]]
+  for (j in seq_along(invalid_idx)) all_results[[invalid_idx[j]]] <- invalid_results[[j]]
+  # handle all-NA DOIs
+  na_idx <- which(is.na(doi))
+  for (i in na_idx) all_results[[i]] <- data.frame(DOI = NA_character_)
+
+  table <- do.call(dplyr::bind_rows, all_results)
+  return(table)
+}
+
+#' Batch query crossref
+#'
+#' @param urls A vector of URLs
+#' @param batch_size Size of each batch
+#'
+#' @returns a list of responses
+#' @keywords internal
+.crossref_batch_query <- function(urls, batch_size = 5) {
+  # set up requests from urls
+  reqs <- lapply(urls, \(url) {
+    httr2::request(url) |>
+      httr2::req_headers(Accept = "application/json") |>
+      #httr2::req_throttle(rate = 30 / 1) |>
+      httr2::req_retry(max_tries = 3, is_transient = \(resp) {
+        status <- httr2::resp_status(resp)
+        status %in% c(429, 500, 502, 503)
+      }) |>
+      httr2::req_error(is_error = \(resp) FALSE)
+  })
+
+  # batch to avoid rate limiting
+  n <- length(reqs)
+  resps <- vector("list", n)
+
+  batches <- split(seq_len(n), ceiling(seq_len(n) / batch_size))
+  pb <- pb(n, format = "Querying CrossRef [:bar] :current/:total")
+
+  for (b in seq_along(batches)) {
+    idx <- batches[[b]]
+
+    resps[idx] <- httr2::req_perform_parallel(
+      reqs[idx],
+      on_error = "continue",
+      progress = FALSE
+    )
+    pb$tick(length(idx))
+
+    # Crossref courtesy delay
+    Sys.sleep(0.5)
   }
 
-  url <- sprintf(
-    "https://api.labs.crossref.org/works/%s?mailto=%s",
-    utils::URLencode(doi, reserved = TRUE),
-    email()
-  )
-
-  item <- tryCatch(
-    {
-      resp <- httr2::request(url) |>
-        httr2::req_headers(Accept = "application/json") |>
-        httr2::req_error(is_error = \(resp) FALSE) |>
-        httr2::req_perform()
-      j <- httr2::resp_body_json(resp)
-      if (j$status != "ok") {
-        stop(j$body$`message-type`)
-      }
-      j$message
-    },
-    error = function(e) {
-      return(list(DOI = doi, error = e$message))
-    },
-    warning = function(w) {
-      return(list(DOI = doi, error = w$message))
-    }
-  )
-
-  .crossref_parse_item(item, select)
+  resps
 }
 
 #' Parse a CrossRef item into a data frame row
@@ -576,7 +566,7 @@ crossref_doi <- function(doi, select = c(
 #' @param select fields to select
 #' @returns a data frame
 #' @keywords internal
-.crossref_parse_item <- function(item, select = c("DOI", "type", "title",
+.crossref_parse_item <- function(item, select = c("DOI", "type", "title", "author",
                                                     "container-title", "volume",
                                                     "issue", "page", "URL",
                                                     "abstract", "year", "error")) {
@@ -609,7 +599,7 @@ crossref_doi <- function(doi, select = c(
   to_select <- intersect(select, names(item))
 
   ret <- data.frame(item[to_select], check.names = FALSE)
-  if (nrow(authors)) ret$author <- list(authors)
+  if ("author" %in% select & nrow(authors)) ret$author <- list(authors)
 
   return(ret)
 }
@@ -672,7 +662,7 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
   if (inherits(ref, "bibentry") || is.data.frame(ref)) {
     # TODO: take advantage of query.title, query.author, query.container-title
     title <- ref$title
-    author <- format_bib_authors(ref$authors) %||% ref$author
+    author <- ref$authors
     container <- ref$container %||% ref$journal %||% ref$booktitle
 
     ref <- paste(title, author, container, sep = "; ")
@@ -703,13 +693,39 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
       )
       httr2::request(url) |>
         httr2::req_headers(Accept = "application/json") |>
-        httr2::req_throttle(rate = 30 / 1) |>
-        httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
+        #httr2::req_throttle(rate = 30 / 1) |>
+        httr2::req_retry(max_tries = 3, is_transient = \(resp) {
+          status <- httr2::resp_status(resp)
+          status %in% c(429, 500, 502, 503)
+        }) |>
         httr2::req_error(is_error = \(resp) FALSE)
     })
 
-    resps <- httr2::req_perform_parallel(reqs, on_error = "continue",
-                                          progress = verbose())
+    # does not work - many inconsistent failures
+    # resps <- httr2::req_perform_parallel(reqs, on_error = "continue",
+    #                                       progress = verbose())
+
+    # batch to avoid rate limiting
+    n <- length(reqs)
+    resps <- vector("list", n)
+
+    batch_size <- 5
+    batches <- split(seq_len(n), ceiling(seq_len(n) / batch_size))
+    pb <- pb(n, format = "Querying CrossRef [:bar] :current/:total")
+
+    for (b in seq_along(batches)) {
+      idx <- batches[[b]]
+
+      resps[idx] <- httr2::req_perform_parallel(
+        reqs[idx],
+        on_error = "continue",
+        progress = FALSE
+      )
+      pb$tick(length(idx))
+
+      # Crossref courtesy delay
+      Sys.sleep(0.5)
+    }
 
     table <- lapply(seq_along(ref), \(i) {
       r <- if (is.character(ref[[i]])) ref[[i]] else paste(ref[[i]])
@@ -838,7 +854,7 @@ add_bib_match <- function(paper, min_score = 50) {
   # get search string, deduplicate, and look up
   refs <- paste(
     bib$title,
-    format_bib_authors(bib$authors),
+    bib$authors,
     bib$container,
     sep = "; "
   )
@@ -914,7 +930,7 @@ add_bib_match <- function(paper, min_score = 50) {
     paper$bib_match <- bib_match_table
   } else if (is_paper_list(paper)) {
     paper <- lapply(paper, \(p) {
-      bib_match_i <- bib_match[bib_match$paper_id == p$paper_id, ]
+      bib_match_i <- bib_match_table[bib_match_table$paper_id == p$paper_id, ]
       bib_match_i$paper_id <- NULL
       p$bib_match <- bib_match_i
       p

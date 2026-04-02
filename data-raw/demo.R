@@ -12,8 +12,12 @@ bibr <- "inst/demo/to_err_is_human.json"
 demopaper <- read(bibr)
 stopifnot(paper_validate(demopaper))
 
+gt <- read(file_path = "data-raw/demo/ground_truth.json")
+stopifnot(paper_validate(gt))
 
-# generate JSON version
+View(gt$section)
+View(demopaper$section)
+# # generate JSON version
 # devtools::load_all(".")
 #
 # paper <- demopaper()
@@ -31,14 +35,7 @@ stopifnot(paper_validate(demopaper))
 # paper2$tables$contents <- list(paper2$table_1)
 # paper2$table_1 <- NULL
 #
-# paper2 |>
-#   jsonlite::toJSON(pretty = TRUE)|>
-#   write("data-raw/demo/to_err_is_human.json")
+# paper2 <- paper_coerce(paper2)
 #
-# paper3 <- jsonlite::read_json("data-raw/demo/to_err_is_human.json", simplifyVector = TRUE)
-# paper_validate(paper3)
+# paper_write(paper2, "ground_truth", "data-raw/demo")
 #
-# zip <- "data-raw/demo/to_err_is_human.zip"
-# paper_write(paper3, zip)
-# file.copy(zip, "tests/testthat/fixtures/bibr", overwrite = TRUE)
-# file.copy(zip, "tests/testthat/fixtures/formats/", overwrite = TRUE)

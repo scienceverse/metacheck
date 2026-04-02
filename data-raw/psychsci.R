@@ -20,18 +20,19 @@ list.files(bibr, full.names = T)[1:3] |>
   file.copy("tests/testthat/fixtures/psychsci/", overwrite = TRUE)
 
 
+# -------------------------------------------------------------------
 # # grobid to bibr ----
 grobid <- "data-raw/psychsci/grobid_0.8.2"
 xml_file <- list.files(grobid, full.names = T)
 save_path <- "data-raw/psychsci/bibr_from_grobid_0.8.2"
-json_paths <- grobid_to_bibr(xml_file, save_path, FALSE)
-psychsci2 <- read(save_path)
+json_paths <- grobid_to_bibr(xml_file, save_path, TRUE)
+psychsci <- read(save_path)
 
 # fix names
 names <- list.files(grobid) |> gsub("\\.xml", "", x = _)
-names(psychsci2) <- names
-for (n in names) psychsci2[[n]]$paper_id <- n
+names(psychsci) <- names
+for (n in names) psychsci[[n]]$paper_id <- n
 
-all(sapply(psychsci2, paper_validate))
+all(sapply(psychsci, paper_validate))
 
-usethis::use_data(psychsci2, overwrite = TRUE, compress = "xz")
+usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")

@@ -6,8 +6,8 @@
 \usage{
 .crossref_parse_item(
   item,
-  select = c("DOI", "type", "title", "container-title", "volume", "issue", "page", "URL",
-    "abstract", "year", "error")
+  select = c("DOI", "type", "title", "author", "container-title", "volume", "issue",
+    "page", "URL", "abstract", "year", "error")
 )
 }
 \arguments{
