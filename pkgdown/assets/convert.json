@@ -21,7 +21,7 @@
     "id": "Platform Bibr 10.0",
     "service": "bibr",
     "version": "10.0",
-    "url": "https://platform.metacheck.app"
+    "url": "https://platform.metacheck.app",
     "api_key": "SCIVRS_API_KEY"
   }
 ]
