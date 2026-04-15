@@ -5,7 +5,7 @@ quarto::quarto_render(qmd, "docx")
 
 # convert newest PDF to bibr (when bibr changes)
 pdf <- "inst/demo/to_err_is_human.pdf"
-bibr <- bibr_convert(pdf, "inst/demo", backend = "scivrs")
+bibr <- convert_bibr(pdf, "inst/demo", backend = "scivrs")
 
 # read in and check (when read changes)
 bibr <- "inst/demo/to_err_is_human.json"

@@ -56,8 +56,8 @@ reference:
 - title: Reading in Papers
   desc: ~
   contents:
-  - '`bibr_convert`'
-  - '`grobid_convert`'
+  - '`convert_bibr`'
+  - '`convert_grobid`'
   - '`grobid_to_bibr`'
   - '`read`'
   - '`demopaper`'

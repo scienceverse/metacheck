@@ -33,7 +33,7 @@ Metacheck uses bibr format for the paper objects. The schema for this can be fou
 - `validate_paper()` (R/paper.R)
 - `paper_write()` (R/paper.R)
 - `platform_bibr()` (R/bibr.R)
-- `bibr_convert()` (R/bibr.R)
+- `convert_bibr()` (R/bibr.R)
 - `read_bibr()` (R/bibr.R) Remove fixes when bibr output conforms to the schema
 - `.grobid_to_bibr()` (R/grobid) Cascades to a bunch of tei_**() functions
 

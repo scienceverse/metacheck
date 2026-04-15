@@ -2,7 +2,7 @@
 # https://r-pkgs.org/testing-design.html#testthat-helper-files
 
 # if TRUE, skip slow tests and those that need external connections
-quick <- TRUE
+quick <- FALSE
 
 testthat::set_max_fails(Inf)
 
@@ -11,6 +11,9 @@ email("metacheck@scienceverse.org")
 httptest::.mockPaths(NULL)
 apis <- normalizePath("apis")
 httptest::.mockPaths(apis)
+
+grobid_url <- "http://localhost:8070"
+bibr_url <- "https://platform.metacheck.app"
 
 # change fancy quotes to straight for text matching with crossref
 fix_fancy <- function(x) {
@@ -24,7 +27,13 @@ skip_api <- function(host = "google.com") {
   if (quick) skip("API")
   skip_on_cran()
   skip_on_covr()
-  skip_if_offline(host)
+
+  is_online <- tryCatch({
+    res <- curl::curl_fetch_memory(host)
+    res$status_code < 400
+  }, error = \(e) return(FALSE))
+
+  skip_if_not(is_online)
 }
 
 # adjust to run LLM tests where wanted

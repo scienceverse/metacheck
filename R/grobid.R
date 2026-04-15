@@ -5,10 +5,10 @@
 #' Consolidation of citations, headers, and funders looks up these items in CrossRef or another database to fix or enhance information (see <https://grobid.readthedocs.io/en/latest/Consolidation/>). This can slow down conversion. Consolidating headers is only useful for published papers, and can be set to 0 for work in prep.
 #'
 #' @param file_path path to the PDF, a vector of paths, or a directory name that contains PDFs
-#' @param save_path directory or file path to save to; set to NULL to save to a temp file
+#' @param save_path directory or file path to save to; set to NULL to return the XML directly
 #' @param api_url the URL to the grobid server
-#' @param start the first page of the PDF to read (defaults to -1 to read all pages)
-#' @param end the last page of the PDF to read (defaults to -1 to read all pages)
+#' @param start_page the first page of the PDF to read (defaults to -1 to read all pages)
+#' @param end_page the last page of the PDF to read (defaults to -1 to read all pages)
 #' @param consolidate_citations whether to fix/enhance citations
 #' @param consolidate_header whether to fix/enhance paper info
 #' @param consolidate_funders whether to fix/enhance funder info
@@ -16,10 +16,10 @@
 #' @return XML object
 #' @export
 #'
-grobid_convert <- function(file_path, save_path = ".",
+convert_grobid <- function(file_path, save_path = ".",
                            api_url = "https://kermitt2-grobid.hf.space",
-                           start = -1,
-                           end = -1,
+                           start_page = -1,
+                           end_page = -1,
                            consolidate_citations = 0,
                            consolidate_header = 0,
                            consolidate_funders = 0) {
@@ -75,16 +75,16 @@ grobid_convert <- function(file_path, save_path = ".",
         file_path = pdf,
         save_path = sp,
         api_url = api_url,
-        start = start,
-        end = end,
+        start = start_page,
+        end = end_page,
         consolidate_citations = consolidate_citations,
         consolidate_header = consolidate_header,
         consolidate_funders = consolidate_funders
       )
       xml <- tryCatch(
-        do.call(grobid_convert, args),
+        do.call(convert_grobid, args),
         error = function(e) {
-          logger("grobid_convert", list(error = e$message))
+          logger("convert_grobid", list(error = e$message))
           return(e$message)
         }
       )
@@ -119,7 +119,7 @@ grobid_convert <- function(file_path, save_path = ".",
     if (length(pdfs) == 0) {
       warning("There are no PDF files in the directory ", file_path)
     }
-    xmls <- grobid_convert(pdfs, save_path, api_url)
+    xmls <- convert_grobid(pdfs, save_path, api_url)
     return(invisible(xmls))
   }
 
@@ -132,8 +132,8 @@ grobid_convert <- function(file_path, save_path = ".",
     httr2::req_url_path("/api/processFulltextDocument") |>
     httr2::req_body_multipart(
       input = curl::form_file(file_path),
-      start = as.character(start),
-      end = as.character(end),
+      start = as.character(start_page),
+      end = as.character(end_page),
       consolidateCitations = as.character(consolidate_citations),
       consolidateHeader = as.character(consolidate_header),
       consolidateFunders = as.character(consolidate_funders),
@@ -175,6 +175,7 @@ grobid_convert <- function(file_path, save_path = ".",
   # read in as xml
   if (is.null(save_path)) {
     xml <- read(save_file)
+    unlink(save_file)
     return(xml)
   } else {
     save_file

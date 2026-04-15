@@ -11,7 +11,7 @@
 #' required).
 #'
 #' @param file_path Path to the document file, or a directory of documents
-#' @param save_dir Path to a directory in which to save the JSON file
+#' @param save_path Path to a directory in which to save the JSON file
 #' @param backend Which backend to use: \code{"auto"} (default) detects from
 #'   the available API key, \code{"scivrs"} uses the Scienceverse platform,
 #'   \code{"selfhosted"} uses a direct bibr API instance.
@@ -35,24 +35,24 @@
 #' @examples
 #' \dontrun{
 #' # Auto-detect backend from environment variables
-#' pdf <- system.file("demo/to_err_is_human.pdf", package = "metacheck")
-#' bibr_convert(pdf)
+#' pdf <- demofile("pdf")
+#' convert_bibr(pdf)
 #'
 #' # Explicitly use Scienceverse platform
-#' bibr_convert(pdf, backend = "scivrs")
+#' convert_bibr(pdf, backend = "scivrs")
 #'
 #' # Use self-hosted bibr instance
-#' bibr_convert(pdf, backend = "selfhosted")
+#' convert_bibr(pdf, backend = "selfhosted")
 #'
 #' # Extract specific pages
-#' bibr_convert(pdf, start_page = 1, end_page = 10)
+#' convert_bibr(pdf, start_page = 1, end_page = 10)
 #'
 #' # Directory of papers
 #' dir <- system.file("demo", package = "metacheck")
-#' bibr_convert(dir, save_dir = "results/")
+#' convert_bibr(dir, save_path = "results/")
 #' }
-bibr_convert <- function(file_path,
-                         save_dir = ".",
+convert_bibr <- function(file_path,
+                         save_path = ".",
                          backend = c("auto", "scivrs", "selfhosted"),
                          api_key = NULL,
                          api_url = NULL,
@@ -103,8 +103,8 @@ bibr_convert <- function(file_path,
     json_paths <- sapply(file_path, \(fp) {
       pb$tick(1, list(what = basename(fp)))
       tryCatch(
-        bibr_convert(file_path = fp,
-                     save_dir = save_dir,
+        convert_bibr(file_path = fp,
+                     save_path = save_path,
                      backend = backend,
                      api_key = api_key,
                      api_url = api_url,
@@ -114,7 +114,7 @@ bibr_convert <- function(file_path,
                      poll_interval = poll_interval,
                      timeout = timeout),
         error = \(e) {
-          logger("bibr_convert", e$message)
+          logger("convert_bibr", e$message)
           return(NULL)
       })
     })
@@ -139,7 +139,7 @@ bibr_convert <- function(file_path,
   )
 
   # save result ----
-  .bibr_save_result(contents, file_path, save_dir)
+  .bibr_save_result(contents, file_path, save_path)
 }
 
 
@@ -166,6 +166,7 @@ bibr_convert <- function(file_path,
 
   submit_resp <- httr2::req_perform(submit_req)
   if (httr2::resp_status(submit_resp) != 200) {
+    logger("convert_bibr", "submission failed")
     stop("Job submission failed (HTTP ", httr2::resp_status(submit_resp), "): ",
          httr2::resp_body_string(submit_resp),
          call. = FALSE)
@@ -178,10 +179,11 @@ bibr_convert <- function(file_path,
   status_url <- paste0(api_url, "/jobs/", job_id)
   elapsed <- 0
 
-  pb <- pb(NA, "(:spin) :elapsed :what")
+  pb <- pb(NA, ":job (:spin) :elapsed :what")
   on.exit(pb$terminate())
-  pb$tick(0, list(what = "submitted"))
-  pb$message(paste0("Job: ", job_id, " [", basename(file_path), "]"))
+  #job <- sprintf("Job: %s [%s]", job_id, basename(file_path))
+  job <- basename(file_path)
+  pb$tick(0, list(what = "submitted", job = job))
 
   repeat {
     Sys.sleep(poll_interval)
@@ -194,18 +196,22 @@ bibr_convert <- function(file_path,
 
     status <- httr2::resp_body_json(status_resp)
 
-    msg <- paste0(status$status,
-               if (!is.null(status$stage)) paste0(" (", status$stage, ")"))
-    pb$tick(0, list(what = msg))
+    msg <- status$status
+    if (!is.null(status$stage)) {
+      msg <- sprintf("%s (%s)", status$status, status$stage)
+    }
+    pb$tick(0, list(what = msg, job = job))
 
     if (identical(status$status, "complete")) break
 
     if (identical(status$status, "failed")) {
       err_msg <- status$stage %||% "unknown error"
+      logger("convert_bibr", list(job_id = job_id, error = err_msg))
       stop("Job ", job_id, " failed: ", err_msg, call. = FALSE)
     }
 
     if (elapsed >= timeout) {
+      logger("convert_bibr", list(job_id = job_id, error = "timeout"))
       stop("Job ", job_id, " timed out after ", timeout, "s ",
            "(last status: ", status$status, ")",
            call. = FALSE)
@@ -220,6 +226,7 @@ bibr_convert <- function(file_path,
 
   result_resp <- httr2::req_perform(result_req)
   if (httr2::resp_status(result_resp) != 200) {
+    logger("convert_bibr", "download failed")
     stop("Result download failed (HTTP ", httr2::resp_status(result_resp), ")",
          call. = FALSE)
   }
@@ -261,11 +268,11 @@ bibr_convert <- function(file_path,
 
 #' Save raw bibr result to a JSON file
 #' @noRd
-.bibr_save_result <- function(contents, file_path, save_dir) {
-  dir.create(save_dir, showWarnings = FALSE, recursive = TRUE)
+.bibr_save_result <- function(contents, file_path, save_path) {
+  dir.create(save_path, showWarnings = FALSE, recursive = TRUE)
   json_path <- basename(file_path) |>
     gsub("\\..{1,4}$", "\\.json", x = _) |>
-    file.path(save_dir, x = _)
+    file.path(save_path, x = _)
   writeBin(contents, json_path)
   json_path
 }

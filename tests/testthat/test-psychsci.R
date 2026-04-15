@@ -180,7 +180,7 @@ test_that("psychsci2", {
   # get valid DOIs from file name
   dois <- tables$info$file_name |>
     gsub("\\.xml", "", x = _) |>
-    gsub("data-raw/psychsci/grobid_0.8.2/", "", x = _, fixed = TRUE) |>
+    gsub("data-raw/psychsci/grobid_0.9.0-crf/", "", x = _, fixed = TRUE) |>
     paste0("10.1177/", x = _)
 
   expect_equal(dois, tables$info$doi)
