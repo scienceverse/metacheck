@@ -4,7 +4,7 @@ test_that("logpath", {
   expect_error(logpath("x"))
 
   lp <- logpath()
-  expect_grepl("metacheck\\.log", lp)
+  expect_match(lp, "metacheck\\.log")
 })
 
 test_that("logger", {
@@ -31,7 +31,7 @@ test_that("logger", {
 })
 
 test_that("logger truncate at 1000", {
-  skip_if_quick() # logs write about 30/second
+  skip("30-second test") # logs write about 30/second
   log_path <- withr::local_tempfile(fileext = ".log")
   for (i in 1:1010) {
     logger(i, list(i = i), log_path)
@@ -62,4 +62,19 @@ test_that("lastlog", {
   expect_equal(log2$label, "test A")
 })
 
+test_that("UTF-8 conversion", {
+  latin1 <- iconv("\x96", from = "latin1", to = "latin1")
+  utf8 <- iconv(latin1, from = "latin1", to = "UTF-8")
+  logger("test1", latin1)
+  obs <- lastlog(1)
+  expect_equal(obs$label, "test1")
+  expect_equal(obs$error, utf8)
+
+  logger("test2", latin1)
+  obs <- lastlog(1:2)
+  expect_equal(obs$label[[1]], "test2")
+  expect_equal(obs$error[[1]], utf8)
+  expect_equal(obs$label[[2]], "test1")
+  expect_equal(obs$error[[2]], utf8)
+})
 

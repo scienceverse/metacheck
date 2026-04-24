@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-#' filename <- demoxml()
+#' filename <- system.file("demos/to_err_is_human.xml", package = "metacheck")
 #' paper <- read_grobid(filename)
 read_grobid <- function(filename) {
   # handle list of files or a directory----
@@ -47,8 +47,8 @@ read_grobid <- function(filename) {
 
     names(p) <- unique_names
     for (un in unique_names) {
-      if (!is.null(p[[un]]) && nrow(p[[un]]$full_text) > 0) {
-        p[[un]]$full_text$id <- un
+      if (!is.null(p[[un]]) && nrow(p[[un]]$text) > 0) {
+        p[[un]]$text$id <- un
       }
     }
 
@@ -106,7 +106,7 @@ read_grobid <- function(filename) {
   p$app <- get_app_info(xml)
 
   # full text----
-  p$full_text <- get_full_text(xml, id = basename(filename))
+  p$text <- get_text(xml, id = basename(filename))
 
   # references ----
   refs <- get_refs(xml)
@@ -165,7 +165,7 @@ read_grobid_xml <- function(filename) {
 #' @return a data frame of the classified full text
 #' @keywords internal
 #'
-get_full_text<- function(xml, id = "") {
+get_text<- function(xml, id = "") {
   div <- NULL  # ugh cmdcheck
 
   ## abstract ----

@@ -3,7 +3,7 @@ dir <- "_stuff/report-demo"
 dir.create(dir, showWarnings = FALSE)
 
 llm_use(TRUE)
-llm_model("groq")
+llm_model("groq/llama-3.1-8b-instant")
 
 # choose modules to run
 # module_list()
@@ -21,20 +21,19 @@ modules <- c(
   # "ref_consistency",
 
   # in reports ----
-  "prereg_check",
-  "causal_claims",
-  "open_practices",
-  "funding_check",
-  "coi_check",
-  "power",
-  "stat_p_exact",
-  "stat_p_nonsig",
-  "marginal",
-  "stat_effect_size",
-  "repo_check",
-  "code_check",
-  "stat_check",
-  "ref_doi_check",
+  # "prereg_check",
+  # # "causal_claims",
+  # "open_practices",
+  # "funding_check",
+  # "coi_check",
+  # "power",
+  # "stat_p_exact",
+  # "stat_p_nonsig",
+  # "marginal",
+  # "stat_effect_size",
+  # "repo_check",
+  # "code_check",
+  # "stat_check",
   "ref_accuracy",
   "ref_replication",
   "ref_retraction",
@@ -42,24 +41,21 @@ modules <- c(
   "ref_summary"
 )
 
-# paper <- psychsci$`0956797621991137`
-# mo <- module_run(paper, "power")
-
-
 # generate reports for a sample of n papers
 n <- 1
 output <- "html"
 paper <- sample(psychsci, n)
+
+# paper <- psychsci$`0956797620970559`
+# paper <- add_bib_match(paper)
+#mo <- module_run(paper, "ref_accuracy")
+
 #paper <- psychsci$`09567976241260247` # has two different links to same repo
-
-
 # paper <- psychsci$`09567976211040491` # doi_check
 # paper <- psychsci$`09567976241239935` # code_check failed
 
-# paper <- read(demoxml())
-args <- list(
-  doi_check = list(crossref_min_score = 50)
-)
+# paper <- demopaper()
+args <- list()
 
 rep <- report(
   paper,

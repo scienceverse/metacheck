@@ -26,6 +26,6 @@ format_ref(mc)
 bib_mc <- utils::toBibtex(mc)
 format_ref(bib_mc)
 
-paper <- read(demoxml())
+paper <- demopaper()
 format_ref(paper$bib$ref[1:2])
 }

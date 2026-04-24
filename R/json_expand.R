@@ -11,7 +11,7 @@
 #'
 #' @examples
 #' table <- data.frame(
-#'   id = 1:5,
+#'   paper_id = 1:5,
 #'   answer = c(
 #'     '{"number": "1", "letter": "A", "bool": true}',
 #'     '{"number": "2", "letter": "B", "bool": "FALSE"}',

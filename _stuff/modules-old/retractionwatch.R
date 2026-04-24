@@ -25,10 +25,10 @@
 #' module_run(psychsci, "retractionwatch")
 retractionwatch <- function(paper) {
   # detailed table of results ----
-  bibs <- concat_tables(paper, c('bib'))
+  bibs <- paper_table(paper, 'bib')
   table <- dplyr::inner_join(bibs, rw(), by = 'doi')
   if (nrow(table) > 0) {
-    xrefs <- concat_tables(paper, c('xrefs'))
+    xrefs <- paper_table(paper, 'xrefs')
     table <- dplyr::left_join(table, xrefs, by = c('xref_id', "id"))
   }
 

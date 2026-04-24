@@ -1,6 +1,6 @@
 # check invalid DOIS in the Psychsci set
 
-bib <- concat_tables(psychsci, "bib")
+bib <- paper_table(psychsci, "bib")
 
 clean_dois <- doi_clean(bib$doi)
 missing_dois <- is.na(clean_dois)

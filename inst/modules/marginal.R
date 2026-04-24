@@ -8,7 +8,6 @@
 #'
 #' Some of the terms identified might not be problematic in some contexts, and there are ways to describe ‘marginal significance’ that are not detected by the module.
 #'
-#'
 #' @keywords results
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
@@ -22,7 +21,7 @@ marginal <- function(paper) {
   table <- search_text(paper, pattern)
 
   # summary_table ----
-  summary_table <- dplyr::count(table, id, name = "marginal")
+  summary_table <- dplyr::count(table, paper_id, name = "marginal")
 
   # traffic light ----
   tl <- ifelse(nrow(table), "red", "green")
@@ -43,8 +42,9 @@ marginal <- function(paper) {
       "For the list of terms used to identifify marginally significant results, see this [blog post by Matthew Hankins](https://web.archive.org/web/20251001114321/https://mchankins.wordpress.com/2013/04/21/still-not-significant-2/)."
     )
 
-    cols <- c("section", "text")
+    cols <- c("text", "header")
     report_table <- table[, cols, drop = FALSE]
+    names(report_table) <- c("Text", "Section Header")
 
     report <- c(
       report_text,

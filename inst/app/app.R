@@ -148,12 +148,12 @@ server <- function(input, output, session) {
   observeEvent(input$demo, {
     debug_msg("demo")
 
-    p <- list(read(demoxml()))
+    p <- list(demopaper())
     id <- "to_err_is_human.xml"
     names(p) <- id
     p[[1]]$name <- id
     p[[1]]$info$filename <- id
-    p[[1]]$full_text$id = id
+    p[[1]]$text$id = id
     update_from_paper(p)
   })
 
@@ -161,7 +161,7 @@ server <- function(input, output, session) {
   observeEvent(input$batch_demo, {
     debug_msg("batch_demo")
 
-    s <- read(demodir())
+    s <- psychsci[c(48, 91)]
     update_from_paper(s)
   })
 
@@ -193,7 +193,7 @@ server <- function(input, output, session) {
         name <- names(s)[[i]]
         s[[i]]$name <- name
         s[[i]]$info$filename <- name
-        s[[i]]$full_text$id <- name
+        s[[i]]$text$id <- name
       }
 
       update_from_paper(s)
@@ -238,18 +238,21 @@ server <- function(input, output, session) {
 
     #updateTextInput(session, "paper_title", value = info$title)
     # updateTextAreaInput(session, "paper_desc",
-    #                     value = info$description)
+    #                     value = info$abstract)
     # updateTextInput(session, "paper_keywords",
     #                 value = paste(info$keywords, collapse = "; "))
   })
 
   output$paper_title <- renderUI({
+    req(input$paper_name, my_paper())
     h4(my_paper()[[input$paper_name]]$info$title)
   })
   output$paper_desc <- renderUI({
-    p(my_paper()[[input$paper_name]]$info$description)
+    req(input$paper_name, my_paper())
+    p(my_paper()[[input$paper_name]]$info$abstract)
   })
   output$paper_keywords <- renderText({
+    req(input$paper_name, my_paper())
     my_paper()[[input$paper_name]]$info$keywords |>
       paste(collapse = "; ")
   })

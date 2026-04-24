@@ -41,6 +41,16 @@ logpath <- function() {
 #' logger("test", list(x = 1), logpath)
 #' lastlog()
 logger <- function(label = "", contents = list(), logpath = NULL) {
+  if (!is.list(contents)) {
+    contents <- list(error = contents)
+  }
+
+  # make sure character contents are UTF-8
+  contents <- lapply(contents, \(v) {
+    if (!is.character(v)) return(v)
+    iconv(v, to = "UTF-8")
+  })
+
   logpath <- logpath %||% logpath()
   if (!file.exists(logpath)) {
     jsonlite::write_json(list(), logpath)
@@ -85,9 +95,9 @@ lastlog <- function(i = 1, logpath = NULL) {
   }
 
   logpath <- logpath %||% logpath()
-  log <- logpath |>
-    jsonlite::read_json() |>
-    _[i]
+  full_log <- jsonlite::read_json(logpath)
+  if (length(full_log) == 0) return(NULL)
+  log <- full_log[intersect(i, seq_along(full_log))]
 
   if (length(log) == 1) {
     log <- log[[1]]

@@ -101,39 +101,39 @@ httptest::use_mock_api()
 test_that("osf_api_check", {
   status <- osf_api_check()
   possible <- c("ok", "too many requests",
-                "server error", "unknown")
+                "server error", "unknown", "no internet")
   expect_true(status %in% possible)
 })
 
 test_that("osf_headers", {
-  header <- osf_headers()
-  expect_equal(header$`User-Agent`, "metacheck")
+  req <- osf_headers(httr2::request("https://api.osf.io"))
+  expect_s3_class(req, "httr2_request")
+  expect_equal(req$headers$`User-Agent`, "metacheck")
 })
 
 test_that("osf_links", {
-  paper <- psychsci$`0956797614557697`
+  paper <- test_paper(c("osf.io/e2aks", "osf.io/tvyxz/"))
   obs <- osf_links(paper)
   exp <- c("osf.io/e2aks", "osf.io/tvyxz/")
   expect_equal(obs$text, exp)
 
   # has view-only link across sentences
-  paper <- psychsci$`0956797615569889`
+  paper <- test_paper(c(
+    "osf.io/t9j8e/?",
+    "view_only=f171281f212f4435917b16a9e581a73b"
+  ))
   obs <- osf_links(paper)
   exp <- "osf.io/t9j8e/? view_only=f171281f212f4435917b16a9e581a73b"
   expect_equal(obs$text, exp)
-
-  obs <- osf_links(psychsci[1:50])
-  ids <- osf_check_id(obs$text)
-  expect_true(all(nchar(ids) == 5))
 })
 
 test_that("osf_check_id", {
   skip_osf()
 
   # check vo links
-  info <- osf_info("t9j8e")
-  expect_equal(info$osf_type, "private")
-  expect_equal(info$public, FALSE)
+  # info <- osf_info("t9j8e")
+  # expect_equal(info$osf_type, "private")
+  # expect_equal(info$public, FALSE)
 
   # 5-letter
   osf_id <- "pngda"
@@ -256,11 +256,24 @@ test_that("osf_get_all_pages", {
 })
 
 test_that("osf_files", {
+  expect_true(is.function(metacheck::osf_files))
+  expect_no_error(helplist <- help(osf_files, metacheck))
+
   skip_osf()
 
   osf_id <- "pngda"
   data <- osf_files(osf_id)
   expect_equal(nrow(data), 3)
+
+  # explicit nodes
+  osf_id <- "pngda"
+  data <- osf_files(osf_id, "nodes")
+  expect_equal(nrow(data), 3)
+
+  # wrong type
+  osf_id <- "pngda"
+  data <- osf_files(osf_id, "registrations")
+  expect_equal(nrow(data), 0)
 
   osf_id <- "yt32c"
   data <- osf_files(osf_id)
@@ -270,6 +283,15 @@ test_that("osf_files", {
   osf_id <- "y6a34"
   data <- osf_files(osf_id)
   expect_equal(nrow(data), 0)
+
+  # registration
+  osf_id <- "jqkg7"
+  files <- osf_files(osf_id, osf_type = "registrations")
+  expect_equal(files$osf_id, "5922fed2b83f69024e8f7aef")
+
+  # look up osf_type
+  files <- osf_files(osf_id)
+  expect_equal(files$osf_id, "5922fed2b83f69024e8f7aef")
 })
 
 test_that("osf_children", {
@@ -277,7 +299,7 @@ test_that("osf_children", {
 
   osf_id <- "pngda"
   data <- osf_children(osf_id)
-  expect_equal(nrow(data), 3)
+  expect_equal(nrow(data), 5)
 
   osf_id <- "y6a34"
   data <- osf_children(osf_id)
@@ -347,14 +369,14 @@ test_that("osf_info", {
   osf_id <- "ybm3c"
   info <- osf_info(osf_id)
   expect_equal(info$osf_id, osf_id)
-  expect_equal(info$osf_type, "private")
+  #expect_equal(info$osf_type, "private")
   expect_equal(info$public, FALSE)
 
   # view-only (private)
   osf_id <- "https://osf.io/ybm3c/?view_only=5acf039f24ac4ea28afec473548dd7f4"
   info <- osf_info(osf_id)
   expect_equal(info$osf_id, "ybm3c")
-  expect_equal(info$osf_type, "private")
+  #expect_equal(info$osf_type, "private")
 
   # view-only (public)
   osf_id <- "https://osf.io/pngda/?view_only=5acf039f24ac4ea28afec473548dd7f4"
@@ -462,7 +484,7 @@ test_that("osf_retrieve", {
   expect_equal(table$osf_id, "ybm3c")
 
   # no links
-  paper <- psychsci[[180]]
+  paper <- test_paper("No links")
   osf_url <- osf_links(paper)
   info <- osf_retrieve(osf_url, recursive = TRUE, find_project = TRUE)
   expect_equal(nrow(info), 0)

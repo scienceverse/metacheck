@@ -1,6 +1,6 @@
 devtools::load_all(".")
 llm_use(TRUE)
-paper <- read(demoxml())
+paper <- demopaper()
 modules <- c(
   # local only
   "stat_p_exact",
@@ -17,8 +17,7 @@ modules <- c(
   "power",
   "repo_check",
   "code_check",
-  # use ref_doi_check
-  "ref_doi_check",
+  # ref functions
   "ref_accuracy",
   "ref_replication",
   "ref_retraction",

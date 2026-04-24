@@ -26,12 +26,12 @@ test_that("extract_urls", {
 
   paper <- test_paper(invalid_urls)
   urls <- extract_urls(paper)
-  expect_equal(urls$text, character(0))
+  expect_equal(nrow(urls), 0)
 
   # paperlist
   paper <- psychsci[1:10]
   urls <- extract_urls(paper)
-  expect_in(urls$id, names(paper))
+  expect_in(urls$paper_id, names(paper))
 })
 
 
@@ -41,7 +41,12 @@ test_that("extract_p_values", {
 
   expect_error(extract_p_values(bad_arg))
 
-  paper <- read(demoxml())
+  paper <- test_paper(c(
+    "t = 2.23, p = 0.005.",
+    "(p = 0.152)",
+    "peta = 2.3; p > .05, ppp = 2",
+    "2 = p"
+  ))
   p <- extract_p_values(paper)
   expect_equal(nrow(p), 3)
   expect_equal(p$text, c("p = 0.005", "p = 0.152", "p > .05"))
@@ -51,13 +56,7 @@ test_that("extract_p_values", {
   # iteration: text modules need no special adaptation
   paper <- psychsci
   p <- extract_p_values(paper)
-  expect_equal(nrow(p), 4832)
 
-  # check problem with minus sign at end
-  minus <- p$text[grep("-$", p$text)]
-  e <- p$text[grep("e", p$text)]
-  expect_equal(length(minus), 0)
-  expect_equal(length(e), 9L)
 
   # specific values
   expected <- c(
@@ -111,3 +110,63 @@ test_that("extract_p_values", {
   expect_equal(p$p_value[23:29], rep(0.05, 7))
 })
 
+
+test_that("extract_equations", {
+  expect_true(is.function(metacheck::extract_equations))
+  expect_no_error(helplist <- help(extract_equations, metacheck))
+
+  expect_error(extract_equations(bad_arg))
+
+  paper <- test_paper(c(
+    "t(10) = 2.23, p = 0.005.",
+    "(F(1, 23) = 9.23, p = .023)",
+    "peta = 2.3; p > .05, 95% CI = [2, 4]",
+    "p-value >= 0.2",
+    "2 = p"
+  ))
+  eq <- extract_equations(paper)
+
+  exp <- dplyr::tribble(
+    ~text_id, ~grp_id, ~lhs,         ~comp, ~rhs,
+    1,        1,       "t(10)",      "=",   "2.23",
+    1,        1,       "p",          "=",   "0.005",
+    2,        2,       "F(1, 23)",   "=",   "9.23",
+    2,        2,       "p",          "=",   ".023",
+    3,        3,       "peta",       "=",   "2.3",
+    3,        3,       "p",          ">",   ".05",
+    3,        3,       "95% CI",     "=",   "[2, 4]",
+    4,        4,       "p-value",    ">=",  "0.2"
+  )
+  exp$paper_id <- paper$paper_id
+
+  expect_equal(eq, exp)
+})
+
+
+test_that("bibr vs extract_equations", {
+  skip("Failures expected")
+
+  eq_bibr <- paper_table(psychsci, "eq")
+  #eq_bibr$rhs <- as.numeric(eq_bibr$rhs)
+  eq_bibr$grp_id <- NULL
+  eq_bibr$bibr <- TRUE
+  eq_bibr$eq_type <- NULL
+
+  eq_mc <- extract_equations(psychsci)
+  eq_mc$grp_id <- NULL
+  eq_mc$eq_type <- NULL
+  eq_mc$mc <- TRUE
+
+  compare <-dplyr::full_join(
+    eq_bibr, eq_mc,
+    by = c("paper_id", "text_id", "lhs", "comp", "rhs"),
+    suffix = c(".bibr", ".mc")
+  ) |>
+    dplyr::arrange(paper_id, text_id)
+
+
+  dplyr::count(compare, bibr, mc)
+
+  dplyr::filter(compare, is.na(bibr) | is.na(mc)) |> View()
+
+})

@@ -1,7 +1,6 @@
 ---
 title: MetaCheck Report
 subtitle: "%s"
-author: "%s"
 metacheck:
   version: "%s"
   report-created: "%s"

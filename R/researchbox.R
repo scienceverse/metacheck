@@ -43,7 +43,7 @@ rbox_retrieve <- function(rb_url, id_col = 1, pb = NULL) {
 
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")
-    pb$tick(0, list(what = "ResaerchBox Retrieve"))
+    pb$tick(0, list(what = "ResearchBox Retrieve"))
     on.exit(pb$terminate())
   }
 
@@ -132,28 +132,33 @@ rbox_info <- function(rb_url, pb = NULL) {
     rb_url = rb_url
   )
   # get website
-  res <- httr::GET(rb_url)
+  resp <- httr2::request(rb_url) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
   # check if redirect (suppress encodings warning)
   suppressMessages({
+    body_text <- httr2::resp_body_string(resp)
     pattern <- "(?<=window\\.location\\.replace\\(')https://researchbox.org/\\d+(?='\\))"
-    if (grepl(pattern, res, perl = TRUE)) {
-      matches <- gregexpr(pattern, res, perl = TRUE)
-      redirect_url <- regmatches(as.character(res), matches)
+    if (grepl(pattern, body_text, perl = TRUE)) {
+      matches <- gregexpr(pattern, body_text, perl = TRUE)
+      redirect_url <- regmatches(body_text, matches)
 
-      res <- httr::GET(redirect_url[[1]])
+      resp <- httr2::request(redirect_url[[1]]) |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_perform()
     }
   })
 
   # handle missing file
-  if (res$status_code != 200) {
+  if (httr2::resp_status(resp) != 200) {
     warning(rb_url, " could not be found", call. = FALSE)
     obj$error <- "unfound"
     return(obj)
   }
 
   # Read the content with specified encoding
-  html <- httr::content(res, "text", encoding = "UTF-8") |>
+  html <- httr2::resp_body_string(resp) |>
     xml2::read_html(encoding = "UTF-8")
 
   # get file list

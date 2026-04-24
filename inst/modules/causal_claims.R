@@ -99,14 +99,15 @@ causal_claims <- function(paper) {
 
 
   # causal claims ----
-  table <- search_text(paper, pattern = ".*", section = "abstract")
+  table <- search_text(paper) |>
+    dplyr::filter(section_type == "abstract")
   causal_title <- causal_relations(paper$info$title)
   causal_abstract <- causal_relations(table$text)
 
   ## summary_table ----
   summary_table <- causal_abstract |>
     dplyr::left_join(table, by = c(sentence = "text")) |>
-    dplyr::summarise(causal = sum(causal), .by = "id")
+    dplyr::summarise(causal = sum(causal), .by = "paper_id")
   # filter after so join doesn't fail
   causal_abstract <- dplyr::filter(causal_abstract, causal)
 

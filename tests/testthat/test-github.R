@@ -8,7 +8,7 @@ test_that("errors", {
   expect_error(github_languages(bad_arg))
   expect_error(github_files(bad_arg))
 
-  skip_if_offline("github.com")
+  skip_api("github.com")
 
   repo <- "scienceverse/norepo"
   expect_null(github_repo(repo))
@@ -52,15 +52,17 @@ test_that("github_config", {
   expect_true(is.function(metacheck::github_config))
   expect_no_error(helplist <- help(github_config, metacheck))
 
-  h <- github_config()
-  expect_equal(class(h), "request")
+  skip_api("api.github.com")
+
+  h <- github_config(httr2::request("https://api.github.com"))
+  expect_s3_class(h, "httr2_request")
 })
 
 test_that("github_repo", {
   expect_true(is.function(metacheck::github_repo))
   expect_no_error(helplist <- help(github_repo, metacheck))
 
-  skip_if_offline("github.com")
+  skip_api("github.com")
 
   urls <- c(
     "scienceverse/metacheck",
@@ -91,10 +93,10 @@ test_that("github_repo", {
 })
 
 test_that("github_readme", {
-  skip_if_offline("github.com")
-
   expect_true(is.function(metacheck::github_readme))
   expect_no_error(helplist <- help(github_readme, metacheck))
+
+  skip_api("github.com")
 
   readme <- github_readme("scienceverse/metacheck")
   search <- "# metacheck\n\n"
@@ -127,10 +129,10 @@ test_that("github_languages", {
 })
 
 test_that("github_files", {
-  skip_if_offline("github.com")
-
   expect_true(is.function(metacheck::github_files))
   expect_no_error(helplist <- help(github_files, metacheck))
+
+  skip_api("github.com")
 
   # repo name already clean
   repo <- "scienceverse/metacheck"
@@ -170,9 +172,10 @@ test_that("github_files", {
 })
 
 test_that("github_info", {
-  skip_if_offline("github.com")
   expect_true(is.function(metacheck::github_info))
   expect_no_error(helplist <- help(github_info, metacheck))
+
+  skip_api("github.com")
 
   repo <- "scienceverse/metacheck"
   info <- github_info(repo)

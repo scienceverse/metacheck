@@ -20,7 +20,7 @@ all_p_values <- function(paper) {
   p <- extract_p_values(paper)
 
   # summary_table ----
-  summary_table <- dplyr::count(p, id, name = "p_values")
+  summary_table <- dplyr::count(p, paper_id, name = "p_values")
 
   # traffic_light ----
   tl <- if (nrow(p)) "info" else "na"

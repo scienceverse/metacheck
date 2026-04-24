@@ -22,7 +22,7 @@ We welcome contributions to metacheck. Small bug fixes can be made as a simple p
       mods <- module_list()
       expect_true(module %in% mods$name)
       
-      paper <- read(demoxml())
+      paper <- demopaper()
       expect_no_error( mo <- module_run(paper, module) )
     })
     ```
@@ -43,19 +43,19 @@ We welcome contributions to metacheck. Small bug fixes can be made as a simple p
 
 - [ ] Do not add the module to report defaults yourself -- ask @debruine or @lakens first
 - [ ] Validate your module on a set of papers
-- [ ] Submit a pull request with changes to only your module file and its associated test file, link to or expain the validation results in the request, and tag @debruine for review
+- [ ] Submit a pull request with changes to only your module file and its associated test file, link to or explain the validation results in the request, and tag @debruine for review
 
 ## Adding a new function
 
 - [ ] Add the new function to an appropriate file under R/ -- make a new file if appropriate ([naming advice](https://style.tidyverse.org/package-files.html#names))
 - [ ] Make sure it has complete roxygen documentation (Code > Insert Roxygen Skeleton)
 - [ ] Run `devtools::document(roclets = c('rd', 'collate', 'namespace'))` (ctrl-cmd-D) to add the documentation
-- [ ] Add unit tests (to the existing test file if adding the function to an existing R file, or make a new one)
-- [ ] Run all tests with `devtools::test()` to make sure you didn't mess up anything
+- [ ] Add unit tests (to the existing test file if adding the function to an existing R file, or make a new one) - THIS IS REQUIRED!
+- [ ] Run all tests with `devtools::test()` to make sure you didn't mess up anything (in tests/testthat/helpers.R set `quick = FALSE` to run all tests)
 - [ ] If internal (only used in other functions, never by a user), make sure you include `@keywords internal` in the roxygen documentation
 - [ ] Run CMD check with `devtools::check()` and fix any warnings related to your function (there are always a few notes, ask Lisa if you aren't sure about a warning)
 - [ ] Submit a pull request with changes to only your function file and its associated documentation and test files, tagging @debruine for review
-- [ ] If the module is acceptable, we may ask you to do the following:
+- [ ] If the code is acceptable, we may ask you to do the following:
     - [ ] If not internal, add it to the appropriate category in `pkgdown/_pkgdown.yml`
     - [ ] Rerender the website sections with `pkgdown::build_reference_index()` and `pkgdown::build_reference()`
 
@@ -81,5 +81,5 @@ A test should give at least one basic example showing the most typical use of th
 
 If you need to define functions for your tests, put the functions in `tests/testthat/helper.R`.
 
-If you need to provide specific files (e.g., XMLs for paper that show a specific thing), put them under `tests/testthat/fixtures/`
+If you need to provide test files (e.g., JSON for a paper that shows a specific thing), put them under `tests/testthat/fixtures/`.
 

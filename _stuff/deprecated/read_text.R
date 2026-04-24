@@ -104,7 +104,7 @@ read_text <- function(txt, id = "") {
     xml2::xml_add_child("root")
 
   p$name <- id
-  p$full_text <- body_table
+  p$text <- body_table
 
   #p$info$filename <- filename
   p$info$title <- ""

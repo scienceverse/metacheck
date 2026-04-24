@@ -16,6 +16,6 @@ a table
 Get a table of URLs from a paper or paperlist. Matches urls that start with http or doi:
 }
 \examples{
-paper <- read(demoxml())
+paper <- demopaper()
 urls <- extract_urls(paper)
 }

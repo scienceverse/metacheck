@@ -21,7 +21,7 @@ module_run <- function(paper, module, ...) {
     # pull out objects to use later
     paper <- prev$paper
     prev$paper <- NULL
-    summary_table <- prev$summary_table
+    summary_table <- prev$summary_table %||% data.frame(paper_id = character(0))
     prev$summary_table <- NULL
 
     # get or set up .__mc__prev_outputs
@@ -29,9 +29,9 @@ module_run <- function(paper, module, ...) {
     prev$prev_outputs <- NULL
     .__mc__prev_outputs[[prev$module]] <- prev
   } else if (is_paper_list(paper)) {
-    summary_table <- data.frame(id = names(paper))
+    summary_table <- data.frame(paper_id = names(paper))
   } else {
-    summary_table <- data.frame(id = paper$id)
+    summary_table <- data.frame(paper_id = paper$paper_id)
   }
 
   # load required libraries
@@ -70,7 +70,7 @@ module_run <- function(paper, module, ...) {
   tryCatch(basename(module_path) |> source(local = TRUE),
     error = function(e) {
       m <- basename(module) |> gsub("\\.R$", "", x = _)
-      logger(m, list(paper = paper$id,
+      logger(m, list(paper = paper$paper_id,
                      error = e$message))
       stop("The module '", m, "' has errors: ", e$message)
     }
@@ -85,9 +85,9 @@ module_run <- function(paper, module, ...) {
   results <- tryCatch(eval(parse(text = code)),
     error = function(e) {
       m <- basename(module) |> gsub("\\.R$", "", x = _)
-      logger(m, list(paper = paper$id,
+      logger(m, list(paper = paper$paper_id,
                      error = e$message))
-      stop("Running the module '", m, "' produced errors: ", e$message)
+      stop("Running the module '", m, "' produced errors: ", e$message, call. = FALSE)
     }
   )
 
@@ -104,7 +104,7 @@ module_run <- function(paper, module, ...) {
 
   # process summary table
   if (!is.null(results$summary_table) &&
-    "id" %in% names(results$summary_table)) {
+    "paper_id" %in% names(results$summary_table)) {
     suffix <- module_path |>
       basename() |>
       sub("\\.(r|R)$", "", x = _, ) |>
@@ -112,7 +112,7 @@ module_run <- function(paper, module, ...) {
 
     summary_table <- summary_table |>
       dplyr::left_join(results$summary_table,
-        by = "id",
+        by = "paper_id",
         suffix = c("", suffix)
       )
 
@@ -327,14 +327,14 @@ print.metacheck_module_list <- function(x, ...) {
       return(NULL)
     }
     items <- paste0("* ", sub$name, ": ", sub$description, "\n")
-    title <- sprintf("\n*** %s ***\n", toupper(s))
+    title <- sprintf("\n*** %s ***\n\n", toupper(s))
 
     c(title, items)
   })
   txt <- unlist(txt)
 
   # txt <- paste0("* ", x$name, ": ", x$description, "\n")
-  cat("", txt, "\nUse `module_help(\"module_name\")` for help with a specific module\n")
+  cat("", txt, "\nUse `module_help(\"module_name\")` for help with a specific module\n", sep = "")
 }
 
 #' Print Module Output

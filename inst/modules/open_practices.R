@@ -10,6 +10,8 @@
 #'
 #' It might miss open data and code declarations when the words used in the manuscript are not in the pattern that ODDPub searches for, or when the repositories are not in the ODDpub code (e.g., ResearchBox).
 #'
+#' From ODDPub: "To validate the algorithm, we manually screened a sample of 792 publications that were randomly selected from PubMed. On this validation dataset, our algorithm detects Open Data publications with a sensitivity of 0.73 and specificity of 0.97."
+#'
 #'
 #' @keywords general
 #'
@@ -25,10 +27,10 @@ open_practices <- function(paper) {
   # devtools::install_github("quest-bih/oddpub")
 
   # format text for oddpub as vectors of sentences for each paper
-  full_text <- search_text(paper)
+  text <- search_text(paper)
 
-  # Check if full_text is NULL or empty, happens in correction notices.
-  if (is.null(full_text) || nrow(full_text) == 0 || all(full_text$text == "")) {
+  # Check if text is NULL or empty, happens in correction notices.
+  if (is.null(text) || nrow(text) == 0 || all(text$text == "")) {
     report <- list(
       traffic_light = "na",
       summary_text = "There was no text to search through"
@@ -36,9 +38,9 @@ open_practices <- function(paper) {
     return(report)
   }
 
-  ids <- unique(full_text$id)
-  paper_oddpub <- lapply(ids, \(id) {
-    full_text[full_text$id == id, ]$text
+  ids <- unique(text$paper_id)
+  paper_oddpub <- lapply(ids, \(paper_id) {
+    text[text$paper_id == paper_id, ]$text
   })
   names(paper_oddpub) <- ids
 
@@ -50,7 +52,7 @@ open_practices <- function(paper) {
   # table ----
   # put in a sensible naming scheme and order
   table <- dplyr::select(oddpub_results,
-    id = article,
+    paper_id = article,
     data_open = is_open_data,
     data_statements = open_data_statements,
     data_reuse = is_reuse,

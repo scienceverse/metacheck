@@ -21,7 +21,7 @@ test_that("FLoRA", {
 })
 
 test_that("update", {
-  skip_if_quick()
+  skip_osf()
 
   path <- FLoRA_update()
   expect_true(grepl("FLoRA\\.Rds$", path))

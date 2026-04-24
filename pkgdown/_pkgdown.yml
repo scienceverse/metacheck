@@ -56,26 +56,27 @@ reference:
 - title: Reading in Papers
   desc: ~
   contents:
-  - '`pdf2grobid`'
-  - '`read_grobid`'
-  - '`read_cermine`'
-  - '`read_text`'
-- title: Demo Resources
-  desc: ~
-  contents:
-  - '`demoxml`'
-  - '`demopdf`'
-  - '`demodir`'
+  - '`convert`'
+  - '`convert_bibr`'
+  - '`convert_grobid`'
+  - '`grobid_to_bibr`'
+  - '`read`'
+  - '`demopaper`'
+  - '`demofile`'
   - '`psychsci`'
   - '`test_paper`'
+  - '`paper_id`'
+  - '`paper_coerce`'
+  - '`paper_schema`'
+  - '`paper_write`'
+  - '`paper_validate`'
 - title: Search Papers
   desc: ~
   contents:
   - '`search_text`'
   - '`expand_text`'
-  - '`concat_tables`'
-  - '`info_table`'
-  - '`author_table`'
+  - '`paper_table`'
+  - '`ref_table`'
 - title: Module Functions
   desc: ~
   contents:
@@ -99,8 +100,9 @@ reference:
   - '`logger`'
   - '`lastlog`'
   - '`format_ref`'
-  - '`pb`'
   - '`get_prev_outputs`'
+  - '`format_bib_authors`'
+  - '`fig_image_view`'
 - title: LLM Functions
   desc: ~
   contents:
@@ -113,9 +115,12 @@ reference:
 - title: References/Citations
   desc: ~
   contents:
+  - '`add_bib_match`'
   - '`crossref_doi`'
   - '`crossref_query`'
+  - '`datacite_doi`'
   - '`doi_clean`'
+  - '`doi_lookup`'
   - '`doi_valid_format`'
   - '`doi_resolves`'
   - '`FLoRA`'
@@ -130,16 +135,16 @@ reference:
 - title: OSF Functions
   desc: ~
   contents:
+  - '`osf_api_calls`'
   - '`osf_api_check`'
   - '`osf_check_id`'
   - '`osf_delay`'
   - '`osf_file_download`'
+  - '`osf_get_all_pages`'
   - '`osf_links`'
+  - '`osf_preprint_list`'
   - '`osf_retrieve`'
   - '`osf_type`'
-  - '`osf_get_all_pages`'
-  - '`osf_api_calls`'
-  - '`osf_preprint_list`'
 - title: GitHub Functions
   desc: ~
   contents:
@@ -164,11 +169,6 @@ reference:
   - '`filetype`'
   - '`file_category`'
   - '`causal_relations`'
-  - '`check_orcid`'
-  - '`get_orcid`'
-  - '`orcid_person`'
-  - '`credit_roles`'
-  - '`online`'
 - title: Validation Functions
   desc: ~
   contents:
@@ -177,7 +177,7 @@ reference:
 - title: Extras
   desc: ~
   contents:
-  - '`verbose`'
+  - '`extract_equations`'
   - '`extract_p_values`'
   - '`extract_urls`'
   - '`stats`'

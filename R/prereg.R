@@ -11,8 +11,14 @@ aspredicted_links <- function(paper) {
   text <- NULL
 
   # search for "aspredicted"
-  RGX_ASPREDICTED <- "/aspredicted>?\\s*\\.org"
-  found_ap <- search_text(paper, RGX_ASPREDICTED)
+  # RGX_ASPREDICTED <- "/aspredicted>?\\s*\\.?org"
+  # found_ap <- search_text(paper, RGX_ASPREDICTED)
+
+  RGX_ASPREDICTED <- "aspredicted>?\\s*\\.?org"
+  urls <- paper_table(paper, "url")
+  urls$text <- urls$href
+  urls$href <- NULL
+  found_ap <- search_text(urls, RGX_ASPREDICTED)
 
   # fix blind.php? with x=abcdef in the next sentence
   blind <- grep("blind\\.php\\?$", found_ap$text)
@@ -20,7 +26,7 @@ aspredicted_links <- function(paper) {
   found_ap$text[blind] <- expanded$expanded
 
   # fix space stuff
-  found_ap$text <- gsub(RGX_ASPREDICTED, "/aspredicted\\.org",
+  found_ap$text <- gsub(RGX_ASPREDICTED, "aspredicted\\.org",
     x = found_ap$text
   )
   found_ap$text <- gsub("blind\\.php\\s*\\?\\s*x\\s*=\\s*",
@@ -29,13 +35,13 @@ aspredicted_links <- function(paper) {
   )
 
   # match up to ">"
-  match_ap <- search_text(found_ap, "/aspredicted\\.org[^\\>]+", return = "match")
+  match_ap <- search_text(found_ap, "aspredicted\\.org[^\\>]+", return = "match")
 
   # clean up the text
   match_ap$text <- match_ap$text |>
     gsub("\\s", "", x = _) |>
     gsub("\\.pdf.*", "\\.pdf", x = _) |> # some end in ".pdf)."
-    paste0("https:/", x = _)
+    paste0("https://", x = _)
 
   # remove trailing blind links
   unique_matches <- match_ap |>
@@ -130,17 +136,19 @@ aspredicted_info <- function(ap_url) {
     ap_url = ap_url
   )
   # get website
-  res <- httr::GET(ap_url)
+  resp <- httr2::request(ap_url) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
   # handle missing file
-  if (res$status_code != 200) {
+  if (httr2::resp_status(resp) != 200) {
     warning(ap_url, " could not be found", call. = FALSE)
     obj$error <- "unfound"
     return(obj)
   }
 
   # Read the content with specified encoding
-  html <- httr::content(res, "text", encoding = "UTF-8") |>
+  html <- httr2::resp_body_string(resp) |>
     xml2::read_html()
 
   body <- xml2::xml_find_all(html, "//body") |>

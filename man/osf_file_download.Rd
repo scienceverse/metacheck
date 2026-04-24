@@ -10,7 +10,8 @@ osf_file_download(
   max_file_size = 10,
   max_download_size = 100,
   max_folder_length = Inf,
-  ignore_folder_structure = FALSE
+  ignore_folder_structure = FALSE,
+  pb = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ osf_file_download(
 \item{max_folder_length}{maximum folder name length (set to make sure paths are <260 character on some Windows OS)}
 
 \item{ignore_folder_structure}{if TRUE, download all files into a single folder}
+
+\item{pb}{a progress bar passed from another function}
 }
 \value{
 data frame of file info

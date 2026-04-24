@@ -3,7 +3,7 @@
 \docType{data}
 \name{psychsci}
 \alias{psychsci}
-\title{Psychologial Science Open Access Paper Set}
+\title{Psychological Science Open Access Paper Set}
 \format{
 A list of 250 paper objects
 }

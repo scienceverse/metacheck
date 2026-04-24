@@ -27,36 +27,17 @@
 #'
 #' @returns a list
 ref_replication <- function(paper, show_outcomes = FALSE) {
-  # for testing: paper <- psychsci[[109]]
-
-  # table ----
-  bib <- concat_tables(paper, "bib")[, c("id", "xref_id", "doi", "ref")]
-  missing_doi <- get_prev_outputs("ref_doi_check", "table")
-
-  if (!is.null(missing_doi)) {
-    md <- missing_doi[, c("id", "xref_id", "DOI")]
-    bib <- dplyr::left_join(bib, md, by = c("id", "xref_id"))
-    is_missing <- is.na(bib$doi)
-    bib$doi[is_missing] <- bib$DOI[is_missing]
-    bib$DOI <- NULL
-  }
+  # create table ----
+  bib <- ref_table(paper) |>
+    dplyr::filter(!is.na(doi), doi != "")
 
   # If there are no rows, return immediately
   if (nrow(bib) == 0) {
     norefs <- list(
       traffic_light = "na",
-      summary_text = "We found no references"
-    )
-    return(norefs)
-  }
-
-  # If there are no DOIs, return immediately
-  if (all(is.na(bib$doi))) {
-    nodois <- list(
-      traffic_light = "na",
       summary_text = "We found no references with DOIs"
     )
-    return(nodois)
+    return(norefs)
   }
 
   ## join to flora table
@@ -69,6 +50,7 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
       replication_outcome = outcome,
       replication_type = type
     )
+
   table <- dplyr::inner_join(bib, flora, by = "doi")
 
   ## remove rows that are already cited (by DOI)
@@ -88,7 +70,7 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
   # summary_table ----
   summary_table <- dplyr::summarise(
     table,
-    .by = "id",
+    .by = "paper_id",
     replications = dplyr::n(),
   )
 
@@ -100,7 +82,7 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
       sum(!is.na(bib$doi)), summary_text
     )
   } else {
-    ## sumary_text ----
+    ## summary_text ----
     n_replications <- sum(table$replication_type == "replication", na.rm = TRUE)
     n_reproductions <- sum(table$replication_type == "reproduction", na.rm = TRUE)
     n_originals <- dplyr::n_distinct(table$doi)
@@ -145,8 +127,7 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
     )
 
     ## report_table ----
-    report_table <- table[, c("ref", "replication_ref")]
-    report_table$ref <- format_ref(report_table$ref)
+    report_table <- table[, c("text", "replication_ref")]
 
     # Create links using DOI if available, otherwise use URL
     has_doi <- !is.na(table$replication_doi) & table$replication_doi != ""

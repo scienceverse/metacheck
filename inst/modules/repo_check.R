@@ -20,7 +20,7 @@
 #' @returns a list
 repo_check <- function(paper) {
   # get repository links ----
-  # paper <- read(demoxml())
+  # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
   pb$tick(0, list(what = "Starting Repo Check"))
   on.exit({
@@ -42,7 +42,7 @@ repo_check <- function(paper) {
   osf_links_found$repo_type <- "osf"
   github_links_found$repo_type <- "github"
   rb_links_found$repo_type <- "researchbox"
-  cols <- c("id", "text", "repo_type")
+  cols <- c("paper_id", "text", "repo_type")
   repos <- dplyr::bind_rows(
     osf_links_found[, cols],
     github_links_found[, cols],
@@ -156,7 +156,7 @@ repo_check <- function(paper) {
       traffic_light = "na",
       summary_text = "We found no links to repositories the Open Science Framework, Github, or ResearchBox.",
       summary_table = data.frame(
-        id = paper$id,
+        paper_id = paper$paper_id,
         repo_n = 0,
         files_n = NA,
         files_data = NA,
@@ -207,7 +207,7 @@ repo_check <- function(paper) {
       files_code = sum(file_type %in% "code"),
       files_readme = sum(file_type %in% "readme"),
       files_zip = sum(file_type %in% "archive"),
-      .by = c(id, repo_url, repo_type, repo_error)
+      .by = c(paper_id, repo_url, repo_type, repo_error)
     )
 
 
@@ -289,7 +289,7 @@ repo_check <- function(paper) {
 
   # set up summary table of repositories
   repo_tbl <- repos
-  repo_tbl$id <- NULL
+  repo_tbl$paper_id <- NULL
   repo_tbl$repo_url <- link(repo_tbl$repo_url)
   names(repo_tbl) <- c("Repository", "Platform", "Error",
                        "All Files", "Data Files",
@@ -319,7 +319,7 @@ repo_check <- function(paper) {
     dplyr::summarise(
       repo_n = dplyr::n(),
       dplyr::across(files_n:files_zip, sum),
-      .by = c(id)
+      .by = c(paper_id)
     )
 
   # summary_text ----

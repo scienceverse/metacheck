@@ -41,7 +41,7 @@ prereg_check <- function(paper) {
       traffic_light = "na",
       summary_text = "No preregistration links were found.",
       summary_table = data.frame(
-        id = info_table(paper, c())$id,
+        paper_id = paper_id(paper),
         preregistration = 0
       )
     )
@@ -71,7 +71,7 @@ prereg_check <- function(paper) {
       ),
       na_replace = 0,
       summary_table = data.frame(
-        id = info_table(paper, c())$id,
+        paper_id = paper_id(paper),
         preregistration = 0
       )
     )

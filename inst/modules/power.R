@@ -1,9 +1,7 @@
 #' Power Analysis Check
 #'
 #' @description
-#' This module uses a large language module (LLM) to extract information reported in power analyses, including the statistical test, sample size, alpha level, desired level of power,and magnitude and type of effect size.
-#'
-#' If you have not set llm_use(TRUE) and supplied a groq API, the module will return paragraphs that potentially contain power analyses, based on a regular expression search.
+#' This module uses uses regular expressions to identify sentences that contain a statistical power analysis. If specified by the user, it also uses a large language module (LLM) to extract information reported in power analyses, including the statistical test, sample size, alpha level, desired level of power, and magnitude and type of effect size.
 #'
 #' @details
 #' The Power Analysis Check module uses regular expressions to identify sentences that contain a statistical power analysis. Without the use of an LMM, the module uses regular expressions to classify the power analysis as a-priori, sensitivity or post-hoc. With the use of an LMM, it checks if the power analysis is reported with all required information.
@@ -168,11 +166,9 @@ power <- function(paper, seed = 8675309) {
     summary_text <- "No power analyses were detected."
     report <- c(summary_text, collapse_section(guidance))
 
-    summary_table <- data.frame(
-      id = NA_character_,
-      power_n = NA_integer_,
-      power_complete = NA_integer_
-    )
+    summary_table <- paper_id(paper)
+    summary_table$power_n <- 0
+    summary_table$power_complete <- NA_integer_
   } else {
     ## power detected ----
     # check for observed power and add text/type
@@ -228,10 +224,10 @@ power <- function(paper, seed = 8675309) {
       power_complete = sum(complete),
       # exclude power_type
       dplyr::across(dplyr::any_of(llm_cols[-1]),
-        \(x) sum(!is.na(x)),
-        .names = "power_{.col}"
+                    \(x) sum(!is.na(x)),
+                    .names = "power_{.col}"
       ),
-      .by = id
+      .by = paper_id
     )
 
     # report ----
@@ -308,7 +304,7 @@ schema <- r"({
     "alpha_level": {
       "description": "The alpha threshold used to determine significance.",
       "type": ["number", "null"],
-     search_text "exclusiveMinimum": 0,
+      "exclusiveMinimum": 0,
       "maximum": 1
     },
 

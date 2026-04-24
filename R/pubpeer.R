@@ -19,14 +19,13 @@ pubpeer_comments <- function(doi) {
   body <- list(dois = tolower(doi_na)) |>
     jsonlite::toJSON(auto_unbox = TRUE)
 
-  response <- httr::POST(
-    url,
-    body = body,
-    encode = "raw",
-    httr::add_headers(`Content-Type` = "application/json;charset=UTF-8")
-  )
-  if (httr::status_code(response) == 200) {
-    data <- httr::content(response, as = "parsed", type = "application/json")
+  resp <- httr2::request(url) |>
+    httr2::req_headers(`Content-Type` = "application/json;charset=UTF-8") |>
+    httr2::req_body_raw(body, type = "application/json;charset=UTF-8") |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
+  if (httr2::resp_status(resp) == 200) {
+    data <- httr2::resp_body_json(resp)
     pp_fb <- lapply(data$feedbacks, \(fb) {
       list(
         doi = fb$id,

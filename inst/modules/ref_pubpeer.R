@@ -21,35 +21,17 @@
 #'
 #' @returns a list
 ref_pubpeer <- function(paper) {
-  # for testing: paper <- psychsci[[109]]
-
   # create table ----
-  bib <- concat_tables(paper, "bib")[, c("id", "xref_id", "doi", "ref")]
-  missing_doi <- get_prev_outputs("ref_doi_check", "table")
-  if (!is.null(missing_doi)) {
-    md <- missing_doi[, c("id", "xref_id", "DOI")]
-    bib <- dplyr::left_join(bib, md, by = c("id", "xref_id"))
-    is_missing <- is.na(bib$doi)
-    bib$doi[is_missing] <- bib$DOI[is_missing]
-    bib$DOI <- NULL
-  }
+  bib <- ref_table(paper) |>
+    dplyr::filter(!is.na(doi), doi != "")
 
   # If there are no rows, return immediately
   if (nrow(bib) == 0) {
     norefs <- list(
       traffic_light = "na",
-      summary_text = "We found no references"
-    )
-    return(norefs)
-  }
-
-  # If there are no DOIs, return immediately
-  if (all(is.na(bib$doi))) {
-    nodois <- list(
-      traffic_light = "na",
       summary_text = "We found no references with DOIs"
     )
-    return(nodois)
+    return(norefs)
   }
 
   ## join to  pubpeer ----
@@ -63,7 +45,7 @@ ref_pubpeer <- function(paper) {
   # summary_table ----
   summary_table <- dplyr::summarise(
     table,
-    .by = "id",
+    .by = "paper_id",
     pubpeer_comments = sum(total_comments, na.rm = TRUE)
   )
 
@@ -91,9 +73,8 @@ ref_pubpeer <- function(paper) {
 
     ## report_table ----
     rows <- !is.na(table$url)
-    cols <- c("ref", "total_comments", "url")
+    cols <- c("text", "total_comments", "url")
     report_table <- table[rows, cols]
-    report_table$ref <- format_ref(report_table$ref)
     report_table$url <- link(report_table$url, "link")
     names(report_table) <- c("Reference", "Comments", "PubPeer Link")
 

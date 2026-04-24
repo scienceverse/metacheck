@@ -1,0 +1,27 @@
+[
+  {
+    "id": "Grobid FULL 0.9.0",
+    "service": "grobid",
+    "version": "0.9.0",
+    "url": "https://grobidOrg-grobid.hf.space"
+  },
+  {
+    "id": "Grobid CRF 0.9.0",
+    "service": "grobid",
+    "version": "0.9.0",
+    "url": "https://grobidOrg-grobid-crf.hf.space"
+  },
+  {
+    "id": "Metacheck grobid 0.9.0",
+    "service": "grobid",
+    "version": "0.9.0",
+    "url": "https://grobid.metacheck.app"
+  },
+  {
+    "id": "Platform Bibr 10.0",
+    "service": "bibr",
+    "version": "10.0",
+    "url": "https://platform.metacheck.app",
+    "api_key": "SCIVRS_API_KEY"
+  }
+]

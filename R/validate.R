@@ -52,6 +52,7 @@ accuracy <- function(expected, observed) {
 #'
 #' @param gt a data frame or vector of text
 #' @param module the module
+#' @param compare name of the module output table for comparison
 #'
 #' @returns something
 #' @export
@@ -62,15 +63,17 @@ validate <- function(gt, module, compare = "table") {
   # convert vector of text to table
   if (!is.data.frame(gt)) {
     gt <- data.frame(
-      id = seq_along(gt) |> as.character(),
+      paper_id = seq_along(gt) |> as.character(),
       text = gt
     )
   }
 
   # create a test paper for each id containing the text
-  paper <- lapply(gt$id, \(id) {
-    t <- gt[gt$id == id, "text"]
-    test_paper(t, id)
+  paper <- lapply(gt$paper_id, \(paper_id) {
+    t <- gt[gt$paper_id == paper_id, "text"]
+    p <- test_paper(t)
+    p$paper_id <- paper_id
+    p
   }) |>
   paperlist()
 
@@ -80,7 +83,7 @@ validate <- function(gt, module, compare = "table") {
   # get table for comparison to text
   comp_table <- dplyr::full_join(
     gt, mo[[compare]],
-    by = c("id", "text"),
+    by = c("paper_id", "text"),
     suffix = c(".gt", ".mod")
   )
 

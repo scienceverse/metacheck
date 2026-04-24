@@ -18,8 +18,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' filename <- demoxml()
-#' paper <- read(filename)
+#' paper <- demopaper()
 #' report(paper)
 #' }
 report <- function(paper,
@@ -35,13 +34,15 @@ report <- function(paper,
                      "stat_p_nonsig",
                      "stat_effect_size",
                      "marginal",
-                     "ref_doi_check",
+                     "ref_accuracy",
                      "ref_replication",
                      "ref_retraction",
                      "ref_pubpeer",
                      "ref_summary"
                    ),
-                   output_file = paste0(paper$id, "_report.", output_format),
+                   output_file = paste0(paper$paper_id,
+                                        "_report.",
+                                        output_format),
                    output_format = c("html", "qmd"),
                    args = list()) {
   # error catching ----
@@ -142,7 +143,7 @@ report <- function(paper,
           paste0(".qmd")
         write(report_text, output_qmd)
 
-        logger("quarto render", list(paper = paper$id,
+        logger("quarto render", list(paper = paper$paper_id,
                                      quarto = output_qmd,
                                      error = e$message))
 
@@ -177,7 +178,7 @@ report <- function(paper,
 #' @export
 #'
 #' @examples
-#' paper <- read(demoxml())
+#' paper <- demopaper()
 #' modules <- c("stat_p_exact", "stat_p_nonsig")
 #' module_output <- report_module_run(paper, modules)
 report_module_run <- function(paper, modules, args = list()) {
@@ -199,7 +200,7 @@ report_module_run <- function(paper, modules, args = list()) {
 
     op <- tryCatch(do.call(module_run, mod_args),
       error = function(e) {
-        warning("Error in ", module)
+        warning("Error in ", module, call. = FALSE)
         prev <- mod_args$paper$prev_outputs
         report_items <- list(
           module = module,
@@ -260,12 +261,22 @@ report_qmd <- function(module_output, paper = list()) {
   doi_text <- ifelse((paper$info$doi %||% "") == "", "",
     sprintf("DOI: [%s](https://doi.org/%s)", paper$info$doi, paper$info$doi)
   )
-  author_text <- utils::capture.output(print.scivrs_authors(paper$authors))
-  if (length(author_text) == 0) author_text <- ""
+
+  # get authors
+  author_text <- ""
+  if (nrow(paper$author) > 0) {
+    names <- paste(paper$author$given,
+                   paper$author$family)
+    last <- utils::tail(names, 1)
+    first <- setdiff(names, last)
+    if (length(first)) first <- paste(first, collapse = ", ")
+    author_text <- c(first, last) |> paste(collapse = " & ")
+  }
+
   qmd_header <- sprintf(
     rt_head,
     subtitle,
-    author_text,
+    # author_text, # was confusing about author of paper vs report
     as.character(utils::packageVersion("metacheck")),
     Sys.Date(),
     doi_text
@@ -338,8 +349,7 @@ report_qmd <- function(module_output, paper = list()) {
 #' @export
 #'
 #' @examples
-#' filename <- demoxml()
-#' paper <- read(filename)
+#' paper <- demopaper()
 #' op <- module_run(paper, "stat_p_exact")
 #' module_report(op) |> cat()
 module_report <- function(module_output,

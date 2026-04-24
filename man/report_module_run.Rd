@@ -26,7 +26,7 @@ Pass arguments to modules in a named list of lists, using the same names as the 
 }\if{html}{\out{</div>}}
 }
 \examples{
-paper <- read(demoxml())
+paper <- demopaper()
 modules <- c("stat_p_exact", "stat_p_nonsig")
 module_output <- report_module_run(paper, modules)
 }

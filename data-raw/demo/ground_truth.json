@@ -1,0 +1,894 @@
+{
+  "paper_id": "to_err_is_human",
+  "info": [
+    {
+      "title": "To Err is Human: An Empirical Investigation",
+      "keywords": [],
+      "doi": null,
+      "file_hash": "a26373a4f28e3718",
+      "input_format": "pdf",
+      "file_name": "to_err_is_human.pdf",
+      "bibr_version": "10.0",
+      "paper_type": "empirical",
+      "paper_type_confidence": 0,
+      "oecd_l1": "Social Sciences",
+      "oecd_l2": "Psychology and Cognitive Sciences",
+      "oecd_confidence": null
+    }
+  ],
+  "author": [
+    {
+      "author_id": 1,
+      "given": "Daniel",
+      "family": "Lakens",
+      "affiliation": null,
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": []
+    },
+    {
+      "author_id": 2,
+      "given": "Lisa",
+      "family": "DeBruine",
+      "affiliation": null,
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": []
+    },
+    {
+      "author_id": 3,
+      "given": "Jakub",
+      "family": "Werner",
+      "affiliation": null,
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": []
+    }
+  ],
+  "text": [
+    {
+      "text_id": 1,
+      "section_id": 1,
+      "paragraph_id": 1,
+      "text": "Daniel Lakens Lisa DeBruine Jakub Werner",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 2,
+      "section_id": 1,
+      "paragraph_id": 2,
+      "text": "2026-02-22",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 3,
+      "section_id": 2,
+      "paragraph_id": 3,
+      "text": "This paper demonstrates some good and poor practices for use with the {metacheck} R package.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 4,
+      "section_id": 2,
+      "paragraph_id": 3,
+      "text": "All data are simulated.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 5,
+      "section_id": 2,
+      "paragraph_id": 3,
+      "text": "The paper shows examples of (1) open and closed OSF links; (2a) citation of retracted papers, (2b) citations without a doi, (2c) citations with Pubpeer comments, (2d) citations in the FLoRA replication database, and (2e) missing/mismatched/incorrect citations and references; (3a) R files with code on GitHub that do not load libraries in one location, (3b) load files that are not shared in the repository, (3c) lack comments, and (3d) have absolute file paths; (4) imprecise reporting of non-significant p-values; (5) tests with and without effect sizes; (6) use of \"marginally significant\" to describe non-significant findings; (7) a power analysis reporting some of the essential attributes; and (8) retrieving information from preregistrations.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 6,
+      "section_id": 3,
+      "paragraph_id": 4,
+      "text": "Although intentional dishonesty might be a successful way to boost creativity (Gino and Wiltermuth 2014), it is safe to say most mistakes researchers make are unintentional.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 7,
+      "section_id": 3,
+      "paragraph_id": 4,
+      "text": "From a human factors perspective, human error is a symptom of a poor design (Smithy, 2020).",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 8,
+      "section_id": 3,
+      "paragraph_id": 4,
+      "text": "Automation can be used to check for errors in scientific manuscripts, and inform authors about possible corrections.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 9,
+      "section_id": 3,
+      "paragraph_id": 4,
+      "text": "In this study we examine the usefulness of metacheck to improve best practices.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 10,
+      "section_id": 4,
+      "paragraph_id": 5,
+      "text": "In this study 1 we examine whether automated checks reduce the amount of errors that researchers make in scientific manuscripts.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 11,
+      "section_id": 4,
+      "paragraph_id": 5,
+      "text": "This study was preregistered at https://osf.io/48ncu and on AsPredicted at https://aspredicted.org/by8i8v.pdf.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 12,
+      "section_id": 5,
+      "paragraph_id": 6,
+      "text": "We randomly assigned 50 scientists to a condition where their manuscript was automatically checked for errors, and 50 scientists to a control condition with a checklist.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 13,
+      "section_id": 5,
+      "paragraph_id": 6,
+      "text": "Scientists had the opportunity to make changes to their manuscript based on the feedback of the tool.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 14,
+      "section_id": 5,
+      "paragraph_id": 6,
+      "text": "We subsequently coded all manuscripts for mistakes, and counted the total number of mistakes.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 15,
+      "section_id": 5,
+      "paragraph_id": 6,
+      "text": "We also measured the expertise of researchers (in years) to explore whether the automated tool would be more useful, the less research experience researchers had.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 16,
+      "section_id": 5,
+      "paragraph_id": 6,
+      "text": "We also asked researchers to rate how useful they found the checklist or app on a scale from 1 (not at all) to 7 (extremely useful).",
+      "formatted": null,
+      "page_number": 2
+    },
+    {
+      "text_id": 17,
+      "section_id": 6,
+      "paragraph_id": 7,
+      "text": "Data and analysis code is available on GitHub from https://github.com/Lakens/to_err_is_human and from https://researchbox.org/4377. ",
+      "formatted": null,
+      "page_number": 2
+    },
+    {
+      "text_id": 18,
+      "section_id": 6,
+      "paragraph_id": 7,
+      "text": "Data is also available from https://osf.io/5tbm9 and code is also available from https://osf.io/629bx.",
+      "formatted": null,
+      "page_number": 2
+    },
+    {
+      "text_id": 19,
+      "section_id": 7,
+      "paragraph_id": 8,
+      "text": "We conducted a sensitivity power analysis 2 to determine that a Cohen's d of 0.50 is the smallest effect size that we could detect with N=50 participants in each group and 80% power.",
+      "formatted": null,
+      "page_number": 2
+    },
+    {
+      "text_id": 20,
+      "section_id": 8,
+      "paragraph_id": 9,
+      "text": "We simulated the data using Faux (DeBruine 2025) (Table 1, Figure 1).",
+      "formatted": null,
+      "page_number": 2
+    },
+    {
+      "text_id": 21,
+      "section_id": 8,
+      "paragraph_id": 10,
+      "text": "On average researchers in the experimental (app) condition made fewer mistakes (M=9.12) than researchers in the control (checklist) condition (M=10.9) t(97.7)=2.9 p=0.005 d=0.59.",
+      "formatted": null,
+      "page_number": 3
+    },
+    {
+      "text_id": 22,
+      "section_id": 8,
+      "paragraph_id": 11,
+      "text": "On average researchers in the experimental condition found the app marginally significantly more useful (M=5.06) than researchers in the control condition found the checklist (M=4.5), t(97.2)=-1.96, p=0.152.",
+      "formatted": null,
+      "page_number": 3
+    },
+    {
+      "text_id": 23,
+      "section_id": 8,
+      "paragraph_id": 12,
+      "text": "There was no effect of experience on the reduction in errors when using the tool (p > .05), as the correlation was non-significant (Figure 2).",
+      "formatted": null,
+      "page_number": 3
+    },
+    {
+      "text_id": 24,
+      "section_id": 9,
+      "paragraph_id": 13,
+      "text": "Since our data are simulated for demonstration purposes, of course they confirm our hypotheses.",
+      "formatted": null,
+      "page_number": 3
+    },
+    {
+      "text_id": 25,
+      "section_id": 9,
+      "paragraph_id": 13,
+      "text": "It seems automated tools can help prevent errors by providing researchers with feedback about potential mistakes, and researchers feel the app is useful.",
+      "formatted": null,
+      "page_number": 3
+    },
+    {
+      "text_id": 26,
+      "section_id": 9,
+      "paragraph_id": 13,
+      "text": "We conclude the use of automated checks has potential to reduce the number of mistakes in scientific manuscripts.",
+      "formatted": null,
+      "page_number": 3
+    },
+    {
+      "text_id": 27,
+      "section_id": 10,
+      "paragraph_id": 14,
+      "text": "The authors declare a conflict of interest.",
+      "formatted": null,
+      "page_number": 4
+    },
+    {
+      "text_id": 28,
+      "section_id": 10,
+      "paragraph_id": 14,
+      "text": "We really want to see this project succeed and help researchers make their papers better.",
+      "formatted": null,
+      "page_number": 4
+    },
+    {
+      "text_id": 29,
+      "section_id": 11,
+      "paragraph_id": 15,
+      "text": "DeBruine, Lisa. 2025. Faux: Simulation for Factorial Designs. Zenodo. https://doi.org/10.5281/zenodo.2669586.",
+      "formatted": null,
+      "page_number": 4
+    },
+    {
+      "text_id": 30,
+      "section_id": 11,
+      "paragraph_id": 16,
+      "text": "Eagly, Alice H., and Wendy Wood. 1999. \"The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles.\" American Psychologist 54 (6): 408-23. https://doi.org/10.1037/0003-066x.54.6.408.",
+      "formatted": null,
+      "page_number": 4
+    },
+    {
+      "text_id": 31,
+      "section_id": 11,
+      "paragraph_id": 17,
+      "text": "Gino, Francesca, and Scott S. Wiltermuth. 2014. \"Evil Genius? How Dishonesty Can Lead to Greater Creativity.\" Psychological Science 25 (4): 973–81. https://doi.org/10.1177/0956797614520714.",
+      "formatted": null,
+      "page_number": 4
+    },
+    {
+      "text_id": 32,
+      "section_id": 11,
+      "paragraph_id": 18,
+      "text": "Lakens, Daniël. 2018. \"Equivalence Testing for Psychological Research.\" Advances in Methods and Practices in Psychological Science 1: 259-70.",
+      "formatted": null,
+      "page_number": 4
+    },
+    {
+      "text_id": 33,
+      "section_id": 11,
+      "paragraph_id": 19,
+      "text": "Smith, F. 2021. \"Human Error Is a Symptom of a Poor Design.\" Journal of Journals. https://doi.org/10.0000/0123456789.",
+      "formatted": null,
+      "page_number": 4
+    },
+    {
+      "text_id": 34,
+      "section_id": 12,
+      "paragraph_id": 20,
+      "text": "The average number of mistakes and usefulness score for the control and experimental conditions.",
+      "formatted": null,
+      "page_number": 3
+    },
+    {
+      "text_id": 35,
+      "section_id": 13,
+      "paragraph_id": 21,
+      "text": "The simulated data.",
+      "formatted": null,
+      "page_number": 2
+    },
+    {
+      "text_id": 36,
+      "section_id": 14,
+      "paragraph_id": 22,
+      "text": "The effect of experience on the reduction in errors.",
+      "formatted": null,
+      "page_number": 3
+    },
+    {
+      "text_id": 37,
+      "section_id": 15,
+      "paragraph_id": 23,
+      "text": "1Remember, this is a demo and none of this is real.",
+      "formatted": null,
+      "page_number": 1
+    },
+    {
+      "text_id": 38,
+      "section_id": 16,
+      "paragraph_id": 24,
+      "text": "2The code we used for this analysis is as follows.",
+      "formatted": null,
+      "page_number": 2
+    },
+    {
+      "text_id": 39,
+      "section_id": 16,
+      "paragraph_id": 25,
+      "text": "pwr::pwr.t.test(n = 50, power = 0.8, alternative = \"greater\")",
+      "formatted": null,
+      "page_number": 2
+    }
+  ],
+  "section": [
+    {
+      "section_id": 1,
+      "header": "To Err is Human: An Empirical Investigation",
+      "parent_section_id": 0,
+      "section_type": "unknown",
+      "classification_score": null
+    },
+    {
+      "section_id": 2,
+      "header": "Abstract",
+      "parent_section_id": 1,
+      "section_type": "abstract",
+      "classification_score": null
+    },
+    {
+      "section_id": 3,
+      "header": "",
+      "parent_section_id": 1,
+      "section_type": "intro",
+      "classification_score": null
+    },
+    {
+      "section_id": 4,
+      "header": "Method",
+      "parent_section_id": 1,
+      "section_type": "method",
+      "classification_score": null
+    },
+    {
+      "section_id": 5,
+      "header": "Procedure",
+      "parent_section_id": 4,
+      "section_type": "method",
+      "classification_score": null
+    },
+    {
+      "section_id": 6,
+      "header": "Data Availability",
+      "parent_section_id": 4,
+      "section_type": "endnote",
+      "classification_score": null
+    },
+    {
+      "section_id": 7,
+      "header": "Power Analysis",
+      "parent_section_id": 4,
+      "section_type": "method",
+      "classification_score": null
+    },
+    {
+      "section_id": 8,
+      "header": "Results",
+      "parent_section_id": 1,
+      "section_type": "results",
+      "classification_score": null
+    },
+    {
+      "section_id": 9,
+      "header": "Discussion",
+      "parent_section_id": 1,
+      "section_type": "discussion",
+      "classification_score": null
+    },
+    {
+      "section_id": 10,
+      "header": "Author Notes",
+      "parent_section_id": 1,
+      "section_type": "acknowledgements",
+      "classification_score": null
+    },
+    {
+      "section_id": 11,
+      "header": "References",
+      "parent_section_id": 1,
+      "section_type": "references",
+      "classification_score": null
+    },
+    {
+      "section_id": 12,
+      "header": "Table 1",
+      "parent_section_id": 0,
+      "section_type": "tbl",
+      "classification_score": null
+    },
+    {
+      "section_id": 13,
+      "header": "Figure 1",
+      "parent_section_id": 0,
+      "section_type": "fig",
+      "classification_score": null
+    },
+    {
+      "section_id": 14,
+      "header": "Figure 2",
+      "parent_section_id": 0,
+      "section_type": "fig",
+      "classification_score": null
+    },
+    {
+      "section_id": 15,
+      "header": "Footnote 1",
+      "parent_section_id": 0,
+      "section_type": "footnote",
+      "classification_score": null
+    },
+    {
+      "section_id": 16,
+      "header": "Footnote 2",
+      "parent_section_id": 0,
+      "section_type": "footnote",
+      "classification_score": null
+    }
+  ],
+  "url": [
+    {
+      "href": "https://osf.io/48ncu",
+      "link_text": null,
+      "text_id": 11
+    },
+    {
+      "href": "https://aspredicted.org/by8i8v.pdf",
+      "link_text": null,
+      "text_id": 11
+    },
+    {
+      "href": "https://github.com/Lakens/to_err_is_human",
+      "link_text": null,
+      "text_id": 17
+    },
+    {
+      "href": "https://researchbox.org/4377",
+      "link_text": null,
+      "text_id": 17
+    },
+    {
+      "href": "https://osf.io/5tbm9",
+      "link_text": null,
+      "text_id": 18
+    },
+    {
+      "href": "https://osf.io/629bx",
+      "link_text": null,
+      "text_id": 18
+    },
+    {
+      "href": "https://doi.org/10.5281/zenodo.2669586",
+      "link_text": null,
+      "text_id": 29
+    },
+    {
+      "href": "https://doi.org/10.1037/0003-066x.54.6.408",
+      "link_text": null,
+      "text_id": 30
+    },
+    {
+      "href": "https://doi.org/10.1177/0956797614520714",
+      "link_text": null,
+      "text_id": 31
+    },
+    {
+      "href": "https://doi.org/10.0000/0123456789",
+      "link_text": null,
+      "text_id": 32
+    }
+  ],
+  "bib": [
+    {
+      "bib_id": 1,
+      "text_id": 29,
+      "bib_type": "misc",
+      "doi": "10.5281/zenodo.2669586",
+      "title": "Faux: Simulation for Factorial Designs",
+      "authors": "DeBruine, Lisa",
+      "editors": null,
+      "publisher": null,
+      "year": 2025,
+      "year_suffix": null,
+      "date": null,
+      "container": "",
+      "volume": null,
+      "issue": null,
+      "first_page": null,
+      "last_page": null,
+      "edition": null,
+      "version": null,
+      "url": null
+    },
+    {
+      "bib_id": 2,
+      "text_id": 30,
+      "bib_type": "article",
+      "doi": "10.1037/0003-066x.54.6.408",
+      "title": "The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles",
+      "authors": "Eagly, Alice H., and Wendy Wood",
+      "editors": null,
+      "publisher": null,
+      "year": 1999,
+      "year_suffix": null,
+      "date": null,
+      "container": "American Psychologist",
+      "volume": "54",
+      "issue": "6",
+      "first_page": "408",
+      "last_page": "423",
+      "edition": null,
+      "version": null,
+      "url": null
+    },
+    {
+      "bib_id": 3,
+      "text_id": 31,
+      "bib_type": "article",
+      "doi": "10.1177/0956797614520714",
+      "title": "Evil Genius? How Dishonesty Can Lead to Greater Creativity",
+      "authors": "Gino, Francesca, and Scott S. Wiltermuth",
+      "editors": null,
+      "publisher": null,
+      "year": 2014,
+      "year_suffix": null,
+      "date": null,
+      "container": "Psychological Science",
+      "volume": "25",
+      "issue": "4",
+      "first_page": "973",
+      "last_page": "981",
+      "edition": null,
+      "version": null,
+      "url": null
+    },
+    {
+      "bib_id": 4,
+      "text_id": 32,
+      "bib_type": "article",
+      "doi": "",
+      "title": "Equivalence Testing for Psychological Research",
+      "authors": "Lakens, Daniël",
+      "editors": null,
+      "publisher": null,
+      "year": 2018,
+      "year_suffix": null,
+      "date": null,
+      "container": "Advances in Methods and Practices in Psychological Science",
+      "volume": "1",
+      "issue": null,
+      "first_page": "259",
+      "last_page": "270",
+      "edition": null,
+      "version": null,
+      "url": null
+    },
+    {
+      "bib_id": 5,
+      "text_id": 33,
+      "bib_type": "article",
+      "doi": "10.0000/0123456789",
+      "title": "Human Error Is a Symptom of a Poor Design",
+      "authors": "Smith, F.",
+      "editors": null,
+      "publisher": null,
+      "year": 2021,
+      "year_suffix": null,
+      "date": null,
+      "container": "Journal of Journals",
+      "volume": null,
+      "issue": null,
+      "first_page": null,
+      "last_page": null,
+      "edition": null,
+      "version": null,
+      "url": null
+    }
+  ],
+  "xref": [
+    {
+      "xref_id": 1,
+      "xref_type": "table",
+      "contents": "Table 1",
+      "text_id": 20
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "figure",
+      "contents": "Figure 1",
+      "text_id": 20
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "figure",
+      "contents": "Figure 2",
+      "text_id": 23
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "foot",
+      "contents": "1",
+      "text_id": 10
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "foot",
+      "contents": "2",
+      "text_id": 19
+    },
+    {
+      "xref_id": 3,
+      "xref_type": "bib",
+      "contents": "(Gino and Wiltermuth 2014)",
+      "text_id": 6
+    },
+    {
+      "xref_id": null,
+      "xref_type": "bib",
+      "contents": "(Smithy, 2020)",
+      "text_id": 7
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "bib",
+      "contents": " (DeBruine 2025)",
+      "text_id": 20
+    }
+  ],
+  "figure": [
+    {
+      "figure_id": 1,
+      "section_id": 13,
+      "image": null,
+      "page_number": 2
+    },
+    {
+      "figure_id": 2,
+      "section_id": 14,
+      "image": null,
+      "page_number": 3
+    }
+  ],
+  "table": [
+    {
+      "table_id": 1,
+      "section_id": 12,
+      "html": "<table>\n  <thead>\n    <tr>\n      <th>Condition<\/th>\n      <th>Mistakes<\/th>\n      <th>Usefulness<\/th>\n    <\/tr>\n  <\/thead>\n  <tbody>\n    <tr>\n      <td>control<\/td>\n      <td>10.90<\/td>\n      <td>4.50<\/td>\n    <\/tr>\n    <tr>\n      <td>experimental<\/td>\n      <td>9.12<\/td>\n      <td>5.06<\/td>\n    <\/tr>\n  <\/tbody>\n<\/table>",
+      "contents": null,
+      "page_number": 3
+    }
+  ],
+  "eq": [
+    {
+      "text_id": 19,
+      "grp_id": 1,
+      "lhs": "N",
+      "comp": "=",
+      "rhs": "50"
+    },
+    {
+      "text_id": 21,
+      "grp_id": 2,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "9.12"
+    },
+    {
+      "text_id": 21,
+      "grp_id": 2,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "10.9"
+    },
+    {
+      "text_id": 21,
+      "grp_id": 2,
+      "lhs": "t(97.7)",
+      "comp": "=",
+      "rhs": "2.9"
+    },
+    {
+      "text_id": 21,
+      "grp_id": 2,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": "0.005"
+    },
+    {
+      "text_id": 21,
+      "grp_id": 2,
+      "lhs": "d",
+      "comp": "=",
+      "rhs": "0.59"
+    },
+    {
+      "text_id": 22,
+      "grp_id": 3,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "5.06"
+    },
+    {
+      "text_id": 22,
+      "grp_id": 3,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "4.5"
+    },
+    {
+      "text_id": 22,
+      "grp_id": 3,
+      "lhs": "t(97.2)",
+      "comp": "=",
+      "rhs": "-1.96"
+    },
+    {
+      "text_id": 22,
+      "grp_id": 3,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": "0.152"
+    },
+    {
+      "text_id": 23,
+      "grp_id": 4,
+      "lhs": "p",
+      "comp": ">",
+      "rhs": ".05"
+    },
+    {
+      "text_id": 39,
+      "grp_id": 5,
+      "lhs": "n",
+      "comp": "=",
+      "rhs": "50"
+    },
+    {
+      "text_id": 39,
+      "grp_id": 5,
+      "lhs": "power",
+      "comp": "=",
+      "rhs": "0.8"
+    }
+  ],
+  "bib_match": [
+    {
+      "service": "crossref",
+      "bib_id": 1,
+      "service_id": "10.32614/cran.package.faux",
+      "score": 100,
+      "bib_type": "misc",
+      "doi": "10.32614/cran.package.faux",
+      "title": "faux: Simulation for Factorial Designs",
+      "authors": "DeBruine, Lisa",
+      "editors": null,
+      "publisher": "The R Foundation",
+      "year": 2020,
+      "date": null,
+      "container": "CRAN: Contributed Packages",
+      "volume": null,
+      "issue": null,
+      "first_page": null,
+      "last_page": null,
+      "edition": null,
+      "version": null,
+      "url": "https://doi.org/10.32614/cran.package.faux"
+    },
+    {
+      "service": "crossref",
+      "bib_id": 2,
+      "service_id": "10.1037/0003-066x.54.6.408",
+      "score": 100,
+      "bib_type": "article",
+      "doi": "10.1037/0003-066x.54.6.408",
+      "title": "The origins of sex differences in human behavior: Evolved dispositions versus social roles.",
+      "authors": "Eagly, Alice H.; Wood, Wendy",
+      "editors": null,
+      "publisher": "American Psychological Association (APA)",
+      "year": 1999,
+      "date": null,
+      "container": "American Psychologist",
+      "volume": "54",
+      "issue": "6",
+      "first_page": "408",
+      "last_page": "423",
+      "edition": null,
+      "version": null,
+      "url": "https://doi.org/10.1037/0003-066x.54.6.408"
+    },
+    {
+      "service": "crossref",
+      "bib_id": 3,
+      "service_id": "10.1177/0956797614520714",
+      "score": 100,
+      "bib_type": "article",
+      "doi": "10.1177/0956797614520714",
+      "title": "Retracted: Evil Genius? How Dishonesty Can Lead to Greater Creativity",
+      "authors": "Gino, Francesca; Wiltermuth, Scott S.",
+      "editors": null,
+      "publisher": "SAGE Publications",
+      "year": 2014,
+      "date": null,
+      "container": "Psychological Science",
+      "volume": "25",
+      "issue": "4",
+      "first_page": "973",
+      "last_page": "981",
+      "edition": null,
+      "version": null,
+      "url": "https://doi.org/10.1177/0956797614520714"
+    },
+    {
+      "service": "crossref",
+      "bib_id": 4,
+      "service_id": "10.1177/2515245918770963",
+      "score": 100,
+      "bib_type": "article",
+      "doi": "10.1177/2515245918770963",
+      "title": "Equivalence Testing for Psychological Research: A Tutorial",
+      "authors": "Lakens, Daniel; Scheel, Anne M.; Isager, Peder Mortvedt",
+      "editors": null,
+      "publisher": "SAGE Publications",
+      "year": 2018,
+      "date": null,
+      "container": "Advances in Methods and Practices in Psychological Science",
+      "volume": "1",
+      "issue": "2",
+      "first_page": "259",
+      "last_page": "269",
+      "edition": null,
+      "version": null,
+      "url": "https://doi.org/10.1177/2515245918770963"
+    }
+  ]
+}

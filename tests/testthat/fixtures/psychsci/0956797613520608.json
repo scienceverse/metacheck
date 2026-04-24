@@ -1,0 +1,4391 @@
+{
+  "paper_id": "0956797613520608",
+  "info": [
+    {
+      "title": "Continuous Theta-Burst Stimulation Demonstrates a Causal Role of Premotor Homunculus in Action Understanding",
+      "keywords": ["mirror-neuron system", "action understanding", "theta-burst stimulation", "social cognition", "theory of mind", "social interaction", "social perception"],
+      "doi": "10.1177/0956797613520608",
+      "file_hash": "9e867a806802ca40",
+      "input_format": "pdf",
+      "file_name": "0956797613520608.pdf",
+      "bibr_version": "9.0",
+      "paper_type": "empirical",
+      "paper_type_confidence": 0,
+      "oecd_l1": "Natural Sciences",
+      "oecd_l2": "Biological Sciences",
+      "oecd_confidence": 0
+    }
+  ],
+  "author": [
+    {
+      "author_id": 1,
+      "given": "John Michael",
+      "family": "",
+      "affiliation": "Center for Subjectivity Research, Copenhagen University; Interacting Minds Centre, Aarhus University",
+      "email": "johnmichaelaarhus@gmail.com",
+      "corresponding": true,
+      "orcid": null,
+      "role": []
+    },
+    {
+      "author_id": 2,
+      "given": "Kristian",
+      "family": "Sandberg",
+      "affiliation": "Cognitive Neuroscience Research Unit, Hammel Neurorehabilitation and Research Centre, Aarhus University; Institute of Cognitive Neuroscience, University College London",
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": []
+    },
+    {
+      "author_id": 3,
+      "given": "Joshua",
+      "family": "Skewes",
+      "affiliation": "Interacting Minds Centre, Aarhus University",
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": []
+    },
+    {
+      "author_id": 4,
+      "given": "Thomas",
+      "family": "Wolf",
+      "affiliation": "Program in Cognitive Science, University of Vienna",
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": []
+    },
+    {
+      "author_id": 5,
+      "given": "Jakob",
+      "family": "Blicher",
+      "affiliation": "Cognitive Neuroscience Research Unit, Hammel Neurorehabilitation and Research Centre, Aarhus University; Cognitive Neuroscience Research Unit, Center of Functionally Integrative Neuroscience/MindLab, Aarhus University",
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": []
+    },
+    {
+      "author_id": 6,
+      "given": "Morten",
+      "family": "Overgaard",
+      "affiliation": "Cognitive Neuroscience Research Unit, Center of Functionally Integrative Neuroscience/MindLab, Aarhus University; Centre for Cognitive Neuroscience, Department of Communication and Psychology, Aalborg University",
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": []
+    },
+    {
+      "author_id": 7,
+      "given": "Chris D.",
+      "family": "Frith",
+      "affiliation": "Wellcome Trust Centre for Neuroimaging, London, England",
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": []
+    }
+  ],
+  "text": [
+    {
+      "text_id": 1,
+      "section_id": 1,
+      "paragraph_id": 1,
+      "text": "Psychological Science 2014, Vol. 25(4) 963-972 © The Author(s) 2014 Reprints and permissions: sagepub.com/journalsPermissions.nav DOI: 10.1177/0956797613520608 pss.sagepub.com SAGE",
+      "page_number": 1
+    },
+    {
+      "text_id": 2,
+      "section_id": 1,
+      "paragraph_id": 2,
+      "text": "John Michael 1,2 , Kristian Sandberg 3,4 , Joshua Skewes 2 Thomas Wolf 5 , Jakob Blicher 3,6 , Morten Overgaard 6,7 and Chris D. Frith 8",
+      "page_number": 1
+    },
+    {
+      "text_id": 3,
+      "section_id": 1,
+      "paragraph_id": 3,
+      "text": "1Center for Subjectivity Research, Copenhagen University; 2Interacting Minds Centre, Aarhus University; 3Cognitive Neuroscience Research Unit, Hammel Neurorehabilitation and Research Centre, Aarhus University; 4Institute of Cognitive Neuroscience, University College London; 5Program in Cognitive Science, University of Vienna; 6Cognitive Neuroscience Research Unit, Center of Functionally Integrative Neuroscience/MindLab, Aarhus University; 7Centre for Cognitive Neuroscience, Department of Communication and Psychology, Aalborg University; and 8Wellcome Trust Centre for Neuroimaging, London, England",
+      "page_number": 1
+    },
+    {
+      "text_id": 4,
+      "section_id": 2,
+      "paragraph_id": 4,
+      "text": "Although it is well established that regions of premotor cortex (PMC) are active during action observation, it remains controversial whether they play a causal role in action understanding.",
+      "page_number": 1
+    },
+    {
+      "text_id": 5,
+      "section_id": 2,
+      "paragraph_id": 4,
+      "text": "In the experiment reported here, we used offline continuous theta-burst stimulation (cTBS) to investigate this question.",
+      "page_number": 1
+    },
+    {
+      "text_id": 6,
+      "section_id": 2,
+      "paragraph_id": 4,
+      "text": "Participants received cTBS over the hand and lip areas of left PMC, in separate sessions, before completing a pantomime-recognition task in which half of the trials contained pantomimed hand actions, and half contained pantomimed mouth actions.",
+      "page_number": 1
+    },
+    {
+      "text_id": 7,
+      "section_id": 2,
+      "paragraph_id": 4,
+      "text": "The results reveal a double dissociation:",
+      "page_number": 1
+    },
+    {
+      "text_id": 8,
+      "section_id": 2,
+      "paragraph_id": 4,
+      "text": "Participants were less accurate in recognizing pantomimed hand actions after receiving cTBS over the hand area than over the lip area and less accurate in recognizing pantomimed mouth actions after receiving cTBS over the lip area than over the hand area.",
+      "page_number": 1
+    },
+    {
+      "text_id": 9,
+      "section_id": 2,
+      "paragraph_id": 4,
+      "text": "This finding constrains theories of action understanding by showing that somatotopically organized regions of PMC contribute causally to action understanding and, thus, that the mechanisms underpinning action understanding and action performance overlap.",
+      "page_number": 1
+    },
+    {
+      "text_id": 10,
+      "section_id": 3,
+      "paragraph_id": 5,
+      "text": "mirror-neuron system, action understanding, theta-burst stimulation, social cognition, theory of mind, social interaction, social perception",
+      "page_number": 1
+    },
+    {
+      "text_id": 11,
+      "section_id": 3,
+      "paragraph_id": 6,
+      "text": "Received 8/16/13; Revision accepted 12/22/13",
+      "page_number": 1
+    },
+    {
+      "text_id": 12,
+      "section_id": 3,
+      "paragraph_id": 7,
+      "text": "Mirror neurons, originally discovered in macaque monkeys using single-cell recordings, are active when an animal is either performing a particular action or observing another agent performing the same or a similar action (di Pelligrino, Fadiga, Fogassi, Gallese, & Rizzolatti, 1992; Gallese, Fadiga, Fogassi, & Rizzolatti, 1996; Rizzolatti, Fadiga, Gallese, & Fogassi, 1996).",
+      "page_number": 1
+    },
+    {
+      "text_id": 13,
+      "section_id": 3,
+      "paragraph_id": 7,
+      "text": "Because single-cell activity has rarely been recorded in humans (but see Mukamel, Ekstrom, Kaplan, Iacoboni, & Fried, 2010), most research involving human participants has been performed with imaging techniques that measure activity in brain regions rather than in individual cells.",
+      "page_number": 1
+    },
+    {
+      "text_id": 14,
+      "section_id": 3,
+      "paragraph_id": 7,
+      "text": "This research has revealed a network, comprising regions of premotor cortex (PMC), inferior parietal lobule, and somatosensory areas (Buccino et al., 2001; Gazzola &",
+      "page_number": 1
+    },
+    {
+      "text_id": 15,
+      "section_id": 3,
+      "paragraph_id": 8,
+      "text": "Keysers, 2009; Iacoboni et al., 2005; Rizzolatti & Craighero, 2004; Vogt et al., 2007), that is \"activated during performance of [an] action as well as during the observation [of] the same action being performed by another person\" (Frith & Singer, 2008, p. 3876).",
+      "page_number": 1
+    },
+    {
+      "text_id": 16,
+      "section_id": 3,
+      "paragraph_id": 8,
+      "text": "On the basis of these findings, it has been proposed that this network, sometimes called the mirror-neuron system (MNS), plays a causal role in action understanding (i.e., in identifying the goals, or underlying intentions, of bodily movements) and that action production and action understanding involve",
+      "page_number": 1
+    },
+    {
+      "text_id": 17,
+      "section_id": 3,
+      "paragraph_id": 9,
+      "text": "Corresponding Author: John Michael, Copenhagen University, Center for Subjectivity Research, Njalsgade 140-2 Copenhagen 2300, Denmark",
+      "page_number": 1
+    },
+    {
+      "text_id": 18,
+      "section_id": 3,
+      "paragraph_id": 9,
+      "text": "E-mail: johnmichaelaarhus@gmail.com",
+      "page_number": 1
+    },
+    {
+      "text_id": 19,
+      "section_id": 3,
+      "paragraph_id": 9,
+      "text": "overlapping mechanisms (Gallese, Keysers, & Rizzolatti, 2004; Gazzola & Keysers, 2009; Iacoboni et al., 2005; Kilner, Neal, Weiskopf, Friston, & Frith, 2009; Pobric & Hamilton, 2006; Vogt et al., 2007).",
+      "page_number": 1
+    },
+    {
+      "text_id": 20,
+      "section_id": 3,
+      "paragraph_id": 9,
+      "text": "However, because most of the research in this area has relied on correlational methods, these claims have remained controversial, with competing models offering conflicting accounts of the function of MNS activation.",
+      "page_number": 1
+    },
+    {
+      "text_id": 21,
+      "section_id": 3,
+      "paragraph_id": 10,
+      "text": "According to the direct-matching model, activation of the PMC during action observation constitutes a covert simulation of the observed action, which enables the observer to match it with an action in his or her own repertoire of intentional actions and thereby to identify the goal of the action (Gallese et al., 2004).",
+      "page_number": 2
+    },
+    {
+      "text_id": 22,
+      "section_id": 3,
+      "paragraph_id": 10,
+      "text": "The direct-matching model therefore holds that somatotopically organized regions of PMC play a causal role in understanding observed actions.",
+      "page_number": 2
+    },
+    {
+      "text_id": 23,
+      "section_id": 3,
+      "paragraph_id": 10,
+      "text": "The predictive-coding model (Kilner, Friston, & Frith, 2007) is based on the conception of a hierarchy of reciprocally connected models.",
+      "page_number": 2
+    },
+    {
+      "text_id": 24,
+      "section_id": 3,
+      "paragraph_id": 10,
+      "text": "Each model generates predictions about the representations at the immediately subordinate level.",
+      "page_number": 2
+    },
+    {
+      "text_id": 25,
+      "section_id": 3,
+      "paragraph_id": 10,
+      "text": "These predictions are compared with the actual state of the subordinate-level model, and a prediction error is returned to the superordinate-level model, which is revised and then generates a new prediction.",
+      "page_number": 2
+    },
+    {
+      "text_id": 26,
+      "section_id": 3,
+      "paragraph_id": 10,
+      "text": "By this process, the interconnected models are continuously updated and prediction errors minimized.",
+      "page_number": 2
+    },
+    {
+      "text_id": 27,
+      "section_id": 3,
+      "paragraph_id": 10,
+      "text": "Thus, according to the predictive-coding model, premotor activation and higher-level representations reciprocally modulate each other.",
+      "page_number": 2
+    },
+    {
+      "text_id": 28,
+      "section_id": 3,
+      "paragraph_id": 10,
+      "text": "Like the direct-matching model, then, the predictive-coding model holds that somatotopically organized regions of PMC play a causal role in action understanding, with the mechanisms for action understanding overlapping with those for the production of actions.",
+      "page_number": 2
+    },
+    {
+      "text_id": 29,
+      "section_id": 3,
+      "paragraph_id": 11,
+      "text": "In contrast, two deflationary models deny that premotor activation plays a causal role in action understanding.",
+      "page_number": 2
+    },
+    {
+      "text_id": 30,
+      "section_id": 3,
+      "paragraph_id": 11,
+      "text": "According to what can be called the priming model, putative mirroring properties may in fact support sensory-motor associations, in which case premotor activation during action observation might reflect a priming effect rather than a contribution to action understanding (Hickok, 2009).",
+      "page_number": 2
+    },
+    {
+      "text_id": 31,
+      "section_id": 3,
+      "paragraph_id": 11,
+      "text": "According to what can be called the inverse-modeling model, the function of premotor activation during action observation is to calculate motor commands appropriate to the realization of a goal and thus to predict the upcoming movements, given that the goal has already been identified by other means (Csibra, 2008).",
+      "page_number": 2
+    },
+    {
+      "text_id": 32,
+      "section_id": 3,
+      "paragraph_id": 11,
+      "text": "In other words, premotor activation, according to this model, is a result rather than a cause or component of action understanding.",
+      "page_number": 2
+    },
+    {
+      "text_id": 33,
+      "section_id": 3,
+      "paragraph_id": 12,
+      "text": "In the experiment reported here, we used continuous theta-burst stimulation (cTBS), an off-line protocol for transcranial magnetic stimulation (TMS), to investigate whether PMC plays a causal role in action understanding and thus to adjudicate between models that affirm this (e.g., direct matching and predictive coding) and models that deny it (e.g., priming and inverse modeling).",
+      "page_number": 2
+    },
+    {
+      "text_id": 34,
+      "section_id": 3,
+      "paragraph_id": 12,
+      "text": "It has been documented that the application of cTBS over motor areas diminishes the excitability of cortical tissue for approximately 20 min (Huang, Edwards, Rounis, Bhatia, & Rothwell, 2005; Huang et al., 2009).",
+      "page_number": 2
+    },
+    {
+      "text_id": 35,
+      "section_id": 3,
+      "paragraph_id": 12,
+      "text": "We therefore administered cTBS over participants' premotor hand and lip areas, in separate sessions, and then measured their performance on a series of tasks designed to probe the mechanisms underlying action understanding.",
+      "page_number": 2
+    },
+    {
+      "text_id": 36,
+      "section_id": 3,
+      "paragraph_id": 12,
+      "text": "We reasoned that if premotor hand and lip areas play a causal role in action understanding, then the application of cTBS over the premotor hand area should specifically impair participants' ability to process observed hand actions, and the application of cTBS over the premotor lip area should specifically impair their ability to process observed mouth actions.",
+      "page_number": 2
+    },
+    {
+      "text_id": 37,
+      "section_id": 3,
+      "paragraph_id": 13,
+      "text": "Because identifying the goals of bodily movements is a complex process that likely involves multiple components, we agree with Cook, Bird, Catmur, Press, and Heyes (in press) that research on the contribution of the MNS to action understanding must attempt to isolate and operationalize distinct components of action understanding.",
+      "page_number": 2
+    },
+    {
+      "text_id": 38,
+      "section_id": 3,
+      "paragraph_id": 13,
+      "text": "Drawing on a tripartite hierarchical distinction developed by Hamilton and Grafton (2007), we therefore designed three separate tasks of varying complexity in order to probe different components of action understanding.",
+      "page_number": 2
+    },
+    {
+      "text_id": 39,
+      "section_id": 3,
+      "paragraph_id": 13,
+      "text": "The simplest task required participants to identify still frames from brief videos of pantomimed actions.",
+      "page_number": 2
+    },
+    {
+      "text_id": 40,
+      "section_id": 3,
+      "paragraph_id": 13,
+      "text": "This task thus probed a perceptual aspect of action understanding, namely the ability to process kinematic features of observed actions.",
+      "page_number": 2
+    },
+    {
+      "text_id": 41,
+      "section_id": 3,
+      "paragraph_id": 13,
+      "text": "An intermediate task required them to select which of three objects complemented a brief video of a pantomimed action, thus probing their ability to identify the proximal goal of an observed movement.",
+      "page_number": 2
+    },
+    {
+      "text_id": 42,
+      "section_id": 3,
+      "paragraph_id": 13,
+      "text": "The most complex task required them to select which of three objects complemented a brief video of a pantomimed action in a context-sensitive manner, thus probing their ability to identify the distal goal of an observed movement (see Fig. 1 and Table 1).",
+      "page_number": 2
+    },
+    {
+      "text_id": 43,
+      "section_id": 3,
+      "paragraph_id": 13,
+      "text": "Whereas the simple task did not require participants to identify the goal of the observed action, it is an open question whether the processing of low-level kinematic features of actions plays a role in the identification of goals.",
+      "page_number": 2
+    },
+    {
+      "text_id": 44,
+      "section_id": 3,
+      "paragraph_id": 13,
+      "text": "The intermediate and complex tasks pertain directly to action understanding insofar as they required participants not just to process perceptual features of bodily movements but also to identify the goals, or underlying intentions, of those movements.",
+      "page_number": 2
+    },
+    {
+      "text_id": 45,
+      "section_id": 5,
+      "paragraph_id": 14,
+      "text": "Twenty right-handed individuals (8 females, 12 males; mean age = 23.5 years, range = 18-40) took part in the experiment.",
+      "page_number": 3
+    },
+    {
+      "text_id": 46,
+      "section_id": 5,
+      "paragraph_id": 14,
+      "text": "All were naive to the experiment's purpose and gave their informed written consent.",
+      "page_number": 3
+    },
+    {
+      "text_id": 47,
+      "section_id": 5,
+      "paragraph_id": 14,
+      "text": "They had no history of epilepsy and were not taking any medication at the time of the test.",
+      "page_number": 3
+    },
+    {
+      "text_id": 48,
+      "section_id": 5,
+      "paragraph_id": 14,
+      "text": "One further participant, a 20-year-old male, experienced a vasovagal episode (unrelated to the stimulation) during the localization procedure prior to the cTBS and therefore discontinued his participation.",
+      "page_number": 3
+    },
+    {
+      "text_id": 49,
+      "section_id": 6,
+      "paragraph_id": 15,
+      "text": "Each participant took part in a preliminary session in which a T1 structural scan was performed, and then in two experimental sessions, each of which was preceded by a TMS session (see Fig. 2).",
+      "page_number": 3
+    },
+    {
+      "text_id": 50,
+      "section_id": 6,
+      "paragraph_id": 15,
+      "text": "Each TMS session consisted of a localization procedure followed by the administering of cTBS.",
+      "page_number": 3
+    },
+    {
+      "text_id": 51,
+      "section_id": 6,
+      "paragraph_id": 15,
+      "text": "In one session, cTBS was applied over the hand area in left PMC, whereas in the other session, it was applied over the lip area in left PMC.",
+      "page_number": 3
+    },
+    {
+      "text_id": 52,
+      "section_id": 6,
+      "paragraph_id": 15,
+      "text": "The order of the sessions was counterbalanced.",
+      "page_number": 3
+    },
+    {
+      "text_id": 53,
+      "section_id": 6,
+      "paragraph_id": 15,
+      "text": "After completing their second experimental session, participants were debriefed.",
+      "page_number": 3
+    },
+    {
+      "text_id": 54,
+      "section_id": 6,
+      "paragraph_id": 15,
+      "text": "The ethics committee for the region of Midtjylland, Denmark, approved the experiment.",
+      "page_number": 3
+    },
+    {
+      "text_id": 55,
+      "section_id": 6,
+      "paragraph_id": 16,
+      "text": "Participants first completed a practice block of 50 trials, which were not repeated in the experiment.",
+      "page_number": 4
+    },
+    {
+      "text_id": 56,
+      "section_id": 6,
+      "paragraph_id": 16,
+      "text": "Then they completed three separate test blocks, which corresponded to three levels of complexity (see Fig.1) and which were presented in counterbalanced order.",
+      "page_number": 4
+    },
+    {
+      "text_id": 57,
+      "section_id": 6,
+      "paragraph_id": 16,
+      "text": "In each block, participants completed 80 trials (depicting 40 hand actions and 40 mouth actions), the order of which was randomized.",
+      "page_number": 4
+    },
+    {
+      "text_id": 58,
+      "section_id": 6,
+      "paragraph_id": 16,
+      "text": "Participants were instructed to complete each trial as quickly and accurately as possible.",
+      "page_number": 4
+    },
+    {
+      "text_id": 59,
+      "section_id": 6,
+      "paragraph_id": 17,
+      "text": "In all blocks, each trial began with a 500-ms black fixation cross.",
+      "page_number": 4
+    },
+    {
+      "text_id": 60,
+      "section_id": 6,
+      "paragraph_id": 17,
+      "text": "Then an image depicting a context for the video they were about to see was displayed for 1,000 ms.",
+      "page_number": 4
+    },
+    {
+      "text_id": 61,
+      "section_id": 6,
+      "paragraph_id": 17,
+      "text": "The context image was followed by a second fixation cross (250 ms), then a video of a pantomimed action (500 ms).",
+      "page_number": 4
+    },
+    {
+      "text_id": 62,
+      "section_id": 6,
+      "paragraph_id": 17,
+      "text": "Participants next saw a response screen on which three static images were displayed from left to right across the middle of the screen for 4 s or until a response was given.",
+      "page_number": 4
+    },
+    {
+      "text_id": 63,
+      "section_id": 6,
+      "paragraph_id": 17,
+      "text": "The task differed slightly across the three blocks.",
+      "page_number": 4
+    },
+    {
+      "text_id": 64,
+      "section_id": 6,
+      "paragraph_id": 17,
+      "text": "In the simple block, the three images were of a hand or mouth, and participants were told to \"choose the image that depicts the same action as the video you just saw.\"",
+      "page_number": 4
+    },
+    {
+      "text_id": 65,
+      "section_id": 6,
+      "paragraph_id": 17,
+      "text": "In the intermediate block, participants saw different objects and were asked to \"choose the object that fits best with the action and the setting you just saw.\"",
+      "page_number": 4
+    },
+    {
+      "text_id": 66,
+      "section_id": 6,
+      "paragraph_id": 17,
+      "text": "The complex block differed from the intermediate block only in that two of the objects on the response screen fit the action video, but only one fit the context, thus making it necessary for participants to draw on contextual information as well as observe the pantomimed action in order to choose the correct object.",
+      "page_number": 4
+    },
+    {
+      "text_id": 67,
+      "section_id": 6,
+      "paragraph_id": 17,
+      "text": "For all three blocks, the response was given by pressing the 1, 2, or 3 key with the first three fingers of the left hand.",
+      "page_number": 4
+    },
+    {
+      "text_id": 68,
+      "section_id": 7,
+      "paragraph_id": 18,
+      "text": "The stimuli were brief videos of pantomimed mouth actions (e.g., licking, sucking, blowing) and hand actions (e.g., writing, cutting, grasping).",
+      "page_number": 4
+    },
+    {
+      "text_id": 69,
+      "section_id": 7,
+      "paragraph_id": 18,
+      "text": "We used 20 different mouth-action videos and 20 different hand-action videos (see Table 1 for examples), each being repeated six times per experimental session (twice per block).",
+      "page_number": 4
+    },
+    {
+      "text_id": 70,
+      "section_id": 7,
+      "paragraph_id": 18,
+      "text": "There were 60 context images, each of which was repeated four times per experimental session.",
+      "page_number": 4
+    },
+    {
+      "text_id": 71,
+      "section_id": 7,
+      "paragraph_id": 18,
+      "text": "There were 120 images used as response options, each of which was repeated six times.",
+      "page_number": 4
+    },
+    {
+      "text_id": 72,
+      "section_id": 7,
+      "paragraph_id": 18,
+      "text": "The stimuli were presented using E-Prime software (Schneider, Eschman, & Zuccolotto, 2001) and were displayed on a 13-in. LCD monitor (refresh rate: 60 Hz resolution: 1,280 × 800 pixels).",
+      "page_number": 4
+    },
+    {
+      "text_id": 73,
+      "section_id": 8,
+      "paragraph_id": 19,
+      "text": "A T1-weighted magnetic resonance imaging volume was acquired for each subject with a GE Signa Excite HDx 3.0-T spectrometer using a 3-D inversion-recovery prepared fast",
+      "page_number": 4
+    },
+    {
+      "text_id": 74,
+      "section_id": 8,
+      "paragraph_id": 20,
+      "text": "spoiled-gradient-recalled sequence (echo time = 3.0 ms, inversion time = 450 ms, flip angle = 2 0circ , slices = 156, slice thickness = 1.1 mm, in-plane resolution = 0.94 mm).",
+      "page_number": 5
+    },
+    {
+      "text_id": 75,
+      "section_id": 8,
+      "paragraph_id": 21,
+      "text": "The scans were used in conjunction with a Nexstim (Helsinki, Finland) navigator device and NBS 3.2 software during the localization procedure and during the cTBS in order to record the site and orientation of the coil as each pulse was administered, as well as the intensity of each pulse and the elicited motor-evoked potential (MEP).",
+      "page_number": 5
+    },
+    {
+      "text_id": 76,
+      "section_id": 8,
+      "paragraph_id": 21,
+      "text": "A Magstim X100 stimulator (MagVenture, Farum, Denmark) was used with an MCF-B65 figure-of-eight coil (MagVenture) to generate the cTBS; 300 pulses were administered in 100 bursts of 3 pulses each over a 20-s period.",
+      "page_number": 5
+    },
+    {
+      "text_id": 77,
+      "section_id": 8,
+      "paragraph_id": 21,
+      "text": "The frequency within each burst was 50 Hz, and the bursts were repeated with a frequency of 5 Hz.",
+      "page_number": 5
+    },
+    {
+      "text_id": 78,
+      "section_id": 8,
+      "paragraph_id": 21,
+      "text": "Stimulation during cTBS was given at 70% of the resting motor threshold (RMT), based on previous studies reporting that 70% of the RMT is equivalent to 80% of the active motor threshold (Chen et al., 1998; Gentner, Wankerl, Reinsberger, Zeller, & Classen, 2008).",
+      "page_number": 5
+    },
+    {
+      "text_id": 79,
+      "section_id": 8,
+      "paragraph_id": 22,
+      "text": "It has been shown that cTBS over motor areas inhibits subsequent MEPs only if preceded by a period of slight voluntary contraction lasting at least 1.5 min and that it otherwise facilitates MEPs (Gentner et al., 2008; Huang et al., 2009).",
+      "page_number": 5
+    },
+    {
+      "text_id": 80,
+      "section_id": 8,
+      "paragraph_id": 22,
+      "text": "For this reason, participants were asked immediately prior to the administering of cTBS in this experiment to clench their fist while relaxing their lip, and then to relax their fist while squeezing their lips together, in alternation, for 5 min.",
+      "page_number": 5
+    },
+    {
+      "text_id": 81,
+      "section_id": 9,
+      "paragraph_id": 23,
+      "text": "For the localization procedure, the hand area in left primary motor cortex (M1) was first approximated by sight with the help of the navigation system.",
+      "page_number": 5
+    },
+    {
+      "text_id": 82,
+      "section_id": 9,
+      "paragraph_id": 23,
+      "text": "Then, slightly suprathreshold pulses were administered over 10 nearby sites, and the optimal site was defined as the location where stimulation elicited largest MEPs in the first dorsal interosseous muscle of the right hand.",
+      "page_number": 5
+    },
+    {
+      "text_id": 83,
+      "section_id": 9,
+      "paragraph_id": 23,
+      "text": "The RMT was determined as the lowest intensity at which MEPs above 50 μV were recorded on 5 of 10 trials.",
+      "page_number": 5
+    },
+    {
+      "text_id": 84,
+      "section_id": 9,
+      "paragraph_id": 23,
+      "text": "For the hand area, the mean threshold intensity was 42% of maximum stimulator output.",
+      "page_number": 5
+    },
+    {
+      "text_id": 85,
+      "section_id": 9,
+      "paragraph_id": 23,
+      "text": "The procedure was repeated for the lip area, with MEPs being recorded on the orbicularis oris, starting from a site 3 cm lateral and 1.5 cm anterior to the hand site.",
+      "page_number": 5
+    },
+    {
+      "text_id": 86,
+      "section_id": 9,
+      "paragraph_id": 23,
+      "text": "The mean RMT for the lip area was 56%.",
+      "page_number": 5
+    },
+    {
+      "text_id": 87,
+      "section_id": 9,
+      "paragraph_id": 23,
+      "text": "The premotor sites were then determined by moving 3 cm anterior from the corresponding spots in M1 and then to the nearest spot on the precentral gyrus with the help of the navigation system.",
+      "page_number": 5
+    },
+    {
+      "text_id": 88,
+      "section_id": 9,
+      "paragraph_id": 24,
+      "text": "Whereas prior TMS studies have localized the hand area in left PMC using the same method as that employed here (Kroeger et al., 2010; Münchau, Bloem, Irlbacher, Trimble, & Rothwell, 2002), there is no precedent for the use of the same localization procedure for the premotor lip area.",
+      "page_number": 6
+    },
+    {
+      "text_id": 89,
+      "section_id": 9,
+      "paragraph_id": 24,
+      "text": "However, the extension of this procedure to the lip area derives support from several sources.",
+      "page_number": 6
+    },
+    {
+      "text_id": 90,
+      "section_id": 9,
+      "paragraph_id": 24,
+      "text": "First, studies with nonhuman primates suggest a somatotopic organization of PMC that parallels that in M1, with higher concentrations of neurons encoding features of leg and foot movements in more dorsal areas than hand representations and lip representations in more ventral areas (Gentilucci et al., 1988; Godschalk, Mitz, van Duin, & van der Burg, 1995; Rizzolatti et al., 1988).",
+      "page_number": 6
+    },
+    {
+      "text_id": 91,
+      "section_id": 9,
+      "paragraph_id": 24,
+      "text": "Second, imaging studies in humans have corroborated this pattern (Buccino et al., 2001; Hauk, Johnsrude, & Pulvermüller, 2004; for a meta-analysis, see Schubotz & von Cramon, 2003).",
+      "page_number": 6
+    },
+    {
+      "text_id": 92,
+      "section_id": 9,
+      "paragraph_id": 24,
+      "text": "Third, lesion studies have confirmed that patients with lesions in more dorsal areas of PMC have greater difficulties performing hand actions, whereas patients with more ventral lesions have greater difficulties performing mouth actions (Basso, Capitani, Della Sala, Laiacona, & Spinnler, 1987; Marquart & Sussman, 1984; Pazzaglia, Smania, Corato, & Aglioti, 2008).",
+      "page_number": 6
+    },
+    {
+      "text_id": 93,
+      "section_id": 9,
+      "paragraph_id": 24,
+      "text": "Thus, although it is not likely that the regions of PMC that we localized are uniquely specialized for hand and mouth actions, respectively, there are independent reasons to accept that the area we defined as the premotor lip area contains neural populations that specialize in the production of mouth actions and that the area we defined as the premotor hand area contains neural populations that specialize in hand-action production.",
+      "page_number": 6
+    },
+    {
+      "text_id": 94,
+      "section_id": 9,
+      "paragraph_id": 25,
+      "text": "Because the lip area served as an optimal control site with respect to the effects of cTBS over the hand area on hand-action understanding, and the hand area in turn served as a control site with respect to the effects of cTBS over the lip area on mouth-action understanding, it was not necessary to include an additional control site or a sham TMS condition.",
+      "page_number": 6
+    },
+    {
+      "text_id": 95,
+      "section_id": 10,
+      "paragraph_id": 26,
+      "text": "For hit rates (see Fig. 3), a 3 (complexity level: simple, intermediate, complex) ×2 (TMS site: hand, lip) ×2 (video type: hand action, mouth action) analysis of variance (ANOVA) revealed a main effect of complexity level, F(2,38)=16.58, p<.001, ηp2=.47 ; as complexity level increased, hit rates decreased.",
+      "page_number": 6
+    },
+    {
+      "text_id": 96,
+      "section_id": 10,
+      "paragraph_id": 26,
+      "text": "A main effect of video type also occurred, F(1,19)=33.56, p<.001, ηp2=.64 ; specifically, hit rates were lower for mouth actions than for hand actions.",
+      "page_number": 6
+    },
+    {
+      "text_id": 97,
+      "section_id": 10,
+      "paragraph_id": 26,
+      "text": "There was also a significant interaction between complexity level and video type, F(2,38)= 36.79, p<.001, ηp2=.67 , with hit rates for mouth actions being more dramatically reduced by increasing complexity than those for hand actions.",
+      "page_number": 6
+    },
+    {
+      "text_id": 98,
+      "section_id": 10,
+      "paragraph_id": 26,
+      "text": "More important, there was a significant interaction between TMS site and video type, F(1,19)=6.98, p=.016, ηp2=.27 .",
+      "page_number": 6
+    },
+    {
+      "text_id": 99,
+      "section_id": 10,
+      "paragraph_id": 26,
+      "text": "This interaction constituted a double dissociation: cTBS over the hand area specifically impaired participants' ability to accurately interpret pantomimed hand actions, whereas cTBS over the lip area specifically impaired their ability to accurately interpret mouth actions.",
+      "page_number": 6
+    },
+    {
+      "text_id": 100,
+      "section_id": 10,
+      "paragraph_id": 26,
+      "text": "No other main effects or interactions reached significance.",
+      "page_number": 6
+    },
+    {
+      "text_id": 101,
+      "section_id": 10,
+      "paragraph_id": 27,
+      "text": "For response time (RT), a 3 (complexity level) ×2 (TMS site) ×2 (video type) ANOVA revealed a main effect of complexity level, F(2,38) = 20.82, p < .001, $ ηp2=.52 and a significant interaction between complexity level and video type, F(2,38) = 51.86, p < .001, ηp2=.73 .",
+      "page_number": 6
+    },
+    {
+      "text_id": 102,
+      "section_id": 10,
+      "paragraph_id": 27,
+      "text": "There was no two-way interaction between TMS site and video type.",
+      "page_number": 6
+    },
+    {
+      "text_id": 103,
+      "section_id": 10,
+      "paragraph_id": 27,
+      "text": "No other main effects or interactions reached significance.",
+      "page_number": 6
+    },
+    {
+      "text_id": 104,
+      "section_id": 11,
+      "paragraph_id": 28,
+      "text": "The two-way interaction between TMS site (hand vs. lip) and video type (hand action vs. mouth action) for hit rate provides evidence that the premotor hand area plays a causal role in understanding observed hand actions and that the premotor lip area plays a causal role in understanding observed mouth actions.",
+      "page_number": 6
+    },
+    {
+      "text_id": 105,
+      "section_id": 11,
+      "paragraph_id": 28,
+      "text": "The absence of an interaction of TMS site and video type for RT confirms that the main results (hit rate) were not caused by a trade-off in which participants achieved faster RTs by sacrificing accuracy.",
+      "page_number": 6
+    },
+    {
+      "text_id": 106,
+      "section_id": 11,
+      "paragraph_id": 29,
+      "text": "Our results corroborate and extend the findings from several previous studies employing causal methodologies, such as those involving patients with apraxia owing to lesions in PMC and those using TMS to produce virtual lesions.",
+      "page_number": 6
+    },
+    {
+      "text_id": 107,
+      "section_id": 11,
+      "paragraph_id": 29,
+      "text": "With regard to the former, Pazzaglia et al. (2008) reported that patients with premotor and parietal lesions",
+      "page_number": 6
+    },
+    {
+      "text_id": 108,
+      "section_id": 11,
+      "paragraph_id": 30,
+      "text": "who were impaired in their ability to perform hand actions were also impaired in their ability to identify sounds typically caused by hand actions, and patients with lesions to premotor areas who were impaired in their ability to move their lips (buccofacial apraxia) were also impaired in their ability to identify sounds typically caused by mouth actions.",
+      "page_number": 7
+    },
+    {
+      "text_id": 109,
+      "section_id": 11,
+      "paragraph_id": 30,
+      "text": "This is consistent with the findings of Saygin, Wilson, Dronkers, and Bates (2004), who reported that aphasic patients with lesions in left PMC were impaired at a task requiring them to match pictures or names of actions to pictures of the objects used in the actions.",
+      "page_number": 7
+    },
+    {
+      "text_id": 110,
+      "section_id": 11,
+      "paragraph_id": 30,
+      "text": "Additionally, Moro et al. (2008) reported that patients with lesions in left PMC were specifically impaired at discrimination of bodily actions but not at discrimination of bodily identity.",
+      "page_number": 7
+    },
+    {
+      "text_id": 111,
+      "section_id": 11,
+      "paragraph_id": 31,
+      "text": "However, it must be noted that some other lesion studies have yielded contrasting results.",
+      "page_number": 7
+    },
+    {
+      "text_id": 112,
+      "section_id": 11,
+      "paragraph_id": 31,
+      "text": "For example, Buxbaum, Kyle, and Menon (2005) reported that apraxic patients with parietal lesions were impaired at gesture recognition, whereas apraxic patients with frontal lesions were not.",
+      "page_number": 7
+    },
+    {
+      "text_id": 113,
+      "section_id": 11,
+      "paragraph_id": 31,
+      "text": "Even more dramatically, Rapcsak, Ochipa, Anderson, and Poizner (1995) conducted a study of G. W., an apraxic patient with bilateral damage to the posterior-superior parietal lobes, who exhibited difficulties in producing pantomimes and in using actual objects but was flawless at recognizing pantomimed actions involving objects.",
+      "page_number": 7
+    },
+    {
+      "text_id": 114,
+      "section_id": 11,
+      "paragraph_id": 32,
+      "text": "Because apraxic patients may develop compensatory means of recognizing actions, it is not possible to infer from the negative findings in these latter studies that the mechanisms underlying action performance and action understanding overlap in normal, healthy individuals.",
+      "page_number": 7
+    },
+    {
+      "text_id": 115,
+      "section_id": 11,
+      "paragraph_id": 32,
+      "text": "It is therefore also important to consider the results of TMS studies.",
+      "page_number": 7
+    },
+    {
+      "text_id": 116,
+      "section_id": 11,
+      "paragraph_id": 32,
+      "text": "For example, Pobric and Hamilton (2006) demonstrated that virtual lesions created by on-line repetitive TMS (rTMS) over left inferior frontal gyrus (IFG) impaired participants' ability to estimate the weight of a box lifted by a person but not the weight of a bouncing ball.",
+      "page_number": 7
+    },
+    {
+      "text_id": 117,
+      "section_id": 11,
+      "paragraph_id": 32,
+      "text": "Also using rTMS to create virtual lesions in left IFG, Tidoni, Borgomaneri, di Pellegrino, and Avenanti (2013) found that participants were impaired in identifying videos of actions in which the actor was attempting to deceive them about the weight of an object, and Urgesi, Candidi, Ionta, and Aglioti (2006) reported that rTMS over left ventral PMC specifically impaired visual discrimination of actions but not visual discrimination of bodily identity.",
+      "page_number": 7
+    },
+    {
+      "text_id": 118,
+      "section_id": 11,
+      "paragraph_id": 32,
+      "text": "Additionally, using a novel TMS-adaptation paradigm,",
+      "page_number": 7
+    },
+    {
+      "text_id": 119,
+      "section_id": 11,
+      "paragraph_id": 33,
+      "text": "Cattaneo, Sandrini, and Schwarzbach (2010) found evidence that some neural populations in left ventral PMC encode the goals of perceived actions irrespective of the effector used.",
+      "page_number": 8
+    },
+    {
+      "text_id": 120,
+      "section_id": 11,
+      "paragraph_id": 34,
+      "text": "The present experiment also builds on these results in three respects.",
+      "page_number": 8
+    },
+    {
+      "text_id": 121,
+      "section_id": 11,
+      "paragraph_id": 34,
+      "text": "First, the use of off-line TMS complements earlier studies that used on-line TMS.",
+      "page_number": 8
+    },
+    {
+      "text_id": 122,
+      "section_id": 11,
+      "paragraph_id": 34,
+      "text": "It must be noted that TMS over frontal areas may induce contraction of facial muscles.",
+      "page_number": 8
+    },
+    {
+      "text_id": 123,
+      "section_id": 11,
+      "paragraph_id": 34,
+      "text": "Thus, there is a risk of participants being distracted during on-line TMS protocols.",
+      "page_number": 8
+    },
+    {
+      "text_id": 124,
+      "section_id": 11,
+      "paragraph_id": 34,
+      "text": "Although the aforementioned studies did incorporate matched control tasks or control stimulation sites to minimize the impact of muscular contraction, the present experiment further strengthens their results insofar as it firmly rules out this potential methodological problem.",
+      "page_number": 8
+    },
+    {
+      "text_id": 125,
+      "section_id": 11,
+      "paragraph_id": 35,
+      "text": "Second, the present experiment provides evidence that premotor regions contributing to action understanding and action production have a similar somatotopic organization and, thus, that the mechanisms for action understanding and action production overlap.",
+      "page_number": 8
+    },
+    {
+      "text_id": 126,
+      "section_id": 11,
+      "paragraph_id": 35,
+      "text": "However, it is important to acknowledge that the neural populations in PMC are not likely to be neatly segregated according to the effector that they encode.",
+      "page_number": 8
+    },
+    {
+      "text_id": 127,
+      "section_id": 11,
+      "paragraph_id": 35,
+      "text": "Indeed, there is evidence of neural populations involved in hand actions in more ventral regions of PMC (Jastorff, Begliomini, Fabbri-Destro, Rizzolatti, & Orban, 2010; Pobric & Hamilton, 2006; Urgesi et al., 2006).",
+      "page_number": 8
+    },
+    {
+      "text_id": 128,
+      "section_id": 11,
+      "paragraph_id": 35,
+      "text": "Moreover, as noted earlier, Cattaneo et al. (2010) found neural populations in PMC that encode actions in a manner that is not specific to the effector used.",
+      "page_number": 8
+    },
+    {
+      "text_id": 129,
+      "section_id": 11,
+      "paragraph_id": 35,
+      "text": "Nevertheless, our results strongly suggest that there are also neural populations in left PMC that specialize in encoding observed actions performed by particular effectors.",
+      "page_number": 8
+    },
+    {
+      "text_id": 130,
+      "section_id": 11,
+      "paragraph_id": 36,
+      "text": "Third, because the tasks employed here were specifically designed to probe three distinct aspects of action understanding, the results help to adjudicate among competing models of action understanding.",
+      "page_number": 8
+    },
+    {
+      "text_id": 131,
+      "section_id": 11,
+      "paragraph_id": 36,
+      "text": "Specifically, the results conflict with the inverse-modeling and priming models, which hold that activation of PMC during action observation is subsequent to—and does not play a causal role in—action understanding.",
+      "page_number": 8
+    },
+    {
+      "text_id": 132,
+      "section_id": 11,
+      "paragraph_id": 36,
+      "text": "Both the directmatching model and the predictive-coding model, in contrast, predict this pattern of findings and therefore gain support from our results.",
+      "page_number": 8
+    },
+    {
+      "text_id": 133,
+      "section_id": 11,
+      "paragraph_id": 37,
+      "text": "Given the absence of any three-way interaction of TMS site, video type, and complexity level (simple, intermediate, complex), our results do not permit any inferences about the hierarchical level at which premotor regions contribute to action understanding (i.e., whether these areas specifically encode low-level kinematics, proximal goals, or distal goals).",
+      "page_number": 8
+    },
+    {
+      "text_id": 134,
+      "section_id": 11,
+      "paragraph_id": 37,
+      "text": "One possibility is that the areas we targeted encode low-level kinematic information about observed movements and that this kinematic information is relevant for tasks of varying complexity.",
+      "page_number": 8
+    },
+    {
+      "text_id": 135,
+      "section_id": 11,
+      "paragraph_id": 37,
+      "text": "A follow-up experiment may address this issue by investigating the impact of cTBS on a task in which contextual information is even more crucial than in the complex block of our experiment (e.g., for atypical actions).",
+      "page_number": 8
+    },
+    {
+      "text_id": 136,
+      "section_id": 11,
+      "paragraph_id": 37,
+      "text": "One might speculate that as contextual information becomes more important and low-level kinematic information less important, the contribution of PMC might decrease and, thus, the impact of cTBS over PMC might diminish.",
+      "page_number": 8
+    },
+    {
+      "text_id": 137,
+      "section_id": 11,
+      "paragraph_id": 38,
+      "text": "In sum, our results provide evidence that somatotopically organized regions of PMC contribute causally to action understanding and, thus, that the mechanisms underpinning action understanding overlap with those underpinning action performance.",
+      "page_number": 8
+    },
+    {
+      "text_id": 138,
+      "section_id": 11,
+      "paragraph_id": 38,
+      "text": "However, these findings do not uniquely support any particular hypothesis about the specific mechanisms by which the neural populations in PMC contribute to action understanding, that is, whether direct matching, predictive coding, somatotopical organization of working memory for observed actions, or some other model best describes the functional mechanism that these neural populations instantiate.",
+      "page_number": 8
+    },
+    {
+      "text_id": 139,
+      "section_id": 12,
+      "paragraph_id": 39,
+      "text": "J. Michael, K. Sandberg, M. Overgaard, and C. D. Frith developed the study concept.",
+      "page_number": 8
+    },
+    {
+      "text_id": 140,
+      "section_id": 12,
+      "paragraph_id": 39,
+      "text": "J. Michael, K. Sandberg, M. Overgaard, T. Wolf, and C. D. Frith designed the study.",
+      "page_number": 8
+    },
+    {
+      "text_id": 141,
+      "section_id": 12,
+      "paragraph_id": 39,
+      "text": "Testing and data collection were performed by J. Michael, J. Blicher, and K. Sandberg.",
+      "page_number": 8
+    },
+    {
+      "text_id": 142,
+      "section_id": 12,
+      "paragraph_id": 39,
+      "text": "The data were analyzed and interpreted by J. Skewes, J. Michael, T. Wolf, K. Sandberg, and M. Overgaard.",
+      "page_number": 8
+    },
+    {
+      "text_id": 143,
+      "section_id": 12,
+      "paragraph_id": 39,
+      "text": "J. Michael drafted the manuscript.",
+      "page_number": 8
+    },
+    {
+      "text_id": 144,
+      "section_id": 12,
+      "paragraph_id": 39,
+      "text": "All other authors provided critical revisions.",
+      "page_number": 8
+    },
+    {
+      "text_id": 145,
+      "section_id": 12,
+      "paragraph_id": 39,
+      "text": "All authors approved the final version of the manuscript for submission.",
+      "page_number": 8
+    },
+    {
+      "text_id": 146,
+      "section_id": 13,
+      "paragraph_id": 40,
+      "text": "The project could not have been completed without the generous support and advice of Alessandro D'Aussilio and Luciano Fadiga.",
+      "page_number": 8
+    },
+    {
+      "text_id": 147,
+      "section_id": 13,
+      "paragraph_id": 40,
+      "text": "We also thank three anonymous reviewers, as well as Chris Bailey, Torben Lund, Dora Zeidler, and Michael Geneser for their helpful input.",
+      "page_number": 8
+    },
+    {
+      "text_id": 148,
+      "section_id": 14,
+      "paragraph_id": 41,
+      "text": "The authors declared that they had no conflicts of interest with respect to their authorship or the publication of this article.",
+      "page_number": 8
+    },
+    {
+      "text_id": 149,
+      "section_id": 15,
+      "paragraph_id": 42,
+      "text": "J. Michael was supported by a grant from the European Cooperation in Science and Technology Short-Term Scientific Mission BM0605-8202.",
+      "page_number": 8
+    },
+    {
+      "text_id": 150,
+      "section_id": 15,
+      "paragraph_id": 42,
+      "text": "M. Overgaard and K. Sandberg were supported by a starting grant from the European Research Council.",
+      "page_number": 8
+    },
+    {
+      "text_id": 151,
+      "section_id": 16,
+      "paragraph_id": 43,
+      "text": "Basso, A., Capitani, E., Della Sala, S., Laiacona, M., & Spinnler, H. (1987). Recovery from ideomotor apraxia: A study on acute stroke patients. Brain, 110, 747-760.",
+      "page_number": 8
+    },
+    {
+      "text_id": 152,
+      "section_id": 16,
+      "paragraph_id": 44,
+      "text": "Buccino, G., Binkofski, F., Fink, G. R., Fadiga, L., Fogassi, L., Gallese, V., . . Freund, H. J. (2001). Action observation activates premotor and parietal areas in a somatotopic manner: An fMRI study. European Journal of Neuroscience, 13, 400-404.",
+      "page_number": 9
+    },
+    {
+      "text_id": 153,
+      "section_id": 16,
+      "paragraph_id": 45,
+      "text": "Buxbaum, L. J., Kyle, K. M., & Menon, R. (2005). On beyond mirror neurons: Internal representations subserving imitation and recognition of skilled object-related actions in humans. Cognitive Brain Research, 25, 226-239.",
+      "page_number": 9
+    },
+    {
+      "text_id": 154,
+      "section_id": 16,
+      "paragraph_id": 46,
+      "text": "Cattaneo, L., Sandrini, M., & Schwarzbach, J. (2010). Statedependent TMS reveals a hierarchical representation of observed acts in the temporal, parietal, and premotor cortices. Cerebral Cortex, 20, 2252-2258.",
+      "page_number": 9
+    },
+    {
+      "text_id": 155,
+      "section_id": 16,
+      "paragraph_id": 47,
+      "text": "Chen, R., Tam, A., Butefisch, C., Corwell, B., Ziemann, U., Rothwell, J. C., & Cohen, L. G. (1998). Intracortical inhibition and facilitation in different representations of the human motor cortex. Journal of Neurophysiology, 80, 2870- 2881.",
+      "page_number": 9
+    },
+    {
+      "text_id": 156,
+      "section_id": 16,
+      "paragraph_id": 48,
+      "text": "Cook, R., Bird, G., Catmur, C., Press, C., & Heyes, C. M. (in press). Mirror neurons: From origin to function. Behavioral & Brain Sciences.",
+      "page_number": 9
+    },
+    {
+      "text_id": 157,
+      "section_id": 16,
+      "paragraph_id": 49,
+      "text": "Csibra, G. (2008). Action mirroring and action understanding: An alternative account. In P. Haggard, Y. Rossetti, & M. Kawato (Eds.), Sensorimotor foundation of higher cognition: Attention and performance (pp. 435-458). Oxford, England: Oxford University Press.",
+      "page_number": 9
+    },
+    {
+      "text_id": 158,
+      "section_id": 16,
+      "paragraph_id": 50,
+      "text": "di Pellegrino, G., Fadiga, L., Fogassi, L., Gallese, V., & Rizzolatti, G. (1992). Understanding motor events: A neurophysiological study. Experimental Brain Research, 91, 176-180.",
+      "page_number": 9
+    },
+    {
+      "text_id": 159,
+      "section_id": 16,
+      "paragraph_id": 51,
+      "text": "Frith, C. D., & Singer, T. (2008). The role of social cognition in decision making. Philosophical Transactions of the Royal Society B: Biological Sciences, 363, 3875-3886.",
+      "page_number": 9
+    },
+    {
+      "text_id": 160,
+      "section_id": 16,
+      "paragraph_id": 52,
+      "text": "Gallese, V., Fadiga, L., Fogassi, L., & Rizzolatti, G. (1996). Action recognition in the premotor cortex. Brain, 119, 593-609.",
+      "page_number": 9
+    },
+    {
+      "text_id": 161,
+      "section_id": 16,
+      "paragraph_id": 53,
+      "text": "Gallese, V., Keysers, C., & Rizzolatti, G. (2004). A unifying view of the basis of social cognition. Trends in Cognitive Sciences, 8, 396-403.",
+      "page_number": 9
+    },
+    {
+      "text_id": 162,
+      "section_id": 16,
+      "paragraph_id": 54,
+      "text": "Gazzola, V., & Keysers, C. (2009). The observation and execution of actions share motor and somatosensory voxels in all tested subjects: Single-subject analyses of unsmoothed fMRI data. Cerebral Cortex, 19, 1239-1255.",
+      "page_number": 9
+    },
+    {
+      "text_id": 163,
+      "section_id": 16,
+      "paragraph_id": 55,
+      "text": "Gentilucci, M., Fogassi, L., Luppino, G., Matelli, M., Camarda, R., & Rizzolatti, G. (1988). Functional organization of inferior area 6 in the macaque monkey: I. Somatotopy and the control of proximal movements. Experimental Brain Research, 71, 475-490.",
+      "page_number": 9
+    },
+    {
+      "text_id": 164,
+      "section_id": 16,
+      "paragraph_id": 56,
+      "text": "Gentner, R., Wankerl, K., Reinsberger, C., Zeller, D., & Classen, J. (2008). Depression of human corticospinal excitability induced by magnetic theta-burst stimulation: Evidence of rapid polarity-reversing metaplasticity. Cerebral Cortex, 18, 2046-2053.",
+      "page_number": 9
+    },
+    {
+      "text_id": 165,
+      "section_id": 16,
+      "paragraph_id": 57,
+      "text": "Godschalk, M., Mitz, A. R., van Duin, B., & van der Burg, H. (1995). Somatotopy of monkey premotor cortex examined with microstimulation. Neuroscience Research, 23, 269-279.",
+      "page_number": 9
+    },
+    {
+      "text_id": 166,
+      "section_id": 16,
+      "paragraph_id": 58,
+      "text": "Hamilton, A., & Grafton, S. (2007). The motor hierarchy: From kinematics to goals and intentions. In P. Haggard, Y. Rossetti, & M. Kawato (Eds.), Sensorimotor foundations of higher cognition: Attention and performance (pp. 381- 408). Oxford, England: Oxford University Press.",
+      "page_number": 9
+    },
+    {
+      "text_id": 167,
+      "section_id": 16,
+      "paragraph_id": 59,
+      "text": "Hauk, O., Johnsrude, I., & Pulvermüller, F. (2004). Somatotopic representation of action words in the motor and premotor cortex. Neuron, 41, 301-307.",
+      "page_number": 9
+    },
+    {
+      "text_id": 168,
+      "section_id": 16,
+      "paragraph_id": 60,
+      "text": "Hickok, G. (2009). Eight problems for the mirror neuron theory of action understanding in monkeys and humans. Journal of Cognitive Neuroscience, 21, 1229-1243.",
+      "page_number": 9
+    },
+    {
+      "text_id": 169,
+      "section_id": 16,
+      "paragraph_id": 61,
+      "text": "Huang, Y. Z., Edwards, M. J., Rounis, E., Bhatia, K. P., & Rothwell, J. C. (2005). Theta burst stimulation of the human motor cortex. Neuron, 45, 201-206.",
+      "page_number": 9
+    },
+    {
+      "text_id": 170,
+      "section_id": 16,
+      "paragraph_id": 62,
+      "text": "Huang, Y. Z., Rothwell, J. C., Lu, C. S., Wang, J., Weng, Y. H., Lai, S. C., & Chen, R. S. (2009). The effect of continuous theta burst stimulation over premotor cortex on circuits in primary motor cortex and spinal cord. Clinical Neurophysiology, 120, 796-801.",
+      "page_number": 9
+    },
+    {
+      "text_id": 171,
+      "section_id": 16,
+      "paragraph_id": 63,
+      "text": "Iacoboni, M., Molnar-Szakacs, I., Gallese, V., Buccino, G., Mazziotta, J. C., & Rizzolatti, G. (2005). Grasping the intentions of others with one's own mirror neuron system. PLoS Biology, 3, 529-535. Retrieved from http://www.plosbiology.org/article/info%3Adoi%2F10.1371%2Fjournal.pbio.0030079",
+      "page_number": 9
+    },
+    {
+      "text_id": 172,
+      "section_id": 16,
+      "paragraph_id": 64,
+      "text": "Jastorff, J., Begliomini, C., Fabbri-Destro, M., Rizzolatti, G., & Orban, G. (2010). Coding observed motor acts: Different organizational principles in parietal and premotor cortex of humans. Journal of Neurophysiology, 104, 128-140.",
+      "page_number": 9
+    },
+    {
+      "text_id": 173,
+      "section_id": 16,
+      "paragraph_id": 65,
+      "text": "Kilner, J., Friston, K., & Frith, C. (2007). Predictive coding: An account of the mirror neuron system. Cognitive Processing, 8, 159-166.",
+      "page_number": 9
+    },
+    {
+      "text_id": 174,
+      "section_id": 16,
+      "paragraph_id": 66,
+      "text": "Kilner, J., Neal, A., Weiskopf, N., Friston, K., & Frith, C. (2009). Evidence of mirror neurons in human inferior frontal gyrus. The Journal of Neuroscience, 29, 10153-10159.",
+      "page_number": 9
+    },
+    {
+      "text_id": 175,
+      "section_id": 16,
+      "paragraph_id": 67,
+      "text": "Kroeger, J., Bäumer, T., Jonas, M., Rothwell, J., Siebner, H., & Münchau, A. (2010). Charting the excitability of premotor to motor connections while withholding or initiating a selected movement. European Journal of Neuroscience, 32, 1771-1779.",
+      "page_number": 9
+    },
+    {
+      "text_id": 176,
+      "section_id": 16,
+      "paragraph_id": 68,
+      "text": "Marquardt, T., & Sussman, H. (1984). The elusive lesion-apraxia of speech link in Broca's aphasia. In J. C. Rosenbek, M. R. McNeil, & A. E. Aronson (Eds.), Apraxia of speech: Physiology, acoustics, linguistics, management (pp. 91- 112). San Diego, CA: College-Hill Press.",
+      "page_number": 9
+    },
+    {
+      "text_id": 177,
+      "section_id": 16,
+      "paragraph_id": 69,
+      "text": "Moro, V., Urgesi, C., Pernigo, S., Lanteri, P., Pazzaglia, M., & Aglioti, S. M. (2008). The neural basis of body form and body action agnosia. Neuron, 60, 235-246.",
+      "page_number": 9
+    },
+    {
+      "text_id": 178,
+      "section_id": 16,
+      "paragraph_id": 70,
+      "text": "Mukamel, R., Ekstrom, A. D., Kaplan, J., Iacoboni, M., & Fried, I. (2010). Single-neuron responses in humans during execution and observation of actions. Current Biology, 20, 750-756.",
+      "page_number": 9
+    },
+    {
+      "text_id": 179,
+      "section_id": 16,
+      "paragraph_id": 71,
+      "text": "Munchau, A., Bloem, B. R., Irlbacher, K., Trimble, M. R., & Rothwell, J. C. (2002). Functional connectivity of human premotor and motor cortex explored with repetitive transcranial magnetic stimulation. The Journal of Neuroscience, 22, 554-561.",
+      "page_number": 9
+    },
+    {
+      "text_id": 180,
+      "section_id": 16,
+      "paragraph_id": 72,
+      "text": "Pazzaglia, M., Smania, N., Corato, E., & Aglioti, S. M. (2008). Neural underpinnings of gesture discrimination in patients with limb apraxia. The Journal of Neuroscience, 28, 3030- 3041.",
+      "page_number": 9
+    },
+    {
+      "text_id": 181,
+      "section_id": 16,
+      "paragraph_id": 73,
+      "text": "Pobric, G., & Hamilton, A. (2006). Action understanding requires the left inferior frontal cortex. Current Biology, 16, 524-529.",
+      "page_number": 9
+    },
+    {
+      "text_id": 182,
+      "section_id": 16,
+      "paragraph_id": 74,
+      "text": "Rapcsak, S. Z., Ochipa, C., Anderson, K. C., & Poizner, H. (1995). Progressive ideomotor apraxia: Evidence for a selective impairment of the action production system. Brain and Cognition, 27, 213-236.",
+      "page_number": 10
+    },
+    {
+      "text_id": 183,
+      "section_id": 16,
+      "paragraph_id": 75,
+      "text": "Rizzolatti, G., Camarda, R., Fogassi, L., Gentilucci, M., Luppino, G., & Matelli, M. (1988). Functional organization of inferior area 6 in the macaque monkey: II. Area F5 and the control of distal movements. Experimental Brain Research, 71, 491-507.",
+      "page_number": 10
+    },
+    {
+      "text_id": 184,
+      "section_id": 16,
+      "paragraph_id": 76,
+      "text": "Rizzolatti, G., & Craighero, L. (2004). The mirror-neuron system. Annual Review of Neuroscience, 27, 169-192.",
+      "page_number": 10
+    },
+    {
+      "text_id": 185,
+      "section_id": 16,
+      "paragraph_id": 77,
+      "text": "Rizzolatti, G., Fadiga, L., Gallese, V., & Fogassi, L. (1996). Premotor cortex and the recognition of motor actions. Cognitive Brain Research, 3, 131-141.",
+      "page_number": 10
+    },
+    {
+      "text_id": 186,
+      "section_id": 16,
+      "paragraph_id": 78,
+      "text": "Saygin, A. P., Wilson, S. M., Dronkers, N. F., & Bates, E. (2004). Action comprehension in aphasia: Linguistic and nonlinguistic deficits and their lesion correlates. Neuropsychologia, 42, 1788-1804.",
+      "page_number": 10
+    },
+    {
+      "text_id": 187,
+      "section_id": 16,
+      "paragraph_id": 79,
+      "text": "Schneider, W., Eschman, A., & Zuccolotto, A. (2001). E-Prime user's guide. Pittsburgh, PA: Psychology Software Tools.",
+      "page_number": 10
+    },
+    {
+      "text_id": 188,
+      "section_id": 16,
+      "paragraph_id": 80,
+      "text": "Schubotz, R., & von Cramon, Y. (2003). Functional-anatomical concepts of human premotor cortex: Evidence from fMRI and PET studies. NeuroImage, 20, S120-S131.",
+      "page_number": 10
+    },
+    {
+      "text_id": 189,
+      "section_id": 16,
+      "paragraph_id": 81,
+      "text": "Tidoni, E., Borgomaneri, S., di Pellegrino, G., & Avenanti, A. (2013). Action simulation plays a critical role in deceptive action recognition. The Journal of Neuroscience, 33, 611-623.",
+      "page_number": 10
+    },
+    {
+      "text_id": 190,
+      "section_id": 16,
+      "paragraph_id": 82,
+      "text": "Urgesi, C., Candidi, M., Ionta, S., & Aglioti, S. (2006). Representation of body identity and body actions in extrastriate body area and ventral premotor cortex. Nature Neuroscience, 10, 30-31.",
+      "page_number": 10
+    },
+    {
+      "text_id": 191,
+      "section_id": 16,
+      "paragraph_id": 83,
+      "text": "Vogt, S., Buccino, G., Wohlschlager, A. M., Canessa, N., Shah, N. J., Zilles, K., . . Fink, G. R. (2007). Prefrontal involvement in imitation learning of hand actions: Effects of practice and expertise. NeuroImage, 37, 1371-1383.",
+      "page_number": 10
+    },
+    {
+      "text_id": 192,
+      "section_id": 17,
+      "paragraph_id": 84,
+      "text": "Fig.1. Example trial sequence for each complexity level. On each trial, an image depicting the context for a subsequent video was displayed for 1,000 ms, followed by a black fixation cross, then the video of a pantomimed action. Participants next saw a response screen, on which three static images were displayed for 4 s or until a response was given. In the simple block, participants chose which one of the three images was a still frame from the action video they had just seen. In the intermediate block, participants were asked to choose the object that best complemented the action pantomimed. The complex block differed from the intermediate block only in that two of the objects on the response screen complemented the action video but only one complemented the context, thus making it necessary for participants to draw on contextual information as well as to observe the pantomimed action in order to choose the correct object. In all three examples depicted here, the correct response was the image on the left.",
+      "page_number": 3
+    },
+    {
+      "text_id": 193,
+      "section_id": 18,
+      "paragraph_id": 85,
+      "text": "Fig. 2. Stimulation sites for 1 participant. The crosshairs in (a) and (b) mark the hand area and lip area, respectively, in premotor cortex (PMC) that were stimulated in this participant. The images were used to create a 3-D brain model, depicted in the bottom row, to be utilized in conjunction with the navigation system. In (c), the hand area is at the crosshair, and in (d), the lip area is at the crosshair. The marker illustrates the position and orientation of the coil during cTBS. L = left, R = right.",
+      "page_number": 5
+    },
+    {
+      "text_id": 194,
+      "section_id": 22,
+      "paragraph_id": 86,
+      "text": "Fig. 3. Mean hit rate as a function of the action depicted in the video and the area of premotor cortex over which participants received transcranial magnetic stimulation (TMS). Results are shown separately for each complexity level. Error bars represent standard deviations.",
+      "page_number": 7
+    },
+    {
+      "text_id": 195,
+      "section_id": 23,
+      "paragraph_id": 87,
+      "text": "Table 1. Example Stimuli for Hand- and Mouth-Action Trials in the Intermediate and Complex Blocks",
+      "page_number": 4
+    },
+    {
+      "text_id": 196,
+      "section_id": 24,
+      "paragraph_id": 88,
+      "text": "Note: On all trials, participants saw an image that provided context for a subsequent video, followed by the video itself; the video depicted either a hand or a mouth action. Participants were then shown three new images, from which they had to choose the one that best complemented the video. The correct response is shown here in boldface. For the intermediate trials, only one of the response options fit the action video, thus rendering the context image superfluous. For the complex trials, a second response option (shown here in italics) fit the action video but not the context, whereas the third response option fit the context but not the action, thus making it necessary to integrate the context image and the action video in order to choose correctly.",
+      "page_number": 4
+    }
+  ],
+  "section": [
+    {
+      "section_id": 1,
+      "header": "Continuous Theta-Burst Stimulation Demonstrates a Causal Role of Premotor Homunculus in Action Understanding",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 2,
+      "header": "Abstract",
+      "parent_section_id": 1,
+      "section_type": "abstract",
+      "classification_score": 1
+    },
+    {
+      "section_id": 3,
+      "header": "Keywords",
+      "parent_section_id": 1,
+      "section_type": "unknown",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 4,
+      "header": "Method",
+      "parent_section_id": 1,
+      "section_type": "method",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 5,
+      "header": "Participants",
+      "parent_section_id": 1,
+      "section_type": "method",
+      "classification_score": 1
+    },
+    {
+      "section_id": 6,
+      "header": "Procedure",
+      "parent_section_id": 1,
+      "section_type": "method",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 7,
+      "header": "Stimuli",
+      "parent_section_id": 1,
+      "section_type": "method",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 8,
+      "header": "Data acquisition",
+      "parent_section_id": 1,
+      "section_type": "method",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 9,
+      "header": "Localization",
+      "parent_section_id": 1,
+      "section_type": "method",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 10,
+      "header": "Results",
+      "parent_section_id": 1,
+      "section_type": "results",
+      "classification_score": 1
+    },
+    {
+      "section_id": 11,
+      "header": "Discussion",
+      "parent_section_id": 1,
+      "section_type": "discussion",
+      "classification_score": 1
+    },
+    {
+      "section_id": 12,
+      "header": "Author Contributions",
+      "parent_section_id": 1,
+      "section_type": "acknowledgment",
+      "classification_score": 1
+    },
+    {
+      "section_id": 13,
+      "header": "Acknowledgments",
+      "parent_section_id": 1,
+      "section_type": "acknowledgment",
+      "classification_score": 1
+    },
+    {
+      "section_id": 14,
+      "header": "Declaration of Conflicting Interests",
+      "parent_section_id": 1,
+      "section_type": "acknowledgment",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 15,
+      "header": "Funding",
+      "parent_section_id": 1,
+      "section_type": "funding",
+      "classification_score": 1
+    },
+    {
+      "section_id": 16,
+      "header": "References",
+      "parent_section_id": 1,
+      "section_type": "references",
+      "classification_score": 1
+    },
+    {
+      "section_id": 17,
+      "header": "Figure 1",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 18,
+      "header": "Figure 2",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 19,
+      "header": "Figure 3",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 20,
+      "header": "Figure 4",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 21,
+      "header": "Figure 5",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 22,
+      "header": "Figure 6",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 23,
+      "header": "Table 1",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0.85
+    },
+    {
+      "section_id": 24,
+      "header": "Footnote 1",
+      "parent_section_id": null,
+      "section_type": "footnote",
+      "classification_score": 0.85
+    }
+  ],
+  "url": [
+    {
+      "href": "http://www.plosbiology.org/article/info%3Adoi%2F10.1371%2Fjournal.pbio.0030079",
+      "link_text": null,
+      "text_id": 171
+    }
+  ],
+  "bib": [
+    {
+      "bib_id": 1,
+      "title": "Recovery from ideomotor apraxia: A study on acute stroke patients",
+      "first_page": "747",
+      "volume": "110",
+      "authors": ["Basso, A.", "Capitani, E.", "Della Sala, S.", "Laiacona, M.", "Spinnler, H."],
+      "container": "Brain",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 151,
+      "last_page": "760",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1987,
+      "date": null
+    },
+    {
+      "bib_id": 2,
+      "title": "Action observation activates premotor and parietal areas in a somatotopic manner: An fMRI study",
+      "first_page": "400",
+      "volume": "13",
+      "authors": "Freund, H. J.",
+      "container": "European Journal of Neuroscience",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 152,
+      "last_page": "404",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2001,
+      "date": null
+    },
+    {
+      "bib_id": 3,
+      "title": "On beyond mirror neurons: Internal representations subserving imitation and recognition of skilled object-related actions in humans",
+      "first_page": "226",
+      "volume": "25",
+      "authors": ["Buxbaum, L. J.", "Kyle, K. M.", "Menon, R."],
+      "container": "Cognitive Brain Research",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 153,
+      "last_page": "239",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2005,
+      "date": null
+    },
+    {
+      "bib_id": 4,
+      "title": "Statedependent TMS reveals a hierarchical representation of observed acts in the temporal, parietal, and premotor cortices",
+      "first_page": "2252",
+      "volume": "20",
+      "authors": ["Cattaneo, L.", "Sandrini, M.", "Schwarzbach, J."],
+      "container": "Cerebral Cortex",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 154,
+      "last_page": "2258",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2010,
+      "date": null
+    },
+    {
+      "bib_id": 5,
+      "title": "Intracortical inhibition and facilitation in different representations of the human motor cortex",
+      "first_page": "2870",
+      "volume": "80",
+      "authors": ["Chen, R.", "Tam, A.", "Butefisch, C.", "Corwell, B.", "Ziemann, U.", "Rothwell, J. C.", "Cohen, L. G."],
+      "container": "Journal of Neurophysiology",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 155,
+      "last_page": "2881",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1998,
+      "date": null
+    },
+    {
+      "bib_id": 6,
+      "title": "Mirror neurons: From origin to function",
+      "first_page": null,
+      "volume": null,
+      "authors": ["Cook, R.", "Bird, G.", "Catmur, C.", "Press, C.", "Heyes, C. M."],
+      "container": "Behavioral & Brain Sciences",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 156,
+      "last_page": null,
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": null,
+      "date": null
+    },
+    {
+      "bib_id": 7,
+      "title": "Action mirroring and action understanding: An alternative account",
+      "first_page": "435",
+      "volume": null,
+      "authors": "Csibra, G.",
+      "container": "Sensorimotor foundation of higher cognition: Attention and performance",
+      "doi": null,
+      "bib_type": "book_chapter",
+      "text_id": 157,
+      "last_page": "458",
+      "issue": null,
+      "editors": ["Haggard, P.", "Rossetti, Y.", "Kawato, M."],
+      "publisher": "Oxford University Press",
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": null,
+      "date": null
+    },
+    {
+      "bib_id": 8,
+      "title": "Understanding motor events: A neurophysiological study",
+      "first_page": "176",
+      "volume": "91",
+      "authors": ["di Pellegrino, G.", "Fadiga, L.", "Fogassi, L.", "Gallese, V.", "Rizzolatti, G."],
+      "container": "Experimental Brain Research",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 158,
+      "last_page": "180",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1992,
+      "date": null
+    },
+    {
+      "bib_id": 9,
+      "title": "The role of social cognition in decision making",
+      "first_page": "3875",
+      "volume": "363",
+      "authors": ["Frith, C. D.", "Singer, T."],
+      "container": "Philosophical Transactions of the Royal Society B: Biological Sciences",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 159,
+      "last_page": "3886",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2008,
+      "date": null
+    },
+    {
+      "bib_id": 10,
+      "title": "Action recognition in the premotor cortex",
+      "first_page": "593",
+      "volume": "119",
+      "authors": ["Gallese, V.", "Fadiga, L.", "Fogassi, L.", "Rizzolatti, G."],
+      "container": "Brain",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 160,
+      "last_page": "609",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1996,
+      "date": null
+    },
+    {
+      "bib_id": 11,
+      "title": "A unifying view of the basis of social cognition",
+      "first_page": "396",
+      "volume": "8",
+      "authors": ["Gallese, V.", "Keysers, C.", "Rizzolatti, G."],
+      "container": "Trends in Cognitive Sciences",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 161,
+      "last_page": "403",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2004,
+      "date": null
+    },
+    {
+      "bib_id": 12,
+      "title": "The observation and execution of actions share motor and somatosensory voxels in all tested subjects: Single-subject analyses of unsmoothed fMRI data",
+      "first_page": "1239",
+      "volume": "19",
+      "authors": ["Gazzola, V.", "Keysers, C."],
+      "container": "Cerebral Cortex",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 162,
+      "last_page": "1255",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2009,
+      "date": null
+    },
+    {
+      "bib_id": 13,
+      "title": "Functional organization of inferior area 6 in the macaque monkey: I. Somatotopy and the control of proximal movements",
+      "first_page": "475",
+      "volume": "71",
+      "authors": ["Gentilucci, M.", "Fogassi, L.", "Luppino, G.", "Matelli, M.", "Camarda, R.", "Rizzolatti, G."],
+      "container": "Experimental Brain Research",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 163,
+      "last_page": "490",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1988,
+      "date": null
+    },
+    {
+      "bib_id": 14,
+      "title": "Depression of human corticospinal excitability induced by magnetic theta-burst stimulation: Evidence of rapid polarity-reversing metaplasticity",
+      "first_page": "2046",
+      "volume": "18",
+      "authors": ["Gentner, R.", "Wankerl, K.", "Reinsberger, C.", "Zeller, D.", "Classen, J."],
+      "container": "Cerebral Cortex",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 164,
+      "last_page": "2053",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2008,
+      "date": null
+    },
+    {
+      "bib_id": 15,
+      "title": "Somatotopy of monkey premotor cortex examined with microstimulation",
+      "first_page": "269",
+      "volume": "23",
+      "authors": ["Godschalk, M.", "Mitz, A. R.", "van Duin, B.", "van der Burg, H."],
+      "container": "Neuroscience Research",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 165,
+      "last_page": "279",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1995,
+      "date": null
+    },
+    {
+      "bib_id": 16,
+      "title": "The motor hierarchy: From kinematics to goals and intentions",
+      "first_page": "381",
+      "volume": null,
+      "authors": ["Hamilton, A.", "Grafton, S."],
+      "container": "Sensorimotor foundations of higher cognition: Attention and performance",
+      "doi": null,
+      "bib_type": "book_chapter",
+      "text_id": 166,
+      "last_page": "408",
+      "issue": null,
+      "editors": ["Haggard, P.", "Rossetti, Y.", "Kawato, M."],
+      "publisher": "Oxford University Press",
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2007,
+      "date": null
+    },
+    {
+      "bib_id": 17,
+      "title": "Somatotopic representation of action words in the motor and premotor cortex",
+      "first_page": "301",
+      "volume": "41",
+      "authors": ["Hauk, O.", "Johnsrude, I.", "Pulvermüller, F."],
+      "container": "Neuron",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 167,
+      "last_page": "307",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2004,
+      "date": null
+    },
+    {
+      "bib_id": 18,
+      "title": "Eight problems for the mirror neuron theory of action understanding in monkeys and humans",
+      "first_page": "1229",
+      "volume": "21",
+      "authors": "Hickok, G.",
+      "container": "Journal of Cognitive Neuroscience",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 168,
+      "last_page": "1243",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2009,
+      "date": null
+    },
+    {
+      "bib_id": 19,
+      "title": "Theta burst stimulation of the human motor cortex",
+      "first_page": "201",
+      "volume": "45",
+      "authors": ["Huang, Y. Z.", "Edwards, M. J.", "Rounis, E.", "Bhatia, K. P.", "Rothwell, J. C."],
+      "container": "Neuron",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 169,
+      "last_page": "206",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2005,
+      "date": null
+    },
+    {
+      "bib_id": 20,
+      "title": "The effect of continuous theta burst stimulation over premotor cortex on circuits in primary motor cortex and spinal cord.",
+      "first_page": "796",
+      "volume": "120",
+      "authors": ["Huang, Y. Z.", "Rothwell, J. C.", "Lu, C. S.", "Wang, J.", "Weng, Y. H.", "Lai, S. C.", "Chen, R. S."],
+      "container": "Clinical Neurophysiology",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 170,
+      "last_page": "801",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2009,
+      "date": null
+    },
+    {
+      "bib_id": 21,
+      "title": "Grasping the intentions of others with one's own mirror neuron system.",
+      "first_page": "529",
+      "volume": "3",
+      "authors": ["Iacoboni, M.", "Molnar-Szakacs, I.", "Gallese, V.", "Buccino, G.", "Mazziotta, J. C.", "Rizzolatti, G."],
+      "container": "PLoS Biology",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 171,
+      "last_page": "535",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2005,
+      "date": null
+    },
+    {
+      "bib_id": 22,
+      "title": "Coding observed motor acts: Different organizational principles in parietal and premotor cortex of humans.",
+      "first_page": "128",
+      "volume": "104",
+      "authors": ["Jastorff, J.", "Begliomini, C.", "Fabbri-Destro, M.", "Rizzolatti, G.", "Orban, G."],
+      "container": "Journal of Neurophysiology",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 172,
+      "last_page": "140",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2010,
+      "date": null
+    },
+    {
+      "bib_id": 23,
+      "title": "Predictive coding: An account of the mirror neuron system.",
+      "first_page": "159",
+      "volume": "8",
+      "authors": ["Kilner, J.", "Friston, K.", "Frith, C."],
+      "container": "Cognitive Processing",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 173,
+      "last_page": "166",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2007,
+      "date": null
+    },
+    {
+      "bib_id": 24,
+      "title": "Evidence of mirror neurons in human inferior frontal gyrus.",
+      "first_page": "10153",
+      "volume": "29",
+      "authors": ["Kilner, J.", "Neal, A.", "Weiskopf, N.", "Friston, K.", "Frith, C."],
+      "container": "The Journal of Neuroscience",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 174,
+      "last_page": "10159",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2009,
+      "date": null
+    },
+    {
+      "bib_id": 25,
+      "title": "Charting the excitability of premotor to motor connections while withholding or initiating a selected movement.",
+      "first_page": "1771",
+      "volume": "32",
+      "authors": ["Kroeger, J.", "Bäumer, T.", "Jonas, M.", "Rothwell, J.", "Siebner, H.", "Münchau, A."],
+      "container": "European Journal of Neuroscience",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 175,
+      "last_page": "1779",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2010,
+      "date": null
+    },
+    {
+      "bib_id": 26,
+      "title": "The elusive lesion-apraxia of speech link in Broca's aphasia.",
+      "first_page": "91",
+      "volume": null,
+      "authors": ["Marquardt, T.", "Sussman, H."],
+      "container": "Apraxia of speech: Physiology, acoustics, linguistics, management",
+      "doi": null,
+      "bib_type": "book_chapter",
+      "text_id": 176,
+      "last_page": "112",
+      "issue": null,
+      "editors": ["Rosenbek, J. C.", "McNeil, M. R.", "Aronson, A. E."],
+      "publisher": "College-Hill Press",
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1984,
+      "date": null
+    },
+    {
+      "bib_id": 27,
+      "title": "The neural basis of body form and body action agnosia.",
+      "first_page": "235",
+      "volume": "60",
+      "authors": ["Moro, V.", "Urgesi, C.", "Pernigo, S.", "Lanteri, P.", "Pazzaglia, M.", "Aglioti, S. M."],
+      "container": "Neuron",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 177,
+      "last_page": "246",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2008,
+      "date": null
+    },
+    {
+      "bib_id": 28,
+      "title": "Single-neuron responses in humans during execution and observation of actions.",
+      "first_page": "750",
+      "volume": "20",
+      "authors": ["Mukamel, R.", "Ekstrom, A. D.", "Kaplan, J.", "Iacoboni, M.", "Fried, I."],
+      "container": "Current Biology",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 178,
+      "last_page": "756",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2010,
+      "date": null
+    },
+    {
+      "bib_id": 29,
+      "title": "Functional connectivity of human premotor and motor cortex explored with repetitive transcranial magnetic stimulation.",
+      "first_page": "554",
+      "volume": "22",
+      "authors": ["Munchau, A.", "Bloem, B. R.", "Irlbacher, K.", "Trimble, M. R.", "Rothwell, J. C."],
+      "container": "The Journal of Neuroscience",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 179,
+      "last_page": "561",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2002,
+      "date": null
+    },
+    {
+      "bib_id": 30,
+      "title": "Neural underpinnings of gesture discrimination in patients with limb apraxia.",
+      "first_page": "3030",
+      "volume": "28",
+      "authors": ["Pazzaglia, M.", "Smania, N.", "Corato, E.", "Aglioti, S. M."],
+      "container": "The Journal of Neuroscience",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 180,
+      "last_page": "3041",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2008,
+      "date": null
+    },
+    {
+      "bib_id": 31,
+      "title": "Action understanding requires the left inferior frontal cortex.",
+      "first_page": "524",
+      "volume": "16",
+      "authors": ["Pobric, G.", "Hamilton, A."],
+      "container": "Current Biology",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 181,
+      "last_page": "529",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2006,
+      "date": null
+    },
+    {
+      "bib_id": 32,
+      "title": "Progressive ideomotor apraxia: Evidence for a selective impairment of the action production system.",
+      "first_page": "213",
+      "volume": "27",
+      "authors": ["Rapcsak, S. Z.", "Ochipa, C.", "Anderson, K. C.", "Poizner, H."],
+      "container": "Brain and Cognition",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 182,
+      "last_page": "236",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1995,
+      "date": null
+    },
+    {
+      "bib_id": 33,
+      "title": "Functional organization of inferior area 6 in the macaque monkey: II. Area F5 and the control of distal movements.",
+      "first_page": "491",
+      "volume": "71",
+      "authors": ["Rizzolatti, G.", "Camarda, R.", "Fogassi, L.", "Gentilucci, M.", "Luppino, G.", "Matelli, M."],
+      "container": "Experimental Brain Research",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 183,
+      "last_page": "507",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1988,
+      "date": null
+    },
+    {
+      "bib_id": 34,
+      "title": "The mirror-neuron system.",
+      "first_page": "169",
+      "volume": "27",
+      "authors": ["Rizzolatti, G.", "Craighero, L."],
+      "container": "Annual Review of Neuroscience",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 184,
+      "last_page": "192",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2004,
+      "date": null
+    },
+    {
+      "bib_id": 35,
+      "title": "Premotor cortex and the recognition of motor actions.",
+      "first_page": "131",
+      "volume": "3",
+      "authors": ["Rizzolatti, G.", "Fadiga, L.", "Gallese, V.", "Fogassi, L."],
+      "container": "Cognitive Brain Research",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 185,
+      "last_page": "141",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1996,
+      "date": null
+    },
+    {
+      "bib_id": 36,
+      "title": "Action comprehension in aphasia: Linguistic and nonlinguistic deficits and their lesion correlates.",
+      "first_page": "1788",
+      "volume": "42",
+      "authors": ["Saygin, A. P.", "Wilson, S. M.", "Dronkers, N. F.", "Bates, E."],
+      "container": "Neuropsychologia",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 186,
+      "last_page": "1804",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2004,
+      "date": null
+    },
+    {
+      "bib_id": 37,
+      "title": "E-Prime user's guide.",
+      "first_page": null,
+      "volume": null,
+      "authors": ["Schneider, W.", "Eschman, A.", "Zuccolotto, A."],
+      "container": null,
+      "doi": null,
+      "bib_type": "book",
+      "text_id": 187,
+      "last_page": null,
+      "issue": null,
+      "editors": [],
+      "publisher": "Psychology Software Tools",
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2001,
+      "date": null
+    },
+    {
+      "bib_id": 38,
+      "title": "Functional-anatomical concepts of human premotor cortex: Evidence from fMRI and PET studies.",
+      "first_page": "S120",
+      "volume": "20",
+      "authors": ["Schubotz, R.", "von Cramon, Y."],
+      "container": "NeuroImage",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 188,
+      "last_page": "S131",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2003,
+      "date": null
+    },
+    {
+      "bib_id": 39,
+      "title": "Action simulation plays a critical role in deceptive action recognition.",
+      "first_page": "611",
+      "volume": "33",
+      "authors": ["Tidoni, E.", "Borgomaneri, S.", "di Pellegrino, G.", "Avenanti, A."],
+      "container": "The Journal of Neuroscience",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 189,
+      "last_page": "623",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2013,
+      "date": null
+    },
+    {
+      "bib_id": 40,
+      "title": "Representation of body identity and body actions in extrastriate body area and ventral premotor cortex",
+      "first_page": "30",
+      "volume": "10",
+      "authors": ["Urgesi, C.", "Candidi, M.", "Ionta, S.", "Aglioti, S."],
+      "container": "Nature Neuroscience",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 190,
+      "last_page": "31",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2006,
+      "date": null
+    },
+    {
+      "bib_id": 41,
+      "title": "Prefrontal involvement in imitation learning of hand actions: Effects of practice and expertise",
+      "first_page": "1371",
+      "volume": "37",
+      "authors": "Fink, G. R.",
+      "container": "NeuroImage",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 191,
+      "last_page": "1383",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2007,
+      "date": null
+    }
+  ],
+  "xref": [
+    {
+      "xref_id": 1,
+      "xref_type": "table",
+      "contents": "Table 1",
+      "text_id": 42
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "figure",
+      "contents": "Fig. 1 a",
+      "text_id": 42
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "figure",
+      "contents": "Fig. 2",
+      "text_id": 49
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "figure",
+      "contents": "Fig.1",
+      "text_id": 56
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "table",
+      "contents": "Table 1",
+      "text_id": 69
+    },
+    {
+      "xref_id": 3,
+      "xref_type": "figure",
+      "contents": "Fig. 3",
+      "text_id": 95
+    },
+    {
+      "xref_id": 24,
+      "xref_type": "foot",
+      "contents": "1",
+      "text_id": 54
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "bib",
+      "contents": "^{1,2}",
+      "text_id": 2
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{1,2}",
+      "text_id": 2
+    },
+    {
+      "xref_id": 3,
+      "xref_type": "bib",
+      "contents": "^{3,4}",
+      "text_id": 2
+    },
+    {
+      "xref_id": 4,
+      "xref_type": "bib",
+      "contents": "^{3,4}",
+      "text_id": 2
+    },
+    {
+      "xref_id": 5,
+      "xref_type": "bib",
+      "contents": "^{5}",
+      "text_id": 2
+    },
+    {
+      "xref_id": 6,
+      "xref_type": "bib",
+      "contents": "^{3,6}",
+      "text_id": 2
+    },
+    {
+      "xref_id": 7,
+      "xref_type": "bib",
+      "contents": "^{6,7}",
+      "text_id": 2
+    },
+    {
+      "xref_id": 8,
+      "xref_type": "bib",
+      "contents": "^{8}",
+      "text_id": 2
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "bib",
+      "contents": "^{1}",
+      "text_id": 3
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 3
+    },
+    {
+      "xref_id": 3,
+      "xref_type": "bib",
+      "contents": "^{3}",
+      "text_id": 3
+    },
+    {
+      "xref_id": 4,
+      "xref_type": "bib",
+      "contents": "^{4}",
+      "text_id": 3
+    },
+    {
+      "xref_id": 5,
+      "xref_type": "bib",
+      "contents": "^{5}",
+      "text_id": 3
+    },
+    {
+      "xref_id": 6,
+      "xref_type": "bib",
+      "contents": "^{6}",
+      "text_id": 3
+    },
+    {
+      "xref_id": 7,
+      "xref_type": "bib",
+      "contents": "^{7}",
+      "text_id": 3
+    },
+    {
+      "xref_id": 8,
+      "xref_type": "bib",
+      "contents": "^{8}",
+      "text_id": 3
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 95
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 96
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 97
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 98
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 101
+    },
+    {
+      "xref_id": 11,
+      "xref_type": "bib",
+      "contents": "(Gallese et al., 2004)",
+      "text_id": 21
+    },
+    {
+      "xref_id": 18,
+      "xref_type": "bib",
+      "contents": "(Hickok, 2009)",
+      "text_id": 30
+    },
+    {
+      "xref_id": 16,
+      "xref_type": "bib",
+      "contents": "Hamilton and Grafton (2007)",
+      "text_id": 38
+    },
+    {
+      "xref_id": 14,
+      "xref_type": "bib",
+      "contents": "(Gentner et al., 2008; Huang et al., 2009)",
+      "text_id": 79
+    },
+    {
+      "xref_id": 20,
+      "xref_type": "bib",
+      "contents": "(Gentner et al., 2008; Huang et al., 2009)",
+      "text_id": 79
+    },
+    {
+      "xref_id": 27,
+      "xref_type": "bib",
+      "contents": "Pazzaglia et al. (2008)",
+      "text_id": 107
+    },
+    {
+      "xref_id": 36,
+      "xref_type": "bib",
+      "contents": "Bates (2004)",
+      "text_id": 109
+    },
+    {
+      "xref_id": 27,
+      "xref_type": "bib",
+      "contents": "Moro et al. (2008)",
+      "text_id": 110
+    },
+    {
+      "xref_id": 3,
+      "xref_type": "bib",
+      "contents": "Menon (2005)",
+      "text_id": 112
+    },
+    {
+      "xref_id": 32,
+      "xref_type": "bib",
+      "contents": "Poizner (1995)",
+      "text_id": 113
+    },
+    {
+      "xref_id": 31,
+      "xref_type": "bib",
+      "contents": "Pobric and Hamilton (2006)",
+      "text_id": 116
+    },
+    {
+      "xref_id": 39,
+      "xref_type": "bib",
+      "contents": "Avenanti (2013)",
+      "text_id": 117
+    },
+    {
+      "xref_id": 40,
+      "xref_type": "bib",
+      "contents": "Aglioti (2006)",
+      "text_id": 117
+    },
+    {
+      "xref_id": 4,
+      "xref_type": "bib",
+      "contents": "Schwarzbach (2010)",
+      "text_id": 119
+    },
+    {
+      "xref_id": 4,
+      "xref_type": "bib",
+      "contents": "Cattaneo et al. (2010)",
+      "text_id": 128
+    },
+    {
+      "xref_id": 7,
+      "xref_type": "bib",
+      "contents": "(Csibra, 2008)",
+      "text_id": 31
+    }
+  ],
+  "figure": [
+    {
+      "figure_id": 1,
+      "section_id": 17,
+      "image": null,
+      "page_number": 3
+    },
+    {
+      "figure_id": 2,
+      "section_id": 18,
+      "image": null,
+      "page_number": 5
+    },
+    {
+      "figure_id": 3,
+      "section_id": 19,
+      "image": null,
+      "page_number": 7
+    },
+    {
+      "figure_id": 4,
+      "section_id": 20,
+      "image": null,
+      "page_number": 7
+    },
+    {
+      "figure_id": 5,
+      "section_id": 21,
+      "image": null,
+      "page_number": 7
+    },
+    {
+      "figure_id": 6,
+      "section_id": 22,
+      "image": null,
+      "page_number": 7
+    }
+  ],
+  "table": [
+    {
+      "table_id": 1,
+      "section_id": 23,
+      "html": "<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th>0<\/th>\n      <th>1<\/th>\n      <th>2<\/th>\n    <\/tr>\n  <\/thead>\n  <tbody>\n    <tr>\n      <td>Action video and block<\/td>\n      <td>Context image<\/td>\n      <td>Response options<\/td>\n    <\/tr>\n    <tr>\n      <td>Hand action<\/td>\n      <td>Hand action<\/td>\n      <td>Hand action<\/td>\n    <\/tr>\n    <tr>\n      <td>Turning<\/td>\n      <td>Turning<\/td>\n      <td>Turning<\/td>\n    <\/tr>\n    <tr>\n      <td>Intermediate<\/td>\n      <td>House entrance<\/td>\n      <td>Newspaper,key,envelope<\/td>\n    <\/tr>\n    <tr>\n      <td>Complex<\/td>\n      <td>Workbench<\/td>\n      <td>Key,hammer,screwdriver<\/td>\n    <\/tr>\n    <tr>\n      <td>Pouring<\/td>\n      <td>Pouring<\/td>\n      <td>Pouring<\/td>\n    <\/tr>\n    <tr>\n      <td>Intermediate<\/td>\n      <td>Tea party<\/td>\n      <td>Teapot,sugar bowl,spoon<\/td>\n    <\/tr>\n    <tr>\n      <td>Complex<\/td>\n      <td>Plants in garden<\/td>\n      <td>Wateringcan,hedge clippers,teapot<\/td>\n    <\/tr>\n    <tr>\n      <td>Mouth action<\/td>\n      <td>Mouth action<\/td>\n      <td>Mouth action<\/td>\n    <\/tr>\n    <tr>\n      <td>Licking<\/td>\n      <td>Licking<\/td>\n      <td>Licking<\/td>\n    <\/tr>\n    <tr>\n      <td>Intermediate<\/td>\n      <td>Beach<\/td>\n      <td>Ice cream cone,soda can,burger<\/td>\n    <\/tr>\n    <tr>\n      <td>Complex<\/td>\n      <td>Desk with papers<\/td>\n      <td>Ice cream cone,eraser,stamp<\/td>\n    <\/tr>\n    <tr>\n      <td>Blowing<\/td>\n      <td>Blowing<\/td>\n      <td>Blowing<\/td>\n    <\/tr>\n    <tr>\n      <td>Intermediate<\/td>\n      <td>Birthday party<\/td>\n      <td>Cake on fork,candles on cake,presents<\/td>\n    <\/tr>\n    <tr>\n      <td>Complex<\/td>\n      <td>Romantic dinner<\/td>\n      <td>Wine glass,one candle,candles on cake<\/td>\n    <\/tr>\n  <\/tbody>\n<\/table>",
+      "contents": [
+        ["0", "1", "2"],
+        ["Action video and block", "Context image", "Response options"],
+        ["Hand action", "Hand action", "Hand action"],
+        ["Turning", "Turning", "Turning"],
+        ["Intermediate", "House entrance", "Newspaper,key,envelope"],
+        ["Complex", "Workbench", "Key,hammer,screwdriver"],
+        ["Pouring", "Pouring", "Pouring"],
+        ["Intermediate", "Tea party", "Teapot,sugar bowl,spoon"],
+        ["Complex", "Plants in garden", "Wateringcan,hedge clippers,teapot"],
+        ["Mouth action", "Mouth action", "Mouth action"],
+        ["Licking", "Licking", "Licking"],
+        ["Intermediate", "Beach", "Ice cream cone,soda can,burger"],
+        ["Complex", "Desk with papers", "Ice cream cone,eraser,stamp"],
+        ["Blowing", "Blowing", "Blowing"],
+        ["Intermediate", "Birthday party", "Cake on fork,candles on cake,presents"],
+        ["Complex", "Romantic dinner", "Wine glass,one candle,candles on cake"]
+      ],
+      "page_number": 4
+    }
+  ],
+  "eq": [
+    {
+      "text_id": 45,
+      "grp_id": 1,
+      "lhs": "age",
+      "comp": "=",
+      "rhs": "23.5"
+    },
+    {
+      "text_id": 45,
+      "grp_id": 2,
+      "lhs": "range",
+      "comp": "=",
+      "rhs": "18-40"
+    },
+    {
+      "text_id": 74,
+      "grp_id": 3,
+      "lhs": "n",
+      "comp": "=",
+      "rhs": "0.94"
+    },
+    {
+      "text_id": 95,
+      "grp_id": 4,
+      "lhs": "F(2,38)",
+      "comp": "=",
+      "rhs": "16.58"
+    },
+    {
+      "text_id": 95,
+      "grp_id": 4,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".001"
+    },
+    {
+      "text_id": 95,
+      "grp_id": 5,
+      "lhs": "F(2,38)",
+      "comp": "=",
+      "rhs": "16.58, p<.001, \\eta_{p}^{2}=.47"
+    },
+    {
+      "text_id": 96,
+      "grp_id": 6,
+      "lhs": "F(1,19)",
+      "comp": "=",
+      "rhs": "33.56"
+    },
+    {
+      "text_id": 96,
+      "grp_id": 6,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".001"
+    },
+    {
+      "text_id": 96,
+      "grp_id": 7,
+      "lhs": "F(1,19)",
+      "comp": "=",
+      "rhs": "33.56, p<.001, \\eta_{p}^{2}=.64"
+    },
+    {
+      "text_id": 97,
+      "grp_id": 8,
+      "lhs": "F(2,38)",
+      "comp": "=",
+      "rhs": "36.79"
+    },
+    {
+      "text_id": 97,
+      "grp_id": 8,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".001"
+    },
+    {
+      "text_id": 97,
+      "grp_id": 9,
+      "lhs": "F(2,38)",
+      "comp": "=",
+      "rhs": "36.79, p<.001, \\eta_{p}^{2}=.67"
+    },
+    {
+      "text_id": 98,
+      "grp_id": 10,
+      "lhs": "F(1,19)",
+      "comp": "=",
+      "rhs": "6.98"
+    },
+    {
+      "text_id": 98,
+      "grp_id": 10,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".016"
+    },
+    {
+      "text_id": 98,
+      "grp_id": 11,
+      "lhs": "F(1,19)",
+      "comp": "=",
+      "rhs": "6.98, p=.016, \\eta_{p}^{2}=.27"
+    },
+    {
+      "text_id": 101,
+      "grp_id": 12,
+      "lhs": "F(2,38)",
+      "comp": "=",
+      "rhs": "20.82"
+    },
+    {
+      "text_id": 101,
+      "grp_id": 12,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".001"
+    },
+    {
+      "text_id": 101,
+      "grp_id": 13,
+      "lhs": "F(2,38)",
+      "comp": "=",
+      "rhs": "51.86"
+    },
+    {
+      "text_id": 101,
+      "grp_id": 13,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".001"
+    },
+    {
+      "text_id": 101,
+      "grp_id": 14,
+      "lhs": "and a significant interaction between complexity level and video type, F(2,38)",
+      "comp": "=",
+      "rhs": "51.86, p < .001,"
+    }
+  ],
+  "bib_match": [
+    {
+      "score": 100,
+      "title": "Action observation activates premotor and parietal areas in a somatotopic manner: an fMRI study",
+      "authors": [
+        {
+          "given": "G.",
+          "family": "Buccino"
+        },
+        {
+          "given": "F.",
+          "family": "Binkofski"
+        },
+        {
+          "given": "G. R.",
+          "family": "Fink"
+        },
+        {
+          "given": "L.",
+          "family": "Fadiga"
+        },
+        {
+          "given": "L.",
+          "family": "Fogassi"
+        },
+        {
+          "given": "V.",
+          "family": "Gallese"
+        },
+        {
+          "given": "R. J.",
+          "family": "Seitz"
+        },
+        {
+          "given": "K.",
+          "family": "Zilles"
+        },
+        {
+          "given": "G.",
+          "family": "Rizzolatti"
+        },
+        {
+          "given": "H.‐J.",
+          "family": "Freund"
+        }
+      ],
+      "container": "European Journal of Neuroscience",
+      "volume": "13",
+      "issue": "2",
+      "first_page": "400",
+      "last_page": "404",
+      "publisher": "Wiley",
+      "editors": null,
+      "doi": "10.1111/j.1460-9568.2001.01385.x",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1111/j.1460-9568.2001.01385.x",
+      "edition": null,
+      "version": null,
+      "bib_id": 2,
+      "service": "crossref",
+      "service_id": "10.1111/j.1460-9568.2001.01385.x",
+      "year": 2001,
+      "date": "2001-01"
+    },
+    {
+      "score": 100,
+      "title": "On beyond mirror neurons: Internal representations subserving imitation and recognition of skilled object-related actions in humans",
+      "authors": [
+        {
+          "given": "Laurel J.",
+          "family": "Buxbaum"
+        },
+        {
+          "given": "Kathleen M.",
+          "family": "Kyle"
+        },
+        {
+          "given": "Rukmini",
+          "family": "Menon"
+        }
+      ],
+      "container": "Cognitive Brain Research",
+      "volume": "25",
+      "issue": "1",
+      "first_page": "226",
+      "last_page": "239",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/j.cogbrainres.2005.05.014",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/j.cogbrainres.2005.05.014",
+      "edition": null,
+      "version": null,
+      "bib_id": 3,
+      "service": "crossref",
+      "service_id": "10.1016/j.cogbrainres.2005.05.014",
+      "year": 2005,
+      "date": "2005-09"
+    },
+    {
+      "score": 99.5918,
+      "title": "State-Dependent TMS Reveals a Hierarchical Representation of Observed Acts in the Temporal, Parietal, and Premotor Cortices",
+      "authors": [
+        {
+          "given": "L.",
+          "family": "Cattaneo"
+        },
+        {
+          "given": "M.",
+          "family": "Sandrini"
+        },
+        {
+          "given": "J.",
+          "family": "Schwarzbach"
+        }
+      ],
+      "container": "Cerebral Cortex",
+      "volume": "20",
+      "issue": "9",
+      "first_page": "2252",
+      "last_page": "2258",
+      "publisher": "Oxford University Press (OUP)",
+      "editors": null,
+      "doi": "10.1093/cercor/bhp291",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1093/cercor/bhp291",
+      "edition": null,
+      "version": null,
+      "bib_id": 4,
+      "service": "crossref",
+      "service_id": "10.1093/cercor/bhp291",
+      "year": 2010,
+      "date": "2010-01-04"
+    },
+    {
+      "score": 100,
+      "title": "Intracortical Inhibition and Facilitation in Different Representations of the Human Motor Cortex",
+      "authors": [
+        {
+          "given": "Robert",
+          "family": "Chen"
+        },
+        {
+          "given": "Alda",
+          "family": "Tam"
+        },
+        {
+          "given": "Cathrin",
+          "family": "Bütefisch"
+        },
+        {
+          "given": "Brian",
+          "family": "Corwell"
+        },
+        {
+          "given": "Ulf",
+          "family": "Ziemann"
+        },
+        {
+          "given": "JOHN C.",
+          "family": "Rothwell"
+        },
+        {
+          "given": "Leonardo G.",
+          "family": "Cohen"
+        }
+      ],
+      "container": "Journal of Neurophysiology",
+      "volume": "80",
+      "issue": "6",
+      "first_page": "2870",
+      "last_page": "2881",
+      "publisher": "American Physiological Society",
+      "editors": null,
+      "doi": "10.1152/jn.1998.80.6.2870",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1152/jn.1998.80.6.2870",
+      "edition": null,
+      "version": null,
+      "bib_id": 5,
+      "service": "crossref",
+      "service_id": "10.1152/jn.1998.80.6.2870",
+      "year": 1998,
+      "date": "1998-12-01"
+    },
+    {
+      "score": 100,
+      "title": "Mirror neurons: From origin to function",
+      "authors": [
+        {
+          "given": "Richard",
+          "family": "Cook"
+        },
+        {
+          "given": "Geoffrey",
+          "family": "Bird"
+        },
+        {
+          "given": "Caroline",
+          "family": "Catmur"
+        },
+        {
+          "given": "Clare",
+          "family": "Press"
+        },
+        {
+          "given": "Cecilia",
+          "family": "Heyes"
+        }
+      ],
+      "container": "Behavioral and Brain Sciences",
+      "volume": "37",
+      "issue": "2",
+      "first_page": "177",
+      "last_page": "192",
+      "publisher": "Cambridge University Press (CUP)",
+      "editors": null,
+      "doi": "10.1017/s0140525x13000903",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1017/s0140525x13000903",
+      "edition": null,
+      "version": null,
+      "bib_id": 6,
+      "service": "crossref",
+      "service_id": "10.1017/s0140525x13000903",
+      "year": 2014,
+      "date": "2014-04"
+    },
+    {
+      "score": 100,
+      "title": "Action mirroring and action understanding: an alternative account",
+      "authors": [
+        {
+          "given": "Gergely",
+          "family": "Csibra"
+        }
+      ],
+      "container": "Sensorimotor Foundations of Higher Cognition",
+      "volume": null,
+      "issue": null,
+      "first_page": "435",
+      "last_page": "459",
+      "publisher": "Oxford University Press",
+      "editors": null,
+      "doi": "10.1093/acprof:oso/9780199231447.003.0020",
+      "bib_type": "book_chapter",
+      "url": "https://doi.org/10.1093/acprof:oso/9780199231447.003.0020",
+      "edition": null,
+      "version": null,
+      "bib_id": 7,
+      "service": "crossref",
+      "service_id": "10.1093/acprof:oso/9780199231447.003.0020",
+      "year": 1993,
+      "date": "1993-07-29"
+    },
+    {
+      "score": 100,
+      "title": "Understanding motor events: a neurophysiological study",
+      "authors": [
+        {
+          "given": "G.",
+          "family": "di Pellegrino"
+        },
+        {
+          "given": "L.",
+          "family": "Fadiga"
+        },
+        {
+          "given": "L.",
+          "family": "Fogassi"
+        },
+        {
+          "given": "V.",
+          "family": "Gallese"
+        },
+        {
+          "given": "G.",
+          "family": "Rizzolatti"
+        }
+      ],
+      "container": "Experimental Brain Research",
+      "volume": "91",
+      "issue": "1",
+      "first_page": "176",
+      "last_page": "180",
+      "publisher": "Springer Science and Business Media LLC",
+      "editors": null,
+      "doi": "10.1007/bf00230027",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1007/bf00230027",
+      "edition": null,
+      "version": null,
+      "bib_id": 8,
+      "service": "crossref",
+      "service_id": "10.1007/bf00230027",
+      "year": 1992,
+      "date": "1992-10"
+    },
+    {
+      "score": 100,
+      "title": "The role of social cognition in decision making",
+      "authors": [
+        {
+          "given": "Chris D",
+          "family": "Frith"
+        },
+        {
+          "given": "Tania",
+          "family": "Singer"
+        }
+      ],
+      "container": "Philosophical Transactions of the Royal Society B: Biological Sciences",
+      "volume": "363",
+      "issue": "1511",
+      "first_page": "3875",
+      "last_page": "3886",
+      "publisher": "The Royal Society",
+      "editors": null,
+      "doi": "10.1098/rstb.2008.0156",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1098/rstb.2008.0156",
+      "edition": null,
+      "version": null,
+      "bib_id": 9,
+      "service": "crossref",
+      "service_id": "10.1098/rstb.2008.0156",
+      "year": 2008,
+      "date": "2008-10"
+    },
+    {
+      "score": 100,
+      "title": "Action recognition in the premotor cortex",
+      "authors": [
+        {
+          "given": "Vittorio",
+          "family": "Gallese"
+        },
+        {
+          "given": "Luciano",
+          "family": "Fadiga"
+        },
+        {
+          "given": "Leonardo",
+          "family": "Fogassi"
+        },
+        {
+          "given": "Giacomo",
+          "family": "Rizzolatti"
+        }
+      ],
+      "container": "Brain",
+      "volume": "119",
+      "issue": "2",
+      "first_page": "593",
+      "last_page": "609",
+      "publisher": "Oxford University Press (OUP)",
+      "editors": null,
+      "doi": "10.1093/brain/119.2.593",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1093/brain/119.2.593",
+      "edition": null,
+      "version": null,
+      "bib_id": 10,
+      "service": "crossref",
+      "service_id": "10.1093/brain/119.2.593",
+      "year": 1996,
+      "date": null
+    },
+    {
+      "score": 100,
+      "title": "A unifying view of the basis of social cognition",
+      "authors": [
+        {
+          "given": "V",
+          "family": "GALLESE"
+        },
+        {
+          "given": "C",
+          "family": "KEYSERS"
+        },
+        {
+          "given": "G",
+          "family": "RIZZOLATTI"
+        }
+      ],
+      "container": "Trends in Cognitive Sciences",
+      "volume": "8",
+      "issue": "9",
+      "first_page": "396",
+      "last_page": "403",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/j.tics.2004.07.002",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/j.tics.2004.07.002",
+      "edition": null,
+      "version": null,
+      "bib_id": 11,
+      "service": "crossref",
+      "service_id": "10.1016/j.tics.2004.07.002",
+      "year": 2004,
+      "date": "2004-09"
+    },
+    {
+      "score": 100,
+      "title": "The Observation and Execution of Actions Share Motor and Somatosensory Voxels in all Tested Subjects: Single-Subject Analyses of Unsmoothed fMRI Data",
+      "authors": [
+        {
+          "given": "V.",
+          "family": "Gazzola"
+        },
+        {
+          "given": "C.",
+          "family": "Keysers"
+        }
+      ],
+      "container": "Cerebral Cortex",
+      "volume": "19",
+      "issue": "6",
+      "first_page": "1239",
+      "last_page": "1255",
+      "publisher": "Oxford University Press (OUP)",
+      "editors": null,
+      "doi": "10.1093/cercor/bhn181",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1093/cercor/bhn181",
+      "edition": null,
+      "version": null,
+      "bib_id": 12,
+      "service": "crossref",
+      "service_id": "10.1093/cercor/bhn181",
+      "year": 2008,
+      "date": "2008-11-19"
+    },
+    {
+      "score": 100,
+      "title": "Depression of Human Corticospinal Excitability Induced by Magnetic Theta-burst Stimulation: Evidence of Rapid Polarity-Reversing Metaplasticity",
+      "authors": [
+        {
+          "given": "R.",
+          "family": "Gentner"
+        },
+        {
+          "given": "K.",
+          "family": "Wankerl"
+        },
+        {
+          "given": "C.",
+          "family": "Reinsberger"
+        },
+        {
+          "given": "D.",
+          "family": "Zeller"
+        },
+        {
+          "given": "J.",
+          "family": "Classen"
+        }
+      ],
+      "container": "Cerebral Cortex",
+      "volume": "18",
+      "issue": "9",
+      "first_page": "2046",
+      "last_page": "2053",
+      "publisher": "Oxford University Press (OUP)",
+      "editors": null,
+      "doi": "10.1093/cercor/bhm239",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1093/cercor/bhm239",
+      "edition": null,
+      "version": null,
+      "bib_id": 14,
+      "service": "crossref",
+      "service_id": "10.1093/cercor/bhm239",
+      "year": 2007,
+      "date": "2007-12-28"
+    },
+    {
+      "score": 100,
+      "title": "Somatotopy of monkey premotor cortex examined with microstimulation",
+      "authors": [
+        {
+          "given": "Moshe",
+          "family": "Godschalk"
+        },
+        {
+          "given": "Andrew R",
+          "family": "Mitz"
+        },
+        {
+          "given": "Berber van",
+          "family": "Duin"
+        },
+        {
+          "given": "Hans van der",
+          "family": "Burga"
+        }
+      ],
+      "container": "Neuroscience Research",
+      "volume": "23",
+      "issue": "3",
+      "first_page": "269",
+      "last_page": "279",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/0168-0102(95)00950-7",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/0168-0102(95)00950-7",
+      "edition": null,
+      "version": null,
+      "bib_id": 15,
+      "service": "crossref",
+      "service_id": "10.1016/0168-0102(95)00950-7",
+      "year": 1995,
+      "date": "1995-10"
+    },
+    {
+      "score": 100,
+      "title": "The motor hierarchy: from kinematics to goals and intentions",
+      "authors": [
+        {
+          "given": "Antonia F de C.",
+          "family": "Hamilton"
+        },
+        {
+          "given": "Scott T.",
+          "family": "Grafton"
+        }
+      ],
+      "container": "Sensorimotor Foundations of Higher Cognition",
+      "volume": null,
+      "issue": null,
+      "first_page": "381",
+      "last_page": "407",
+      "publisher": "Oxford University Press",
+      "editors": null,
+      "doi": "10.1093/acprof:oso/9780199231447.003.0018",
+      "bib_type": "book_chapter",
+      "url": "https://doi.org/10.1093/acprof:oso/9780199231447.003.0018",
+      "edition": null,
+      "version": null,
+      "bib_id": 16,
+      "service": "crossref",
+      "service_id": "10.1093/acprof:oso/9780199231447.003.0018",
+      "year": 1993,
+      "date": "1993-07-29"
+    },
+    {
+      "score": 93.4211,
+      "title": "Somatotopic Representation of Action Words in Human Motor and Premotor Cortex",
+      "authors": [
+        {
+          "given": "Olaf",
+          "family": "Hauk"
+        },
+        {
+          "given": "Ingrid",
+          "family": "Johnsrude"
+        },
+        {
+          "given": "Friedemann",
+          "family": "Pulvermüller"
+        }
+      ],
+      "container": "Neuron",
+      "volume": "41",
+      "issue": "2",
+      "first_page": "301",
+      "last_page": "307",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/s0896-6273(03)00838-9",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/s0896-6273(03)00838-9",
+      "edition": null,
+      "version": null,
+      "bib_id": 17,
+      "service": "crossref",
+      "service_id": "10.1016/s0896-6273(03)00838-9",
+      "year": 2004,
+      "date": "2004-01"
+    },
+    {
+      "score": 100,
+      "title": "Eight Problems for the Mirror Neuron Theory of Action Understanding in Monkeys and Humans",
+      "authors": [
+        {
+          "given": "Gregory",
+          "family": "Hickok"
+        }
+      ],
+      "container": "Journal of Cognitive Neuroscience",
+      "volume": "21",
+      "issue": "7",
+      "first_page": "1229",
+      "last_page": "1243",
+      "publisher": "MIT Press",
+      "editors": null,
+      "doi": "10.1162/jocn.2009.21189",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1162/jocn.2009.21189",
+      "edition": null,
+      "version": null,
+      "bib_id": 18,
+      "service": "crossref",
+      "service_id": "10.1162/jocn.2009.21189",
+      "year": 2009,
+      "date": "2009-07-01"
+    },
+    {
+      "score": 100,
+      "title": "Theta Burst Stimulation of the Human Motor Cortex",
+      "authors": [
+        {
+          "given": "Ying-Zu",
+          "family": "Huang"
+        },
+        {
+          "given": "Mark J.",
+          "family": "Edwards"
+        },
+        {
+          "given": "Elisabeth",
+          "family": "Rounis"
+        },
+        {
+          "given": "Kailash P.",
+          "family": "Bhatia"
+        },
+        {
+          "given": "John C.",
+          "family": "Rothwell"
+        }
+      ],
+      "container": "Neuron",
+      "volume": "45",
+      "issue": "2",
+      "first_page": "201",
+      "last_page": "206",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/j.neuron.2004.12.033",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/j.neuron.2004.12.033",
+      "edition": null,
+      "version": null,
+      "bib_id": 19,
+      "service": "crossref",
+      "service_id": "10.1016/j.neuron.2004.12.033",
+      "year": 2005,
+      "date": "2005-01"
+    },
+    {
+      "score": 99.5885,
+      "title": "The effect of continuous theta burst stimulation over premotor cortex on circuits in primary motor cortex and spinal cord",
+      "authors": [
+        {
+          "given": "Ying-Zu",
+          "family": "Huang"
+        },
+        {
+          "given": "John C.",
+          "family": "Rothwell"
+        },
+        {
+          "given": "Chin-Song",
+          "family": "Lu"
+        },
+        {
+          "given": "JiunJie",
+          "family": "Wang"
+        },
+        {
+          "given": "Yi-Hsin",
+          "family": "Weng"
+        },
+        {
+          "given": "Szu-Chia",
+          "family": "Lai"
+        },
+        {
+          "given": "Wen-Li",
+          "family": "Chuang"
+        },
+        {
+          "given": "June",
+          "family": "Hung"
+        },
+        {
+          "given": "Rou-Shayn",
+          "family": "Chen"
+        }
+      ],
+      "container": "Clinical Neurophysiology",
+      "volume": "120",
+      "issue": "4",
+      "first_page": "796",
+      "last_page": "801",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/j.clinph.2009.01.003",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/j.clinph.2009.01.003",
+      "edition": null,
+      "version": null,
+      "bib_id": 20,
+      "service": "crossref",
+      "service_id": "10.1016/j.clinph.2009.01.003",
+      "year": 2009,
+      "date": "2009-04"
+    },
+    {
+      "score": 99.2806,
+      "title": "Grasping the Intentions of Others with One's Own Mirror Neuron System",
+      "authors": [
+        {
+          "given": "Marco",
+          "family": "Iacoboni"
+        },
+        {
+          "given": "Istvan",
+          "family": "Molnar-Szakacs"
+        },
+        {
+          "given": "Vittorio",
+          "family": "Gallese"
+        },
+        {
+          "given": "Giovanni",
+          "family": "Buccino"
+        },
+        {
+          "given": "John C",
+          "family": "Mazziotta"
+        },
+        {
+          "given": "Giacomo",
+          "family": "Rizzolatti"
+        }
+      ],
+      "container": "PLoS Biology",
+      "volume": "3",
+      "issue": "3",
+      "first_page": "e79",
+      "last_page": null,
+      "publisher": "Public Library of Science (PLoS)",
+      "editors": [
+        {
+          "given": "James",
+          "family": "Ashe"
+        }
+      ],
+      "doi": "10.1371/journal.pbio.0030079",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1371/journal.pbio.0030079",
+      "edition": null,
+      "version": null,
+      "bib_id": 21,
+      "service": "crossref",
+      "service_id": "10.1371/journal.pbio.0030079",
+      "year": 2005,
+      "date": "2005-02-22"
+    },
+    {
+      "score": 97.6744,
+      "title": "Coding Observed Motor Acts: Different Organizational Principles in the Parietal and Premotor Cortex of Humans",
+      "authors": [
+        {
+          "given": "Jan",
+          "family": "Jastorff"
+        },
+        {
+          "given": "Chiara",
+          "family": "Begliomini"
+        },
+        {
+          "given": "Maddalena",
+          "family": "Fabbri-Destro"
+        },
+        {
+          "given": "Giacomo",
+          "family": "Rizzolatti"
+        },
+        {
+          "given": "Guy A.",
+          "family": "Orban"
+        }
+      ],
+      "container": "Journal of Neurophysiology",
+      "volume": "104",
+      "issue": "1",
+      "first_page": "128",
+      "last_page": "140",
+      "publisher": "American Physiological Society",
+      "editors": null,
+      "doi": "10.1152/jn.00254.2010",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1152/jn.00254.2010",
+      "edition": null,
+      "version": null,
+      "bib_id": 22,
+      "service": "crossref",
+      "service_id": "10.1152/jn.00254.2010",
+      "year": 2010,
+      "date": "2010-07"
+    },
+    {
+      "score": 99.1304,
+      "title": "Predictive coding: an account of the mirror neuron system",
+      "authors": [
+        {
+          "given": "James M.",
+          "family": "Kilner"
+        },
+        {
+          "given": "Karl J.",
+          "family": "Friston"
+        },
+        {
+          "given": "Chris D.",
+          "family": "Frith"
+        }
+      ],
+      "container": "Cognitive Processing",
+      "volume": "8",
+      "issue": "3",
+      "first_page": "159",
+      "last_page": "166",
+      "publisher": "Springer Science and Business Media LLC",
+      "editors": null,
+      "doi": "10.1007/s10339-007-0170-2",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1007/s10339-007-0170-2",
+      "edition": null,
+      "version": null,
+      "bib_id": 23,
+      "service": "crossref",
+      "service_id": "10.1007/s10339-007-0170-2",
+      "year": 2007,
+      "date": "2007-04-12"
+    },
+    {
+      "score": 99.1453,
+      "title": "Evidence of Mirror Neurons in Human Inferior Frontal Gyrus",
+      "authors": [
+        {
+          "given": "James M.",
+          "family": "Kilner"
+        },
+        {
+          "given": "Alice",
+          "family": "Neal"
+        },
+        {
+          "given": "Nikolaus",
+          "family": "Weiskopf"
+        },
+        {
+          "given": "Karl J.",
+          "family": "Friston"
+        },
+        {
+          "given": "Chris D.",
+          "family": "Frith"
+        }
+      ],
+      "container": "The Journal of Neuroscience",
+      "volume": "29",
+      "issue": "32",
+      "first_page": "10153",
+      "last_page": "10159",
+      "publisher": "Society for Neuroscience",
+      "editors": null,
+      "doi": "10.1523/jneurosci.2668-09.2009",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1523/jneurosci.2668-09.2009",
+      "edition": null,
+      "version": null,
+      "bib_id": 24,
+      "service": "crossref",
+      "service_id": "10.1523/jneurosci.2668-09.2009",
+      "year": 2009,
+      "date": "2009-08-12"
+    },
+    {
+      "score": 99.5475,
+      "title": "Charting the excitability of premotor to motor connections while withholding or initiating a selected movement",
+      "authors": [
+        {
+          "given": "Johan",
+          "family": "Kroeger"
+        },
+        {
+          "given": "Tobias",
+          "family": "Bäumer"
+        },
+        {
+          "given": "Melanie",
+          "family": "Jonas"
+        },
+        {
+          "given": "John C.",
+          "family": "Rothwell"
+        },
+        {
+          "given": "Hartwig R.",
+          "family": "Siebner"
+        },
+        {
+          "given": "Alexander",
+          "family": "Münchau"
+        }
+      ],
+      "container": "European Journal of Neuroscience",
+      "volume": "32",
+      "issue": "10",
+      "first_page": "1771",
+      "last_page": "1779",
+      "publisher": "Wiley",
+      "editors": null,
+      "doi": "10.1111/j.1460-9568.2010.07442.x",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1111/j.1460-9568.2010.07442.x",
+      "edition": null,
+      "version": null,
+      "bib_id": 25,
+      "service": "crossref",
+      "service_id": "10.1111/j.1460-9568.2010.07442.x",
+      "year": 2010,
+      "date": "2010-11"
+    },
+    {
+      "score": 99.0654,
+      "title": "The Neural Basis of Body Form and Body Action Agnosia",
+      "authors": [
+        {
+          "given": "Valentina",
+          "family": "Moro"
+        },
+        {
+          "given": "Cosimo",
+          "family": "Urgesi"
+        },
+        {
+          "given": "Simone",
+          "family": "Pernigo"
+        },
+        {
+          "given": "Paola",
+          "family": "Lanteri"
+        },
+        {
+          "given": "Mariella",
+          "family": "Pazzaglia"
+        },
+        {
+          "given": "Salvatore Maria",
+          "family": "Aglioti"
+        }
+      ],
+      "container": "Neuron",
+      "volume": "60",
+      "issue": "2",
+      "first_page": "235",
+      "last_page": "246",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/j.neuron.2008.09.022",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/j.neuron.2008.09.022",
+      "edition": null,
+      "version": null,
+      "bib_id": 27,
+      "service": "crossref",
+      "service_id": "10.1016/j.neuron.2008.09.022",
+      "year": 2008,
+      "date": "2008-10"
+    },
+    {
+      "score": 99.3548,
+      "title": "Single-Neuron Responses in Humans during Execution and Observation of Actions",
+      "authors": [
+        {
+          "given": "Roy",
+          "family": "Mukamel"
+        },
+        {
+          "given": "Arne D.",
+          "family": "Ekstrom"
+        },
+        {
+          "given": "Jonas",
+          "family": "Kaplan"
+        },
+        {
+          "given": "Marco",
+          "family": "Iacoboni"
+        },
+        {
+          "given": "Itzhak",
+          "family": "Fried"
+        }
+      ],
+      "container": "Current Biology",
+      "volume": "20",
+      "issue": "8",
+      "first_page": "750",
+      "last_page": "756",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/j.cub.2010.02.045",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/j.cub.2010.02.045",
+      "edition": null,
+      "version": null,
+      "bib_id": 28,
+      "service": "crossref",
+      "service_id": "10.1016/j.cub.2010.02.045",
+      "year": 2010,
+      "date": "2010-04"
+    },
+    {
+      "score": 99.5745,
+      "title": "Functional Connectivity of Human Premotor and Motor Cortex Explored with Repetitive Transcranial Magnetic Stimulation",
+      "authors": [
+        {
+          "given": "A.",
+          "family": "Münchau"
+        },
+        {
+          "given": "B. R.",
+          "family": "Bloem"
+        },
+        {
+          "given": "K.",
+          "family": "Irlbacher"
+        },
+        {
+          "given": "M. R.",
+          "family": "Trimble"
+        },
+        {
+          "given": "J. C.",
+          "family": "Rothwell"
+        }
+      ],
+      "container": "The Journal of Neuroscience",
+      "volume": "22",
+      "issue": "2",
+      "first_page": "554",
+      "last_page": "561",
+      "publisher": "Society for Neuroscience",
+      "editors": null,
+      "doi": "10.1523/jneurosci.22-02-00554.2002",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1523/jneurosci.22-02-00554.2002",
+      "edition": null,
+      "version": null,
+      "bib_id": 29,
+      "service": "crossref",
+      "service_id": "10.1523/jneurosci.22-02-00554.2002",
+      "year": 2002,
+      "date": "2002-01-15"
+    },
+    {
+      "score": 99.3464,
+      "title": "Neural Underpinnings of Gesture Discrimination in Patients with Limb Apraxia",
+      "authors": [
+        {
+          "given": "Mariella",
+          "family": "Pazzaglia"
+        },
+        {
+          "given": "Nicola",
+          "family": "Smania"
+        },
+        {
+          "given": "Elisabetta",
+          "family": "Corato"
+        },
+        {
+          "given": "Salvatore Maria",
+          "family": "Aglioti"
+        }
+      ],
+      "container": "The Journal of Neuroscience",
+      "volume": "28",
+      "issue": "12",
+      "first_page": "3030",
+      "last_page": "3041",
+      "publisher": "Society for Neuroscience",
+      "editors": null,
+      "doi": "10.1523/jneurosci.5748-07.2008",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1523/jneurosci.5748-07.2008",
+      "edition": null,
+      "version": null,
+      "bib_id": 30,
+      "service": "crossref",
+      "service_id": "10.1523/jneurosci.5748-07.2008",
+      "year": 2008,
+      "date": "2008-03-19"
+    },
+    {
+      "score": 99.2,
+      "title": "Action Understanding Requires the Left Inferior Frontal Cortex",
+      "authors": [
+        {
+          "given": "Gorana",
+          "family": "Pobric"
+        },
+        {
+          "given": "Antonia F.",
+          "family": "de C. Hamilton"
+        }
+      ],
+      "container": "Current Biology",
+      "volume": "16",
+      "issue": "5",
+      "first_page": "524",
+      "last_page": "529",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/j.cub.2006.01.033",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/j.cub.2006.01.033",
+      "edition": null,
+      "version": null,
+      "bib_id": 31,
+      "service": "crossref",
+      "service_id": "10.1016/j.cub.2006.01.033",
+      "year": 2006,
+      "date": "2006-03"
+    },
+    {
+      "score": 97.9798,
+      "title": "Progressive Ideomotor Apraxia - Evidence for a Selective Impairment of the Action Production System",
+      "authors": [
+        {
+          "given": "S.Z.",
+          "family": "Rapcsak"
+        },
+        {
+          "given": "C.",
+          "family": "Ochipa"
+        },
+        {
+          "given": "K.C.",
+          "family": "Anderson"
+        },
+        {
+          "given": "H.",
+          "family": "Poizner"
+        }
+      ],
+      "container": "Brain and Cognition",
+      "volume": "27",
+      "issue": "2",
+      "first_page": "213",
+      "last_page": "236",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1006/brcg.1995.1018",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1006/brcg.1995.1018",
+      "edition": null,
+      "version": null,
+      "bib_id": 32,
+      "service": "crossref",
+      "service_id": "10.1006/brcg.1995.1018",
+      "year": 1995,
+      "date": "1995-03"
+    },
+    {
+      "score": 97.9592,
+      "title": "THE MIRROR-NEURON SYSTEM",
+      "authors": [
+        {
+          "given": "Giacomo",
+          "family": "Rizzolatti"
+        },
+        {
+          "given": "Laila",
+          "family": "Craighero"
+        }
+      ],
+      "container": "Annual Review of Neuroscience",
+      "volume": "27",
+      "issue": "1",
+      "first_page": "169",
+      "last_page": "192",
+      "publisher": "Annual Reviews",
+      "editors": null,
+      "doi": "10.1146/annurev.neuro.27.070203.144230",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1146/annurev.neuro.27.070203.144230",
+      "edition": null,
+      "version": null,
+      "bib_id": 34,
+      "service": "crossref",
+      "service_id": "10.1146/annurev.neuro.27.070203.144230",
+      "year": 2004,
+      "date": "2004-07-21"
+    },
+    {
+      "score": 99.0476,
+      "title": "Premotor cortex and the recognition of motor actions",
+      "authors": [
+        {
+          "given": "Giacomo",
+          "family": "Rizzolatti"
+        },
+        {
+          "given": "Luciano",
+          "family": "Fadiga"
+        },
+        {
+          "given": "Vittorio",
+          "family": "Gallese"
+        },
+        {
+          "given": "Leonardo",
+          "family": "Fogassi"
+        }
+      ],
+      "container": "Cognitive Brain Research",
+      "volume": "3",
+      "issue": "2",
+      "first_page": "131",
+      "last_page": "141",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/0926-6410(95)00038-0",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/0926-6410(95)00038-0",
+      "edition": null,
+      "version": null,
+      "bib_id": 35,
+      "service": "crossref",
+      "service_id": "10.1016/0926-6410(95)00038-0",
+      "year": 1996,
+      "date": "1996-03"
+    },
+    {
+      "score": 98.9899,
+      "title": "Action comprehension in aphasia: linguistic and non-linguistic deficits and their lesion correlates",
+      "authors": [
+        {
+          "given": "Ayşe Pınar",
+          "family": "Saygın"
+        },
+        {
+          "given": "Stephen M.",
+          "family": "Wilson"
+        },
+        {
+          "given": "Nina F.",
+          "family": "Dronkers"
+        },
+        {
+          "given": "Elizabeth",
+          "family": "Bates"
+        }
+      ],
+      "container": "Neuropsychologia",
+      "volume": "42",
+      "issue": "13",
+      "first_page": "1788",
+      "last_page": "1804",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/j.neuropsychologia.2004.04.016",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/j.neuropsychologia.2004.04.016",
+      "edition": null,
+      "version": null,
+      "bib_id": 36,
+      "service": "crossref",
+      "service_id": "10.1016/j.neuropsychologia.2004.04.016",
+      "year": 2004,
+      "date": "2004-01"
+    },
+    {
+      "score": 98.3607,
+      "title": "Functional–anatomical concepts of human premotor cortex: evidence from fMRI and PET studies",
+      "authors": [
+        {
+          "given": "Ricarda I",
+          "family": "Schubotz"
+        },
+        {
+          "given": "D.Yves",
+          "family": "von Cramon"
+        }
+      ],
+      "container": "NeuroImage",
+      "volume": "20",
+      "issue": null,
+      "first_page": "S120",
+      "last_page": "S131",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/j.neuroimage.2003.09.014",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/j.neuroimage.2003.09.014",
+      "edition": null,
+      "version": null,
+      "bib_id": 38,
+      "service": "crossref",
+      "service_id": "10.1016/j.neuroimage.2003.09.014",
+      "year": 2003,
+      "date": "2003-11"
+    },
+    {
+      "score": 99.3007,
+      "title": "Action Simulation Plays a Critical Role in Deceptive Action Recognition",
+      "authors": [
+        {
+          "given": "Emmanuele",
+          "family": "Tidoni"
+        },
+        {
+          "given": "Sara",
+          "family": "Borgomaneri"
+        },
+        {
+          "given": "Giuseppe",
+          "family": "di Pellegrino"
+        },
+        {
+          "given": "Alessio",
+          "family": "Avenanti"
+        }
+      ],
+      "container": "The Journal of Neuroscience",
+      "volume": "33",
+      "issue": "2",
+      "first_page": "611",
+      "last_page": "623",
+      "publisher": "Society for Neuroscience",
+      "editors": null,
+      "doi": "10.1523/jneurosci.2228-11.2013",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1523/jneurosci.2228-11.2013",
+      "edition": null,
+      "version": null,
+      "bib_id": 39,
+      "service": "crossref",
+      "service_id": "10.1523/jneurosci.2228-11.2013",
+      "year": 2013,
+      "date": "2013-01-09"
+    },
+    {
+      "score": 100,
+      "title": "Representation of body identity and body actions in extrastriate body area and ventral premotor cortex",
+      "authors": [
+        {
+          "given": "Cosimo",
+          "family": "Urgesi"
+        },
+        {
+          "given": "Matteo",
+          "family": "Candidi"
+        },
+        {
+          "given": "Silvio",
+          "family": "Ionta"
+        },
+        {
+          "given": "Salvatore M",
+          "family": "Aglioti"
+        }
+      ],
+      "container": "Nature Neuroscience",
+      "volume": "10",
+      "issue": "1",
+      "first_page": "30",
+      "last_page": "31",
+      "publisher": "Springer Science and Business Media LLC",
+      "editors": null,
+      "doi": "10.1038/nn1815",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1038/nn1815",
+      "edition": null,
+      "version": null,
+      "bib_id": 40,
+      "service": "crossref",
+      "service_id": "10.1038/nn1815",
+      "year": 2006,
+      "date": "2006-12-10"
+    },
+    {
+      "score": 100,
+      "title": "Prefrontal involvement in imitation learning of hand actions: Effects of practice and expertise",
+      "authors": [
+        {
+          "given": "Stefan",
+          "family": "Vogt"
+        },
+        {
+          "given": "Giovanni",
+          "family": "Buccino"
+        },
+        {
+          "given": "Afra M.",
+          "family": "Wohlschläger"
+        },
+        {
+          "given": "Nicola",
+          "family": "Canessa"
+        },
+        {
+          "given": "N. Jon",
+          "family": "Shah"
+        },
+        {
+          "given": "Karl",
+          "family": "Zilles"
+        },
+        {
+          "given": "Simon B.",
+          "family": "Eickhoff"
+        },
+        {
+          "given": "Hans-Joachim",
+          "family": "Freund"
+        },
+        {
+          "given": "Giacomo",
+          "family": "Rizzolatti"
+        },
+        {
+          "given": "Gereon R.",
+          "family": "Fink"
+        }
+      ],
+      "container": "NeuroImage",
+      "volume": "37",
+      "issue": "4",
+      "first_page": "1371",
+      "last_page": "1383",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/j.neuroimage.2007.07.005",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/j.neuroimage.2007.07.005",
+      "edition": null,
+      "version": null,
+      "bib_id": 41,
+      "service": "crossref",
+      "service_id": "10.1016/j.neuroimage.2007.07.005",
+      "year": 2007,
+      "date": "2007-10"
+    }
+  ]
+}
