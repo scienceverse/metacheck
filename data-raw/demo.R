@@ -1,14 +1,14 @@
 # render versions from qmd (when qmd changes)
-qmd <- "inst/demo/to_err_is_human.qmd"
+qmd <- "inst/demos/to_err_is_human.qmd"
 quarto::quarto_render(qmd, "pdf")
 quarto::quarto_render(qmd, "docx")
 
 # convert newest PDF to bibr (when bibr changes)
-pdf <- "inst/demo/to_err_is_human.pdf"
-bibr <- convert_bibr(pdf, "inst/demo", backend = "scivrs")
+pdf <- "inst/demos/to_err_is_human.pdf"
+bibr <- convert_bibr(pdf, "inst/demos", backend = "scivrs")
 
 # read in and check (when read changes)
-bibr <- "inst/demo/to_err_is_human.json"
+bibr <- "inst/demos/to_err_is_human.json"
 demopaper <- read(bibr)
 stopifnot(paper_validate(demopaper))
 

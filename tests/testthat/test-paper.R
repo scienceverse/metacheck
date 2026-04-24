@@ -171,6 +171,15 @@ test_that("demofile", {
 })
 
 test_that("paper_table", {
+  expect_true(is.function(metacheck::paper_table))
+  expect_no_error(helplist <- help(paper_table, metacheck))
+
+  paper <- demopaper()
+  expect_error(paper_table("x", "info"))
+  expect_equal(paper_table(paper, "notatable"),
+               data.frame(),
+               ignore_attr = TRUE)
+
   # concat 2 papers
   paper <- psychsci[1:2]
   bibs <- paper_table(paper, "bib")
@@ -198,6 +207,42 @@ test_that("paper_table", {
   expect_equal(nrow(bib), 0)
   expect_equal(names(bib), c("text", "paper_id"))
 })
+
+test_that("paper_id", {
+  expect_true(is.function(metacheck::paper_id))
+  expect_no_error(helplist <- help(paper_id, metacheck))
+
+  expect_error(paper_id("x"))
+
+  paper <- demopaper()
+  obs <- paper_id(paper)
+  exp <- data.frame(paper_id = paper$paper_id)
+  expect_equal(obs, exp)
+
+  paper <- psychsci
+  obs <- paper_id(paper)
+  expect_equal(nrow(obs), length(paper))
+})
+
+
+test_that("ref_table", {
+  expect_true(is.function(metacheck::ref_table))
+  expect_no_error(helplist <- help(ref_table, metacheck))
+
+  expect_error(ref_table())
+
+  paper <- demopaper()
+  bib <- ref_table(paper)
+  expect_equal(bib$bib_id, 1:5)
+  expect_equal(bib$doi[[5]], paper$bib$doi[[5]])
+  expect_equal(bib$doi[1:4], paper$bib_match$doi[1:4])
+
+  paper$bib_match <- NULL
+  bib <- ref_table(paper)
+  expect_equal(bib$doi[[4]], "")
+  expect_equal(names(bib), c("paper_id", "bib_id", "doi", "text"))
+})
+
 
 
 test_that("is_paper_list", {
@@ -246,7 +291,7 @@ test_that("paper_write", {
   expect_true(is.function(metacheck::paper_write))
   expect_no_error(helplist <- help(paper_write, metacheck))
 
-  expect_error(paper_write(bad_arg))
+  expect_error(paper_write("x"))
 
   # save an exact copy
   paper <- demopaper()

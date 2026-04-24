@@ -47,10 +47,10 @@ test_that("1 paper, NULL save_path, no CR lookup", {
 
 
 test_that("1 paper, save_path, no CR lookup", {
-  xml_file1 <- system.file("demo/to_err_is_human.xml", package = "metacheck")
+  xml_file1 <- system.file("demos/to_err_is_human.xml", package = "metacheck")
   paper1 <- grobid_to_bibr(xml_file1, NULL)
 
-  xml_file2 <- system.file("demo/to_err_is_human.xml", package = "metacheck")
+  xml_file2 <- system.file("demos/to_err_is_human.xml", package = "metacheck")
   save_path <- withr::local_tempdir()
   json_path <- grobid_to_bibr(xml_file2, save_path)
   paper2 <- read(json_path)
@@ -118,7 +118,7 @@ test_that("multiple papers, save_path, no CR lookup", {
 
 test_that("1 paper, NULL save_path, CR lookup", {
   skip_api("api.labs.crossref.org")
-  xml_file <- system.file("demo/to_err_is_human.xml", package = "metacheck")
+  xml_file <- system.file("demos/to_err_is_human.xml", package = "metacheck")
   paper_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
   expect_equal(paper_cr$bib_match$service[[1]], "crossref")
 })
@@ -127,8 +127,8 @@ test_that("1 paper, NULL save_path, CR lookup", {
 test_that("multiple papers, NULL save_path, CR lookup", {
   skip_api("api.labs.crossref.org")
   xml_file <- c(
-    system.file("demo/to_err_is_human.xml", package = "metacheck"),
-    system.file("demo/to_err_is_human.xml", package = "metacheck")
+    system.file("demos/to_err_is_human.xml", package = "metacheck"),
+    system.file("demos/to_err_is_human.xml", package = "metacheck")
   )
   papers_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
   expect_equal(papers_cr[[1]]$bib_match$service[[1]], "crossref")
@@ -145,7 +145,7 @@ test_that("read", {
 })
 
 test_that("read grobid xml", {
-  xml_file <- system.file("demo/to_err_is_human.xml", package = "metacheck")
+  xml_file <- system.file("demos/to_err_is_human.xml", package = "metacheck")
   title <- "To Err is Human: An Empirical Investigation"
 
   obs_xml <- read(xml_file)
@@ -155,15 +155,15 @@ test_that("read grobid xml", {
 })
 
 test_that("bibr file", {
-  bibr_file <- system.file("demo/to_err_is_human.json", package = "metacheck")
+  bibr_file <- system.file("demos/to_err_is_human.json", package = "metacheck")
   obs_bibr <- read(bibr_file)
   expect_s3_class(obs_bibr, "scivrs_paper")
   expect_match(obs_bibr$info$title, "To Err is Human")
 })
 
 test_that("both grobid xml and bibr", {
-  xml_file <- system.file("demo/to_err_is_human.xml", package = "metacheck")
-  bibr_file <- system.file("demo/to_err_is_human.json", package = "metacheck")
+  xml_file <- system.file("demos/to_err_is_human.xml", package = "metacheck")
+  bibr_file <- system.file("demos/to_err_is_human.json", package = "metacheck")
 
   file_path <- c(xml_file, bibr_file)
   obs <- read(file_path)
@@ -188,12 +188,10 @@ test_that("convert_grobid", {
 
 test_that("invalid URL error", {
   filename <- demofile("pdf")
-  expect_error(convert_grobid(filename, api_url = "notawebsite"),
-               "api_url must be a valid URL, starting with http or https!")
+  expect_error(convert_grobid(filename, api_url = "notawebsite"))
 
   # URL without http/https detected"
-  expect_error(convert_grobid(filename, api_url = "kermitt2-grobid.hf.space"),
-               "api_url must be a valid URL, starting with http or https!")
+  expect_error(convert_grobid(filename, api_url = "kermitt2-grobid.hf.space"))
 })
 
 
@@ -376,4 +374,27 @@ test_that("batch - multiple filenames", {
   actual <- list.files(save_path, "\\.xml")
   expected <- list.files(grobid_dir, "\\.xml")[2:3]
   expect_equal(actual, expected)
+})
+
+test_that(".grobid_isalive", {
+  expect_true(is.function(metacheck:::.grobid_isalive))
+
+  expect_error(.grobid_isalive())
+
+  # not a url
+  api_url <- "grobid"
+  expect_error(.grobid_isalive(api_url))
+  expect_false(.grobid_isalive(api_url, error = FALSE))
+
+  # url, not grobid
+  api_url <- "https://google.com"
+  expect_error(.grobid_isalive(api_url))
+  expect_false(.grobid_isalive(api_url, error = FALSE))
+
+  # TODO: mock this
+  skip_api(grobid_url)
+
+  api_url <- grobid_url
+  alive <- .grobid_isalive(api_url, error = FALSE)
+  expect_in(alive, c(TRUE, FALSE))
 })

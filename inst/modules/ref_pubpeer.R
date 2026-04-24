@@ -22,25 +22,16 @@
 #' @returns a list
 ref_pubpeer <- function(paper) {
   # create table ----
-  cols <- c("paper_id", "bib_id", "doi", "bib_text")
-  bib <- paper_table(paper, "bib", cols)
+  bib <- ref_table(paper) |>
+    dplyr::filter(!is.na(doi), doi != "")
 
   # If there are no rows, return immediately
   if (nrow(bib) == 0) {
     norefs <- list(
       traffic_light = "na",
-      summary_text = "We found no references"
-    )
-    return(norefs)
-  }
-
-  # If there are no DOIs, return immediately
-  if (all(is.na(bib$doi))) {
-    nodois <- list(
-      traffic_light = "na",
       summary_text = "We found no references with DOIs"
     )
-    return(nodois)
+    return(norefs)
   }
 
   ## join to  pubpeer ----
@@ -82,7 +73,7 @@ ref_pubpeer <- function(paper) {
 
     ## report_table ----
     rows <- !is.na(table$url)
-    cols <- c("bib_text", "total_comments", "url")
+    cols <- c("text", "total_comments", "url")
     report_table <- table[rows, cols]
     report_table$url <- link(report_table$url, "link")
     names(report_table) <- c("Reference", "Comments", "PubPeer Link")

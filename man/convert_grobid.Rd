@@ -7,7 +7,7 @@
 convert_grobid(
   file_path,
   save_path = ".",
-  api_url = "https://kermitt2-grobid.hf.space",
+  api_url = "http://localhost:8070",
   start_page = -1,
   end_page = -1,
   consolidate_citations = 0,

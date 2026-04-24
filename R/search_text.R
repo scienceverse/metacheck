@@ -94,7 +94,10 @@ search_text <- function(paper, pattern = ".*",
   required_cols <- c("text_id", "section_id", "paragraph_id", "text",
                      "paper_id", "header", "section_type")
   missing_cols <- setdiff(required_cols, names(text))
-  text[missing_cols] <- NA
+  for (m in missing_cols) {
+    text[[m]] <- rep(NA, nrow(text))
+  }
+
   if ("text" %in% missing_cols) text$text <- text[[1]]
 
   # filter reference section ----

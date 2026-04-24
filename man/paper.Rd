@@ -7,9 +7,9 @@
 paper(id = NULL, ...)
 }
 \arguments{
-\item{...}{further arguments to add}
+\item{id}{The ID of the study}
 
-\item{name}{The name of the study or a file path to a PDF or grobid XML}
+\item{...}{further arguments to add}
 }
 \value{
 An object with class scivrs_paper

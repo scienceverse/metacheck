@@ -142,6 +142,79 @@ convert_bibr <- function(file_path,
   .bibr_save_result(contents, file_path, save_path)
 }
 
+#' Check bibr server status
+#'
+#' @param api_url the URL to the bibr server
+#' @param api_key the API key to use (NULL if local)
+#' @param error whether to generate and error on failure
+#'
+#' @returns boolean
+#' @keywords internal
+.bibr_isalive <- function(api_url,
+                          api_key = Sys.getenv("SCIVRS_API_KEY"),
+                          error = TRUE) {
+  resp <- tryCatch(
+    {
+      req <- httr2::request(api_url) |>
+        httr2::req_url_path_append("ready")
+
+      if (!is.null(api_key)) {
+        req <- httr2::req_auth_bearer_token(req, api_key)
+      }
+      req |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_perform()
+    },
+    error = function(e) {
+      if (error) {
+        stop(
+          "Connection to the BIBR server failed. ",
+          "Please check your connection or the URL: ", api_url,
+          call. = FALSE
+        )
+      }
+    }
+  )
+
+  if (is.null(resp)) return(FALSE)
+
+  # check status
+  status <- httr2::resp_status(resp)
+  if (status != 200) {
+    if (error) {
+      stop("The BIBR server does not appear up and running on the URL ",
+           api_url, ". Status: ", status,
+           call. = FALSE)
+    } else {
+      return(FALSE)
+    }
+  }
+
+  # check for bad API key
+  ct <- resp$headers$`content-type`
+  if (!grepl("json", resp$headers$`content-type`)) {
+    if (error) {
+      stop("The server is running, but the API key is not valid",
+           call. = FALSE)
+    } else {
+      return(FALSE)
+    }
+  }
+
+  # check readiness
+  body <- httr2::resp_body_json(resp)
+  if (body$status != "ready" || body$checks$bibr != "ok") {
+    if (error) {
+      stop("The server is running, but BIBR is not ready", status,
+           call. = FALSE)
+    } else {
+      return(FALSE)
+    }
+  }
+
+  return(TRUE)
+}
+
 
 #' Submit and poll a job on the Scienceverse platform
 #' @noRd

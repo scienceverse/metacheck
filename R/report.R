@@ -34,7 +34,7 @@ report <- function(paper,
                      "stat_p_nonsig",
                      "stat_effect_size",
                      "marginal",
-                     "ref_doi_check",
+                     "ref_accuracy",
                      "ref_replication",
                      "ref_retraction",
                      "ref_pubpeer",
@@ -200,7 +200,7 @@ report_module_run <- function(paper, modules, args = list()) {
 
     op <- tryCatch(do.call(module_run, mod_args),
       error = function(e) {
-        warning("Error in ", module)
+        warning("Error in ", module, call. = FALSE)
         prev <- mod_args$paper$prev_outputs
         report_items <- list(
           module = module,
@@ -276,7 +276,7 @@ report_qmd <- function(module_output, paper = list()) {
   qmd_header <- sprintf(
     rt_head,
     subtitle,
-    author_text,
+    # author_text, # was confusing about author of paper vs report
     as.character(utils::packageVersion("metacheck")),
     Sys.Date(),
     doi_text

@@ -27,26 +27,17 @@
 #'
 #' @returns a list
 ref_replication <- function(paper, show_outcomes = FALSE) {
-  # table ----
-  cols <- c("paper_id", "bib_id", "doi", "bib_text")
-  bib <- paper_table(paper, "bib", cols)
+  # create table ----
+  bib <- ref_table(paper) |>
+    dplyr::filter(!is.na(doi), doi != "")
 
   # If there are no rows, return immediately
   if (nrow(bib) == 0) {
     norefs <- list(
       traffic_light = "na",
-      summary_text = "We found no references"
-    )
-    return(norefs)
-  }
-
-  # If there are no DOIs, return immediately
-  if (all(is.na(bib$doi))) {
-    nodois <- list(
-      traffic_light = "na",
       summary_text = "We found no references with DOIs"
     )
-    return(nodois)
+    return(norefs)
   }
 
   ## join to flora table
@@ -91,7 +82,7 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
       sum(!is.na(bib$doi)), summary_text
     )
   } else {
-    ## sumary_text ----
+    ## summary_text ----
     n_replications <- sum(table$replication_type == "replication", na.rm = TRUE)
     n_reproductions <- sum(table$replication_type == "reproduction", na.rm = TRUE)
     n_originals <- dplyr::n_distinct(table$doi)
@@ -136,7 +127,7 @@ ref_replication <- function(paper, show_outcomes = FALSE) {
     )
 
     ## report_table ----
-    report_table <- table[, c("bib_text", "replication_ref")]
+    report_table <- table[, c("text", "replication_ref")]
 
     # Create links using DOI if available, otherwise use URL
     has_doi <- !is.na(table$replication_doi) & table$replication_doi != ""

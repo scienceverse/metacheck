@@ -18,37 +18,47 @@
 #' @returns a list
 ref_consistency <- function(paper) {
   # detailed table of results ----
-  bibs <- paper_table(paper, "bib")
-  xrefs <- paper_table(paper, "xref")
-  xrefs <- xrefs[xrefs$xref_type == "bib", ]
+  bibs <- ref_table(paper) |>
+    dplyr::select(paper_id, bib_id, reference = text)
+  xrefs <- paper_table(paper, "xref") |>
+    dplyr::filter(xref_type == "bib") |>
+    dplyr::select(paper_id, bib_id = xref_id, contents, text_id)
+  text <- paper_table(paper, "text") |>
+    dplyr::select(paper_id, text_id, text)
 
-  missing_refs <- dplyr::anti_join(bibs, xrefs, by = c("paper_id", "bib_id" = "xref_id"))
-  missing_refs$missing <- rep("xref", nrow(missing_refs))
-  missing_bib <- dplyr::anti_join(xrefs, bibs, by = c("paper_id", "xref_id" = "bib_id"))
-  missing_bib$missing <- rep("bib", nrow(missing_bib))
-  names(missing_bib) <- names(missing_bib) |> sub("text", "bib_text", x = _)
-  missing_bib$bib_text <- as.list(missing_bib$bib_text)
-
-  table <- dplyr::bind_rows(missing_refs, missing_bib) |>
-    dplyr::arrange(id, xref_id)
+  table <- dplyr::full_join(
+    bibs, xrefs,
+    by = c("paper_id", "bib_id")
+  ) |>
+    dplyr::filter(is.na(contents) | is.na(bib_id)) |>
+    dplyr::left_join(text, by = c("paper_id", "text_id"))
+  table$text_id <- NULL
 
   # summary_table ----
-  nbibs <- dplyr::count(bibs, id, name = "n_bib")
-  nxrefs <- dplyr::count(xrefs, id, name = "n_xrefs")
-  nmiss <- dplyr::count(table, id, missing) |>
+  nbibs <- dplyr::count(bibs, paper_id, name = "n_bib")
+  nxrefs <- dplyr::count(xrefs, paper_id, name = "n_xrefs")
+  nmiss <- dplyr::count(table, paper_id, missing = is.na(bib_id)) |>
     tidyr::pivot_wider(
-      names_from = missing, names_prefix = "missing_",
+      names_from = missing, names_prefix = "n_missing_",
       values_from = n, values_fill = 0
     )
-  summary_table <- info_table(paper, c()) |>
+  nextra <- dplyr::count(table, paper_id, extra = is.na(contents)) |>
+    tidyr::pivot_wider(
+      names_from = extra, names_prefix = "n_extra_",
+      values_from = n, values_fill = 0
+    )
+  summary_table <- paper_id(paper) |>
     dplyr::left_join(nbibs, by = "paper_id") |>
     dplyr::left_join(nxrefs, by = "paper_id") |>
-    dplyr::left_join(nmiss, by = "paper_id")
+    dplyr::left_join(nmiss, by = "paper_id") |>
+    dplyr::left_join(nextra, by = "paper_id") |>
+    dplyr::select(-dplyr::ends_with("_FALSE")) |>
+    dplyr::rename_with(\(x) gsub("_TRUE", "", x))
 
   # traffic light ----
   tl <- dplyr::case_when(
     nrow(bibs) == 0 ~ "na",
-    nrow(missing_bib) || nrow(missing_refs) ~ "red",
+    nrow(table) > 0 ~ "red",
     .default = "green"
   )
 
@@ -59,11 +69,13 @@ ref_consistency <- function(paper) {
     na = "No bibliography entries were detected"
   )
 
-  cols <- c("xref_id", "bib_text", "missing")
-  report_table <- table[, cols]
+  cols <- c("bib_id", "type", "contents", "reference")
+  report_table <- table
+  report_table$type = ifelse(is.na(report_table$contents), "extra", "missing")
+  report_table$reference <- ifelse(is.na(report_table$reference), report_table$text, report_table$reference)
+  report_table <- report_table[, cols]
 
   report_text <- c(
-    report[[tl]],
     "This module relies on Grobid correctly parsing the references. There are likley to be some false positives.",
     scroll_table(report_table)
   )

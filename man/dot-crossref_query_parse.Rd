@@ -4,12 +4,10 @@
 \alias{.crossref_query_parse}
 \title{Parse crossref query items into a table}
 \usage{
-.crossref_query_parse(items, ref, min_score, select)
+.crossref_query_parse(items, min_score, select)
 }
 \arguments{
 \item{items}{list of items from CrossRef query response}
-
-\item{ref}{the original reference string}
 
 \item{min_score}{minimum score threshold}
 

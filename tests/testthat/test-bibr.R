@@ -6,6 +6,7 @@ test_that("convert_bibr selfhosted backend", {
 
   skip_api("localhost:8000")
   skip_if_quick()
+  skip_if_not(.bibr_isalive("http://localhost:8000", error = FALSE), message = "bibr local host not available")
 
   # pdf
   file_name <- "to_err_is_human.pdf"
@@ -121,6 +122,8 @@ test_that("convert_bibr selfhosted sends page params in request", {
 test_that("convert_bibr scivrs backend", {
   skip_api(bibr_url)
   skip_if_quick()
+  skip_if_not(.bibr_isalive(bibr_url, error = FALSE),
+              message = "bibr not available")
 
   # pdf
   file_path <- demofile("pdf")
@@ -275,6 +278,37 @@ test_that("convert_bibr auto-detects backend", {
   expect_true(startsWith(captured_url, scivrs_url))
 })
 
+test_that(".bibr_isalive", {
+  expect_true(is.function(metacheck:::.bibr_isalive))
+
+  expect_error(.bibr_isalive())
+
+  # not a url
+  api_url <- "bibr"
+  expect_error(.bibr_isalive(api_url))
+  expect_false(.bibr_isalive(api_url, error = FALSE))
+
+  # url, not bibr
+  api_url <- "https://google.com"
+  expect_error(.bibr_isalive(api_url))
+  expect_false(.bibr_isalive(api_url, error = FALSE))
+
+  # TODO: mock this
+  skip_api(bibr_url)
+
+  api_url <- bibr_url
+  alive <- .bibr_isalive(api_url, error = FALSE)
+  expect_in(alive, c(TRUE, FALSE))
+
+  # wrong API key
+  api_key <- "XXX"
+  expect_error(.bibr_isalive(api_url, api_key),
+               "API key is not valid")
+  alive <- .bibr_isalive(api_url, api_key, error = FALSE)
+  expect_false(alive)
+})
+
+
 test_that("read_bibr", {
   expect_true(is.function(metacheck::read_bibr))
   expect_no_error(helplist <- help(read_bibr, metacheck))
@@ -310,7 +344,7 @@ test_that("read - single paper", {
 })
 
 # test_that("read - images", {
-#   file_path <- system.file("demo/to_err_is_human.json", package = "metacheck")
+#   file_path <- system.file("demos/to_err_is_human.json", package = "metacheck")
 #   paper <- read(file_path, include_images = TRUE)
 #
 #   expect_true(paper_validate(paper))

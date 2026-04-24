@@ -10,6 +10,8 @@ validate(gt, module, compare = "table")
 \item{gt}{a data frame or vector of text}
 
 \item{module}{the module}
+
+\item{compare}{name of the module output table for comparison}
 }
 \value{
 something

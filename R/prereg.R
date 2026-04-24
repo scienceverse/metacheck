@@ -11,8 +11,14 @@ aspredicted_links <- function(paper) {
   text <- NULL
 
   # search for "aspredicted"
-  RGX_ASPREDICTED <- "/aspredicted>?\\s*\\.?org"
-  found_ap <- search_text(paper, RGX_ASPREDICTED)
+  # RGX_ASPREDICTED <- "/aspredicted>?\\s*\\.?org"
+  # found_ap <- search_text(paper, RGX_ASPREDICTED)
+
+  RGX_ASPREDICTED <- "aspredicted>?\\s*\\.?org"
+  urls <- paper_table(paper, "url")
+  urls$text <- urls$href
+  urls$href <- NULL
+  found_ap <- search_text(urls, RGX_ASPREDICTED)
 
   # fix blind.php? with x=abcdef in the next sentence
   blind <- grep("blind\\.php\\?$", found_ap$text)
@@ -20,7 +26,7 @@ aspredicted_links <- function(paper) {
   found_ap$text[blind] <- expanded$expanded
 
   # fix space stuff
-  found_ap$text <- gsub(RGX_ASPREDICTED, "/aspredicted\\.org",
+  found_ap$text <- gsub(RGX_ASPREDICTED, "aspredicted\\.org",
     x = found_ap$text
   )
   found_ap$text <- gsub("blind\\.php\\s*\\?\\s*x\\s*=\\s*",
@@ -29,13 +35,13 @@ aspredicted_links <- function(paper) {
   )
 
   # match up to ">"
-  match_ap <- search_text(found_ap, "/aspredicted\\.org[^\\>]+", return = "match")
+  match_ap <- search_text(found_ap, "aspredicted\\.org[^\\>]+", return = "match")
 
   # clean up the text
   match_ap$text <- match_ap$text |>
     gsub("\\s", "", x = _) |>
     gsub("\\.pdf.*", "\\.pdf", x = _) |> # some end in ".pdf)."
-    paste0("https:/", x = _)
+    paste0("https://", x = _)
 
   # remove trailing blind links
   unique_matches <- match_ap |>

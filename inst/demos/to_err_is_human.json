@@ -3,7 +3,9 @@
   "info": [
     {
       "title": "To Err is Human: An Empirical Investigation",
-      "keywords": [],
+      "keywords": [
+        []
+      ],
       "doi": null,
       "file_hash": "a26373a4f28e3718",
       "input_format": "pdf",
@@ -803,15 +805,20 @@
   ],
   "bib_match": [
     {
-      "service": "crossref",
       "bib_id": 1,
-      "service_id": "10.32614/cran.package.faux",
-      "score": 100,
+      "service": "crossref",
+      "service_id": null,
+      "score": 62.0597,
       "bib_type": "misc",
       "doi": "10.32614/cran.package.faux",
       "title": "faux: Simulation for Factorial Designs",
-      "authors": "DeBruine, Lisa",
-      "editors": null,
+      "authors": [
+        {
+          "given": "Lisa",
+          "family": "DeBruine"
+        }
+      ],
+      "editors": [],
       "publisher": "The R Foundation",
       "year": 2020,
       "date": null,
@@ -825,15 +832,24 @@
       "url": "https://doi.org/10.32614/cran.package.faux"
     },
     {
-      "service": "crossref",
       "bib_id": 2,
-      "service_id": "10.1037/0003-066x.54.6.408",
-      "score": 100,
+      "service": "crossref",
+      "service_id": null,
+      "score": 103.1059,
       "bib_type": "article",
       "doi": "10.1037/0003-066x.54.6.408",
       "title": "The origins of sex differences in human behavior: Evolved dispositions versus social roles.",
-      "authors": "Eagly, Alice H.; Wood, Wendy",
-      "editors": null,
+      "authors": [
+        {
+          "given": "Alice H.",
+          "family": "Eagly"
+        },
+        {
+          "given": "Wendy",
+          "family": "Wood"
+        }
+      ],
+      "editors": [],
       "publisher": "American Psychological Association (APA)",
       "year": 1999,
       "date": null,
@@ -847,15 +863,24 @@
       "url": "https://doi.org/10.1037/0003-066x.54.6.408"
     },
     {
-      "service": "crossref",
       "bib_id": 3,
-      "service_id": "10.1177/0956797614520714",
-      "score": 100,
+      "service": "crossref",
+      "service_id": null,
+      "score": 103.5523,
       "bib_type": "article",
       "doi": "10.1177/0956797614520714",
       "title": "Retracted: Evil Genius? How Dishonesty Can Lead to Greater Creativity",
-      "authors": "Gino, Francesca; Wiltermuth, Scott S.",
-      "editors": null,
+      "authors": [
+        {
+          "given": "Francesca",
+          "family": "Gino"
+        },
+        {
+          "given": "Scott S.",
+          "family": "Wiltermuth"
+        }
+      ],
+      "editors": [],
       "publisher": "SAGE Publications",
       "year": 2014,
       "date": null,
@@ -869,15 +894,28 @@
       "url": "https://doi.org/10.1177/0956797614520714"
     },
     {
-      "service": "crossref",
       "bib_id": 4,
-      "service_id": "10.1177/2515245918770963",
-      "score": 100,
+      "service": "crossref",
+      "service_id": null,
+      "score": 68.781,
       "bib_type": "article",
       "doi": "10.1177/2515245918770963",
       "title": "Equivalence Testing for Psychological Research: A Tutorial",
-      "authors": "Lakens, Daniel; Scheel, Anne M.; Isager, Peder Mortvedt",
-      "editors": null,
+      "authors": [
+        {
+          "given": "Daniël",
+          "family": "Lakens"
+        },
+        {
+          "given": "Anne M.",
+          "family": "Scheel"
+        },
+        {
+          "given": "Peder M.",
+          "family": "Isager"
+        }
+      ],
+      "editors": [],
       "publisher": "SAGE Publications",
       "year": 2018,
       "date": null,

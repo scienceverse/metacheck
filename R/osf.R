@@ -209,7 +209,7 @@ osf_retrieve <- function(osf_url, id_col = 1,
     child_collector <- data.frame()
 
     while (nrow(children) > 0) {
-      node_ids <- children[children$osf_type == "nodes", "osf_id"]
+      node_ids <- children[children$osf_type == "nodes", ]$osf_id
       children <- osf_children(node_ids, pb = pb)
       child_collector <- dplyr::bind_rows(child_collector, children)
     }

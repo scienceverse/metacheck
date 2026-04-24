@@ -60,7 +60,6 @@ test_that("power, no LLM", {
 })
 
 test_that("power, with LLM", {
-  skip("Jakub please fix")
   skip_llm()
 
   module <- "power"

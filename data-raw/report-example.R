@@ -17,8 +17,7 @@ modules <- c(
   "power",
   "repo_check",
   "code_check",
-  # use ref_doi_check
-  "ref_doi_check",
+  # ref functions
   "ref_accuracy",
   "ref_replication",
   "ref_retraction",

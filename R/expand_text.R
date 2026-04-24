@@ -18,8 +18,8 @@
 #' expanded <- expand_text(res_tbl, paper)
 #'
 #' # multiple paper search
-#' papers <- demodir() |> read()
-#' res_tbl <- search_text(papers, "replicate", return = "sentence")
+#' papers <- psychsci
+#' res_tbl <- search_text(papers, "replicate")
 #' expanded <- expand_text(res_tbl, papers, plus = 1, minus = 1)
 expand_text <- function(results_table,
                         paper,

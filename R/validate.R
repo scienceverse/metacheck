@@ -52,6 +52,7 @@ accuracy <- function(expected, observed) {
 #'
 #' @param gt a data frame or vector of text
 #' @param module the module
+#' @param compare name of the module output table for comparison
 #'
 #' @returns something
 #' @export

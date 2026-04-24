@@ -17,7 +17,7 @@
 #' @export
 #'
 convert_grobid <- function(file_path, save_path = ".",
-                           api_url = "https://kermitt2-grobid.hf.space",
+                           api_url = "http://localhost:8070",
                            start_page = -1,
                            end_page = -1,
                            consolidate_citations = 0,
@@ -27,31 +27,8 @@ convert_grobid <- function(file_path, save_path = ".",
     stop("Files do not exist")
   }
 
-  # check if api_url is a valid url, before connecting to it
-  if (!grepl("^https?://", api_url)) {
-    stop("api_url must be a valid URL, starting with http or https!")
-  }
-
-  # test if the server is up using the isalive endpoint, instead of sitedown
-  resp <- tryCatch(
-    {
-      httr2::request(api_url) |>
-        httr2::req_url_path("/api/isalive") |>
-        httr2::req_error(is_error = \(resp) FALSE) |>
-        httr2::req_perform()
-    },
-    error = function(e) {
-      stop(
-        "Connection to the GROBID server failed!",
-        "Please check your connection or the URL: ", api_url
-      )
-    }
-  )
-
-  status <- httr2::resp_status(resp)
-  if (status != 200) {
-    stop("GROBID server does not appear up and running on the provided URL. Status: ", status)
-  }
+  # test if the server is up
+  .grobid_isalive(api_url)
 
   # handle list of files or a directory----
   if (length(file_path) > 1) {
@@ -247,6 +224,45 @@ grobid_to_bibr <- function(xml_file,
 }
 
 
+#' Check grobid server status
+#'
+#' @param api_url the URL to the grobid server
+#' @param error whether to generate and error on failure
+#'
+#' @returns boolean
+#' @keywords internal
+.grobid_isalive <- function(api_url, error = TRUE) {
+  # test if the server is up using the isalive endpoint, instead of sitedown
+  resp <- tryCatch(
+    {
+      httr2::request(api_url) |>
+        httr2::req_url_path("/api/isalive") |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_perform()
+    },
+    error = function(e) {
+      if (error) {
+        stop(
+          "Connection to the GROBID server failed! ",
+          "Please check your connection or the URL: ", api_url,
+          call. = FALSE
+        )
+      }
+    }
+  )
+
+  if (is.null(resp)) return(FALSE)
+
+  status <- httr2::resp_status(resp)
+  if (status != 200 && error) {
+    stop("GROBID server does not appear up and running on the provided URL. Status: ", status,
+         call. = FALSE)
+  }
+
+  return(status == 200)
+}
+
+
 #' Convert grobid to Bibr format
 #'
 #' @param xml_file a singhle XML file
@@ -256,6 +272,8 @@ grobid_to_bibr <- function(xml_file,
 #' @export
 #' @keywords internal
 .grobid_to_bibr <- function(xml_file, pb = NULL) {
+  header <- section_type <- NULL
+
   schema <- paper_schema()
   m <- regexec("(?<=\\(v)[\\d\\.]+", schema$description, perl = TRUE)
   bibr_version = regmatches(schema$description, m)[[1]]
@@ -663,7 +681,7 @@ tei_authors <- function(xml) {
 #' @return xrefs table
 #' @keywords internal
 tei_xrefs <- function(xml, text_table) {
-  text <- xref_id <- xref_type <- NULL
+  text <- text_id <- xref_id <- xref_type <- NULL
   xrefs <- xml2::xml_find_all(xml, "//ref")
   if (length(xrefs) == 0) {
     return(data.frame(

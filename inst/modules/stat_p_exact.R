@@ -41,7 +41,7 @@ stat_p_exact <- function(paper) {
 
   cols <- c("text", "expanded")
   report_table <- unique(p[p$imprecise, cols, drop = FALSE])
-  colnames(report_table) <- c("P-Value", "Sentence")
+  colnames(report_table) <- c("P-Value", "Text")
 
   # summary_table ----
   summary_table <- p[p$imprecise, , drop = FALSE]

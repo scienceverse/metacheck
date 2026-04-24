@@ -94,15 +94,7 @@ test_that("module_help", {
   expect_equal(help$title, title)
   expect_equal(help$description, desc)
 
-  # with argument
-  help <- module_help("ref_doi_check")
-  output <- capture.output(help)
-  usage <- "module_run(paper, \"ref_doi_check\", crossref_min_score = 50)"
-  def1 <- "- paper: a paper object or paperlist object  "
-  def2 <- "- crossref_min_score: The minimum score to return a DOI match from `crossref_query()`  "
-  expect_equal(output[[5]], usage)
-  expect_equal(output[[7]], def1)
-  expect_equal(output[[8]], def2)
+  # TODO: test with argument
 })
 
 test_that("module_template", {

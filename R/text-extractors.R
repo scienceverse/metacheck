@@ -25,7 +25,7 @@ extract_urls <- function(paper) {
 #' @details
 #' Note that this will not catch p-values reported like "the p-value is 0.03" because that results in a ton of false positives when papers discuss p-value thresholds. If you need to detect text like that, use the `search_text()` function and a custom pattern.
 #'
-#' This will catch most comparators like =<>~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.
+#' This will catch most comparators like =<>~ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.
 #'
 #' @param paper a paper object or paperlist object
 #'
@@ -83,7 +83,7 @@ extract_p_values <- function(paper) {
 #' @details
 #' Note that this will not catch p-values reported like "the p-value is 0.03" because that results in a ton of false positives when papers discuss p-value thresholds. If you need to detect text like that, use the `search_text()` function and a custom pattern.
 #'
-#' This will catch most comparators like =<>~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.
+#' This will catch most comparators like =<>~and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.
 #'
 #' @param paper a paper object or paperlist object
 #'
@@ -96,7 +96,7 @@ extract_p_values <- function(paper) {
 extract_equations <- function(paper) {
   # set up pattern
   operators <- c(
-    "=", "<", ">", "~", "≈",
+    "=", "<", ">", "~",
     "\u2248", # ~~
     "\u2260", # !=
     "\u2264", # <=
@@ -104,13 +104,19 @@ extract_equations <- function(paper) {
     "\u226A", # <<
     "\u226B" # >>
   )
+  greek <- c(
+    "\u03B2", # beta
+    "\u03B7", # eta
+    "\u03B1" # alpha
+  )
 
   op <- operators |> paste(collapse = "")
+  gr <- greek |> paste(collapse = "")
   pattern <- paste0(
     "(?:(Cronbach..|Cohen..|\\d{1,2}%)\\s+)?", # common prefix
-    "[βηa-zA-Z-_\\.0-9\\{\\}\\^\\\\]+\\s*", # statistic name
+    "[", gr, "a-zA-Z-_\\.0-9\\{\\}\\^\\\\]+\\s*", # statistic name
     "(?:\\([^)]*\\))?\\s*", # optional parentheses
-    "[", op , "]{1,2}\\s*", # 1-2 operators
+    "[", op , "]{1,3}\\s*", # 1-3 operators
     "([0-9\\.,+-]*[0-9]|\\[[^\\]]+\\])", # valid numbers or anything in []
     "\\s*(e\\s*-\\d+)?", # also match scientific notation
     "(\\s*[x\\*]\\s*10\\s*\\^\\s*-\\d+)?"

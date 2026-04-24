@@ -213,6 +213,7 @@ test_that("osf_file_download registrations", {
 
   skip_if_quick()
 
+  osf_id <- "jqkg7"
   contents <- osf_retrieve(osf_id, recursive = TRUE)
   expect_contains(contents$kind, c("folder", "file"))
 })

@@ -56,13 +56,16 @@ reference:
 - title: Reading in Papers
   desc: ~
   contents:
+  - '`convert`'
   - '`convert_bibr`'
   - '`convert_grobid`'
   - '`grobid_to_bibr`'
   - '`read`'
   - '`demopaper`'
+  - '`demofile`'
   - '`psychsci`'
   - '`test_paper`'
+  - '`paper_id`'
   - '`paper_coerce`'
   - '`paper_schema`'
   - '`paper_write`'
@@ -73,6 +76,7 @@ reference:
   - '`search_text`'
   - '`expand_text`'
   - '`paper_table`'
+  - '`ref_table`'
 - title: Module Functions
   desc: ~
   contents:

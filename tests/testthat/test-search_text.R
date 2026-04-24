@@ -117,6 +117,19 @@ test_that("odd errors", {
   x <- search_text(paper, pattern, perl = TRUE, return = "match")
   expect_equal(nrow(x), 0)
   expect_contains(names(x), "text")
+
+  # missing cols
+  paper <- data.frame(
+    text = LETTERS
+  )
+  pattern <- "B"
+  x <- search_text(paper, pattern)
+  expect_equal(x$text, "B")
+  expect_contains(names(x), "text_id")
+
+  # no text
+  paper <- data.frame(text = character(0))
+  x <- search_text(paper)
 })
 
 test_that("exclude", {

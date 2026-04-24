@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-#' filename <- system.file("demo/to_err_is_human.xml", package = "metacheck")
+#' filename <- system.file("demos/to_err_is_human.xml", package = "metacheck")
 #' paper <- read_grobid(filename)
 read_grobid <- function(filename) {
   # handle list of files or a directory----

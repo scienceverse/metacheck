@@ -21,7 +21,7 @@ module_run <- function(paper, module, ...) {
     # pull out objects to use later
     paper <- prev$paper
     prev$paper <- NULL
-    summary_table <- prev$summary_table
+    summary_table <- prev$summary_table %||% data.frame(paper_id = character(0))
     prev$summary_table <- NULL
 
     # get or set up .__mc__prev_outputs

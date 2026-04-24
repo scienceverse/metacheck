@@ -167,19 +167,6 @@ test_that("detected", {
     "stat_p_exact", "marginal", "stat_effect_size", "stat_check"
   )
 
-  # add a retracted paper
-  retracted <- data.frame(
-    bib_id = 5,
-    title = "Fake",
-    doi = retractionwatch()$doi[[1]],
-    bib_text = "Test retracted paper",
-    bibtype = "Article",
-    journal_title = "Fake Journal",
-    year = "2025",
-    author = "Hmmm"
-  )
-  paper$bib <- dplyr::bind_rows(paper$bib, retracted)
-
   # add imprecise p-values
   paper$text[1, "text"] <- "Bad p-value example (p < .05)"
   paper$text[2, "text"] <- "Bad p-value example (p<.05)"

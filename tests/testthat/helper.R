@@ -2,9 +2,9 @@
 # https://r-pkgs.org/testing-design.html#testthat-helper-files
 
 # if TRUE, skip slow tests and those that need external connections
-quick <- FALSE
+quick <- TRUE
 
-testthat::set_max_fails(Inf)
+testthat::set_max_fails(1)
 
 email("metacheck@scienceverse.org")
 
@@ -12,14 +12,15 @@ httptest::.mockPaths(NULL)
 apis <- normalizePath("apis")
 httptest::.mockPaths(apis)
 
-grobid_url <- "http://localhost:8070"
+# grobid_url <- "http://localhost:8070"
+grobid_url <- "https://grobid.metacheck.app"
 bibr_url <- "https://platform.metacheck.app"
 
 # change fancy quotes to straight for text matching with crossref
 fix_fancy <- function(x) {
   x |>
-    gsub("[\u2018\u2019\u0060]", "'", x = _) |>
-    gsub("[\u201C\u201D]", "\"", x = _) |>
+    gsub("[\u2018\u2019\u201A\u201B\u0060]", "'", x = _) |>
+    gsub("[\u201C\u201D\u201E\u201F]", '"', x = _) |>
     gsub("–", "-", x = _)
 }
 

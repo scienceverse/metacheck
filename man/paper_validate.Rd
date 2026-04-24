@@ -17,7 +17,10 @@ Checks if a paper object conforms to the JSON schema.
 }
 \examples{
 paper <- list(paper_id = "Not a paper object")
-paper_validate(paper)
+tryCatch(
+  paper_validate(paper),
+  error = \(e) print(e$message)
+)
 
 paper <- demopaper()
 paper_validate(paper)

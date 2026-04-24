@@ -20,7 +20,7 @@ the path to the JSON file
 Save a paper as a JSON file.
 }
 \examples{
-dontrun{
+\dontrun{
 paper <- demopaper()
 paper$info$title <- "New title"
 paper_write(paper, "new_paper")

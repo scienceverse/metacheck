@@ -6,6 +6,9 @@
 \usage{
 demofile(ext = c("json", "pdf", "docx", "doc", "xml", "qmd"))
 }
+\arguments{
+\item{ext}{the extension of the file}
+}
 \value{
 file path
 }

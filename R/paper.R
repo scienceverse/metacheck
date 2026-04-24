@@ -19,7 +19,7 @@ paper_schema <- function() {
 #'
 #' Create a new paper object or load a paper from PDF or XML
 #'
-#' @param name The name of the study or a file path to a PDF or grobid XML
+#' @param id The ID of the study
 #' @param ... further arguments to add
 #'
 #' @return An object with class scivrs_paper
@@ -165,7 +165,10 @@ test_paper <- function(text = LETTERS) {
 #'
 #' @examples
 #' paper <- list(paper_id = "Not a paper object")
-#' paper_validate(paper)
+#' tryCatch(
+#'   paper_validate(paper),
+#'   error = \(e) print(e$message)
+#' )
 #'
 #' paper <- demopaper()
 #' paper_validate(paper)
@@ -455,7 +458,7 @@ print.scivrs_paperlist <- function(x, ...) {
 #' @examples
 #' paper <- demopaper()
 demopaper <- function() {
-  file_path <- system.file("demo/to_err_is_human.json",
+  file_path <- system.file("demos/to_err_is_human.json",
                            package = "metacheck")
 
   read_bibr(file_path)
@@ -464,6 +467,8 @@ demopaper <- function() {
 #' Get a demo file
 #'
 #' Return the file path for various versions of the demo paper. Use `demopaper()` to directly read it as a paper object from the json file.
+#'
+#' @param ext the extension of the file
 #'
 #' @return file path
 #' @export
@@ -474,7 +479,7 @@ demopaper <- function() {
 demofile <- function(ext = c("json", "pdf", "docx", "doc", "xml", "qmd")) {
   ext <- match.arg(ext)
 
-  file_path <- paste0("demo/to_err_is_human.", ext) |>
+  file_path <- paste0("demos/to_err_is_human.", ext) |>
     system.file(package = "metacheck")
 
   return(file_path)
@@ -495,7 +500,10 @@ demofile <- function(ext = c("json", "pdf", "docx", "doc", "xml", "qmd")) {
 #' biblio <- paper_table(psychsci[1:10], "bib")
 #' xrefs <- paper_table(psychsci[1:10], "xref")
 paper_table <- function(paper, table, cols = NULL) {
-  if (!is_paper_list(paper)) paper <- list(paper)
+  if (!is_paper_list(paper)) {
+    if (!is_paper(paper)) stop("paper must be a paper or paperlist object.")
+    paper <- list(paper)
+  }
 
   # add paper_id to tables
   table_list <- lapply(paper, `[[`, table)
@@ -517,6 +525,55 @@ paper_table <- function(paper, table, cols = NULL) {
 }
 
 
+#' Get Paper IDs
+#'
+#' @param paper a paper or paperlist
+#'
+#' @returns a table with paper_id column
+#' @export
+#'
+#' @examples
+#' paper_id(psychsci)
+paper_id <- function(paper) {
+  paper_table(paper, "info", "paper_id")
+}
+
+#' Reference and DOI table
+#'
+#' Return a table with fixed DOIs and reference text from a paper object or concatenate tables across a list of paper objects.
+#'
+#' @param paper a paper or paperlist
+#'
+#' @return a merged table
+#' @export
+#'
+#' @examples
+#' biblio <- ref_table(psychsci[[1]])
+ref_table <- function(paper) {
+  bib_id <- text <- NULL
+  cols <- c("paper_id", "bib_id", "doi")
+  bib_orig <- paper_table(paper, "bib", cols)
+  bib_match <- paper_table(paper, "bib_match", cols)
+  if (nrow(bib_match) == 0) {
+    bib <- bib_orig
+  } else {
+    bib <- dplyr::anti_join(bib_orig, bib_match,
+                            by = c("paper_id", "bib_id")) |>
+      dplyr::bind_rows(bib_match) |>
+      dplyr::arrange(paper_id, bib_id)
+  }
+
+  ref_text <- dplyr::inner_join(
+    paper_table(paper, "bib"),
+    paper_table(paper, "text"),
+    by = c("paper_id", "text_id")
+  ) |>
+    dplyr::select(paper_id, bib_id, text)
+
+  dplyr::inner_join(bib, ref_text, by = c("paper_id", "bib_id"))
+}
+
+
 #' Write paper
 #'
 #' Save a paper as a JSON file.
@@ -529,7 +586,7 @@ paper_table <- function(paper, table, cols = NULL) {
 #' @export
 #'
 #' @examples
-#' dontrun{
+#' \dontrun{
 #' paper <- demopaper()
 #' paper$info$title <- "New title"
 #' paper_write(paper, "new_paper")

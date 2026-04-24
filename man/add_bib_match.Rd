@@ -18,7 +18,7 @@ the paper or paperlist with bib_match table added
 Match table from bib table
 }
 \examples{
-dontrun{
+\dontrun{
 paper <- demopaper()
 paper$bib_match <- NULL # remove existing
 paper2 <- add_bib_match(paper)

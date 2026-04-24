@@ -4,8 +4,14 @@ test_that("convert", {
 
   expect_error(convert(bad_arg))
 
-  # no relevant files
+  # no files
   file_path <- file.path(withr::local_tempdir(), "emptydir")
+  dir.create(file_path)
+  expect_error(convert(file_path), "No PDF, XML, DOC or DOCX files detected")
+
+  # no relevant files
+  txt_path <- file.path(file_path, "hi.txt")
+  write("hi", txt_path)
   expect_error(convert(file_path), "No PDF, XML, DOC or DOCX files detected")
 })
 
@@ -54,6 +60,8 @@ test_that("XML-crossref", {
 
 test_that("PDF-auto", {
   skip_api(grobid_url)
+  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
+              message = "grobid not available")
 
   file_path <- demofile("pdf")
   save_path <- withr::local_tempdir()
@@ -68,6 +76,8 @@ test_that("PDF-auto", {
 
 test_that("PDF-grobid", {
   skip_api(grobid_url)
+  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
+              message = "grobid not available")
 
   file_path <- demofile("pdf")
   save_path <- withr::local_tempdir()
@@ -83,6 +93,8 @@ test_that("PDF-grobid", {
 
 test_that("PDF-bibr", {
   skip_api(bibr_url)
+  skip_if_not(.bibr_isalive(bibr_url, error = FALSE),
+              message = "bibr not available")
 
   file_path <- demofile("pdf")
   save_path <- withr::local_tempdir()
@@ -98,6 +110,8 @@ test_that("PDF-bibr", {
 
 test_that("DOC-auto", {
   skip_api(bibr_url)
+  skip_if_not(.bibr_isalive(bibr_url, error = FALSE),
+              message = "bibr not available")
 
   file_path <- demofile("doc")
   save_path <- withr::local_tempdir()
@@ -112,6 +126,8 @@ test_that("DOC-auto", {
 
 test_that("DOCX-auto", {
   skip_api(bibr_url)
+  skip_if_not(.bibr_isalive(bibr_url, error = FALSE),
+              message = "bibr not available")
 
   file_path <- demofile("doc")
   save_path <- withr::local_tempdir()

@@ -161,7 +161,7 @@ server <- function(input, output, session) {
   observeEvent(input$batch_demo, {
     debug_msg("batch_demo")
 
-    s <- read(demodir())
+    s <- psychsci[c(48, 91)]
     update_from_paper(s)
   })
 

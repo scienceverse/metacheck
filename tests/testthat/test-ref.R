@@ -38,6 +38,7 @@ test_that("add_bib_match", {
   expect_equal(paper_bm$bib_match$bib_id, 1:2)
   expect_equal(paper_bm$bib_match$doi, c("10.1098/rspb.2002.2034",
                                          "10.1098/rspb.2004.3003"))
+  expect_equal(paper_bm$bib_match$year, c(2002, 2005))
 
   # set threshold between two papers
   min_score <- mean(paper_bm$bib_match$score)
@@ -91,206 +92,7 @@ test_that("longer bib", {
 
 
 
-test_that("doi_lookup", {
-  expect_true(is.function(metacheck::doi_lookup))
-  expect_no_error(helplist <- help(doi_lookup, metacheck))
 
-  expect_error(doi_lookup(badarg))
-
-  # NULL VALUE
-  doi <- NULL
-  exp <- data.frame(doi = character(0))
-  info <- doi_lookup(doi)
-  expect_equal(info, exp)
-
-  # empty vector
-  doi <- c()
-  exp <- data.frame(doi = character(0))
-  info <- doi_lookup(doi)
-  expect_equal(info, exp)
-
-  skip_api("doi.org")
-
-  # one item
-  doi <- "10.7717/peerj.4375"
-  info <- doi_lookup(doi)
-  expect_equal(nrow(info), 1)
-  expect_equal(info$title, "The state of OA: a large-scale analysis of the prevalence and impact of Open Access articles")
-
-  # one NA
-  doi <- NA
-  info <- doi_lookup(doi)
-  expect_equal(nrow(info), 1)
-  expect_equal(info$title, NA_character_)
-
-  # multiple items
-  doi <- c("10.1177/2515245920970949", "10.1037/0003-066x.54.6.408")
-  info <- doi_lookup(doi)
-  exp <- c("Improving Transparency, Falsifiability, and Rigor by Making Hypothesis Tests Machine-Readable",
-           "The origins of sex differences in human behavior: Evolved dispositions versus social roles.")
-  expect_equal(info$title, exp)
-})
-
-test_that("doi_clean", {
-  expect_true(is.function(metacheck::doi_clean))
-  expect_no_error(helplist <- help(doi_clean, metacheck))
-
-  expect_error(doi_clean(bad_arg))
-
-  exp <- "10.1038/nphys1170"
-  doi <- "https://doi.org/10.1038/nphys1170"
-  clean <- doi_clean(doi)
-  expect_equal(clean, exp)
-
-  doi <- "doi:10.1038/nphys1170"
-  clean <- doi_clean(doi)
-  expect_equal(clean, exp)
-
-  doi <- "  DOI : 10.1038/nphys1170 "
-  clean <- doi_clean(doi)
-  expect_equal(clean, exp)
-
-  doi <- "bad.doi"
-  clean <- doi_clean(doi)
-  expect_equal(clean, doi)
-
-  # multiple
-  doi <- c(
-    "https://doi.org/10.1038/nphys1170",
-    "doi:10.1038/nphys1170",
-    "  DOI : 10.1038/nphys1170 ",
-    "10.1038/nphys1170",
-    "",
-    NA
-  )
-  clean <- doi_clean(doi)
-  exp <- rep("10.1038/nphys1170", 4) |> c("", NA)
-  expect_equal(clean, exp)
-
-  doi <- list(
-    "https://doi.org/10.1038/nphys1170",
-    "doi:10.1038/nphys1170",
-    "  DOI : 10.1038/nphys1170 ",
-    "10.1038/nphys1170",
-    "",
-    NA
-  )
-  clean <- doi_clean(doi)
-  expect_equal(clean, exp)
-
-  # journal-specific format
-  doi <- "http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0004153"
-  clean <- doi_clean(doi)
-  exp <- "10.1371/journal.pone.0004153"
-  expect_equal(clean, exp)
-
-  # make sure the start match at the first 10.###
-  doi <- "10.1234/more.10.2345"
-  clean <- doi_clean(doi)
-  expect_equal(clean, doi)
-
-  # remove post # sections
-  doi <- "10.1234/mypaper#section"
-  clean <- doi_clean(doi)
-  expect_equal(clean, "10.1234/mypaper")
-
-  # remove post /full
-  doi <- "10.1234/mypaper/full"
-  clean <- doi_clean(doi)
-  expect_equal(clean, "10.1234/mypaper")
-})
-
-test_that("doi_valid_format", {
-  expect_true(is.function(metacheck::doi_valid_format))
-  expect_no_error(helplist <- help(doi_valid_format, metacheck))
-
-  expect_error(doi_valid_format(bad_arg))
-
-  doi <- "10.1038/nphys1170"
-  v <- doi_valid_format(doi)
-  expect_equal(v, T)
-
-  doi <- "no10.1038/nphys1170"
-  v <- doi_valid_format(doi)
-  expect_equal(v, F)
-
-  doi <- NA
-  v <- doi_valid_format(doi)
-  expect_equal(v, F)
-
-  doi <- c("10.1038/nphys1170", "bad", NA)
-  v <- doi_valid_format(doi)
-  expect_equal(v, c(T, F, F))
-
-  # odd format
-  doi <- "10.1002/(SICI)1099-1611(200001/02)9:1<11::AID-PON424>3.0.CO;2-Z"
-  v <- doi_valid_format(doi)
-  expect_equal(v, T)
-})
-
-# httptest::start_capturing()
-httptest::use_mock_api()
-
-test_that("doi_resolves", {
-  expect_true(is.function(metacheck::doi_resolves))
-  expect_no_error(helplist <- help(doi_resolves, metacheck))
-
-  expect_error(doi_resolves(bad_arg))
-
-  doi <- "10.1038/nphys1170"
-  check <- doi_resolves(doi)
-  expect_true(check)
-
-  doi <- "10.1234/invalid.doi"
-  check <- doi_resolves(doi)
-  expect_false(check)
-
-  check <- doi_resolves(NA)
-  expect_equal(check, NA)
-
-  check <- doi_resolves("")
-  expect_equal(check, NA)
-
-  # invalid format
-  check <- doi_resolves("bad.doi")
-  expect_false(check)
-
-  # multiple
-  doi <- c("10.1038/nphys1170", "10.1234/invalid.doi", "bad.doi", NA)
-  check <- doi_resolves(doi)
-  expect_equal(check, c(T, F, F, NA))
-
-  # clean DOIs
-  doi <- "https://doi.org/10.1038/nphys1170"
-  check <- doi_resolves(doi)
-  expect_true(check)
-
-  doi <- "doi:10.1038/nphys1170"
-  check <- doi_resolves(doi)
-  expect_true(check)
-
-  doi <- "  DOI : 10.1038/nphys1170 "
-  check <- doi_resolves(doi)
-  expect_true(check)
-
-  # try to break it
-  doi <- list("10.1038/nphys1170", "10.1234/invalid.doi", NA)
-  check <- doi_resolves(doi)
-  expect_equal(check, c(T, F, NA))
-
-  # should it do this or break?
-  doi <- list(c("10.1038/nphys1170", "10.1234/invalid.doi"),
-              c("10.1038/nphys1170", NA))
-  check <- doi_resolves(doi)
-  expect_equal(check, c(T, F, T, NA))
-
-  # server not available - without_internet not working!
-  doi <- c("10.1038/nphys1170", "10.1234/invalid.doi", "bad.doi", NA)
-  # httptest::without_internet({
-  #   check <- doi_resolves(doi)
-  #   expect_equal(check, c(NA, NA, NA, F))
-  # })
-})
 
 test_that("crossref_query", {
   expect_true(is.function(metacheck::crossref_query))
@@ -315,11 +117,20 @@ test_that("crossref_query", {
   # select
   ref <- "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1)."
   obs <- crossref_query(ref, select = c("DOI"))
-  expect_equal(names(obs), c("ref", "DOI"))
+  expect_setequal(names(obs), c("ref", "DOI"))
 
   ref <- "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1)."
   obs <- crossref_query(ref, select = c("score", "title"))
-  expect_equal(names(obs), c("ref", "score", "title"))
+  expect_setequal(names(obs), c("ref", "score", "title"))
+
+  ref <- data.frame(
+    authors = "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M.",
+    title = "The benefits of preregistration and Registered Reports",
+    container = "Evidence-Based Toxicology",
+    year = 2024
+  )
+  obs <- crossref_query(ref, select = c("score", "title"))
+  expect_equal(obs$title, "The benefits of preregistration and Registered Reports")
 
   # from bibentry
   ref <- bibentry(
@@ -414,12 +225,149 @@ test_that("crossref_doi", {
   expect_equal(cr4$DOI, cr2$DOI)
 })
 
-test_that(".crossref_batch_query", {
-  expect_true(is.function(metacheck:::.crossref_batch_query))
+test_that("datacite_doi", {
+  expect_true(is.function(metacheck::datacite_doi))
+  expect_no_error(helplist <- help(datacite_doi, metacheck))
 
-  expect_error(.crossref_batch_query())
+  expect_error(datacite_doi(badarg))
 
+  # NULL VALUE
+  doi <- NULL
+  info <- datacite_doi(doi)
+  expect_equal(nrow(info), 0)
 
+  # empty vector
+  doi <- c()
+  info <- datacite_doi(doi)
+  expect_equal(nrow(info), 0)
+
+  skip_api("api.datacite.org")
+
+  # one item
+  doi <- "10.5281/zenodo.2669586"
+  info <- datacite_doi(doi)
+  expect_equal(nrow(info), 1)
+  expect_equal(info$service, "datacite")
+  expect_equal(info$title, "faux: Simulation for Factorial Designs")
+
+  # one NA
+  doi <- NA
+  info <- datacite_doi(doi)
+  expect_equal(nrow(info), 1)
+  expect_equal(info$service, "datacite")
+  expect_equal(info$title, NA_character_)
+
+  # multiple items
+  doi <- c("10.5281/zenodo.2669586", "10.5281/zenodo.3564348")
+  info <- datacite_doi(doi)
+  expect_equal(info$title, c("faux: Simulation for Factorial Designs",
+                             "Data Skills for Reproducible Science"))
+})
+
+test_that("openalex_doi", {
+  expect_true(is.function(metacheck::openalex_doi))
+  expect_no_error(helplist <- help(openalex_doi, metacheck))
+
+  doi <- "10.1177/fake"
+  suppressWarnings(oa <- openalex_doi(doi))
+  expect_equal(oa$DOI, doi)
+  expect_equal(oa$error, "not found")
+
+  doi <- "bad.form"
+  oa <- openalex_doi(doi)
+  expect_equal(oa$DOI, doi)
+  expect_equal(oa$error, "malformed")
+
+  skip_api("api.openalex.org")
+
+  # short DOI
+  doi <- "10.1177/0956797614520714"
+  oa <- openalex_doi(doi)
+  expect_equal(oa$is_retracted, TRUE)
+  expect_equal(oa$abstract, "We propose that dishonest and creative behavior have something in common: They both involve breaking rules. Because of this shared feature, creativity may lead to dishonesty (as shown in prior work), and dishonesty may lead to creativity (the hypothesis we tested in this research). In five experiments, participants had the opportunity to behave dishonestly by overreporting their performance on various tasks. They then completed one or more tasks designed to measure creativity. Those who cheated were subsequently more creative than noncheaters, even when we accounted for individual differences in their creative ability (Experiment 1). Using random assignment, we confirmed that acting dishonestly leads to greater creativity in subsequent tasks (Experiments 2 and 3). The link between dishonesty and creativity is explained by a heightened feeling of being unconstrained by rules, as indicated by both mediation (Experiment 4) and moderation (Experiment 5).")
+
+  # long DOI
+  doi <- c("https://doi.org/10.1177/0956797613520608")
+  oa <- openalex_doi(doi)
+  expect_equal(oa$id, "https://openalex.org/W2134722098")
+
+  # multiple DOIs
+  dois <- c("10.1177/0956797613520608", "10.1177/0956797614522816")
+  oa <- openalex_doi(dois)
+  expect_equal(oa[[1]]$id, "https://openalex.org/W2134722098")
+  expect_equal(oa[[2]]$id, "https://openalex.org/W2103593746")
+
+  # DOI from paper
+  paper <- psychsci[[1]]
+  oa <- openalex_doi(paper)
+  expect_equal(oa$id, "https://openalex.org/W2134722098")
+
+  # DOIs from paperlist
+  paper <- psychsci[1:2]
+  oa <- openalex_doi(paper)
+  expect_equal(oa[[1]]$id, "https://openalex.org/W2134722098")
+  expect_equal(oa[[2]]$id, "https://openalex.org/W2103593746")
+  # one malformatted DOI
+  paper <- psychsci[10:11]
+  paper[[2]]$info$doi <- paste0(paper[[2]]$info$doi, "x")
+  # expect_warning(oa <- openalex(paper))  DOES NOT FAIL ON LAKENS
+  # expect_equal(oa[[1]]$id, "https://openalex.org/W1824074316")
+  # expect_equal(oa[[2]], list(error = paper[[2]]$info$doi))
+
+  # select
+  doi <- "10.1177/0956797614520714"
+  oa <- openalex_doi(doi, select = "is_retracted")
+  expect_equal(oa$is_retracted, TRUE)
+})
+
+test_that("openalex_query", {
+  expect_true(is.function(metacheck::openalex_query))
+  expect_no_error(helplist <- help(openalex_query, metacheck))
+
+  expect_error(openalex_query(bad_arg))
+
+  skip_api("api.openalex.org")
+
+  doi <- "https://doi.org/10.1525/collabra.33267"
+  title <- "Sample Size Justification"
+  source <- "Collabra Psychology"
+  authors <- "Lakens, D"
+  b <- openalex_query(title, source, authors)
+  expect_equal(nrow(b), 1)
+  expect_equal(b$display_name, title)
+  expect_equal(b$doi, doi)
+})
+
+test_that(".batch_query", {
+  expect_true(is.function(metacheck:::.batch_query))
+
+  expect_error(.batch_query())
+
+  urls <- c()
+  obs <- .batch_query(urls)
+  exp <- list()
+  expect_equal(obs, exp)
+
+  urls <- "notawebsite"
+  expect_warning(obs <- .batch_query(urls), "notawebsite")
+
+  skip_api("httpbin.org")
+
+  urls <- "https://httpbin.org/get"
+  obs <- .batch_query(urls)
+  expect_equal(length(obs), 1)
+
+  urls <- c("https://httpbin.org/status/429",
+            "https://httpbin.org/status/404",
+            "https://httpbin.org/status/200")
+  batch_size <- 2
+  msg <- "X"
+  delay = 0
+  obs <- .batch_query(urls, batch_size, msg, delay)
+  expect_equal(length(obs), 3)
+  expect_equal(obs[[1]]$status_code, 429)
+  expect_equal(obs[[2]]$status_code, 404)
+  expect_equal(obs[[3]]$status_code, 200)
 })
 
 

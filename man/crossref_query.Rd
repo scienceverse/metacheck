@@ -9,7 +9,7 @@ crossref_query(
   min_score = 50,
   rows = 1,
   select = c("DOI", "score", "type", "title", "author", "editor", "publisher",
-    "container-title", "published", "volume", "issue", "page", "URL")
+    "container-title", "year", "volume", "issue", "page", "URL")
 )
 }
 \arguments{
