@@ -43,4 +43,7 @@ for (n in names) psychsci[[n]]$paper_id <- n
 
 all(sapply(psychsci, paper_validate))
 
+
+psychsci <- add_bib_match(psychsci)
+
 usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")

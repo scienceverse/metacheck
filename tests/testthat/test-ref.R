@@ -16,18 +16,50 @@ test_that("add_bib_match", {
   paper <- test_paper("No matching refs")
   paper$bib <- data.frame(
     bib_id = 1,
-    title = c("Not a real paper"),
-    container = c("Journal of Journals"),
-    authors = I(list(c("Not A. Realname")))
+    doi = NA,
+    title = "Not a real paper",
+    container = "Journal of Journals",
+    authors = "Not A. Realname"
   )
   paper_bm <- add_bib_match(paper)
   expect_equal(paper_bm$bib$bib_id, 1)
   expect_equal(nrow(paper_bm$bib_match), 0)
 
+  # invalid DOI
+  paper <- test_paper("Invalid DOI")
+  paper$bib <- data.frame(
+    bib_id = 1,
+    doi = "not.a.doi",
+    title = "Facial resemblance enhances trust",
+    container = "Proceedings of the Royal Society of London B",
+    authors = "Lisa DeBruine"
+  )
+  paper_bm <- add_bib_match(paper)
+  expect_equal(paper_bm$bib$bib_id, 1)
+  expect_equal(nrow(paper_bm$bib_match), 1)
+  expect_equal(paper_bm$bib_match$doi, "10.1098/rspb.2002.2034")
+  expect_gte(paper_bm$bib_match$score, 50)
+
+  # valid DOI
+  paper <- test_paper("Valid DOI")
+  paper$bib <- data.frame(
+    bib_id = 1,
+    doi = "10.1098/rspb.2002.2034",
+    title = "Facial resemblance enhances trust",
+    container = "Proceedings of the Royal Society of London B",
+    authors = "Lisa DeBruine"
+  )
+  paper_bm <- add_bib_match(paper)
+  expect_equal(paper_bm$bib$bib_id, 1)
+  expect_equal(nrow(paper_bm$bib_match), 1)
+  expect_equal(paper_bm$bib_match$doi, "10.1098/rspb.2002.2034")
+  expect_equal(paper_bm$bib_match$score, NA_real_)
+
   # make paper with 2 refs
   paper <- test_paper("LDB test papers")
   paper$bib <- data.frame(
     bib_id = 1:2,
+    doi = NA,
     title = c("Facial resemblance enhances trust",
               "Trustworthy but not Lustworthy"),
     container = c("Proceedings of the Royal Society of London B"),
@@ -49,19 +81,21 @@ test_that("add_bib_match", {
   paper1 <- test_paper()
   paper1$bib <- data.frame(
     bib_id = 1:2,
+    doi = NA,
     title = c("Facial resemblance enhances trust",
               "Trustworthy but not Lustworthy"),
     container = c("Proceedings of the Royal Society of London B"),
-    authors = I(list("Lisa DeBruine", "Lisa DeBruine"))
+    authors = c("Lisa DeBruine", "Lisa DeBruine")
   )
   paper2 <- test_paper()
   paper2$bib <- data.frame(
     bib_id = 1:2,
+    doi = NA,
     title = c("Trustworthy but not Lustworthy",
               "Equivalence Tests: A Practical Primer for t Tests, Correlations, and Meta-Analyses"),
     container = c("Proceedings of the Royal Society of London B",
                   "Social Psychological and Personality Science"),
-    authors = I(list("Lisa DeBruine", "Daniel Lakens"))
+    authors = c("Lisa DeBruine", "Daniel Lakens")
   )
   paper <- paperlist(list(paper1, paper2))
   paper_bm <- add_bib_match(paper, 0)

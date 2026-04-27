@@ -130,7 +130,7 @@ prereg_check <- function(paper) {
   # report ----
   has_sample_size <- "sample_size" %in% names(prereg_info)
   report_text <- sprintf(
-    "Meta-scientific research has shown that deviations from preregistrations are often not reported or checked, and that the most common deviations concern the sample size. We recommend manually checking the full preregistration at the link%s below%s.",
+    "Meta-scientific research has shown that deviations from preregistrations are often not reported or checked, and that the most common deviations concern the sample size. We recommend manually checking the full preregistration at the link%s above%s.",
     nrow(prereg_info) |> plural(),
     ifelse(has_sample_size, ", and have provided the preregistered sample size", "")
   )

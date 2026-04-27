@@ -248,7 +248,7 @@ repo_check <- function(paper) {
   )
 
   if (repo_no_readme > 0) {
-    report_readme <- "README files are a way to document the contents and structure of a folder, helping users locate the information they need. You can use a README to document changes to a repository, and explain how files are named. Please consider adding a README to each repository."
+    report_readme <- "README files are a way to document the contents and structure of a folder, helping users locate the information they need. You can use a README to document changes to a repository, and explain how files are named. Please consider adding a README to each repository or includeing 'README' in the name of your overview document."
   } else {
     report_readme <- "README files were found in all repositories."
   }

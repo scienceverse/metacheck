@@ -220,7 +220,7 @@ crossref_doi <- function(doi, select = c(
       email()
     )
 
-    resps <- .batch_query(urls, msg = "Querying CrossRef")
+    resps <- .batch_query(urls, msg = "Querying CrossRef by DOI")
 
     valid_results <- lapply(seq_along(valid_idx), \(j) {
       tryCatch({
@@ -423,7 +423,7 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
     # to take advantage of query.title, query.author, query.container-title
     x <- data.frame(
       title = ref$title,
-      author = (ref$authors %||% ref$author) |> paste(collapse = ", "),
+      author =(ref$authors %||% ref$author), # |> paste(collapse = ", "),
       container = ref$container %||% ref$journal %||% ref$booktitle
     )
     # split into a list of 1-row tables (revisit)
@@ -548,21 +548,33 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
 #' paper2$bib_match
 #' }
 add_bib_match <- function(paper, min_score = 50) {
-  page <- NULL
+  page <- paper_id <- bib_id <- NULL
   bib <- paper_table(paper, "bib")
 
   if (nrow(bib) == 0) {
     return(paper)
   }
 
-  # get search string, deduplicate, and look up
-  refs <- paste(
-    bib$title,
-    bib$authors,
-    bib$container,
-    sep = "; "
-  )
-  cr_data <- crossref_query(unique(refs), min_score = min_score)
+  # look up by doi
+  has_doi <- doi_valid_format(bib$doi) %in% TRUE
+
+  # look up papers with DOI
+  cr_data_doi <- data.frame()
+  if (sum(has_doi) > 0) {
+    cr_data_doi <- crossref_doi(bib$doi[has_doi])
+    cr_data_doi$paper_id <- bib$paper_id[has_doi]
+    cr_data_doi$bib_id <- bib$bib_id[has_doi]
+  }
+  # look up papers without
+  cr_data_no <- data.frame()
+  if (sum(!has_doi) > 0) {
+    cr_data_no <- crossref_query(bib[!has_doi, ], min_score = min_score)
+    cr_data_no$ref <- NULL
+    cr_data_no$paper_id <- bib$paper_id[!has_doi]
+    cr_data_no$bib_id <- bib$bib_id[!has_doi]
+  }
+
+  cr_data <- dplyr::bind_rows(cr_data_doi, cr_data_no)
   if ("page" %in% names(cr_data)) {
     cr_data <- tidyr::separate(
       cr_data, page,
@@ -591,7 +603,8 @@ add_bib_match <- function(paper, min_score = 50) {
   }
 
   bib_match <- data.frame(
-    ref              = unique(refs),
+    paper_id         = cr_data$paper_id,
+    bib_id           = cr_data$bib_id,
     service          = "crossref",
     service_id       = NA_character_,
     score            = cr_data$score %||% NA_real_,
@@ -618,15 +631,9 @@ add_bib_match <- function(paper, min_score = 50) {
     simplify = FALSE
   )
 
-  # re-duplicate and add IDs
-  bib_match_table <- data.frame(
-    paper_id = bib$paper_id,
-    bib_id = bib$bib_id,
-    ref = refs
-  ) |>
-    dplyr::left_join(bib_match, by = "ref")
-  bib_match_table$ref <- NULL
-  bib_match_table <- bib_match_table[!is.na(bib_match_table$score), ]
+  # remove unfound
+  bib_match_table <- bib_match[!is.na(bib_match$doi), ] |>
+    dplyr::arrange(paper_id, bib_id)
 
   # add bib_match table to paper object(s)
   if (is_paper(paper)) {
