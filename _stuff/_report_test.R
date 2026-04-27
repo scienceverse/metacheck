@@ -21,32 +21,32 @@ modules <- c(
   # "ref_consistency",
 
   # in reports ----
-  "prereg_check",
-  # "causal_claims",
-  "open_practices",
-  "funding_check",
-  "coi_check",
-  "power",
-  "stat_p_exact",
-  "stat_p_nonsig",
-  "marginal",
-  "stat_effect_size",
-  "repo_check",
-  "code_check",
-  "stat_check",
+  # "prereg_check",
+  # # "causal_claims",
+  # "open_practices",
+  # "funding_check",
+  # "coi_check",
+  # "power",
+  # "stat_p_exact",
+  # "stat_p_nonsig",
+  # "marginal",
+  # "stat_effect_size",
+  # "repo_check",
+  # "code_check",
+  # "stat_check",
   "ref_accuracy",
-  "ref_replication",
-  "ref_retraction",
-  "ref_pubpeer",
+  # "ref_replication",
+  # "ref_retraction",
+  # "ref_pubpeer",
   "ref_summary"
 )
 
 # generate reports for a sample of n papers
-n <- 1
+n <- 10
 output <- "html"
 paper <- sample(psychsci, n)
 
-# paper <- psychsci$`0956797620970559`
+# paper <- psychsci$`0956797620954815`
 # paper <- add_bib_match(paper)
 #mo <- module_run(paper, "ref_accuracy")
 

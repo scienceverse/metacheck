@@ -103,8 +103,11 @@ ref_accuracy <- function(paper) {
     ref_table, table,
     by = c("paper_id", "bib_id")
   )
-  unmatched$no_match <- TRUE
-  table <- dplyr::bind_rows(table, unmatched)
+  table$no_match <- FALSE
+  if (nrow(unmatched)) {
+    unmatched$no_match <- TRUE
+    table <- dplyr::bind_rows(table, unmatched)
+  }
 
 
   # traffic_light ----
@@ -151,35 +154,42 @@ ref_accuracy <- function(paper) {
   ## doi mismatches ----
   doi_table <- table[table$doi_mismatch %in% TRUE,
                      c("text", "doi.orig", "doi.match")]
-
-  not_na <- !is.na(doi_table$doi.orig)
-  doi_table$doi.orig[not_na] <- paste0(
-    "https://doi.org/", doi_table$doi.orig[not_na] ) |>
-    link(doi_table$doi.orig[not_na] )
-  doi_table$doi.match <- paste0("https://doi.org/", doi_table$doi.match) |>
-    link(doi_table$doi.match)
-  names(doi_table) <- c("References with Mismatched DOIs", "Original DOI", "CrossRef DOI")
+  if (nrow(doi_table)) {
+    not_na <- !is.na(doi_table$doi.orig)
+    doi_table$doi.orig[not_na] <- paste0(
+      "https://doi.org/", doi_table$doi.orig[not_na] ) |>
+      link(doi_table$doi.orig[not_na] )
+    doi_table$doi.match <- paste0("https://doi.org/", doi_table$doi.match) |>
+      link(doi_table$doi.match)
+    names(doi_table) <- c("References with Mismatched DOIs", "Original DOI", "CrossRef DOI")
+  }
 
   ## year mismatches ----
   year_mm <- table$year_mismatch %in% TRUE
   year_table <- table[year_mm, c("text", "year.orig", "year.match")]
-  year_table$year.match <- paste0("https://doi.org/", table$doi.match[year_mm]) |>
-    link(year_table$year.match)
-  names(year_table) <- c("References with Mismatched Years", "Original Year", "CrossRef Year")
+  if (nrow(year_table)) {
+    year_table$year.match <- paste0("https://doi.org/", table$doi.match[year_mm]) |>
+      link(year_table$year.match)
+    names(year_table) <- c("References with Mismatched Years", "Original Year", "CrossRef Year")
+  }
 
   ## title mismatches ----
   title_mm <- table$title_mismatch %in% TRUE
   title_table <- table[title_mm, c("text", "title.orig", "title.match")]
-  title_table$title.match <- paste0("https://doi.org/", table$doi.match[title_mm]) |>
-    link(title_table$title.match)
-  names(title_table) <- c("References with Mismatched Titles", "Original Title", "CrossRef Title")
+  if (nrow(title_table)) {
+    title_table$title.match <- paste0("https://doi.org/", table$doi.match[title_mm]) |>
+      link(title_table$title.match)
+    names(title_table) <- c("References with Mismatched Titles", "Original Title", "CrossRef Title")
+  }
 
   ## author mismatches ----
   author_table <- table[table$author_mismatch %in% TRUE,
                         c("text", "authors.orig", "authors.match")]
-  author_table$authors.match <- author_table$authors.match |>
-    sapply(\(a) paste(a$family, a$given, sep = ", ", collapse = "; "))
-  names(author_table) <- c("References with Mismatched Authors", "Original Authors", "CrossRef Authors")
+  if (nrow(author_table)) {
+    author_table$authors.match <- author_table$authors.match |>
+      sapply(\(a) paste(a$family, a$given, sep = ", ", collapse = "; "))
+    names(author_table) <- c("References with Mismatched Authors", "Original Authors", "CrossRef Authors")
+  }
 
   report <- c(
     guidance,
