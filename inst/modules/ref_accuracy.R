@@ -74,9 +74,18 @@ ref_accuracy <- function(paper) {
     pre_bib_title <- gsub(":.*", "", bib_title)
     pre_match_title <- gsub(":.*", "", match_title)
 
-    !is.na(bib_title) & !is.na(match_title) &
+    # find mismatches
+    mm <- !is.na(bib_title) & !is.na(match_title) &
       bib_title != match_title &
       pre_bib_title != pre_match_title
+
+    # find titles in text that aren't parsed into title correctly
+    clean_text <- clean(table$text)
+    in_text <- mapply(\(pattern, x) grepl(pattern, x, fixed = TRUE),
+           pattern = match_title, x = clean_text, USE.NAMES = FALSE)
+
+    # mismatched excluding unparsed matches in text
+    mm & !in_text
   }
 
   # TODO: make this better
@@ -186,8 +195,14 @@ ref_accuracy <- function(paper) {
   author_table <- table[table$author_mismatch %in% TRUE,
                         c("text", "authors.orig", "authors.match")]
   if (nrow(author_table)) {
-    author_table$authors.match <- author_table$authors.match |>
-      sapply(\(a) paste(a$family, a$given, sep = ", ", collapse = "; "))
+    author_table$authors.match <- sapply(author_table$authors.match, \(a) {
+      if (nrow(a) > 6) {
+        a$family[[4]] <- sprintf("(%d authors omitted)", nrow(a) - 4)
+        a$given[[4]] <- "..."
+        a <- a[c(1:4, nrow(a)), ]
+      }
+      paste(a$family, a$given, sep = ", ", collapse = "; <br>")
+    })
     names(author_table) <- c("References with Mismatched Authors", "Original Authors", "CrossRef Authors")
   }
 

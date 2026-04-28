@@ -35,9 +35,9 @@ modules <- c(
   # "code_check",
   # "stat_check",
   "ref_accuracy",
-  # "ref_replication",
-  # "ref_retraction",
-  # "ref_pubpeer",
+  "ref_replication",
+  "ref_retraction",
+  "ref_pubpeer",
   "ref_summary"
 )
 

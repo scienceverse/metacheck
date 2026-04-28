@@ -2,7 +2,7 @@
 # https://r-pkgs.org/testing-design.html#testthat-helper-files
 
 # if TRUE, skip slow tests and those that need external connections
-quick <- FALSE
+quick <- TRUE
 
 testthat::set_max_fails(1)
 
