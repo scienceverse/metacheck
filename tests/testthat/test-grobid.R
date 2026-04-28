@@ -32,6 +32,8 @@ test_that("1 paper, NULL save_path, no CR lookup", {
   expect_contains(paper$bib$doi, "10.0000/0123456789")
   expect_false("bib_match" %in% names(paper))
   expect_true(paper_validate(paper))
+  expect_match(paper$info$input_format, "grobid", ignore.case = TRUE)
+  expect_match(paper$info$input_format, "0\\.\\d\\.\\d")
 
   expect_equal(paper$info$keywords[[1]], NULL)
   expect_contains(paper$bib$authors, "Smith, F")

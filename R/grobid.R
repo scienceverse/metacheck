@@ -308,13 +308,21 @@ grobid_to_bibr <- function(xml_file,
   keywords <- xml_find(xml, ".//textClass/keywords/term")
   if (keywords[[1]] == "") keywords <- c()
   doi <- xml_find1(xml, ".//idno[@type='DOI']")
+  grobid_version <- xml |>
+    xml2::xml_find_first(".//application[@ident='GROBID']") |>
+    xml2::xml_attr("version")
+  if (is.na(grobid_version)) {
+    input_format <- "Unknown TEI XML"
+  } else {
+    input_format <- paste("grobid", grobid_version)
+  }
 
   paper$info <- data.frame(
     title = title %||% "",
     keywords = I(list(keywords)),
     doi = doi,
     file_hash = file_hash,
-    input_format = "TEI XML",
+    input_format = input_format,
     file_name = xml_file,
     bibr_version = bibr_version,
     paper_type = "unknown",
