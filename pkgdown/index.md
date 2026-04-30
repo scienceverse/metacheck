@@ -11,16 +11,23 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 coverage](https://codecov.io/gh/scienceverse/metacheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/metacheck)
 <!-- badges: end -->
 
-Metacheck provides extendable and integrated tools for automatically
-checking research outputs for best practices. (formerly named
-papercheck)
+Metacheck provides extendable and integrated tools for automated checks
+of research outputs for best practices. (formerly named papercheck)
 
 Inspired by practices in software development, where automated checks
 (e.g., CRAN checks for R packages) are used to identify issues before
-release, metacheck aims to screen scientific manuscripts to identify
-potential issues or areas for improvement and guide researchers in
-adopting best practices. It can also assist with processing large
-numbers of papers for metascientific enquiry.
+release, metacheck screens scientific manuscripts to identify potential
+issues or areas for improvement and guide researchers in adopting best
+practices. It can also assist with processing large numbers of papers
+for metascientific enquiry.
+
+These check are meant to assist, but not replace, human expertise. For
+example, metacheck can identify incorrect citations, add missing DOIs,
+and cross-reference citations against Retraction Watch, PubPeer, and the
+FLoRA replication database. It can also identify commonly misreported
+aspects, such as power analyses, and provide general advice. However,
+actioning this advice is always up to a human who can interpret the
+advice in context.
 
 See [Get Started](articles/metacheck.html) for the basics,
 [Articles](articles/) for more detailed examples of what you can do, or
@@ -41,15 +48,17 @@ Scienceverse projects.
     access datasets for validation.
 
 3.  **AI Optional**: The use of large language models (LLMs) will be
-    restricted to classification of existing text, not generation of
-    evaluations. The use of LLMs will always be opt-in and transparently
-    declared. We will prioritise non-LLM functions where possible, and
-    limit use to cases where it provides substantial benefits that
-    cannot be realised with other methods, such as regular expressions.
+    restricted to classification of existing text, not evaluation of the
+    quality of practice. The use of LLMs will always be opt-in and
+    transparently declared. We will prioritise non-LLM functions where
+    possible, and limit use to cases where it provides substantial
+    benefits that cannot be realised with other methods, such as regular
+    expressions.
 
 4.  **No Automated Evaluation**: While our software is designed to
-    assist the evaluation of research, we will never support automated
-    rankings or scoring.
+    assist the evaluation of research by highlighting aspects where
+    practice may be improved, we will never support automated quality
+    assessments, rankings or scoring.
 
 5.  **Data Privacy**: We will be fully transparent about what data we
     have access to and how those data will be used, as well as what will
