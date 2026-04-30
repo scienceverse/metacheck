@@ -27,23 +27,74 @@ See [Get Started](articles/metacheck.html) for the basics,
 our [introductory blog post](articles/intro.html) for a more conceptual
 overview.
 
+## Our Values
+
+The values below guide our priorities and decision-making for all
+Scienceverse projects.
+
+1.  **Quality Control**: The knowledge, data, code and software we
+    create will be verified for accuracy, using publicly available
+    methods and measures, such that users have enough context to
+    interpret the results.
+
+2.  **Transparency**: We are committed to open source software and open
+    access datasets for validation.
+
+3.  **AI Optional**: The use of large language models (LLMs) will be
+    restricted to classification of existing text, not generation of
+    evaluations. The use of LLMs will always be opt-in and transparently
+    declared. We will prioritise non-LLM functions where possible, and
+    limit use to cases where it provides substantial benefits that
+    cannot be realised with other methods, such as regular expressions.
+
+4.  **No Automated Evaluation**: While our software is designed to
+    assist the evaluation of research, we will never support automated
+    rankings or scoring.
+
+5.  **Data Privacy**: We will be fully transparent about what data we
+    have access to and how those data will be used, as well as what will
+    be shared with external services. Wherever possible, we will
+    prioritise functions that share minimal data and services that have
+    robust data protection. We will meet all EU data privacy
+    regulations.
+
+6.  **Accessibility**: We will provide our knowledge, data, code and
+    software to all potential users with minimal barriers to access. We
+    will prioritise access that is not unduly limited by wealth,
+    disability or technical knowledge.
+
+7.  **Community Engagement**: Our work will reflect and respect the
+    needs of a diverse range of research communities, and benefit their
+    research practices. We are open to critique from the research
+    community.
+
+8.  **Sustainability**: We are committed to the long-term viability of
+    our work. We will actively protect and future-proof our work through
+    technical maintenance, governance structures and strategic planning
+    to make it a durable and relevant public good.
+
+9.  **Fair Recognition and Reward**: Contributions to knowledge, data,
+    code, and software will be uniquely and persistently identified, and
+    benefit a diverse range of contributors.
+
 ## The Team
 
 Metacheck is developed by a collaborative team of researchers,
-consisting of (from left to right in the picture below) [Lisa
-DeBruine](https://debruine.github.io) (developer and maintainer),
-[Daniël Lakens](https://sites.google.com/site/lakens2/Home) (developer),
-[René Bekkers](https://research.vu.nl/en/persons/rene-bekkers)
-(collaborator and PI of [Transparency
-Check](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check)),
+consisting of [Lisa DeBruine](https://debruine.github.io) (developer and
+maintainer, UofG), [Daniël
+Lakens](https://sites.google.com/site/lakens2/Home) (developer, TU/e),
 [Cristian
 Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/)
-(postdoctoral researcher), and [Max
-Littel](https://nl.linkedin.com/in/max-littel-a0620a233/nl), [Jakub
-Werner](https://nl.linkedin.com/in/jakubwerner), [Hadeel
-Khawatmy](https://nl.linkedin.com/in/hadeel-khawatmy-a720021a2), and
-[Lavinia Ion](https://nl.linkedin.com/in/lavinia-i-05275636b) (research
-assistants).
+(postdoctoral researcher, TU/e), [Jakub
+Werner](https://nl.linkedin.com/in/jakubwerner) (RA, TUE), [Lavinia
+Ion](https://nl.linkedin.com/in/lavinia-i-05275636b) (RA, TU/e), [Hadeel
+Khawatmy](https://nl.linkedin.com/in/hadeel-khawatmy-a720021a2) (RA,
+TU/e), Levi Baruch (RA, TU/e), Mink Veltman (RA, TU/e) [René
+Bekkers](https://research.vu.nl/en/persons/rene-bekkers) (collaborator
+and PI of [Transparency
+Check](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check),
+VUE), and [Max
+Littel](https://nl.linkedin.com/in/max-littel-a0620a233/nl) (RA, VUE).
 
 Metacheck was initially developed by Lisa and Daniël in 2024 during
 Lisa’s visiting professorship at the Eindhoven Artificial Intelligence
@@ -52,7 +103,7 @@ Systems Institute
 
 <style>
 &#10;.people figure { 
-  width: 23%;
+  width: 18%;
   padding: 0;
   margin: 1% 1% 0 1%;
   float: left; 
@@ -86,15 +137,27 @@ alt="Jakub Werner" />
 </figure>
 
 <figure>
+<img src="https://scienceverse.github.io/images/people/ion.jpg"
+alt="Lavinia Ion" />
+<figcaption aria-hidden="true">Lavinia Ion</figcaption>
+</figure>
+
+<figure>
 <img src="https://scienceverse.github.io/images/people/khawatmy.jpg"
 alt="Hadeel Khawatmy" />
 <figcaption aria-hidden="true">Hadeel Khawatmy</figcaption>
 </figure>
 
 <figure>
-<img src="https://scienceverse.github.io/images/people/ion.jpg"
-alt="Lavinia Ion" />
-<figcaption aria-hidden="true">Lavinia Ion</figcaption>
+<img src="https://scienceverse.github.io/images/people/baruch.jpg"
+alt="Levi Baruch" />
+<figcaption aria-hidden="true">Levi Baruch</figcaption>
+</figure>
+
+<figure>
+<img src="https://scienceverse.github.io/images/people/mink.jpg"
+alt="Mink Veltman" />
+<figcaption aria-hidden="true">Mink Veltman</figcaption>
 </figure>
 
 <figure>
