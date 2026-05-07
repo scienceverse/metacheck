@@ -29,12 +29,12 @@ api_url <- "http://localhost:8070"
 convert_grobid(file_path[199:250], save_path, api_url)
 
 # # grobid to bibr ----
-grobid <- "data-raw/psychsci/grobid_0.9.0-crf"
+grobid <- "data-raw/psychsci/grobid_0.9.0-full"
 xml_file <- list.files(grobid, full.names = T)
-save_path <- "data-raw/psychsci/bibr_from_grobid_0.9.0"
-json_paths <- grobid_to_bibr(xml_file, save_path, TRUE)
+save_path <- "data-raw/psychsci/bibr_from_grobid_0.9.0-full"
+dir.create(save_path, showWarnings = FALSE)
+json_paths <- grobid_to_bibr(xml_file, save_path, FALSE)
 psychsci <- read(save_path)
-
 
 # fix names
 names <- list.files(grobid) |> gsub("\\.xml", "", x = _)
@@ -47,3 +47,29 @@ all(sapply(psychsci, paper_validate))
 psychsci <- add_bib_match(psychsci)
 
 usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")
+
+
+## abstract checks ----------------------------------------------
+
+psychsci_full <- read("data-raw/psychsci/bibr_from_grobid_0.9.0-full")
+psychsci_crf <- read("data-raw/psychsci/bibr_from_grobid_0.9.0-crf")
+
+abs_f <- search_text(psychsci_full) |>
+  dplyr::filter(section_type == "abstract") |>
+  dplyr::select(paper_id, text, text_id)
+abs_c <- search_text(psychsci_crf) |>
+  dplyr::filter(section_type == "abstract") |>
+  dplyr::select(paper_id, text, text_id)
+
+x <- dplyr::full_join(abs_c, abs_f,
+                      by = c("paper_id", "text"),
+                      suffix = c(".crf", ".full")) |>
+  dplyr::filter(is.na(text_id.crf) | is.na(text_id.full)) |>
+  dplyr::arrange(paper_id)
+
+module <- "power"
+mo_f <- module_run(psychsci_full, module)
+mo_c <- module_run(psychsci_crf, module)
+
+expect_equal(mo_f$summary_table, mo_c$summary_table)
+
