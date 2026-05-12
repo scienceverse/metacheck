@@ -1,0 +1,1089 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    5
+                ]
+            ],
+            "date-time": "2026-05-05T21:15:49Z",
+            "timestamp": 1778015749716,
+            "version": "3.51.4"
+        },
+        "reference-count": 97,
+        "publisher": "Academy of Management",
+        "issue": "3",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "AMJ"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2012,
+                    6
+                ]
+            ]
+        },
+        "DOI": "10.5465/amj.2009.0804",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2012,
+                    6,
+                    8
+                ]
+            ],
+            "date-time": "2012-06-08T18:36:30Z",
+            "timestamp": 1339180590000
+        },
+        "page": "643-666",
+        "source": "Crossref",
+        "is-referenced-by-count": 397,
+        "title": [
+            "A Social Context Model of Envy and Social Undermining"
+        ],
+        "prefix": "10.5465",
+        "volume": "55",
+        "author": [
+            {
+                "given": "Michelle K.",
+                "family": "Duffy",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "University of Minnesota"
+                    }
+                ]
+            },
+            {
+                "given": "Kristin L.",
+                "family": "Scott",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Clemson University"
+                    }
+                ]
+            },
+            {
+                "given": "Jason D.",
+                "family": "Shaw",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "University of Minnesota"
+                    }
+                ]
+            },
+            {
+                "given": "Bennett J.",
+                "family": "Tepper",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Georgia State University"
+                    }
+                ]
+            },
+            {
+                "given": "Karl",
+                "family": "Aquino",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "University of British Columbia"
+                    }
+                ]
+            }
+        ],
+        "member": "3433",
+        "reference": [
+            {
+                "key": "B1",
+                "doi-asserted-by": "crossref",
+                "first-page": "73",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0005",
+                "volume-title": "Envy: Theory and research",
+                "author": "Alicke M. A.",
+                "year": "2008"
+            },
+            {
+                "key": "B2",
+                "doi-asserted-by": "crossref",
+                "first-page": "385",
+                "DOI": "10.1016/j.jesp.2006.05.013",
+                "volume": "43",
+                "author": "Aquino K.",
+                "year": "2007",
+                "journal-title": "Journal of Experimental Social Psychology"
+            },
+            {
+                "key": "B3",
+                "doi-asserted-by": "crossref",
+                "first-page": "179",
+                "DOI": "10.1016/j.obhdp.2007.03.003",
+                "volume": "103",
+                "author": "Bamberger P.",
+                "year": "2007",
+                "journal-title": "Organizational Behavior and Human Decision Processes"
+            },
+            {
+                "key": "B4",
+                "volume-title": "Social foundations of thought and action: A social cognitive theory",
+                "author": "Bandura A.",
+                "year": "1986"
+            },
+            {
+                "key": "B5",
+                "first-page": "45",
+                "volume-title": "Handbook of moral behavior and development",
+                "volume": "1",
+                "author": "Bandura A.",
+                "year": "1991"
+            },
+            {
+                "key": "B6",
+                "doi-asserted-by": "crossref",
+                "first-page": "193",
+                "DOI": "10.1207/s15327957pspr0303_3",
+                "volume": "3",
+                "author": "Bandura A.",
+                "year": "1999",
+                "journal-title": "Personality and Social Psychology Review"
+            },
+            {
+                "key": "B7",
+                "doi-asserted-by": "crossref",
+                "first-page": "364",
+                "DOI": "10.1037/0022-3514.71.2.364",
+                "volume": "71",
+                "author": "Bandura A.",
+                "year": "1996",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "B8",
+                "doi-asserted-by": "crossref",
+                "first-page": "364",
+                "DOI": "10.1037/0022-3514.71.2.364",
+                "volume": "71",
+                "author": "Bandura A.",
+                "year": "2001",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "B9",
+                "doi-asserted-by": "crossref",
+                "first-page": "111",
+                "DOI": "10.1037/1089-2680.8.2.111",
+                "volume": "8",
+                "author": "Baumeister R. F.",
+                "year": "2004",
+                "journal-title": "Review of General Psychology"
+            },
+            {
+                "key": "B10",
+                "doi-asserted-by": "crossref",
+                "first-page": "509",
+                "DOI": "10.1086/587632",
+                "volume": "35",
+                "author": "Berger J.",
+                "year": "2008",
+                "journal-title": "Journal of Consumer Research"
+            },
+            {
+                "key": "B11",
+                "doi-asserted-by": "crossref",
+                "first-page": "355",
+                "DOI": "10.1177/109442819814001",
+                "volume": "1",
+                "author": "Bliese P. D.",
+                "year": "1998",
+                "journal-title": "Organizational Research Methods"
+            },
+            {
+                "key": "B12",
+                "first-page": "471",
+                "volume-title": "Groups at work: Theory and research",
+                "author": "Brief A. P.",
+                "year": "2001"
+            },
+            {
+                "key": "B13",
+                "doi-asserted-by": "crossref",
+                "first-page": "95",
+                "DOI": "10.1111/j.1540-4560.1990.tb00274.x",
+                "volume": "46",
+                "author": "Brockner J.",
+                "year": "1990",
+                "journal-title": "Journal of Social Issues"
+            },
+            {
+                "key": "B14",
+                "doi-asserted-by": "crossref",
+                "first-page": "273",
+                "DOI": "10.1111/j.2044-8325.1986.tb00230.x",
+                "volume": "59",
+                "author": "Brown R.",
+                "year": "1986",
+                "journal-title": "Journal of Occupational Psychology"
+            },
+            {
+                "key": "B15",
+                "doi-asserted-by": "crossref",
+                "first-page": "201",
+                "DOI": "10.1016/S0065-2601(08)60330-5",
+                "volume": "24",
+                "author": "Cialdini R. B.",
+                "year": "1991",
+                "journal-title": "Advances in Experimental Social Psychology"
+            },
+            {
+                "key": "B16",
+                "first-page": "151",
+                "volume-title": "The handbook of social psychology",
+                "volume": "2",
+                "author": "Cialdini R. B.",
+                "year": "1998",
+                "edition": "4"
+            },
+            {
+                "key": "B17",
+                "doi-asserted-by": "crossref",
+                "first-page": "298",
+                "DOI": "10.1207/S15327957PSPR0704_03",
+                "volume": "7",
+                "author": "Clayton S.",
+                "year": "2003",
+                "journal-title": "Personality and Social Psychology Review"
+            },
+            {
+                "key": "B18",
+                "doi-asserted-by": "crossref",
+                "first-page": "2128",
+                "DOI": "10.1111/j.1559-1816.2009.00519.x",
+                "volume": "39",
+                "author": "Cohen-Charash Y.",
+                "year": "2009",
+                "journal-title": "Journal of Applied Social Psychology"
+            },
+            {
+                "key": "B19",
+                "doi-asserted-by": "crossref",
+                "first-page": "666",
+                "DOI": "10.1037/0021-9010.92.3.666",
+                "volume": "92",
+                "author": "Cohen-Charash Y.",
+                "year": "2007",
+                "journal-title": "Journal of Applied Psychology"
+            },
+            {
+                "key": "B20",
+                "first-page": "3",
+                "volume-title": "The handbook of organizational justice",
+                "author": "Colquitt J. A.",
+                "year": "2005"
+            },
+            {
+                "key": "B21",
+                "doi-asserted-by": "crossref",
+                "first-page": "14",
+                "DOI": "10.1016/j.obhdp.2008.06.001",
+                "volume": "108",
+                "author": "Crossley C.",
+                "year": "2009",
+                "journal-title": "Organizational Behavior and Human Decision Processes"
+            },
+            {
+                "key": "B22",
+                "doi-asserted-by": "crossref",
+                "first-page": "374",
+                "DOI": "10.1037/0021-9010.93.2.374",
+                "volume": "93",
+                "author": "Detert J. R.",
+                "year": "2008",
+                "journal-title": "Journal of Applied Psychology"
+            },
+            {
+                "key": "B23",
+                "doi-asserted-by": "crossref",
+                "first-page": "331",
+                "DOI": "10.2307/3069350",
+                "volume": "45",
+                "author": "Duffy M. K.",
+                "year": "2002",
+                "journal-title": "Academy of Management Journal"
+            },
+            {
+                "key": "B24",
+                "doi-asserted-by": "crossref",
+                "first-page": "950",
+                "DOI": "10.1037/0021-9010.83.6.950",
+                "volume": "83",
+                "author": "Duffy M. K.",
+                "year": "1998",
+                "journal-title": "Journal of Applied Psychology"
+            },
+            {
+                "key": "B25",
+                "doi-asserted-by": "crossref",
+                "first-page": "105",
+                "DOI": "10.1016/j.obhdp.2006.04.005",
+                "volume": "101",
+                "author": "Duffy M. K.",
+                "year": "2006",
+                "journal-title": "Organizational Behavior and Human Decision Processes"
+            },
+            {
+                "key": "B26",
+                "doi-asserted-by": "crossref",
+                "first-page": "3",
+                "DOI": "10.1177/104649640003100101",
+                "volume": "31",
+                "author": "Duffy M. K.",
+                "year": "2000",
+                "journal-title": "Small Group Research"
+            },
+            {
+                "key": "B27",
+                "doi-asserted-by": "crossref",
+                "first-page": "167",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0010",
+                "volume-title": "Envy: Theory and research",
+                "author": "Duffy M. K.",
+                "year": "2008"
+            },
+            {
+                "key": "B28",
+                "doi-asserted-by": "crossref",
+                "first-page": "772",
+                "DOI": "10.5465/1556367",
+                "volume": "43",
+                "author": "Duffy M. K.",
+                "year": "2000",
+                "journal-title": "Academy of Management Journal"
+            },
+            {
+                "key": "B29",
+                "volume-title": "Paper presented at the annual meetings of the Academy of Management",
+                "author": "Dunn J. R.",
+                "year": "2004"
+            },
+            {
+                "key": "B30",
+                "first-page": "177",
+                "volume-title": "Research on managing groups and teams: Ethics in groups",
+                "volume": "8",
+                "author": "Dunn J.",
+                "year": "2006"
+            },
+            {
+                "key": "B31",
+                "first-page": "263",
+                "volume-title": "Positive organizational scholarship: Foundations of a new discipline",
+                "author": "Dutton J.",
+                "year": "2003"
+            },
+            {
+                "key": "B32",
+                "doi-asserted-by": "crossref",
+                "first-page": "1",
+                "DOI": "10.1037/1082-989X.12.1.1",
+                "volume": "12",
+                "author": "Edwards J. R.",
+                "year": "2007",
+                "journal-title": "Psychological Methods"
+            },
+            {
+                "key": "B33",
+                "first-page": "665",
+                "volume-title": "Annual review of psychology",
+                "volume": "51",
+                "author": "Eisenberg N.",
+                "year": "2000"
+            },
+            {
+                "key": "B34",
+                "doi-asserted-by": "crossref",
+                "first-page": "315",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0017",
+                "volume-title": "Envy: Theory and research",
+                "author": "Exline J . J.",
+                "year": "2008"
+            },
+            {
+                "key": "B35",
+                "volume-title": "Antisocial behavior in organizations",
+                "author": "Giacalone R.",
+                "year": "1997"
+            },
+            {
+                "key": "B36",
+                "first-page": "65",
+                "volume-title": "Trends in organizational behavior",
+                "volume": "5",
+                "author": "Griffin R. W.",
+                "year": "1998"
+            },
+            {
+                "key": "B37",
+                "volume-title": "Monographs in organizational behavior and industrial relations",
+                "volume": "23",
+                "author": "Griffin R. W.",
+                "year": "1998"
+            },
+            {
+                "key": "B38",
+                "first-page": "199",
+                "volume-title": "Handbook of industrial and organizational psychology",
+                "volume": "3",
+                "author": "Hackman J. R.",
+                "year": "1992"
+            },
+            {
+                "key": "B39",
+                "first-page": "852",
+                "volume-title": "Handbook of affective sciences",
+                "author": "Haidt J.",
+                "year": "2003"
+            },
+            {
+                "key": "B40",
+                "doi-asserted-by": "crossref",
+                "first-page": "133",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0008",
+                "volume-title": "Envy: Theory and research",
+                "author": "Harris L. T.",
+                "year": "2008"
+            },
+            {
+                "key": "B41",
+                "first-page": "467",
+                "volume-title": "Multilevel theory, research, and methods in organizations",
+                "author": "Hofmann D. A.",
+                "year": "2000"
+            },
+            {
+                "key": "B42",
+                "doi-asserted-by": "crossref",
+                "first-page": "401",
+                "DOI": "10.1007/978-1-4615-4237-7_19",
+                "volume-title": "Handbook of social comparison: Theory and research",
+                "author": "Hogg M. A.",
+                "year": "2000"
+            },
+            {
+                "key": "B43",
+                "volume-title": "Social identifications: A social psychology of intergroup relations and group processes",
+                "author": "Hogg M. A.",
+                "year": "1988"
+            },
+            {
+                "key": "B44",
+                "doi-asserted-by": "crossref",
+                "first-page": "433",
+                "DOI": "10.1037/a0021470",
+                "volume": "100",
+                "author": "Jacobson R. P.",
+                "year": "2011",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "B45",
+                "doi-asserted-by": "crossref",
+                "first-page": "85",
+                "DOI": "10.1037/0021-9010.69.1.85",
+                "volume": "69",
+                "author": "James L. R.",
+                "year": "1984",
+                "journal-title": "Journal of Applied Psychology"
+            },
+            {
+                "key": "B46",
+                "doi-asserted-by": "crossref",
+                "first-page": "376",
+                "DOI": "10.1037/0033-2909.127.3.376",
+                "volume": "127",
+                "author": "Judge T. A.",
+                "year": "2001",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "key": "B47",
+                "doi-asserted-by": "crossref",
+                "first-page": "341",
+                "DOI": "10.1891/0886-6708.9.4.341",
+                "volume": "9",
+                "author": "Keashly L.",
+                "year": "1994",
+                "journal-title": "Violence and Victims"
+            },
+            {
+                "key": "B48",
+                "doi-asserted-by": "crossref",
+                "first-page": "337",
+                "DOI": "10.1037/0022-3514.59.2.337",
+                "volume": "59",
+                "author": "Lakey B.",
+                "year": "1990",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "B49",
+                "first-page": "890",
+                "volume": "13",
+                "author": "Lieberman M. D.",
+                "year": "2009",
+                "journal-title": "Neuroscience"
+            },
+            {
+                "key": "B50",
+                "doi-asserted-by": "crossref",
+                "first-page": "1256",
+                "DOI": "10.1016/j.jesp.2008.04.007",
+                "volume": "44",
+                "author": "Liviatan I.",
+                "year": "2008",
+                "journal-title": "Journal of Experimental Social Psychology"
+            },
+            {
+                "issue": "1",
+                "key": "B51",
+                "doi-asserted-by": "crossref",
+                "first-page": "35",
+                "DOI": "10.5840/beq20102014",
+                "volume": "20",
+                "author": "McFerran B.",
+                "year": "2010",
+                "journal-title": "Business Ethics Quarterly"
+            },
+            {
+                "key": "B52",
+                "doi-asserted-by": "crossref",
+                "first-page": "845",
+                "DOI": "10.1037/0021-9010.76.6.845",
+                "volume": "76",
+                "author": "Moorman R. H.",
+                "year": "1991",
+                "journal-title": "Journal of Applied Psychology"
+            },
+            {
+                "key": "B53",
+                "doi-asserted-by": "crossref",
+                "first-page": "527",
+                "DOI": "10.2307/256591",
+                "volume": "36",
+                "author": "Niehoff B. P.",
+                "year": "1993",
+                "journal-title": "Academy of Management Journal"
+            },
+            {
+                "key": "B54",
+                "doi-asserted-by": "crossref",
+                "first-page": "1",
+                "DOI": "10.1111/j.1540-4560.1990.tb00268.x",
+                "volume": "46",
+                "author": "Opotow S.",
+                "year": "1990",
+                "journal-title": "Journal of Social Issues"
+            },
+            {
+                "key": "B55",
+                "first-page": "347",
+                "volume-title": "Conflict, cooperation, and justice: Essays inspired by the work of Morton Deutsch",
+                "author": "Opotow S.",
+                "year": "1995"
+            },
+            {
+                "key": "B56",
+                "doi-asserted-by": "crossref",
+                "first-page": "149",
+                "DOI": "10.1023/A:1012888902705",
+                "volume": "14",
+                "author": "Opotow S.",
+                "year": "2001",
+                "journal-title": "Social Justice Research"
+            },
+            {
+                "key": "B57",
+                "doi-asserted-by": "crossref",
+                "first-page": "906",
+                "DOI": "10.1037/0022-3514.64.6.906",
+                "volume": "64",
+                "author": "Parrott W. G.",
+                "year": "1993",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "2",
+                "key": "B58",
+                "doi-asserted-by": "crossref",
+                "first-page": "123",
+                "DOI": "10.1016/S0090-2616(00)00019-X",
+                "volume": "29",
+                "author": "Pearson C.",
+                "year": "2000",
+                "journal-title": "Organizational Dynamics"
+            },
+            {
+                "key": "B59",
+                "doi-asserted-by": "crossref",
+                "first-page": "160",
+                "DOI": "10.1037/0033-2909.112.1.160",
+                "volume": "112",
+                "author": "Prentice D. A.",
+                "year": "1992",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "key": "B60",
+                "volume-title": "Hierarchical linear models: Applications and data analysis methods",
+                "author": "Raudenbush S. W.",
+                "year": "2002",
+                "edition": "2"
+            },
+            {
+                "key": "B61",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.4324/9780203302194",
+                "volume-title": "Workplace bullying: What we know, who is to blame, and what can we do?",
+                "author": "Rayner C.",
+                "year": "2002"
+            },
+            {
+                "key": "B62",
+                "doi-asserted-by": "crossref",
+                "first-page": "1270",
+                "DOI": "10.1037/0022-3514.84.6.1270",
+                "volume": "84",
+                "author": "Reed A.",
+                "year": "2003",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "B63",
+                "doi-asserted-by": "crossref",
+                "first-page": "641",
+                "DOI": "10.2307/256963",
+                "volume": "41",
+                "author": "Robinson S. L.",
+                "year": "1998",
+                "journal-title": "Academy of Management Journal"
+            },
+            {
+                "key": "B64",
+                "doi-asserted-by": "crossref",
+                "first-page": "375",
+                "DOI": "10.1016/S1359-1789(00)00012-4",
+                "volume": "6",
+                "author": "Salmivalli C.",
+                "year": "2001",
+                "journal-title": "Aggressive and Violent Behavior"
+            },
+            {
+                "key": "B65",
+                "doi-asserted-by": "crossref",
+                "first-page": "780",
+                "DOI": "10.1037/0022-3514.47.4.780",
+                "volume": "47",
+                "author": "Salovey P.",
+                "year": "1984",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "B66",
+                "doi-asserted-by": "crossref",
+                "first-page": "33",
+                "DOI": "10.1016/j.obhdp.2004.01.001",
+                "volume": "94",
+                "author": "Schaubroeck J.",
+                "year": "2004",
+                "journal-title": "Organizational Behavior and Human Decision Processes"
+            },
+            {
+                "key": "B67",
+                "doi-asserted-by": "crossref",
+                "first-page": "90",
+                "DOI": "10.1037/a0015108",
+                "volume": "13",
+                "author": "Schmidt S.",
+                "year": "2009",
+                "journal-title": "Review of General Psychology"
+            },
+            {
+                "key": "B68",
+                "doi-asserted-by": "crossref",
+                "first-page": "360",
+                "DOI": "10.1111/j.1467-9280.1993.tb00582.x",
+                "volume": "4",
+                "author": "Schweder R.",
+                "year": "1993",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "key": "B69",
+                "doi-asserted-by": "crossref",
+                "first-page": "422",
+                "DOI": "10.1037/1082-989X.7.4.422",
+                "volume": "7",
+                "author": "Shrout P. E.",
+                "year": "2002",
+                "journal-title": "Psychological Methods"
+            },
+            {
+                "key": "B70",
+                "doi-asserted-by": "crossref",
+                "first-page": "105",
+                "DOI": "10.2307/3033570",
+                "volume": "41",
+                "author": "Silver M.",
+                "year": "1978",
+                "journal-title": "Social Psychology Quarterly"
+            },
+            {
+                "key": "B71",
+                "doi-asserted-by": "crossref",
+                "first-page": "43",
+                "DOI": "10.1017/CBO9780511819568.004",
+                "volume-title": "The social life of emotions",
+                "author": "Smith R. H.",
+                "year": "2004"
+            },
+            {
+                "key": "B72",
+                "doi-asserted-by": "crossref",
+                "first-page": "46",
+                "DOI": "10.1037/0033-2909.133.1.46",
+                "volume": "133",
+                "author": "Smith R. H.",
+                "year": "2007",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "key": "B73",
+                "doi-asserted-by": "crossref",
+                "first-page": "1007",
+                "DOI": "10.1177/01461672992511008",
+                "volume": "25",
+                "author": "Smith R. H.",
+                "year": "1999",
+                "journal-title": "Personality and Social Psychology Bulletin"
+            },
+            {
+                "key": "B74",
+                "doi-asserted-by": "crossref",
+                "first-page": "173",
+                "DOI": "10.1007/978-1-4615-4237-7_10",
+                "volume-title": "Handbook of social comparison: Theory and research",
+                "author": "Smith R.",
+                "year": "2000"
+            },
+            {
+                "key": "B75",
+                "doi-asserted-by": "crossref",
+                "first-page": "1442",
+                "DOI": "10.2307/256865",
+                "volume": "38",
+                "author": "Spreitzer G. M.",
+                "year": "1995",
+                "journal-title": "Academy of Management Journal"
+            },
+            {
+                "key": "B76",
+                "volume-title": "The roots of evil",
+                "author": "Staub E.",
+                "year": "1989"
+            },
+            {
+                "key": "B77",
+                "doi-asserted-by": "crossref",
+                "first-page": "657",
+                "DOI": "10.1002/job.523",
+                "volume": "29",
+                "author": "Stewart M. M.",
+                "year": "2008",
+                "journal-title": "Journal of Organizational Behavior"
+            },
+            {
+                "key": "B78",
+                "doi-asserted-by": "crossref",
+                "first-page": "721",
+                "DOI": "10.1037/0021-9010.93.4.721",
+                "volume": "93",
+                "author": "Tepper B. J.",
+                "year": "2008",
+                "journal-title": "Journal of Applied Psychology"
+            },
+            {
+                "key": "B79",
+                "doi-asserted-by": "crossref",
+                "first-page": "261",
+                "DOI": "10.1177/0149206307300812",
+                "volume": "33",
+                "author": "Tepper B. J.",
+                "year": "2007",
+                "journal-title": "Journal of Management"
+            },
+            {
+                "key": "B80",
+                "doi-asserted-by": "crossref",
+                "first-page": "487",
+                "DOI": "10.1002/job.688",
+                "volume": "32",
+                "author": "Tepper B. J.",
+                "year": "2011",
+                "journal-title": "Journal of Organizational Behavior"
+            },
+            {
+                "key": "B81",
+                "doi-asserted-by": "crossref",
+                "first-page": "279",
+                "DOI": "10.5465/amj.2011.60263085",
+                "volume": "54",
+                "author": "Tepper B. J.",
+                "year": "2011",
+                "journal-title": "Academy of Management Journal"
+            },
+            {
+                "key": "B82",
+                "doi-asserted-by": "crossref",
+                "first-page": "178",
+                "DOI": "10.2307/1556375",
+                "volume": "43",
+                "author": "Tepper B.",
+                "year": "2000",
+                "journal-title": "Academy of Management Journal"
+            },
+            {
+                "key": "B83",
+                "first-page": "181",
+                "volume-title": "Advances in experimental social psychology",
+                "volume": "21",
+                "author": "Tesser A.",
+                "year": "1988"
+            },
+            {
+                "key": "B84",
+                "first-page": "15",
+                "volume-title": "Social identity and intergroup relations",
+                "author": "Turner J. C.",
+                "year": "1982"
+            },
+            {
+                "key": "B85",
+                "volume-title": "Social influence",
+                "author": "Turner J. C.",
+                "year": "1991"
+            },
+            {
+                "key": "B86",
+                "doi-asserted-by": "crossref",
+                "first-page": "156",
+                "DOI": "10.1037/1528-3542.6.1.156",
+                "volume": "6",
+                "author": "van Dijk W. W.",
+                "year": "2006",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "B87",
+                "volume-title": "The theory of the leisure class",
+                "author": "Veblen T.",
+                "year": "1979"
+            },
+            {
+                "key": "B88",
+                "first-page": "201",
+                "volume": "13",
+                "author": "Vecchio R. P.",
+                "year": "1995",
+                "journal-title": "Research in Personnel and Human Resources Management"
+            },
+            {
+                "key": "B89",
+                "first-page": "121",
+                "volume-title": "Organizational psychology and health care",
+                "author": "Vecchio R. P.",
+                "year": "1999"
+            },
+            {
+                "key": "B90",
+                "doi-asserted-by": "crossref",
+                "first-page": "161",
+                "DOI": "10.1023/A:1009592430712",
+                "volume": "7",
+                "author": "Vecchio R. P.",
+                "year": "2000",
+                "journal-title": "International Journal of Stress Management"
+            },
+            {
+                "key": "B91",
+                "doi-asserted-by": "crossref",
+                "first-page": "69",
+                "DOI": "10.1080/02699930441000148",
+                "volume": "19",
+                "author": "Vecchio R. P.",
+                "year": "2005",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "B92",
+                "first-page": "109",
+                "volume-title": "Managing social and ethical issues in organizations",
+                "author": "Vecchio R. P.",
+                "year": "2007"
+            },
+            {
+                "key": "B93",
+                "volume-title": "Les ravages de l'envie au travail [The ravages of envy at work]",
+                "author": "Vidaillet B.",
+                "year": "2006"
+            },
+            {
+                "key": "B94",
+                "doi-asserted-by": "crossref",
+                "first-page": "1063",
+                "DOI": "10.1037/0022-3514.54.6.1063",
+                "volume": "54",
+                "author": "Watson D.",
+                "year": "1988",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "B95",
+                "doi-asserted-by": "crossref",
+                "first-page": "122",
+                "DOI": "10.1037/1089-2680.8.2.122",
+                "volume": "8",
+                "author": "Wert S. R.",
+                "year": "2004",
+                "journal-title": "Review of General Psychology"
+            },
+            {
+                "key": "B96",
+                "doi-asserted-by": "crossref",
+                "first-page": "373",
+                "DOI": "10.1177/104649648201300307",
+                "volume": "13",
+                "author": "Wheeless R.",
+                "year": "1978",
+                "journal-title": "Small Group Behavior"
+            },
+            {
+                "key": "B97",
+                "doi-asserted-by": "crossref",
+                "first-page": "520",
+                "DOI": "10.1177/0146167296225009",
+                "volume": "22",
+                "author": "Wood J. V.",
+                "year": "1996",
+                "journal-title": "Personality and Social Psychology Bulletin"
+            }
+        ],
+        "container-title": [
+            "Academy of Management Journal"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://journals.aom.org/doi/10.5465/amj.2009.0804",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2023,
+                    6,
+                    23
+                ]
+            ],
+            "date-time": "2023-06-23T07:01:19Z",
+            "timestamp": 1687503679000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "http://journals.aom.org/doi/10.5465/amj.2009.0804"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2012,
+                    6
+                ]
+            ]
+        },
+        "references-count": 97,
+        "journal-issue": {
+            "issue": "3",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2012,
+                        6
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.5465/amj.2009.0804"
+        ],
+        "URL": "https://doi.org/10.5465/amj.2009.0804",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0001-4273",
+            "1948-0989"
+        ],
+        "issn-type": [
+            {
+                "value": "0001-4273",
+                "type": "print"
+            },
+            {
+                "value": "1948-0989",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2012,
+                    6
+                ]
+            ]
+        }
+    }
+}

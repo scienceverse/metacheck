@@ -1,0 +1,304 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 22,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            5,
+                            2
+                        ]
+                    ],
+                    "date-time": "2026-05-02T20:15:38Z",
+                    "timestamp": 1777752938944,
+                    "version": "3.51.4"
+                },
+                "reference-count": 22,
+                "publisher": "The Royal Society",
+                "issue": "1498",
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "short-container-title": [
+                    "Proc. R. Soc. Lond. B"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2002,
+                            7,
+                            7
+                        ]
+                    ]
+                },
+                "DOI": "10.1098/rspb.2002.2034",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2002,
+                            7,
+                            28
+                        ]
+                    ],
+                    "date-time": "2002-07-28T22:41:28Z",
+                    "timestamp": 1027896088000
+                },
+                "page": "1307-1312",
+                "source": "Crossref",
+                "is-referenced-by-count": 345,
+                "title": [
+                    "Facial resemblance enhances trust"
+                ],
+                "prefix": "10.1098",
+                "volume": "269",
+                "author": [
+                    {
+                        "given": "Lisa M.",
+                        "family": "DeBruine",
+                        "sequence": "first",
+                        "affiliation": [
+                            {
+                                "name": "Department of Psychology, McMaster University, Hamilton, Ontario,L8S 4K1, Canada ()"
+                            }
+                        ]
+                    }
+                ],
+                "member": "175",
+                "published-online": {
+                    "date-parts": [
+                        [
+                            2002,
+                            7,
+                            7
+                        ]
+                    ]
+                },
+                "reference": [
+                    {
+                        "key": "p_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rspb.1999.0807"
+                    },
+                    {
+                        "key": "p_2",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1006/game.1995.1027"
+                    },
+                    {
+                        "key": "p_3",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1257/aer.90.1.166"
+                    },
+                    {
+                        "key": "p_4",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S1090-5138(98)00047-6"
+                    },
+                    {
+                        "key": "p_5",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/1467-9280.00440"
+                    },
+                    {
+                        "key": "p_6",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S0167-2681(00)00108-6"
+                    },
+                    {
+                        "key": "p_7",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/0162-3095(82)90002-4"
+                    },
+                    {
+                        "key": "p_8",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/0022-5193(64)90038-4"
+                    },
+                    {
+                        "key": "p_9",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S0166-2236(00)01916-0"
+                    },
+                    {
+                        "key": "p_10",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/j.1465-7295.1998.tb01719.x"
+                    },
+                    {
+                        "key": "p_11",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/icb/22.3.491"
+                    },
+                    {
+                        "key": "p_12",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1073/pnas.93.23.13421"
+                    },
+                    {
+                        "key": "p_13",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S1090-5138(99)00029-X"
+                    },
+                    {
+                        "key": "p_14",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rspb.2000.1058"
+                    },
+                    {
+                        "key": "p_15",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/294160a0"
+                    },
+                    {
+                        "key": "p_16",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/0162-3095(90)90003-O"
+                    },
+                    {
+                        "key": "p_17",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s12144-999-1020-4"
+                    },
+                    {
+                        "key": "p_18",
+                        "first-page": "98",
+                        "article-title": "Kin recognition. Sci",
+                        "volume": "272",
+                        "author": "Pfennig D. W.",
+                        "year": "1995",
+                        "journal-title": "Am."
+                    },
+                    {
+                        "key": "p_19",
+                        "unstructured": "Porter R. H. 1987 Kin recognition: functions and mediating mechanisms. In Sociobiology and psychology: ideas issues and applications (ed. C. Crawford M. Smith & D. Krebs) pp. 175-203. Hillsdale NJ: Erlbaum Associates."
+                    },
+                    {
+                        "key": "p_20",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "501",
+                        "DOI": "10.1542/peds.74.4.501",
+                        "article-title": "Recognition of neonates by facial-visual characteristics",
+                        "volume": "74",
+                        "author": "Porter R. H.",
+                        "year": "1984",
+                        "journal-title": "Pediatrics"
+                    },
+                    {
+                        "key": "p_21",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/0162-3095(93)90010-F"
+                    },
+                    {
+                        "key": "p_22",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S0167-4870(01)00059-9"
+                    }
+                ],
+                "container-title": [
+                    "Proceedings of the Royal Society of London. Series B: Biological Sciences"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "https://royalsocietypublishing.org/doi/pdf/10.1098/rspb.2002.2034",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2023,
+                            4,
+                            24
+                        ]
+                    ],
+                    "date-time": "2023-04-24T00:05:35Z",
+                    "timestamp": 1682294735000
+                },
+                "score": 80.36001,
+                "resource": {
+                    "primary": {
+                        "URL": "https://royalsocietypublishing.org/doi/10.1098/rspb.2002.2034"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2002,
+                            7,
+                            7
+                        ]
+                    ]
+                },
+                "references-count": 22,
+                "journal-issue": {
+                    "issue": "1498",
+                    "published-online": {
+                        "date-parts": [
+                            [
+                                2002,
+                                7,
+                                7
+                            ]
+                        ]
+                    },
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2002,
+                                7,
+                                7
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "10.1098/rspb.2002.2034"
+                ],
+                "URL": "https://doi.org/10.1098/rspb.2002.2034",
+                "ISSN": [
+                    "0962-8452",
+                    "1471-2954"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0962-8452",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1471-2954",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2002,
+                            7,
+                            7
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

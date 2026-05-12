@@ -33,11 +33,11 @@ df <- select(df, any_of(c("id", "doi")), any_of(modules), everything())
 for (module in modules) {
   for (paper in papers) {
     tryCatch({
-      idx <- which(paper$id == df$id)
+      idx <- which(paper$paper_id == df$paper_id)
 
       # only run if not already in the df
       if (is.na(df[[module]][[idx]])) {
-        message(paper$id, ": ", module)
+        message(paper$paper_id, ": ", module)
         output <- tryCatch({
           time <- system.time( mo <- module_run(paper, module) )
           # for (n in names(mo$summary_table)) {

@@ -18,7 +18,7 @@ all_urls <- function(paper) {
   table <- extract_urls(paper)
 
   # summary output for paperlists ----
-  summary_table <- dplyr::count(table, id, name = "urls")
+  summary_table <- dplyr::count(table, paper_id, name = "urls")
 
   # determine the traffic light ----
   tl <- if (nrow(table)) "info" else "na"

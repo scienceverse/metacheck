@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">To Err is Human: An Empirical Investigation</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct status="extracted">
+					<analytic>
+						<author>
+							<persName><forename type="first">Daniel</forename><surname>Lakens</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Lisa</forename><surname>Debruine</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Jakub</forename><surname>Werner</surname></persName>
+						</author>
+						<title level="a" type="main">To Err is Human: An Empirical Investigation</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">E2F9A83B2D35B14F12EB57E0EE760B7C</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.9.0" ident="GROBID" when="2026-05-12T16:08+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">0.9.0</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=true, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], flavor=null</label>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>This paper demonstrates some good and poor practices for use with the {metacheck} R package. All data are simulated. The paper shows examples of (1) open and closed OSF links; (2a) citation of retracted papers, (2b) citations without a doi, (2c) citations with Pubpeer comments, (2d) citations in the FLoRA replication database, and (2e) missing/mismatched/incorrect citations and references; (3a) R files with code on GitHub that do not load libraries in one location, (3b) load files that are not shared in the repository, (3c) lack comments, and (3d) have absolute file paths; (4) imprecise reporting of non-significant p-values; (5) tests with and without effect sizes; (6) use of "marginally significant" to describe non-significant findings; (7) a power analysis reporting some of the essential attributes; and (8) retrieving information from preregistrations.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Although intentional dishonesty might be a successful way to boost creativity <ref type="bibr" target="#b2">(Gino and Wiltermuth 2014)</ref>, it is safe to say most mistakes researchers make are unintentional. From a human factors perspective, human error is a symptom of a poor design (Smithy, 2020). Automation can be used to check for errors in scientific manuscripts, and inform authors about possible corrections. In this study we examine the usefulness of metacheck to improve best practices.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head><p>In this study<ref type="foot" target="#foot_0">foot_0</ref> we examine whether automated checks reduce the amount of errors that researchers make in scientific manuscripts. This study was preregistered at <ref type="url" target="https://osf.io/48ncu">https://osf.io/48ncu</ref> and on AsPredicted at <ref type="url" target="https://aspredicted.org/by8i8v.pdf">https://aspredicted.org/by8i8v.pdf</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Procedure</head><p>We randomly assigned 50 scientists to a condition where their manuscript was automatically checked for errors, and 50 scientists to a control condition with a checklist. Scientists had the opportunity to make changes to their manuscript based on the feedback of the tool. We subsequently coded all manuscripts for mistakes, and counted the total number of mistakes. We also measured the expertise of researchers (in years) to explore whether the automated tool would be more useful, the less research experience researchers had. We also asked researchers to rate how useful they found the checklist or app on a scale from 1 (not at all) to 7 (extremely useful). On average researchers in the experimental (app) condition made fewer mistakes (M = 9.12) than researchers in the control (checklist) condition (M = 10.9), t(97.7) = 2.9, p = 0.005, d = 0.59.</p><p>On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152.</p><p>There was no effect of experience on the reduction in errors when using the tool (p &gt; .05), as the correlation was non-significant (Figure <ref type="figure" target="#fig_0">2</ref>). </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>Since our data are simulated for demonstration purposes, of course they confirm our hypotheses. It seems automated tools can help prevent errors by providing researchers with feedback about potential mistakes, and researchers feel the app</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 2 :</head><label>2</label><figDesc>Figure2: The effect of experience on the reduction in errors.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 :</head><label>1</label><figDesc>The average number of mistakes and usefulness score for the control and experimental conditions.</figDesc><table><row><cell>Condition</cell><cell cols="2">Mistakes Usefulness</cell></row><row><cell>control</cell><cell>10.90</cell><cell>4.50</cell></row><row><cell>experimental</cell><cell>9.12</cell><cell>5.06</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>Remember, this is a demo and none of this is real.</p></note>
+		</body>
+		<back>
+
+			<div type="availability">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data Availability</head><p>Data and analysis code is available on GitHub from <ref type="url" target="https://github.com/Lak-">https://github.com/Lak-</ref>ens/to_err_is_human and from <ref type="url" target="https://researchbox.org/4377">https://researchbox.org/4377</ref>.</p><p>Data is also available from <ref type="url" target="https://osf.io/5tbm9">https://osf.io/5tbm9</ref> and code is also available from <ref type="url" target="https://osf.io/629bx">https://osf.io/629bx</ref>.</p></div>
+			</div>
+
+
+			<div type="contribution">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Author Notes</head><p>The authors declare a conflict of interest. We really want to see this project succeed and help researchers make their papers better.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Power Analysis</head><p>We conducted a sensitivity power analysis 2 to determine that a Cohen's d of 0.50 is the smallest effect size that we could detect with N = 50 participants in each group and 80% power.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>We simulated the data using Faux (DeBruine 2025) (Table <ref type="table">1</ref>, Figure <ref type="figure" target="#fig_1">1</ref>). 2</p><p>The code we used for this analysis is as follows.</p><p>pwr::pwr.t.test(n = 50, power = 0.8, alternative = "greater") is useful. We conclude the use of automated checks has potential to reduce the number of mistakes in scientific manuscripts.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 1 :</head><label>1</label><figDesc>The simulated data.</figDesc></figure>
+			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct status="extracted" xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Faux: Simulation for Factorial Designs</title>
+		<author>
+			<persName><forename type="first">Lisa</forename><surname>Debruine</surname></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.2669586</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.2669586" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">DeBruine, Lisa. 2025. Faux: Simulation for Factorial Designs. Zenodo. https: //doi.org/10.5281/zenodo.2669586.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b1">
+	<analytic>
+		<title level="a" type="main">The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles</title>
+		<author>
+			<persName><forename type="first">Alice</forename><forename type="middle">H</forename><surname>Eagly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wendy</forename><surname>Wood</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0003-066x.54.6.408</idno>
+		<ptr target="https://doi.org/10.1037/0003-066x.54.6.408" />
+	</analytic>
+	<monogr>
+		<title level="j">American Psychologist</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="408" to="423" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Eagly, Alice H., and Wendy Wood. 1999. &quot;The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles.&quot; American Psychologist 54 (6): 408-23. https://doi.org/10.1037/0003-066x.54.6.408.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Evil Genius? How Dishonesty Can Lead to Greater Creativity</title>
+		<author>
+			<persName><forename type="first">Francesca</forename><surname>Gino</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Scott</forename><forename type="middle">S</forename><surname>Wiltermuth</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0956797614520714</idno>
+		<ptr target="https://doi.org/10.1177/0956797614520714" />
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Science</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="973" to="981" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gino, Francesca, and Scott S. Wiltermuth. 2014. &quot;Evil Genius? How Dishonesty Can Lead to Greater Creativity.&quot; Psychological Science 25 (4): 973-81. https://doi.org/10.1177/0956797614520714.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Equivalence Testing for Psychological Research</title>
+		<author>
+			<persName><forename type="first">Daniël</forename><surname>Lakens</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Science</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="259" to="270" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note>Advances in Methods and Practices</note>
+	<note type="raw_reference">Lakens, Daniël. 2018. &quot;Equivalence Testing for Psychological Research.&quot; Ad- vances in Methods and Practices in Psychological Science 1: 259-70.</note>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Human Error Is a Symptom of a Poor Design</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Smith</surname></persName>
+		</author>
+		<idno type="DOI">10.0000/0123456789</idno>
+		<ptr target="https://doi.org/10.0000/0123456789" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Journals</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Smith, F. 2021. &quot;Human Error Is a Symptom of a Poor Design.&quot; Journal of Journals. https://doi.org/10.0000/0123456789.</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

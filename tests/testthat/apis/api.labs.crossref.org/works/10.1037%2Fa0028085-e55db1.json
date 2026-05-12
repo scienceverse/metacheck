@@ -1,0 +1,173 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    12
+                ]
+            ],
+            "date-time": "2026-05-12T06:18:25Z",
+            "timestamp": 1778566705528,
+            "version": "3.51.4"
+        },
+        "reference-count": 0,
+        "publisher": "American Psychological Association (APA)",
+        "issue": "3",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Psychological Methods"
+        ],
+        "DOI": "10.1037/a0028085",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2012,
+                    4,
+                    13
+                ]
+            ],
+            "date-time": "2012-04-13T21:45:34Z",
+            "timestamp": 1334353534000
+        },
+        "page": "437-455",
+        "source": "Crossref",
+        "is-referenced-by-count": 2920,
+        "title": [
+            "Identifying careless responses in survey data."
+        ],
+        "prefix": "10.1037",
+        "volume": "17",
+        "author": [
+            {
+                "given": "Adam W.",
+                "family": "Meade",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "S. Bartholomew",
+                "family": "Craig",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "15",
+        "published-online": {
+            "date-parts": [
+                [
+                    2012,
+                    9
+                ]
+            ]
+        },
+        "container-title": [
+            "Psychological Methods"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://psycnet.apa.org/journals/met/17/3/437.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    2,
+                    6
+                ]
+            ],
+            "date-time": "2024-02-06T00:27:47Z",
+            "timestamp": 1707179267000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://doi.apa.org/doi/10.1037/a0028085"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2012,
+                    9
+                ]
+            ]
+        },
+        "references-count": 0,
+        "journal-issue": {
+            "issue": "3",
+            "published-online": {
+                "date-parts": [
+                    [
+                        2012,
+                        9
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "2012-10015-001",
+            "22506584"
+        ],
+        "URL": "https://doi.org/10.1037/a0028085",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1939-1463",
+            "1082-989X"
+        ],
+        "issn-type": [
+            {
+                "value": "1939-1463",
+                "type": "electronic"
+            },
+            {
+                "value": "1082-989X",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2012,
+                    9
+                ]
+            ]
+        }
+    }
+}

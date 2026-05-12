@@ -1,0 +1,1217 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    24
+                ]
+            ],
+            "date-time": "2026-04-24T11:54:10Z",
+            "timestamp": 1777031650737,
+            "version": "3.51.4"
+        },
+        "reference-count": 93,
+        "publisher": "Elsevier BV",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2015,
+                            10,
+                            1
+                        ]
+                    ],
+                    "date-time": "2015-10-01T00:00:00Z",
+                    "timestamp": 1443657600000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "elsevier.com",
+                "sciencedirect.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Journal of Research in Personality"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2015,
+                    10
+                ]
+            ]
+        },
+        "DOI": "10.1016/j.jrp.2015.08.001",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2015,
+                    8,
+                    6
+                ]
+            ],
+            "date-time": "2015-08-06T20:33:23Z",
+            "timestamp": 1438893203000
+        },
+        "page": "143-153",
+        "update-policy": "https://doi.org/10.1016/elsevier_cm_policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 39,
+        "special_numbering": "C",
+        "title": [
+            "Envy mediates the relation between low academic self-esteem and hostile tendencies"
+        ],
+        "prefix": "10.1016",
+        "volume": "58",
+        "author": [
+            {
+                "given": "Katrin",
+                "family": "Rentzsch",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Michela",
+                "family": "Schröder-Abé",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Astrid",
+                "family": "Schütz",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "78",
+        "reference": [
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0005",
+                "doi-asserted-by": "crossref",
+                "first-page": "16",
+                "DOI": "10.1002/per.768",
+                "article-title": "From dating to mating and relating: Predictors of initial and long-term outcomes of speed-dating in a community sample",
+                "volume": "25",
+                "author": "Asendorpf",
+                "year": "2011",
+                "journal-title": "European Journal of Personality"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0010",
+                "doi-asserted-by": "crossref",
+                "first-page": "90",
+                "DOI": "10.1002/per.811",
+                "article-title": "PERSOC: A unified framework for understanding the dynamic interplay of personality and social relationships",
+                "volume": "25",
+                "author": "Back",
+                "year": "2011",
+                "journal-title": "European Journal of Personality"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0015",
+                "series-title": "The subtlety of emotions",
+                "author": "Ben-Ze’ev",
+                "year": "2000"
+            },
+            {
+                "issue": "7",
+                "key": "10.1016/j.jrp.2015.08.001_b0020",
+                "doi-asserted-by": "crossref",
+                "first-page": "235",
+                "DOI": "10.1111/j.1746-1561.2004.tb08280.x",
+                "article-title": "Why we harass nerds and freaks: A formal theory of student culture and norms",
+                "volume": "74",
+                "author": "Bishop",
+                "year": "2004",
+                "journal-title": "Journal of School Health"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0025",
+                "doi-asserted-by": "crossref",
+                "first-page": "149",
+                "DOI": "10.1007/s11218-007-9041-z",
+                "article-title": "Peer pressure: A cause of scholastic underachievement? A cross-cultural study of mathematical achievement among German, Canadian, and Israeli middle school students",
+                "volume": "11",
+                "author": "Boehnke",
+                "year": "2008",
+                "journal-title": "Social Psychology of Education"
+            },
+            {
+                "issue": "5",
+                "key": "10.1016/j.jrp.2015.08.001_b0030",
+                "first-page": "549",
+                "article-title": "“Streber” – zum Verhältnis von Peer Kultur und Schulerfolg [”Careerist” – Relationship of peer culture and success in schools]",
+                "volume": "58",
+                "author": "Breidenstein",
+                "year": "2004",
+                "journal-title": "Pädagogische Rundschau"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0035",
+                "series-title": "Personal relationships during adolescence",
+                "first-page": "123",
+                "article-title": "Casting adolescent crowds in a relational perspective: Caricature, channel, and context",
+                "author": "Brown",
+                "year": "1994"
+            },
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0040",
+                "doi-asserted-by": "crossref",
+                "first-page": "219",
+                "DOI": "10.1037/0022-3514.75.1.219",
+                "article-title": "Threatened egotism, narcissism, self-esteem, and direct and displaced aggression: Does self-love or self-hate lead to violence?",
+                "volume": "75",
+                "author": "Bushman",
+                "year": "1998",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0045",
+                "doi-asserted-by": "crossref",
+                "first-page": "343",
+                "DOI": "10.1037/h0046900",
+                "article-title": "An inventory for assessing different kinds of hostility",
+                "volume": "21",
+                "author": "Buss",
+                "year": "1957",
+                "journal-title": "Journal of Consulting Psychology"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0050",
+                "doi-asserted-by": "crossref",
+                "first-page": "452",
+                "DOI": "10.1037/0022-3514.63.3.452",
+                "article-title": "The aggression questionnaire",
+                "volume": "63",
+                "author": "Buss",
+                "year": "1992",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0055",
+                "doi-asserted-by": "crossref",
+                "first-page": "574",
+                "DOI": "10.1080/03033910.1994.10558031",
+                "article-title": "Bullies and victims in a school setting with reference to some Dublin schools",
+                "volume": "15",
+                "author": "Byrne",
+                "year": "1994",
+                "journal-title": "The Irish Journal of Psychology"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0060",
+                "doi-asserted-by": "crossref",
+                "first-page": "200",
+                "DOI": "10.1080/01973533.2013.764297",
+                "article-title": "Effect of personal injustice on attributions for the success of others",
+                "volume": "35",
+                "author": "Chen",
+                "year": "2013",
+                "journal-title": "Basic and Applied Social Psychology"
+            },
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0065",
+                "doi-asserted-by": "crossref",
+                "first-page": "138",
+                "DOI": "10.1521/soco.2009.27.1.138",
+                "article-title": "Maintaining a positive self-image by stereotyping others: Self-threat and the stereotype content model",
+                "volume": "27",
+                "author": "Collange",
+                "year": "2009",
+                "journal-title": "Social Cognition"
+            },
+            {
+                "issue": "5",
+                "key": "10.1016/j.jrp.2015.08.001_b0070",
+                "doi-asserted-by": "crossref",
+                "first-page": "894",
+                "DOI": "10.1037/0022-3514.85.5.894",
+                "article-title": "Contingencies of self-worth in college students: Theory and measurement",
+                "volume": "85",
+                "author": "Crocker",
+                "year": "2003",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0075",
+                "doi-asserted-by": "crossref",
+                "first-page": "317",
+                "DOI": "10.1016/j.paid.2012.03.029",
+                "article-title": "Envy: Functional specificity and sex-differentiated design features",
+                "volume": "53",
+                "author": "DelPriore",
+                "year": "2012",
+                "journal-title": "Personality and Individual Differences"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0080",
+                "doi-asserted-by": "crossref",
+                "first-page": "328",
+                "DOI": "10.1111/j.0956-7976.2005.01535.x",
+                "article-title": "Low self-esteem is related to aggression, antisocial behavior, and delinquency",
+                "volume": "16",
+                "author": "Donnellan",
+                "year": "2005",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0085",
+                "unstructured": "Duden (2007). Duden – Das Herkunftswörterbuch [Duden – Etymological dictionary] (4th ed.). Mannheim: Dudenverlag."
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0090",
+                "doi-asserted-by": "crossref",
+                "first-page": "424",
+                "DOI": "10.1521/jscp.22.4.424.22897",
+                "article-title": "Self-esteem and social problem solving as predictors of aggression in college students",
+                "volume": "22",
+                "author": "D’Zurilla",
+                "year": "2003",
+                "journal-title": "Journal of Social and Clinical Psychology"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0095",
+                "doi-asserted-by": "crossref",
+                "first-page": "117",
+                "DOI": "10.1177/001872675400700202",
+                "article-title": "A theory of social comparison processes",
+                "volume": "7",
+                "author": "Festinger",
+                "year": "1954",
+                "journal-title": "Human Relations"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0100",
+                "doi-asserted-by": "crossref",
+                "first-page": "404",
+                "DOI": "10.1037/0022-3514.46.2.404",
+                "article-title": "The dimensionality of self-esteem: II. Hierarchical facet model for revised measurement scales",
+                "volume": "46",
+                "author": "Fleming",
+                "year": "1984",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0105",
+                "doi-asserted-by": "crossref",
+                "first-page": "233",
+                "DOI": "10.1111/j.1467-9280.2007.01882.x",
+                "article-title": "Required sample size to detect the mediated effect",
+                "volume": "18",
+                "author": "Fritz",
+                "year": "2007",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0110",
+                "doi-asserted-by": "crossref",
+                "first-page": "129",
+                "DOI": "10.1037/0022-3514.76.1.129",
+                "article-title": "Individual differences in social comparison: Development of a scale of social comparison orientation",
+                "volume": "76",
+                "author": "Gibbons",
+                "year": "1999",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0115",
+                "doi-asserted-by": "crossref",
+                "first-page": "131",
+                "DOI": "10.1111/j.1468-5914.2008.00363.x",
+                "article-title": "What’s social about social emotions?",
+                "volume": "38",
+                "author": "Hareli",
+                "year": "2008",
+                "journal-title": "Journal for the Theory of Social Behaviour"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0120",
+                "doi-asserted-by": "crossref",
+                "first-page": "255",
+                "DOI": "10.1007/BF02251889",
+                "article-title": "Envy and jealousy as discrete emotions: A taxometric analysis",
+                "volume": "20",
+                "author": "Haslam",
+                "year": "1996",
+                "journal-title": "Motivation and Emotion"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0125",
+                "doi-asserted-by": "crossref",
+                "first-page": "345",
+                "DOI": "10.1111/1469-7610.00618",
+                "article-title": "Gender self-concept profiles of adolescents suspended from high school",
+                "volume": "41",
+                "author": "Hay",
+                "year": "2000",
+                "journal-title": "Journal of Child Psychology and Psychiatry"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0130",
+                "series-title": "Introduction to mediation, moderation, and conditional process analysis: A regression-based approach",
+                "author": "Hayes",
+                "year": "2013"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0135",
+                "doi-asserted-by": "crossref",
+                "first-page": "588",
+                "DOI": "10.1006/jrpe.1997.2204",
+                "article-title": "Assessing hypersensitive narcissism: A reexamination of Murray’s Narcism Scale",
+                "volume": "31",
+                "author": "Hendin",
+                "year": "1997",
+                "journal-title": "Journal of Research in Personality"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0140",
+                "doi-asserted-by": "crossref",
+                "first-page": "311",
+                "DOI": "10.1024/0170-1789.24.4.311",
+                "volume": "24",
+                "author": "Herzberg",
+                "year": "2003",
+                "journal-title": "Zeitschrift für Differentielle und Diagnostische Psychologie"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0145",
+                "series-title": "Envy: Theory and research",
+                "first-page": "60",
+                "article-title": "The evolutionary psychology of envy",
+                "author": "Hill",
+                "year": "2008"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0150",
+                "doi-asserted-by": "crossref",
+                "first-page": "219",
+                "DOI": "10.1016/j.jrp.2011.02.003",
+                "article-title": "When the needs for affiliation and intimacy are frustrated: Envy and indirect aggression among German and Cameroonian adults",
+                "volume": "45",
+                "author": "Hofer",
+                "year": "2011",
+                "journal-title": "Journal of Research in Personality"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0155",
+                "series-title": "Oxford advanced learner’s dictionary of current English",
+                "author": "Hornby",
+                "year": "2005"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0160",
+                "unstructured": "John, O. P., Donahue, E. M., & Kentle, R. L. (1991). The Big Five Inventory – Versions 4a and 54. Berkeley, CA: University of California, Berkeley, Institute of Personality and Social Research."
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0165",
+                "series-title": "Self-attitudes and deviant behavior",
+                "author": "Kaplan",
+                "year": "1975"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0170",
+                "series-title": "Interpersonal perception: A social relations analysis",
+                "author": "Kenny",
+                "year": "1994"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0175",
+                "unstructured": "Kenny, D. A. (2007). SOREMO Version V. 2. University of Connecticut."
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0180",
+                "doi-asserted-by": "crossref",
+                "first-page": "115",
+                "DOI": "10.1037/1082-989X.8.2.115",
+                "article-title": "Lower level mediation in multilevel models",
+                "volume": "8",
+                "author": "Kenny",
+                "year": "2003",
+                "journal-title": "Psychological Methods"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0185",
+                "doi-asserted-by": "crossref",
+                "first-page": "619",
+                "DOI": "10.1037/a0035789",
+                "article-title": "Victimization of high performers: The roles of envy and work group identification",
+                "volume": "99",
+                "author": "Kim",
+                "year": "2014",
+                "journal-title": "Journal of Applied Psychology"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0190",
+                "doi-asserted-by": "crossref",
+                "first-page": "331",
+                "DOI": "10.1002/per.522",
+                "article-title": "Proneness to, perceptions of, and responses to teasing: The influence of both intrapersonal and interpersonal factors",
+                "volume": "18",
+                "author": "Kowalski",
+                "year": "2004",
+                "journal-title": "European Journal of Personality"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0195",
+                "doi-asserted-by": "crossref",
+                "first-page": "249",
+                "DOI": "10.1207/S15327906MBR3602_06",
+                "article-title": "Multilevel modeling of individual and group level mediated effects",
+                "volume": "36",
+                "author": "Krull",
+                "year": "2001",
+                "journal-title": "Multivariate Behavioral Research"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0200",
+                "doi-asserted-by": "crossref",
+                "first-page": "111",
+                "DOI": "10.1026//0012-1924.47.3.111",
+                "volume": "47",
+                "author": "Lang",
+                "year": "2001",
+                "journal-title": "Diagnostica"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0205",
+                "doi-asserted-by": "crossref",
+                "first-page": "518",
+                "DOI": "10.1037/0022-3514.68.3.518",
+                "article-title": "Self-esteem as an interpersonal monitor: The sociometer hypothesis",
+                "volume": "68",
+                "author": "Leary",
+                "year": "1995",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "6",
+                "key": "10.1016/j.jrp.2015.08.001_b0210",
+                "doi-asserted-by": "crossref",
+                "first-page": "565",
+                "DOI": "10.1002/per.1924",
+                "article-title": "Positive self-regard and claim to leadership: Two fundamental forms of self-evaluation",
+                "volume": "27",
+                "author": "Leising",
+                "year": "2013",
+                "journal-title": "European Journal of Personality"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0220",
+                "series-title": "Handbook of self and identity",
+                "first-page": "354",
+                "article-title": "Individual differences in self-esteem",
+                "author": "MacDonald",
+                "year": "2013"
+            },
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0225",
+                "doi-asserted-by": "crossref",
+                "first-page": "41",
+                "DOI": "10.1207/s15327906mbr3001_3",
+                "article-title": "A simulation study of mediated effect measures",
+                "volume": "30",
+                "author": "MacKinnon",
+                "year": "1995",
+                "journal-title": "Multivariate Behavioral Research"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0230",
+                "doi-asserted-by": "crossref",
+                "first-page": "542",
+                "DOI": "10.1177/0146167207312313",
+                "article-title": "Reciprocal effects between academic self-concept, self-esteem, achievement, and attainment over seven adolescent years: Unidimensional and multidimensional perspectives of self-concept",
+                "volume": "34",
+                "author": "Marsh",
+                "year": "2008",
+                "journal-title": "Personality and Social Psychology Bulletin"
+            },
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0235",
+                "doi-asserted-by": "crossref",
+                "first-page": "27",
+                "DOI": "10.1037/1040-3590.16.1.27",
+                "article-title": "A multidimensional perspective of relations between self-concept (Self Description Questionnaire II) and adolescent mental health (Youth Self-Report)",
+                "volume": "16",
+                "author": "Marsh",
+                "year": "2004",
+                "journal-title": "Psychological Assessment"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0240",
+                "doi-asserted-by": "crossref",
+                "first-page": "411",
+                "DOI": "10.1037/0022-0663.93.2.411",
+                "article-title": "Aggressive school troublemakers and victims: A longitudinal model examining the pivotal role of self-concept",
+                "volume": "93",
+                "author": "Marsh",
+                "year": "2001",
+                "journal-title": "Journal of Educational Psychology"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0245",
+                "doi-asserted-by": "crossref",
+                "first-page": "107",
+                "DOI": "10.1207/s15326985ep2003_1",
+                "article-title": "Self-concept: Its multifaceted, hierarchical structure",
+                "volume": "20",
+                "author": "Marsh",
+                "year": "1985",
+                "journal-title": "Educational Psychologist"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0250",
+                "doi-asserted-by": "crossref",
+                "first-page": "403",
+                "DOI": "10.1111/j.1467-6494.2005.00380.x",
+                "article-title": "Integration of multidimensional self-concept and core personality constructs: Construct validation and relations to well-being and achievement",
+                "volume": "74",
+                "author": "Marsh",
+                "year": "2006",
+                "journal-title": "Journal of Personality"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0255",
+                "doi-asserted-by": "crossref",
+                "first-page": "556",
+                "DOI": "10.1037/0022-3514.83.3.556",
+                "article-title": "When rejection stings: How self-esteem constrains relationship-enhancement processes",
+                "volume": "83",
+                "author": "Murray",
+                "year": "2002",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0260",
+                "series-title": "Mplus user’s guide",
+                "author": "Muthén",
+                "year": "2012"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0265",
+                "series-title": "Health hazards in adolescence",
+                "first-page": "259",
+                "article-title": "Bullying among school children",
+                "author": "Olweus",
+                "year": "1990"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0270",
+                "doi-asserted-by": "crossref",
+                "first-page": "269",
+                "DOI": "10.1002/ab.1010",
+                "article-title": "Self-esteem and its relationship to bullying behaviour",
+                "volume": "27",
+                "author": "O’Moore",
+                "year": "2001",
+                "journal-title": "Aggressive Behavior"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0275",
+                "doi-asserted-by": "crossref",
+                "first-page": "695",
+                "DOI": "10.1037/0022-3514.95.3.695",
+                "article-title": "Low self-esteem prospectively predicts depression in adolescence and young adulthood",
+                "volume": "95",
+                "author": "Orth",
+                "year": "2008",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0280",
+                "doi-asserted-by": "crossref",
+                "first-page": "509",
+                "DOI": "10.1177/0146167202287008",
+                "article-title": "The effects of envy on reciprocation in a social dilemma",
+                "volume": "28",
+                "author": "Parks",
+                "year": "2002",
+                "journal-title": "Personality and Social Psychology Bulletin"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0285",
+                "series-title": "Emotions in social psychology: Essential readings",
+                "first-page": "306",
+                "article-title": "The emotional experiences of envy and jealousy",
+                "author": "Parrott",
+                "year": "2001"
+            },
+            {
+                "issue": "6",
+                "key": "10.1016/j.jrp.2015.08.001_b0290",
+                "doi-asserted-by": "crossref",
+                "first-page": "906",
+                "DOI": "10.1037/0022-3514.64.6.906",
+                "article-title": "Distinguishing the experiences of envy and jealousy",
+                "volume": "64",
+                "author": "Parrott",
+                "year": "1993",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0295",
+                "doi-asserted-by": "crossref",
+                "first-page": "106",
+                "DOI": "10.1007/s11618-003-0007-4",
+                "article-title": "Streber als Leistungsverweigerer? Projektidee und erstes Datenmaterial einer Studie zu mathematischen Schulleistungen [Nerds as achievement objectors? Project idea and first data material of a study about mathematical school achievements]",
+                "volume": "6",
+                "author": "Pelkner",
+                "year": "2003",
+                "journal-title": "Zeitschrift für Erziehungswissenschaft"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0300",
+                "doi-asserted-by": "crossref",
+                "first-page": "879",
+                "DOI": "10.3758/BRM.40.3.879",
+                "article-title": "Asymptotic and resampling strategies for assessing and comparing indirect effects in multiple mediator models",
+                "volume": "40",
+                "author": "Preacher",
+                "year": "2008",
+                "journal-title": "Behavior Research Methods"
+            },
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0305",
+                "doi-asserted-by": "crossref",
+                "first-page": "185",
+                "DOI": "10.1080/00273170701341316",
+                "article-title": "Addressing moderated mediation hypotheses: Theory, methods, and prescriptions",
+                "volume": "42",
+                "author": "Preacher",
+                "year": "2007",
+                "journal-title": "Multivariate Behavioral Research"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0310",
+                "doi-asserted-by": "crossref",
+                "first-page": "161",
+                "DOI": "10.1080/10705511.2011.557329",
+                "article-title": "Alternative methods for assessing mediation in multilevel data: The advantages of multilevel SEM",
+                "volume": "18",
+                "author": "Preacher",
+                "year": "2011",
+                "journal-title": "Structural Equation Modeling"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0315",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Rentzsch, K., & Gross, J. J. (in press). Who turns green with envy? Conceptual and empirical perspectives on dispositional envy. European Journal of Personality. http://dx.doi.org/10.1002/per.2012.",
+                "DOI": "10.1002/per.2012"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0320",
+                "doi-asserted-by": "crossref",
+                "first-page": "411",
+                "DOI": "10.1002/per.1884",
+                "article-title": "Being called a “Streber”: The roles of personality and competition in the labelling of academically oriented students",
+                "volume": "27",
+                "author": "Rentzsch",
+                "year": "2013",
+                "journal-title": "European Journal of Personality"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0325",
+                "doi-asserted-by": "crossref",
+                "first-page": "143",
+                "DOI": "10.1080/00220970903292900",
+                "article-title": "Being labeled nerd. Factors that influence the social acceptance of high-achieving students",
+                "volume": "79",
+                "author": "Rentzsch",
+                "year": "2011",
+                "journal-title": "Journal of Experimental Education"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0330",
+                "doi-asserted-by": "crossref",
+                "first-page": "609",
+                "DOI": "10.1016/0191-8869(96)00105-5",
+                "article-title": "The contribution of bullying at school and low self-esteem to acts of delinquency among Australian teenagers",
+                "volume": "21",
+                "author": "Rigby",
+                "year": "1996",
+                "journal-title": "Personality and Individual Differences"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0335",
+                "series-title": "Society and the adolescent self-image",
+                "author": "Rosenberg",
+                "year": "1965"
+            },
+            {
+                "issue": "6",
+                "key": "10.1016/j.jrp.2015.08.001_b0340",
+                "doi-asserted-by": "crossref",
+                "first-page": "1004",
+                "DOI": "10.2307/2095720",
+                "article-title": "Self-esteem and adolescent problems: Modeling reciprocal effects",
+                "volume": "54",
+                "author": "Rosenberg",
+                "year": "1989",
+                "journal-title": "American Sociological Review"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0345",
+                "doi-asserted-by": "crossref",
+                "first-page": "457",
+                "DOI": "10.1016/0191-8869(92)90075-Z",
+                "article-title": "Physical and psychological abuse of heterosexual partners",
+                "volume": "13",
+                "author": "Russell",
+                "year": "1992",
+                "journal-title": "Personality and Individual Differences"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0350",
+                "doi-asserted-by": "crossref",
+                "first-page": "333",
+                "DOI": "10.1207/s15327795jra0803_3",
+                "article-title": "Intelligent, attractive, well-behaving, unhappy: The structure of adolescents’ self-concept and its relations to their social behavior",
+                "volume": "8",
+                "author": "Salmivalli",
+                "year": "1998",
+                "journal-title": "Journal of Research on Adolescence"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0355",
+                "doi-asserted-by": "crossref",
+                "first-page": "780",
+                "DOI": "10.1037/0022-3514.47.4.780",
+                "article-title": "Some antecedents and consequences of social-comparison jealousy",
+                "volume": "47",
+                "author": "Salovey",
+                "year": "1984",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0360",
+                "doi-asserted-by": "crossref",
+                "first-page": "33",
+                "DOI": "10.1016/j.obhdp.2004.01.001",
+                "article-title": "Comparing lots before and after: Promotion rejectees’ invidious reactions to promotees",
+                "volume": "94",
+                "author": "Schaubroeck",
+                "year": "2004",
+                "journal-title": "Organizational Behavior and Human Decision Processes"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0365",
+                "unstructured": "Schmukle, S. C., Schönbrodt, F. D., & Back, M. D. (2010). Triple R: A package for round robin analyses using R (version 0.3). Retrieved from <http://www.persoc.net/Toolbox/TripleR>."
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0370",
+                "unstructured": "Schütz, A., & Sellin, I. (2006). MSWS. Multidimensionale Selbstwertskala [MSES. Multidimensional self-esteem scale]. Göttingen: Hogrefe."
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0375",
+                "doi-asserted-by": "crossref",
+                "first-page": "407",
+                "DOI": "10.3102/00346543046003407",
+                "article-title": "Self-concept: Validation of construct interpretations",
+                "volume": "46",
+                "author": "Shavelson",
+                "year": "1976",
+                "journal-title": "Review of Educational Research"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0380",
+                "doi-asserted-by": "crossref",
+                "first-page": "105",
+                "DOI": "10.2307/3033570",
+                "article-title": "The perception of envy",
+                "volume": "41",
+                "author": "Silver",
+                "year": "1978",
+                "journal-title": "Social Psychology"
+            },
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0385",
+                "doi-asserted-by": "crossref",
+                "first-page": "46",
+                "DOI": "10.1037/0033-2909.133.1.46",
+                "article-title": "Comprehending envy",
+                "volume": "133",
+                "author": "Smith",
+                "year": "2007",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "issue": "8",
+                "key": "10.1016/j.jrp.2015.08.001_b0390",
+                "doi-asserted-by": "crossref",
+                "first-page": "1007",
+                "DOI": "10.1177/01461672992511008",
+                "article-title": "Dispositional envy",
+                "volume": "25",
+                "author": "Smith",
+                "year": "1999",
+                "journal-title": "Personality and Social Psychology Bulletin"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0395",
+                "doi-asserted-by": "crossref",
+                "first-page": "179",
+                "DOI": "10.1207/s15327957pspr0303_2",
+                "article-title": "The roots of evil: Social conditions, culture, personality, and basic human needs",
+                "volume": "3",
+                "author": "Staub",
+                "year": "1999",
+                "journal-title": "Personality and Social Psychology Review"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0400",
+                "first-page": "261",
+                "article-title": "The psychology of self-affirmation: Sustaining the integrity of the self",
+                "volume": "Vol. 21",
+                "author": "Steele",
+                "year": "1988"
+            },
+            {
+                "issue": "3",
+                "key": "10.1016/j.jrp.2015.08.001_b0405",
+                "doi-asserted-by": "crossref",
+                "first-page": "412",
+                "DOI": "10.1037/0022-3514.94.3.412",
+                "article-title": "The cost of lower self-esteem: Testing a self- and social-bonds model of health",
+                "volume": "94",
+                "author": "Stinson",
+                "year": "2008",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "5916",
+                "key": "10.1016/j.jrp.2015.08.001_b0410",
+                "doi-asserted-by": "crossref",
+                "first-page": "937",
+                "DOI": "10.1126/science.1165604",
+                "article-title": "When your gain is my pain and your pain is my gain: Neural correlates of envy and Schadenfreude",
+                "volume": "323",
+                "author": "Takahashi",
+                "year": "2009",
+                "journal-title": "Science"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0415",
+                "doi-asserted-by": "crossref",
+                "first-page": "290",
+                "DOI": "10.1207/S15327957PSPR0404_1",
+                "article-title": "On the confluence of self-esteem maintenance mechanisms",
+                "volume": "4",
+                "author": "Tesser",
+                "year": "2000",
+                "journal-title": "Personality and Social Psychology Review"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0420",
+                "series-title": "Advances in experimental social psychology",
+                "doi-asserted-by": "crossref",
+                "first-page": "181",
+                "DOI": "10.1016/S0065-2601(08)60227-0",
+                "article-title": "Toward a self-evaluation maintenance model of social behavior",
+                "volume": "Vol. 21",
+                "author": "Tesser",
+                "year": "1988"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0425",
+                "doi-asserted-by": "crossref",
+                "first-page": "381",
+                "DOI": "10.1037/0012-1649.42.2.381",
+                "article-title": "Low self-esteem during adolescence predicts poor health, criminal behavior, and limited economic prospects during adulthood",
+                "volume": "42",
+                "author": "Trzesniewski",
+                "year": "2006",
+                "journal-title": "Developmental Psychology"
+            },
+            {
+                "issue": "6",
+                "key": "10.1016/j.jrp.2015.08.001_b0430",
+                "doi-asserted-by": "crossref",
+                "first-page": "784",
+                "DOI": "10.1177/0146167211400421",
+                "article-title": "Why envy outperforms admiration",
+                "volume": "37",
+                "author": "van de Ven",
+                "year": "2011",
+                "journal-title": "Personality and Social Psychology Bulletin"
+            },
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0435",
+                "doi-asserted-by": "crossref",
+                "first-page": "156",
+                "DOI": "10.1037/1528-3542.6.1.156",
+                "article-title": "When people fall from grace: Reconsidering the role of envy in schadenfreude",
+                "volume": "6",
+                "author": "van Dijk",
+                "year": "2006",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0440",
+                "doi-asserted-by": "crossref",
+                "first-page": "69",
+                "DOI": "10.1080/02699930441000148",
+                "article-title": "Explorations in employee envy: Feeling envious and feeling envied",
+                "volume": "19",
+                "author": "Vecchio",
+                "year": "2005",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0445",
+                "doi-asserted-by": "crossref",
+                "first-page": "476",
+                "DOI": "10.1521/jscp.20.4.476.22397",
+                "article-title": "Perfectionism, body dissatisfaction, and self-esteem: An interactive model of bulimic symptom development",
+                "volume": "20",
+                "author": "Vohs",
+                "year": "2001",
+                "journal-title": "Journal of Social and Clinical Psychology"
+            },
+            {
+                "issue": "1",
+                "key": "10.1016/j.jrp.2015.08.001_b0450",
+                "doi-asserted-by": "crossref",
+                "first-page": "3",
+                "DOI": "10.1024//0170-1789.24.1.3",
+                "article-title": "Eine revidierte Fassung der deutschsprachigen Skala zum Selbstwertgefühl von Rosenberg [Revised form of the German version of the Rosenberg Self-Esteem Scale]",
+                "volume": "24",
+                "author": "von Collani",
+                "year": "2003",
+                "journal-title": "Zeitschrift für Differentielle und Diagnostische Psychologie"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0455",
+                "doi-asserted-by": "crossref",
+                "first-page": "729",
+                "DOI": "10.1111/j.1467-6494.1995.tb00315.x",
+                "article-title": "Self-evaluation processes: Motives, information use, and self-esteem",
+                "volume": "63",
+                "author": "Wayment",
+                "year": "1995",
+                "journal-title": "Journal of Personality"
+            },
+            {
+                "issue": "2",
+                "key": "10.1016/j.jrp.2015.08.001_b0460",
+                "doi-asserted-by": "crossref",
+                "first-page": "245",
+                "DOI": "10.1037/0033-2909.90.2.245",
+                "article-title": "Downward comparison principles in social psychology",
+                "volume": "90",
+                "author": "Wills",
+                "year": "1981",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "key": "10.1016/j.jrp.2015.08.001_b0465",
+                "series-title": "The social psychology of emotional and behavioral problems: Interfaces of social and clinical psychology",
+                "first-page": "97",
+                "article-title": "Social comparisons in dysphoric and low self-esteem people",
+                "author": "Wood",
+                "year": "1999"
+            },
+            {
+                "issue": "4",
+                "key": "10.1016/j.jrp.2015.08.001_b0470",
+                "doi-asserted-by": "crossref",
+                "first-page": "695",
+                "DOI": "10.1177/1094428108327450",
+                "article-title": "Testing multilevel mediation using hierarchical linear models: Problems and solutions",
+                "volume": "12",
+                "author": "Zhang",
+                "year": "2009",
+                "journal-title": "Organizational Research Methods"
+            }
+        ],
+        "container-title": [
+            "Journal of Research in Personality"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://api.elsevier.com/content/article/PII:S009265661530009X?httpAccept=text/xml",
+                "content-type": "text/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://api.elsevier.com/content/article/PII:S009265661530009X?httpAccept=text/plain",
+                "content-type": "text/plain",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2022,
+                    5,
+                    20
+                ]
+            ],
+            "date-time": "2022-05-20T01:29:03Z",
+            "timestamp": 1653010143000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://linkinghub.elsevier.com/retrieve/pii/S009265661530009X"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2015,
+                    10
+                ]
+            ]
+        },
+        "references-count": 93,
+        "alternative-id": [
+            "S009265661530009X"
+        ],
+        "URL": "https://doi.org/10.1016/j.jrp.2015.08.001",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0092-6566"
+        ],
+        "issn-type": [
+            {
+                "value": "0092-6566",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2015,
+                    10
+                ]
+            ]
+        },
+        "assertion": [
+            {
+                "value": "Elsevier",
+                "name": "publisher",
+                "label": "This article is maintained by"
+            },
+            {
+                "value": "Envy mediates the relation between low academic self-esteem and hostile tendencies",
+                "name": "articletitle",
+                "label": "Article Title"
+            },
+            {
+                "value": "Journal of Research in Personality",
+                "name": "journaltitle",
+                "label": "Journal Title"
+            },
+            {
+                "value": "https://doi.org/10.1016/j.jrp.2015.08.001",
+                "name": "articlelink",
+                "label": "CrossRef DOI link to publisher maintained version"
+            },
+            {
+                "value": "article",
+                "name": "content_type",
+                "label": "Content Type"
+            },
+            {
+                "value": "Copyright © 2015 Elsevier Inc. All rights reserved.",
+                "name": "copyright",
+                "label": "Copyright"
+            }
+        ]
+    }
+}

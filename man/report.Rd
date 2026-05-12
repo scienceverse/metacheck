@@ -8,9 +8,9 @@ report(
   paper,
   modules = c("prereg_check", "funding_check", "coi_check", "power", "repo_check",
     "code_check", "stat_check", "stat_p_exact", "stat_p_nonsig", "stat_effect_size",
-    "marginal", "ref_doi_check", "ref_replication", "ref_retraction", "ref_pubpeer",
+    "marginal", "ref_accuracy", "ref_replication", "ref_retraction", "ref_pubpeer",
     "ref_summary"),
-  output_file = paste0(paper$id, "_report.", output_format),
+  output_file = paste0(paper$paper_id, "_report.", output_format),
   output_format = c("html", "qmd"),
   args = list()
 )
@@ -40,8 +40,7 @@ Pass arguments to modules in a named list of lists, using the same names as the 
 }
 \examples{
 \dontrun{
-filename <- demoxml()
-paper <- read(filename)
+paper <- demopaper()
 report(paper)
 }
 }

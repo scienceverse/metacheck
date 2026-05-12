@@ -1,0 +1,497 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    1,
+                    23
+                ]
+            ],
+            "date-time": "2026-01-23T19:55:35Z",
+            "timestamp": 1769198135357,
+            "version": "3.49.0"
+        },
+        "reference-count": 41,
+        "publisher": "Informa UK Limited",
+        "issue": "3",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2017,
+                            4,
+                            27
+                        ]
+                    ],
+                    "date-time": "2017-04-27T00:00:00Z",
+                    "timestamp": 1493251200000
+                },
+                "content-version": "vor",
+                "delay-in-days": 0,
+                "URL": "http://creativecommons.org/licenses/by-nc-nd/4.0/"
+            }
+        ],
+        "funder": [
+            {
+                "name": "Netherlands Organization for Scientific Research",
+                "award": [
+                    "275-70-033"
+                ],
+                "award-info": [
+                    {
+                        "award-number": [
+                            "275-70-033"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "www.tandfonline.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Cognition and Emotion"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2018,
+                    4,
+                    3
+                ]
+            ]
+        },
+        "DOI": "10.1080/02699931.2017.1320978",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2017,
+                    4,
+                    27
+                ]
+            ],
+            "date-time": "2017-04-27T09:21:46Z",
+            "timestamp": 1493284906000
+        },
+        "page": "504-515",
+        "update-policy": "https://doi.org/10.1080/tandf_crossmark_01",
+        "source": "Crossref",
+        "is-referenced-by-count": 33,
+        "title": [
+            "Can perceivers recognise emotions from spontaneous expressions?"
+        ],
+        "prefix": "10.1080",
+        "volume": "32",
+        "author": [
+            {
+                "given": "Disa A.",
+                "family": "Sauter",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "Department of Social Psychology, University of Amsterdam, Amsterdam, Netherlands"
+                    }
+                ]
+            },
+            {
+                "given": "Agneta H.",
+                "family": "Fischer",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Department of Social Psychology, University of Amsterdam, Amsterdam, Netherlands"
+                    }
+                ]
+            }
+        ],
+        "member": "301",
+        "published-online": {
+            "date-parts": [
+                [
+                    2017,
+                    4,
+                    27
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "CIT0001",
+                "doi-asserted-by": "crossref",
+                "first-page": "693",
+                "DOI": "10.21437/SpeechProsody.2008-153",
+                "volume-title": "Proceedings of the Speech Prosody 2008 Conference",
+                "author": "Audibert N.",
+                "year": "2008"
+            },
+            {
+                "key": "CIT0002",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1126/science.1224313"
+            },
+            {
+                "key": "CIT0003",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0022022104273656"
+            },
+            {
+                "key": "CIT0004",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0025827"
+            },
+            {
+                "key": "CIT0005",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1163/156856897X00357"
+            },
+            {
+                "key": "CIT0006",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.evolhumbehav.2014.03.003"
+            },
+            {
+                "key": "CIT0007",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000100"
+            },
+            {
+                "key": "CIT0008",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919-010-0097-7"
+            },
+            {
+                "key": "CIT0009",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073912457229"
+            },
+            {
+                "key": "CIT0010",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.80.1.75"
+            },
+            {
+                "key": "CIT0011",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1024952730333"
+            },
+            {
+                "key": "CIT0012",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00990794"
+            },
+            {
+                "key": "CIT0013",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/ejsp.2420200502"
+            },
+            {
+                "key": "CIT0014",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0099338"
+            },
+            {
+                "key": "CIT0015",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.3389/fpsyg.2013.00111"
+            },
+            {
+                "key": "CIT0016",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919-015-0209-5"
+            },
+            {
+                "key": "CIT0018",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.3389/fpsyg.2011.00180"
+            },
+            {
+                "key": "CIT0017",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.1.4.381"
+            },
+            {
+                "key": "CIT0019",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919-004-0887-x"
+            },
+            {
+                "key": "CIT0020",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0017844"
+            },
+            {
+                "key": "CIT0021",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2011.602047"
+            },
+            {
+                "key": "CIT0022",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919-015-0222-8"
+            },
+            {
+                "key": "CIT0023",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0024244"
+            },
+            {
+                "key": "CIT0024",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919-009-0071-4"
+            },
+            {
+                "key": "CIT0025",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919-009-0068-z"
+            },
+            {
+                "key": "CIT0026",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.5.2.175"
+            },
+            {
+                "key": "CIT0027",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/10570318809389622"
+            },
+            {
+                "key": "CIT0028",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073912457227"
+            },
+            {
+                "key": "CIT0029",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073912457228"
+            },
+            {
+                "key": "CIT0030",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.cortex.2012.05.002"
+            },
+            {
+                "key": "CIT0031",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.115.1.102"
+            },
+            {
+                "key": "CIT0032",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.3389/fpsyg.2013.00814/abstract"
+            },
+            {
+                "key": "CIT0033",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s11031-007-9065-x"
+            },
+            {
+                "key": "CIT0034",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/00207594.2011.626049"
+            },
+            {
+                "key": "CIT0035",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0167-6393(02)00084-5"
+            },
+            {
+                "key": "CIT0036",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1073/pnas.0802686105"
+            },
+            {
+                "key": "CIT0037",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00995547"
+            },
+            {
+                "key": "CIT0038",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00987006"
+            },
+            {
+                "key": "CIT0039",
+                "first-page": "805",
+                "volume-title": "Proceedings of the Annual Conference of the International Speech Communication Association (Interspeech)",
+                "author": "Wilting J.",
+                "year": "2006"
+            },
+            {
+                "key": "CIT0040",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2013.763769"
+            },
+            {
+                "key": "CIT0041",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.34.5.966"
+            }
+        ],
+        "container-title": [
+            "Cognition and Emotion"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://www.tandfonline.com/doi/pdf/10.1080/02699931.2017.1320978",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://www.tandfonline.com/doi/pdf/10.1080/02699931.2017.1320978",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    6,
+                    23
+                ]
+            ],
+            "date-time": "2024-06-23T20:21:17Z",
+            "timestamp": 1719174077000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://www.tandfonline.com/doi/full/10.1080/02699931.2017.1320978"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2017,
+                    4,
+                    27
+                ]
+            ]
+        },
+        "references-count": 41,
+        "journal-issue": {
+            "issue": "3",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2018,
+                        4,
+                        3
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1080/02699931.2017.1320978"
+        ],
+        "URL": "https://doi.org/10.1080/02699931.2017.1320978",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0269-9931",
+            "1464-0600"
+        ],
+        "issn-type": [
+            {
+                "value": "0269-9931",
+                "type": "print"
+            },
+            {
+                "value": "1464-0600",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2017,
+                    4,
+                    27
+                ]
+            ]
+        },
+        "assertion": [
+            {
+                "value": "The publishing and review policy for this title is described in its Aims & Scope.",
+                "order": 1,
+                "name": "peerreview_statement",
+                "label": "Peer Review Statement"
+            },
+            {
+                "value": "http://www.tandfonline.com/action/journalInformation?show=aimsScope&journalCode=pcem20",
+                "URL": "http://www.tandfonline.com/action/journalInformation?show=aimsScope&journalCode=pcem20",
+                "order": 2,
+                "name": "aims_and_scope_url",
+                "label": "Aim & Scope"
+            },
+            {
+                "value": "2016-08-31",
+                "order": 0,
+                "name": "received",
+                "label": "Received",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            },
+            {
+                "value": "2017-04-06",
+                "order": 1,
+                "name": "revised",
+                "label": "Revised",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            },
+            {
+                "value": "2017-04-06",
+                "order": 2,
+                "name": "accepted",
+                "label": "Accepted",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            },
+            {
+                "value": "2017-04-27",
+                "order": 3,
+                "name": "published",
+                "label": "Published",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,181 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 12,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2022,
+                            4,
+                            4
+                        ]
+                    ],
+                    "date-time": "2022-04-04T02:31:48Z",
+                    "timestamp": 1649039508214
+                },
+                "reference-count": 1,
+                "publisher": "Oxford University Press (OUP)",
+                "issue": "8",
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "short-container-title": [
+                    "The Journals of Gerontology Series A: Biological Sciences and Medical Sciences"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2002,
+                            8,
+                            1
+                        ]
+                    ]
+                },
+                "DOI": "10.1093/gerona/57.8.b291",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2011,
+                            6,
+                            21
+                        ]
+                    ],
+                    "date-time": "2011-06-21T19:04:09Z",
+                    "timestamp": 1308683049000
+                },
+                "page": "B291-B291",
+                "source": "Crossref",
+                "is-referenced-by-count": 1,
+                "title": [
+                    "Editorial: Position Statement on Human Aging"
+                ],
+                "prefix": "10.1093",
+                "volume": "57",
+                "author": [
+                    {
+                        "given": "J. R.",
+                        "family": "Smith",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "S. J.",
+                        "family": "Olshansky",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "286",
+                "reference": [
+                    {
+                        "issue": "8",
+                        "key": "1_36567649",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "B292",
+                        "DOI": "10.1093/gerona/57.8.B292",
+                        "volume": "57",
+                        "year": "2002",
+                        "journal-title": "The Journals of Gerontology Series A: Biological Sciences and Medical Sciences",
+                        "ISSN": "http://id.crossref.org/issn/1079-5006",
+                        "issn-type": "print"
+                    }
+                ],
+                "container-title": [
+                    "The Journals of Gerontology Series A: Biological Sciences and Medical Sciences"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "http://academic.oup.com/biomedgerontology/article-pdf/57/8/B291/9732938/B291.pdf",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2017,
+                            8,
+                            23
+                        ]
+                    ],
+                    "date-time": "2017-08-23T04:00:28Z",
+                    "timestamp": 1503460828000
+                },
+                "score": 16.812752,
+                "resource": {
+                    "primary": {
+                        "URL": "https://academic.oup.com/biomedgerontology/article-lookup/doi/10.1093/gerona/57.8.B291"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2002,
+                            8,
+                            1
+                        ]
+                    ]
+                },
+                "references-count": 1,
+                "journal-issue": {
+                    "issue": "8",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2002,
+                                8,
+                                1
+                            ]
+                        ]
+                    }
+                },
+                "URL": "https://doi.org/10.1093/gerona/57.8.b291",
+                "ISSN": [
+                    "1079-5006",
+                    "1758-535X"
+                ],
+                "issn-type": [
+                    {
+                        "value": "1079-5006",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1758-535X",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2002,
+                            8,
+                            1
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

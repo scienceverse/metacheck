@@ -1,0 +1,6 @@
+bib_id,text_id,bib_type,doi,title,authors,editors,publisher,year,year_suffix,date,container,volume,issue,first_page,last_page,edition,version,url
+1,29,misc,10.5281/zenodo.2669586,Faux: Simulation for Factorial Designs,"DeBruine, Lisa",,,2025,,,,,,,,,,
+2,30,article,10.1037/0003-066x.54.6.408,The Origins of Sex Differences in Human Behavior: Evolved Dispositions Versus Social Roles,"Eagly, Alice H., and Wendy Wood",,,1999,,,American Psychologist,54,6,408,423,,,
+3,31,article,10.1177/0956797614520714,Evil Genius? How Dishonesty Can Lead to Greater Creativity,"Gino, Francesca, and Scott S. Wiltermuth",,,2014,,,Psychological Science,25,4,973,981,,,
+4,32,article,,Equivalence Testing for Psychological Research,"Lakens, Dani‘l",,,2018,,,Advances in Methods and Practices in Psychological Science,1,,259,270,,,
+5,33,article,10.0000/0123456789,Human Error Is a Symptom of a Poor Design,"Smith, F.",,,2021,,,Journal of Journals,,,,,,,

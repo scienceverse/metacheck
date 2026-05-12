@@ -1,0 +1,33 @@
+{
+    "id": "chatcmpl-e13f4f5f-46f1-4316-86ec-4a76ee1b1a0f",
+    "object": "chat.completion",
+    "created": 1778628770,
+    "model": "llama-3.3-70b-versatile",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "```json\n[\n  {\n    \"text\": \"A sensitivity power analysis for a paired samples t-test, conducted using G-Power, indicated that with 64 participants, an adequate power was reached for an effect size of d = 0.5.\",\n    \"power_type\": \"sensitivity\",\n    \"statistical_test\": \"paired t-test\",\n    \"statistical_test_other\": null,\n    \"sample_size\": 64,\n    \"alpha_level\": null,\n    \"power\": null,\n    \"effect_size\": 0.5,\n    \"effect_size_metric\": \"Cohen's d\",\n    \"effect_size_metric_other\": null,\n    \"software\": \"G*Power\"\n  }\n]\n```"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "queue_time": 0.047611789,
+        "prompt_tokens": 1086,
+        "prompt_time": 0.056091438,
+        "completion_tokens": 147,
+        "completion_time": 0.265507287,
+        "total_tokens": 1233,
+        "total_time": 0.321598725
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_ba38bbab80",
+    "x_groq": {
+        "id": "req_01krf8jejdffa861bqghrp1g5s",
+        "seed": 8675309
+    },
+    "service_tier": "on_demand"
+}

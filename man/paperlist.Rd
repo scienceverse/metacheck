@@ -4,7 +4,7 @@
 \alias{paperlist}
 \title{Create a paperlist object}
 \usage{
-paperlist(..., merge_duplicates = TRUE)
+paperlist(..., merge_duplicates = FALSE)
 }
 \arguments{
 \item{...}{scivrs_paper objects or lists of paper objects}
@@ -23,6 +23,7 @@ p1 <- psychsci[[1]]
 p2 <- psychsci[[2]]
 plist <- paperlist(p1, p2)
 
-merged <- paperlist(psychsci[1:2], psychsci[2:3])
+merged <- paperlist(psychsci[1:2], psychsci[2:3],
+                    merge_duplicates = TRUE)
 }
 \keyword{internal}

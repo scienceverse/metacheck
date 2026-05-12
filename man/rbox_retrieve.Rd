@@ -4,12 +4,14 @@
 \alias{rbox_retrieve}
 \title{Retrieve info from ResearchBox by URL}
 \usage{
-rbox_retrieve(rb_url, id_col = 1)
+rbox_retrieve(rb_url, id_col = 1, pb = NULL)
 }
 \arguments{
 \item{rb_url}{an ResearchBox URL, or a table containing them (e.g., as created by \code{rbox_links()})}
 
 \item{id_col}{the index or name of the column that contains ResearchBox URLs, if id is a table}
+
+\item{pb}{a progress bar passed from another function}
 }
 \value{
 a data frame of information

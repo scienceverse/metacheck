@@ -1,89 +1,75 @@
 ## code to prepare `psychsci` dataset goes here
 
-grobid_url <- "http://grobid-server.panda-pythagorean.ts.net:8070"
-pdf <- "data-raw/psychsci/pdf/0956797613520608.pdf"
-xml <- pdf2grobid(pdf, "data-raw/test2.xml", grobid_url)
+# pdf to bibr ----
+pdf <- "data-raw/psychsci/pdf"
+files <- list.files(pdf, full.names = T)
+bibr <- "data-raw/psychsci/bibr"
+file_paths <- convert_bibr(files[1], bibr, backend = "scivrs")
 
-# make relative filename make sense
-dir <- "data-raw/psychsci/grobid_0.8.2/"
-setwd(dir)
-psychsci <- read(".")
-setwd("../../../")
+psychsci <- read(bibr, include_images = FALSE)
+
+# fix names
+names <- list.files(bibr) |> gsub("\\.json", "", x = _)
+names(psychsci) <- names
+for (n in names) psychsci[[n]]$paper_id <- n
 
 usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")
 
-# docker run --rm --init --ulimit core=0 -p 8070:8070 lfoppiano/grobid:0.8.2
-dir <- "data-raw/psychsci/grobid_0.8.2/"
-filename = "data-raw/psychsci/pdf"
-sink <- pdf2grobid(
-  filename = filename,
-  save_path = dir,
-  #grobid_url = "http://localhost:8070",
-  consolidate_header = 1,
-  consolidate_citations = 1,
-  consolidate_funders = 1
-)
+# copy 3 to test dir
+list.files(bibr, full.names = T)[1:3] |>
+  file.copy("tests/testthat/fixtures/psychsci/", overwrite = TRUE)
 
 
+# -------------------------------------------------------------------
+# pdf to grobid
+pdf <- "data-raw/psychsci/pdf"
+file_path <- list.files(pdf, full.names = T)
+save_path <- "data-raw/psychsci/grobid_0.9.0-crf"
+api_url <- "http://localhost:8070"
+convert_grobid(file_path[199:250], save_path, api_url)
+
+# # grobid to bibr ----
+grobid <- "data-raw/psychsci/grobid_0.9.0-full"
+xml_file <- list.files(grobid, full.names = T)
+save_path <- "data-raw/psychsci/bibr_from_grobid_0.9.0-full"
+dir.create(save_path, showWarnings = FALSE)
+json_paths <- grobid_to_bibr(xml_file, save_path, FALSE)
+psychsci <- read(save_path)
+
+# fix names
+names <- list.files(grobid) |> gsub("\\.xml", "", x = _)
+names(psychsci) <- names
+for (n in names) psychsci[[n]]$paper_id <- n
+
+all(sapply(psychsci, paper_validate))
 
 
-# 09567976231188124 is an erratum
-# 09567976221139496 and 09567976231217508 are just a corrigendum
-# 0956797620955209 and 0956797620939054 have no titles but are research papers (both preregistered direct replications)
+psychsci <- add_bib_match(psychsci)
 
-# fix corrigenda DOIs ----
-info <- info_table(psychsci)
-bad_dois <- which(paste0("10.1177/", info$id) != info$doi)
-info[bad_dois, c("id", "doi", "title")]
+usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")
 
 
-# test full vs light ----
-full <- read("data-raw/psychsci/grobid_0.8.2-full/")
-light <- read("data-raw/psychsci/grobid_0.8.2/")
-consolidated <- read("data-raw/psychsci/grobid_0.8.3_consolidated/")
+## abstract checks ----------------------------------------------
 
-info <- c("filename", "title", "keywords", "doi", "description")
-light_info <- info_table(light, info)
-full_info <- info_table(full, info)
-cons_info <- info_table(consolidated, info)
+psychsci_full <- read("data-raw/psychsci/bibr_from_grobid_0.9.0-full")
+psychsci_crf <- read("data-raw/psychsci/bibr_from_grobid_0.9.0-crf")
 
-info_table(psychsci, c("title", "keywords", "doi", "description"))
+abs_f <- search_text(psychsci_full) |>
+  dplyr::filter(section_type == "abstract") |>
+  dplyr::select(paper_id, text, text_id)
+abs_c <- search_text(psychsci_crf) |>
+  dplyr::filter(section_type == "abstract") |>
+  dplyr::select(paper_id, text, text_id)
 
-all(light_info$id == full_info$id)
-all(light_info$id == cons_info$id)
+x <- dplyr::full_join(abs_c, abs_f,
+                      by = c("paper_id", "text"),
+                      suffix = c(".crf", ".full")) |>
+  dplyr::filter(is.na(text_id.crf) | is.na(text_id.full)) |>
+  dplyr::arrange(paper_id)
 
-abs_mismatch <- data.frame(
-  id = light_info$id,
-  light = light_info$description,
-  full = full_info$doi,
-  cons = cons_info$description
-) |>
-  dplyr::filter(light != cons)
+module <- "power"
+mo_f <- module_run(psychsci_full, module)
+mo_c <- module_run(psychsci_crf, module)
 
-doi_mismatch <- data.frame(
-  id = light_info$id,
-  light = light_info$doi,
-  full = full_info$doi,
-  cons = cons_info$doi
-) |>
-  dplyr::filter(light != cons)
+expect_equal(mo_f$summary_table, mo_c$summary_table)
 
-kw_mismatch <- data.frame(
-  id = light_info$id,
-  light = light_info$keywords,
-  full= full_info$keywords,
-  cons= cons_info$keywords
-) |>
-  dplyr::filter(light != full)
-
-title_mismatch <- data.frame(
-  id = light_info$id,
-  light = light_info$title,
-  full= full_info$title,
-  cons = cons_info$title
-) |>
-  dplyr::filter(tolower(light) != tolower(cons))
-
-consref <- concat_tables(consolidated, "bib")
-lightref <- concat_tables(light, "bib")
-fullref <- concat_tables(full, "bib")

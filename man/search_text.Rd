@@ -7,13 +7,13 @@
 search_text(
   paper,
   pattern = ".*",
-  section = NULL,
-  return = c("sentence", "paragraph", "div", "section", "match", "id"),
+  return = c("sentence", "paragraph", "section", "header", "match", "paper_id"),
   ignore.case = TRUE,
   fixed = FALSE,
   perl = FALSE,
   exclude = FALSE,
-  search_header = FALSE
+  search_header = FALSE,
+  include_refs = FALSE
 )
 }
 \arguments{
@@ -21,9 +21,7 @@ search_text(
 
 \item{pattern}{the regex pattern to search for, if a vector with length > 1, the patterns will be searched separately and combined}
 
-\item{section}{the section(s) to search in}
-
-\item{return}{the kind of text to return, the full sentence, paragraph, div, or section that the text is in, or just the (regex) match, or all body text for a paper (id)}
+\item{return}{the kind of text to return, the full sentence, paragraph, header, or section that the text is in, or just the (regex) match, or all body text for a paper (paper_id)}
 
 \item{ignore.case}{whether to ignore case when text searching}
 
@@ -34,6 +32,8 @@ search_text(
 \item{exclude}{should matches be included or excluded}
 
 \item{search_header}{also search the header}
+
+\item{include_refs}{whether to include the reference section in the search}
 }
 \value{
 a data frame of matches
@@ -41,9 +41,13 @@ a data frame of matches
 \description{
 Search the text of a paper or list of paper objects. Also works on the table results of a \code{search_text()} call.
 }
+\details{
+The section argument can take a vector of section names, or a PERL regular expression (use ".*" to match all sections). Possible section types are abstract, intro, method, results, discussion, references, acknowledgment, funding, endnote, footnote, table, figure, and unknown. The default includes all sections except references, tables and figures.
+}
 \examples{
-filename <- demoxml()
-paper <- read(filename)
-
-search_text(paper, "p\\\\s*(=|<)\\\\s*[0-9\\\\.]+", return = "match")
+paper <- demopaper()
+all_text <- search_text(paper)
+study <- search_text(paper, "study")
+equations <- search_text(paper, "\\\\b\\\\S+\\\\s*(=|<)\\\\s*[0-9\\\\.]+", return = "match")
+no_numbers <- search_text(paper, "\\\\d", exclude = TRUE)
 }

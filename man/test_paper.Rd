@@ -4,18 +4,16 @@
 \alias{test_paper}
 \title{Test paper}
 \usage{
-test_paper(text, id = "test")
+test_paper(text = LETTERS)
 }
 \arguments{
 \item{text}{a vector of text to add}
-
-\item{id}{the ID for the paper}
 }
 \value{
 a paper object
 }
 \description{
-Create a paper object with the specified text and id (mainly for testing/demos).
+Create a paper object with the specified text (mainly for testing/demos).
 }
 \examples{
 # to test a paper with a specific URL

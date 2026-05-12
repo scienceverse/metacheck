@@ -1,0 +1,631 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 35,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            5,
+                            12
+                        ]
+                    ],
+                    "date-time": "2026-05-12T09:39:14Z",
+                    "timestamp": 1778578754276,
+                    "version": "3.51.4"
+                },
+                "reference-count": 36,
+                "publisher": "Elsevier BV",
+                "issue": "2",
+                "license": [
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2005,
+                                    1,
+                                    1
+                                ]
+                            ],
+                            "date-time": "2005-01-01T00:00:00Z",
+                            "timestamp": 1104537600000
+                        },
+                        "content-version": "tdm",
+                        "delay-in-days": 0,
+                        "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+                    },
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2013,
+                                    7,
+                                    17
+                                ]
+                            ],
+                            "date-time": "2013-07-17T00:00:00Z",
+                            "timestamp": 1374019200000
+                        },
+                        "content-version": "vor",
+                        "delay-in-days": 3119,
+                        "URL": "https://www.elsevier.com/open-access/userlicense/1.0/"
+                    }
+                ],
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "short-container-title": [
+                    "Neuron"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2005,
+                            1
+                        ]
+                    ]
+                },
+                "DOI": "10.1016/j.neuron.2004.12.033",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2005,
+                            1,
+                            20
+                        ]
+                    ],
+                    "date-time": "2005-01-20T09:21:14Z",
+                    "timestamp": 1106212874000
+                },
+                "page": "201-206",
+                "source": "Crossref",
+                "is-referenced-by-count": 3634,
+                "title": [
+                    "Theta Burst Stimulation of the Human Motor Cortex"
+                ],
+                "prefix": "10.1016",
+                "volume": "45",
+                "author": [
+                    {
+                        "given": "Ying-Zu",
+                        "family": "Huang",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Mark J.",
+                        "family": "Edwards",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Elisabeth",
+                        "family": "Rounis",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Kailash P.",
+                        "family": "Bhatia",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "John C.",
+                        "family": "Rothwell",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "78",
+                "reference": [
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB1",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "332",
+                        "DOI": "10.1016/0006-8993(92)91715-Q",
+                        "article-title": "Theta burst stimulation is optimal for induction of LTP at both apical and basal dendritic synapses on hippocampal CA1 neurons",
+                        "volume": "591",
+                        "author": "Capocchi",
+                        "year": "1992",
+                        "journal-title": "Brain Res."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB2",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1398",
+                        "DOI": "10.1212/WNL.48.5.1398",
+                        "article-title": "Depression of motor cortex excitability by low-frequency transcranial magnetic stimulation",
+                        "volume": "48",
+                        "author": "Chen",
+                        "year": "1997",
+                        "journal-title": "Neurology"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB3",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "3443",
+                        "DOI": "10.1523/JNEUROSCI.18-09-03443.1998",
+                        "article-title": "Mechanisms of cortical reorganization in lower-limb amputees",
+                        "volume": "18",
+                        "author": "Chen",
+                        "year": "1998",
+                        "journal-title": "J. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB4",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "2915",
+                        "DOI": "10.1097/00001756-200109170-00032",
+                        "article-title": "The impact of transcranial magnetic stimulation on cognitive processing",
+                        "volume": "12",
+                        "author": "Evers",
+                        "year": "2001",
+                        "journal-title": "Neuroreport"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB5",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "438",
+                        "DOI": "10.1523/JNEUROSCI.20-01-00438.2000",
+                        "article-title": "Long-term depression and depotentiation in the sensorimotor cortex of the freely moving rat",
+                        "volume": "20",
+                        "author": "Froc",
+                        "year": "2000",
+                        "journal-title": "J. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB6",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1097",
+                        "DOI": "10.1162/089892901753294392",
+                        "article-title": "Interference with performance of a response selection task that has no working memory component",
+                        "volume": "13",
+                        "author": "Hadland",
+                        "year": "2001",
+                        "journal-title": "J. Cogn. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB7",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "607",
+                        "DOI": "10.1111/j.1469-7793.1998.607bn.x",
+                        "article-title": "Paired-pulse magnetic stimulation of the human motor cortex",
+                        "volume": "509",
+                        "author": "Hanajima",
+                        "year": "1998",
+                        "journal-title": "J. Physiol."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB8",
+                        "first-page": "320",
+                        "article-title": "No benefit derived from repetitive transcranial magnetic stimulation in depression",
+                        "volume": "75",
+                        "author": "Hausmann",
+                        "year": "2004",
+                        "journal-title": "J. Neurol. Neurosurg. Psychiatry"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB9",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "397",
+                        "DOI": "10.55782/ane-1996-1143",
+                        "article-title": "Long-term potentiation and long-term depression of horizontal connections in rat motor cortex",
+                        "volume": "56",
+                        "author": "Hess",
+                        "year": "1996",
+                        "journal-title": "Acta Neurobiol. Exp. (Warsz.)"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB10",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1765",
+                        "DOI": "10.1152/jn.1996.75.5.1765",
+                        "article-title": "Conditions for the induction of long-term potentiation in layer II/III horizontal connections of the rat motor cortex",
+                        "volume": "75",
+                        "author": "Hess",
+                        "year": "1996",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB11",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "300",
+                        "DOI": "10.1007/s002210000530",
+                        "article-title": "A repetitive intracortical microstimulation pattern induces long-lasting synaptic depression in brain slices of the rat primary somatosensory cortex",
+                        "volume": "135",
+                        "author": "Heusler",
+                        "year": "2000",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB12",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "9801",
+                        "DOI": "10.1523/JNEUROSCI.21-24-09801.2001",
+                        "article-title": "Long-term potentiation of thalamocortical transmission in the adult visual cortex in vivo",
+                        "volume": "21",
+                        "author": "Heynen",
+                        "year": "2001",
+                        "journal-title": "J. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB13",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "31",
+                        "DOI": "10.1113/jphysiol.1990.sp018159",
+                        "article-title": "Use-dependent changes in synaptic efficacy in rat prefrontal neurons in vitro",
+                        "volume": "427",
+                        "author": "Hirsch",
+                        "year": "1990",
+                        "journal-title": "J. Physiol."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB14",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1069",
+                        "DOI": "10.1016/j.clinph.2003.12.026",
+                        "article-title": "The effect of short-duration bursts of high-frequency, low-intensity transcranial magnetic stimulation on the human motor cortex",
+                        "volume": "115",
+                        "author": "Huang",
+                        "year": "2004",
+                        "journal-title": "Clin. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB15",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1641",
+                        "DOI": "10.1046/j.1460-9568.2002.02002.x",
+                        "article-title": "Metabotropic glutamate receptors mediate expression of LTP in slices of rat visual cortex",
+                        "volume": "15",
+                        "author": "Huemmeke",
+                        "year": "2002",
+                        "journal-title": "Eur. J. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB16",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "501",
+                        "DOI": "10.1113/jphysiol.1993.sp019912",
+                        "article-title": "Corticocortical inhibition in human motor cortex",
+                        "volume": "471",
+                        "author": "Kujirai",
+                        "year": "1993",
+                        "journal-title": "J. Physiol."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB17",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "985",
+                        "DOI": "10.1126/science.3704635",
+                        "article-title": "Induction of synaptic potentiation in hippocampus by patterned stimulation involves two events",
+                        "volume": "232",
+                        "author": "Larson",
+                        "year": "1986",
+                        "journal-title": "Science"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB18",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "5308",
+                        "DOI": "10.1523/JNEUROSCI.23-12-05308.2003",
+                        "article-title": "Acute remapping within the motor system induced by low-frequency repetitive transcranial magnetic stimulation",
+                        "volume": "23",
+                        "author": "Lee",
+                        "year": "2003",
+                        "journal-title": "J. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB19",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1021",
+                        "DOI": "10.1126/science.1096615",
+                        "article-title": "Role of NMDA receptor subtypes in governing the direction of hippocampal synaptic plasticity",
+                        "volume": "304",
+                        "author": "Liu",
+                        "year": "2004",
+                        "journal-title": "Science"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB20",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "425",
+                        "DOI": "10.1007/s002210000432",
+                        "article-title": "Interindividual variability of the modulatory effects of repetitive transcranial magnetic stimulation on cortical excitability",
+                        "volume": "133",
+                        "author": "Maeda",
+                        "year": "2000",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB21",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "480",
+                        "DOI": "10.1192/bjp.182.6.480",
+                        "article-title": "Repetitive transcranial magnetic stimulation for the treatment of depression. Systematic review and meta-analysis",
+                        "volume": "182",
+                        "author": "Martin",
+                        "year": "2003",
+                        "journal-title": "Br. J. Psychiatry"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB22",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1002",
+                        "DOI": "10.1016/S1388-2457(00)00284-4",
+                        "article-title": "Effects of low-frequency transcranial magnetic stimulation on motor excitability and basic motor behavior",
+                        "volume": "111",
+                        "author": "Muellbacher",
+                        "year": "2000",
+                        "journal-title": "Clin. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB23",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "584",
+                        "DOI": "10.1038/35046067",
+                        "article-title": "Calcium stores regulate the polarity and input specificity of synaptic modification",
+                        "volume": "408",
+                        "author": "Nishiyama",
+                        "year": "2000",
+                        "journal-title": "Nature"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB24",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "633",
+                        "DOI": "10.1111/j.1469-7793.2000.t01-1-00633.x",
+                        "article-title": "Excitability changes induced in the human motor cortex by weak transcranial direct current stimulation",
+                        "volume": "527",
+                        "author": "Nitsche",
+                        "year": "2000",
+                        "journal-title": "J. Physiol."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB25",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1149",
+                        "DOI": "10.1046/j.1528-1157.2002.09902.x",
+                        "article-title": "Topiramate selectively decreases intracortical excitability in human motor cortex",
+                        "volume": "43",
+                        "author": "Reis",
+                        "year": "2002",
+                        "journal-title": "Epilepsia"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB26",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1437",
+                        "DOI": "10.1016/S1388-2457(03)00115-9",
+                        "article-title": "Changes in motor cortical excitability induced by paired associative stimulation",
+                        "volume": "114",
+                        "author": "Ridding",
+                        "year": "2003",
+                        "journal-title": "Clin. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB27",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "314",
+                        "DOI": "10.1002/syn.10274",
+                        "article-title": "Synaptic plasticity in rat subthalamic nucleus induced by high-frequency stimulation",
+                        "volume": "50",
+                        "author": "Shen",
+                        "year": "2003",
+                        "journal-title": "Synapse"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB28",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "956",
+                        "DOI": "10.1212/WNL.54.4.956",
+                        "article-title": "Lasting cortical activation after repetitive TMS of the motor cortex",
+                        "volume": "54",
+                        "author": "Siebner",
+                        "year": "2000",
+                        "journal-title": "Neurology"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB29",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "2710",
+                        "DOI": "10.1093/brain/awg282",
+                        "article-title": "Patients with focal arm dystonia have increased sensitivity to slow-frequency repetitive TMS of the dorsal premotor cortex",
+                        "volume": "126",
+                        "author": "Siebner",
+                        "year": "2003",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB30",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "326",
+                        "DOI": "10.1097/00004691-200107000-00004",
+                        "article-title": "Repetitive transcranial magnetic stimulation effects on language function depend on the stimulation parameters",
+                        "volume": "18",
+                        "author": "Sparing",
+                        "year": "2001",
+                        "journal-title": "J. Clin. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB31",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "572",
+                        "DOI": "10.1093/brain/123.3.572",
+                        "article-title": "Induction of plasticity in the human motor cortex by paired associative stimulation",
+                        "volume": "123",
+                        "author": "Stefan",
+                        "year": "2000",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB32",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "4145",
+                        "DOI": "10.1046/j.1460-9568.1999.00870.x",
+                        "article-title": "Induction of stable long-term depression in vivo in the hippocampal-prefrontal cortex pathway",
+                        "volume": "11",
+                        "author": "Takita",
+                        "year": "1999",
+                        "journal-title": "Eur. J. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB33",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "719",
+                        "DOI": "10.1093/cercor/8.8.719",
+                        "article-title": "Long-term potentiation in the neocortex of the adult, freely moving rat",
+                        "volume": "8",
+                        "author": "Trepel",
+                        "year": "1998",
+                        "journal-title": "Cereb. Cortex"
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB34",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "3039",
+                        "DOI": "10.1152/jn.1997.78.6.3039",
+                        "article-title": "Metabotropic glutamate receptors are involved in long-term potentiation in isolated slices of rat medial frontal cortex",
+                        "volume": "78",
+                        "author": "Vickery",
+                        "year": "1997",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB35",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1",
+                        "DOI": "10.1016/S0168-5597(97)00096-8",
+                        "article-title": "Risk and safety of repetitive transcranial magnetic stimulation",
+                        "volume": "108",
+                        "author": "Wassermann",
+                        "year": "1998",
+                        "journal-title": "Electroencephalogr. Clin. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/j.neuron.2004.12.033_BIB36",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1115",
+                        "DOI": "10.1523/JNEUROSCI.18-03-01115.1998",
+                        "article-title": "Modulation of plasticity in human motor cortex after forearm ischemic nerve block",
+                        "volume": "18",
+                        "author": "Ziemann",
+                        "year": "1998",
+                        "journal-title": "J. Neurosci."
+                    }
+                ],
+                "container-title": [
+                    "Neuron"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "https://api.elsevier.com/content/article/PII:S0896627304008463?httpAccept=text/xml",
+                        "content-type": "text/xml",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "https://api.elsevier.com/content/article/PII:S0896627304008463?httpAccept=text/plain",
+                        "content-type": "text/plain",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2024,
+                            1,
+                            20
+                        ]
+                    ],
+                    "date-time": "2024-01-20T16:39:44Z",
+                    "timestamp": 1705768784000
+                },
+                "score": 96.73683,
+                "resource": {
+                    "primary": {
+                        "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0896627304008463"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2005,
+                            1
+                        ]
+                    ]
+                },
+                "references-count": 36,
+                "journal-issue": {
+                    "issue": "2",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2005,
+                                1
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "S0896627304008463"
+                ],
+                "URL": "https://doi.org/10.1016/j.neuron.2004.12.033",
+                "relation": {
+                    "has-review": [
+                        {
+                            "id-type": "doi",
+                            "id": "10.3410/f.1024546.290707",
+                            "asserted-by": "object"
+                        }
+                    ]
+                },
+                "ISSN": [
+                    "0896-6273"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0896-6273",
+                        "type": "print"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2005,
+                            1
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

@@ -1,7 +1,7 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.0.0.9069
-Date: 2025-02-10
+Version: 0.0.0.9100
+Date: 2026-05-13
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -20,7 +20,7 @@ Authors@R: c(
            comment = c(ORCID = "0000-0002-1542-8355")),
   person(  given = "Jakub",
            family = "Werner",
-           role = c("ctb"),
+           role = c("aut"),
            email = "jakub@jakubwerner.com",
            comment = c(ORCID = "0009-0004-0388-0362")),
   person(  given = "Lukas",
@@ -28,14 +28,15 @@ Authors@R: c(
            role = c("ctb"),
            email = "l.wallrich@bbk.ac.uk",
            comment = c(ORCID = "0000-0003-2121-5177")))
-Description: A modular, extendable system for automatically checking research outputs for best practices using text search, R code, and/or (optional) LLM queries.
+Description: A modular, extendable system for checking research outputs for best practices using text search, R code, and/or (optional) LLM queries.
 License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Suggests: 
     ggplot2,
-    httptest,
+    devtools,
+    httptest2,
     readr,
     rmarkdown,
     shiny,
@@ -48,35 +49,29 @@ Suggests:
     knitr,
     withr
 Config/testthat/edition: 3
+Config/testthat/parallel: false
 Imports: 
+    svutils,
     dplyr,
     tidyr,
     quarto,   
     DT,       
     bibtex,   
     ellmer,   
-    progress, 
     jsonlite,
     xml2,
     curl,
-    httr,
-    httr2,    
+    httr2,
     rvest,    
-    urltools, 
     fs,       
     rappdirs, 
-    officer,  
-    anytime,  
-    htmltools,
-    arrow,    
-    tidytext, 
-    SnowballC,
+    tidytext,
     statcheck,
     base64enc,
     gitcreds, 
     roxygen2, 
-    bib2df,   
-    oddpub    
+    oddpub,
+    jpeg
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
 BugReports: https://github.com/scienceverse/metacheck/issues
@@ -86,4 +81,5 @@ LazyData: true
 LazyDataCompression: xz
 Config/Needs/website: rmarkdown
 Remotes:
-  quest-bih/oddpub
+  quest-bih/oddpub,
+  scienceverse/svutils

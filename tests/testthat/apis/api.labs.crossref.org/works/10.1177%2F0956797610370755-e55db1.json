@@ -1,0 +1,443 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    4
+                ]
+            ],
+            "date-time": "2026-05-04T20:51:32Z",
+            "timestamp": 1777927892212,
+            "version": "3.51.4"
+        },
+        "reference-count": 40,
+        "publisher": "SAGE Publications",
+        "issue": "6",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2010,
+                            5,
+                            5
+                        ]
+                    ],
+                    "date-time": "2010-05-05T00:00:00Z",
+                    "timestamp": 1273017600000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://journals.sagepub.com/page/policies/text-and-data-mining-license"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Psychol Sci"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2010,
+                    6
+                ]
+            ]
+        },
+        "abstract": "<jats:p>The current research is the first investigation of how the effects of expressing discrete emotions in negotiations vary across cultures. In a hypothetical negotiation scenario (Study 1) and a computer-mediated negotiation simulation (Study 2), expressing anger (relative to not expressing anger) elicited larger concessions from European American negotiators, but smaller concessions from Asian and Asian American negotiators. A third study provided evidence that this effect is due to different cultural norms about the appropriateness of anger expressions in negotiations: When we explicitly manipulated anger expressions to be appropriate, Asian and Asian American negotiators made larger concessions to the angry opponent, and their concessions were as large as was typical for European American negotiators; when we explicitly manipulated anger expressions to be inappropriate, European American negotiators made smaller concessions to the angry opponent, and their concessions were as small as was typical for Asian and Asian American negotiators. Implications for current understanding of culture, emotions, and negotiations are discussed.<\/jats:p>",
+        "DOI": "10.1177/0956797610370755",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2010,
+                    10,
+                    18
+                ]
+            ],
+            "date-time": "2010-10-18T01:10:54Z",
+            "timestamp": 1287364254000
+        },
+        "page": "882-889",
+        "source": "Crossref",
+        "is-referenced-by-count": 107,
+        "title": [
+            "Cultural Variance in the Interpersonal Effects of Anger in Negotiations"
+        ],
+        "prefix": "10.1177",
+        "volume": "21",
+        "author": [
+            {
+                "given": "Hajo",
+                "family": "Adam",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "INSEAD"
+                    }
+                ]
+            },
+            {
+                "given": "Aiwa",
+                "family": "Shirako",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "University of California, Berkeley"
+                    }
+                ]
+            },
+            {
+                "given": "William W.",
+                "family": "Maddux",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "INSEAD"
+                    }
+                ]
+            }
+        ],
+        "member": "179",
+        "published-online": {
+            "date-parts": [
+                [
+                    2010,
+                    5,
+                    5
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "bibr1-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1287/orsc.1040.0102"
+            },
+            {
+                "key": "bibr2-0956797610370755",
+                "first-page": "27",
+                "volume": "7",
+                "author": "Allred K.G.",
+                "year": "1999",
+                "journal-title": "Research on Negotiation in Organizations"
+            },
+            {
+                "key": "bibr3-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/256938"
+            },
+            {
+                "key": "bibr4-0956797610370755",
+                "volume-title": "Never in anger",
+                "author": "Briggs J.",
+                "year": "1970"
+            },
+            {
+                "key": "bibr5-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0022-1031(91)90029-6"
+            },
+            {
+                "key": "bibr6-0956797610370755",
+                "volume-title": "Quasi-experimentation: Design and analysis issues",
+                "author": "Cook T.D.",
+                "year": "1979"
+            },
+            {
+                "key": "bibr7-0956797610370755",
+                "first-page": "1",
+                "volume-title": "New perspectives on U.S.-Japan relations",
+                "author": "Curtis G.L.",
+                "year": "2000"
+            },
+            {
+                "key": "bibr8-0956797610370755",
+                "first-page": "207",
+                "volume-title": "Nebraska Symposium on Motivation, 1971",
+                "author": "Ekman P.",
+                "year": "1972"
+            },
+            {
+                "key": "bibr9-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.128.2.203"
+            },
+            {
+                "key": "bibr10-0956797610370755",
+                "unstructured": "Friesen W.V. (1972). Cultural differences in facial expressions in a social situation: An experimental test of the concept of display rules. Unpublished doctoral dissertation, University of California, San Francisco."
+            },
+            {
+                "key": "bibr11-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0021-9010.86.6.1059"
+            },
+            {
+                "key": "bibr12-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/s15327957pspr0203_1"
+            },
+            {
+                "key": "bibr13-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.82.6.903"
+            },
+            {
+                "key": "bibr14-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0022022103034004005"
+            },
+            {
+                "key": "bibr15-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.128.1.89"
+            },
+            {
+                "key": "bibr16-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.91.5.890"
+            },
+            {
+                "key": "bibr17-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/B978-0-12-558702-0.50009-1"
+            },
+            {
+                "key": "bibr18-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10726-007-9087-5"
+            },
+            {
+                "key": "bibr19-0956797610370755",
+                "volume-title": "The manager as negotiator",
+                "author": "Lax D.A.",
+                "year": "1986"
+            },
+            {
+                "key": "bibr20-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-295X.98.2.224"
+            },
+            {
+                "key": "bibr21-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/1467-839X.00010"
+            },
+            {
+                "key": "bibr22-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.5.1.23"
+            },
+            {
+                "key": "bibr23-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.94.6.925"
+            },
+            {
+                "key": "bibr24-0956797610370755",
+                "first-page": "A1",
+                "author": "Rennert L.",
+                "year": "1994",
+                "journal-title": "The Sacramento Bee"
+            },
+            {
+                "key": "bibr25-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1525/eth.1983.11.3.02a00060"
+            },
+            {
+                "key": "bibr26-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2005.05.002"
+            },
+            {
+                "key": "bibr27-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.89.6.845"
+            },
+            {
+                "key": "bibr28-0956797610370755",
+                "first-page": "D1",
+                "author": "Sterngold J.",
+                "year": "1993",
+                "journal-title": "The New York Times"
+            },
+            {
+                "key": "bibr29-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/256456"
+            },
+            {
+                "key": "bibr30-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0021-9010.83.2.316"
+            },
+            {
+                "key": "bibr31-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.90.2.288"
+            },
+            {
+                "key": "bibr32-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-8721.2009.01633.x"
+            },
+            {
+                "key": "bibr33-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0021-9010.92.6.1557"
+            },
+            {
+                "key": "bibr34-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.86.1.57"
+            },
+            {
+                "key": "bibr35-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.87.4.510"
+            },
+            {
+                "key": "bibr36-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.91.1.124"
+            },
+            {
+                "key": "bibr37-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/ejsp.320"
+            },
+            {
+                "key": "bibr38-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amj.2009.41331253"
+            },
+            {
+                "key": "bibr39-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2006.02.004"
+            },
+            {
+                "key": "bibr40-0956797610370755",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0016399"
+            }
+        ],
+        "container-title": [
+            "Psychological Science"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1177/0956797610370755",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/full-xml/10.1177/0956797610370755",
+                "content-type": "application/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1177/0956797610370755",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    1
+                ]
+            ],
+            "date-time": "2026-05-01T22:54:05Z",
+            "timestamp": 1777676045000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://journals.sagepub.com/doi/10.1177/0956797610370755"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2010,
+                    5,
+                    5
+                ]
+            ]
+        },
+        "references-count": 40,
+        "journal-issue": {
+            "issue": "6",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2010,
+                        6
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1177/0956797610370755"
+        ],
+        "URL": "https://doi.org/10.1177/0956797610370755",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0956-7976",
+            "1467-9280"
+        ],
+        "issn-type": [
+            {
+                "value": "0956-7976",
+                "type": "print"
+            },
+            {
+                "value": "1467-9280",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2010,
+                    5,
+                    5
+                ]
+            ]
+        }
+    }
+}

@@ -27,6 +27,7 @@ rbox_links <- function(paper) {
 #'
 #' @param rb_url an ResearchBox URL, or a table containing them (e.g., as created by `rbox_links()`)
 #' @param id_col the index or name of the column that contains ResearchBox URLs, if id is a table
+#' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame of information
 #' @export
@@ -35,9 +36,15 @@ rbox_links <- function(paper) {
 #' # get info on one OSF node
 #' rbox_retrieve("https://researchbox.org/801")
 #' }
-rbox_retrieve <- function(rb_url, id_col = 1) {
+rbox_retrieve <- function(rb_url, id_col = 1, pb = NULL) {
   if (!online("researchbox.org")) {
     stop("ResearchBox.org seems to be offline")
+  }
+
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    pb$tick(0, list(what = "ResearchBox Retrieve"))
+    on.exit(pb$terminate())
   }
 
   # handle list of links
@@ -59,16 +66,20 @@ rbox_retrieve <- function(rb_url, id_col = 1) {
   valid_ids <- unique(ids$rb_url)
 
   if (length(valid_ids) == 0) {
-    message("No valid ResearchBox links")
+    ("No valid ResearchBox links") |>
+      list(what = _) |>
+      pb$tick(0, tokens = _)
     return(table)
   }
 
   # iterate over valid IDs
-  message(
+  paste0(
     "Starting ResearchBox retrieval for ",
     length(valid_ids), " file",
     ifelse(length(valid_ids) == 1, "", "s"), "..."
-  )
+  ) |>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
 
   id_info <- vector("list", length(valid_ids))
   i <- 0
@@ -91,7 +102,9 @@ rbox_retrieve <- function(rb_url, id_col = 1) {
     suffix = c("", ".rb")
   )
 
-  message("...ResearchBox retrieval complete!")
+  paste0("...ResearchBox retrieval complete!") |>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
 
   return(data)
 }
@@ -99,39 +112,53 @@ rbox_retrieve <- function(rb_url, id_col = 1) {
 #' Retrieve info from ResearchBox by URL
 #'
 #' @param rb_url a ResearchBox URL
+#' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame of information
 #' @export
 #' @keywords internal
-rbox_info <- function(rb_url) {
-  message("* Retrieving info from ", rb_url, "...")
+rbox_info <- function(rb_url, pb = NULL) {
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    on.exit(pb$terminate())
+  }
+
+  paste0("* Retrieving info from ", rb_url, "...") |>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
+
   # set up return table
   obj <- data.frame(
     rb_url = rb_url
   )
   # get website
-  res <- httr::GET(rb_url)
+  resp <- httr2::request(rb_url) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
   # check if redirect (suppress encodings warning)
   suppressMessages({
+    body_text <- httr2::resp_body_string(resp)
     pattern <- "(?<=window\\.location\\.replace\\(')https://researchbox.org/\\d+(?='\\))"
-    if (grepl(pattern, res, perl = TRUE)) {
-      matches <- gregexpr(pattern, res, perl = TRUE)
-      redirect_url <- regmatches(as.character(res), matches)
+    if (grepl(pattern, body_text, perl = TRUE)) {
+      matches <- gregexpr(pattern, body_text, perl = TRUE)
+      redirect_url <- regmatches(body_text, matches)
 
-      res <- httr::GET(redirect_url[[1]])
+      resp <- httr2::request(redirect_url[[1]]) |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_perform()
     }
   })
 
   # handle missing file
-  if (res$status_code != 200) {
+  if (httr2::resp_status(resp) != 200) {
     warning(rb_url, " could not be found", call. = FALSE)
     obj$error <- "unfound"
     return(obj)
   }
 
   # Read the content with specified encoding
-  html <- httr::content(res, "text", encoding = "UTF-8") |>
+  html <- httr2::resp_body_string(resp) |>
     xml2::read_html(encoding = "UTF-8")
 
   # get file list
@@ -178,18 +205,24 @@ rbox_info <- function(rb_url) {
 #' Retrieve files from ResearchBox by URL
 #'
 #' @param rb_url a vector of ResearchBox URLs
+#' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame of information
 #' @export
 #' @keywords internal
-rbox_file_download <- function(rb_url) {
+rbox_file_download <- function(rb_url, pb = NULL) {
   listed <- NULL
+
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    on.exit(pb$terminate())
+  }
 
   # vectorise
   if (length(rb_url) > 1) {
     unique_rb <- unique(rb_url) |> setdiff(NA)
 
-    file_lists <- lapply(unique_rb, rbox_file_download)
+    file_lists <- lapply(unique_rb, rbox_file_download, pb = pb)
     info <- do.call(dplyr::bind_rows, args = file_lists)
     orig <- data.frame(rb_url = rb_url)
     df <- dplyr::left_join(orig, info, by = "rb_url")
@@ -197,7 +230,9 @@ rbox_file_download <- function(rb_url) {
     return(df)
   }
 
-  message("* Retrieving files from ", rb_url, "...")
+  paste0("* Retrieving files from ", rb_url, "...") |>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
 
   # Download a ZIP to a temp dir
   tmp_dir <- file.path(tempdir(), paste0("rbx_", as.integer(Sys.time())))
@@ -210,7 +245,10 @@ rbox_file_download <- function(rb_url) {
   }
 
   # download (use binary mode on Windows)
-  message("Downloading to: ", zip_path)
+  paste0("Downloading to: ", zip_path) |>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
+
   url_researchbox <- paste0(
     "https://s3.wasabisys.com/zipballs.researchbox.org/ResearchBox_",
     sub("^https://researchbox.org/", "", rb_url),
@@ -233,7 +271,9 @@ rbox_file_download <- function(rb_url) {
   out_dir <- file.path(tmp_dir, "unzipped")
   dir.create(out_dir, showWarnings = FALSE)
 
-  message("Unzipping into: ", out_dir)
+  paste0("Unzipping into: ", out_dir) |>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
   unzipped_files <- utils::unzip(zip_path, exdir = out_dir)
 
   if (length(unzipped_files) == 0) {

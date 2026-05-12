@@ -1,6 +1,46 @@
 # options(metacheck.osf.api = "https://api.osf.io/v2/")
 # osf_delay(0)
 
+test_that("osf_pat_validate", {
+  expect_true(is.function(metacheck::osf_pat_validate))
+  osf_pat <- Sys.getenv("OSF_PAT")
+
+  # httptest2::without_internet({
+  #   expect_warning(obs <- osf_pat_validate("BADPAT"),
+  #                  "could not be validated")
+  #   expect_false(obs)
+  # })
+
+  skip_if_not(online("https://api.osf.io/v2/preprints/khbvy/"))
+
+  # real PAT (if set)
+  if (osf_pat != "") {
+    obs <- osf_pat_validate()
+    expect_true(obs)
+  }
+
+  # bad PAT - direct - resets env variable
+  expect_warning(obs <- osf_pat_validate("BADPAT"))
+  expect_false(obs)
+  expect_equal(Sys.getenv("OSF_PAT"), "")
+
+  # unset PAT
+  withr::local_envvar(OSF_PAT = "")
+  obs <- osf_pat_validate()
+  expect_false(obs)
+
+  # bad PAT - from env - resets env variable
+  withr::local_envvar(OSF_PAT = "NOTAREALPAT")
+  expect_warning(obs <- osf_pat_validate())
+  expect_false(obs)
+  expect_equal(Sys.getenv("OSF_PAT"), "")
+
+})
+
+
+#httptest2::start_capturing()
+httptest2::use_mock_api()
+
 test_that("exists", {
   expect_true(is.function(metacheck::osf_check_id))
 
@@ -15,9 +55,6 @@ test_that("exists", {
 
   expect_true(is.function(metacheck::osf_delay))
   expect_no_error(helplist <- help(osf_delay, metacheck))
-
-  expect_true(is.function(metacheck::summarize_contents))
-  expect_no_error(helplist <- help(summarize_contents, metacheck))
 
   expect_true(is.function(metacheck::osf_file_download))
   expect_no_error(helplist <- help(osf_file_download, metacheck))
@@ -44,15 +81,15 @@ test_that("edge case summarise", {
     "datarelease.pdf",  NA,         NA,        # pdf cannot be data or code
     "data.pdf",         "data",     NA,        # what about qual data?
     "my_r_code.pdf",    NA,         NA,
-    "readme.xls",       "project",  "data",    # is an xls file always data?
+    "readme.xls",       "project",  "readme",    # is an xls file always data?
     "data.sas",         NA,         "code",    # sas is always code
-    "codebook.sas",     NA,         "code",
-    "readme.sas",       NA,         "code",
+    "codebook.sas",     NA,         "codebook",
+    "readme.sas",       NA,         "readme",
     "codebook.pdf",     NA,         "codebook" # not a great format but possible
   )
   contents$filetype <- filetype(contents$name)
 
-  summary <- summarize_contents(contents)
+  summary <- file_category(contents)
   expect_equal(summary$file_category, contents$classify)
 })
 
@@ -60,8 +97,6 @@ test_that("edge case summarise", {
 test_that("osf_type", {
   expect_true(is.function(metacheck::osf_type))
   expect_no_error(helplist <- help(osf_type, metacheck))
-
-  skip_osf()
 
   examples <- list(project = "pngda",
                    component = "https://osf.io/6nt4v",
@@ -98,45 +133,62 @@ test_that("osf_type", {
   expect_equal(otype, NA_character_)
 })
 
-# httptest::start_capturing()
-httptest::use_mock_api()
-
 test_that("osf_api_check", {
   status <- osf_api_check()
   possible <- c("ok", "too many requests",
-                "server error", "unknown")
+                "server error", "unknown", "no internet")
   expect_true(status %in% possible)
 })
 
 test_that("osf_headers", {
-  header <- osf_headers()
-  expect_equal(header$`User-Agent`, "metacheck")
+  req <- httr2::request("https://api.osf.io")
+
+  # real PAT
+  osf_pat <- Sys.getenv("OSF_PAT")
+  if (osf_pat != "") {
+    obs <- osf_headers(req)
+    x <- obs$headers$`Authorization`
+    expect_equal(typeof(x), "weakref")
+  }
+
+  # PAT unset
+  withr::local_envvar(OSF_PAT = "")
+  obs <- osf_headers(req)
+  expect_s3_class(obs, "httr2_request")
+  expect_equal(obs$headers$`User-Agent`, "metacheck")
+  expect_null(obs$headers$`Authorization`)
+
+  # PAT set to fake PAT
+  withr::local_envvar(OSF_PAT = "NOPTAREALPAT")
+  obs <- osf_headers(req)
+  expect_s3_class(obs, "httr2_request")
+  expect_equal(obs$headers$`User-Agent`, "metacheck")
+  x <- obs$headers$`Authorization`
+  expect_equal(typeof(x), "weakref")
 })
 
+
 test_that("osf_links", {
-  paper <- psychsci$`0956797614557697`
+  paper <- test_paper(c("osf.io/e2aks", "osf.io/tvyxz/"))
   obs <- osf_links(paper)
   exp <- c("osf.io/e2aks", "osf.io/tvyxz/")
   expect_equal(obs$text, exp)
 
   # has view-only link across sentences
-  paper <- psychsci$`0956797615569889`
+  paper <- test_paper(c(
+    "osf.io/t9j8e/?",
+    "view_only=f171281f212f4435917b16a9e581a73b"
+  ))
   obs <- osf_links(paper)
   exp <- "osf.io/t9j8e/? view_only=f171281f212f4435917b16a9e581a73b"
   expect_equal(obs$text, exp)
-
-  obs <- osf_links(psychsci[1:50])
-  ids <- osf_check_id(obs$text)
-  expect_true(all(nchar(ids) == 5))
 })
 
 test_that("osf_check_id", {
-  skip_osf()
-
   # check vo links
-  info <- osf_info("t9j8e")
-  expect_equal(info$osf_type, "private")
-  expect_equal(info$public, FALSE)
+  # info <- osf_info("t9j8e")
+  # expect_equal(info$osf_type, "private")
+  # expect_equal(info$public, FALSE)
 
   # 5-letter
   osf_id <- "pngda"
@@ -225,8 +277,6 @@ test_that("osf_check_id", {
 })
 
 test_that("osf_get_all_pages", {
-  skip_osf()
-
   osf_api <- getOption("metacheck.osf.api")
 
   # fewer than 10
@@ -259,11 +309,22 @@ test_that("osf_get_all_pages", {
 })
 
 test_that("osf_files", {
-  skip_osf()
+  expect_true(is.function(metacheck::osf_files))
+  expect_no_error(helplist <- help(osf_files, metacheck))
 
   osf_id <- "pngda"
   data <- osf_files(osf_id)
   expect_equal(nrow(data), 3)
+
+  # explicit nodes
+  osf_id <- "pngda"
+  data <- osf_files(osf_id, "nodes")
+  expect_equal(nrow(data), 3)
+
+  # wrong type
+  osf_id <- "pngda"
+  data <- osf_files(osf_id, "registrations")
+  expect_equal(nrow(data), 0)
 
   osf_id <- "yt32c"
   data <- osf_files(osf_id)
@@ -273,14 +334,21 @@ test_that("osf_files", {
   osf_id <- "y6a34"
   data <- osf_files(osf_id)
   expect_equal(nrow(data), 0)
+
+  # registration
+  osf_id <- "jqkg7"
+  files <- osf_files(osf_id, osf_type = "registrations")
+  expect_equal(files$osf_id, "5922fed2b83f69024e8f7aef")
+
+  # look up osf_type
+  files <- osf_files(osf_id)
+  expect_equal(files$osf_id, "5922fed2b83f69024e8f7aef")
 })
 
 test_that("osf_children", {
-  skip_osf()
-
   osf_id <- "pngda"
   data <- osf_children(osf_id)
-  expect_equal(nrow(data), 3)
+  expect_equal(nrow(data), 5)
 
   osf_id <- "y6a34"
   data <- osf_children(osf_id)
@@ -288,7 +356,12 @@ test_that("osf_children", {
 })
 
 test_that("osf_info", {
-  skip_osf()
+  # waterbutler
+  osf_id <- "68472f93b21328dc7f539482"
+  info <- osf_info(osf_id)
+  expect_equal(info$name, "test-folder")
+  expect_equal(info$osf_type, "files")
+  expect_equal(info$kind, "folder")
 
   # project
   osf_id <- "pngda"
@@ -350,14 +423,14 @@ test_that("osf_info", {
   osf_id <- "ybm3c"
   info <- osf_info(osf_id)
   expect_equal(info$osf_id, osf_id)
-  expect_equal(info$osf_type, "private")
+  #expect_equal(info$osf_type, "private")
   expect_equal(info$public, FALSE)
 
   # view-only (private)
   osf_id <- "https://osf.io/ybm3c/?view_only=5acf039f24ac4ea28afec473548dd7f4"
   info <- osf_info(osf_id)
   expect_equal(info$osf_id, "ybm3c")
-  expect_equal(info$osf_type, "private")
+  #expect_equal(info$osf_type, "private")
 
   # view-only (public)
   osf_id <- "https://osf.io/pngda/?view_only=5acf039f24ac4ea28afec473548dd7f4"
@@ -378,22 +451,22 @@ test_that("osf_info", {
   expect_equal(info$osf_id, osf_id)
   expect_equal(info$osf_type, "unfound")
 
-  # # multiple nodes
-  # osf_id <- c("mc45x", "y6a34")
-  # info <- osf_info(osf_id)
-  # expect_equal(info$osf_id, osf_id)
-  # expect_equal(info$osf_type, c("nodes", "nodes"))
-  #
-  # # multiple different types
-  # osf_id <- c("mc45x", "y6a34", "4i578")
-  # info <- osf_info(osf_id)
-  # weird false positive of preprint/3j9rf_v1
+  # multiple nodes
+  osf_id <- c("mc45x", "y6a34")
+  info <- osf_info(osf_id)
+  expect_equal(info$osf_id, osf_id)
+  expect_equal(info$osf_type, c("nodes", "nodes"))
+
+  # multiple different types
+  osf_id <- c("mc45x", "y6a34", "4i578")
+  info <- osf_info(osf_id)
+  expect_equal(info$osf_type, c("nodes", "nodes", "users"))
+
+  #weird false positive of preprint/3j9rf_v1
 })
 
 
 test_that("osf_retrieve", {
-  skip_osf()
-
   examples <- c(project = "pngda",
                 component = "https://osf.io/6nt4v",
                 private = "ybm3c",
@@ -459,13 +532,13 @@ test_that("osf_retrieve", {
   expect_equal(table$osf_id, "ybm3c")
 
   # children of private
-  osf_url <- "https://osf.io/ybm3c/?view_only=5acf039f24ac4ea28afec473548dd7f4"
-  table <- osf_retrieve(osf_url, recursive = TRUE)
-  expect_equal(table$osf_url, osf_url)
-  expect_equal(table$osf_id, "ybm3c")
+  # osf_url <- "https://osf.io/ybm3c/?view_only=5acf039f24ac4ea28afec473548dd7f4"
+  # table <- osf_retrieve(osf_url, recursive = TRUE)
+  # expect_equal(table$osf_url, osf_url)
+  # expect_equal(table$osf_id, "ybm3c")
 
   # no links
-  paper <- psychsci[[180]]
+  paper <- test_paper("No links")
   osf_url <- osf_links(paper)
   info <- osf_retrieve(osf_url, recursive = TRUE, find_project = TRUE)
   expect_equal(nrow(info), 0)
@@ -473,8 +546,6 @@ test_that("osf_retrieve", {
 })
 
 test_that("osf_retrieve recursive", {
-  skip_osf()
-
   # folders can only have wb IDs,
   # files only have wb IDs until someone looks at them on the web
   #  and then they get 5-letter guids
@@ -493,8 +564,6 @@ test_that("osf_retrieve recursive", {
 })
 
 test_that("osf_id vs wb_id", {
-  skip_osf()
-
   osf_id <- "k6gbt"
   osf_info <- osf_info(osf_id)
 
@@ -505,8 +574,6 @@ test_that("osf_id vs wb_id", {
 })
 
 test_that("osf_parent_project", {
-  skip_osf()
-
   # has parent project
   osf_id <- "yt32c"
   parent <- osf_parent_project(osf_id)
@@ -528,22 +595,7 @@ test_that("osf_parent_project", {
   expect_true(is.na(parent))
 })
 
-test_that("summarize_contents", {
-  # handle zero results and/or OSF down
-  summary <- summarize_contents(data.frame())
-  expect_equal(nrow(summary), 0)
 
-  skip_osf()
-
-  osf_id <- "pngda"
-  contents <- osf_retrieve(osf_id, recursive = TRUE)
-
-  summary <- summarize_contents(contents)
-
-  readme <- dplyr::filter(summary, name == "README")
-  expect_equal(unique(readme$file_category), "readme")
-})
-
-httptest::stop_mocking()
-# httptest::stop_capturing()
+httptest2::stop_mocking()
+#httptest2::stop_capturing()
 

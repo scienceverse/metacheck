@@ -1,0 +1,915 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 603,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            1,
+                            28
+                        ]
+                    ],
+                    "date-time": "2026-01-28T07:03:09Z",
+                    "timestamp": 1769583789067,
+                    "version": "3.49.0"
+                },
+                "reference-count": 67,
+                "publisher": "Elsevier BV",
+                "issue": "3",
+                "license": [
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    1995,
+                                    10,
+                                    1
+                                ]
+                            ],
+                            "date-time": "1995-10-01T00:00:00Z",
+                            "timestamp": 812505600000
+                        },
+                        "content-version": "tdm",
+                        "delay-in-days": 0,
+                        "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+                    }
+                ],
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "short-container-title": [
+                    "Neuroscience Research"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            1995,
+                            10
+                        ]
+                    ]
+                },
+                "DOI": "10.1016/0168-0102(95)00950-7",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2002,
+                            7,
+                            25
+                        ]
+                    ],
+                    "date-time": "2002-07-25T23:00:37Z",
+                    "timestamp": 1027638037000
+                },
+                "page": "269-279",
+                "source": "Crossref",
+                "is-referenced-by-count": 134,
+                "title": [
+                    "Somatotopy of monkey premotor cortex examined with microstimulation"
+                ],
+                "prefix": "10.1016",
+                "volume": "23",
+                "author": [
+                    {
+                        "given": "Moshe",
+                        "family": "Godschalk",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Andrew R",
+                        "family": "Mitz",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Berber van",
+                        "family": "Duin",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Hans van der",
+                        "family": "Burga",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "78",
+                "reference": [
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB1",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "219",
+                        "DOI": "10.1007/BF00230856",
+                        "article-title": "An output zone of the monkey primary motor cortex specialized for bilateral hand movement",
+                        "volume": "82",
+                        "author": "Aizawa",
+                        "year": "1990",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB2",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "243",
+                        "DOI": "10.1007/BF00816161",
+                        "article-title": "Topographical organization of cortical efferent zones projecting to distal forelimb muscles in the monkey",
+                        "volume": "14",
+                        "author": "Asanuma",
+                        "year": "1972",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB3",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "442",
+                        "DOI": "10.1007/BF00238820",
+                        "article-title": "Further study on the excitation of pyramidal tract cells by intracortical microstimulation",
+                        "volume": "26",
+                        "author": "Asanuma",
+                        "year": "1976",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB4",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "211",
+                        "DOI": "10.1002/cne.902560203",
+                        "article-title": "Architecture and frontal cortical connections of the premotor cortex (area 6) in the rhesus monkey",
+                        "volume": "256",
+                        "author": "Barbas",
+                        "year": "1987",
+                        "journal-title": "J. Comp. Neurol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB5",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "951",
+                        "DOI": "10.1093/brain/114.2.951",
+                        "article-title": "A neurophysiological comparison of three distinct regions of the primate frontal lobe",
+                        "volume": "114",
+                        "author": "Di Pellegrino",
+                        "year": "1991",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB6",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1",
+                        "DOI": "10.1007/BF00228996",
+                        "article-title": "Organization of the forelimb area in squirrel monkey motor cortex: representation of digit, wrist, and elbow muscles",
+                        "volume": "89",
+                        "author": "Donoghue",
+                        "year": "1992",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB7",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "667",
+                        "DOI": "10.1523/JNEUROSCI.11-03-00667.1991",
+                        "article-title": "The origin of corticospinal projections from the premotor areas in the frontal lobe",
+                        "volume": "3",
+                        "author": "Dum",
+                        "year": "1991",
+                        "journal-title": "J. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB8",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "686",
+                        "DOI": "10.1007/BF00229894",
+                        "article-title": "Space coding by premotor cortex",
+                        "volume": "89",
+                        "author": "Fogassi",
+                        "year": "1992",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB9",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "464",
+                        "DOI": "10.1007/BF00239214",
+                        "article-title": "Visual responses in the postarcuate cortex (area 6) of the monkey that are independent of eye position",
+                        "volume": "50",
+                        "author": "Gentilucci",
+                        "year": "1983",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB10",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "475",
+                        "DOI": "10.1007/BF00248741",
+                        "article-title": "Functional organization of inferior area 6 in the macaque monkey. I. Somatotopy and the control of proximal movements",
+                        "volume": "71",
+                        "author": "Gentilucci",
+                        "year": "1988",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB11",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "410",
+                        "DOI": "10.1007/BF00237982",
+                        "article-title": "Cortical afferents and efferents of monkey postarcuate area: an anatomical and electrophysiological study",
+                        "volume": "56",
+                        "author": "Godschalk",
+                        "year": "1984",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB12",
+                        "first-page": "1133",
+                        "article-title": "Microstimulation map of the monkey premotor cortex",
+                        "volume": "16",
+                        "author": "Godschalk",
+                        "year": "1990",
+                        "journal-title": "Soc. Neurosci. Abstr."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB13",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "786",
+                        "DOI": "10.1152/jn.1993.69.3.786",
+                        "article-title": "Smooth eye movements elicited by microstimulation in the primate frontal eye field",
+                        "volume": "69",
+                        "author": "Gottlieb",
+                        "year": "1993",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB14",
+                        "first-page": "593",
+                        "article-title": "Coding of extrapersonal visual space in body-part centered coordinates",
+                        "volume": "18",
+                        "author": "Graziano",
+                        "year": "1992",
+                        "journal-title": "Soc. Neurosci. Abstr."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB15",
+                        "first-page": "1278",
+                        "article-title": "Mapping visual space around the arm with bimodal visual-tactile neurons",
+                        "volume": "20",
+                        "author": "Graziano",
+                        "year": "1994",
+                        "journal-title": "Soc. Neurosci. Abstr."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB16",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "247",
+                        "DOI": "10.1016/0006-8993(81)90857-X",
+                        "article-title": "Distribution of slow cortical potentials preceding self-paced hand and hindlimb movements in the premotor and motor areas of monkeys",
+                        "volume": "224",
+                        "author": "Hashimoto",
+                        "year": "1981",
+                        "journal-title": "Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB17",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "952",
+                        "DOI": "10.1523/JNEUROSCI.13-03-00952.1993",
+                        "article-title": "Topographic organization of corticospinal projections from the frontal lobe: motor areas on the lateral surface of the hemisphere",
+                        "volume": "13",
+                        "author": "He",
+                        "year": "1993",
+                        "journal-title": "J. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB18",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "571",
+                        "DOI": "10.1139/y94-081",
+                        "article-title": "Force-related neuronal activity in two regions of the primate ventral premotor cortex",
+                        "volume": "72",
+                        "author": "Hepp-Reymond",
+                        "year": "1994",
+                        "journal-title": "Can. J. Physiol. Pharmacol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB19",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "299",
+                        "DOI": "10.1002/cne.902930211",
+                        "article-title": "Supplementary eye field as defined by intracortical microstimulation: connections in macaques",
+                        "volume": "293",
+                        "author": "Huerta",
+                        "year": "1990",
+                        "journal-title": "J. Comp. Neurol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB20",
+                        "series-title": "Motor Control Mechanisms in Health and Disease",
+                        "first-page": "347",
+                        "article-title": "Separate cortical system for control of joint movement and joint stiffness: reciprocal activation and coactivation of antagonist muscles",
+                        "author": "Humphrey",
+                        "year": "1983"
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB21",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "390",
+                        "DOI": "10.1152/jn.1991.66.2.390",
+                        "article-title": "Relationship of intrinsic connections to forelimb movement representations in monkey motor cortex: a correlative anatomic and physiological study",
+                        "volume": "66",
+                        "author": "Huntley",
+                        "year": "1991",
+                        "journal-title": "J. Neurphysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB22",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "287",
+                        "DOI": "10.1016/0306-4522(91)90055-S",
+                        "article-title": "The emergence of architectonic field structure and areal borders in developing monkey sensorimotor cortex",
+                        "volume": "44",
+                        "author": "Huntley",
+                        "year": "1991",
+                        "journal-title": "Neuroscience"
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB23",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "597",
+                        "DOI": "10.1113/jphysiol.1972.sp009817",
+                        "article-title": "An electrophysiological demonstration of the axonal projections of single spinal intemeurones in the cat",
+                        "volume": "222",
+                        "author": "Jankowska",
+                        "year": "1972",
+                        "journal-title": "J. Physiol. (Lond.)"
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB24",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "391",
+                        "DOI": "10.1002/cne.901750403",
+                        "article-title": "Size, laminar and columnar distribution of efferent cells in the sensory-motor cortex of monkeys",
+                        "volume": "175",
+                        "author": "Jones",
+                        "year": "1977",
+                        "journal-title": "J. Comp. Neurol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB25",
+                        "first-page": "453",
+                        "article-title": "Propagation of electrical activity in motor nerve terminals",
+                        "volume": "161",
+                        "author": "Katz",
+                        "year": "1965"
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB26",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "245",
+                        "DOI": "10.1007/BF00274982",
+                        "article-title": "Distribution of neurons with set- and movementrelated activity before hand and foot movements in the premotor cortex of rhesus monkeys",
+                        "volume": "77",
+                        "author": "Kurata",
+                        "year": "1989",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB27",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "187",
+                        "DOI": "10.1152/jn.1993.69.1.187",
+                        "article-title": "Premotor cortex of monkeys: set- and movementrelated activity reflecting amplitude and direction of wrist movements",
+                        "volume": "69",
+                        "author": "Kurata",
+                        "year": "1993",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB28",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "188",
+                        "DOI": "10.1007/BF00237031",
+                        "article-title": "Distribution of neurons related to a hindlimb as opposed to forelimb movement in the monkey premotor cortex",
+                        "volume": "60",
+                        "author": "Kurata",
+                        "year": "1985",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB29",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1120",
+                        "DOI": "10.1152/jn.1978.41.5.1120",
+                        "article-title": "Spatial organization of precentral cortex in awake primates. II. Motor outputs",
+                        "volume": "41",
+                        "author": "Kwan",
+                        "year": "1978",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB30",
+                        "first-page": "56",
+                        "article-title": "Methods for Neuronal Recording in Conscious Animals",
+                        "volume": "Vol. 4",
+                        "author": "Lemon",
+                        "year": "1984"
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB31",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "319",
+                        "DOI": "10.1152/jn.1952.15.4.319",
+                        "article-title": "Threshold movements produced by excitation of cerebral cortex and efferent fibers with some parametric regions of rectangular current pulses (cats and monkeys)",
+                        "volume": "15",
+                        "author": "Lilly",
+                        "year": "1952",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB32",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "214",
+                        "DOI": "10.1007/BF00230855",
+                        "article-title": "Cortico-cortical connections of two electrophysiologically identified arm representations in the mesial agranular frontal cortex",
+                        "volume": "82",
+                        "author": "Luppino",
+                        "year": "1990",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB33",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "463",
+                        "DOI": "10.1002/cne.903110403",
+                        "article-title": "Multiple representations of body movements in mesial area 6 and the adjacent cingulate cortex: an intracortical microstimulation study in the macaque monkey",
+                        "volume": "311",
+                        "author": "Luppino",
+                        "year": "1991",
+                        "journal-title": "J. Comp. Neurol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB34",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "410",
+                        "DOI": "10.1007/BF01208601",
+                        "article-title": "Microstimulation of the supplementary motor area (SMA) in the awake monkey",
+                        "volume": "45",
+                        "author": "Macpherson",
+                        "year": "1982",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB35",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "125",
+                        "DOI": "10.1016/0166-4328(85)90068-3",
+                        "article-title": "Patterns of cytochrome oxidase activity in the frontal agranular cortex of the macaque monkey",
+                        "volume": "18",
+                        "author": "Matelli",
+                        "year": "1985",
+                        "journal-title": "Behav. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB36",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "445",
+                        "DOI": "10.1002/cne.903110402",
+                        "article-title": "Architecture of superior and mesial area 6 and the adjacent cingulate cortex in the macaque monkey",
+                        "volume": "311",
+                        "author": "Matelli",
+                        "year": "1991",
+                        "journal-title": "J. Comp. Neurol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB37",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "241",
+                        "DOI": "10.1016/0304-3940(79)90001-6",
+                        "article-title": "Cortical projection to handarm motor area from post-arcuate area in macaque monkeys: a histological study of retrograde transport of horseradish peroxidase",
+                        "volume": "11",
+                        "author": "Matsumura",
+                        "year": "1979",
+                        "journal-title": "Neurosci. Lett."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB38",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "591",
+                        "DOI": "10.1002/cne.901930302",
+                        "article-title": "Organization of the face representation in macaque motor cortex",
+                        "volume": "193",
+                        "author": "McGuinness",
+                        "year": "1980",
+                        "journal-title": "J. Comp. Neurol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB39",
+                        "first-page": "233",
+                        "article-title": "Microstimulation mapping of the primate motor cortex: changes in topography after pyramidotomy and after subsequent motor recovery",
+                        "author": "Mitz",
+                        "year": "1984"
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB40",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "157",
+                        "DOI": "10.1016/0304-3940(89)90219-X",
+                        "article-title": "Eye-movement representation in the frontal lobe of rhesus monkeys",
+                        "volume": "106",
+                        "author": "Mitz",
+                        "year": "1989",
+                        "journal-title": "Neurosci. Lett."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB41",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "59",
+                        "DOI": "10.1016/0304-3940(86)90663-4",
+                        "article-title": "Intracortical stimulation in pyramidotomized monkeys",
+                        "volume": "64",
+                        "author": "Mitz",
+                        "year": "1986",
+                        "journal-title": "Neurosci. Lett."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB42",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1010",
+                        "DOI": "10.1523/JNEUROSCI.07-04-01010.1987",
+                        "article-title": "The somatotopic organization of the supplementary motor area: intracortical microstimulation mapping",
+                        "volume": "7",
+                        "author": "Mitz",
+                        "year": "1987",
+                        "journal-title": "J. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB43",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "587",
+                        "DOI": "10.1016/0013-4694(84)90096-8",
+                        "article-title": "A sequential pulse generator for producing true biphasic stimuli. Electroenceph",
+                        "volume": "57",
+                        "author": "Mitz",
+                        "year": "1984",
+                        "journal-title": "Elen. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB44",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "471",
+                        "DOI": "10.1002/cne.903220403",
+                        "article-title": "Cingulate input to the primary and supplementary motor cortices in the rhesus monkey: evidence for somatotopy in areas 24c and 23c",
+                        "volume": "322",
+                        "author": "Morecraft",
+                        "year": "1992",
+                        "journal-title": "J. Comp. Neurol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB45",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "176",
+                        "DOI": "10.1016/0006-8993(79)90928-4",
+                        "article-title": "Frontal lobe inputs to primate motor cortex: evidence for four somatotopically organized ‘premotor’ areas",
+                        "volume": "177",
+                        "author": "Muakkassa",
+                        "year": "1979",
+                        "journal-title": "Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB46",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "705",
+                        "DOI": "10.1152/jn.1991.66.3.705",
+                        "article-title": "Neuronal activity in the primate premotor, supplementary, and precentral motor cortex during visually guided and internally determined sequential movements",
+                        "volume": "66",
+                        "author": "Mushiake",
+                        "year": "1991",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB47",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1132",
+                        "DOI": "10.1152/jn.1978.41.5.1132",
+                        "article-title": "Spatial organization of precentral cortex in awake primates. III. Input-output coupling",
+                        "volume": "41",
+                        "author": "Murphy",
+                        "year": "1978",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB48",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "747",
+                        "DOI": "10.1152/jn.1992.67.3.747",
+                        "article-title": "Functional properties of single neurons in the face primary motor cortex of the primate. I. Input and output features of tongue motor cortex",
+                        "volume": "67",
+                        "author": "Murray",
+                        "year": "1992",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB49",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "13",
+                        "DOI": "10.1016/0006-8993(69)90141-3",
+                        "article-title": "Cortico-cortical connections in the rhesus monkey",
+                        "volume": "13",
+                        "author": "Pandya",
+                        "year": "1969",
+                        "journal-title": "Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB50",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "429",
+                        "DOI": "10.1002/cne.903100402",
+                        "article-title": "Myelo- and cytoarchitecture of the granular frontal cortex and surrounding regions in the strepsirhine primate Galago and the anthropoid primate Macaca",
+                        "volume": "310",
+                        "author": "Preuss",
+                        "year": "1991",
+                        "journal-title": "J. Comp. Neurol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB51",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "417",
+                        "DOI": "10.1016/0006-8993(75)90364-9",
+                        "article-title": "Which elements are excited in electrical stimulation of mammalian central nervous system: A review",
+                        "volume": "98",
+                        "author": "Ranck",
+                        "year": "1975",
+                        "journal-title": "Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB52",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "147",
+                        "DOI": "10.1016/0166-4328(81)90053-X",
+                        "article-title": "Afferent properties of periancuate neurons in macaque monkeys. II. Visual responses",
+                        "volume": "2",
+                        "author": "Rizzolatti",
+                        "year": "1981",
+                        "journal-title": "Behav. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB53",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "491",
+                        "DOI": "10.1007/BF00248742",
+                        "article-title": "Functional organization of inferior area 6 in the macaque monkey. II. Area F5 and the control of distal movements",
+                        "volume": "71",
+                        "author": "Rizzolatti",
+                        "year": "1988",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB54",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "384",
+                        "DOI": "10.1111/j.1748-1716.1973.tb05533.x",
+                        "article-title": "Analysis of threshold currents during microstimulation of fibres in the spinal cord",
+                        "volume": "89",
+                        "author": "Roberts",
+                        "year": "1973",
+                        "journal-title": "Acta. Physiol. Scand."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB55",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "179",
+                        "DOI": "10.1152/jn.1987.57.1.179",
+                        "article-title": "Evidence for a supplementary eye field",
+                        "volume": "57",
+                        "author": "Schlag",
+                        "year": "1987",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB56",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "245",
+                        "DOI": "10.1113/jphysiol.1982.sp014071",
+                        "article-title": "Structural and functional definition of the motor cortex in the monkey (Macaca fascicularis)",
+                        "volume": "323",
+                        "author": "Sessle",
+                        "year": "1982",
+                        "journal-title": "J. Physiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB57",
+                        "first-page": "986",
+                        "article-title": "Neuronal activity in the supplementary and pre-supplementary motor area in relation to sequential performance of multiple movements",
+                        "volume": "20",
+                        "author": "Shima",
+                        "year": "1994",
+                        "journal-title": "Soc. Neurosci. Abstr."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB58",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "188",
+                        "DOI": "10.1152/jn.1991.65.2.188",
+                        "article-title": "Two movement-related foci in the primate cingulate cortex observed in signal-triggered and self-paced forelimb movements",
+                        "volume": "65",
+                        "author": "Shima",
+                        "year": "1991",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB59",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "139",
+                        "DOI": "10.1152/jn.1982.48.1.139",
+                        "article-title": "Two representations of the hand in area 4 of a primate. I. Motor output organization",
+                        "volume": "48",
+                        "author": "Strick",
+                        "year": "1982",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB60",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "150",
+                        "DOI": "10.1152/jn.1982.48.1.150",
+                        "article-title": "Two representations of the hand in area 4 of a primate. II. Somatosensory input organization",
+                        "volume": "48",
+                        "author": "Strick",
+                        "year": "1982",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB61",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "255",
+                        "DOI": "10.1002/cne.901910208",
+                        "article-title": "Two-dimensional maps of the cerebral cortex",
+                        "volume": "191",
+                        "author": "Van Essen",
+                        "year": "1980",
+                        "journal-title": "J. Comp. Neurol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB62",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "485",
+                        "DOI": "10.3109/08990229009144721",
+                        "article-title": "Topographic organization of baboon primary motor cortex: face, hand, forelimb, and shoulder representation",
+                        "volume": "7",
+                        "author": "Waters",
+                        "year": "1990",
+                        "journal-title": "Somatosens. Motor Res."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB63",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1329",
+                        "DOI": "10.1523/JNEUROSCI.02-09-01329.1982",
+                        "article-title": "The premotor cortex of the monkey",
+                        "volume": "2",
+                        "author": "Weinrich",
+                        "year": "1982",
+                        "journal-title": "J. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB64",
+                        "first-page": "331",
+                        "article-title": "Set-related neuronal activity in the premotor cortex of rhesus monkeys: effects of changes in motor set",
+                        "volume": "223",
+                        "author": "Wise",
+                        "year": "1985"
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB65",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "433",
+                        "DOI": "10.1002/cne.901950305",
+                        "article-title": "Supplementary and precentral motor cortex: contrast in responsiveness to peripheral input in the hindlimb area of the unanesthetized monkey",
+                        "volume": "195",
+                        "author": "Wise",
+                        "year": "1981",
+                        "journal-title": "J. Comp. Neurol."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB66",
+                        "first-page": "238",
+                        "article-title": "Patterns of localization in precentral and ‘supplementary’ motor areas and their relation to the concept of a premotor area",
+                        "volume": "30",
+                        "author": "Woolsey",
+                        "year": "1952",
+                        "journal-title": "Res. Publ. Assoc. Nerv. Ment. Dis."
+                    },
+                    {
+                        "key": "10.1016/0168-0102(95)00950-7_BIB67",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "476",
+                        "DOI": "10.3171/jns.1979.51.4.0476",
+                        "article-title": "Localization in somatic sensory and motor areas of human cerebral cortex as determined by direct recording of evoked potentials and electrical stimulation",
+                        "volume": "51",
+                        "author": "Woolsey",
+                        "year": "1979",
+                        "journal-title": "J. Neurosurg."
+                    }
+                ],
+                "container-title": [
+                    "Neuroscience Research"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "https://api.elsevier.com/content/article/PII:0168010295009507?httpAccept=text/xml",
+                        "content-type": "text/xml",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "https://api.elsevier.com/content/article/PII:0168010295009507?httpAccept=text/plain",
+                        "content-type": "text/plain",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2020,
+                            1,
+                            29
+                        ]
+                    ],
+                    "date-time": "2020-01-29T01:50:55Z",
+                    "timestamp": 1580262655000
+                },
+                "score": 130.58028,
+                "resource": {
+                    "primary": {
+                        "URL": "https://linkinghub.elsevier.com/retrieve/pii/0168010295009507"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            1995,
+                            10
+                        ]
+                    ]
+                },
+                "references-count": 67,
+                "journal-issue": {
+                    "issue": "3",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                1995,
+                                10
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "0168010295009507"
+                ],
+                "URL": "https://doi.org/10.1016/0168-0102(95)00950-7",
+                "ISSN": [
+                    "0168-0102"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0168-0102",
+                        "type": "print"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            1995,
+                            10
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

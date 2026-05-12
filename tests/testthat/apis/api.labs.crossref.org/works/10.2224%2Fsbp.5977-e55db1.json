@@ -1,0 +1,180 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    1,
+                    21
+                ]
+            ],
+            "date-time": "2026-01-21T05:24:25Z",
+            "timestamp": 1768973065648,
+            "version": "3.49.0"
+        },
+        "reference-count": 0,
+        "publisher": "Scientific Journal Publishers Ltd",
+        "issue": "1",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "soc behav pers"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2017,
+                    2,
+                    7
+                ]
+            ]
+        },
+        "abstract": "<jats:p>We conducted 2 studies to investigate whether or not benign envy prompts risk taking, suggesting that, compared to malicious envy, benign envy would motivate individuals to improve themselves and to be less sensitive to potential losses in risk taking. In Study 1 (<jats:italic>N<\/jats:italic> = 111), we\n found that individuals who experienced benign, as opposed to malicious, envy were more likely to engage in risk taking, even when the risky behavior was not directly related to the envy-eliciting situation. In Study 2 (<jats:italic>N<\/jats:italic> = 57), we replicated in a different domain this risk-taking tendency\n of benignly envious individuals, examined the process by which benign envy increases risk taking, and demonstrated that individuals who feel benign, compared to malicious, envy perceive less threat in risk taking. Our findings suggest that benign envy can lead to risk taking and self-improving\n behavior, owing to the motivation to improve oneself.<\/jats:p>",
+        "DOI": "10.2224/sbp.5977",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2017,
+                    3,
+                    10
+                ]
+            ],
+            "date-time": "2017-03-10T14:04:42Z",
+            "timestamp": 1489154682000
+        },
+        "page": "39-50",
+        "source": "Crossref",
+        "is-referenced-by-count": 22,
+        "title": [
+            "Envy takes you further: The influence of benign envy on risk taking"
+        ],
+        "prefix": "10.2224",
+        "volume": "45",
+        "author": [
+            {
+                "given": "Mijin",
+                "family": "Kwon",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Youngjee",
+                "family": "Han",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Myungwoo",
+                "family": "Nam",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "1070",
+        "container-title": [
+            "Social Behavior and Personality: an international journal"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://www.ingentaconnect.com/content/sbp/sbp/2017/00000045/00000001/art00004",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2020,
+                    11,
+                    16
+                ]
+            ],
+            "date-time": "2020-11-16T12:10:09Z",
+            "timestamp": 1605528609000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://www.ingentaconnect.com/content/10.2224/sbp.5977"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2017,
+                    2,
+                    7
+                ]
+            ]
+        },
+        "references-count": 0,
+        "journal-issue": {
+            "issue": "1",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2017,
+                        2,
+                        7
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "0301-2212(20170207)45:1L.39;1-"
+        ],
+        "URL": "https://doi.org/10.2224/sbp.5977",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0301-2212"
+        ],
+        "issn-type": [
+            {
+                "value": "0301-2212",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2017,
+                    2,
+                    7
+                ]
+            ]
+        }
+    }
+}

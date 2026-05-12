@@ -1,0 +1,1328 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    11
+                ]
+            ],
+            "date-time": "2026-05-11T23:48:01Z",
+            "timestamp": 1778543281744,
+            "version": "3.51.4"
+        },
+        "reference-count": 149,
+        "publisher": "American Psychological Association (APA)",
+        "issue": "2",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Psychological Bulletin"
+        ],
+        "DOI": "10.1037/0033-2909.128.2.203",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2005,
+                    10,
+                    7
+                ]
+            ],
+            "date-time": "2005-10-07T15:17:19Z",
+            "timestamp": 1128698239000
+        },
+        "page": "203-235",
+        "source": "Crossref",
+        "is-referenced-by-count": 1333,
+        "title": [
+            "On the universality and cultural specificity of emotion recognition: A meta-analysis."
+        ],
+        "prefix": "10.1037",
+        "volume": "128",
+        "author": [
+            {
+                "ORCID": "https://orcid.org/0000-0002-3973-1447",
+                "authenticated-orcid": false,
+                "given": "Hillary Anger",
+                "family": "Elfenbein",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Nalini",
+                "family": "Ambady",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "15",
+        "published-online": {
+            "date-parts": [
+                [
+                    2002,
+                    3
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "r1_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "481",
+                "DOI": "10.1177/002202217674009",
+                "article-title": "Perception of the emotional content of speech: A comparison of two Canadian groups.",
+                "volume": "7",
+                "author": "Albas",
+                "year": "1976",
+                "journal-title": "Journal of Cross-Cultural Psychology",
+                "ISSN": "https://id.crossref.org/issn/0022-0221",
+                "issn-type": "print"
+            },
+            {
+                "key": "r2_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1037/11566-000",
+                "volume-title": "Studies in expressive movement.",
+                "author": "Allport",
+                "year": "1933"
+            },
+            {
+                "key": "r3_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1016/S0065-2601(00)80006-4",
+                "article-title": "Towards a histology of social behavior: Judgmental accuracy from thin slices of behavior.",
+                "volume-title": "Advances in Experimental Social Psychology, 32, 201-272.",
+                "author": "Ambady",
+                "year": "2000"
+            },
+            {
+                "key": "r4_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.77.3.538"
+            },
+            {
+                "key": "r5_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "296",
+                "DOI": "10.1177/0146167292183005",
+                "article-title": "Cross-racial facial identification: A social cognitive integration.",
+                "volume": "18",
+                "author": "Anthony",
+                "year": "1992",
+                "journal-title": "Personality and Social Psychology Bulletin",
+                "ISSN": "https://id.crossref.org/issn/0146-1672",
+                "issn-type": "print"
+            },
+            {
+                "key": "r6_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "418",
+                "DOI": "10.1177/00957984980244002",
+                "article-title": "The ability to decode nonverbal information in African American, African and Afro-Caribbean, and European American adults.",
+                "volume": "24",
+                "author": "Bailey",
+                "year": "1998",
+                "journal-title": "The Journal of Black Psychology",
+                "ISSN": "https://id.crossref.org/issn/0095-7984",
+                "issn-type": "print"
+            },
+            {
+                "key": "r7_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.53.6.1222"
+            },
+            {
+                "key": "r8_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0033170"
+            },
+            {
+                "key": "r9_10.1037/0033-2909.128.2.203",
+                "unstructured": "Bhardwaj. 1982"
+            },
+            {
+                "key": "r10_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1024902500935"
+            },
+            {
+                "key": "r11_10.1037/0033-2909.128.2.203",
+                "first-page": "177",
+                "article-title": "II riconoscimento delle espressioni facciali delle emozioni: Uno studio cross-culturale",
+                "volume-title": "Comunicare senza parole",
+                "author": "Boggi-Cavallo",
+                "year": "1983"
+            },
+            {
+                "key": "r12_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00996226"
+            },
+            {
+                "key": "r13_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0163-6383(90)90040-F"
+            },
+            {
+                "key": "r14_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "263",
+                "DOI": "10.1177/0022022180113003",
+                "article-title": "Recognition of facial expression in three cultures.",
+                "volume": "11",
+                "author": "Boucher",
+                "year": "1980",
+                "journal-title": "Journal of Cross-Cultural Psychology",
+                "ISSN": "https://id.crossref.org/issn/0022-0221",
+                "issn-type": "print"
+            },
+            {
+                "key": "r15_10.1037/0033-2909.128.2.203",
+                "first-page": "634",
+                "article-title": "The perception of people.",
+                "volume-title": "Handbook of social psychology",
+                "volume": "Vol. 2",
+                "author": "Bruner",
+                "year": "1954"
+            },
+            {
+                "key": "r16_10.1037/0033-2909.128.2.203",
+                "unstructured": "Buchman. 1973"
+            },
+            {
+                "key": "r17_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "193",
+                "DOI": "10.1177/016502548400700207",
+                "article-title": "Preschool children's interpretation of facial expressions of emotion.",
+                "volume": "7",
+                "author": "Bullock",
+                "year": "1984",
+                "journal-title": "International Journal of Behavioral Development",
+                "ISSN": "https://id.crossref.org/issn/0165-0254",
+                "issn-type": "print"
+            },
+            {
+                "key": "r18_10.1037/0033-2909.128.2.203",
+                "unstructured": "Caterina. L'espressione non verbale del disprezzo 25 11 1999"
+            },
+            {
+                "key": "r19_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "681",
+                "DOI": "10.1080/00207598508247563",
+                "article-title": "Perception and judgment of facial expressions among the Chinese.",
+                "volume": "20",
+                "author": "Chan",
+                "year": "1985",
+                "journal-title": "International Journal of Psychology",
+                "ISSN": "https://id.crossref.org/issn/0020-7594",
+                "issn-type": "print"
+            },
+            {
+                "key": "r20_10.1037/0033-2909.128.2.203",
+                "unstructured": "Collins. 1996"
+            },
+            {
+                "key": "r21_10.1037/0033-2909.128.2.203",
+                "first-page": "788",
+                "article-title": "Gender.",
+                "volume-title": "The handbook of social psychology",
+                "volume": "Vol. 1",
+                "author": "Deaux",
+                "year": "1998",
+                "edition": "4th ed."
+            },
+            {
+                "key": "r22_10.1037/0033-2909.128.2.203",
+                "unstructured": "Demertzis. 1996"
+            },
+            {
+                "key": "r23_10.1037/0033-2909.128.2.203",
+                "unstructured": "Dennis. 1982"
+            },
+            {
+                "key": "r24_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1086/218843"
+            },
+            {
+                "key": "r25_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "340",
+                "DOI": "10.1177/0022002182013003005",
+                "article-title": "Emotion recognition in Ethiopia: The effect of familiarity with Western culture on accuracy of recognition.",
+                "volume": "13",
+                "author": "Ducci",
+                "year": "1982",
+                "journal-title": "Journal of Cross-Cultural Psychology",
+                "ISSN": "https://id.crossref.org/issn/0022-0221",
+                "issn-type": "print"
+            },
+            {
+                "key": "r26_10.1037/0033-2909.128.2.203",
+                "volume-title": "Gesture and environment.",
+                "author": "Efron",
+                "year": "1941"
+            },
+            {
+                "key": "r27_10.1037/0033-2909.128.2.203",
+                "unstructured": "Ekman. 1972"
+            },
+            {
+                "key": "r28_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.115.2.268"
+            },
+            {
+                "key": "r29_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0030377"
+            },
+            {
+                "key": "r30_10.1037/0033-2909.128.2.203",
+                "volume-title": "Pictures of facial affect",
+                "author": "Ekman",
+                "year": "1976"
+            },
+            {
+                "key": "r31_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00993116"
+            },
+            {
+                "key": "r32_10.1037/0033-2909.128.2.203",
+                "volume-title": "What the face reveals: Basic and applied studies of spontaneous expression using the Facial Action Coding System (FACS).",
+                "author": "Ekman",
+                "year": "1997"
+            },
+            {
+                "key": "r33_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "37",
+                "DOI": "10.1515/semi.1971.3.1.37",
+                "article-title": "Facial Affect Scoring Technique (FAST): A first validity study.",
+                "volume": "3",
+                "author": "Ekman",
+                "year": "1971",
+                "journal-title": "Semiotica",
+                "ISSN": "https://id.crossref.org/issn/0037-1998",
+                "issn-type": "print"
+            },
+            {
+                "key": "r34_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.53.4.712"
+            },
+            {
+                "key": "r35_10.1037/0033-2909.128.2.203",
+                "unstructured": "Ekman. 1972"
+            },
+            {
+                "key": "r36_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "86",
+                "DOI": "10.1126/science.164.3875.86",
+                "article-title": "Pancultural elements in facial displays of emotions.",
+                "volume": "164",
+                "author": "Ekman",
+                "year": "1969",
+                "journal-title": "Science",
+                "ISSN": "https://id.crossref.org/issn/0036-8075",
+                "issn-type": "print"
+            },
+            {
+                "key": "r37_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "903",
+                "DOI": "10.2466/pr0.1988.62.3.903",
+                "article-title": "Scores on the Profile of Nonverbal Sensitivity--A sample of Australian medical students.",
+                "volume": "62",
+                "author": "Evans",
+                "year": "1988",
+                "journal-title": "Psychological Reports",
+                "ISSN": "https://id.crossref.org/issn/0033-2941",
+                "issn-type": "print"
+            },
+            {
+                "key": "r38_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "195",
+                "DOI": "10.1002/ejsp.2420230207",
+                "article-title": "On the clarity of expressive and contextual information in the recognition of emotions: A methodological critique.",
+                "volume": "23",
+                "author": "Fernandez-Dols",
+                "year": "1993",
+                "journal-title": "European Journal of Social Psychology",
+                "ISSN": "https://id.crossref.org/issn/0046-2772",
+                "issn-type": "print"
+            },
+            {
+                "key": "r39_10.1037/0033-2909.128.2.203",
+                "first-page": "915",
+                "article-title": "The cultural matrix of social psychology.",
+                "volume-title": "The handbook of social psychology",
+                "volume": "Vol. 2",
+                "author": "Fiske",
+                "year": "1998",
+                "edition": "4th ed."
+            },
+            {
+                "key": "r40_10.1037/0033-2909.128.2.203",
+                "first-page": "349",
+                "article-title": "Dialectology.",
+                "volume-title": "International encyclopedia of linguistics",
+                "author": "Francis",
+                "year": "1992"
+            },
+            {
+                "key": "r41_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF02190342"
+            },
+            {
+                "key": "r42_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.73.6.1363"
+            },
+            {
+                "key": "r43_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.51.4.755"
+            },
+            {
+                "key": "r44_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0074941"
+            },
+            {
+                "key": "r45_10.1037/0033-2909.128.2.203",
+                "volume-title": "Perception of emotion: Differences in race and sex of perceiver and expressor. (Rep. No. 17).",
+                "author": "Gitter",
+                "year": "1968"
+            },
+            {
+                "key": "r46_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "273",
+                "DOI": "10.1080/00224545.1972.9918684",
+                "article-title": "Race and sex in the communication of emotion.",
+                "volume": "88",
+                "author": "Gitter",
+                "year": "1972a",
+                "journal-title": "The Journal of Social Psychology",
+                "ISSN": "https://id.crossref.org/issn/0022-4545",
+                "issn-type": "print"
+            },
+            {
+                "key": "r47_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "63",
+                "DOI": "10.1111/j.1540-4560.1972.tb00046.x",
+                "article-title": "Race and sex in the perception of emotion.",
+                "volume": "28",
+                "author": "Gitter",
+                "year": "1972b",
+                "journal-title": "The Journal of Social Issues",
+                "ISSN": "https://id.crossref.org/issn/0022-4537",
+                "issn-type": "print"
+            },
+            {
+                "key": "r48_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "213",
+                "DOI": "10.1080/00224545.1972.9918677",
+                "article-title": "Perception of emotion: The role of race, sex and presentation mode.",
+                "volume": "88",
+                "author": "Gitter",
+                "year": "1972",
+                "journal-title": "The Journal of Social Psychology",
+                "ISSN": "https://id.crossref.org/issn/0022-4545",
+                "issn-type": "print"
+            },
+            {
+                "key": "r49_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/1127609"
+            },
+            {
+                "key": "r50_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "3",
+                "DOI": "10.3102/0013189X007001003",
+                "article-title": "Reply to Mansfield and Busse.",
+                "volume": "7",
+                "author": "Glass",
+                "year": "1978",
+                "journal-title": "Educational Researcher",
+                "ISSN": "https://id.crossref.org/issn/0013-189X",
+                "issn-type": "print"
+            },
+            {
+                "key": "r51_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "383",
+                "DOI": "10.3406/psy.1991.29473",
+                "article-title": "Vocal expression of emotions: A cross-cultural and developmental approach.",
+                "volume": "91",
+                "author": "Guidetti",
+                "year": "1991",
+                "journal-title": "L' Annee Psychologique",
+                "ISSN": "https://id.crossref.org/issn/0003-5033",
+                "issn-type": "print"
+            },
+            {
+                "key": "r52_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0920-9964(99)00093-6"
+            },
+            {
+                "key": "r53_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999399379267"
+            },
+            {
+                "key": "r54_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "419",
+                "DOI": "10.2466/pr0.1996.79.2.419",
+                "article-title": "Nonverbal communication among American and Chinese students.",
+                "volume": "79",
+                "author": "Hall",
+                "year": "1996",
+                "journal-title": "Psychological Reports",
+                "ISSN": "https://id.crossref.org/issn/0033-2941",
+                "issn-type": "print"
+            },
+            {
+                "key": "r55_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.85.4.845"
+            },
+            {
+                "key": "r56_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.56021/9780801824401",
+                "volume-title": "Nonverbal sex differences: Accuracy of communication and expressive style.",
+                "author": "Hall",
+                "year": "1984"
+            },
+            {
+                "key": "r57_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "155",
+                "DOI": "10.4324/9781315805870-7",
+                "article-title": "How big are nonverbal sex differences? The case of smiling and sensitivity to nonverbal cues.",
+                "volume-title": "Sex differences and similarities in communication: Critical essays and empirical investigations of sex and gender in interaction",
+                "author": "Hall",
+                "year": "1998"
+            },
+            {
+                "key": "r58_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "1082",
+                "DOI": "10.1177/01461672992512002",
+                "article-title": "Status, gender, and nonverbal behavior: A study of structured interactions between employees of a company.",
+                "volume": "25",
+                "author": "Hall",
+                "year": "1999",
+                "journal-title": "Personality and Social Psychology Bulletin",
+                "ISSN": "https://id.crossref.org/issn/0146-1672",
+                "issn-type": "print"
+            },
+            {
+                "key": "r59_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1025608105284"
+            },
+            {
+                "key": "r60_10.1037/0033-2909.128.2.203",
+                "volume-title": "The social construction of emotions.",
+                "author": "Harre",
+                "year": "1986"
+            },
+            {
+                "key": "r61_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "293",
+                "DOI": "10.1080/00207598808247767",
+                "article-title": "Ear differences in evaluating emotional overtones of unfamiliar speech by Japanese and Israelis.",
+                "volume": "23",
+                "author": "Hatta",
+                "year": "1988",
+                "journal-title": "International Journal of Psychology",
+                "ISSN": "https://id.crossref.org/issn/0020-7594",
+                "issn-type": "print"
+            },
+            {
+                "key": "r62_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "1332",
+                "DOI": "10.1177/01461672982412007",
+                "article-title": "License or obligation to smile: The effect of power and sex on amount and type of smiling.",
+                "volume": "24",
+                "author": "Hecht",
+                "year": "1998",
+                "journal-title": "Personality and Social Psychology Bulletin",
+                "ISSN": "https://id.crossref.org/issn/0146-1672",
+                "issn-type": "print"
+            },
+            {
+                "key": "r63_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/1164961"
+            },
+            {
+                "key": "r64_10.1037/0033-2909.128.2.203",
+                "volume-title": "Statistical methods for meta-analysis. San Diego",
+                "author": "Hedges",
+                "year": "1985"
+            },
+            {
+                "key": "r65_10.1037/0033-2909.128.2.203",
+                "volume-title": "Body politics: Power, sex, and nonverbal communication.",
+                "author": "Henley",
+                "year": "1977"
+            },
+            {
+                "key": "r66_10.1037/0033-2909.128.2.203",
+                "volume-title": "The face of emotion.",
+                "author": "Izard",
+                "year": "1971"
+            },
+            {
+                "key": "r67_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.115.2.288"
+            },
+            {
+                "key": "r68_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00992469"
+            },
+            {
+                "key": "r69_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0071038"
+            },
+            {
+                "key": "r70_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999396380312"
+            },
+            {
+                "key": "r71_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "281",
+                "DOI": "10.1177/0022022180113004",
+                "article-title": "Recognition and imitation of facial expressions: A cross-cultural comparison between Zambia and the United States.",
+                "volume": "11",
+                "author": "Kilbride",
+                "year": "1980",
+                "journal-title": "Journal of Cross-Cultural Psychology",
+                "ISSN": "https://id.crossref.org/issn/0022-0221",
+                "issn-type": "print"
+            },
+            {
+                "key": "r72_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00986328"
+            },
+            {
+                "key": "r73_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "1",
+                "DOI": "10.1080/00207598208247427",
+                "article-title": "Identification des expressions faciales emotionnelles par un echantillon quebecois francophone",
+                "volume": "17",
+                "author": "Kirouac",
+                "year": "1982",
+                "journal-title": "International Journal of Psychology",
+                "ISSN": "https://id.crossref.org/issn/0020-7594",
+                "issn-type": "print"
+            },
+            {
+                "key": "r74_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "683",
+                "DOI": "10.2466/pms.1983.57.3.683",
+                "article-title": "Accuracy and latency of judgment of facial expressions of emotions.",
+                "volume": "57",
+                "author": "Kirouac",
+                "year": "1983",
+                "journal-title": "Perceptual and Motor Skills",
+                "ISSN": "https://id.crossref.org/issn/0031-5125",
+                "issn-type": "print"
+            },
+            {
+                "key": "r75_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00987555"
+            },
+            {
+                "key": "r76_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0042473"
+            },
+            {
+                "key": "r77_10.1037/0033-2909.128.2.203",
+                "unstructured": "Kretsch. 1968"
+            },
+            {
+                "key": "r78_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "205",
+                "DOI": "10.1177/01454455980222008",
+                "article-title": "Recognition of facial expressions of emotion by Chinese adults with mental retardation.",
+                "volume": "22",
+                "author": "Leung",
+                "year": "1998",
+                "journal-title": "Behavior Modification",
+                "ISSN": "https://id.crossref.org/issn/0145-4455",
+                "issn-type": "print"
+            },
+            {
+                "key": "r79_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-0663.78.6.454"
+            },
+            {
+                "key": "r80_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "13",
+                "DOI": "10.2466/pms.1985.61.1.13",
+                "article-title": "Recognition of facial affect in depression.",
+                "volume": "61",
+                "author": "Mandal",
+                "year": "1985",
+                "journal-title": "Perceptual and Motor Skills",
+                "ISSN": "https://id.crossref.org/issn/0031-5125",
+                "issn-type": "print"
+            },
+            {
+                "key": "r81_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "295",
+                "DOI": "10.1159/000284610",
+                "article-title": "Identifying the components of facial emotion and schizophrenia.",
+                "volume": "22",
+                "author": "Mandal",
+                "year": "1989",
+                "journal-title": "Psychopathology",
+                "ISSN": "https://id.crossref.org/issn/0254-4962",
+                "issn-type": "print"
+            },
+            {
+                "key": "r82_10.1037/0033-2909.128.2.203",
+                "unstructured": "Mandal. A cross-cultural study on facial affect. 30 140 1986"
+            },
+            {
+                "key": "r83_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "616",
+                "DOI": "10.1177/0022022196275008",
+                "article-title": "Recognition of emotion by Chinese and Australian children.",
+                "volume": "27",
+                "author": "Markham",
+                "year": "1996",
+                "journal-title": "Journal of Cross-Cultural Psychology",
+                "ISSN": "https://id.crossref.org/issn/0022-0221",
+                "issn-type": "print"
+            },
+            {
+                "key": "r84_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-295X.98.2.224"
+            },
+            {
+                "key": "r85_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "92",
+                "DOI": "10.1177/0022022189201006",
+                "article-title": "Cultural influences on the perception of emotion.",
+                "volume": "20",
+                "author": "Matsumoto",
+                "year": "1989",
+                "journal-title": "Journal of Cross-Cultural Psychology",
+                "ISSN": "https://id.crossref.org/issn/0022-0221",
+                "issn-type": "print"
+            },
+            {
+                "key": "r86_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "72",
+                "DOI": "10.1177/0022022192231005",
+                "article-title": "American-Japanese cultural differences in the recognition of universal facial expressions.",
+                "volume": "23",
+                "author": "Matsumoto",
+                "year": "1992a",
+                "journal-title": "Journal of Cross-Cultural Psychology",
+                "ISSN": "https://id.crossref.org/issn/0022-0221",
+                "issn-type": "print"
+            },
+            {
+                "key": "r87_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00992972"
+            },
+            {
+                "key": "r88_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00995188"
+            },
+            {
+                "key": "r89_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00990324"
+            },
+            {
+                "key": "r90_10.1037/0033-2909.128.2.203",
+                "volume-title": "Japanese and Caucasian facial expressions of emotion (JACFEE).",
+                "author": "Matsumoto",
+                "year": "1988"
+            },
+            {
+                "key": "r91_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "41",
+                "DOI": "10.1080/00049539308259117",
+                "article-title": "A new series of slides depicting facial expressions of affect: A comparison with the Pictures of Facial Affect Series.",
+                "volume": "45",
+                "author": "Mazurski",
+                "year": "1993",
+                "journal-title": "Australian Journal of Psychology",
+                "ISSN": "https://id.crossref.org/issn/0004-9530",
+                "issn-type": "print"
+            },
+            {
+                "key": "r92_10.1037/0033-2909.128.2.203",
+                "first-page": "29",
+                "article-title": "Recognition of facial expressions of emotion by persons with mental retardation.",
+                "volume": "96",
+                "author": "McAlpine",
+                "year": "1991",
+                "journal-title": "American Journal of Mental Retardation",
+                "ISSN": "https://id.crossref.org/issn/0895-8017",
+                "issn-type": "print"
+            },
+            {
+                "key": "r93_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "211",
+                "DOI": "10.1177/0022002186017002005",
+                "article-title": "A cross-cultural study of recognition thresholds for facial expression of emotion.",
+                "volume": "17",
+                "author": "McAndrew",
+                "year": "1986",
+                "journal-title": "Journal of Cross-Cultural Psychology",
+                "ISSN": "https://id.crossref.org/issn/0022-0221",
+                "issn-type": "print"
+            },
+            {
+                "key": "r94_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-295X.90.3.215"
+            },
+            {
+                "key": "r95_10.1037/0033-2909.128.2.203",
+                "unstructured": "McCluskey. 1980"
+            },
+            {
+                "key": "r96_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "119",
+                "DOI": "10.1080/00207598108247409",
+                "article-title": "Perception of the emotional content of speech by Canadian and Mexican children, adolescents and adults.",
+                "volume": "16",
+                "author": "McCluskey",
+                "year": "1981",
+                "journal-title": "International Journal of Psychology",
+                "ISSN": "https://id.crossref.org/issn/0020-7594",
+                "issn-type": "print"
+            },
+            {
+                "key": "r97_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0012-1649.11.5.551"
+            },
+            {
+                "key": "r98_10.1037/0033-2909.128.2.203",
+                "first-page": "74",
+                "article-title": "Cross-cultural recognition of posed facial expressions of emotion.",
+                "volume": "21",
+                "author": "Mehta",
+                "year": "1992",
+                "journal-title": "New Zealand Journal of Psychology",
+                "ISSN": "https://id.crossref.org/issn/0112-190X",
+                "issn-type": "print"
+            },
+            {
+                "key": "r99_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.112.2.179"
+            },
+            {
+                "key": "r100_10.1037/0033-2909.128.2.203",
+                "unstructured": "Mesquita. 1997"
+            },
+            {
+                "key": "r101_10.1037/0033-2909.128.2.203",
+                "unstructured": "Niit. Recognition of facial expressions: An experimental investigation of Ekman's model. 429 85 1977"
+            },
+            {
+                "key": "r102_10.1037/0033-2909.128.2.203",
+                "unstructured": "Nowicki. 1997"
+            },
+            {
+                "key": "r103_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "333",
+                "DOI": "10.1177/00957984980243005",
+                "article-title": "A test of the ability to recognize emotion in the facial expression of African American adults.",
+                "volume": "24",
+                "author": "Nowicki",
+                "year": "1998",
+                "journal-title": "The Journal of Black Psychology",
+                "ISSN": "https://id.crossref.org/issn/0095-7984",
+                "issn-type": "print"
+            },
+            {
+                "key": "r104_10.1037/0033-2909.128.2.203",
+                "volume-title": "Psychometric theory",
+                "author": "Nunnally",
+                "year": "1994",
+                "edition": "3rd ed."
+            },
+            {
+                "key": "r105_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "208",
+                "DOI": "10.3758/BF03208892",
+                "article-title": "Structural aspects of face recognition and the other-race effect.",
+                "volume": "22",
+                "author": "O'Toole",
+                "year": "1994",
+                "journal-title": "Memory & Cognition",
+                "ISSN": "https://id.crossref.org/issn/0090-502X",
+                "issn-type": "print"
+            },
+            {
+                "key": "r106_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "669",
+                "DOI": "10.1068/p250669",
+                "article-title": "An 'other-race effect' for categorizing faces by sex.",
+                "volume": "25",
+                "author": "O'Toole",
+                "year": "1996",
+                "journal-title": "Perception",
+                "ISSN": "https://id.crossref.org/issn/0301-0066",
+                "issn-type": "print"
+            },
+            {
+                "key": "r107_10.1037/0033-2909.128.2.203",
+                "first-page": "329",
+                "article-title": "Is contempt expressed by pancultural facial movements?",
+                "volume-title": "Recent advances in social psychology: An international perspective",
+                "author": "Ricci Bitti",
+                "year": "1989"
+            },
+            {
+                "key": "r108_10.1037/0033-2909.128.2.203",
+                "unstructured": "Ricci Bitti. La comunicazione di due dimensioni delle emozioni attraverso indici facciale e corporei 6 341 1979"
+            },
+            {
+                "key": "r109_10.1037/0033-2909.128.2.203",
+                "unstructured": "Ricci Bitti. La comunicazione delle emozioni attraverso indici facciali e corporei 7 85 1980"
+            },
+            {
+                "key": "r110_10.1037/0033-2909.128.2.203",
+                "volume-title": "Mathematical statistics and data analysis",
+                "author": "Rice",
+                "year": "1995",
+                "edition": "2nd ed."
+            },
+            {
+                "key": "r111_10.1037/0033-2909.128.2.203",
+                "first-page": "900",
+                "article-title": "Dialect and dialectology.",
+                "volume-title": "The encyclopedia of language and linguistics",
+                "author": "Romaine",
+                "year": "1994"
+            },
+            {
+                "key": "r112_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1073/pnas.93.10.4699"
+            },
+            {
+                "key": "r113_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1073/pnas.94.10.5489"
+            },
+            {
+                "key": "r114_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.4135/9781412984997",
+                "volume-title": "Meta-analytic procedures for social research.",
+                "author": "Rosenthal",
+                "year": "1991"
+            },
+            {
+                "key": "r115_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.118.2.183"
+            },
+            {
+                "key": "r116_10.1037/0033-2909.128.2.203",
+                "volume-title": "Essentials of behavioral research: Methods and data analysis",
+                "author": "Rosenthal",
+                "year": "1991",
+                "edition": "2nd ed."
+            },
+            {
+                "key": "r117_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.92.2.500"
+            },
+            {
+                "key": "r118_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1016/B978-0-12-761350-5.50012-4",
+                "volume-title": "Sensitivity to nonverbal communication: The PONS Test.",
+                "author": "Rosenthal",
+                "year": "1979"
+            },
+            {
+                "key": "r119_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Russell. Negative results on a reported facial expression of contempt. 15 285 1991",
+                "DOI": "10.1007/BF00995646"
+            },
+            {
+                "key": "r120_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00995206"
+            },
+            {
+                "key": "r121_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.115.1.102"
+            },
+            {
+                "key": "r122_10.1037/0033-2909.128.2.203",
+                "first-page": "166",
+                "article-title": "Emotion among the Chinese.",
+                "volume-title": "The handbook of Chinese psychology",
+                "author": "Russell",
+                "year": "1996"
+            },
+            {
+                "key": "r123_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00992324"
+            },
+            {
+                "key": "r124_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.73.5.902"
+            },
+            {
+                "key": "r125_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.66.2.310"
+            },
+            {
+                "key": "r126_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "76",
+                "DOI": "10.1177/0022022101032001009",
+                "article-title": "Emotion inferences from vocal expression correlate across languages and cultures.",
+                "volume": "32",
+                "author": "Scherer",
+                "year": "2001",
+                "journal-title": "Journal of Cross-Cultural Psychology",
+                "ISSN": "https://id.crossref.org/issn/0022-0221",
+                "issn-type": "print"
+            },
+            {
+                "key": "r127_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0165-1781(94)90044-2"
+            },
+            {
+                "key": "r128_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1515/9783110907643.151",
+                "article-title": "Facial expression dialect: An example.",
+                "volume-title": "Organization of behavior in face-to-face interaction.",
+                "author": "Seaford",
+                "year": "1975"
+            },
+            {
+                "key": "r129_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "169",
+                "DOI": "10.1002/ejsp.2420080203",
+                "article-title": "The intercultural recognition of emotional expressions by three national racial groups: English, Italian and Japanese.",
+                "volume": "8",
+                "author": "Shimoda",
+                "year": "1978",
+                "journal-title": "European Journal of Social Psychology",
+                "ISSN": "https://id.crossref.org/issn/0046-2772",
+                "issn-type": "print"
+            },
+            {
+                "key": "r130_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "35",
+                "DOI": "10.2466/pr0.1989.65.1.35",
+                "article-title": "Identification of emotion from body movements: A cross-cultural study of Americans and Japanese.",
+                "volume": "65",
+                "author": "Sogon",
+                "year": "1989",
+                "journal-title": "Psychological Reports",
+                "ISSN": "https://id.crossref.org/issn/0033-2941",
+                "issn-type": "print"
+            },
+            {
+                "key": "r131_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "361",
+                "DOI": "10.1515/9783110802818.361",
+                "article-title": "Culture and the expression of emotion.",
+                "volume-title": "Psychological anthropology",
+                "author": "Sorensen",
+                "year": "1975"
+            },
+            {
+                "key": "r132_10.1037/0033-2909.128.2.203",
+                "unstructured": "Sprouse. 1995"
+            },
+            {
+                "key": "r133_10.1037/0033-2909.128.2.203",
+                "unstructured": "Stokes. 1984"
+            },
+            {
+                "key": "r134_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0920-9964(96)00126-0"
+            },
+            {
+                "key": "r135_10.1037/0033-2909.128.2.203",
+                "unstructured": "Strong. 1978"
+            },
+            {
+                "key": "r136_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-0167.27.2.150"
+            },
+            {
+                "key": "r137_10.1037/0033-2909.128.2.203",
+                "volume-title": "TeleGeography.",
+                "year": "1997"
+            },
+            {
+                "key": "r138_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00987558"
+            },
+            {
+                "key": "r139_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "387",
+                "DOI": "10.1177/0022002183014004001",
+                "article-title": "Recognition of vocal expressions of emotion.",
+                "volume": "14",
+                "author": "Van Bezooijen",
+                "year": "1983",
+                "journal-title": "Journal of Cross-Cultural Psychology",
+                "ISSN": "https://id.crossref.org/issn/0022-0221",
+                "issn-type": "print"
+            },
+            {
+                "key": "r140_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00987006"
+            },
+            {
+                "key": "r141_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "207",
+                "DOI": "10.1111/j.2044-8309.1991.tb00939.x",
+                "article-title": "Recognition of emotion from facial expression via imitation--Some indirect evidence for an old theory.",
+                "volume": "30",
+                "author": "Wallbott",
+                "year": "1991a",
+                "journal-title": "The British Journal of Social Psychology",
+                "ISSN": "https://id.crossref.org/issn/0144-6665",
+                "issn-type": "print"
+            },
+            {
+                "key": "r142_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "89",
+                "DOI": "10.1002/ejsp.2420210107",
+                "article-title": "The robustness of communication of emotion via facial expressions: Emotion recognition from photographs with deteriorated pictorial quality.",
+                "volume": "21",
+                "author": "Wallbott",
+                "year": "1991b",
+                "journal-title": "European Journal of Social Psychology",
+                "ISSN": "https://id.crossref.org/issn/0046-2772",
+                "issn-type": "print"
+            },
+            {
+                "key": "r143_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.78.1.105"
+            },
+            {
+                "key": "r144_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "crossref",
+                "first-page": "600",
+                "DOI": "10.1002/1097-4679(197807)34:3<600::AID-JCLP2270340304>3.0.CO;2-A",
+                "article-title": "The relative accuracy of U.S., British, and Mexican raters in judging the emotional displays of schizophrenic and normal U. S. women.",
+                "volume": "34",
+                "author": "Winkelmayer",
+                "year": "1978",
+                "journal-title": "Journal of Clinical Psychology",
+                "ISSN": "https://id.crossref.org/issn/0021-9762",
+                "issn-type": "print"
+            },
+            {
+                "key": "r145_10.1037/0033-2909.128.2.203",
+                "unstructured": "Wolfgang. 1980"
+            },
+            {
+                "key": "r146_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0147-1767(88)90045-4"
+            },
+            {
+                "key": "r147_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF02189118"
+            },
+            {
+                "key": "r148_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999399379384"
+            },
+            {
+                "key": "r149_10.1037/0033-2909.128.2.203",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999398379529"
+            }
+        ],
+        "container-title": [
+            "Psychological Bulletin"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://psycnet.apa.org/journals/bul/128/2/203.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2025,
+                    10,
+                    20
+                ]
+            ],
+            "date-time": "2025-10-20T13:34:08Z",
+            "timestamp": 1760967248000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://doi.apa.org/doi/10.1037/0033-2909.128.2.203"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2002,
+                    3
+                ]
+            ]
+        },
+        "references-count": 149,
+        "aliases": [
+            "10.1037//0033-2909.128.2.203"
+        ],
+        "journal-issue": {
+            "issue": "2",
+            "published-online": {
+                "date-parts": [
+                    [
+                        2002,
+                        3
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "2002-00947-001",
+            "11931516"
+        ],
+        "URL": "https://doi.org/10.1037/0033-2909.128.2.203",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1939-1455",
+            "0033-2909"
+        ],
+        "issn-type": [
+            {
+                "value": "1939-1455",
+                "type": "electronic"
+            },
+            {
+                "value": "0033-2909",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2002,
+                    3
+                ]
+            ]
+        }
+    }
+}

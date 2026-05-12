@@ -1,0 +1,482 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    1,
+                    31
+                ]
+            ],
+            "date-time": "2026-01-31T13:22:34Z",
+            "timestamp": 1769865754537,
+            "version": "3.49.0"
+        },
+        "reference-count": 39,
+        "publisher": "Informa UK Limited",
+        "issue": "2",
+        "content-domain": {
+            "domain": [
+                "www.tandfonline.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Cognition and Emotion"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2020,
+                    2,
+                    17
+                ]
+            ]
+        },
+        "DOI": "10.1080/02699931.2019.1611542",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2019,
+                    5,
+                    14
+                ]
+            ],
+            "date-time": "2019-05-14T03:24:01Z",
+            "timestamp": 1557804241000
+        },
+        "page": "359-366",
+        "update-policy": "https://doi.org/10.1080/tandf_crossmark_01",
+        "source": "Crossref",
+        "is-referenced-by-count": 7,
+        "title": [
+            "Faces in the wild: A naturalistic study of children’s facial expressions in response to an Internet prank"
+        ],
+        "prefix": "10.1080",
+        "volume": "34",
+        "author": [
+            {
+                "given": "Michael M.",
+                "family": "Shuster",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychology, DePaul University, Chicago, USA"
+                    }
+                ]
+            },
+            {
+                "given": "Linda A.",
+                "family": "Camras",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychology, DePaul University, Chicago, USA"
+                    }
+                ]
+            },
+            {
+                "given": "Adam",
+                "family": "Grabell",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychological and Brain Sciences, University of Massachusetts-Amherst, Amherst, USA"
+                    }
+                ]
+            },
+            {
+                "given": "Susan B.",
+                "family": "Perlman",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychiatry, University of Pittsburgh, Pittsburgh, USA"
+                    }
+                ]
+            }
+        ],
+        "member": "301",
+        "published-online": {
+            "date-parts": [
+                [
+                    2019,
+                    5,
+                    13
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "CIT0001",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000378"
+            },
+            {
+                "key": "CIT0002",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1126/science.1224313"
+            },
+            {
+                "key": "CIT0003",
+                "first-page": "555",
+                "volume-title": "Handbook of infant development",
+                "author": "Barrett K.",
+                "year": "1987",
+                "edition": "2"
+            },
+            {
+                "key": "CIT0004",
+                "volume-title": "The psychological construction of emotion",
+                "author": "Barrett L. F.",
+                "year": "2015"
+            },
+            {
+                "key": "CIT0005",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/S15327078IN0301_5"
+            },
+            {
+                "key": "CIT0006",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/s15327078in0802_4"
+            },
+            {
+                "key": "CIT0007",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919-014-0191-3"
+            },
+            {
+                "key": "CIT0008",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073910387944"
+            },
+            {
+                "key": "CIT0009",
+                "first-page": "255",
+                "volume-title": "Handbook of emotions",
+                "author": "Camras L. A.",
+                "year": "2016",
+                "edition": "4"
+            },
+            {
+                "key": "CIT0010",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1532-7078.2007.tb00219.x"
+            },
+            {
+                "key": "CIT0011",
+                "first-page": "284",
+                "volume": "2",
+                "author": "Cohen J.",
+                "year": "1988",
+                "journal-title": "Statistical Power Analysis for the Behavioral Sciences"
+            },
+            {
+                "key": "CIT0012",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.evolhumbehav.2014.08.009"
+            },
+            {
+                "key": "CIT0013",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780190613501.003.0007"
+            },
+            {
+                "key": "CIT0014",
+                "first-page": "169222",
+                "volume": "1",
+                "author": "Ekman P.",
+                "year": "1973",
+                "journal-title": "Darwin and Facial Expression: A Century of Research in Review"
+            },
+            {
+                "key": "CIT0015",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073911410740"
+            },
+            {
+                "key": "CIT0016",
+                "volume-title": "The facial action coding system",
+                "author": "Ekman P.",
+                "year": "2002",
+                "edition": "2"
+            },
+            {
+                "key": "CIT0017",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.128.2.203"
+            },
+            {
+                "key": "CIT0018",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.69.6.1113"
+            },
+            {
+                "key": "CIT0019",
+                "volume-title": "The emotions",
+                "author": "Frijda N.",
+                "year": "1986"
+            },
+            {
+                "key": "CIT0020",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/s1532785xmep0102_1"
+            },
+            {
+                "key": "CIT0021",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/1129328"
+            },
+            {
+                "key": "CIT0022",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0012-1649.40.1.16"
+            },
+            {
+                "key": "CIT0023",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jecp.2014.01.012"
+            },
+            {
+                "key": "CIT0024",
+                "unstructured": "Izard, C. (1995). The maximally discrminative facial movement coding system. Unpublished manuscript."
+            },
+            {
+                "key": "CIT0025",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073911410737"
+            },
+            {
+                "key": "CIT0026",
+                "first-page": "494",
+                "volume-title": "Handbook of infant development",
+                "author": "Izard C.",
+                "year": "1987",
+                "edition": "2"
+            },
+            {
+                "key": "CIT0027",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-8624.1998.tb06168.x"
+            },
+            {
+                "key": "CIT0028",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/cdev.12315"
+            },
+            {
+                "key": "CIT0029",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.91.3.568"
+            },
+            {
+                "key": "CIT0030",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0012-1649.28.6.1115"
+            },
+            {
+                "key": "CIT0031",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.91.2.295"
+            },
+            {
+                "key": "CIT0032",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073912457228"
+            },
+            {
+                "key": "CIT0033",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0012-1649.15.4.424"
+            },
+            {
+                "key": "CIT0034",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/1130020"
+            },
+            {
+                "key": "CIT0035",
+                "first-page": "334",
+                "volume-title": "The psychological construction of emotion",
+                "author": "Scarantino A.",
+                "year": "2015"
+            },
+            {
+                "key": "CIT0036",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.evolhumbehav.2012.04.003"
+            },
+            {
+                "key": "CIT0037",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.cogdev.2007.08.009"
+            },
+            {
+                "key": "CIT0038",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699930143000464"
+            },
+            {
+                "key": "CIT0039",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000185"
+            }
+        ],
+        "container-title": [
+            "Cognition and Emotion"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://www.tandfonline.com/doi/pdf/10.1080/02699931.2019.1611542",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2020,
+                    8,
+                    28
+                ]
+            ],
+            "date-time": "2020-08-28T21:18:00Z",
+            "timestamp": 1598649480000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://www.tandfonline.com/doi/full/10.1080/02699931.2019.1611542"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2019,
+                    5,
+                    13
+                ]
+            ]
+        },
+        "references-count": 39,
+        "journal-issue": {
+            "issue": "2",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2020,
+                        2,
+                        17
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1080/02699931.2019.1611542"
+        ],
+        "URL": "https://doi.org/10.1080/02699931.2019.1611542",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0269-9931",
+            "1464-0600"
+        ],
+        "issn-type": [
+            {
+                "value": "0269-9931",
+                "type": "print"
+            },
+            {
+                "value": "1464-0600",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2019,
+                    5,
+                    13
+                ]
+            ]
+        },
+        "assertion": [
+            {
+                "value": "The publishing and review policy for this title is described in its Aims & Scope.",
+                "order": 1,
+                "name": "peerreview_statement",
+                "label": "Peer Review Statement"
+            },
+            {
+                "value": "http://www.tandfonline.com/action/journalInformation?show=aimsScope&journalCode=pcem20",
+                "URL": "http://www.tandfonline.com/action/journalInformation?show=aimsScope&journalCode=pcem20",
+                "order": 2,
+                "name": "aims_and_scope_url",
+                "label": "Aim & Scope"
+            },
+            {
+                "value": "2018-09-11",
+                "order": 0,
+                "name": "received",
+                "label": "Received",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            },
+            {
+                "value": "2019-04-04",
+                "order": 1,
+                "name": "revised",
+                "label": "Revised",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            },
+            {
+                "value": "2019-04-05",
+                "order": 2,
+                "name": "accepted",
+                "label": "Accepted",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            },
+            {
+                "value": "2019-05-13",
+                "order": 3,
+                "name": "published",
+                "label": "Published",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            }
+        ]
+    }
+}

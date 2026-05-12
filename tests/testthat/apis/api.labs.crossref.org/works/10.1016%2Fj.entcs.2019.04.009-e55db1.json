@@ -1,0 +1,1045 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    12
+                ]
+            ],
+            "date-time": "2026-05-12T17:00:20Z",
+            "timestamp": 1778605220237,
+            "version": "3.51.4"
+        },
+        "reference-count": 89,
+        "publisher": "Elsevier BV",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2019,
+                            5,
+                            1
+                        ]
+                    ],
+                    "date-time": "2019-05-01T00:00:00Z",
+                    "timestamp": 1556668800000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+            },
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2019,
+                            5,
+                            1
+                        ]
+                    ],
+                    "date-time": "2019-05-01T00:00:00Z",
+                    "timestamp": 1556668800000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://www.elsevier.com/legal/tdmrep-license"
+            },
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2019,
+                            4,
+                            4
+                        ]
+                    ],
+                    "date-time": "2019-04-04T00:00:00Z",
+                    "timestamp": 1554336000000
+                },
+                "content-version": "vor",
+                "delay-in-days": 0,
+                "URL": "http://creativecommons.org/licenses/by-nc-nd/4.0/"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "elsevier.com",
+                "sciencedirect.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Electronic Notes in Theoretical Computer Science"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2019,
+                    5
+                ]
+            ]
+        },
+        "DOI": "10.1016/j.entcs.2019.04.009",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2019,
+                    5,
+                    13
+                ]
+            ],
+            "date-time": "2019-05-13T11:25:07Z",
+            "timestamp": 1557746707000
+        },
+        "page": "35-55",
+        "update-policy": "https://doi.org/10.1016/elsevier_cm_policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 494,
+        "special_numbering": "C",
+        "title": [
+            "Emotion Recognition from Physiological Signal Analysis: A Review"
+        ],
+        "prefix": "10.1016",
+        "volume": "343",
+        "author": [
+            {
+                "given": "Maria",
+                "family": "Egger",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Matthias",
+                "family": "Ley",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Sten",
+                "family": "Hanke",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "78",
+        "reference": [
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0010",
+                "doi-asserted-by": "crossref",
+                "first-page": "102",
+                "DOI": "10.1109/T-AFFC.2011.28",
+                "article-title": "ECG pattern analysis for emotion detection",
+                "volume": "3",
+                "author": "Agrafioti",
+                "year": "2012",
+                "journal-title": "IEEE Transactions on Affective Computing"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0020",
+                "first-page": "3744",
+                "article-title": "Smart clothes for the monitoring in real time and conditions of physiological, emotional and sensorial reactions of human",
+                "volume": "4",
+                "author": "Axisa",
+                "year": "2003"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0030",
+                "author": "Baltrusaitis"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0040",
+                "doi-asserted-by": "crossref",
+                "first-page": "614",
+                "DOI": "10.1037/0022-3514.70.3.614",
+                "article-title": "Acoustic Profiles in Vocal Emotion Expression",
+                "volume": "70",
+                "author": "Banse",
+                "year": "1996",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0050",
+                "series-title": "Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics)",
+                "first-page": "1",
+                "article-title": "The role of affect and emotion in HCI",
+                "author": "Beale",
+                "year": "2008"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0060",
+                "doi-asserted-by": "crossref",
+                "first-page": "80",
+                "DOI": "10.1016/j.jneumeth.2010.04.028",
+                "article-title": "A continuous measure of phasic electrodermal activity",
+                "volume": "190",
+                "author": "Benedek",
+                "year": "2010",
+                "journal-title": "Journal of Neuroscience Methods"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0070",
+                "doi-asserted-by": "crossref",
+                "first-page": "49",
+                "DOI": "10.1016/0005-7916(94)90063-9",
+                "article-title": "Measuring emotion: The self-assessment manikin and the semantic differential",
+                "volume": "25",
+                "author": "Bradley",
+                "year": "1994",
+                "journal-title": "Journal of Behavior Therapy and Experimental Psychiatry"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0080",
+                "series-title": "The International Affective Digitized Sounds Affective Ratings of Sounds and Instruction Manual",
+                "first-page": "2946",
+                "author": "Bradley",
+                "year": "2007"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0090",
+                "first-page": "214",
+                "article-title": "Garment-based monitoring of respiration rate using a foam pressure sensor",
+                "volume": "2005",
+                "author": "Brady",
+                "year": "2005"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0100",
+                "doi-asserted-by": "crossref",
+                "first-page": "119",
+                "DOI": "10.1016/S1071-5819(03)00018-1",
+                "article-title": "Emotion and Sociable Humanoid Robots",
+                "volume": "59",
+                "author": "Breazeal",
+                "year": "2003",
+                "journal-title": "Int. J. Hum.-Comput. Stud."
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0110",
+                "doi-asserted-by": "crossref",
+                "first-page": "477",
+                "DOI": "10.1016/j.psychres.2014.06.017",
+                "article-title": "Neural processing of facial expressions of emotion in first onset psychosis",
+                "volume": "219",
+                "author": "Brennan",
+                "year": "2014",
+                "journal-title": "Psychiatry Research"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0120",
+                "series-title": "Proceedings of the 6th international conference on Multimodal interfaces",
+                "first-page": "205",
+                "article-title": "Analysis of emotion recognition using facial expressions, speech and multimodal information",
+                "author": "Busso",
+                "year": "2004"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0130",
+                "first-page": "1",
+                "article-title": "The Generation of Affect in Synthesized Speech",
+                "volume": "8",
+                "author": "Cahn",
+                "year": "1990",
+                "journal-title": "Journal of the American Voice I/O Society"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0140",
+                "article-title": "The James-Lange theory of emotions: a critical examination and an alternative theory. By Walter B. Cannon, 1927",
+                "author": "Cannon",
+                "year": "1987",
+                "journal-title": "The American journal of psychology"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0150",
+                "series-title": "EEG-Based Human Interface for Disabled Individuals: Emotion Expression with Neural Networks",
+                "author": "Choppin",
+                "year": "2000"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0160",
+                "first-page": "978",
+                "article-title": "From signals to emotions: Applying emotion models to HM affective interactions",
+                "volume": "3",
+                "author": "Ciceri",
+                "year": "2008",
+                "journal-title": "Affective Computing. InTech"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0170",
+                "series-title": "Proceedings of the 4th IASTED International Conference on Telehealth and Assistive Technologies",
+                "first-page": "31",
+                "article-title": "Recognizing emotion in speech using neural networks",
+                "author": "Dai",
+                "year": "2008"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0180",
+                "doi-asserted-by": "crossref",
+                "first-page": "730",
+                "DOI": "10.1038/110730b0",
+                "article-title": "The Emotions",
+                "volume": "110",
+                "author": "Damasio",
+                "year": "1922",
+                "journal-title": "Nature"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0190",
+                "series-title": "Assessing the validity of FaceReader using facial EMG",
+                "author": "D'Arcey",
+                "year": "2013"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0200",
+                "article-title": "The expression of the emotions in man and animals",
+                "author": "Darwin",
+                "year": "1872",
+                "journal-title": "American Association for the Advancement of Science"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0210",
+                "doi-asserted-by": "crossref",
+                "first-page": "180",
+                "DOI": "10.1515/aut-2003-030404",
+                "article-title": "Electroactive fabrics and wearable biomonitoring devices",
+                "volume": "3",
+                "author": "De Rossi",
+                "year": "2003",
+                "journal-title": "Autex Research Journal"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0220",
+                "first-page": "207",
+                "article-title": "Universals and cultural differences in facial expressions of emotion",
+                "volume": "19",
+                "author": "Ekman",
+                "year": "1971",
+                "journal-title": "Nebraska Symposium on Motivation"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0230",
+                "series-title": "Nonverbal behavior and communication",
+                "first-page": "97",
+                "article-title": "Facial expression",
+                "author": "Ekman",
+                "year": "1977"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0240",
+                "doi-asserted-by": "crossref",
+                "first-page": "1125",
+                "DOI": "10.1037/h0077722",
+                "article-title": "Facial signs of emotional experience",
+                "volume": "39",
+                "author": "Ekman",
+                "year": "1980",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0250",
+                "doi-asserted-by": "crossref",
+                "first-page": "124",
+                "DOI": "10.1037/h0030377",
+                "article-title": "Constants across cultures in the face and emotion",
+                "volume": "17",
+                "author": "Ekman",
+                "year": "1971",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0260",
+                "series-title": "Facial Action Coding System: A Technique for the Measurement of Facial Movement",
+                "author": "Ekman",
+                "year": "1978"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0270",
+                "series-title": "Unmasking the face: A guide to recognizing emotions from facial clues",
+                "author": "Ekman",
+                "year": "2003"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0280",
+                "doi-asserted-by": "crossref",
+                "first-page": "572",
+                "DOI": "10.1016/j.patcog.2010.09.020",
+                "article-title": "Survey on speech emotion recognition: Features, classification schemes, and databases",
+                "volume": "44",
+                "author": "El Ayadi",
+                "year": "2011",
+                "journal-title": "Pattern Recognition"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0290",
+                "doi-asserted-by": "crossref",
+                "first-page": "389",
+                "DOI": "10.1016/j.neunet.2005.03.006",
+                "article-title": "Emotion recognition in human-computer interaction",
+                "volume": "18",
+                "author": "Fragopanagos",
+                "year": "2005",
+                "journal-title": "Neural Networks"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0300",
+                "doi-asserted-by": "crossref",
+                "first-page": "829",
+                "DOI": "10.1109/10.846676",
+                "article-title": "Acoustical properties of speech as indicators of depression and suicidal risk",
+                "volume": "47",
+                "author": "France",
+                "year": "2000",
+                "journal-title": "IEEE Transactions on Biomedical Engineering"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0310",
+                "doi-asserted-by": "crossref",
+                "first-page": "1277",
+                "DOI": "10.3390/app7121277",
+                "article-title": "Wearable Current-Based ECG Monitoring System with Non-Insulated Electrodes for Underwater Application",
+                "volume": "7",
+                "author": "Gradl",
+                "year": "2017",
+                "journal-title": "Applied Sciences"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0320",
+                "series-title": "Proceedings of the 7Th conference of European Study Group on Cardiovascular Oscillations",
+                "first-page": "1",
+                "article-title": "Comparison of Pulse Rate Variability Derived from Digital Photoplethysmography over the Temporal Artery with the Heart Rate Variability Derived from a Polar Heart Rate Monitor",
+                "author": "Greve",
+                "year": "2012"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0330",
+                "series-title": "2016 IEEE 16th International Conference on Bioinformatics and Bioengineering",
+                "first-page": "274",
+                "article-title": "Heart Rate Variability Signal Features for Emotion Recognition by Using Principal Component Analysis and Support Vectors Machine",
+                "author": "Guo",
+                "year": "2016"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0340",
+                "doi-asserted-by": "crossref",
+                "first-page": "1089",
+                "DOI": "10.1109/ICME.2008.4607628",
+                "article-title": "Emotion recognition based on pressure sensor keyboards",
+                "author": "Lv",
+                "year": "2008",
+                "journal-title": "2008 IEEE International Conference on Multimedia and Expo"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0350",
+                "series-title": "Emotion Recognition Using Bio-sensors: First Steps towards an Automatic System",
+                "first-page": "36",
+                "author": "Haag",
+                "year": "2004"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0360",
+                "first-page": "3749",
+                "article-title": "Digital processing of affective signals",
+                "volume": "6",
+                "author": "Healey",
+                "year": "1998"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0370",
+                "doi-asserted-by": "crossref",
+                "first-page": "1427",
+                "DOI": "10.1016/S0006-3223(02)01926-1",
+                "article-title": "Reduced heart rate variability in chronic alcohol abuse: Relationship with negative mood, chronic thought suppression, and compulsive drinking",
+                "volume": "54",
+                "author": "Ingjaldsson",
+                "year": "2003",
+                "journal-title": "Biological Psychiatry"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0380",
+                "doi-asserted-by": "crossref",
+                "first-page": "147",
+                "DOI": "10.1037/0882-7974.22.1.147",
+                "article-title": "Age differences in recognition of emotion in lexical stimuli and facial expressions",
+                "volume": "22",
+                "author": "Isaacowitz",
+                "year": "2007",
+                "journal-title": "Psychology and Aging"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0390",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1093/mind/os-IX.34.188",
+                "article-title": "What is an Emotion?",
+                "author": "James",
+                "year": "1884",
+                "journal-title": "Mind"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0400",
+                "doi-asserted-by": "crossref",
+                "first-page": "665",
+                "DOI": "10.1109/21.256541",
+                "article-title": "ANFIS: adaptive-network-based fuzzy inference system",
+                "volume": "23",
+                "author": "Jang",
+                "year": "1993",
+                "journal-title": "IEEE Transactions on Systems, Man, and Cybernetics"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0410",
+                "series-title": "2011 IEEE 7th International Colloquium on Signal Processing and its Applications",
+                "first-page": "410",
+                "article-title": "Physiological signals based human emotion Recognition: a review",
+                "author": "Jerritta",
+                "year": "2011"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0420",
+                "author": "Jones"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0430",
+                "doi-asserted-by": "crossref",
+                "first-page": "502",
+                "DOI": "10.1109/TSMCA.2008.918624",
+                "article-title": "Toward emotion recognition in car-racing drivers: A biosignal processing approach",
+                "volume": "38",
+                "author": "Katsis",
+                "year": "2008",
+                "journal-title": "IEEE Transactions on Systems, Man, and Cybernetics Part A: Systems and Humans"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0440",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1371/journal.pone.0044014",
+                "article-title": "Oxytocin Increases Heart Rate Variability in Humans at Rest: Implications for Social Approach-Related Motivation and Capacity for Social Engagement",
+                "volume": "7",
+                "author": "Kemp",
+                "year": "2012",
+                "journal-title": "PLoS ONE"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0450",
+                "doi-asserted-by": "crossref",
+                "first-page": "33",
+                "DOI": "10.1007/s12193-009-0025-5",
+                "article-title": "Multimodal emotion recognition in speech-based interaction using facial expression, body gesture and acoustic analysis",
+                "volume": "3",
+                "author": "Kessous",
+                "year": "2010",
+                "journal-title": "Journal on Multimodal User Interfaces"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0460",
+                "doi-asserted-by": "crossref",
+                "first-page": "2067",
+                "DOI": "10.1109/TPAMI.2008.26",
+                "article-title": "Emotion recognition based on physiological changes in music listening",
+                "volume": "30",
+                "author": "Kim",
+                "year": "2008",
+                "journal-title": "IEEE Transactions on Pattern Analysis and Machine Intelligence"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0470",
+                "doi-asserted-by": "crossref",
+                "first-page": "991",
+                "DOI": "10.1109/TRO.2007.904899",
+                "article-title": "Affective State Estimation for HumanRobot Interaction",
+                "volume": "23",
+                "author": "Kulic",
+                "year": "2007",
+                "journal-title": "IEEE Transactions on Robotics"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0480",
+                "series-title": "International affective picture system (IAPS): Affective ratings of pictures and instruction manual",
+                "author": "Lang",
+                "year": "2008"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0490",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1037/0003-066X.37.9.1019",
+                "article-title": "Thoughts on the relations between emotion and cognition",
+                "author": "Lazarus",
+                "year": "1982",
+                "journal-title": "American Psychologist"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0500",
+                "series-title": "2006 International Conference on Intelligent Information Hiding and Multimedia",
+                "first-page": "355",
+                "article-title": "Emotion Recognition Using Physiological Signals from Multiple Subjects",
+                "author": "Li",
+                "year": "2006"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0510",
+                "series-title": "Prosody and speaker state: Paralinguistics, pragmatics, and proficiency",
+                "author": "Liscombe",
+                "year": "2007"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0520",
+                "first-page": "317",
+                "article-title": "Emotion recognition through physiological signals for human-machine communication",
+                "author": "Maaoui",
+                "year": "2010",
+                "journal-title": "Cutting Edge Robotics"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0530",
+                "series-title": "Proceedings of the 2016 CHI Conference Extended Abstracts on Human Factors in Computing Systems",
+                "first-page": "3723",
+                "article-title": "AFFDEX SDK: A Cross-Platform Real-Time Multi-Face Expression Recognition Toolkit",
+                "author": "McDuff",
+                "year": "2016"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0540",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1016/j.compeleceng.2016.04.009",
+                "article-title": "A novel feature extraction method based on late positive potential for emotion recognition in human brain signal patterns",
+                "author": "Mehmood",
+                "year": "2016",
+                "journal-title": "Computers and Electrical Engineering"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0550",
+                "series-title": "Psychology Chapter 13",
+                "author": "Myers",
+                "year": "1998"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0560",
+                "doi-asserted-by": "crossref",
+                "first-page": "241",
+                "DOI": "10.1007/s12559-013-9239-7",
+                "article-title": "Classification of Music-Induced Emotions Based on Information Fusion of Forehead Biosignals and Electrocardiogram",
+                "volume": "6",
+                "author": "Naji",
+                "year": "2014",
+                "journal-title": "Cognitive Computation"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0570",
+                "first-page": "219",
+                "article-title": "Emotion Recognition from Electromyography and Skin Conductance",
+                "author": "Nakasone",
+                "year": "2005",
+                "journal-title": "The 5th International Workshop on Biosignal Interpretation"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0580",
+                "doi-asserted-by": "crossref",
+                "first-page": "4",
+                "DOI": "10.1007/s10111-003-0143-x",
+                "article-title": "Emotion recognition from physiological signals using wireless sensors for presence technologies",
+                "volume": "6",
+                "author": "Nasoz",
+                "year": "2004",
+                "journal-title": "Cognition, Technology & Work"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0590",
+                "doi-asserted-by": "crossref",
+                "first-page": "290",
+                "DOI": "10.1007/s005210070006",
+                "article-title": "Emotion Recognition in Speech Using Neural Networks",
+                "volume": "9",
+                "author": "Nicholson",
+                "year": "2000",
+                "journal-title": "Neural Computing & Applications"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0600",
+                "series-title": "Emotion Modelling for Social Robots",
+                "author": "Paiva",
+                "year": "2012"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0610",
+                "doi-asserted-by": "crossref",
+                "first-page": "1370",
+                "DOI": "10.1109/JPROC.2003.817122",
+                "article-title": "Toward an affect-sensitive multimodal human-computer interaction",
+                "volume": "91",
+                "author": "Pantic",
+                "year": "2003",
+                "journal-title": "Proceedings of the IEEE"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0620",
+                "series-title": "Proceedings – 2013 4th World Congress on Software Engineering",
+                "first-page": "190",
+                "article-title": "Individual emotion classification between happiness and sadness by analyzing photoplethysmography and skin temperature",
+                "author": "Park",
+                "year": "2013"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0630",
+                "series-title": "Emotions in Social Psychology",
+                "author": "Parrott",
+                "year": "2000"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0640",
+                "doi-asserted-by": "crossref",
+                "first-page": "1175",
+                "DOI": "10.1109/34.954607",
+                "article-title": "Toward machine emotional intelligence: Analysis of affective physiological state",
+                "volume": "23",
+                "author": "Picard",
+                "year": "2001",
+                "journal-title": "IEEE Transactions on Pattern Analysis and Machine Intelligence"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0650",
+                "series-title": "2016 38th Annual International Conference of the IEEE Engineering in Medicine and Biology Society",
+                "first-page": "2945",
+                "article-title": "Can PPG be used for HRV analysis?",
+                "author": "Pinheiro",
+                "year": "2016"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0660",
+                "doi-asserted-by": "crossref",
+                "first-page": "344",
+                "DOI": "10.1511/2001.28.344",
+                "article-title": "The nature of emotions: Human emotions have deep evolutionary roots",
+                "volume": "89",
+                "author": "Plutchik",
+                "year": "2001",
+                "journal-title": "American Scientist"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0670",
+                "doi-asserted-by": "crossref",
+                "first-page": "715",
+                "DOI": "10.1017/S0954579405050340",
+                "article-title": "The circumplex model of affect: An integrative approach to affective neuroscience, cognitive development, and psychopathology",
+                "volume": "17",
+                "author": "Posner",
+                "year": "2005",
+                "journal-title": "Development and Psychopathology"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0680",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.3389/fnins.2015.00354",
+                "article-title": "Musical neurofeedback for treating depression in elderly people",
+                "volume": "9",
+                "author": "Ramirez",
+                "year": "2015",
+                "journal-title": "Frontiers in Neuroscience"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0690",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1007/s10044-006-0025-y",
+                "article-title": "An empirical study of machine learning techniques for affect recognition in human-robot interaction",
+                "author": "Rani",
+                "year": "2006",
+                "journal-title": "Pattern Analysis and Applications"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0700",
+                "series-title": "The Media equation: how people treat computers, television, and new media",
+                "author": "Reeves",
+                "year": "1997"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0710",
+                "series-title": "User Modeling 2007",
+                "first-page": "314",
+                "article-title": "A User Independent, Biosignal Based, Emotion Recognition Method",
+                "author": "Rigas",
+                "year": "2007"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0720",
+                "author": "Schachter",
+                "year": "1962",
+                "journal-title": "Psychological Review"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0730",
+                "author": "Scherer"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0740",
+                "first-page": "577",
+                "article-title": "Speech emotion recognition combining acoustic features and linguistic information in a hybrid support vector machine – belief network architecture",
+                "volume": "1",
+                "author": "Schuller",
+                "year": "2004",
+                "journal-title": "Acoustics, Speech, and Signal Processing"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0750",
+                "series-title": "Encyclopedia of Social Psychology",
+                "first-page": "377",
+                "article-title": "Social psychophysiology",
+                "author": "Schwartz",
+                "year": "1973"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0760",
+                "doi-asserted-by": "crossref",
+                "unstructured": "N. Sebanz, H. Bekkering, G. Knoblich, Joint action: Bodies and minds moving together, 2006.",
+                "DOI": "10.1016/j.tics.2005.12.009"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0770",
+                "doi-asserted-by": "crossref",
+                "first-page": "252",
+                "DOI": "10.7763/IJCEE.2012.V4.489",
+                "article-title": "Emotion Recognition Using Finger Tip Temperature: First Step towards an Automatic System",
+                "volume": "4",
+                "author": "Shivakumar",
+                "year": "2012",
+                "journal-title": "International Journal of Computer and Electrical Engineering"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0780",
+                "doi-asserted-by": "crossref",
+                "first-page": "161",
+                "DOI": "10.1027/0269-8803/a000147",
+                "article-title": "Emotions under the skin autonomic reactivity to emotional pictures in insecure attachment",
+                "volume": "29",
+                "author": "Silva",
+                "year": "2015",
+                "journal-title": "Journal of Psychophysiology"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0790",
+                "first-page": "417",
+                "article-title": "Human authentication implemented for mobile applications based on ECG-data acquired from sensorized garments",
+                "volume": "42",
+                "author": "Tantinger",
+                "year": "2015"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0800",
+                "first-page": "61",
+                "article-title": "Psychophysiology (5th ed.)",
+                "volume": "21",
+                "author": "Tecce",
+                "year": "1996"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0810",
+                "series-title": "2014 6th Computer Science and Electronic Engineering Conference",
+                "first-page": "41",
+                "article-title": "Emotional healthcare system: Emotion detection by facial expressions using Japanese database",
+                "author": "Tivatansakul",
+                "year": "2014"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0820",
+                "first-page": "589",
+                "article-title": "The FaceReader: Online facial expression recognition",
+                "volume": "2005",
+                "author": "Uyl",
+                "year": "2005",
+                "journal-title": "Psychology"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0830",
+                "series-title": "2010 Annual International Conference of the IEEE Engineering in Medicine and Biology Society",
+                "first-page": "3598",
+                "article-title": "Towards a smart glove: Arousal recognition based on textile Electrodermal Response",
+                "author": "Valenza",
+                "year": "2010"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0840",
+                "doi-asserted-by": "crossref",
+                "first-page": "6075",
+                "DOI": "10.3390/s120506075",
+                "article-title": "A stress sensor based on galvanic skin response (GSR) controlled by ZigBee",
+                "volume": "12",
+                "author": "Villarejo",
+                "year": "2012",
+                "journal-title": "Sensors (Switzerland)"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0850",
+                "doi-asserted-by": "crossref",
+                "first-page": "870",
+                "DOI": "10.1016/j.ijhcs.2009.07.005",
+                "article-title": "Automated stress detection using keystroke and linguistic features: An exploratory study",
+                "volume": "67",
+                "author": "Vizer",
+                "year": "2009",
+                "journal-title": "International Journal of Human Computer Studies"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0860",
+                "doi-asserted-by": "crossref",
+                "first-page": "1238",
+                "DOI": "10.1121/1.1913238",
+                "article-title": "Emotions and Speech: Some Acoustical Correlates",
+                "volume": "52",
+                "author": "Williams",
+                "year": "1972",
+                "journal-title": "The Journal of the Acoustical Society of America"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0870",
+                "series-title": "Proceedings – 2010 International Symposium on Intelligence Information Processing and Trusted Computing",
+                "first-page": "360",
+                "article-title": "The analysis of emotion recognition from GSR based on PSO",
+                "author": "Wu",
+                "year": "2010"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0880",
+                "series-title": "Readings in the history of psychology",
+                "first-page": "248",
+                "article-title": "Principles of physiological psychology, 1873",
+                "author": "Wundt",
+                "year": "1948"
+            },
+            {
+                "key": "10.1016/j.entcs.2019.04.009_br0890",
+                "doi-asserted-by": "crossref",
+                "first-page": "84",
+                "DOI": "10.1016/j.compind.2017.04.005",
+                "article-title": "Respiration-based emotion recognition with deep learning",
+                "volume": "92–93",
+                "author": "Zhang",
+                "year": "2017",
+                "journal-title": "Computers in Industry"
+            }
+        ],
+        "container-title": [
+            "Electronic Notes in Theoretical Computer Science"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://api.elsevier.com/content/article/PII:S157106611930009X?httpAccept=text/xml",
+                "content-type": "text/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://api.elsevier.com/content/article/PII:S157106611930009X?httpAccept=text/plain",
+                "content-type": "text/plain",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2025,
+                    10,
+                    28
+                ]
+            ],
+            "date-time": "2025-10-28T00:12:34Z",
+            "timestamp": 1761610354000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://linkinghub.elsevier.com/retrieve/pii/S157106611930009X"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2019,
+                    5
+                ]
+            ]
+        },
+        "references-count": 89,
+        "alternative-id": [
+            "S157106611930009X"
+        ],
+        "URL": "https://doi.org/10.1016/j.entcs.2019.04.009",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1571-0661"
+        ],
+        "issn-type": [
+            {
+                "value": "1571-0661",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2019,
+                    5
+                ]
+            ]
+        },
+        "assertion": [
+            {
+                "value": "Elsevier",
+                "name": "publisher",
+                "label": "This article is maintained by"
+            },
+            {
+                "value": "Emotion Recognition from Physiological Signal Analysis: A Review",
+                "name": "articletitle",
+                "label": "Article Title"
+            },
+            {
+                "value": "Electronic Notes in Theoretical Computer Science",
+                "name": "journaltitle",
+                "label": "Journal Title"
+            },
+            {
+                "value": "https://doi.org/10.1016/j.entcs.2019.04.009",
+                "name": "articlelink",
+                "label": "CrossRef DOI link to publisher maintained version"
+            },
+            {
+                "value": "article",
+                "name": "content_type",
+                "label": "Content Type"
+            },
+            {
+                "value": "© 2019 Published by Elsevier B.V.",
+                "name": "copyright",
+                "label": "Copyright"
+            }
+        ]
+    }
+}

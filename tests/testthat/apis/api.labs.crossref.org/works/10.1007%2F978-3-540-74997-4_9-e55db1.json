@@ -1,0 +1,382 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2024,
+                    9,
+                    4
+                ]
+            ],
+            "date-time": "2024-09-04T23:00:22Z",
+            "timestamp": 1725490822786
+        },
+        "publisher-location": "Berlin, Heidelberg",
+        "reference-count": 27,
+        "publisher": "Springer Berlin Heidelberg",
+        "isbn-type": [
+            {
+                "type": "print",
+                "value": "9783540749967"
+            },
+            {
+                "type": "electronic",
+                "value": "9783540749974"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+
+        ],
+        "DOI": "10.1007/978-3-540-74997-4_9",
+        "type": "book-chapter",
+        "created": {
+            "date-parts": [
+                [
+                    2007,
+                    8,
+                    31
+                ]
+            ],
+            "date-time": "2007-08-31T07:54:25Z",
+            "timestamp": 1188546865000
+        },
+        "page": "86-98",
+        "source": "Crossref",
+        "is-referenced-by-count": 7,
+        "title": [
+            "Fuzzy Similarity of Facial Expressions of Embodied Agents"
+        ],
+        "prefix": "10.1007",
+        "author": [
+            {
+                "given": "Radosław",
+                "family": "Niewiadomski",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Catherine",
+                "family": "Pelachaud",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "297",
+        "reference": [
+            {
+                "issue": "4",
+                "key": "9_CR1",
+                "doi-asserted-by": "publisher",
+                "first-page": "201",
+                "DOI": "10.1007/s10055-005-0153-5",
+                "volume": "8",
+                "author": "I. Albrecht",
+                "year": "2005",
+                "unstructured": "Albrecht, I., Schröder, M., Haber, J., Seidel, H.: Mixed feelings: expression of non-basic emotions in a muscle-based talking head. Virtual Reality 8(4), 201–212 (2005)",
+                "journal-title": "Virtual Reality"
+            },
+            {
+                "issue": "2",
+                "key": "9_CR2",
+                "doi-asserted-by": "publisher",
+                "first-page": "179",
+                "DOI": "10.1016/j.ijhcs.2004.11.006",
+                "volume": "62",
+                "author": "C. Bartneck",
+                "year": "2005",
+                "unstructured": "Bartneck, C., Reichenbach, J.: Subtle emotional expressions of synthetic characters, International. Journal Human-Computer Studies 62(2), 179–192 (2005)",
+                "journal-title": "Journal Human-Computer Studies"
+            },
+            {
+                "issue": "11",
+                "key": "9_CR3",
+                "doi-asserted-by": "publisher",
+                "first-page": "2049",
+                "DOI": "10.1037/0022-3514.37.11.2049",
+                "volume": "37",
+                "author": "J.N. Bassili",
+                "year": "1979",
+                "unstructured": "Bassili, J.N.: Emotion recognition: the role of facial movement and the relative importance of upper and lower areas of the face. Journal of Personality and Social Psychology 37(11), 2049–2058 (1979)",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9_CR4",
+                "unstructured": "Bevacqua, E., Mancini, M., Niewiadomski, R., Pelachaud, C.: An expressive ECA showing complex emotions. In: Proceedings of the AISB Annual Convention, Newcastle, UK, pp. 208–216 (2007)"
+            },
+            {
+                "issue": "2",
+                "key": "9_CR5",
+                "doi-asserted-by": "publisher",
+                "first-page": "143",
+                "DOI": "10.1016/0165-0114(96)00067-X",
+                "volume": "84",
+                "author": "B. Bouchon-Meunier",
+                "year": "1996",
+                "unstructured": "Bouchon-Meunier, B., Rifqi, M., Bothorel, S.: Towards general measures of comparison of objects. Fuzzy sets and systems 84(2), 143–153 (1996)",
+                "journal-title": "Fuzzy sets and systems"
+            },
+            {
+                "key": "9_CR6",
+                "unstructured": "Constantini, E., Pianesi, F., Prete, M.: Recognizing Emotions in Human and Synthetic Faces: The Role of the Upper and Lower Parts of the Face. In: Proceedings of the 10th International Conference on Intelligent User Interfaces, San Diego, California, USA, pp. 20–27 (January 10-13, 2005)"
+            },
+            {
+                "key": "9_CR7",
+                "volume-title": "The Face Revealed",
+                "author": "P. Ekman",
+                "year": "2003",
+                "unstructured": "Ekman, P.: The Face Revealed. Weidenfeld & Nicolson, London (2003)"
+            },
+            {
+                "key": "9_CR8",
+                "doi-asserted-by": "publisher",
+                "first-page": "205",
+                "DOI": "10.1196/annals.1280.010",
+                "volume": "1000",
+                "author": "P. Ekman",
+                "year": "2003",
+                "unstructured": "Ekman, P.: Darwin, deception, and facial expression. Ann. N.Y. Acad. Sci. 1000, 205–221 (2003)",
+                "journal-title": "Ann. N.Y. Acad. Sci."
+            },
+            {
+                "key": "9_CR9",
+                "first-page": "49",
+                "volume": "1",
+                "author": "P. Ekman",
+                "year": "1969",
+                "unstructured": "Ekman, P., Friesen, W.V.: The Repertoire of Nonverbal Behavior’s. Categories, Origins, Usage and Coding, Semiotica 1, 49–98 (1969)",
+                "journal-title": "Categories, Origins, Usage and Coding, Semiotica"
+            },
+            {
+                "key": "9_CR10",
+                "volume-title": "Unmasking the Face. A guide to recognizing emotions from facial clues",
+                "author": "P. Ekman",
+                "year": "1975",
+                "unstructured": "Ekman, P., Friesen, W.V.: Unmasking the Face. A guide to recognizing emotions from facial clues. Prentice-Hall, Inc., Englewood Cliffs, New Jersey (1975)"
+            },
+            {
+                "issue": "3",
+                "key": "9_CR11",
+                "doi-asserted-by": "publisher",
+                "first-page": "227",
+                "DOI": "10.1016/0010-0277(92)90002-Y",
+                "volume": "44",
+                "author": "N. Etcoff",
+                "year": "1992",
+                "unstructured": "Etcoff, N., Magee, J.: Categorical perception of facial expressions. Cognition 44(3), 227–240 (1992)",
+                "journal-title": "Cognition"
+            },
+            {
+                "key": "9_CR12",
+                "volume-title": "What the Face Reveals: Basic and Applied Studies of Spontaneous Expression Using the Facial Action Coding System (FACS)",
+                "author": "M.G. Frank",
+                "year": "1995",
+                "unstructured": "Frank, M.G., Ekman, P., Friesen, W.V.: Behavioral Markers and Recognizability of the Smile of Enjoyment. In: Ekman, P., Rosenberg, E.L. (eds.) What the Face Reveals: Basic and Applied Studies of Spontaneous Expression Using the Facial Action Coding System (FACS), Oxford University Press, Oxford (1995)"
+            },
+            {
+                "issue": "2",
+                "key": "9_CR13",
+                "doi-asserted-by": "publisher",
+                "first-page": "247",
+                "DOI": "10.1037/0022-3514.81.2.247",
+                "volume": "81",
+                "author": "G.C. Gonzaga",
+                "year": "2001",
+                "unstructured": "Gonzaga, G.C., Keltner, D., Londahl, E.A., Smith, M.D.: Love and commitment problem in romantic relation and friendship. Journal of Personality and Social Psychology 81(2), 247–262 (2001)",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9_CR14",
+                "first-page": "243",
+                "volume-title": "What the Face Reveals: Basic and Applied Studies of Spontaneous Expression Using the Facial Action Coding System (FACS)",
+                "author": "P. Gosselin",
+                "year": "1995",
+                "unstructured": "Gosselin, P., Kirouac, G., Doré, F.Y.: Components and Recognition of Facial Expression in the Communication of Emotion by Actors. In: Ekman, P., Rosenberg, E.L. (eds.) What the Face Reveals: Basic and Applied Studies of Spontaneous Expression Using the Facial Action Coding System (FACS), pp. 243–267. Oxford University Press, Oxford (1995)"
+            },
+            {
+                "issue": "3",
+                "key": "9_CR15",
+                "doi-asserted-by": "publisher",
+                "first-page": "225",
+                "DOI": "10.1080/026999399379267",
+                "volume": "13",
+                "author": "J. Haidt",
+                "year": "1999",
+                "unstructured": "Haidt, J., Keltner, D.: Culture and facial expression: Open-ended methods find more expressions and a gradient of recognition. Cognition and Emotion 13(3), 225–266 (1999)",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "9_CR16",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1007/978-1-4899-2209-0",
+                "volume-title": "Human emotion",
+                "author": "C.E. Izard",
+                "year": "1977",
+                "unstructured": "Izard, C.E.: Human emotion. Plenum Press, New York (1977)"
+            },
+            {
+                "key": "9_CR17",
+                "unstructured": "Kätsyri, J., Klucharev, V., Frydrych, M., Sams, M.: Identification of synthetic and natural emotional facial expressions. In: AVSP 2003. ISCA Tutorial and Research Workshop on Audio Visual Speech Processing, St. Jorioz, France, pp. 239–244 (2003)"
+            },
+            {
+                "key": "9_CR18",
+                "doi-asserted-by": "publisher",
+                "first-page": "441",
+                "DOI": "10.1037/0022-3514.68.3.441",
+                "volume": "68",
+                "author": "D. Keltner",
+                "year": "1992",
+                "unstructured": "Keltner, D.: Signs of appeasement: Evidence for the distinct displays of embarrassment, amusement, and shame. Journal of Personality and Social Psychology 68, 441–454 (1992)",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "4",
+                "key": "9_CR19",
+                "doi-asserted-by": "publisher",
+                "first-page": "363",
+                "DOI": "10.1007/BF00992972",
+                "volume": "16",
+                "author": "D. Matsumoto",
+                "year": "1992",
+                "unstructured": "Matsumoto, D.: More evidence for the universality of a contempt expression. Motivation and Emotion 16(4), 363–368 (1992)",
+                "journal-title": "Motivation and Emotion"
+            },
+            {
+                "key": "9_CR20",
+                "unstructured": "Niewiadomski, R.: A model of complex facial expressions in interpersonal relations for animated agents, Ph.D. thesis, University of Perugia (2007)"
+            },
+            {
+                "key": "9_CR21",
+                "doi-asserted-by": "publisher",
+                "first-page": "17",
+                "DOI": "10.1002/0470854626.ch2",
+                "volume-title": "MPEG-4 Facial Animation - The Standard Implementation and Applications",
+                "author": "J. Ostermann",
+                "year": "2002",
+                "unstructured": "Ostermann, J.: Face Animation in MPEG-4. In: Pandzic, I.S., Forchheimer, R. (eds.) MPEG-4 Facial Animation - The Standard Implementation and Applications, pp. 17–55. Wiley, England (2002)"
+            },
+            {
+                "key": "9_CR22",
+                "unstructured": "Poggi, I.: Interacting bodies and interacting minds. In: 2nd lInternational Society for Gesture Studies (ISGS) Conference Interacting Bodies, Lyon, pp. 15–18 (2005)"
+            },
+            {
+                "key": "9_CR23",
+                "unstructured": "Rifqi, M.: Mesures de comparaison, typicalité et classification d’objets flous: théorie et pratique, Ph.D Thesis (1996)"
+            },
+            {
+                "key": "9_CR24",
+                "unstructured": "Scozzafava, R., Vantaggi, B. (eds.): Fuzzy Relations in a Coherent Conditional Probability Setting, 7th International Conference on Information and Management Sciences (IMS), Chengdu, China, pp. 496–500 (2006)"
+            },
+            {
+                "key": "9_CR25",
+                "unstructured": "Teknomo, K.: Similarity Measurement, \n                    \n                      http://people.revoledu.com/kardi/tutorial/Similarity/index.html"
+            },
+            {
+                "key": "9_CR26",
+                "volume-title": "MPEG-4 Facial Animation - The standard, implementations, applications",
+                "author": "N. Tsapatsoulis",
+                "year": "2002",
+                "unstructured": "Tsapatsoulis, N., Raouzaiou, A., Kollias, S., Crowie, R., Douglas-Cowie, E.: Emotion Recognition and Synthesis Based on MPEG-4 FAPs. In: Pandzic, I., Forchheimer, R. (eds.) MPEG-4 Facial Animation - The standard, implementations, applications, John Wiley & Sons, UK (2002)"
+            },
+            {
+                "issue": "3",
+                "key": "9_CR27",
+                "doi-asserted-by": "publisher",
+                "first-page": "271",
+                "DOI": "10.1016/S0010-0277(97)00003-6",
+                "volume": "63",
+                "author": "A.W. Young",
+                "year": "1997",
+                "unstructured": "Young, A.W., Rowland, D., Calder, A.J., Etcoff, N.L., Seth, A., Perrett, D.I.: Facial expression megamix: tests of dimensional and category accounts of emotion recognition. Cognition 63(3), 271–313 (1997)",
+                "journal-title": "Cognition"
+            }
+        ],
+        "container-title": [
+            "Lecture Notes in Computer Science",
+            "Intelligent Virtual Agents"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://link.springer.com/content/pdf/10.1007/978-3-540-74997-4_9.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2021,
+                    4,
+                    27
+                ]
+            ],
+            "date-time": "2021-04-27T06:51:16Z",
+            "timestamp": 1619506276000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "http://link.springer.com/10.1007/978-3-540-74997-4_9"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    null
+                ]
+            ]
+        },
+        "ISBN": [
+            "9783540749967",
+            "9783540749974"
+        ],
+        "references-count": 27,
+        "URL": "https://doi.org/10.1007/978-3-540-74997-4_9",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0302-9743",
+            "1611-3349"
+        ],
+        "issn-type": [
+            {
+                "type": "print",
+                "value": "0302-9743"
+            },
+            {
+                "type": "electronic",
+                "value": "1611-3349"
+            }
+        ],
+        "subject": [
+
+        ]
+    }
+}

@@ -1,8 +1,14 @@
 $primary: #327118;
 
 .people figure {
-  width: 23%;
+  width: 18%;
   padding: 0;
   margin: 1% 1% 0 1%;
   float: left;
+}
+
+.people figure figcaption {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

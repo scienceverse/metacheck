@@ -1,0 +1,205 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    5
+                ]
+            ],
+            "date-time": "2026-05-05T21:15:49Z",
+            "timestamp": 1778015749963,
+            "version": "3.51.4"
+        },
+        "reference-count": 0,
+        "publisher": "American Psychological Association (APA)",
+        "issue": "4",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Journal of Experimental Psychology: General"
+        ],
+        "DOI": "10.1037/xge0000538",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2019,
+                    3,
+                    4
+                ]
+            ],
+            "date-time": "2019-03-04T14:28:40Z",
+            "timestamp": 1551709720000
+        },
+        "page": "667-687",
+        "source": "Crossref",
+        "is-referenced-by-count": 68,
+        "title": [
+            "Mitigating malicious envy: Why successful individuals should reveal their failures."
+        ],
+        "prefix": "10.1037",
+        "volume": "148",
+        "author": [
+            {
+                "given": "Alison Wood",
+                "family": "Brooks",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Karen",
+                "family": "Huang",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Nicole",
+                "family": "Abi-Esber",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Ryan W.",
+                "family": "Buell",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Laura",
+                "family": "Huang",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Brian",
+                "family": "Hall",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "15",
+        "published-online": {
+            "date-parts": [
+                [
+                    2019,
+                    4
+                ]
+            ]
+        },
+        "container-title": [
+            "Journal of Experimental Psychology: General"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://psycnet.apa.org/journals/xge/148/4/667.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    2,
+                    5
+                ]
+            ],
+            "date-time": "2024-02-05T23:13:23Z",
+            "timestamp": 1707174803000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://doi.apa.org/doi/10.1037/xge0000538"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2019,
+                    4
+                ]
+            ]
+        },
+        "references-count": 0,
+        "journal-issue": {
+            "issue": "4",
+            "published-online": {
+                "date-parts": [
+                    [
+                        2019,
+                        4
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "2019-11196-001",
+            "30829524"
+        ],
+        "URL": "https://doi.org/10.1037/xge0000538",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1939-2222",
+            "0096-3445"
+        ],
+        "issn-type": [
+            {
+                "value": "1939-2222",
+                "type": "electronic"
+            },
+            {
+                "value": "0096-3445",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2019,
+                    4
+                ]
+            ]
+        }
+    }
+}

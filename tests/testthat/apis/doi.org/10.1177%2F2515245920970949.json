@@ -1,0 +1,393 @@
+{
+    "indexed": {
+        "date-parts": [
+            [
+                2026,
+                4,
+                28
+            ]
+        ],
+        "date-time": "2026-04-28T17:30:18Z",
+        "timestamp": 1777397418465,
+        "version": "3.51.4"
+    },
+    "reference-count": 22,
+    "publisher": "SAGE Publications",
+    "issue": "2",
+    "license": [
+        {
+            "start": {
+                "date-parts": [
+                    [
+                        2021,
+                        4,
+                        1
+                    ]
+                ],
+                "date-time": "2021-04-01T00:00:00Z",
+                "timestamp": 1617235200000
+            },
+            "content-version": "unspecified",
+            "delay-in-days": 0,
+            "URL": "https://creativecommons.org/licenses/by/4.0/"
+        },
+        {
+            "start": {
+                "date-parts": [
+                    [
+                        2021,
+                        4,
+                        1
+                    ]
+                ],
+                "date-time": "2021-04-01T00:00:00Z",
+                "timestamp": 1617235200000
+            },
+            "content-version": "tdm",
+            "delay-in-days": 0,
+            "URL": "https://journals.sagepub.com/page/policies/text-and-data-mining-license"
+        }
+    ],
+    "funder": [
+        {
+            "DOI": "10.13039/100010663",
+            "name": "H2020 European Research Council",
+            "doi-asserted-by": "publisher",
+            "award": [
+                "647910"
+            ],
+            "award-info": [
+                {
+                    "award-number": [
+                        "647910"
+                    ]
+                }
+            ],
+            "id": [
+                {
+                    "id": "10.13039/100010663",
+                    "id-type": "DOI",
+                    "asserted-by": "publisher"
+                }
+            ]
+        },
+        {
+            "DOI": "10.13039/501100003246",
+            "name": "Nederlandse Organisatie voor Wetenschappelijk Onderzoek",
+            "doi-asserted-by": "publisher",
+            "award": [
+                "452-17-013"
+            ],
+            "award-info": [
+                {
+                    "award-number": [
+                        "452-17-013"
+                    ]
+                }
+            ],
+            "id": [
+                {
+                    "id": "10.13039/501100003246",
+                    "id-type": "DOI",
+                    "asserted-by": "publisher"
+                }
+            ]
+        }
+    ],
+    "content-domain": {
+        "domain": [
+            "journals.sagepub.com"
+        ],
+        "crossmark-restriction": true
+    },
+    "published-print": {
+        "date-parts": [
+            [
+                2021,
+                4
+            ]
+        ]
+    },
+    "abstract": "<jats:p>\n                    Making scientific information machine-readable greatly facilitates its reuse. Many scientific articles have the goal to test a hypothesis, so making the tests of statistical predictions easier to find and access could be very beneficial. We propose an approach that can be used to make hypothesis tests machine-readable. We believe there are two benefits to specifying a hypothesis test in such a way that a computer can evaluate whether the statistical prediction is corroborated or not. First, hypothesis tests become more transparent, falsifiable, and rigorous. Second, scientists benefit if information related to hypothesis tests in scientific articles is easily findable and reusable, for example, to perform meta-analyses, conduct peer review, and examine metascientific research questions. We examine what a machine-readable hypothesis test should look like and demonstrate the feasibility of machine-readable hypothesis tests in a real-life example using the fully operational prototype R package\n                    <jats:italic toggle=\"yes\">scienceverse<\/jats:italic>\n                    .\n                  <\/jats:p>",
+    "DOI": "10.1177/2515245920970949",
+    "type": "journal-article",
+    "created": {
+        "date-parts": [
+            [
+                2021,
+                4,
+                28
+            ]
+        ],
+        "date-time": "2021-04-28T12:14:27Z",
+        "timestamp": 1619612067000
+    },
+    "update-policy": "https://doi.org/10.1177/sage-journals-update-policy",
+    "source": "Crossref",
+    "is-referenced-by-count": 27,
+    "title": "Improving Transparency, Falsifiability, and Rigor by Making Hypothesis Tests Machine-Readable",
+    "prefix": "10.1177",
+    "volume": "4",
+    "author": [
+        {
+            "ORCID": "https://orcid.org/0000-0002-0247-239X",
+            "authenticated-orcid": false,
+            "given": "Daniël",
+            "family": "Lakens",
+            "sequence": "first",
+            "affiliation": [
+                {
+                    "name": "Human-Technology Interaction Group, Eindhoven University of Technology"
+                }
+            ]
+        },
+        {
+            "ORCID": "https://orcid.org/0000-0002-7523-5539",
+            "authenticated-orcid": false,
+            "given": "Lisa M.",
+            "family": "DeBruine",
+            "sequence": "additional",
+            "affiliation": [
+                {
+                    "name": "Institute of Neuroscience &amp; Psychology, University of Glasgow"
+                }
+            ]
+        }
+    ],
+    "member": "179",
+    "published-online": {
+        "date-parts": [
+            [
+                2021,
+                4,
+                28
+            ]
+        ]
+    },
+    "reference": [
+        {
+            "key": "e_1_3_4_2_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "Arslan R. C. (2019). How to automatically document data with the codebook package to facilitate data reuse. Advances in Methods and Practices in Psychological Science 2(2) 169–187. https://doi.org/10.1177/2515245919838783",
+            "DOI": "10.1177/2515245919838783"
+        },
+        {
+            "key": "e_1_3_4_3_1",
+            "unstructured": "Aust F. Barth M. (2018). papaja: Create APA manuscripts with R Markdown (Version 0.1.0.9997) [Computer software]. GitHub. https://github.com/crsh/papaja"
+        },
+        {
+            "key": "e_1_3_4_4_1",
+            "unstructured": "Bartoš F. Schimmack U. (2020). Zcurve: An r package for fitting z-curves (Version 1.0.0) [Computer software]. Comprehensive R Archive Network. https://CRAN.R-project.org/package=zcurve"
+        },
+        {
+            "key": "e_1_3_4_5_1",
+            "doi-asserted-by": "publisher",
+            "DOI": "10.1177/2515245919882693"
+        },
+        {
+            "key": "e_1_3_4_6_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "Brunner J. Schimmack U. (2020). Estimating population mean power under conditions of heterogeneity and selection for significance. Meta-Psychology 4 1–22. https://doi.org/10.15626/MP.2018.874",
+            "DOI": "10.15626/MP.2018.874"
+        },
+        {
+            "key": "e_1_3_4_7_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "Chambers C. (2019). What’s next for Registered Reports? Nature 573(7773) 187–189. https://doi.org/10.1038/d41586-019-02674-6",
+            "DOI": "10.1038/d41586-019-02674-6"
+        },
+        {
+            "key": "e_1_3_4_8_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "Colling L. J. Szűcs D. De Marco D. Cipora K. Ulrich R. Nuerk H.-C. Soltanlou M. Bryce D. Chen S.-C. Schroeder P. A. Henare D. T. Chrystall C. K. Corballis P. M. Ansari D. Goffin C. Sokolowski H. M. Hancock P. J. B. Millen A. E. Langton S. R. H. . . . McShane B. B. (2020). Registered Replication Report on Fischer Castel Dodd and Pratt (2003). Advances in Methods and Practices in Psychological Science 3(2) 143–162. https://doi.org/10.1177/2515245920903079",
+            "DOI": "10.1177/2515245920903079"
+        },
+        {
+            "key": "e_1_3_4_9_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "DeBruine L. (2002). Facial resemblance enhances trust. Proceedings of the Royal Society of London. Series B: Biological Sciences 269(1498) 1307–1312. https://doi.org/10.1098/rspb.2002.2034",
+            "DOI": "10.1098/rspb.2002.2034"
+        },
+        {
+            "key": "e_1_3_4_10_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "DeBruine L. (2020). faux: Simulation for factorial designs (Version 0.0.1.2) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.2669586",
+            "DOI": "10.32614/CRAN.package.faux"
+        },
+        {
+            "key": "e_1_3_4_11_1",
+            "unstructured": "DeBruine L. Lakens D. (2020). scienceverse: Machine-readable study descriptions (Version 0.0.0.9018) [Computer software]. GitHub. https://github.com/scienceverse/scienceverse"
+        },
+        {
+            "key": "e_1_3_4_12_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "Gorgolewski K. J. Auer T. Calhoun V. D. Craddock R. C. Das S. Duff E. P. Flandin G. Ghosh S. S. Glatard T. Halchenko Y. O. Handwerker D. A. Hanke M. Keator D. Li X. Michael Z. Maumet C. Nichols B. N. Nichols T. E. Pellman J. . . . Poldrack R. A. (2016). The brain imaging data structure a format for organizing and describing outputs of neuroimaging experiments. Nature Scientific Data 3 Article 160044. https://doi.org/10.1038/sdata.2016.44",
+            "DOI": "10.1038/sdata.2016.44"
+        },
+        {
+            "key": "e_1_3_4_13_1",
+            "doi-asserted-by": "publisher",
+            "DOI": "10.1017/CBO9780511621123"
+        },
+        {
+            "issue": "3",
+            "key": "e_1_3_4_14_1",
+            "first-page": "221",
+            "article-title": "The value of preregistration for psychological science: A conceptual analysis",
+            "volume": "62",
+            "author": "Lakens D.",
+            "year": "2019",
+            "unstructured": "Lakens D. (2019). The value of preregistration for psychological science: A conceptual analysis. Japanese Psychological Review, 62(3), 221–230.",
+            "journal-title": "Japanese Psychological Review"
+        },
+        {
+            "key": "e_1_3_4_15_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "Lakens D. Scheel A. M. Isager P. M. (2018). Equivalence testing for psychological research: A tutorial. Advances in Methods and Practices in Psychological Science 1(2) 259–269. https://doi.org/10.1177/2515245918770963",
+            "DOI": "10.1177/2515245918770963"
+        },
+        {
+            "key": "e_1_3_4_16_1",
+            "doi-asserted-by": "publisher",
+            "DOI": "10.1207/s15327965pli0102_1"
+        },
+        {
+            "key": "e_1_3_4_17_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "Neyman J. Pearson E. S. (1933). On the problem of the most efficient tests of statistical hypotheses. Philosophical Transactions of the Royal Society of London. Series A: Containing Papers of a Mathematical or Physical Character 231(694–706) 289–337. https://doi.org/10.1098/rsta.1933.0009",
+            "DOI": "10.1098/rsta.1933.0009"
+        },
+        {
+            "key": "e_1_3_4_18_1",
+            "unstructured": "R Core Team. (2019). R: A language and environment for statistical computing (Version 4.0.3) [Computer software]. R Foundation for Statistical Computing. https://www.R-project.org/"
+        },
+        {
+            "key": "e_1_3_4_19_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "Scheel A. M. Tiokhin L. Isager P. M. Lakens D. (2020). Why hypothesis testers should spend less time testing hypotheses. Perspectives on Psychological Science. Advance online publication. https://doi.org/10.1177/1745691620966795",
+            "DOI": "10.31234/osf.io/vekpu"
+        },
+        {
+            "key": "e_1_3_4_20_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "Simonsohn U. Nelson L. D. Simmons J. P. (2014). p-curve and effect size: Correcting for publication bias using only significant results. Perspectives on Psychological Science 9(6) 666–681. https://doi.org/10.1177/1745691614553988",
+            "DOI": "10.1177/1745691614553988"
+        },
+        {
+            "key": "e_1_3_4_21_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "Viechtbauer W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software 36(3). https://www.jstatsoft.org/v36/i03/",
+            "DOI": "10.18637/jss.v036.i03"
+        },
+        {
+            "key": "e_1_3_4_22_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "Wickham H. (2017). tidyverse: Easily install and load the ’tidyverse’ (Version 1.3.0) [Computer software]. Comprehensive R Archive Network. https://CRAN.R-project.org/package=tidyverse",
+            "DOI": "10.32614/CRAN.package.tidyverse"
+        },
+        {
+            "key": "e_1_3_4_23_1",
+            "doi-asserted-by": "crossref",
+            "unstructured": "Wilkinson M. D. Dumontier M. Aalbersberg Ij. J. Appleton G. Axton M. Baak A. Blomberg N. Boiten J.-W. Santos L. B. da S. Bourne P. E. Bouwman J. Brookes A. J. Clark T. Crosas M. Dillo I. Dumon O. Edmunds S. Evelo C. T. Finkers R. . . . Mons B. (2016). The FAIR Guiding Principles for scientific data management and stewardship [Comments and Opinion]. Scientific Data 3 Article 160018. https://doi.org/10.1038/sdata.2016.18",
+            "DOI": "10.1038/sdata.2016.18"
+        }
+    ],
+    "container-title": "Advances in Methods and Practices in Psychological Science",
+    "original-title": [
+
+    ],
+    "language": "en",
+    "link": [
+        {
+            "URL": "https://journals.sagepub.com/doi/pdf/10.1177/2515245920970949",
+            "content-type": "application/pdf",
+            "content-version": "vor",
+            "intended-application": "text-mining"
+        },
+        {
+            "URL": "https://journals.sagepub.com/doi/full-xml/10.1177/2515245920970949",
+            "content-type": "application/xml",
+            "content-version": "vor",
+            "intended-application": "text-mining"
+        },
+        {
+            "URL": "https://journals.sagepub.com/doi/pdf/10.1177/2515245920970949",
+            "content-type": "unspecified",
+            "content-version": "vor",
+            "intended-application": "similarity-checking"
+        }
+    ],
+    "deposited": {
+        "date-parts": [
+            [
+                2026,
+                4,
+                28
+            ]
+        ],
+        "date-time": "2026-04-28T10:10:51Z",
+        "timestamp": 1777371051000
+    },
+    "score": 1,
+    "resource": {
+        "primary": {
+            "URL": "https://journals.sagepub.com/doi/10.1177/2515245920970949"
+        }
+    },
+    "subtitle": [
+
+    ],
+    "short-title": [
+
+    ],
+    "issued": {
+        "date-parts": [
+            [
+                2021,
+                4
+            ]
+        ]
+    },
+    "references-count": 22,
+    "journal-issue": {
+        "issue": "2",
+        "published-print": {
+            "date-parts": [
+                [
+                    2021,
+                    4
+                ]
+            ]
+        }
+    },
+    "alternative-id": [
+        "10.1177/2515245920970949"
+    ],
+    "URL": "http://dx.doi.org/10.1177/2515245920970949",
+    "relation": {
+        "has-preprint": [
+            {
+                "id-type": "doi",
+                "id": "10.31234/osf.io/5xcda",
+                "asserted-by": "object"
+            }
+        ]
+    },
+    "ISSN": [
+        "2515-2459",
+        "2515-2467"
+    ],
+    "subject": [
+
+    ],
+    "container-title-short": "Advances in Methods and Practices in Psychological Science",
+    "published": {
+        "date-parts": [
+            [
+                2021,
+                4
+            ]
+        ]
+    },
+    "article-number": "2515245920970949"
+}

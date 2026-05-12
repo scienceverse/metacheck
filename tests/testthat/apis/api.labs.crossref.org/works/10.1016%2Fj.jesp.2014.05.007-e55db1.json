@@ -1,0 +1,768 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    6
+                ]
+            ],
+            "date-time": "2026-04-06T23:00:02Z",
+            "timestamp": 1775516402251,
+            "version": "3.50.1"
+        },
+        "reference-count": 56,
+        "publisher": "Elsevier BV",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2014,
+                            11,
+                            1
+                        ]
+                    ],
+                    "date-time": "2014-11-01T00:00:00Z",
+                    "timestamp": 1414800000000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+            }
+        ],
+        "funder": [
+            {
+                "name": "German Science Foundation"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "elsevier.com",
+                "sciencedirect.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Journal of Experimental Social Psychology"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2014,
+                    11
+                ]
+            ]
+        },
+        "DOI": "10.1016/j.jesp.2014.05.007",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2014,
+                    5,
+                    15
+                ]
+            ],
+            "date-time": "2014-05-15T03:17:38Z",
+            "timestamp": 1400123858000
+        },
+        "page": "1-11",
+        "update-policy": "https://doi.org/10.1016/elsevier_cm_policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 188,
+        "special_numbering": "C",
+        "title": [
+            "What catches the envious eye? Attentional biases within malicious and benign envy"
+        ],
+        "prefix": "10.1016",
+        "volume": "55",
+        "author": [
+            {
+                "given": "Jan",
+                "family": "Crusius",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Jens",
+                "family": "Lange",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "78",
+        "reference": [
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0080",
+                "doi-asserted-by": "crossref",
+                "first-page": "1",
+                "DOI": "10.1037/0033-2909.133.1.1",
+                "article-title": "Threat-related attentional bias in anxious and nonanxious individuals: A meta-analytic study",
+                "volume": "133",
+                "author": "Bar-Haim",
+                "year": "2007",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0005",
+                "series-title": "Visual masking: Time slices through conscious and unconscious vision",
+                "author": "Breitmeyer",
+                "year": "2006"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0015",
+                "doi-asserted-by": "crossref",
+                "first-page": "685",
+                "DOI": "10.1037/1528-3542.7.3.685",
+                "article-title": "That baby caught my eye… Attention capture by infant faces",
+                "volume": "7",
+                "author": "Brosch",
+                "year": "2007",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0010",
+                "doi-asserted-by": "crossref",
+                "first-page": "309",
+                "DOI": "10.1016/j.cognition.2012.07.007",
+                "article-title": "The flexibility of emotional attention: Accessible social identities guide rapid attentional orienting",
+                "volume": "125",
+                "author": "Brosch",
+                "year": "2012",
+                "journal-title": "Cognition"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0020",
+                "doi-asserted-by": "crossref",
+                "first-page": "1321",
+                "DOI": "10.1016/j.brat.2005.10.004",
+                "article-title": "Attentional bias to angry faces using the dot-probe task? It depends when you look for it",
+                "volume": "44",
+                "author": "Cooper",
+                "year": "2006",
+                "journal-title": "Behaviour Research and Therapy"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0025",
+                "series-title": "Theories in social psychology",
+                "first-page": "119",
+                "article-title": "Social comparison: Motives, standards, and mechanisms",
+                "author": "Corcoran",
+                "year": "2011"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0030",
+                "doi-asserted-by": "crossref",
+                "first-page": "142",
+                "DOI": "10.1037/a0023523",
+                "article-title": "When people want what others have: The impulsive side of envious desire",
+                "volume": "12",
+                "author": "Crusius",
+                "year": "2012",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0035",
+                "doi-asserted-by": "crossref",
+                "first-page": "317",
+                "DOI": "10.1016/j.paid.2012.03.029",
+                "article-title": "Envy: Functional specificity and sex-differentiated design features",
+                "volume": "53",
+                "author": "DelPriore",
+                "year": "2012",
+                "journal-title": "Personality and Individual Differences"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0040",
+                "doi-asserted-by": "crossref",
+                "first-page": "729",
+                "DOI": "10.1037/a0014634",
+                "article-title": "Social exclusion and early-stage interpersonal perception: Selective attention to signs of acceptance",
+                "volume": "96",
+                "author": "DeWall",
+                "year": "2009",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0045",
+                "unstructured": "Duden, Deutsches Universalwörterbuch. (2011). (7th ed.). Mannheim: Dudenverlag."
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0050",
+                "series-title": "The evil eye: A casebook",
+                "year": "1992"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0055",
+                "series-title": "Handbook of affective sciences",
+                "first-page": "572",
+                "article-title": "Appraisal processes in emotion",
+                "author": "Ellsworth",
+                "year": "2003"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0060",
+                "series-title": "The evil eye: The classic account of an ancient superstition",
+                "author": "Elworthy",
+                "year": "1895"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0065",
+                "doi-asserted-by": "crossref",
+                "first-page": "165",
+                "DOI": "10.1086/201267",
+                "article-title": "The anatomy of envy: A study in symbolic behavior",
+                "volume": "13",
+                "author": "Foster",
+                "year": "1972",
+                "journal-title": "Current Anthropology"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0070",
+                "doi-asserted-by": "crossref",
+                "first-page": "681",
+                "DOI": "10.1037/0096-3445.130.4.681",
+                "article-title": "Do threatening stimuli draw or hold visual attention in subclinical anxiety?",
+                "volume": "130",
+                "author": "Fox",
+                "year": "2001",
+                "journal-title": "Journal of Experimental Psychology: General"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0075",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1080/02699931.2014.881326",
+                "article-title": "Enhanced probing of attentional bias: The independence of anxiety-linked selectivity in attentional engagement with and disengagement from negative information",
+                "author": "Grafton",
+                "year": "2014",
+                "journal-title": "Cognition & Emotion"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0085",
+                "series-title": "The psychology of interpersonal relations",
+                "author": "Heider",
+                "year": "1958"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0090",
+                "series-title": "Envy: Theory and research",
+                "first-page": "60",
+                "article-title": "The evolutionary psychology of envy",
+                "author": "Hill",
+                "year": "2008"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0095",
+                "doi-asserted-by": "crossref",
+                "first-page": "653",
+                "DOI": "10.1037/a0023904",
+                "article-title": "The cognitive consequences of envy: Attention, memory, and self-regulatory depletion",
+                "volume": "101",
+                "author": "Hill",
+                "year": "2011",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0100",
+                "doi-asserted-by": "crossref",
+                "first-page": "515",
+                "DOI": "10.1111/j.1751-9004.2012.00445.x",
+                "article-title": "Behavioral responses to threatening social comparisons: From dastardly deeds to rising above",
+                "volume": "6",
+                "author": "Johnson",
+                "year": "2012",
+                "journal-title": "Social and Personality Psychology Compass"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0105",
+                "doi-asserted-by": "crossref",
+                "first-page": "186",
+                "DOI": "10.1016/j.jesp.2011.06.012",
+                "article-title": "When the grass on the other side of the fence doesn't matter: Reciprocal romantic interest neutralizes attentional bias towards attractive alternatives",
+                "volume": "48",
+                "author": "Koranyi",
+                "year": "2012",
+                "journal-title": "Journal of Experimental Social Psychology"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0110",
+                "doi-asserted-by": "crossref",
+                "first-page": "1183",
+                "DOI": "10.1016/j.brat.2003.08.001",
+                "article-title": "Selective attention to threat in the dot probe paradigm: Differentiating vigilance and difficulty to disengage",
+                "volume": "42",
+                "author": "Koster",
+                "year": "2004",
+                "journal-title": "Behaviour Research and Therapy"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0115",
+                "doi-asserted-by": "crossref",
+                "first-page": "1087",
+                "DOI": "10.1016/j.brat.2004.08.004",
+                "article-title": "Time-course of attention for threatening pictures in high and low trait anxiety",
+                "volume": "43",
+                "author": "Koster",
+                "year": "2005",
+                "journal-title": "Behaviour Research and Therapy"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0120",
+                "first-page": "331",
+                "article-title": "A theory of goal systems",
+                "volume": "Vol. 34",
+                "author": "Kruglanski",
+                "year": "2002"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0125",
+                "unstructured": "Langenscheidt, Taschenwörterbuch Niederländisch (2012). Berlin: Langenscheidt."
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0130",
+                "doi-asserted-by": "crossref",
+                "first-page": "15",
+                "DOI": "10.1037/0021-843X.95.1.15",
+                "article-title": "Attentional bias in emotional disorders",
+                "volume": "95",
+                "author": "MacLeod",
+                "year": "1986",
+                "journal-title": "Journal of Abnormal Psychology"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0135",
+                "doi-asserted-by": "crossref",
+                "first-page": "389",
+                "DOI": "10.1037/0022-3514.93.3.389",
+                "article-title": "Can't take my eyes off you: Attentional adhesion to mates and rivals",
+                "volume": "93",
+                "author": "Maner",
+                "year": "2007",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0145",
+                "doi-asserted-by": "crossref",
+                "first-page": "825",
+                "DOI": "10.1046/j.1360-0443.2003.00392.x",
+                "article-title": "Eye movements to smoking-related pictures in smokers: Relationship between attentional biases and implicit and explicit measures of stimulus valence",
+                "volume": "98",
+                "author": "Mogg",
+                "year": "2003",
+                "journal-title": "Addiction"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0140",
+                "doi-asserted-by": "crossref",
+                "first-page": "689",
+                "DOI": "10.1080/02699930341000158",
+                "article-title": "Time course of attentional bias for threat scenes: Testing the vigilance‐avoidance hypothesis",
+                "volume": "18",
+                "author": "Mogg",
+                "year": "2004",
+                "journal-title": "Cognition & Emotion"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0150",
+                "doi-asserted-by": "crossref",
+                "first-page": "297",
+                "DOI": "10.1037/0033-2909.132.2.297",
+                "article-title": "Automaticity: A theoretical and conceptual analysis",
+                "volume": "132",
+                "author": "Moors",
+                "year": "2006",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0155",
+                "doi-asserted-by": "crossref",
+                "first-page": "397",
+                "DOI": "10.1016/S0022-1031(02)00001-X",
+                "article-title": "Preconscious effects of temporary goals on attention",
+                "volume": "38",
+                "author": "Moskowitz",
+                "year": "2002",
+                "journal-title": "Journal of Experimental Social Psychology"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0160",
+                "first-page": "317",
+                "article-title": "The implicit volition model: On the preconscious regulation of temporarily adopted goals",
+                "volume": "Vol. 36",
+                "author": "Moskowitz",
+                "year": "2004"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0165",
+                "doi-asserted-by": "crossref",
+                "first-page": "194",
+                "DOI": "10.1037/0022-3514.93.2.194",
+                "article-title": "The focusing effect of self-evaluation threat in coaction and social comparison",
+                "volume": "93",
+                "author": "Muller",
+                "year": "2007",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0170",
+                "series-title": "Social motivation: Conscious and unconscious processes",
+                "first-page": "133",
+                "article-title": "From evolved motives to everyday mentation: Evolution, goals, and cognition",
+                "author": "Neuberg",
+                "year": "2004"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0175",
+                "doi-asserted-by": "crossref",
+                "first-page": "906",
+                "DOI": "10.1037/0022-3514.64.6.906",
+                "article-title": "Distinguishing the experiences of envy and jealousy",
+                "volume": "64",
+                "author": "Parrott",
+                "year": "1993",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0180",
+                "doi-asserted-by": "crossref",
+                "first-page": "206",
+                "DOI": "10.1037/0022-3514.67.2.206",
+                "article-title": "Phenomenology, behaviors, and goals differentiate discrete emotions",
+                "volume": "67",
+                "author": "Roseman",
+                "year": "1994",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0185",
+                "doi-asserted-by": "crossref",
+                "first-page": "520",
+                "DOI": "10.1037/a0031236",
+                "article-title": "There's more to anxiety than meets the eye: Isolating threat-related attentional engagement and disengagement biases",
+                "volume": "13",
+                "author": "Sheppes",
+                "year": "2013",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0190",
+                "doi-asserted-by": "crossref",
+                "first-page": "105",
+                "DOI": "10.2307/3033570",
+                "article-title": "The perception of envy",
+                "volume": "41",
+                "author": "Silver",
+                "year": "1978",
+                "journal-title": "Social Psychology Quarterly"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0195",
+                "doi-asserted-by": "crossref",
+                "first-page": "46",
+                "DOI": "10.1037/0033-2909.133.1.46",
+                "article-title": "Comprehending envy",
+                "volume": "133",
+                "author": "Smith",
+                "year": "2007",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0200",
+                "doi-asserted-by": "crossref",
+                "first-page": "545",
+                "DOI": "10.1146/annurev.ph.25.030163.002553",
+                "article-title": "Higher nervous functions: The orienting reflex",
+                "volume": "25",
+                "author": "Sokolov",
+                "year": "1963",
+                "journal-title": "Annual Review of Physiology"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0205",
+                "series-title": "Using multivariate statistics",
+                "author": "Tabachnick",
+                "year": "2007"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0210",
+                "first-page": "107",
+                "article-title": "Envy as pain: Rethinking the nature of envy and its implications for employees and organizations",
+                "volume": "37",
+                "author": "Tai",
+                "year": "2012",
+                "journal-title": "Academy of Management Review"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0215",
+                "doi-asserted-by": "crossref",
+                "first-page": "569",
+                "DOI": "10.1037/0033-295X.96.4.569",
+                "article-title": "Social comparison activity under threat: Downward evaluation and upward contacts",
+                "volume": "96",
+                "author": "Taylor",
+                "year": "1989",
+                "journal-title": "Psychological Review"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0220",
+                "first-page": "181",
+                "article-title": "Toward a self-evaluation maintenance model of social behavior",
+                "volume": "Vol. 21",
+                "author": "Tesser",
+                "year": "1988"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0225",
+                "doi-asserted-by": "crossref",
+                "first-page": "290",
+                "DOI": "10.1207/S15327957PSPR0404_1",
+                "article-title": "On the confluence of self-esteem maintenance mechanisms",
+                "volume": "4",
+                "author": "Tesser",
+                "year": "2000",
+                "journal-title": "Personality and Social Psychology Review"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0230",
+                "doi-asserted-by": "crossref",
+                "first-page": "341",
+                "DOI": "10.2307/3033737",
+                "article-title": "Self-definition: The impact of the relative performance and similarity of others",
+                "volume": "43",
+                "author": "Tesser",
+                "year": "1980",
+                "journal-title": "Social Psychology Quarterly"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0235",
+                "doi-asserted-by": "crossref",
+                "first-page": "1322",
+                "DOI": "10.1016/j.jesp.2008.03.006",
+                "article-title": "Attending to threat: Race-based patterns of selective attention",
+                "volume": "44",
+                "author": "Trawalter",
+                "year": "2008",
+                "journal-title": "Journal of Experimental Social Psychology"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0240",
+                "doi-asserted-by": "crossref",
+                "first-page": "419",
+                "DOI": "10.1037/a0015669",
+                "article-title": "Leveling up and down: The experience of benign and malicious envy",
+                "volume": "3",
+                "author": "Van de Ven",
+                "year": "2009",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0245",
+                "doi-asserted-by": "crossref",
+                "first-page": "784",
+                "DOI": "10.1177/0146167211400421",
+                "article-title": "Why envy outperforms admiration",
+                "volume": "37",
+                "author": "Van de Ven",
+                "year": "2011",
+                "journal-title": "Personality and Social Psychology Bulletin"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0250",
+                "doi-asserted-by": "crossref",
+                "first-page": "984",
+                "DOI": "10.1086/657239",
+                "article-title": "The envy premium in product evaluation",
+                "volume": "37",
+                "author": "Van de Ven",
+                "year": "2011",
+                "journal-title": "The Journal of Consumer Research"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0255",
+                "doi-asserted-by": "crossref",
+                "first-page": "195",
+                "DOI": "10.1007/s11031-011-9235-8",
+                "article-title": "Appraisal patterns of envy and related emotions",
+                "volume": "36",
+                "author": "Van de Ven",
+                "year": "2012",
+                "journal-title": "Motivation and Emotion"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0260",
+                "doi-asserted-by": "crossref",
+                "first-page": "587",
+                "DOI": "10.1037/a0027204",
+                "article-title": "Competing for attentional priority: Temporary goals versus threats",
+                "volume": "13",
+                "author": "Vogt",
+                "year": "2013",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0265",
+                "doi-asserted-by": "crossref",
+                "first-page": "466",
+                "DOI": "10.1080/02699931.2010.532613",
+                "article-title": "On the role of goal relevance in emotional attention: Disgust evokes early attention to cleanliness",
+                "volume": "25",
+                "author": "Vogt",
+                "year": "2011",
+                "journal-title": "Cognition & Emotion"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0270",
+                "series-title": "Wörterbuch der deutschen Synonymen",
+                "volume": "Vol. 2",
+                "author": "Weigand",
+                "year": "1852"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0275",
+                "doi-asserted-by": "crossref",
+                "first-page": "3",
+                "DOI": "10.1080/02699930903205698",
+                "article-title": "The effects of emotion on attention: A review of attentional processing of emotional information",
+                "volume": "24",
+                "author": "Yiend",
+                "year": "2010",
+                "journal-title": "Cognition & Emotion"
+            },
+            {
+                "key": "10.1016/j.jesp.2014.05.007_bb0280",
+                "doi-asserted-by": "crossref",
+                "first-page": "424",
+                "DOI": "10.1016/j.jesp.2009.10.015",
+                "article-title": "Mere exposure has differential effects on attention allocation to threatening and neutral stimuli",
+                "volume": "46",
+                "author": "Young",
+                "year": "2010",
+                "journal-title": "Journal of Experimental Social Psychology"
+            }
+        ],
+        "container-title": [
+            "Journal of Experimental Social Psychology"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://api.elsevier.com/content/article/PII:S0022103114000729?httpAccept=text/xml",
+                "content-type": "text/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://api.elsevier.com/content/article/PII:S0022103114000729?httpAccept=text/plain",
+                "content-type": "text/plain",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2018,
+                    10,
+                    4
+                ]
+            ],
+            "date-time": "2018-10-04T01:01:05Z",
+            "timestamp": 1538614865000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0022103114000729"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2014,
+                    11
+                ]
+            ]
+        },
+        "references-count": 56,
+        "alternative-id": [
+            "S0022103114000729"
+        ],
+        "URL": "https://doi.org/10.1016/j.jesp.2014.05.007",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0022-1031"
+        ],
+        "issn-type": [
+            {
+                "value": "0022-1031",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2014,
+                    11
+                ]
+            ]
+        },
+        "assertion": [
+            {
+                "value": "Elsevier",
+                "name": "publisher",
+                "label": "This article is maintained by"
+            },
+            {
+                "value": "What catches the envious eye? Attentional biases within malicious and benign envy",
+                "name": "articletitle",
+                "label": "Article Title"
+            },
+            {
+                "value": "Journal of Experimental Social Psychology",
+                "name": "journaltitle",
+                "label": "Journal Title"
+            },
+            {
+                "value": "https://doi.org/10.1016/j.jesp.2014.05.007",
+                "name": "articlelink",
+                "label": "CrossRef DOI link to publisher maintained version"
+            },
+            {
+                "value": "article",
+                "name": "content_type",
+                "label": "Content Type"
+            },
+            {
+                "value": "Copyright © 2014 Elsevier Inc. All rights reserved.",
+                "name": "copyright",
+                "label": "Copyright"
+            }
+        ]
+    }
+}

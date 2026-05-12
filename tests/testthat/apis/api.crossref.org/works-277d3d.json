@@ -1,0 +1,420 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 813,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            5,
+                            12
+                        ]
+                    ],
+                    "date-time": "2026-05-12T06:15:55Z",
+                    "timestamp": 1778566555849,
+                    "version": "3.51.4"
+                },
+                "reference-count": 39,
+                "publisher": "SAGE Publications",
+                "issue": "4",
+                "license": [
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2017,
+                                    5,
+                                    1
+                                ]
+                            ],
+                            "date-time": "2017-05-01T00:00:00Z",
+                            "timestamp": 1493596800000
+                        },
+                        "content-version": "tdm",
+                        "delay-in-days": 0,
+                        "URL": "https://journals.sagepub.com/page/policies/text-and-data-mining-license"
+                    }
+                ],
+                "content-domain": {
+                    "domain": [
+                        "journals.sagepub.com"
+                    ],
+                    "crossmark-restriction": true
+                },
+                "short-container-title": [
+                    "Social Psychological and Personality Science"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2017,
+                            5
+                        ]
+                    ]
+                },
+                "abstract": "<jats:p>Scientists should be able to provide support for the absence of a meaningful effect. Currently, researchers often incorrectly conclude an effect is absent based a nonsignificant result. A widely recommended approach within a frequentist framework is to test for equivalence. In equivalence tests, such as the two one-sided tests (TOST) procedure discussed in this article, an upper and lower equivalence bound is specified based on the smallest effect size of interest. The TOST procedure can be used to statistically reject the presence of effects large enough to be considered worthwhile. This practical primer with accompanying spreadsheet and R package enables psychologists to easily perform equivalence tests (and power analyses) by setting equivalence bounds based on standardized effect sizes and provides recommendations to prespecify equivalence bounds. Extending your statistical tool kit with equivalence tests is an easy way to improve your statistical and theoretical inferences.<\/jats:p>",
+                "DOI": "10.1177/1948550617697177",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2017,
+                            5,
+                            5
+                        ]
+                    ],
+                    "date-time": "2017-05-05T11:47:02Z",
+                    "timestamp": 1493984822000
+                },
+                "page": "355-362",
+                "update-policy": "https://doi.org/10.1177/sage-journals-update-policy",
+                "source": "Crossref",
+                "is-referenced-by-count": 1612,
+                "title": [
+                    "Equivalence Tests"
+                ],
+                "prefix": "10.1177",
+                "volume": "8",
+                "author": [
+                    {
+                        "given": "Daniël",
+                        "family": "Lakens",
+                        "sequence": "first",
+                        "affiliation": [
+                            {
+                                "name": "Human Technology Interaction Group, Eindhoven University of Technology, Eindhoven, the Netherlands"
+                            }
+                        ]
+                    }
+                ],
+                "member": "179",
+                "published-online": {
+                    "date-parts": [
+                        [
+                            2017,
+                            5,
+                            5
+                        ]
+                    ]
+                },
+                "reference": [
+                    {
+                        "key": "bibr1-1948550617697177",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Anderson S. F., Maxwell S. E. (2016). There’s more than one way to conduct a replication study: Beyond statistical significance. Psychological Methods, 21, 1–12. doi:https://doi.org/11037/met0000051",
+                        "DOI": "10.1037/met0000051"
+                    },
+                    {
+                        "key": "bibr2-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1214/ss/1032280304"
+                    },
+                    {
+                        "key": "bibr3-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1081/BIP-120016229"
+                    },
+                    {
+                        "key": "bibr4-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1027/0044-3409.217.1.15"
+                    },
+                    {
+                        "key": "bibr5-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/0013164401614002"
+                    },
+                    {
+                        "key": "bibr6-1948550617697177",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Delacre M., Lakens D., Leys C. (2017). Why psychologists should by default use Welch’s t-test instead of Student’s t-test with unequal group sizes. International Review of Social Psychology, 30, 92–101. doi:10.5334/irsp.82",
+                        "DOI": "10.5334/irsp.82"
+                    },
+                    {
+                        "key": "bibr7-1948550617697177",
+                        "first-page": "781",
+                        "volume": "5",
+                        "author": "Dienes Z.",
+                        "year": "2014",
+                        "journal-title": "Quantitative Psychology and Measurement"
+                    },
+                    {
+                        "key": "bibr8-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.jmp.2015.10.003"
+                    },
+                    {
+                        "key": "bibr9-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/1948550612447114"
+                    },
+                    {
+                        "key": "bibr10-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.3758/BF03193146"
+                    },
+                    {
+                        "key": "bibr11-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/0013164401612001"
+                    },
+                    {
+                        "key": "bibr12-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/0959354398082006"
+                    },
+                    {
+                        "key": "bibr13-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1348/000711009X475853"
+                    },
+                    {
+                        "key": "bibr14-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/BF01063612"
+                    },
+                    {
+                        "key": "bibr15-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1002/sim.1783"
+                    },
+                    {
+                        "key": "bibr16-1948550617697177",
+                        "volume-title": "Doing Bayesian data analysis: A tutorial introduction with R",
+                        "author": "Kruschke J.",
+                        "year": "2010"
+                    },
+                    {
+                        "key": "bibr17-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.3389/fpsyg.2013.00863"
+                    },
+                    {
+                        "key": "bibr18-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1002/ejsp.2023"
+                    },
+                    {
+                        "key": "bibr19-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1146/annurev.psych.59.103006.093735"
+                    },
+                    {
+                        "key": "bibr20-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/a0039400"
+                    },
+                    {
+                        "key": "bibr21-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.foodqual.2012.05.003"
+                    },
+                    {
+                        "key": "bibr38-1948550617697177",
+                        "unstructured": "Minitab 17 Statistical Software. (2010). [Computer software]. State College, PA: Minitab, Inc."
+                    },
+                    {
+                        "key": "bibr22-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/1948550616639649"
+                    },
+                    {
+                        "key": "bibr23-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rsos.150547"
+                    },
+                    {
+                        "key": "bibr24-1948550617697177",
+                        "unstructured": "Morey R. D., Lakens D. (2017). Why most of psychology is statistically unfalsifiable. Manuscript submitted for publication."
+                    },
+                    {
+                        "key": "bibr25-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1001/jama.295.10.1152"
+                    },
+                    {
+                        "key": "bibr26-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.5334/pb-51-2-109"
+                    },
+                    {
+                        "key": "bibr27-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0033-2909.113.3.553"
+                    },
+                    {
+                        "key": "bibr28-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.3758/PBR.16.2.225"
+                    },
+                    {
+                        "key": "bibr29-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/beheco/ark016"
+                    },
+                    {
+                        "key": "bibr39-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.2307/3002019"
+                    },
+                    {
+                        "key": "bibr30-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/BF01068419"
+                    },
+                    {
+                        "key": "bibr31-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/1082-989X.3.4.403"
+                    },
+                    {
+                        "key": "bibr32-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1002/9780470723586"
+                    },
+                    {
+                        "key": "bibr34-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/0956797614567341"
+                    },
+                    {
+                        "key": "bibr35-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.18637/jss.v036.i03"
+                    },
+                    {
+                        "key": "bibr36-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1080/19312458.2012.703834"
+                    },
+                    {
+                        "key": "bibr40-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.2307/2332510"
+                    },
+                    {
+                        "key": "bibr37-1948550617697177",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1201/EBK1439808184"
+                    }
+                ],
+                "container-title": [
+                    "Social Psychological and Personality Science"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "https://journals.sagepub.com/doi/pdf/10.1177/1948550617697177",
+                        "content-type": "application/pdf",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "https://journals.sagepub.com/doi/full-xml/10.1177/1948550617697177",
+                        "content-type": "application/xml",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "https://journals.sagepub.com/doi/pdf/10.1177/1948550617697177",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2026,
+                            4,
+                            30
+                        ]
+                    ],
+                    "date-time": "2026-04-30T22:08:48Z",
+                    "timestamp": 1777586928000
+                },
+                "score": 71.0658,
+                "resource": {
+                    "primary": {
+                        "URL": "https://journals.sagepub.com/doi/10.1177/1948550617697177"
+                    }
+                },
+                "subtitle": [
+                    "A Practical Primer for\n                    <i>t<\/i>\n                    Tests, Correlations, and Meta-Analyses"
+                ],
+                "issued": {
+                    "date-parts": [
+                        [
+                            2017,
+                            5
+                        ]
+                    ]
+                },
+                "references-count": 39,
+                "journal-issue": {
+                    "issue": "4",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2017,
+                                5
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "10.1177/1948550617697177"
+                ],
+                "URL": "https://doi.org/10.1177/1948550617697177",
+                "relation": {
+                    "has-preprint": [
+                        {
+                            "id-type": "doi",
+                            "id": "10.31234/osf.io/97gpc",
+                            "asserted-by": "object"
+                        },
+                        {
+                            "id-type": "doi",
+                            "id": "10.31234/osf.io/97gpc_v1",
+                            "asserted-by": "object"
+                        }
+                    ]
+                },
+                "ISSN": [
+                    "1948-5506",
+                    "1948-5514"
+                ],
+                "issn-type": [
+                    {
+                        "value": "1948-5506",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1948-5514",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2017,
+                            5
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

@@ -22,3 +22,5 @@
 codecov.yml
 ^inst/plumber$
 ^inst/templates/*.html
+^\.positai$
+^\.claude$

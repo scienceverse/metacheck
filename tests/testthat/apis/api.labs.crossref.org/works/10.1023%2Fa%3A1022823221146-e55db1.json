@@ -1,0 +1,587 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    21
+                ]
+            ],
+            "date-time": "2026-04-21T23:42:23Z",
+            "timestamp": 1776814943577,
+            "version": "3.51.2"
+        },
+        "reference-count": 37,
+        "publisher": "Springer Science and Business Media LLC",
+        "issue": "4",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2002,
+                            12,
+                            1
+                        ]
+                    ],
+                    "date-time": "2002-12-01T00:00:00Z",
+                    "timestamp": 1038700800000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://www.springernature.com/gp/researchers/text-and-data-mining"
+            },
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2002,
+                            12,
+                            1
+                        ]
+                    ],
+                    "date-time": "2002-12-01T00:00:00Z",
+                    "timestamp": 1038700800000
+                },
+                "content-version": "vor",
+                "delay-in-days": 0,
+                "URL": "https://www.springernature.com/gp/researchers/text-and-data-mining"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Motivation and Emotion"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2002,
+                    12
+                ]
+            ]
+        },
+        "DOI": "10.1023/a:1022823221146",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2003,
+                    4,
+                    4
+                ]
+            ],
+            "date-time": "2003-04-04T21:57:10Z",
+            "timestamp": 1049493430000
+        },
+        "page": "321-331",
+        "source": "Crossref",
+        "is-referenced-by-count": 92,
+        "title": [
+            "Investigating the Appraisal Patterns of Regret and Disappointment"
+        ],
+        "prefix": "10.1007",
+        "volume": "26",
+        "author": [
+            {
+                "given": "Wilco W.",
+                "family": "van Dijk",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Marcel",
+                "family": "Zeelenberg",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "297",
+        "reference": [
+            {
+                "key": "461771_CR1",
+                "doi-asserted-by": "crossref",
+                "first-page": "961",
+                "DOI": "10.1287/opre.30.5.961",
+                "volume": "30",
+                "author": "D. E. Bell",
+                "year": "1982",
+                "unstructured": "Bell, D. E. (1982). Regret in decision making under uncertainty. Operations Research, 30, 961–981.",
+                "journal-title": "Operations Research"
+            },
+            {
+                "key": "461771_CR2",
+                "doi-asserted-by": "crossref",
+                "first-page": "1",
+                "DOI": "10.1287/opre.33.1.1",
+                "volume": "33",
+                "author": "D. E. Bell",
+                "year": "1985",
+                "unstructured": "Bell, D. E. (1985). Disappointment in decision making under uncertainty. Operations Research, 33, 1–27.",
+                "journal-title": "Operations Research"
+            },
+            {
+                "key": "461771_CR3",
+                "volume-title": "The emotions",
+                "author": "N. H. Frijda",
+                "year": "1986",
+                "unstructured": "Frijda, N. H. (1986). The emotions. Cambridge, UK Cambridge University Press."
+            },
+            {
+                "key": "461771_CR4",
+                "doi-asserted-by": "crossref",
+                "first-page": "357",
+                "DOI": "10.1080/02699939308409193",
+                "volume": "7",
+                "author": "N. H. Frijda",
+                "year": "1993",
+                "unstructured": "Frijda, N. H. (1993). The place of appraisal in emotion. Cognition and Emotion, 7, 357–387.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "461771_CR5",
+                "doi-asserted-by": "crossref",
+                "first-page": "212",
+                "DOI": "10.1037/0022-3514.57.2.212",
+                "volume": "57",
+                "author": "N. H. Frijda",
+                "year": "1989",
+                "unstructured": "Frijda, N. H., Kuipers, P., & Ter Schure, E. (1989). Relations among emotion, appraisal, and emotional action readiness. Journal of Personality and Social Psychology, 57, 212–228.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "461771_CR6",
+                "doi-asserted-by": "crossref",
+                "first-page": "141",
+                "DOI": "10.1093/oso/9780195130072.003.0007",
+                "volume-title": "Appraisal processes in emotion: Theory, methods, research",
+                "author": "N. H. Frijda",
+                "year": "2001",
+                "unstructured": "Frijda, N. H., & Zeelenberg, M. (2001). Appraisal: What is the dependent? In K. R. Scherer, A. Schorr, & T. Johnstone (Eds.), Appraisal processes in emotion: Theory, methods, research (pp. 141–155). New York: Oxford University Press."
+            },
+            {
+                "key": "461771_CR7",
+                "doi-asserted-by": "crossref",
+                "first-page": "97",
+                "DOI": "10.1287/mksc.16.2.97",
+                "volume": "16",
+                "author": "J. J. Inman",
+                "year": "1997",
+                "unstructured": "Inman, J. J., Dyer, J. S., & Jia, J. (1997). A generalized utility model of disappointment and regret effects on post-choice valuation. Marketing Science, 16, 97–111.",
+                "journal-title": "Marketing Science"
+            },
+            {
+                "key": "461771_CR8",
+                "doi-asserted-by": "crossref",
+                "first-page": "819",
+                "DOI": "10.1037/0003-066X.46.8.819",
+                "volume": "46",
+                "author": "R. Lazarus",
+                "year": "1991",
+                "unstructured": "Lazarus, R. (1991). Progress on a cognitive–motivational–relational theory of emotion. American Psychologist, 46, 819–834.",
+                "journal-title": "American Psychologist"
+            },
+            {
+                "key": "461771_CR9",
+                "doi-asserted-by": "crossref",
+                "first-page": "337",
+                "DOI": "10.1080/026999396380178",
+                "volume": "10",
+                "author": "L. J. Levine",
+                "year": "1996",
+                "unstructured": "Levine, L. J. (1996). The anatomy of disappointment: A naturalistic test of appraisal models of sadness, anger, and hope. Cognition and Emotion, 10, 337–359.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "461771_CR10",
+                "doi-asserted-by": "crossref",
+                "first-page": "805",
+                "DOI": "10.2307/2232669",
+                "volume": "92",
+                "author": "G. Loomes",
+                "year": "1982",
+                "unstructured": "Loomes, G., & Sugden, R. (1982). Regret Theory: An alternative theory of rational choice under uncertainty. Economic Journal, 92, 805–824.",
+                "journal-title": "Economic Journal"
+            },
+            {
+                "key": "461771_CR11",
+                "doi-asserted-by": "crossref",
+                "first-page": "271",
+                "DOI": "10.2307/2297651",
+                "volume": "53",
+                "author": "G. Loomes",
+                "year": "1986",
+                "unstructured": "Loomes, G., & Sugden, R. (1986). Disappointment and dynamic inconsistency in choice under uncertainty. Review of Economic Studies, 53, 271–282.",
+                "journal-title": "Review of Economic Studies"
+            },
+            {
+                "key": "461771_CR12",
+                "doi-asserted-by": "crossref",
+                "first-page": "332",
+                "DOI": "10.1037/0096-3445.128.3.332",
+                "volume": "128",
+                "author": "B. A. Mellers",
+                "year": "1999",
+                "unstructured": "Mellers, B. A., Schwartz, A., & Ritov, I. (1999). Emotion-based choice. Journal of Experimental Psychology: General, 128, 332–345.",
+                "journal-title": "Journal of Experimental Psychology: General"
+            },
+            {
+                "key": "461771_CR13",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1037/10802-000",
+                "volume-title": "Learning theory and behavior",
+                "author": "O. H. Mowrer",
+                "year": "1960",
+                "unstructured": "Mowrer, O. H. (1960). Learning theory and behavior. New York: Wiley."
+            },
+            {
+                "key": "461771_CR14",
+                "doi-asserted-by": "crossref",
+                "first-page": "132",
+                "DOI": "10.1006/obhd.1999.2834",
+                "volume": "81",
+                "author": "L. D. Ordóñez",
+                "year": "2000",
+                "unstructured": "Ordóñez, L. D., & Connolly, T. (2000). Regret and responsibility: A reply to Zeelenberg et al. (1998). Organizational Behavior and Human Decision Processes, 81, 132–142.",
+                "journal-title": "Organizational Behavior and Human Decision Processes"
+            },
+            {
+                "key": "461771_CR15",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1017/CBO9780511571299",
+                "volume-title": "The cognitive structure of emotions",
+                "author": "A. Ortony",
+                "year": "1988",
+                "unstructured": "Ortony, A., Clore, G. L., & Collins, A. (1988). The cognitive structure of emotions. New York: Cambridge University Press."
+            },
+            {
+                "key": "461771_CR16",
+                "doi-asserted-by": "crossref",
+                "first-page": "62",
+                "DOI": "10.1207/s15327957pspr0101_5",
+                "volume": "1",
+                "author": "B. Parkinson",
+                "year": "1997",
+                "unstructured": "Parkinson, B. (1997). Untangling the appraisal-emotion connection. Personality and Social Psychology Review, 1, 62–79.",
+                "journal-title": "Personality and Social Psychology Review"
+            },
+            {
+                "key": "461771_CR17",
+                "first-page": "122",
+                "volume-title": "Review of personality and social psychology",
+                "author": "B. Parkinson",
+                "year": "1992",
+                "unstructured": "Parkinson, B., & Manstead, A. S. R. (1992). Appraisal as a cause of emotion. In M. S. Clark (Ed.), Review of personality and social psychology (Vol. 13, pp. 122–149). Newbury Park, CA: Sage."
+            },
+            {
+                "key": "461771_CR18",
+                "unstructured": "Pfister, H. R., Van der Pligt, J., & van Dijk, W. W. (2001). Temporal aspects of regret and disappointment and their impact on choice behavior. Unpublished manuscript."
+            },
+            {
+                "key": "461771_CR19",
+                "first-page": "11",
+                "volume-title": "Review of Personality and Social Psychology",
+                "author": "I. J. Roseman",
+                "year": "1984",
+                "unstructured": "Roseman, I. J. (1984). Cognitive determinants of emotions: A structural theory. In P. Shaver (Ed.), Review of Personality and Social Psychology (Vol. 5, pp. 11–36). Beverly Hills, CA: Sage."
+            },
+            {
+                "key": "461771_CR20",
+                "doi-asserted-by": "crossref",
+                "first-page": "241",
+                "DOI": "10.1080/026999396380240",
+                "volume": "10",
+                "author": "I. J. Roseman",
+                "year": "1996",
+                "unstructured": "Roseman, I. J., Antoniou, A. A., & Jose, P. E. (1996). Appraisal determinants of emotions: Constructing a more accurate and comprehensive theory. Cognition and Emotion, 10, 241–277.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "461771_CR21",
+                "doi-asserted-by": "crossref",
+                "first-page": "899",
+                "DOI": "10.1037/0022-3514.59.5.899",
+                "volume": "59",
+                "author": "I. J. Roseman",
+                "year": "1990",
+                "unstructured": "Roseman, I. J., Spindel, M. S., & Jose, P. E. (1990). Appraisal of emotion-eliciting events: Testing a theory of discrete emotions. Journal of Personality and Social Psychology, 59, 899–915.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "461771_CR22",
+                "doi-asserted-by": "crossref",
+                "first-page": "206",
+                "DOI": "10.1037/0022-3514.67.2.206",
+                "volume": "67",
+                "author": "I. J. Roseman",
+                "year": "1994",
+                "unstructured": "Roseman, I. J., Wiest, C., & Swartz, T. S. (1994). Phenomenology, behaviors, and goals differentiate discrete emotions. Journal of Personality and Social Psychology, 67, 206–211.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "461771_CR23",
+                "first-page": "37",
+                "volume-title": "Review of personality and social psychology: Vol. 5. Emotions, relationships, and health",
+                "author": "K. R. Scherer",
+                "year": "1984",
+                "unstructured": "Scherer, K. R. (1984). Emotion as a multi-component process. In P. Shaver (Ed.), Review of personality and social psychology: Vol. 5. Emotions, relationships, and health (pp. 37–63). Newbury Park, CA: Sage."
+            },
+            {
+                "key": "461771_CR24",
+                "volume-title": "Appraisal processes in emotion: Theory, research, application",
+                "year": "2001",
+                "unstructured": "Scherer, K. R., Schorr, A., & Johnstone, T. (Eds.). (2001). Appraisal processes in emotion: Theory, research, application. New York: Oxford University Press."
+            },
+            {
+                "key": "461771_CR25",
+                "doi-asserted-by": "crossref",
+                "first-page": "813",
+                "DOI": "10.1037/0022-3514.48.4.813",
+                "volume": "48",
+                "author": "C. A. Smith",
+                "year": "1985",
+                "unstructured": "Smith, C. A., & Ellsworth, P. C. (1985). Patterns of cognitive appraisal in emotion. Journal of Personality and Social Psychology, 48, 813–838.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "461771_CR26",
+                "first-page": "609",
+                "volume-title": "Handbook of personality: Theory and research",
+                "author": "C. A. Smith",
+                "year": "1990",
+                "unstructured": "Smith, C. A., & Lazarus, R. S. (1990). Emotion and adaptation. In L.A. Pervin (Ed.), Handbook of personality: Theory and research (pp. 609–637). New York: Guilford."
+            },
+            {
+                "key": "461771_CR27",
+                "doi-asserted-by": "crossref",
+                "first-page": "277",
+                "DOI": "10.1006/obhd.1997.2688",
+                "volume": "69",
+                "author": "W. W. van Dijk",
+                "year": "1997",
+                "unstructured": "van Dijk, W. W., & Van der Pligt, J. (1997). The impact of probability and magnitude of outcome on disappointment and elation. Organizational Behavior and Human Decision Processes, 69, 277–284.",
+                "journal-title": "Organizational Behavior and Human Decision Processes"
+            },
+            {
+                "key": "461771_CR28",
+                "doi-asserted-by": "crossref",
+                "first-page": "203",
+                "DOI": "10.1023/A:1021315314979",
+                "volume": "23",
+                "author": "W. W. van Dijk",
+                "year": "1999",
+                "unstructured": "van Dijk, W. W., Van der Pligt, J., & Zeelenberg, M. (1999). Effort invested in vain: The impact of effort on the intensity of disappointment and regret. Motivation and Emotion, 23, 203–220.",
+                "journal-title": "Motivation and Emotion"
+            },
+            {
+                "key": "461771_CR29",
+                "doi-asserted-by": "crossref",
+                "first-page": "787",
+                "DOI": "10.1080/02699930143000563",
+                "volume": "16",
+                "author": "W. W. van Dijk",
+                "year": "2002",
+                "unstructured": "van Dijk, W. W., & Zeelenberg, M. (2002). What do we talk about when we talk about disappointment? Distinguishing outcome-related disappointment from person-related disappointment. Cognition and Emotion, 16, 787–807.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "461771_CR30",
+                "doi-asserted-by": "crossref",
+                "first-page": "129",
+                "DOI": "10.1080/026999399379302",
+                "volume": "13",
+                "author": "W. W. van Dijk",
+                "year": "1999",
+                "unstructured": "van Dijk, W. W., Zeelenberg, M. & Van der Pligt, J. (1999). Not having what you want versus having what you don't want: The impact of type of negative outcome on the experience of disappointment and related emotions. Cognition and Emotion, 13, 129–148",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "461771_CR31",
+                "doi-asserted-by": "crossref",
+                "first-page": "548",
+                "DOI": "10.1037/0033-295X.92.4.548",
+                "volume": "92",
+                "author": "B. Weiner",
+                "year": "1985",
+                "unstructured": "Weiner, B. (1985). An attributional theory of achievement motivation and emotion. Psychological Review, 92, 548–573.",
+                "journal-title": "Psychological Review"
+            },
+            {
+                "key": "461771_CR32",
+                "doi-asserted-by": "crossref",
+                "first-page": "86",
+                "DOI": "10.1177/109467059921007",
+                "volume": "2",
+                "author": "M. Zeelenberg",
+                "year": "1999",
+                "unstructured": "Zeelenberg, M., & Pieters, R. (1999). On service delivery that might have been: Behavioral responses to disapointment and regret. Journal of Service Reserach, 2, 86–97.",
+                "journal-title": "Journal of Service Reserach"
+            },
+            {
+                "key": "461771_CR33",
+                "unstructured": "Zeelenberg, M., & Pieters, R. (in press). Beyond valence in customer dissatisfaction; A review and new findings on behavioral responses to regret and disappointment in failed services. Journal of Business Research."
+            },
+            {
+                "key": "461771_CR34",
+                "doi-asserted-by": "crossref",
+                "first-page": "143",
+                "DOI": "10.1006/obhd.1999.2865",
+                "volume": "81",
+                "author": "M. Zeelenberg",
+                "year": "2000",
+                "unstructured": "Zeelenberg, M., van Dijk, W. W., & Manstead, A. S. R. (2000). Regret and responsibility resolved? Evaluating Ordóñez and Connolly's (2000) conclusions. Organizational Behavior and Human Decision Processes, 81, 143–154.",
+                "journal-title": "Organizational Behavior and Human Decision Processes"
+            },
+            {
+                "key": "461771_CR35",
+                "doi-asserted-by": "crossref",
+                "first-page": "221",
+                "DOI": "10.1080/026999398379727",
+                "volume": "12",
+                "author": "M. Zeelenberg",
+                "year": "1998",
+                "unstructured": "Zeelenberg, M., van Dijk, W. W., Manstead, A. S. R., & Van der Pligt, J. (1998). The experience of regret and disappointment. Cognition and Emotion, 12, 221–230.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "461771_CR36",
+                "doi-asserted-by": "crossref",
+                "first-page": "521",
+                "DOI": "10.1080/026999300402781",
+                "volume": "14",
+                "author": "M. Zeelenberg",
+                "year": "2000",
+                "unstructured": "Zeelenberg, M., van Dijk, W. W., Manstead, A. S. R., & Van der Pligt, J. (2000). On bad decisions and disconfirmed expectancies: The psychology of regret and disappointment. Cognition and Emotion, 14, 521–541.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "461771_CR37",
+                "doi-asserted-by": "crossref",
+                "first-page": "117",
+                "DOI": "10.1006/obhd.1998.2784",
+                "volume": "75",
+                "author": "M. Zeelenberg",
+                "year": "1998",
+                "unstructured": "Zeelenberg, M., van Dijk, W. W., Van der Pligt, J., Manstead, A. S. R., Van Empelen, P., & Reinderman, D. (1998). Emotional reactions to the outcomes of decisions: The role of counterfactual thought in the experience of regret and disappointment. Organizational Behavior and Human Decision Processes, 75, 117–141.",
+                "journal-title": "Organizational Behavior and Human Decision Processes"
+            }
+        ],
+        "container-title": [
+            "Motivation and Emotion"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://link.springer.com/content/pdf/10.1023/A:1022823221146.pdf",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://link.springer.com/article/10.1023/A:1022823221146/fulltext.html",
+                "content-type": "text/html",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://link.springer.com/content/pdf/10.1023/A:1022823221146.pdf",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2025,
+                    5,
+                    22
+                ]
+            ],
+            "date-time": "2025-05-22T06:58:17Z",
+            "timestamp": 1747897097000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://link.springer.com/10.1023/A:1022823221146"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2002,
+                    12
+                ]
+            ]
+        },
+        "references-count": 37,
+        "journal-issue": {
+            "issue": "4",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2002,
+                        12
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "461771"
+        ],
+        "URL": "https://doi.org/10.1023/a:1022823221146",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0146-7239",
+            "1573-6644"
+        ],
+        "issn-type": [
+            {
+                "value": "0146-7239",
+                "type": "print"
+            },
+            {
+                "value": "1573-6644",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2002,
+                    12
+                ]
+            ]
+        }
+    }
+}

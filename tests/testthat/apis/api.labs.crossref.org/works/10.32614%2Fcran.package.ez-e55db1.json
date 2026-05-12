@@ -1,0 +1,154 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "institution": [
+            {
+                "name": "Comprehensive R Archive Network",
+                "acronym": [
+                    "CRAN"
+                ]
+            }
+        ],
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    6
+                ]
+            ],
+            "date-time": "2026-05-06T05:40:09Z",
+            "timestamp": 1778046009248,
+            "version": "3.51.4"
+        },
+        "description": "Facilitates easy analysis of factorial experiments, including purely within-Ss designs (a.k.a. \"repeated measures\"), purely between-Ss designs, and mixed within-and-between-Ss designs. The functions in this package aim to provide simple, intuitive and consistent specification of data analysis and visualization. Visualization functions also include design visualization for pre-analysis data auditing, and correlation matrix visualization. Finally, this package includes functions for non-parametric analysis, including permutation tests and bootstrap resampling. The bootstrap function obtains predictions either by cell means or by more advanced/powerful mixed effects models, yielding predictions and confidence intervals that may be easily visualized at any level of the experiment's design.",
+        "reference-count": 0,
+        "publisher": "The R Foundation",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+
+        ],
+        "content-updated": {
+            "date-parts": [
+                [
+                    2026,
+                    2,
+                    16
+                ]
+            ]
+        },
+        "published-print": {
+            "date-parts": [
+                [
+                    2009,
+                    4,
+                    26
+                ]
+            ]
+        },
+        "DOI": "10.32614/cran.package.ez",
+        "type": "dataset",
+        "created": {
+            "date-parts": [
+                [
+                    2024,
+                    6,
+                    10
+                ]
+            ],
+            "date-time": "2024-06-10T08:48:11Z",
+            "timestamp": 1718009291000
+        },
+        "source": "Crossref",
+        "is-referenced-by-count": 6,
+        "title": [
+            "ez: Easy Analysis and Visualization of Factorial Experiments"
+        ],
+        "prefix": "10.32614",
+        "author": [
+            {
+                "given": "Michael A.",
+                "family": "Lawrence",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "17266",
+        "content-created": {
+            "date-parts": [
+                [
+                    2009,
+                    4,
+                    26
+                ]
+            ]
+        },
+        "container-title": [
+            "CRAN: Contributed Packages"
+        ],
+        "original-title": [
+
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2026,
+                    2,
+                    17
+                ]
+            ],
+            "date-time": "2026-02-17T02:15:23Z",
+            "timestamp": 1771294523000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://CRAN.R-project.org/package=ez"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2009,
+                    4,
+                    26
+                ]
+            ]
+        },
+        "references-count": 0,
+        "URL": "https://doi.org/10.32614/cran.package.ez",
+        "relation": {
+
+        },
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2009,
+                    4,
+                    26
+                ]
+            ]
+        }
+    }
+}

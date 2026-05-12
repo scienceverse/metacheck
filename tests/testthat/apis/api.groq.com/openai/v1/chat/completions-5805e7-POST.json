@@ -1,0 +1,33 @@
+{
+    "id": "chatcmpl-631d8146-4b1a-4843-97e4-6c30fad7a822",
+    "object": "chat.completion",
+    "created": 1778628765,
+    "model": "llama-3.3-70b-versatile",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "```json\n[\n  {\n    \"text\": \"The a priori power analysis determined a sample size of 15 in each group for 80% power with a medium effect size.\",\n    \"power_type\": \"apriori\",\n    \"statistical_test\": null,\n    \"statistical_test_other\": null,\n    \"sample_size\": 30,\n    \"alpha_level\": null,\n    \"power\": 0.8,\n    \"effect_size\": null,\n    \"effect_size_metric\": \"unstandardised\",\n    \"effect_size_metric_other\": null,\n    \"software\": null\n  }\n]\n```"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "queue_time": 0.047606892,
+        "prompt_tokens": 1072,
+        "prompt_time": 0.055209446,
+        "completion_tokens": 127,
+        "completion_time": 0.246253269,
+        "total_tokens": 1199,
+        "total_time": 0.301462715
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_ba38bbab80",
+    "x_groq": {
+        "id": "req_01krf8j92ef0qaespwfnqprx4w",
+        "seed": 8675309
+    },
+    "service_tier": "on_demand"
+}

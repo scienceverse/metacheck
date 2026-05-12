@@ -1,0 +1,513 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 11,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            5,
+                            9
+                        ]
+                    ],
+                    "date-time": "2026-05-09T04:24:40Z",
+                    "timestamp": 1778300680263,
+                    "version": "3.51.4"
+                },
+                "reference-count": 52,
+                "publisher": "SAGE Publications",
+                "issue": "2",
+                "license": [
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2018,
+                                    6,
+                                    1
+                                ]
+                            ],
+                            "date-time": "2018-06-01T00:00:00Z",
+                            "timestamp": 1527811200000
+                        },
+                        "content-version": "tdm",
+                        "delay-in-days": 0,
+                        "URL": "https://journals.sagepub.com/page/policies/text-and-data-mining-license"
+                    }
+                ],
+                "funder": [
+                    {
+                        "DOI": "10.13039/501100003246",
+                        "name": "Nederlandse Organisatie voor Wetenschappelijk Onderzoek",
+                        "doi-asserted-by": "publisher",
+                        "award": [
+                            "452-17-013"
+                        ],
+                        "award-info": [
+                            {
+                                "award-number": [
+                                    "452-17-013"
+                                ]
+                            }
+                        ],
+                        "id": [
+                            {
+                                "id": "10.13039/501100003246",
+                                "id-type": "DOI",
+                                "asserted-by": "publisher"
+                            }
+                        ]
+                    }
+                ],
+                "content-domain": {
+                    "domain": [
+                        "journals.sagepub.com"
+                    ],
+                    "crossmark-restriction": true
+                },
+                "short-container-title": [
+                    "Advances in Methods and Practices in Psychological Science"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2018,
+                            6
+                        ]
+                    ]
+                },
+                "abstract": "<jats:p>Psychologists must be able to test both for the presence of an effect and for the absence of an effect. In addition to testing against zero, researchers can use the two one-sided tests (TOST) procedure to test for equivalence and reject the presence of a smallest effect size of interest (SESOI). The TOST procedure can be used to determine if an observed effect is surprisingly small, given that a true effect at least as extreme as the SESOI exists. We explain a range of approaches to determine the SESOI in psychological science and provide detailed examples of how equivalence tests should be performed and reported. Equivalence tests are an important extension of the statistical tools psychologists currently use and enable researchers to falsify predictions about the presence, and declare the absence, of meaningful effects.<\/jats:p>",
+                "DOI": "10.1177/2515245918770963",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2018,
+                            6,
+                            1
+                        ]
+                    ],
+                    "date-time": "2018-06-01T11:20:28Z",
+                    "timestamp": 1527852028000
+                },
+                "page": "259-269",
+                "update-policy": "https://doi.org/10.1177/sage-journals-update-policy",
+                "source": "Crossref",
+                "is-referenced-by-count": 1174,
+                "title": [
+                    "Equivalence Testing for Psychological Research: A Tutorial"
+                ],
+                "prefix": "10.1177",
+                "volume": "1",
+                "author": [
+                    {
+                        "ORCID": "https://orcid.org/0000-0002-0247-239X",
+                        "authenticated-orcid": false,
+                        "given": "Daniël",
+                        "family": "Lakens",
+                        "sequence": "first",
+                        "affiliation": [
+                            {
+                                "name": "Human-Technology Interaction Group, Eindhoven University of Technology"
+                            }
+                        ]
+                    },
+                    {
+                        "ORCID": "https://orcid.org/0000-0002-6627-0746",
+                        "authenticated-orcid": false,
+                        "given": "Anne M.",
+                        "family": "Scheel",
+                        "sequence": "additional",
+                        "affiliation": [
+                            {
+                                "name": "Human-Technology Interaction Group, Eindhoven University of Technology"
+                            }
+                        ]
+                    },
+                    {
+                        "ORCID": "https://orcid.org/0000-0002-6922-3590",
+                        "authenticated-orcid": false,
+                        "given": "Peder M.",
+                        "family": "Isager",
+                        "sequence": "additional",
+                        "affiliation": [
+                            {
+                                "name": "Human-Technology Interaction Group, Eindhoven University of Technology"
+                            }
+                        ]
+                    }
+                ],
+                "member": "179",
+                "published-online": {
+                    "date-parts": [
+                        [
+                            2018,
+                            6,
+                            1
+                        ]
+                    ]
+                },
+                "reference": [
+                    {
+                        "key": "bibr1-2515245918770963",
+                        "unstructured": "Allaire J., Xie Y., McPherson J., Luraschi J., Ushey K., Atkins A. Chang W. (2017). rmarkdown: Dynamic documents for R (Version 1.7) [Computer software]. Retrieved from https://CRAN.R-project.org/package=rmarkdown"
+                    },
+                    {
+                        "key": "bibr2-2515245918770963",
+                        "unstructured": "Auguie B. (2017). gridExtra: Miscellaneous functions for “grid” graphics (Version 2.3) [Computer software]. Retrieved from https://CRAN.R-project.org/package=gridExtra"
+                    },
+                    {
+                        "key": "bibr3-2515245918770963",
+                        "unstructured": "Aust F., Barth M. (2017). papaja: Create APA manuscripts with R Markdown (Version 0.1.0.9492) [Computer software]. Retrieved from https://github.com/crsh/papaja"
+                    },
+                    {
+                        "key": "bibr4-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1348/000712608X377117"
+                    },
+                    {
+                        "key": "bibr5-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/0956797611432497"
+                    },
+                    {
+                        "key": "bibr6-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1027/1864-9335/a000191"
+                    },
+                    {
+                        "key": "bibr7-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s40806-017-0102-z"
+                    },
+                    {
+                        "key": "bibr8-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1371/journal.pone.0130093"
+                    },
+                    {
+                        "key": "bibr9-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1017/S0033291715001270"
+                    },
+                    {
+                        "key": "bibr10-2515245918770963",
+                        "volume-title": "The CIA World Factbook 2017",
+                        "author": "Central Intelligence Agency",
+                        "year": "2016"
+                    },
+                    {
+                        "key": "bibr11-2515245918770963",
+                        "unstructured": "Champely S. (2017). pwr: Basic functions for power analysis (Version 1.2.1) [Computer software]. Retrieved from https://CRAN.R-project.org/package=pwr"
+                    },
+                    {
+                        "key": "bibr12-2515245918770963",
+                        "volume-title": "Statistical power analysis for the behavioral sciences",
+                        "author": "Cohen J.",
+                        "year": "1988",
+                        "edition": "2"
+                    },
+                    {
+                        "key": "bibr13-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.5334/irsp.82"
+                    },
+                    {
+                        "key": "bibr14-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1348/000711009X475853"
+                    },
+                    {
+                        "key": "bibr15-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0003-066X.58.1.78"
+                    },
+                    {
+                        "key": "bibr16-2515245918770963",
+                        "unstructured": "Henry L., Wickham H. (2017). purrr: Functional programming tools (Version 0.2.4) [Computer software]. Retrieved from https://CRAN.R-project.org/package=purrr"
+                    },
+                    {
+                        "key": "bibr17-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.1160364"
+                    },
+                    {
+                        "key": "bibr18-2515245918770963",
+                        "unstructured": "jamovi project. (2017). Jamovi (Version 0.8) [Computer software]. Retrieved from https://www.jamovi.org/download.html"
+                    },
+                    {
+                        "key": "bibr19-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.cognition.2014.10.005"
+                    },
+                    {
+                        "key": "bibr20-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.evolhumbehav.2017.08.002"
+                    },
+                    {
+                        "key": "bibr21-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/1948550617697177"
+                    },
+                    {
+                        "key": "bibr22-2515245918770963",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Lakens D. (2017b). TOSTER: Two one-sided tests (TOST) equivalence testing (Version 0.3) [Computer software]. Retrieved from https://CRAN.R-project.org/package=TOSTER",
+                        "DOI": "10.32614/CRAN.package.TOSTER"
+                    },
+                    {
+                        "key": "bibr23-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/s41562-018-0311-x"
+                    },
+                    {
+                        "key": "bibr24-2515245918770963",
+                        "volume-title": "Post hoc power: Tables and commentary",
+                        "author": "Lenth R. V.",
+                        "year": "2007"
+                    },
+                    {
+                        "key": "bibr25-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1027/1864-9335/a000187"
+                    },
+                    {
+                        "key": "bibr26-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/a0039400"
+                    },
+                    {
+                        "key": "bibr27-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0022-006X.46.4.806"
+                    },
+                    {
+                        "key": "bibr28-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.foodqual.2012.05.003"
+                    },
+                    {
+                        "key": "bibr29-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1027/1864-9335/a000193"
+                    },
+                    {
+                        "key": "bibr30-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.5281/zenodo.838685"
+                    },
+                    {
+                        "key": "bibr31-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.4324/9781315773155"
+                    },
+                    {
+                        "key": "bibr32-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rsta.1933.0009"
+                    },
+                    {
+                        "key": "bibr33-2515245918770963",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Norman G. R., Sloan J. A., Wyrwich K. W. (2003). Interpretation of changes in health-related quality of life: The remarkable universality of half a standard deviation. Medical Care, 41, 582–592.",
+                        "DOI": "10.1097/01.MLR.0000062554.74615.4C"
+                    },
+                    {
+                        "key": "bibr34-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/1745691614528519"
+                    },
+                    {
+                        "key": "bibr35-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1001/jama.295.10.1152"
+                    },
+                    {
+                        "key": "bibr36-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.146.3642.347"
+                    },
+                    {
+                        "key": "bibr37-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.5334/pb-51-2-109"
+                    },
+                    {
+                        "key": "bibr38-2515245918770963",
+                        "unstructured": "R Core Team. (2017). R: A language and environment for statistical computing (Version 3.4.2) [Computer software]. Retrieved from https://www.R-project.org/"
+                    },
+                    {
+                        "key": "bibr39-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0033-2909.113.3.553"
+                    },
+                    {
+                        "key": "bibr40-2515245918770963",
+                        "unstructured": "RStudio Team. (2016). RStudio: Integrated development environment for R (Version 1.1.383) [Computer software]. Boston, MA: RStudio."
+                    },
+                    {
+                        "key": "bibr41-2515245918770963",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Sarkar D. (2008). Lattice: Multivariate data visualization with R (Version 0.20.35) [Computer software]. Retrieved from http://lmdvr.r-forge.r-project.org",
+                        "DOI": "10.1007/978-0-387-75969-2"
+                    },
+                    {
+                        "key": "bibr42-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.chb.2017.08.006"
+                    },
+                    {
+                        "key": "bibr43-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/1082-989X.3.4.403"
+                    },
+                    {
+                        "key": "bibr44-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1002/9780470723586"
+                    },
+                    {
+                        "key": "bibr45-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/1467-9280.00111"
+                    },
+                    {
+                        "key": "bibr46-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/0956797614567341"
+                    },
+                    {
+                        "key": "bibr47-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/1082-989X.6.4.371"
+                    },
+                    {
+                        "key": "bibr48-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1080/19312458.2012.703834"
+                    },
+                    {
+                        "key": "bibr49-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/978-0-387-98141-3"
+                    },
+                    {
+                        "key": "bibr50-2515245918770963",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.1162548"
+                    },
+                    {
+                        "key": "bibr51-2515245918770963",
+                        "unstructured": "Xie Y. (2015). knitr: Elegant, flexible, and fast dynamic report generation with R. Retrieved from https://yihui.name/knitr/"
+                    },
+                    {
+                        "key": "bibr52-2515245918770963",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Xie Y. (2016). bookdown: Authoring books and technical documents with R Markdown. Retrieved from https://github.com/rstudio/bookdown",
+                        "DOI": "10.1201/9781315204963"
+                    }
+                ],
+                "container-title": [
+                    "Advances in Methods and Practices in Psychological Science"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "https://journals.sagepub.com/doi/pdf/10.1177/2515245918770963",
+                        "content-type": "application/pdf",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "https://journals.sagepub.com/doi/full-xml/10.1177/2515245918770963",
+                        "content-type": "application/xml",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "https://journals.sagepub.com/doi/pdf/10.1177/2515245918770963",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2026,
+                            4,
+                            28
+                        ]
+                    ],
+                    "date-time": "2026-04-28T10:10:28Z",
+                    "timestamp": 1777371028000
+                },
+                "score": 75.73313,
+                "resource": {
+                    "primary": {
+                        "URL": "https://journals.sagepub.com/doi/10.1177/2515245918770963"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2018,
+                            6
+                        ]
+                    ]
+                },
+                "references-count": 52,
+                "journal-issue": {
+                    "issue": "2",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2018,
+                                6
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "10.1177/2515245918770963"
+                ],
+                "URL": "https://doi.org/10.1177/2515245918770963",
+                "ISSN": [
+                    "2515-2459",
+                    "2515-2467"
+                ],
+                "issn-type": [
+                    {
+                        "value": "2515-2459",
+                        "type": "print"
+                    },
+                    {
+                        "value": "2515-2467",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2018,
+                            6
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

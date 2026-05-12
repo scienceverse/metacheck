@@ -1,0 +1,457 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 218,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            4,
+                            4
+                        ]
+                    ],
+                    "date-time": "2026-04-04T21:45:08Z",
+                    "timestamp": 1775339108747,
+                    "version": "3.50.1"
+                },
+                "reference-count": 30,
+                "publisher": "Wiley",
+                "issue": "2",
+                "license": [
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2015,
+                                    9,
+                                    1
+                                ]
+                            ],
+                            "date-time": "2015-09-01T00:00:00Z",
+                            "timestamp": 1441065600000
+                        },
+                        "content-version": "tdm",
+                        "delay-in-days": 5356,
+                        "URL": "http://doi.wiley.com/10.1002/tdm_license_1"
+                    }
+                ],
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "short-container-title": [
+                    "Eur J Neurosci"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2001,
+                            1
+                        ]
+                    ]
+                },
+                "DOI": "10.1046/j.1460-9568.2001.01385.x",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2003,
+                            3,
+                            6
+                        ]
+                    ],
+                    "date-time": "2003-03-06T14:36:58Z",
+                    "timestamp": 1046961418000
+                },
+                "page": "400-404",
+                "source": "Crossref",
+                "is-referenced-by-count": 244,
+                "title": [
+                    "Action observation activates premotor and parietal areas in a somatotopic manner: an fMRI study"
+                ],
+                "prefix": "10.1111",
+                "volume": "13",
+                "author": [
+                    {
+                        "given": "G.",
+                        "family": "Buccino",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "F.",
+                        "family": "Binkofski",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "G. R.",
+                        "family": "Fink",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "L.",
+                        "family": "Fadiga",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "L.",
+                        "family": "Fogassi",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "V.",
+                        "family": "Gallese",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "R. J.",
+                        "family": "Seitz",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "K.",
+                        "family": "Zilles",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "G.",
+                        "family": "Rizzolatti",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "H.-J.",
+                        "family": "Freund",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "311",
+                "reference": [
+                    {
+                        "key": "b17_957",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1002/(SICI)1096-9861(19990920)412:2<319::AID-CNE10>3.0.CO;2-7"
+                    },
+                    {
+                        "key": "b20_958",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1046/j.1460-9568.1999.00753.x"
+                    },
+                    {
+                        "key": "b4_959",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1046/j.1460-9568.1999.00598.x"
+                    },
+                    {
+                        "key": "b24_960",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/0028-3932(91)90008-V"
+                    },
+                    {
+                        "key": "b26_961",
+                        "volume-title": "Disorders of Space Exploration and Cognition",
+                        "author": "De Renzi E.",
+                        "year": "1982"
+                    },
+                    {
+                        "key": "b9_962",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/brain/120.10.1763"
+                    },
+                    {
+                        "key": "b18_963",
+                        "volume-title": "The Cytoarchitectonics of the Human Cerebral Cortex.",
+                        "author": "von Economo C.",
+                        "year": "1929"
+                    },
+                    {
+                        "key": "b5_964",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "2608",
+                        "DOI": "10.1152/jn.1995.73.6.2608",
+                        "volume": "73",
+                        "author": "Fadiga L.",
+                        "year": "1995",
+                        "journal-title": "J. Neurophysiol."
+                    },
+                    {
+                        "key": "b22_965",
+                        "first-page": "154",
+                        "volume": "24",
+                        "author": "Fogassi L.",
+                        "year": "1998",
+                        "journal-title": "Soc. Neurosci. Abstr."
+                    },
+                    {
+                        "key": "b14_966",
+                        "first-page": "165",
+                        "volume": "2",
+                        "author": "Friston K.J.",
+                        "year": "1997",
+                        "journal-title": "Hum. Brain Mapp."
+                    },
+                    {
+                        "key": "b15_967",
+                        "first-page": "5",
+                        "volume": "2",
+                        "author": "Friston K.J.",
+                        "year": "1995",
+                        "journal-title": "Neuroimage"
+                    },
+                    {
+                        "key": "b1_968",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "593",
+                        "DOI": "10.1093/brain/119.2.593",
+                        "volume": "119",
+                        "author": "Gallese V.",
+                        "year": "1996",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "b7_969",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/BF00227183"
+                    },
+                    {
+                        "key": "b10_970",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1080/026432998381023"
+                    },
+                    {
+                        "key": "b3_971",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1073/pnas.95.25.15061"
+                    },
+                    {
+                        "key": "b11_972",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.286.5449.2526"
+                    },
+                    {
+                        "key": "b27_973",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/0166-4328(86)90008-2"
+                    },
+                    {
+                        "key": "b12_974",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "187",
+                        "DOI": "10.1017/S0140525X00034026",
+                        "volume": "17",
+                        "author": "Jeannerod M.",
+                        "year": "1994",
+                        "journal-title": "Behav. Brain Sci."
+                    },
+                    {
+                        "key": "b30_975",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/0166-2236(95)93921-J"
+                    },
+                    {
+                        "key": "b21_976",
+                        "first-page": "321",
+                        "volume": "34",
+                        "author": "Leinonen L.",
+                        "year": "1979",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "b13_977",
+                        "volume-title": "The Visual Brain in Action",
+                        "author": "Milner A.D.",
+                        "year": "1995"
+                    },
+                    {
+                        "key": "b28_978",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1599",
+                        "DOI": "10.1093/brain/112.6.1599",
+                        "volume": "112",
+                        "author": "Pause M.",
+                        "year": "1989",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "b19_979",
+                        "volume-title": "The Cerebral Cortex of Man",
+                        "author": "Penfield W.",
+                        "year": "1952"
+                    },
+                    {
+                        "key": "b2_980",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/0926-6410(95)00038-0"
+                    },
+                    {
+                        "key": "b8_981",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/BF00227301"
+                    },
+                    {
+                        "key": "b23_982",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "429",
+                        "DOI": "10.1093/cercor/5.5.429",
+                        "volume": "5",
+                        "author": "Sakata H.",
+                        "year": "1995",
+                        "journal-title": "Cerebral Cortex"
+                    },
+                    {
+                        "key": "b29_983",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "481",
+                        "DOI": "10.1111/j.1460-9568.1991.tb00835.x",
+                        "volume": "3",
+                        "author": "Seitz R.J.",
+                        "year": "1991",
+                        "journal-title": "Eur. J. Neurosci."
+                    },
+                    {
+                        "key": "b25_984",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/386167a0"
+                    },
+                    {
+                        "key": "b6_985",
+                        "first-page": "2289",
+                        "volume": "11",
+                        "author": "Strafella A.P.",
+                        "year": "2000",
+                        "journal-title": "Exp. Brain Res."
+                    },
+                    {
+                        "key": "b16_986",
+                        "volume-title": "Co-Planar Stereotactic Atlas of the Human Brain",
+                        "author": "Talairach J.",
+                        "year": "1988"
+                    }
+                ],
+                "container-title": [
+                    "European Journal of Neuroscience"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "http://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1046%2Fj.1460-9568.2001.01385.x",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "http://onlinelibrary.wiley.com/wol1/doi/10.1046/j.1460-9568.2001.01385.x/fullpdf",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2021,
+                            2,
+                            4
+                        ]
+                    ],
+                    "date-time": "2021-02-04T14:45:19Z",
+                    "timestamp": 1612449919000
+                },
+                "score": 136.47302,
+                "resource": {
+                    "primary": {
+                        "URL": "http://doi.wiley.com/10.1046/j.1460-9568.2001.01385.x"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2001,
+                            1
+                        ]
+                    ]
+                },
+                "references-count": 30,
+                "journal-issue": {
+                    "issue": "2",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2001,
+                                1
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "10.1046/j.1460-9568.2001.01385.x"
+                ],
+                "URL": "https://doi.org/10.1046/j.1460-9568.2001.01385.x",
+                "ISSN": [
+                    "0953-816X",
+                    "1460-9568"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0953-816X",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1460-9568",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2001,
+                            1
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

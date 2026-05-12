@@ -2,32 +2,32 @@
     {
         "name": "testthat.R",
         "path": "tests/testthat.R",
-        "sha": "efb9b3ece14f667f131ed3e525a26040bca84ec7",
-        "size": 488,
+        "sha": "d4d56d5d74cd3a8b9cb7173d75df34e4ae67e505",
+        "size": 430,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/tests/testthat.R?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/blob/main/tests/testthat.R",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/efb9b3ece14f667f131ed3e525a26040bca84ec7",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/d4d56d5d74cd3a8b9cb7173d75df34e4ae67e505",
         "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/tests/testthat.R",
         "type": "file",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/tests/testthat.R?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/efb9b3ece14f667f131ed3e525a26040bca84ec7",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/d4d56d5d74cd3a8b9cb7173d75df34e4ae67e505",
             "html": "https://github.com/scienceverse/metacheck/blob/main/tests/testthat.R"
         }
     },
     {
         "name": "testthat",
         "path": "tests/testthat",
-        "sha": "2d097c5cbf906b3cdf593d48736034dcb102505c",
+        "sha": "4f3a695ad7599f5faf6bba19c241f75e5972d2f7",
         "size": 0,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/tests/testthat?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/tree/main/tests/testthat",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/2d097c5cbf906b3cdf593d48736034dcb102505c",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/4f3a695ad7599f5faf6bba19c241f75e5972d2f7",
         "download_url": null,
         "type": "dir",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/tests/testthat?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/2d097c5cbf906b3cdf593d48736034dcb102505c",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/4f3a695ad7599f5faf6bba19c241f75e5972d2f7",
             "html": "https://github.com/scienceverse/metacheck/tree/main/tests/testthat"
         }
     }

@@ -1,0 +1,1119 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    11
+                ]
+            ],
+            "date-time": "2026-05-11T13:55:22Z",
+            "timestamp": 1778507722729,
+            "version": "3.51.4"
+        },
+        "reference-count": 163,
+        "publisher": "SAGE Publications",
+        "issue": "1",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2019,
+                            10,
+                            14
+                        ]
+                    ],
+                    "date-time": "2019-10-14T00:00:00Z",
+                    "timestamp": 1571011200000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://journals.sagepub.com/page/policies/text-and-data-mining-license"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "journals.sagepub.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Emotion Review"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2020,
+                    1
+                ]
+            ]
+        },
+        "abstract": "<jats:p>The nature of envy has recently been the subject of a heated debate. Some researchers see envy as a complex, yet unitary construct that despite being hostile in nature can lead to both hostile and nonhostile reactions. Others offer a dual approach to envy, in which envy’s outcomes reflect two types of envy: benign envy, involving upward motivation, and malicious envy, involving hostility against superior others. We compare these competing conceptualizations of envy in an adversarial (yet collaborative) review. Our goal is to aid the consumers of envy research in navigating the intricacies of this debate. We identify agreements and disagreements and describe implications for theory, methodology, and measurement, as well as challenges and opportunities for future work.<\/jats:p>",
+        "DOI": "10.1177/1754073919873131",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2019,
+                    10,
+                    14
+                ]
+            ],
+            "date-time": "2019-10-14T03:22:37Z",
+            "timestamp": 1571023357000
+        },
+        "page": "3-21",
+        "update-policy": "https://doi.org/10.1177/sage-journals-update-policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 84,
+        "title": [
+            "Envy: An Adversarial Review and Comparison of Two Competing Views"
+        ],
+        "prefix": "10.1177",
+        "volume": "12",
+        "author": [
+            {
+                "ORCID": "https://orcid.org/0000-0002-9403-6084",
+                "authenticated-orcid": false,
+                "given": "Jan",
+                "family": "Crusius",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychology, University of Cologne, Germany"
+                    }
+                ]
+            },
+            {
+                "given": "Manuel F.",
+                "family": "Gonzalez",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychology, Baruch College, USA"
+                    },
+                    {
+                        "name": "The Graduate Center, The City University of New York, USA"
+                    }
+                ]
+            },
+            {
+                "given": "Jens",
+                "family": "Lange",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Department of Social Psychology, University of Amsterdam, The Netherlands"
+                    }
+                ]
+            },
+            {
+                "given": "Yochi",
+                "family": "Cohen-Charash",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychology, Baruch College, USA"
+                    },
+                    {
+                        "name": "The Graduate Center, The City University of New York, USA"
+                    }
+                ]
+            }
+        ],
+        "member": "179",
+        "published-online": {
+            "date-parts": [
+                [
+                    2019,
+                    10,
+                    14
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "bibr1-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0005"
+            },
+            {
+                "key": "bibr2-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s40806-015-0037-1"
+            },
+            {
+                "key": "bibr3-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/258555"
+            },
+            {
+                "key": "bibr4-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0034431"
+            },
+            {
+                "key": "bibr5-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF01252843"
+            },
+            {
+                "key": "bibr6-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s13162-011-0018-x"
+            },
+            {
+                "key": "bibr7-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/2941056"
+            },
+            {
+                "key": "bibr8-1754073919873131",
+                "first-page": "1",
+                "volume-title": "Perspectives on anger and emotion: Advances in social cognition",
+                "volume": "6",
+                "author": "Berkowitz L.",
+                "year": "1993"
+            },
+            {
+                "key": "bibr9-1754073919873131",
+                "first-page": "17",
+                "volume-title": "Envy, competition, and gender: Theory, clinical applications and group work",
+                "author": "Berman A.",
+                "year": "2007"
+            },
+            {
+                "key": "bibr10-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.117.2.187"
+            },
+            {
+                "key": "bibr11-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0024448"
+            },
+            {
+                "key": "bibr12-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10551-016-3224-5"
+            },
+            {
+                "key": "bibr13-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073909103590"
+            },
+            {
+                "key": "bibr14-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1086/672357"
+            },
+            {
+                "key": "bibr15-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5455/apd.256664"
+            },
+            {
+                "key": "bibr16-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073913489751"
+            },
+            {
+                "issue": "1",
+                "key": "bibr17-1754073919873131",
+                "first-page": "584",
+                "volume": "62",
+                "author": "Cohen-Charash Y.",
+                "year": "2000",
+                "journal-title": "Dissertation Abstracts International: Section B. Sciences and Engineering"
+            },
+            {
+                "key": "bibr18-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1559-1816.2009.00519.x"
+            },
+            {
+                "key": "bibr19-1754073919873131",
+                "author": "Cohen-Charash Y.",
+                "year": "2019",
+                "journal-title": "The value judgment of emotions"
+            },
+            {
+                "key": "bibr20-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.4337/9781848443778.00033"
+            },
+            {
+                "key": "bibr21-1754073919873131",
+                "volume-title": "Paper presented at the biannual conference of the International Society for Research on Emotion",
+                "author": "Cohen-Charash Y.",
+                "year": "2019"
+            },
+            {
+                "key": "bibr22-1754073919873131",
+                "volume-title": "Paper presented at the Annual Meeting of the Academy of Management",
+                "author": "Cohen-Charash Y.",
+                "year": "2011"
+            },
+            {
+                "key": "bibr23-1754073919873131",
+                "volume-title": "Paper presented at the biannual conference of the International Society for Research on Emotion",
+                "author": "Cohen-Charash Y.",
+                "year": "2015"
+            },
+            {
+                "key": "bibr24-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0963721416683667"
+            },
+            {
+                "key": "bibr25-1754073919873131",
+                "first-page": "1",
+                "volume-title": "Envy at work and in organizations",
+                "author": "Cohen-Charash Y.",
+                "year": "2017"
+            },
+            {
+                "key": "bibr26-1754073919873131",
+                "volume-title": "Symposium presented at the Annual Meeting of the Academy of Management",
+                "author": "Cohen-Charash Y.",
+                "year": "2013"
+            },
+            {
+                "key": "bibr27-1754073919873131",
+                "author": "Cohen-Charash Y.",
+                "year": "2019",
+                "journal-title": "I am so happy for you: Firgun in organizations"
+            },
+            {
+                "key": "bibr28-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0021-9010.92.3.666"
+            },
+            {
+                "key": "bibr29-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jbusres.2008.01.013"
+            },
+            {
+                "key": "bibr30-1754073919873131",
+                "first-page": "119",
+                "volume-title": "Theories in social psychology",
+                "author": "Corcoran K.",
+                "year": "2011"
+            },
+            {
+                "key": "bibr31-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2014.05.007"
+            },
+            {
+                "key": "bibr32-1754073919873131",
+                "first-page": "85",
+                "volume-title": "Envy at work and in organizations",
+                "author": "Crusius J.",
+                "year": "2017"
+            },
+            {
+                "key": "bibr33-1754073919873131",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Crusius J., Lange J. (2019). Counterfactual thinking in benign and malicious envy. Unpublished manuscript, University of Cologne, Cologne, Germany.",
+                "DOI": "10.31234/osf.io/kbqfv"
+            },
+            {
+                "key": "bibr34-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0023523"
+            },
+            {
+                "key": "bibr35-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/mila.12113"
+            },
+            {
+                "key": "bibr36-1754073919873131",
+                "unstructured": "D’Arms J. (2017). Envy. In Zalta E. N. (Ed.), The Stanford encyclopedia of philosophy. Retrieved from https://plato.stanford.edu/archives/spr2017/entries/envy/"
+            },
+            {
+                "key": "bibr37-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0003"
+            },
+            {
+                "key": "bibr38-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amj.2014.0767"
+            },
+            {
+                "key": "bibr39-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amj.2009.0804"
+            },
+            {
+                "key": "bibr40-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/104649640003100101"
+            },
+            {
+                "key": "bibr41-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1094428110378369"
+            },
+            {
+                "key": "bibr42-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1082-989X.5.2.155"
+            },
+            {
+                "key": "bibr43-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1548051815605020"
+            },
+            {
+                "key": "bibr44-1754073919873131",
+                "first-page": "572",
+                "volume-title": "Handbook of affective sciences",
+                "author": "Ellsworth P. C.",
+                "year": "2003"
+            },
+            {
+                "key": "bibr45-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.6.4.572"
+            },
+            {
+                "key": "bibr46-1754073919873131",
+                "first-page": "49",
+                "volume-title": "Strategy and choice",
+                "author": "Elster J.",
+                "year": "1991"
+            },
+            {
+                "key": "bibr47-1754073919873131",
+                "first-page": "1759",
+                "volume": "10",
+                "author": "Eslami A.",
+                "year": "2016",
+                "journal-title": "International Journal of Social, Behavioral, Educational, Economic, Business and Industrial Engineering"
+            },
+            {
+                "key": "bibr48-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0017"
+            },
+            {
+                "key": "bibr49-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000102"
+            },
+            {
+                "key": "bibr50-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/00049530500048672"
+            },
+            {
+                "key": "bibr51-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/014616720202800708"
+            },
+            {
+                "key": "bibr52-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0956797613510184"
+            },
+            {
+                "key": "bibr53-1754073919873131",
+                "volume-title": "Paper presented at the biannual meeting of the International Society for Research on Emotion",
+                "author": "Fischer A. H.",
+                "year": "2009"
+            },
+            {
+                "key": "bibr54-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073910361980"
+            },
+            {
+                "key": "bibr55-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1559-1816.2008.00428.x"
+            },
+            {
+                "key": "bibr56-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0003-066x.65.8.698"
+            },
+            {
+                "key": "bibr57-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.82.6.878"
+            },
+            {
+                "key": "bibr58-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1086/201267"
+            },
+            {
+                "key": "bibr59-1754073919873131",
+                "volume-title": "Luxury fever: Money and happiness in an era of excess",
+                "author": "Frank R. H.",
+                "year": "1999"
+            },
+            {
+                "key": "bibr60-1754073919873131",
+                "volume-title": "The emotions",
+                "author": "Frijda N. H.",
+                "year": "1986"
+            },
+            {
+                "key": "bibr61-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1745691613504114"
+            },
+            {
+                "key": "bibr62-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10887-014-9106-8"
+            },
+            {
+                "key": "bibr63-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.76.1.129"
+            },
+            {
+                "key": "bibr64-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1287/orsc.1090.0498"
+            },
+            {
+                "key": "bibr65-1754073919873131",
+                "author": "Gonzalez M. F.",
+                "year": "2019",
+                "journal-title": "Changeability and reactions to envy"
+            },
+            {
+                "key": "bibr66-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1022818803399"
+            },
+            {
+                "key": "bibr67-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0018"
+            },
+            {
+                "key": "bibr68-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/10628-000"
+            },
+            {
+                "key": "bibr69-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/mde.1288"
+            },
+            {
+                "key": "bibr70-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0004"
+            },
+            {
+                "key": "bibr71-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0023904"
+            },
+            {
+                "key": "bibr72-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1082-989X.12.2.205"
+            },
+            {
+                "key": "bibr73-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s11031-015-9498-6"
+            },
+            {
+                "key": "bibr74-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10869-011-9238-1"
+            },
+            {
+                "key": "bibr75-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699938908408075"
+            },
+            {
+                "key": "bibr76-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999399379140"
+            },
+            {
+                "key": "bibr77-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999399379168"
+            },
+            {
+                "key": "bibr78-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/009539979202400103"
+            },
+            {
+                "key": "bibr79-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1108/PR-12-2014-0279"
+            },
+            {
+                "key": "bibr80-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/job.1864"
+            },
+            {
+                "key": "bibr81-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0035789"
+            },
+            {
+                "key": "bibr82-1754073919873131",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Kwiatkowska M. M., Rogoza R., Volkodav T. (2018). Psychometric properties of the Benign and Malicious Envy Scale: Assessment of structure, reliability, and measurement invariance across three European countries. Unpublished manuscript, Cardinal Stefan Wyszyński University, Warsaw, Poland.",
+                "DOI": "10.31234/osf.io/7wutz"
+            },
+            {
+                "key": "bibr83-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2224/sbp.5977"
+            },
+            {
+                "key": "bibr84-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.4135/9781526451248.n18"
+            },
+            {
+                "key": "bibr85-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000454"
+            },
+            {
+                "key": "bibr86-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167214564959"
+            },
+            {
+                "key": "bibr87-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/pspi0000026"
+            },
+            {
+                "key": "bibr88-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/per.2047"
+            },
+            {
+                "key": "bibr89-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000652"
+            },
+            {
+                "key": "bibr90-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167217746340"
+            },
+            {
+                "key": "bibr91-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167218808501"
+            },
+            {
+                "key": "bibr92-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/pspi0000118"
+            },
+            {
+                "key": "bibr93-1754073919873131",
+                "volume-title": "Paper presented at the Annual Meeting of the Academy of Management",
+                "author": "Larson E. C.",
+                "year": "2013"
+            },
+            {
+                "key": "bibr94-1754073919873131",
+                "volume-title": "Paper presented at the Annual Conference of the Society of Industrial and Organizational Psychology",
+                "author": "Larson E. C.",
+                "year": "2018"
+            },
+            {
+                "key": "bibr95-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0021-9010.73.4.753"
+            },
+            {
+                "key": "bibr96-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/oso/9780195069945.001.0001"
+            },
+            {
+                "key": "bibr97-1754073919873131",
+                "first-page": "45",
+                "volume-title": "Emotions at work: Theory, research and applications for management",
+                "author": "Lazarus R. S.",
+                "year": "2001"
+            },
+            {
+                "key": "bibr98-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0006"
+            },
+            {
+                "key": "bibr99-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0012629"
+            },
+            {
+                "key": "bibr100-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amj.2016.1202"
+            },
+            {
+                "key": "bibr101-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/00223891.1971.10119638"
+            },
+            {
+                "key": "bibr102-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0018726714535824"
+            },
+            {
+                "key": "bibr103-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167214554916"
+            },
+            {
+                "key": "bibr104-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1089/cyber.2017.0708"
+            },
+            {
+                "key": "bibr105-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/1467-9280.00350"
+            },
+            {
+                "key": "bibr106-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699930600814735"
+            },
+            {
+                "key": "bibr107-1754073919873131",
+                "first-page": "373",
+                "volume-title": "Envy at work and in organizations",
+                "author": "Mishra P.",
+                "year": "2017"
+            },
+            {
+                "key": "bibr108-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1750-4716.2007.00002.x"
+            },
+            {
+                "key": "bibr109-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.4324/9781315276229"
+            },
+            {
+                "key": "bibr110-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1017/CBO9780511571299"
+            },
+            {
+                "key": "bibr111-1754073919873131",
+                "first-page": "3",
+                "volume-title": "The psychology of jealousy and envy",
+                "author": "Parrott W. G.",
+                "year": "1991"
+            },
+            {
+                "key": "bibr112-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.64.6.906"
+            },
+            {
+                "key": "bibr113-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/B978-012134645-4/50023-8"
+            },
+            {
+                "key": "bibr114-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1094428115624965"
+            },
+            {
+                "key": "bibr115-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/09515089.2015.1115475"
+            },
+            {
+                "key": "bibr116-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.4159/9780674042605"
+            },
+            {
+                "key": "bibr117-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0020965"
+            },
+            {
+                "key": "bibr118-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/oso/9780195130072.003.0001"
+            },
+            {
+                "key": "bibr119-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.47.4.780"
+            },
+            {
+                "key": "bibr120-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.50.6.1100"
+            },
+            {
+                "key": "bibr121-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1521/jscp.1991.10.4.395"
+            },
+            {
+                "key": "bibr122-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.4992/jjpsy.87.15316"
+            },
+            {
+                "key": "bibr123-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2004.01.001"
+            },
+            {
+                "key": "bibr124-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0539018405058216"
+            },
+            {
+                "key": "bibr125-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2014.903230"
+            },
+            {
+                "key": "bibr126-1754073919873131",
+                "volume-title": "Envy: A theory of social behavior",
+                "author": "Schoeck H.",
+                "year": "1969"
+            },
+            {
+                "key": "bibr127-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/3033570"
+            },
+            {
+                "key": "bibr128-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1468-5914.1978.tb00406.x"
+            },
+            {
+                "key": "bibr129-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.paid.2016.01.007"
+            },
+            {
+                "key": "bibr130-1754073919873131",
+                "first-page": "79",
+                "volume-title": "The psychology of jealousy and envy",
+                "author": "Smith R. H.",
+                "year": "1991"
+            },
+            {
+                "key": "bibr131-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/978-1-4615-4237-7_10"
+            },
+            {
+                "key": "bibr132-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1017/CBO9780511819568.004"
+            },
+            {
+                "key": "bibr133-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.133.1.46"
+            },
+            {
+                "key": "bibr134-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/01461672992511008"
+            },
+            {
+                "key": "bibr135-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167294206008"
+            },
+            {
+                "key": "bibr136-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1751-9004.2009.00181.x"
+            },
+            {
+                "key": "bibr137-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167296222005"
+            },
+            {
+                "key": "bibr138-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/978-1-4939-0867-7_10"
+            },
+            {
+                "key": "bibr139-1754073919873131",
+                "first-page": "57",
+                "volume-title": "Envy at work and in organizations",
+                "author": "Sterling C. M.",
+                "year": "2017"
+            },
+            {
+                "key": "bibr140-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/12169-002"
+            },
+            {
+                "key": "bibr141-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amr.2009.0484"
+            },
+            {
+                "key": "bibr142-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1126/science.1165604"
+            },
+            {
+                "key": "bibr143-1754073919873131",
+                "first-page": "115",
+                "volume-title": "Social comparison: Contemporary theory and research",
+                "author": "Tesser A.",
+                "year": "1991"
+            },
+            {
+                "key": "bibr144-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.55.5.695"
+            },
+            {
+                "key": "bibr145-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.54.1.49"
+            },
+            {
+                "key": "bibr146-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/spc3.12253"
+            },
+            {
+                "key": "bibr147-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2014.961903"
+            },
+            {
+                "key": "bibr148-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2014.957657"
+            },
+            {
+                "key": "bibr149-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0015669"
+            },
+            {
+                "key": "bibr150-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0956797610385352"
+            },
+            {
+                "key": "bibr151-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1086/657239"
+            },
+            {
+                "key": "bibr152-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167211400421"
+            },
+            {
+                "key": "bibr153-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s11031-011-9235-8"
+            },
+            {
+                "key": "bibr154-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.6.1.156"
+            },
+            {
+                "key": "bibr155-1754073919873131",
+                "volume-title": "The theory of the leisure class",
+                "author": "Veblen T.",
+                "year": "1899"
+            },
+            {
+                "key": "bibr156-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.paid.2018.02.043"
+            },
+            {
+                "key": "bibr157-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.paid.2017.11.001"
+            },
+            {
+                "key": "bibr158-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000226"
+            },
+            {
+                "key": "bibr159-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1089-2680.8.2.122"
+            },
+            {
+                "key": "bibr160-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.paid.2014.08.039"
+            },
+            {
+                "key": "bibr161-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/mde.2672"
+            },
+            {
+                "key": "bibr162-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1108/EJM-04-2016-0208"
+            },
+            {
+                "key": "bibr163-1754073919873131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/20076295"
+            }
+        ],
+        "container-title": [
+            "Emotion Review"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1177/1754073919873131",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/full-xml/10.1177/1754073919873131",
+                "content-type": "application/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1177/1754073919873131",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    28
+                ]
+            ],
+            "date-time": "2026-04-28T20:00:40Z",
+            "timestamp": 1777406440000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://journals.sagepub.com/doi/10.1177/1754073919873131"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2019,
+                    10,
+                    14
+                ]
+            ]
+        },
+        "references-count": 163,
+        "journal-issue": {
+            "issue": "1",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2020,
+                        1
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1177/1754073919873131"
+        ],
+        "URL": "https://doi.org/10.1177/1754073919873131",
+        "relation": {
+            "has-preprint": [
+                {
+                    "id-type": "doi",
+                    "id": "10.31234/osf.io/v3ufs",
+                    "asserted-by": "object"
+                }
+            ]
+        },
+        "ISSN": [
+            "1754-0739",
+            "1754-0747"
+        ],
+        "issn-type": [
+            {
+                "value": "1754-0739",
+                "type": "print"
+            },
+            {
+                "value": "1754-0747",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2019,
+                    10,
+                    14
+                ]
+            ]
+        }
+    }
+}

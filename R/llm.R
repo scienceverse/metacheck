@@ -1,6 +1,9 @@
 #' Query an LLM
 #'
-#' Ask a large language model (LLM) any question you want about a vector of text or the text from a search_text().
+#' Ask a large language model (LLM) any question you want about a vector of
+#' text or the text from a search_text(). When `type` is provided, uses
+#' ellmer's structured output API to guarantee output conforming to the type
+#' spec; otherwise returns free-text responses in an `answer` column.
 #'
 #' You will need to get your own API key from <https://console.groq.com/keys>. To avoid having to type it out, add it to the .Renviron file in the following format (you can use `usethis::edit_r_environ()` to access the .Renviron file)
 #'
@@ -10,21 +13,32 @@
 #'
 #' @param text The text to send to the LLM (vector of strings, or data frame with the text in a column)
 #' @param system_prompt A system prompt to set the behavior of the assistant
+#' @param type An optional ellmer type specification for structured extraction
+#'   (e.g., from `type_object()`, `type_from_schema()`). When provided, the
+#'   provider enforces the schema and returns structured columns instead of
+#'   free text.
 #' @param text_col The name of the text column if text is a data frame
 #' @param model the LLM model name (see `llm_model_list()`) in the format "provider" or "provider/model"
 #' @param params a named list to pass to `ellmer::params()`
 #'
-#' @return a list of results
+#' @return a data frame of results
 #'
 #' @export
 #' @examples
 #' \dontrun{
+#' # Free-text query
 #' text <- c("hello", "number", "ten", 12)
 #' system_prompt <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
 #' is_number <- llm(text, system_prompt)
-#' is_number
+#'
+#' # Structured extraction
+#' type_spec <- ellmer::type_object(
+#'   is_number = ellmer::type_boolean("Whether the input is a number")
+#' )
+#' result <- llm(c("hello", "42"), "Classify the input.", type = type_spec)
 #' }
 llm <- function(text, system_prompt,
+                type = NULL,
                 text_col = "text",
                 model = llm_model(),
                 params = list()) {
@@ -42,7 +56,6 @@ llm <- function(text, system_prompt,
   # set up answer data frame to return ----
   unique_text <- unique(text[[text_col]])
   ncalls <- length(unique_text)
-  responses <- replicate(ncalls, list(), simplify = FALSE)
 
   if (ncalls == 0) stop("No calls to the LLM")
   if (ncalls > llm_max_calls()) {
@@ -50,6 +63,10 @@ llm <- function(text, system_prompt,
   }
 
   # Set up the llm ----
+  # default temperature to 0 for deterministic extraction/classification
+  if (is.null(params$temperature)) {
+    params$temperature <- 0
+  }
   tryCatch(
     {
       params <- do.call(ellmer::params, params)
@@ -59,76 +76,128 @@ llm <- function(text, system_prompt,
     }
   )
 
-  tryCatch(
-    {
-      chat <- ellmer::chat(
-        name = model,
-        system_prompt = system_prompt,
-        params = params
-      )
-    },
-    error = \(e) {
-      stop("Error setting up LLM:\n", e$message, call. = FALSE)
-    }
-  )
+  structured <- !is.null(type)
 
   # set up progress bar ----
-  pb <- pb(ncalls, "Querying LLM [:bar] :current/:total :elapsedfull")
+  label <- if (structured) "Extracting data" else "Querying LLM"
+  pb <- pb(ncalls, paste0(label, " [:bar] :current/:total :elapsedfull"))
 
   # iterate over the text ----
-  # this works better than ellmer parallel functions for now because
-  # it keeps the relationship between unique_text index and
-  # response index where responses return have 0+ items
-  for (i in seq_along(unique_text)) {
-    responses[[i]] <- tryCatch(
+  responses <- lapply(seq_along(unique_text), function(i) {
+    tryCatch(
       {
-        answer <- chat$chat(unique_text[i], echo = FALSE)
-
-        list(
-          answer = trimws(answer)
+        # fresh chat per call to avoid context accumulation
+        chat <- ellmer::chat(
+          name = model,
+          system_prompt = system_prompt,
+          params = params
         )
+
+        if (structured) {
+          result <- chat$chat_structured(unique_text[i], type = type)
+          df <- unnest_result(result)
+          df$.join_key. <- unique_text[i]
+          pb$tick()
+          df
+        } else {
+          answer <- chat$chat(unique_text[i], echo = FALSE)
+          pb$tick()
+          list(answer = trimws(answer))
+        }
       },
       error = function(e) {
-        return(list(
-          answer = NA,
-          error = TRUE,
-          error_msg = e$message
-        ))
+        pb$tick()
+        if (structured) {
+          df <- data.frame(.error = TRUE, .error_msg = e$message)
+          df$.join_key. <- unique_text[i]
+          df
+        } else {
+          list(answer = NA, error = TRUE, error_msg = e$message)
+        }
       }
     )
+  })
 
-    pb$tick()
+  # join responses back to input ----
+  if (structured) {
+    response_df <- dplyr::bind_rows(responses)
+    text$.join_key. <- text[[text_col]]
+    answer_df <- dplyr::left_join(text, response_df, by = ".join_key.",
+                                  suffix = c("", ".extracted"))
+    answer_df$.join_key. <- NULL
+  } else {
+    response_df <- do.call(dplyr::bind_rows, responses)
+    response_df[text_col] <- unique_text
+    answer_df <- dplyr::left_join(text, response_df, by = text_col)
   }
 
-  # add responses to the return df ----
-  response_df <- do.call(dplyr::bind_rows, responses)
-  response_df[text_col] <- unique_text
-  answer_df <- dplyr::left_join(text, response_df, by = text_col)
-
-  # add metadata about the system_prompt ----
+  # add metadata ----
   class(answer_df) <- c("metacheck_llm", "data.frame")
-  attr(answer_df, "llm") <- c(
-    list(
-      system_prompt = system_prompt,
-      model = model
-    ),
-    params
+  attr(answer_df, "llm") <- list(
+    system_prompt = system_prompt,
+    model = model,
+    type = type
   )
 
   # warn about errors ----
-  error_indices <- isTRUE(answer_df$error)
-  if (any(error_indices)) {
-    warn <- paste(which(error_indices), collapse = ", ") |>
-      paste("There were errors in the following rows:", x = _)
+  if (structured && ".error" %in% names(answer_df)) {
+    error_rows <- which(!is.na(answer_df$.error) & answer_df$.error)
+    if (length(error_rows) > 0) {
+      msgs <- unique(answer_df$.error_msg[error_rows])
+      warning("There were extraction errors in rows: ",
+              paste(error_rows, collapse = ", "),
+              "\n", paste("  *", msgs, collapse = "\n"))
+    }
+  } else if (!structured) {
+    error_indices <- isTRUE(answer_df$error)
+    if (any(error_indices)) {
+      warn <- paste(which(error_indices), collapse = ", ") |>
+        paste("There were errors in the following rows:", x = _)
 
-    answer_df$error_msg[error_indices] |>
-      unique() |>
-      paste("\n  * ", x = _) |>
-      paste(warn, x = _) |>
-      warning()
+      answer_df$error_msg[error_indices] |>
+        unique() |>
+        paste("\n  * ", x = _) |>
+        paste(warn, x = _) |>
+        warning()
+    }
   }
 
   return(answer_df)
+}
+
+#' Convert structured LLM result to a data frame
+#'
+#' Handles single objects, wrapper objects with a single array field,
+#' and data frames. Converts NULLs to NAs for data frame compatibility.
+#'
+#' @param result a list from `chat$chat_structured()`
+#' @returns a data frame
+#' @keywords internal
+unnest_result <- function(result) {
+  if (is.data.frame(result)) return(result)
+
+  # If result is a list with a single field containing an array of objects,
+  # unnest the array into rows (e.g., { power_analyses: [{...}, {...}] })
+  if (is.list(result) && length(result) == 1) {
+    inner <- result[[1]]
+    if (is.list(inner) && !is.data.frame(inner)) {
+      if (length(inner) == 0) {
+        return(data.frame())
+      }
+      if (all(vapply(inner, is.list, logical(1)))) {
+        return(dplyr::bind_rows(lapply(inner, function(item) {
+          item[vapply(item, is.null, logical(1))] <- NA
+          as.data.frame(item, stringsAsFactors = FALSE)
+        })))
+      }
+    }
+  }
+
+  # Single object — convert NULLs to NAs and make one-row df
+  if (is.list(result)) {
+    result[vapply(result, is.null, logical(1))] <- NA
+  }
+  as.data.frame(result, stringsAsFactors = FALSE)
 }
 
 #' List LLM Models
@@ -207,18 +276,14 @@ llm_model_list <- function(platform = NULL) {
 models_groq <- function() {
   API_KEY <- Sys.getenv("GROQ_API_KEY")
   url <- "https://api.groq.com/openai/v1/models"
-  config <- httr::add_headers(
-    Authorization = paste("Bearer", API_KEY)
-  )
 
-  response <- httr::GET(
-    url, config,
-    encode = "json"
-  )
+  resp <- httr2::request(url) |>
+    httr2::req_headers(Authorization = paste("Bearer", API_KEY)) |>
+    httr2::req_perform()
 
   models <- do.call(
     dplyr::bind_rows,
-    httr::content(response)$data
+    httr2::resp_body_json(resp)$data
   ) |>
     data.frame()
 
@@ -274,34 +339,6 @@ llm_model <- function(model = NULL) {
     stop("set llm_model with the name of a model, use `llm_model_list()` to get available models")
   }
 }
-
-
-# python_setup <- function(envname = "r-reticulate") {
-#   if (!reticulate::py_available(TRUE)) {
-#     stop("You need to install python (e.g. `reticulate::install_python()` )")
-#   }
-#
-#   # set up virtual environment
-#   message("Setting up virtual environment ", envname, "...")
-#   req <- system.file("python/requirements.txt", package = "metacheck")
-#   if (!reticulate::virtualenv_exists(envname)) {
-#     reticulate::virtualenv_create(envname, requirements = req)
-#   } else {
-#     reticulate::virtualenv_install(envname, requirements = req)
-#   }
-#
-#   # check for .Renviron
-#   if (Sys.getenv("RETICULATE_PYTHON") == "") {
-#     message <- "Add the following line to your .Renviron file, and restart R:"
-#
-#      message <- sprintf("%s\nRETICULATE_PYTHON=\"%s/%s/bin/python\"",
-#               message, reticulate::virtualenv_root(), envname)
-#
-#     base::message(message)
-#   }
-#
-#   message("Done!")
-# }
 
 
 #' Set or get metacheck LLM use

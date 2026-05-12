@@ -4,10 +4,12 @@
 \alias{osf_children}
 \title{List Children of an OSF Component}
 \usage{
-osf_children(osf_id)
+osf_children(osf_id, pb = NULL)
 }
 \arguments{
 \item{osf_id}{a vector of OSF IDs}
+
+\item{pb}{a progress bar passed from another function}
 }
 \value{
 a data frame with child info

@@ -1,0 +1,778 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    1
+                ]
+            ],
+            "date-time": "2026-05-01T01:17:28Z",
+            "timestamp": 1777598248235,
+            "version": "3.51.4"
+        },
+        "reference-count": 102,
+        "publisher": "SAGE Publications",
+        "issue": "3",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2011,
+                            5,
+                            1
+                        ]
+                    ],
+                    "date-time": "2011-05-01T00:00:00Z",
+                    "timestamp": 1304208000000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://journals.sagepub.com/page/policies/text-and-data-mining-license"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "journals.sagepub.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Eur J Pers"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2011,
+                    5
+                ]
+            ]
+        },
+        "abstract": "<jats:p>Based on a new theoretical framework—the Social Relations Lens Model—this study examined the influence of personality on real–life attraction at zero acquaintance. A group of psychology freshmen ( N = 73) was investigated upon encountering one another for the first time. Personality traits, attraction ratings and metaperceptions were assessed using a large round–robin design (2628 dyads). In line with our model, personality differentially predicted who was a liker and who expected to be liked (perceiver effects), who was popular and who was seen as a liker (target effects), as well as who liked whom and who expected to be liked by whom (relationship effects). Moreover, the influence of personality on attraction was mediated by observable physical, nonverbal and audible cues. Results allowed a closer look at first sight and underline the importance of combining componential and process approaches in understanding the interplay of personality and social phenomena. Copyright © 2010 John Wiley &amp; Sons, Ltd.<\/jats:p>",
+        "DOI": "10.1002/per.790",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2010,
+                    7,
+                    29
+                ]
+            ],
+            "date-time": "2010-07-29T03:31:08Z",
+            "timestamp": 1280374268000
+        },
+        "page": "225-238",
+        "update-policy": "https://doi.org/10.1177/sage-journals-update-policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 126,
+        "title": [
+            "A Closer Look at First Sight: Social Relations Lens Model Analysis of Personality and Interpersonal Attraction at Zero Acquaintance"
+        ],
+        "prefix": "10.1177",
+        "volume": "25",
+        "author": [
+            {
+                "given": "Mitja D.",
+                "family": "Back",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychology Johannes Gutenberg-University Mainz, Germany"
+                    }
+                ]
+            },
+            {
+                "given": "Stefan C.",
+                "family": "Schmukle",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychology Westfälische Wilhelms-University Mü nster, Germany"
+                    }
+                ]
+            },
+            {
+                "given": "Boris",
+                "family": "Egloff",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychology Johannes Gutenberg-University Mainz, Germany"
+                    }
+                ]
+            }
+        ],
+        "member": "179",
+        "published-online": {
+            "date-parts": [
+                [
+                    2011,
+                    5,
+                    1
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "bibr1-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0014201"
+            },
+            {
+                "key": "bibr2-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0025907"
+            },
+            {
+                "key": "bibr3-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.53.3.542"
+            },
+            {
+                "key": "bibr4-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.83.1.245"
+            },
+            {
+                "key": "bibr5-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/per.725"
+            },
+            {
+                "key": "bibr6-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jrp.2009.04.002"
+            },
+            {
+                "key": "bibr7-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-9280.2008.02106.x"
+            },
+            {
+                "key": "bibr8-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jrp.2008.02.001"
+            },
+            {
+                "key": "bibr9-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0016229"
+            },
+            {
+                "key": "bibr10-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0016338"
+            },
+            {
+                "key": "bibr11-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0956797609360756"
+            },
+            {
+                "key": "bibr12-per.790",
+                "first-page": "680",
+                "volume-title": "The handbook of social psychology",
+                "author": "Baumeister R. F.",
+                "year": "1998",
+                "edition": "4"
+            },
+            {
+                "key": "bibr13-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1745-6916.2007.00051.x"
+            },
+            {
+                "key": "bibr14-per.790",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.2307/j.ctv17vf74v",
+                "volume-title": "Music scenes: Local, trans–local and virtual",
+                "author": "Bennett A.",
+                "year": "2004"
+            },
+            {
+                "key": "bibr15-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167200265002"
+            },
+            {
+                "key": "bibr16-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.100.1.3"
+            },
+            {
+                "key": "bibr17-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF02294341"
+            },
+            {
+                "key": "bibr18-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jrp.2009.03.007"
+            },
+            {
+                "key": "bibr19-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.62.4.645"
+            },
+            {
+                "key": "bibr20-per.790",
+                "doi-asserted-by": "crossref",
+                "first-page": "477",
+                "DOI": "10.1111/j.1467-6494.1993.tb00779.x",
+                "volume": "61",
+                "author": "Borkenau P.",
+                "year": "1993",
+                "journal-title": "Journal of Personality"
+            },
+            {
+                "key": "bibr21-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.65.3.546"
+            },
+            {
+                "key": "bibr22-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-6494.1995.tb00799.x"
+            },
+            {
+                "key": "bibr23-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.86.4.599"
+            },
+            {
+                "key": "bibr24-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.106.2.265"
+            },
+            {
+                "key": "bibr25-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1525/9780520350519"
+            },
+            {
+                "key": "bibr26-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.3.1.48"
+            },
+            {
+                "key": "bibr27-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0044721"
+            },
+            {
+                "key": "bibr28-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jrp.2007.01.004"
+            },
+            {
+                "key": "bibr29-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF02289193"
+            },
+            {
+                "key": "bibr30-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167298243009"
+            },
+            {
+                "key": "bibr31-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0057173"
+            },
+            {
+                "key": "bibr32-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/per.682"
+            },
+            {
+                "key": "bibr33-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.111.2.203"
+            },
+            {
+                "key": "bibr34-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/14792779108401864"
+            },
+            {
+                "key": "bibr35-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/per.477"
+            },
+            {
+                "key": "bibr36-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.83.6.1441"
+            },
+            {
+                "key": "bibr37-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167288141020"
+            },
+            {
+                "key": "bibr38-per.790",
+                "volume-title": "Personality judgment: A realistic approach to person perception",
+                "author": "Funder D. C.",
+                "year": "1999"
+            },
+            {
+                "key": "bibr39-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/1467-6494.00103"
+            },
+            {
+                "key": "bibr40-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.64.3.479"
+            },
+            {
+                "key": "bibr41-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-6494.2008.00521.x"
+            },
+            {
+                "key": "bibr42-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/per.724"
+            },
+            {
+                "key": "bibr43-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/00223890903379134"
+            },
+            {
+                "key": "bibr44-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-6494.2006.00414.x"
+            },
+            {
+                "key": "bibr45-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.66.2.398"
+            },
+            {
+                "key": "bibr46-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0022-1031(77)80005-X"
+            },
+            {
+                "key": "bibr47-per.790",
+                "volume-title": "Snoop: What your stuff says about you",
+                "author": "Gosling S. D.",
+                "year": "2008"
+            },
+            {
+                "key": "bibr48-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.82.3.379"
+            },
+            {
+                "key": "bibr49-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/978-3-662-07142-7_11"
+            },
+            {
+                "key": "bibr50-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919-009-0070-5"
+            },
+            {
+                "key": "bibr51-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/per.2410010405"
+            },
+            {
+                "key": "bibr52-per.790",
+                "volume-title": "Subculture: The meaning of style",
+                "author": "Hebdige D.",
+                "year": "1979"
+            },
+            {
+                "key": "bibr53-per.790",
+                "volume-title": "Making vocational choices",
+                "author": "Holland J. L.",
+                "year": "1973"
+            },
+            {
+                "key": "bibr54-per.790",
+                "first-page": "114",
+                "volume-title": "Handbook of personality: Theory and research",
+                "author": "John O. P.",
+                "year": "2008"
+            },
+            {
+                "key": "bibr55-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0065-2601(05)37001-8"
+            },
+            {
+                "key": "bibr56-per.790",
+                "volume-title": "Interpersonal perception: A social relations analysis",
+                "author": "Kenny D. A.",
+                "year": "1994"
+            },
+            {
+                "key": "bibr57-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.114.1.145"
+            },
+            {
+                "key": "bibr58-per.790",
+                "volume-title": "Dyadic data analysis",
+                "author": "Kenny D. A.",
+                "year": "2006"
+            },
+            {
+                "key": "bibr59-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/s15327957pspr1004_1"
+            },
+            {
+                "key": "bibr60-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167208326477"
+            },
+            {
+                "key": "bibr61-per.790",
+                "author": "Küfner A. C. P.",
+                "journal-title": "Journal of Research in Personality."
+            },
+            {
+                "key": "bibr62-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.126.3.390"
+            },
+            {
+                "key": "bibr63-per.790",
+                "doi-asserted-by": "crossref",
+                "first-page": "349",
+                "DOI": "10.1111/j.1467-6494.1981.tb00219.x",
+                "volume": "49",
+                "author": "Larrance D. T.",
+                "year": "1981",
+                "journal-title": "Journal of Personality"
+            },
+            {
+                "key": "bibr64-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1082-989X.2.3.278"
+            },
+            {
+                "key": "bibr65-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1082-989X.3.3.328"
+            },
+            {
+                "key": "bibr66-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0065-2601(00)80003-9"
+            },
+            {
+                "key": "bibr67-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.65.6.1178"
+            },
+            {
+                "key": "bibr68-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.58.3.419"
+            },
+            {
+                "key": "bibr69-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167292186006"
+            },
+            {
+                "key": "bibr70-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-6494.1986.tb00393.x"
+            },
+            {
+                "key": "bibr71-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/s15327906mbr2801_2"
+            },
+            {
+                "key": "bibr72-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.90.5.862"
+            },
+            {
+                "key": "bibr73-per.790",
+                "volume-title": "Mplus. User's guide",
+                "author": "Muthén L. K.",
+                "year": "2006",
+                "edition": "4"
+            },
+            {
+                "key": "bibr74-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167209346309"
+            },
+            {
+                "key": "bibr75-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/13156-000"
+            },
+            {
+                "key": "bibr76-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.56.4.506"
+            },
+            {
+                "key": "bibr77-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.74.5.1197"
+            },
+            {
+                "key": "bibr78-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.63.5.816"
+            },
+            {
+                "key": "bibr79-per.790",
+                "first-page": "492",
+                "volume-title": "Handbook of personality: Theory and research",
+                "author": "Paulhus D. L.",
+                "year": "2008"
+            },
+            {
+                "key": "bibr80-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.81.3.524"
+            },
+            {
+                "key": "bibr81-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.0963-7214.2005.00344.x"
+            },
+            {
+                "key": "bibr82-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jrp.2006.02.001"
+            },
+            {
+                "key": "bibr83-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/ejsp.2420200307"
+            },
+            {
+                "key": "bibr84-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1022117500440"
+            },
+            {
+                "key": "bibr85-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167200262009"
+            },
+            {
+                "key": "bibr86-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1515/9781400876136"
+            },
+            {
+                "key": "bibr87-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/3002019"
+            },
+            {
+                "key": "bibr88-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.99.2.143"
+            },
+            {
+                "key": "bibr89-per.790",
+                "unstructured": "Schmukle S. C., Schoenbrodt F. D. & Back M. D. (2009). Triple R: A package for round robin analyses using R (version 0.1). Retrieved from http://www.persoc.net"
+            },
+            {
+                "key": "bibr90-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0065-2601(08)60281-6"
+            },
+            {
+                "key": "bibr91-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-6494.2010.00625.x"
+            },
+            {
+                "key": "bibr92-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0014468"
+            },
+            {
+                "key": "bibr93-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-6494.1981.tb00732.x"
+            },
+            {
+                "key": "bibr94-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0057171"
+            },
+            {
+                "key": "bibr95-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0265407504042837"
+            },
+            {
+                "key": "bibr96-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/s15327957pspr1002_4"
+            },
+            {
+                "key": "bibr97-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jrp.2008.06.007"
+            },
+            {
+                "key": "bibr98-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.57.1.120"
+            },
+            {
+                "key": "bibr99-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.0022-3506.2004.00289.x"
+            },
+            {
+                "key": "bibr100-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.64.3.453"
+            },
+            {
+                "key": "bibr101-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0012-1649.28.6.1143"
+            },
+            {
+                "key": "bibr102-per.790",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/01461672962212006"
+            }
+        ],
+        "container-title": [
+            "European Journal of Personality"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1002%2Fper.790",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1002%2Fper.790",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1002/per.790",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/full-xml/10.1002/per.790",
+                "content-type": "application/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1002/per.790",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    28
+                ]
+            ],
+            "date-time": "2026-04-28T20:44:52Z",
+            "timestamp": 1777409092000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://journals.sagepub.com/doi/10.1002/per.790"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2011,
+                    5
+                ]
+            ]
+        },
+        "references-count": 102,
+        "journal-issue": {
+            "issue": "3",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2011,
+                        5
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1002/per.790"
+        ],
+        "URL": "https://doi.org/10.1002/per.790",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0890-2070",
+            "1099-0984"
+        ],
+        "issn-type": [
+            {
+                "value": "0890-2070",
+                "type": "print"
+            },
+            {
+                "value": "1099-0984",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2011,
+                    5
+                ]
+            ]
+        }
+    }
+}

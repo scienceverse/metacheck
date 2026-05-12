@@ -19,27 +19,30 @@
 #' @returns a list
 ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.Rds", package = "metacheck"))) {
   # consolidate bib tables and filter to relevant DOI
-  bibs <- concat_tables(paper, "bib") |>
-    dplyr::select(xref_id, ref, doi, id) |>
+  bibs <- paper_table(paper, "bib", c("paper_id", "bib_id", "doi")) |>
     dplyr::inner_join(db, by = "doi") |>
     unique()
 
   # consolidate xrefs, filter, and expand
-  xrefs <- concat_tables(paper, "xrefs") |>
-    dplyr::right_join(bibs, by = c("xref_id", "id")) |>
+  text <- paper_table(paper, "text")
+  xrefs <- paper_table(paper, "xref") |>
+    dplyr::filter(!is.na(xref_id)) |>
+    dplyr::left_join(text, by = c("paper_id", "text_id")) |>
+    dplyr::select(paper_id, bib_id = xref_id, citation = text) |>
+    dplyr::right_join(bibs, by = c("paper_id", "bib_id")) |>
     # expand_text(paper, expand_to = "paragraph")
     unique()
 
   # detailed table of results ----
-  cols <- c("id", "xref_id", "doi", "text", "section", "div", "p", "s")
+  cols <- c("paper_id", "bib_id", "doi", "citation", "reftext", "warning")
   table <- xrefs[, cols] |> unique()
 
   # summary output for paperlists ----
   summary_table <- table |>
-    dplyr::count(id, xref_id, doi) |>
+    dplyr::count(paper_id, bib_id, doi) |>
     dplyr::select(-n) |>
     tidyr::pivot_wider(
-      names_from = doi, values_from = xref_id,
+      names_from = doi, values_from = bib_id,
       names_prefix = "miscite_"
     )
 

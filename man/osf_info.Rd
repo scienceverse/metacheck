@@ -4,9 +4,11 @@
 \alias{osf_info}
 \title{Retrieve info from the OSF by ID}
 \usage{
-osf_info(osf_id)
+osf_info(osf_ids, pb = NULL)
 }
 \arguments{
+\item{pb}{a progress bar passed from another function}
+
 \item{osf_id}{an OSF ID or URL}
 }
 \value{

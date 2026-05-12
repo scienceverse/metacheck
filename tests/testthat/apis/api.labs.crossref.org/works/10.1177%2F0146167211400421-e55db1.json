@@ -1,0 +1,611 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    4
+                ]
+            ],
+            "date-time": "2026-05-04T16:32:18Z",
+            "timestamp": 1777912338028,
+            "version": "3.51.4"
+        },
+        "reference-count": 75,
+        "publisher": "SAGE Publications",
+        "issue": "6",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2011,
+                            3,
+                            7
+                        ]
+                    ],
+                    "date-time": "2011-03-07T00:00:00Z",
+                    "timestamp": 1299456000000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://journals.sagepub.com/page/policies/text-and-data-mining-license"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "journals.sagepub.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Pers Soc Psychol Bull"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2011,
+                    6
+                ]
+            ]
+        },
+        "abstract": "<jats:p>Four studies tested the hypothesis that the emotion of benign envy, but not the emotions of admiration or malicious envy, motivates people to improve themselves. Studies 1 to 3 found that only benign envy was related to the motivation to study more (Study 1) and to actual performance on the Remote Associates Task (which measures intelligence and creativity; Studies 2 and 3). Study 4 found that an upward social comparison triggered benign envy and subsequent better performance only when people thought self-improvement was attainable. When participants thought self-improvement was hard, an upward social comparison led to more admiration and no motivation to do better. Implications of these findings for theories of social emotions such as envy, social comparisons, and for understanding the influence of role models are discussed.<\/jats:p>",
+        "DOI": "10.1177/0146167211400421",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2011,
+                    3,
+                    8
+                ]
+            ],
+            "date-time": "2011-03-08T01:59:06Z",
+            "timestamp": 1299549546000
+        },
+        "page": "784-795",
+        "update-policy": "https://doi.org/10.1177/sage-journals-update-policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 233,
+        "title": [
+            "Why Envy Outperforms Admiration"
+        ],
+        "prefix": "10.1177",
+        "volume": "37",
+        "author": [
+            {
+                "given": "Niels",
+                "family": "van de Ven",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "Tilburg University, Tilburg, The Netherlands,"
+                    }
+                ]
+            },
+            {
+                "given": "Marcel",
+                "family": "Zeelenberg",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Tilburg University, Tilburg, The Netherlands"
+                    }
+                ]
+            },
+            {
+                "given": "Rik",
+                "family": "Pieters",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Tilburg University, Tilburg, The Netherlands"
+                    }
+                ]
+            }
+        ],
+        "member": "179",
+        "published-online": {
+            "date-parts": [
+                [
+                    2011,
+                    3,
+                    7
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "atypb1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/17439760802650519"
+            },
+            {
+                "key": "atypb2",
+                "volume-title": "The rhetoric and the poetics of Aristotle",
+                "author": "Aristotle.",
+                "year": "1954"
+            },
+            {
+                "key": "atypb3",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.76.3.420"
+            },
+            {
+                "key": "atypb4",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1348/014466604X23509"
+            },
+            {
+                "key": "atypb5",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1559-1816.2007.00223.x"
+            },
+            {
+                "key": "atypb6",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1559-1816.2009.00519.x"
+            },
+            {
+                "key": "atypb7",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.119.1.51"
+            },
+            {
+                "key": "atypb8",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.75.4.862"
+            },
+            {
+                "key": "atypb9",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/104649640003100101"
+            },
+            {
+                "key": "atypb10",
+                "volume-title": "Self-theories: Their role in motivation, personality, and development",
+                "author": "Dweck, C.S.",
+                "year": "1999"
+            },
+            {
+                "key": "atypb11",
+                "unstructured": "Elster, J. ( 1991). Envy in social life. In R. J. Zeckhauser (Ed.), Strategy and choices (pp. 49-82). Cambridge, MA: MIT Press."
+            },
+            {
+                "key": "atypb12",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1088868308316091"
+            },
+            {
+                "key": "atypb13",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1089-2680.2.3.300"
+            },
+            {
+                "key": "atypb14",
+                "volume-title": "The emotions",
+                "author": "Frijda, N.H.",
+                "year": "1986"
+            },
+            {
+                "key": "atypb15",
+                "volume-title": "Admiration of others",
+                "author": "Gallozzi, C.",
+                "year": "2010"
+            },
+            {
+                "key": "atypb16",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.76.1.129"
+            },
+            {
+                "key": "atypb17",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.91.3.436"
+            },
+            {
+                "key": "atypb18",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/00221678980383002"
+            },
+            {
+                "key": "atypb19",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167207309193"
+            },
+            {
+                "key": "atypb20",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1073/pnas.0810363106"
+            },
+            {
+                "key": "atypb21",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.92.6.1051"
+            },
+            {
+                "key": "atypb22",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/ejsp.361"
+            },
+            {
+                "key": "atypb23",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1017/CBO9781107049512"
+            },
+            {
+                "key": "atypb24",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/01621459.1958.10501452"
+            },
+            {
+                "key": "atypb25",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999399379140"
+            },
+            {
+                "key": "atypb26",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999399379168"
+            },
+            {
+                "key": "atypb27",
+                "volume-title": "The sickness unto death",
+                "author": "Kierkegaard, S.",
+                "year": "2008"
+            },
+            {
+                "key": "atypb28",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.73.1.91"
+            },
+            {
+                "key": "atypb29",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.76.2.214"
+            },
+            {
+                "issue": "3",
+                "key": "atypb30",
+                "first-page": "163",
+                "volume": "50",
+                "author": "Mantel, N.",
+                "year": "1966",
+                "journal-title": "Cancer Chemotherapy Reports"
+            },
+            {
+                "key": "atypb31",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1006/jesp.1993.1005"
+            },
+            {
+                "key": "atypb32",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/S15327957PSPR0703_04"
+            },
+            {
+                "key": "atypb33",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2007.01.001"
+            },
+            {
+                "key": "atypb34",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/01461672022812004"
+            },
+            {
+                "key": "atypb35",
+                "unstructured": "Matelesta, C. & Izard, C. ( 1984). The facial expression of emotion: Young, middle-aged, and older adult expressions. In C. Matelesta & C. Izard (Eds.), Emotion in adult development (pp. 253-273). Beverly Hills, CA: Sage."
+            },
+            {
+                "key": "atypb36",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/s15324834basp0503_5"
+            },
+            {
+                "key": "atypb37",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0048850"
+            },
+            {
+                "key": "atypb38",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699930600814735"
+            },
+            {
+                "key": "atypb39",
+                "unstructured": "Neu, J. ( 1980). Jealous thoughts. In A. O. Rorty (Ed.), Explaining emotions (pp. 425-464). Los Angeles: University of California Press."
+            },
+            {
+                "key": "atypb40",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167202287008"
+            },
+            {
+                "key": "atypb41",
+                "unstructured": "Parrott, W.G. ( 1991). The emotional experiences of envy and jealousy. In P. Salovey (Ed.), The psychology of jealousy and envy (pp. 3-30). New York, NY: Guilford."
+            },
+            {
+                "key": "atypb42",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.64.6.906"
+            },
+            {
+                "key": "atypb43",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2005.04.001"
+            },
+            {
+                "key": "atypb44",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.3758/BRM.40.3.879"
+            },
+            {
+                "key": "atypb45",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.4159/9780674042605"
+            },
+            {
+                "key": "atypb46",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167295216008"
+            },
+            {
+                "key": "atypb47",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.47.4.780"
+            },
+            {
+                "key": "atypb48",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2004.01.001"
+            },
+            {
+                "key": "atypb49",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.42.2.281"
+            },
+            {
+                "key": "atypb50",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1017/CBO9780511819568.004"
+            },
+            {
+                "key": "atypb51",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780195327953.001.0001"
+            },
+            {
+                "key": "atypb52",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.133.1.46"
+            },
+            {
+                "key": "atypb53",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167288142017"
+            },
+            {
+                "key": "atypb54",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/01461672992511008"
+            },
+            {
+                "key": "atypb55",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167294206008"
+            },
+            {
+                "key": "atypb56",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167296222005"
+            },
+            {
+                "key": "atypb57",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.87.6.860"
+            },
+            {
+                "key": "atypb58",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0003-066X.52.6.613"
+            },
+            {
+                "key": "atypb59",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.49.6.1460"
+            },
+            {
+                "key": "atypb60",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1475-4975.1988.tb00124.x"
+            },
+            {
+                "key": "atypb61",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/1467-9450.00041"
+            },
+            {
+                "key": "atypb62",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0065-2601(08)60227-0"
+            },
+            {
+                "key": "atypb63",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.84.4.871"
+            },
+            {
+                "key": "atypb64",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.87.6.957"
+            },
+            {
+                "key": "atypb65",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0015669"
+            },
+            {
+                "key": "atypb66",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1086/657239"
+            },
+            {
+                "key": "atypb67",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0956797610385352"
+            },
+            {
+                "key": "atypb68",
+                "volume-title": "Appraisal patterns of benign envy and malicious envy and related social comparison emotions",
+                "author": "Van de Ven, N.",
+                "year": "2010"
+            },
+            {
+                "key": "atypb69",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.6.1.156"
+            },
+            {
+                "key": "atypb70",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1009592430712"
+            },
+            {
+                "key": "atypb71",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1089-2680.8.2.122"
+            },
+            {
+                "key": "atypb72",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-9280.2009.02292.x"
+            },
+            {
+                "key": "atypb73",
+                "doi-asserted-by": "crossref",
+                "first-page": "18",
+                "DOI": "10.1017/S1930297500000139",
+                "volume": "3",
+                "author": "Zeelenberg, M.",
+                "year": "2008",
+                "journal-title": "Judgment and Decision Making"
+            },
+            {
+                "key": "atypb74",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2003.10.001"
+            },
+            {
+                "key": "atypb75",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/s15327663jcp1701_3"
+            }
+        ],
+        "container-title": [
+            "Personality and Social Psychology Bulletin"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1177/0146167211400421",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1177/0146167211400421",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    1
+                ]
+            ],
+            "date-time": "2026-05-01T15:51:45Z",
+            "timestamp": 1777650705000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://journals.sagepub.com/doi/10.1177/0146167211400421"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2011,
+                    3,
+                    7
+                ]
+            ]
+        },
+        "references-count": 75,
+        "journal-issue": {
+            "issue": "6",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2011,
+                        6
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1177/0146167211400421"
+        ],
+        "URL": "https://doi.org/10.1177/0146167211400421",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0146-1672",
+            "1552-7433"
+        ],
+        "issn-type": [
+            {
+                "value": "0146-1672",
+                "type": "print"
+            },
+            {
+                "value": "1552-7433",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2011,
+                    3,
+                    7
+                ]
+            ]
+        }
+    }
+}

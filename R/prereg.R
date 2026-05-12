@@ -11,36 +11,48 @@ aspredicted_links <- function(paper) {
   text <- NULL
 
   # search for "aspredicted"
-  RGX_ASPREDICTED <- "/aspredicted>?\\s*\\.org"
+  RGX_ASPREDICTED <- "aspredicted>?\\s*\\.?org/\\s*"
+  # urls <- paper_table(paper, "url")
+  # urls$text <- urls$href
+  # urls$href <- NULL
+  # found_ap <- search_text(urls, RGX_ASPREDICTED)
   found_ap <- search_text(paper, RGX_ASPREDICTED)
 
   # fix blind.php? with x=abcdef in the next sentence
-  blind <- grep("blind\\.php\\?$", found_ap$text)
+  blind <- grep("blind\\s*\\.php\\?$", found_ap$text)
   expanded <- expand_text(found_ap[blind, ], paper, plus = 1)
   found_ap$text[blind] <- expanded$expanded
 
   # fix space stuff
-  found_ap$text <- gsub(RGX_ASPREDICTED, "/aspredicted\\.org",
+  found_ap$text <- gsub(RGX_ASPREDICTED, "aspredicted\\.org/",
     x = found_ap$text
   )
-  found_ap$text <- gsub("blind\\.php\\s*\\?\\s*x\\s*=\\s*",
+  found_ap$text <- gsub("blind\\s*\\.php\\s*\\?\\s*x\\s*=\\s*",
     "blind\\.php\\?x=",
     x = found_ap$text
   )
 
   # match up to ">"
-  match_ap <- search_text(found_ap, "/aspredicted\\.org[^\\>]+", return = "match")
+  #pattern <- "aspredicted\\.org[^\\>]+"
+  pattern <- c(
+    "aspredicted\\.org/[A-Za-z0-9_]{5,7}(\\.pdf)?\\b",
+    "aspredicted\\.org/[A-Za-z0-9_]{7}",
+    "aspredicted\\.org/blind.php\\?x=[A-Za-z0-9_]{5,7}"
+  )
+  match_ap <- search_text(found_ap, pattern, return = "match") |>
+    search_text("aspredicted\\.org/blind$", exclude = TRUE)
 
   # clean up the text
   match_ap$text <- match_ap$text |>
     gsub("\\s", "", x = _) |>
     gsub("\\.pdf.*", "\\.pdf", x = _) |> # some end in ".pdf)."
-    paste0("https:/", x = _)
+    paste0("https://", x = _)
 
   # remove trailing blind links
   unique_matches <- match_ap |>
     dplyr::filter(text != "https://aspredicted.org/blind.php?") |>
-    unique()
+    unique() |>
+    dplyr::arrange(text_id)
 
   return(unique_matches)
 }
@@ -130,17 +142,19 @@ aspredicted_info <- function(ap_url) {
     ap_url = ap_url
   )
   # get website
-  res <- httr::GET(ap_url)
+  resp <- httr2::request(ap_url) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
   # handle missing file
-  if (res$status_code != 200) {
+  if (httr2::resp_status(resp) != 200) {
     warning(ap_url, " could not be found", call. = FALSE)
     obj$error <- "unfound"
     return(obj)
   }
 
   # Read the content with specified encoding
-  html <- httr::content(res, "text", encoding = "UTF-8") |>
+  html <- httr2::resp_body_string(resp) |>
     xml2::read_html()
 
   body <- xml2::xml_find_all(html, "//body") |>

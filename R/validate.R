@@ -1,30 +1,3 @@
-#' Print Validation List Object
-#'
-#' @param x The metacheck_validate object
-#' @param ... Additional parameters for print
-#'
-#' @export
-#' @keywords internal
-print.metacheck_validate <- function(x, ...) {
-  txt <- sprintf("Validated matches for module `%s`:\n\n", x$module)
-  txt <- sprintf("%s* N in validation sample: %i", txt, x$stats$n_papers)
-  for (stat in names(x$stats[-1])) {
-    txt <- sprintf("%s\n* %s: ", txt, stat)
-
-    # set different formats for integer vs decimal stats
-    all_integers <- sapply(x$stats[[stat]], \(x) x == as.integer(x)) |> all()
-    fmt <- ifelse(all_integers, "%s\n  * %s: %i", "%s\n  * %s: %.2f")
-
-    for (item in names(x$stats[[stat]])) {
-      value <- x$stats[[stat]][[item]]
-      txt <- sprintf(fmt, txt, item, value)
-    }
-  }
-  cat("", txt)
-}
-
-
-
 #' Accuracy
 #'
 #' Signal detection values for modules that classify papers as having a feature or not
@@ -74,114 +47,58 @@ accuracy <- function(expected, observed) {
   return(measures)
 }
 
-#' Compare Tables for Validation
+
+#' Validate
 #'
-#' @param expected the expected table
-#' @param observed the observed table
-#' @param match_cols which columns should be used to determine identification
-#' @param comp_cols which columns should be compared for classification
+#' @param gt a data frame or vector of text
+#' @param module the module
+#' @param compare name of the module output table for comparison
 #'
-#' @returns a list of comparisons
+#' @returns something
 #' @export
 #'
 #' @examples
-#' expected <- data.frame(id = 1:2, text = c("A", "B"), value = c(10, 20))
-#' observed <- data.frame(id = 1:2, text = c("A", "B"), value = c(10, 25))
-#' compare_tables(expected, observed)
-compare_tables <- function(expected, observed,
-                           match_cols = c("id", "text"),
-                           comp_cols = NULL) {
-  .temp_id. <- NULL
-
-  # error checking
-  if (!all(match_cols %in% colnames(expected)) |
-    !all(match_cols %in% colnames(observed))) {
-    stop("All match_cols need to be in both expected and observed tables.")
+#' validate("p < .05", "stat_p_exact")
+validate <- function(gt, module, compare = "table") {
+  # convert vector of text to table
+  if (!is.data.frame(gt)) {
+    gt <- data.frame(
+      paper_id = seq_along(gt) |> as.character(),
+      text = gt
+    )
   }
 
-  # calculate or check for comp_cols
-  if (is.null(comp_cols)) {
-    # get col names that match between exp and obs
-    comp_cols <- intersect(colnames(observed), colnames(expected)) |>
-      setdiff(match_cols)
-  } else {
-    if (!all(comp_cols %in% colnames(expected)) |
-      !all(comp_cols %in% colnames(observed))) {
-      stop("All comp_cols need to be in both expected and observed tables.")
-    }
-  }
+  # create a test paper for each id containing the text
+  paper <- lapply(gt$paper_id, \(paper_id) {
+    t <- gt[gt$paper_id == paper_id, "text"]
+    p <- test_paper(t)
+    p$paper_id <- paper_id
+    p
+  }) |>
+  paperlist()
 
-  # assume repeat columns are in same order in exp and obs
-  # add temp ID for matching multi-row returns
-  exp <- expected |>
-    dplyr::mutate(
-      .temp_id. = dplyr::row_number(),
-      .by = dplyr::all_of(match_cols)
-    )
+  # run the module on the test papers
+  mo <- module_run(paper, module)
 
-  obs <- observed |>
-    dplyr::mutate(
-      .temp_id. = dplyr::row_number(),
-      .by = dplyr::all_of(match_cols)
-    )
-
-  join_cols <- c(match_cols, ".temp_id.")
-
-  # metrics of validation ----
-
-  ## identification ----
-  exp2 <- exp[, join_cols]
-  exp2$exp <- TRUE
-
-  obs2 <- obs[, join_cols]
-  obs2$obs <- TRUE
-
-  v_tbl <- dplyr::full_join(exp2, obs2, by = join_cols)
-  v_tbl$exp <- sapply(v_tbl$exp, isTRUE)
-  v_tbl$obs <- sapply(v_tbl$obs, isTRUE)
-  v_tbl$true_pos <- v_tbl$exp & v_tbl$obs
-  v_tbl$false_pos <- v_tbl$obs & !v_tbl$exp
-  v_tbl$false_neg <- v_tbl$exp & !v_tbl$obs
-
-  vars <- c("exp", "obs", "true_pos", "false_pos", "false_neg")
-  v_ident <- apply(v_tbl[, vars], 2, sum)
-
-  ## classification ----
-  if (length(comp_cols)) {
-    comp_results <- dplyr::full_join(exp, obs,
-      by = join_cols,
-      suffix = c(".exp", ".obs")
-    )
-
-    # check for matches
-    obs_match <- comp_results[paste0(comp_cols, ".obs")]
-    exp_match <- comp_results[paste0(comp_cols, ".exp")]
-
-    # check if values match (NA => FALSE)
-    match_val <- apply(obs_match == exp_match, c(1, 2), isTRUE)
-    # check if both values are NA
-    match_na <- is.na(obs_match) & is.na(exp_match)
-    # if values match or both NA, set to TRUE
-    match <- match_val | match_na
-    colnames(match) <- comp_cols
-
-    v_classification <- apply(match, 2, mean)
-
-    # make details table
-    cc <- rep(comp_cols, each = 2) |> paste0(".", c("exp", "obs"))
-    details_tbl <- comp_results[, c(join_cols, cc)] |>
-      dplyr::left_join(v_tbl, by = join_cols) |>
-      dplyr::select(-.temp_id.)
-  } else {
-    # no comp_cols
-    v_classification <- list()
-    details_tbl <- v_tbl |>
-      dplyr::select(-.temp_id.)
-  }
-
-  list(
-    identification = v_ident,
-    classification = v_classification,
-    table = details_tbl
+  # get table for comparison to text
+  comp_table <- dplyr::full_join(
+    gt, mo[[compare]],
+    by = c("paper_id", "text"),
+    suffix = c(".gt", ".mod")
   )
+
+  # compare columns with .gt/.mod suffix
+  comp_cols <- names(comp_table) |>
+    grep("\\.mod$", x = _, value = TRUE) |>
+    gsub("\\.mod$", "", x = _)
+
+  for (col in comp_cols) {
+    v_col <- paste0(col, ".valid")
+    gt_col <- comp_table[[paste0(col, ".gt")]]
+    mod_col <- comp_table[[paste0(col, ".mod")]]
+    comp_table[[v_col]] <- gt_col == mod_col
+  }
+
+  comp_table
 }
+

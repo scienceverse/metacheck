@@ -1,0 +1,34 @@
+[
+    {
+        "name": "Archive.zip",
+        "path": "folder/Archive.zip",
+        "sha": "bf725b9b7f5a88716990a6e4461ee5049f5894a2",
+        "size": 31324,
+        "url": "https://api.github.com/repos/scienceverse/demo/contents/folder/Archive.zip?ref=main",
+        "html_url": "https://github.com/scienceverse/demo/blob/main/folder/Archive.zip",
+        "git_url": "https://api.github.com/repos/scienceverse/demo/git/blobs/bf725b9b7f5a88716990a6e4461ee5049f5894a2",
+        "download_url": "https://raw.githubusercontent.com/scienceverse/demo/main/folder/Archive.zip",
+        "type": "file",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/demo/contents/folder/Archive.zip?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/demo/git/blobs/bf725b9b7f5a88716990a6e4461ee5049f5894a2",
+            "html": "https://github.com/scienceverse/demo/blob/main/folder/Archive.zip"
+        }
+    },
+    {
+        "name": "file.txt",
+        "path": "folder/file.txt",
+        "sha": "935ae925b6d391800da94744bed4426a21c8ab66",
+        "size": 17,
+        "url": "https://api.github.com/repos/scienceverse/demo/contents/folder/file.txt?ref=main",
+        "html_url": "https://github.com/scienceverse/demo/blob/main/folder/file.txt",
+        "git_url": "https://api.github.com/repos/scienceverse/demo/git/blobs/935ae925b6d391800da94744bed4426a21c8ab66",
+        "download_url": "https://raw.githubusercontent.com/scienceverse/demo/main/folder/file.txt",
+        "type": "file",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/demo/contents/folder/file.txt?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/demo/git/blobs/935ae925b6d391800da94744bed4426a21c8ab66",
+            "html": "https://github.com/scienceverse/demo/blob/main/folder/file.txt"
+        }
+    }
+]

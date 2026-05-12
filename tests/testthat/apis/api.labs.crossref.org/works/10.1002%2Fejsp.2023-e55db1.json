@@ -1,0 +1,399 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    1
+                ]
+            ],
+            "date-time": "2026-05-01T06:17:44Z",
+            "timestamp": 1777616264366,
+            "version": "3.51.4"
+        },
+        "reference-count": 36,
+        "publisher": "Wiley",
+        "issue": "7",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2014,
+                            8,
+                            15
+                        ]
+                    ],
+                    "date-time": "2014-08-15T00:00:00Z",
+                    "timestamp": 1408060800000
+                },
+                "content-version": "vor",
+                "delay-in-days": 0,
+                "URL": "http://onlinelibrary.wiley.com/termsAndConditions#vor"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Euro J Social Psych"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2014,
+                    12
+                ]
+            ]
+        },
+        "abstract": "<jats:title>Abstract<\/jats:title>\n                  <jats:p>Running studies with high statistical power, while effect size estimates in psychology are often inaccurate, leads to a practical challenge when designing an experiment. This challenge can be addressed by performing sequential analyses while the data collection is still in progress. At an interim analysis, data collection can be stopped whenever the results are convincing enough to conclude that an effect is present, more data can be collected, or the study can be terminated whenever it is extremely unlikely that the predicted effect will be observed if data collection would be continued. Such interim analyses can be performed while controlling the Type 1 error rate. Sequential analyses can greatly improve the efficiency with which data are collected. Additional flexibility is provided by adaptive designs where sample sizes are increased on the basis of the observed effect size. The need for pre‐registration, ways to prevent experimenter bias, and a comparison between Bayesian approaches and null‐hypothesis significance testing (NHST) are discussed. Sequential analyses, which are widely used in large‐scale medical trials, provide an efficient way to perform high‐powered informative experiments. I hope this introduction will provide a practical primer that allows researchers to incorporate sequential analyses in their research. Copyright © 2014 John Wiley &amp; Sons, Ltd.<\/jats:p>",
+        "DOI": "10.1002/ejsp.2023",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2014,
+                    8,
+                    15
+                ]
+            ],
+            "date-time": "2014-08-15T03:17:55Z",
+            "timestamp": 1408072675000
+        },
+        "page": "701-710",
+        "source": "Crossref",
+        "is-referenced-by-count": 309,
+        "title": [
+            "Performing high‐powered studies efficiently with sequential analyses"
+        ],
+        "prefix": "10.1002",
+        "volume": "44",
+        "author": [
+            {
+                "given": "Daniël",
+                "family": "Lakens",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "Human Technology Interaction Group Eindhoven University of Technology  Eindhoven The Netherlands"
+                    }
+                ]
+            }
+        ],
+        "member": "311",
+        "published-online": {
+            "date-parts": [
+                [
+                    2014,
+                    8,
+                    15
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "e_1_2_12_2_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/2343787"
+            },
+            {
+                "key": "e_1_2_12_3_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/2533441"
+            },
+            {
+                "key": "e_1_2_12_4_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1038/nrn3475"
+            },
+            {
+                "key": "e_1_2_12_5_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1186/1750-1172-3-11"
+            },
+            {
+                "key": "e_1_2_12_6_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1201/9780203911341"
+            },
+            {
+                "key": "e_1_2_12_7_1",
+                "volume-title": "Statistical power analysis for the behavioral sciences",
+                "author": "Cohen J.",
+                "year": "1988"
+            },
+            {
+                "key": "e_1_2_12_8_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1745-6924.2008.00079.x"
+            },
+            {
+                "key": "e_1_2_12_9_1",
+                "volume-title": "Understanding the new statistics: Effect sizes, confidence intervals, and meta‐analysis",
+                "author": "Cumming G.",
+                "year": "2012"
+            },
+            {
+                "key": "e_1_2_12_10_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/j.1538-7305.1929.tb01240.x"
+            },
+            {
+                "key": "e_1_2_12_11_1",
+                "article-title": "On the association between loneliness and bathing habits: Nine replications of Bargh and Shalev (2012) study 1",
+                "author": "Donnellan M. B.",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "e_1_2_12_12_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/ejsp.1932"
+            },
+            {
+                "key": "e_1_2_12_13_1",
+                "unstructured": "European Medicines Agency. (2006).Point to consider on methodological issues in confirmatory clinical trials with flexible design and analysis plan. The European Agency for the Evaluation of Medicinal Products Evaluation of Medicines for Human Use. CPMP/EWP/2459/02 London UK."
+            },
+            {
+                "key": "e_1_2_12_14_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1371/journal.pmed.0020124"
+            },
+            {
+                "key": "e_1_2_12_15_1",
+                "volume-title": "Group sequential methods with applications to clinical trials",
+                "author": "Jennison C.",
+                "year": "2000"
+            },
+            {
+                "key": "e_1_2_12_16_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1745691612463704"
+            },
+            {
+                "key": "e_1_2_12_17_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.3389/fpsyg.2013.00863"
+            },
+            {
+                "key": "e_1_2_12_18_1",
+                "article-title": "Sailing from the seas of chaos into the corridor of stability: Practical recommendations to increase the informational value of studies",
+                "author": "Lakens D.",
+                "journal-title": "Perspectives on Psychological Science"
+            },
+            {
+                "key": "e_1_2_12_19_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/2336502"
+            },
+            {
+                "key": "e_1_2_12_20_1",
+                "unstructured": "Lan K. K. G. &Trost D. C.(1997).Estimation of parameters and sample size re‐estimation. InProceedings‐Biopharmaceutical Section American Statistical Association. American Statistical Association 48–51."
+            },
+            {
+                "key": "e_1_2_12_21_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/9781118147634.ch6"
+            },
+            {
+                "key": "e_1_2_12_22_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0023347"
+            },
+            {
+                "key": "e_1_2_12_23_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1088868313496330"
+            },
+            {
+                "key": "e_1_2_12_24_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1027/1864-9335/a000192"
+            },
+            {
+                "key": "e_1_2_12_25_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/biomet/64.2.191"
+            },
+            {
+                "key": "e_1_2_12_26_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1136/bmj.305.6847.235"
+            },
+            {
+                "key": "e_1_2_12_27_1",
+                "volume-title": "Statistical monitoring of clinical trials: A unified approach",
+                "author": "Proschan M. A.",
+                "year": "2006"
+            },
+            {
+                "key": "e_1_2_12_28_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0197-2456(00)00057-X"
+            },
+            {
+                "key": "e_1_2_12_29_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jrp.2013.05.009"
+            },
+            {
+                "key": "e_1_2_12_30_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0956797611417632"
+            },
+            {
+                "key": "e_1_2_12_31_1",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Simmons J. P. Nelson L. D. &Simonsohn U.(2013).Life afterp‐hacking. Meeting of the Society for Personality and Social Psychology New Orleans LA 17‐19 January 2013. Available athttp://dx.doi.org/10.2139/ssrn.2205186",
+                "DOI": "10.2139/ssrn.2205186"
+            },
+            {
+                "key": "e_1_2_12_32_1",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Simonsohn U.(2014).Evaluating replication results. Downloaded on September 30th2013 fromhttp://ssrn.com/abstract=2259879. DOI:10.2139/ssrn.2259879",
+                "DOI": "10.2139/ssrn.2259879"
+            },
+            {
+                "key": "e_1_2_12_33_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/0470092602"
+            },
+            {
+                "key": "e_1_2_12_34_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0197-2456(86)90003-6"
+            },
+            {
+                "key": "e_1_2_12_35_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/biomet/90.2.367"
+            },
+            {
+                "key": "e_1_2_12_36_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.3758/BF03194105"
+            },
+            {
+                "key": "e_1_2_12_37_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/sim.4780090113"
+            }
+        ],
+        "container-title": [
+            "European Journal of Social Psychology"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1002%2Fejsp.2023",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://onlinelibrary.wiley.com/doi/pdf/10.1002/ejsp.2023",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2023,
+                    10,
+                    6
+                ]
+            ],
+            "date-time": "2023-10-06T07:50:13Z",
+            "timestamp": 1696578613000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://onlinelibrary.wiley.com/doi/10.1002/ejsp.2023"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2014,
+                    8,
+                    15
+                ]
+            ]
+        },
+        "references-count": 36,
+        "journal-issue": {
+            "issue": "7",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2014,
+                        12
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1002/ejsp.2023"
+        ],
+        "URL": "https://doi.org/10.1002/ejsp.2023",
+        "archive": [
+            "Portico"
+        ],
+        "relation": {
+            "has-preprint": [
+                {
+                    "id-type": "doi",
+                    "id": "10.31234/osf.io/9yegd",
+                    "asserted-by": "object"
+                }
+            ]
+        },
+        "ISSN": [
+            "0046-2772",
+            "1099-0992"
+        ],
+        "issn-type": [
+            {
+                "value": "0046-2772",
+                "type": "print"
+            },
+            {
+                "value": "1099-0992",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2014,
+                    8,
+                    15
+                ]
+            ]
+        }
+    }
+}

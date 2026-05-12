@@ -15,7 +15,7 @@
     groq = Sys.getenv("GROQ_API_KEY"),
     openai = Sys.getenv("OPENAI_API_KEY"),
     google_gemini = Sys.getenv("GEMINI_API_KEY"),
-    google_gemini = Sys.getenv("GOOGLE_API_KEY"),
+    google_vertex = Sys.getenv("GOOGLE_API_KEY"),
     # others alphabetically
     anthropic = Sys.getenv("ANTHROPIC_API_KEY"),
     cloudflare = Sys.getenv("CLOUDFLARE_API_KEY"),
@@ -50,6 +50,9 @@
   # only set if not already set
   toset <- !(names(op.pkg) %in% names(op))
   if (any(toset)) options(op.pkg[toset])
+
+  # check OSF PAT
+  osf_pat_validate()
 
   invisible()
 }
@@ -107,6 +110,3 @@
     sep = "\n"
   ) |> packageStartupMessage()
 }
-
-## quiets concerns of R CMD check re: the .'s that appear in pipelines
-if (getRversion() >= "2.15.1") utils::globalVariables(c("."))

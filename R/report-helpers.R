@@ -225,7 +225,7 @@ link <- function(url, text = url, new_window = TRUE, type = "") {
 #' bib_mc <- utils::toBibtex(mc)
 #' format_ref(bib_mc)
 #'
-#' paper <- read(demoxml())
+#' paper <- demopaper()
 #' format_ref(paper$bib$ref[1:2])
 format_ref <- function(bib) {
   if (!all(sapply(bib, inherits, "bibentry"))) {

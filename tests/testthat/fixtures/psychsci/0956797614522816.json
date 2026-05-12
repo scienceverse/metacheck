@@ -1,0 +1,4788 @@
+{
+  "paper_id": "0956797614522816",
+  "info": [
+    {
+      "title": "Beyond Gist: Strategic and Incremental Information Accumulation for Scene Categorization",
+      "keywords": ["object recognition", "eye movements"],
+      "doi": "10.1177/0956797614522816",
+      "file_hash": "ea7ffd3c9960f712",
+      "input_format": "pdf",
+      "file_name": "0956797614522816.pdf",
+      "bibr_version": "9.0",
+      "paper_type": "empirical",
+      "paper_type_confidence": 0,
+      "oecd_l1": "Social Sciences",
+      "oecd_l2": "Psychology and Cognitive Sciences",
+      "oecd_confidence": 0
+    }
+  ],
+  "author": [
+    {
+      "author_id": 1,
+      "given": "George L.",
+      "family": "Malcolm",
+      "affiliation": "The George Washington University",
+      "email": "glmalcolm@gwu.edu",
+      "corresponding": true,
+      "orcid": null,
+      "role": []
+    },
+    {
+      "author_id": 2,
+      "given": "Antje",
+      "family": "Nuthmann",
+      "affiliation": "University of Edinburgh",
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": []
+    },
+    {
+      "author_id": 3,
+      "given": "Philippe G.",
+      "family": "Schyns",
+      "affiliation": "University of Glasgow",
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": []
+    }
+  ],
+  "text": [
+    {
+      "text_id": 1,
+      "section_id": 1,
+      "paragraph_id": 1,
+      "text": "George L. Malcolm 1 , Antje Nuthmann 2 , and Philippe G. Schyns 3",
+      "page_number": 1
+    },
+    {
+      "text_id": 2,
+      "section_id": 1,
+      "paragraph_id": 2,
+      "text": "Psychological Science 2014, Vol. 25(5) 1087-1097 © The Author(s) 2014 Reprints and permissions: sagepub.com/journalsPermissions.nav DOI: 10.1177/0956797614522816 pss.sagepub.com SAGE",
+      "page_number": 1
+    },
+    {
+      "text_id": 3,
+      "section_id": 1,
+      "paragraph_id": 3,
+      "text": "1The George Washington University, 2University of Edinburgh, and 3University of Glasgow",
+      "page_number": 1
+    },
+    {
+      "text_id": 4,
+      "section_id": 2,
+      "paragraph_id": 4,
+      "text": "Research on scene categorization generally concentrates on gist processing, particularly the speed and minimal features with which the \"story\" of a scene can be extracted.",
+      "page_number": 1
+    },
+    {
+      "text_id": 5,
+      "section_id": 2,
+      "paragraph_id": 4,
+      "text": "However, this focus has led to a paucity of research into how scenes are categorized at specific hierarchical levels (e.g., a scene could be a road or more specifically a highway); consequently, research has disregarded a potential diagnostically driven feedback process.",
+      "page_number": 1
+    },
+    {
+      "text_id": 6,
+      "section_id": 2,
+      "paragraph_id": 4,
+      "text": "We presented participants with scenes that were low-pass filtered so only their gist was revealed, while a gaze-contingent window provided the fovea with full-resolution details.",
+      "page_number": 1
+    },
+    {
+      "text_id": 7,
+      "section_id": 2,
+      "paragraph_id": 4,
+      "text": "By recording where in a scene participants fixated prior to making a basic- or subordinate-level judgment, we identified the scene information accrued when participants made either categorization.",
+      "page_number": 1
+    },
+    {
+      "text_id": 8,
+      "section_id": 2,
+      "paragraph_id": 4,
+      "text": "We observed a feedback process, dependent on categorization level, that systematically accrues sufficient and detailed diagnostic information from the same scene.",
+      "page_number": 1
+    },
+    {
+      "text_id": 9,
+      "section_id": 2,
+      "paragraph_id": 4,
+      "text": "Our results demonstrate that during scene processing, a diagnostically driven bidirectional interplay between top-down and bottom-up information facilitates relevant category processing.",
+      "page_number": 1
+    },
+    {
+      "text_id": 10,
+      "section_id": 3,
+      "paragraph_id": 5,
+      "text": "object recognition, eye movements",
+      "page_number": 1
+    },
+    {
+      "text_id": 11,
+      "section_id": 3,
+      "paragraph_id": 6,
+      "text": "Received 11/30/12; Revision accepted 12/31/13",
+      "page_number": 1
+    },
+    {
+      "text_id": 12,
+      "section_id": 3,
+      "paragraph_id": 7,
+      "text": "In order to interact with the world, people must quickly extract the semantic meaning of their environment to effectively guide their subsequent behaviors.",
+      "page_number": 1
+    },
+    {
+      "text_id": 13,
+      "section_id": 3,
+      "paragraph_id": 7,
+      "text": "Within around 100 ms of the onset of a scene, its \"story,\" or gist, can be gleaned (Potter, 1975, 1976).",
+      "page_number": 1
+    },
+    {
+      "text_id": 14,
+      "section_id": 3,
+      "paragraph_id": 7,
+      "text": "These incredible scene-processing speeds have often led researchers to treat categorization as a perceptually driven process with semantic meaning passively emerging in a set hierarchy as critical properties become available to the visual system (Fei-Fei, Iyer, Koch, & Perona, 2007; Greene & Oliva, 2009a, 2009b; Joubert, Rousselet, Fize, & Fabre-Thorpe, 2007; Loschky & Larson, 2010; Oliva & Torralba, 2001; Rousselet, Joubert, & Fabre-Thorpe, 2005; Schyns & Oliva, 1994; Torralba & Oliva, 2003), perhaps as a result of a feed-forward network (Delorme, Richard, & Fabre-Thorpe, 2000; Serre, Oliva, & Poggio, 2007; Thorpe, Fize, & Marlot, 1996; VanRullen & Thorpe, 2002).",
+      "page_number": 1
+    },
+    {
+      "text_id": 15,
+      "section_id": 3,
+      "paragraph_id": 8,
+      "text": "Consequently, most scene-recognition research has focused on the nature and extraction of the critical visual properties representing scene gist—that is, the minimal visual information enabling entry into a category hierarchy.",
+      "page_number": 1
+    },
+    {
+      "text_id": 16,
+      "section_id": 3,
+      "paragraph_id": 8,
+      "text": "Several candidates have emerged, such as the spatial regularities between volumetric forms (Biederman, 1987, 1995) or the variety of simple image statistics at low spatial resolutions (Greene & Oliva, 2009b; Oliva & Torralba, 2001, 2006; Schyns & Oliva, 1994).",
+      "page_number": 1
+    },
+    {
+      "text_id": 17,
+      "section_id": 3,
+      "paragraph_id": 8,
+      "text": "We contend that these perceptually driven accounts of gist have led the focus of scene-categorization research away from an important determinant of visual information: the categorization task itself (Oliva & Schyns, 1997; Rotshtein, Schofield, Funes, & Humphreys, 2010; Schyns, 1998).",
+      "page_number": 1
+    },
+    {
+      "text_id": 18,
+      "section_id": 3,
+      "paragraph_id": 9,
+      "text": "Depending on a viewer's needs, a scene on a campus could be hierarchically categorized at the superordinate (e.g., indoor), basic (library), or subordinate (university library) levels (Gosselin & Schyns, 2001; Rosch, 1978;",
+      "page_number": 1
+    },
+    {
+      "text_id": 19,
+      "section_id": 3,
+      "paragraph_id": 10,
+      "text": "Corresponding Author: George L. Malcolm, Department of Psychology, The George Washington University, 2125 G St. NW, Washington, DC 20052 E-mail: glmalcolm@gwu.edu",
+      "page_number": 1
+    },
+    {
+      "text_id": 20,
+      "section_id": 3,
+      "paragraph_id": 11,
+      "text": "Rosch, Mervis, Gray, Johnson, & Boyes-Braem, 1976; Schyns, 1998; Tversky & Hemenway, 1983).",
+      "page_number": 2
+    },
+    {
+      "text_id": 21,
+      "section_id": 3,
+      "paragraph_id": 11,
+      "text": "The information accrued over time from the input scene could be constrained by these different categorization tasks, which suggests a bidirectional interplay between visual information in the input and information requirements in scene memory (Schyns, 1998).",
+      "page_number": 2
+    },
+    {
+      "text_id": 22,
+      "section_id": 3,
+      "paragraph_id": 12,
+      "text": "The present study investigated whether there is evidence for this bidirectional interplay.",
+      "page_number": 2
+    },
+    {
+      "text_id": 23,
+      "section_id": 3,
+      "paragraph_id": 12,
+      "text": "We presented lowpass filtered scenes allowing just enough information for gist recognition.",
+      "page_number": 2
+    },
+    {
+      "text_id": 24,
+      "section_id": 3,
+      "paragraph_id": 12,
+      "text": "In addition, a gaze-contingent moving window (see McConkie & Rayner, 1975) enabled observers to freely supplement gist information with foveated full-resolution details.",
+      "page_number": 2
+    },
+    {
+      "text_id": 25,
+      "section_id": 3,
+      "paragraph_id": 12,
+      "text": "By recording fixation locations when basic and subordinate categorizations were performed, we identified not only the image coordinates of each fixation, but also modeled the specific full-resolution details and objects facilitating each judgment.",
+      "page_number": 2
+    },
+    {
+      "text_id": 26,
+      "section_id": 3,
+      "paragraph_id": 12,
+      "text": "If lowresolution image statistics (i.e., low spatial frequencies, or LSFs) suffice for gist processing, then full-resolution fixations are superfluous and should be randomly distributed over the input scene.",
+      "page_number": 2
+    },
+    {
+      "text_id": 27,
+      "section_id": 3,
+      "paragraph_id": 12,
+      "text": "Conversely, if access to the categorization hierarchy requires additional information, then observers will generate systematic fixations onto full-resolution diagnostic objects.",
+      "page_number": 2
+    },
+    {
+      "text_id": 28,
+      "section_id": 3,
+      "paragraph_id": 12,
+      "text": "Such evidence would go beyond gist by demonstrating the critical (and often neglected) feedback loop existing between the different information requirements of hierarchical scene categorizations and the incremental accrual of categorization-specific information from the same scene.",
+      "page_number": 2
+    },
+    {
+      "text_id": 29,
+      "section_id": 5,
+      "paragraph_id": 13,
+      "text": "Twenty-eight participants from the University of Edinburgh took part in the experiment.",
+      "page_number": 2
+    },
+    {
+      "text_id": 30,
+      "section_id": 5,
+      "paragraph_id": 13,
+      "text": "All reported normal or corrected-to-normal vision and gave informed consent before participating.",
+      "page_number": 2
+    },
+    {
+      "text_id": 31,
+      "section_id": 6,
+      "paragraph_id": 14,
+      "text": "Stimuli were presented on a 21-in.",
+      "page_number": 2
+    },
+    {
+      "text_id": 32,
+      "section_id": 6,
+      "paragraph_id": 14,
+      "text": "ViewSonic (London England)",
+      "page_number": 2
+    },
+    {
+      "text_id": 33,
+      "section_id": 6,
+      "paragraph_id": 14,
+      "text": "G225f CRT monitor (refresh rate = 140 Hz) positioned 90 cm from participants （25.18 circ × 19.01 circ ）.",
+      "page_number": 2
+    },
+    {
+      "text_id": 34,
+      "section_id": 6,
+      "paragraph_id": 14,
+      "text": "Participants sat with their head in a chin rest and made responses using a button box.",
+      "page_number": 2
+    },
+    {
+      "text_id": 35,
+      "section_id": 6,
+      "paragraph_id": 14,
+      "text": "We recorded eye movements using an SR Research (Mississauga, Ontario, Canada) EyeLink binocular desktop-mount system, equipped with a 2000-Hz camera upgrade, which allowed for binocular recordings at a sampling rate of 1000 Hz for each eye.",
+      "page_number": 2
+    },
+    {
+      "text_id": 36,
+      "section_id": 6,
+      "paragraph_id": 14,
+      "text": "Participants viewed stimuli binocularly, with the position of the gaze-contingent moving window determined by taking the mean of the two eye positions.",
+      "page_number": 2
+    },
+    {
+      "text_id": 37,
+      "section_id": 7,
+      "paragraph_id": 15,
+      "text": "We selected 32 scenes from Google Images and converted them to gray scale （ 8 0 0 ×6 0 0 pixel resolution).",
+      "page_number": 2
+    },
+    {
+      "text_id": 38,
+      "section_id": 7,
+      "paragraph_id": 15,
+      "text": "Each scene belonged to one of four basic-level categories (restaurant, classroom, road, and pool), and within each basic category, each scene belonged to one of four subordinate categories (restaurant: diner, cafeteria, fine-dining establishment, pub; classroom: computer lab, lecture hall, preschool, elementary school; road: motorway, culde-sac, city street, roundabout; pool: Olympic pool, above-ground pool, Jacuzzi, water park).",
+      "page_number": 2
+    },
+    {
+      "text_id": 39,
+      "section_id": 7,
+      "paragraph_id": 15,
+      "text": "Thus, each scene could be categorized at two levels of specificity (Fig.1).",
+      "page_number": 2
+    },
+    {
+      "text_id": 40,
+      "section_id": 7,
+      "paragraph_id": 16,
+      "text": "We low-pass filtered scenes (i.e., removed high-spatial-frequency, or HSF, details) to leave only information below 2 5 ×1 8. 7 5 cycles per image (0. 8 3 ×0. 6 2 cycles per degree of visual angle).",
+      "page_number": 2
+    },
+    {
+      "text_id": 41,
+      "section_id": 7,
+      "paragraph_id": 16,
+      "text": "A pilot test found that with this filtering, participants made basic and subordinate category judgments with 78% and 23% accuracy, respectively, during a four-alternative forced-choice (4AFC) task.",
+      "page_number": 2
+    },
+    {
+      "text_id": 42,
+      "section_id": 7,
+      "paragraph_id": 16,
+      "text": "In addition to showing participants low-pass-filtered images, we provided them with the ability to obtain additional visual details to inform their category decision:",
+      "page_number": 2
+    },
+    {
+      "text_id": 43,
+      "section_id": 7,
+      "paragraph_id": 16,
+      "text": "A gaze-contingent moving window, 2. 5circ in diameter, provided full-resolution information from the scene to foveal vision.",
+      "page_number": 2
+    },
+    {
+      "text_id": 44,
+      "section_id": 7,
+      "paragraph_id": 16,
+      "text": "Updating the display required 1 ms to receive gaze-position information from the eye tracker, less than 1 ms to draw the image textures, and up to 7 ms to refresh the screen.",
+      "page_number": 2
+    },
+    {
+      "text_id": 45,
+      "section_id": 7,
+      "paragraph_id": 16,
+      "text": "We smoothed the perimeter of the window with a Gaussian low-pass filter to avoid possible perceptual problems resulting from sharp-boundary windows (Fig. 2).",
+      "page_number": 2
+    },
+    {
+      "text_id": 46,
+      "section_id": 7,
+      "paragraph_id": 16,
+      "text": "The gaze-contingent window afforded viewers the ability to flesh out aspects of the scene with extra HSF details to facilitate category judgments, which would expose the feedback process.",
+      "page_number": 2
+    },
+    {
+      "text_id": 47,
+      "section_id": 8,
+      "paragraph_id": 17,
+      "text": "We assigned participants evenly to the basic and subordinate conditions.",
+      "page_number": 2
+    },
+    {
+      "text_id": 48,
+      "section_id": 8,
+      "paragraph_id": 18,
+      "text": "Basic condition.",
+      "page_number": 2
+    },
+    {
+      "text_id": 49,
+      "section_id": 8,
+      "paragraph_id": 18,
+      "text": "In the basic condition, we first showed participants unfiltered examples from each of the four basic scene categories (none of these examples appeared in the experiment).",
+      "page_number": 2
+    },
+    {
+      "text_id": 50,
+      "section_id": 8,
+      "paragraph_id": 18,
+      "text": "When participants indicated that they understood the category labels, they then proceeded to the gaze-contingent experiment.",
+      "page_number": 2
+    },
+    {
+      "text_id": 51,
+      "section_id": 8,
+      "paragraph_id": 18,
+      "text": "The experiment started with four filler trials, with one scene from each basic category, followed by the 32 test scenes presented in random order.",
+      "page_number": 2
+    },
+    {
+      "text_id": 52,
+      "section_id": 8,
+      "paragraph_id": 18,
+      "text": "In each trial, the gaze-contingent window did not appear until after the first fixation, so if the information contained in the low-pass-filtered image was enough, then no eye movements would be",
+      "page_number": 2
+    },
+    {
+      "text_id": 53,
+      "section_id": 8,
+      "paragraph_id": 19,
+      "text": "necessary.",
+      "page_number": 3
+    },
+    {
+      "text_id": 54,
+      "section_id": 8,
+      "paragraph_id": 19,
+      "text": "Participants viewed each scene until they were ready to make a category response, which they did by pressing a button.",
+      "page_number": 3
+    },
+    {
+      "text_id": 55,
+      "section_id": 8,
+      "paragraph_id": 19,
+      "text": "The scene then disappeared, and participants chose which category the scene belonged to using a separate set of buttons.",
+      "page_number": 3
+    },
+    {
+      "text_id": 56,
+      "section_id": 8,
+      "paragraph_id": 19,
+      "text": "Trials timed out after 15 s if the button was not pressed.",
+      "page_number": 3
+    },
+    {
+      "text_id": 57,
+      "section_id": 8,
+      "paragraph_id": 20,
+      "text": "Subordinate condition.",
+      "page_number": 3
+    },
+    {
+      "text_id": 58,
+      "section_id": 8,
+      "paragraph_id": 20,
+      "text": "The paradigm in the subordinate condition was the same as in the basic condition, with the following exceptions.",
+      "page_number": 3
+    },
+    {
+      "text_id": 59,
+      "section_id": 8,
+      "paragraph_id": 20,
+      "text": "We divided test scenes into blocks by their basic-level category.",
+      "page_number": 3
+    },
+    {
+      "text_id": 60,
+      "section_id": 8,
+      "paragraph_id": 20,
+      "text": "Each block now started with an unfiltered example from each subordinate category.",
+      "page_number": 3
+    },
+    {
+      "text_id": 61,
+      "section_id": 8,
+      "paragraph_id": 20,
+      "text": "Once participants indicated that they understood",
+      "page_number": 3
+    },
+    {
+      "text_id": 62,
+      "section_id": 8,
+      "paragraph_id": 21,
+      "text": "the category labels, the block of trials began with four filler trials, one from each subordinate category within the basic group, followed by the eight test scenes in random order.",
+      "page_number": 4
+    },
+    {
+      "text_id": 63,
+      "section_id": 8,
+      "paragraph_id": 21,
+      "text": "Blocks appeared in random order.",
+      "page_number": 4
+    },
+    {
+      "text_id": 64,
+      "section_id": 8,
+      "paragraph_id": 22,
+      "text": "We excluded incorrect trials in which the wrong category was selected (16 and 27 from the basic and subordinate",
+      "page_number": 4
+    },
+    {
+      "text_id": 65,
+      "section_id": 9,
+      "paragraph_id": 23,
+      "text": "conditions, respectively) and trials that timed out after 15 s (2 from the subordinate group).",
+      "page_number": 4
+    },
+    {
+      "text_id": 66,
+      "section_id": 9,
+      "paragraph_id": 23,
+      "text": "The remaining 432 and 419 trials eligible for analysis comprised 96.4% and 93.5% of the basic and subordinate trials, respectively.",
+      "page_number": 4
+    },
+    {
+      "text_id": 67,
+      "section_id": 9,
+      "paragraph_id": 23,
+      "text": "Analyses also took into account which basic-level category (henceforth called stimuli type) the scene belonged to, thereby allowing for a 2 ×4 mixed-design analysis of variance (ANOVA) with judgment (basic vs. subordinate) as a between-subjects factor and stimuli type (classroom, pool, restaurant, road) as a within-subjects factor",
+      "page_number": 4
+    },
+    {
+      "text_id": 68,
+      "section_id": 9,
+      "paragraph_id": 23,
+      "text": "Whenever assumption of sphericity was violated, we used a Greenhouse-Geisser correction.",
+      "page_number": 4
+    },
+    {
+      "text_id": 69,
+      "section_id": 9,
+      "paragraph_id": 24,
+      "text": "We found a main effect of judgment on response time (RT); processing was faster in the basic condition M=2,305 ms) than in the subordinate condition M=3,253 ms), F(1,26)=9.277,p=.005,ηp2=.263 .",
+      "page_number": 4
+    },
+    {
+      "text_id": 70,
+      "section_id": 9,
+      "paragraph_id": 24,
+      "text": "There was also a main effect of stimuli type, F(3,78)=12.910,p<.001, ηp2=.332 (Ms = 2,832, 2,709, 3,419, and 2,157 ms for classrooms, pools, restaurants, and roads, respectively), but no interaction between the two factors, F(3,78)= 1.805,p=.153,ηp2=.065 (Table 1).",
+      "page_number": 4
+    },
+    {
+      "text_id": 71,
+      "section_id": 9,
+      "paragraph_id": 25,
+      "text": "The RT difference suggests that participants' ability to categorize a scene depends on the information needed for each level of specificity.",
+      "page_number": 4
+    },
+    {
+      "text_id": 72,
+      "section_id": 9,
+      "paragraph_id": 25,
+      "text": "However, it is not clear what participants were doing during this time:",
+      "page_number": 4
+    },
+    {
+      "text_id": 73,
+      "section_id": 9,
+      "paragraph_id": 25,
+      "text": "If participants in the subordinate condition used the extra time to accrue HSF information to facilitate their judgment, they should have made more eye movements than participants in the basic condition.",
+      "page_number": 4
+    },
+    {
+      "text_id": 74,
+      "section_id": 9,
+      "paragraph_id": 25,
+      "text": "Conversely, if participants found all their needed information in the low-pass-filtered image, and the increased RT was simply due to a longer decisionmaking process, then there should be a similar number of fixations across categorization conditions.",
+      "page_number": 4
+    },
+    {
+      "text_id": 75,
+      "section_id": 9,
+      "paragraph_id": 26,
+      "text": "We found a main effect of judgment on fixation count, with more fixations made during subordinate categorizations ( M=9. 7 2 ) than during basic categorizations ( M= 5. 4 0 )",
+      "page_number": 5
+    },
+    {
+      "text_id": 76,
+      "section_id": 9,
+      "paragraph_id": 26,
+      "text": "F ( 1, 2 6 )=1 7. 9 0 6 p<. 0 0 1 ηp2=. 4 0 8 .",
+      "page_number": 5
+    },
+    {
+      "text_id": 77,
+      "section_id": 9,
+      "paragraph_id": 26,
+      "text": "There was also a main effect of stimuli type, F ( 3, 7 8 )=9. 5 5 8 p<. 0 0 1 ηp2=. 2 6 9 ( M s=7. 7 6, 7. 2 3, 9. 3 6 , and 5.89 for classrooms, pools, restaurants, and roads, respectively), but no interaction, F ( 3, 7 8 )=1. 2 0 1 p=. 3 1 5 ηp2=. 0 4 4 (Table 1).",
+      "page_number": 5
+    },
+    {
+      "text_id": 78,
+      "section_id": 9,
+      "paragraph_id": 27,
+      "text": "Thus, participants did indeed generate eye movements to supplement visible LSF information with HSF details.",
+      "page_number": 5
+    },
+    {
+      "text_id": 79,
+      "section_id": 9,
+      "paragraph_id": 27,
+      "text": "Such details were acquired even during basic-level categorization, which demonstrates that viewers use HSF information when available.",
+      "page_number": 5
+    },
+    {
+      "text_id": 80,
+      "section_id": 9,
+      "paragraph_id": 27,
+      "text": "Additionally, participants in the subordinate condition, compared with those in the basic condition, needed more time and fixations—this suggests that performing subordinate-level categorizations is a separate, slower information-accrual process than performing basic-level categorizations.",
+      "page_number": 5
+    },
+    {
+      "text_id": 81,
+      "section_id": 10,
+      "paragraph_id": 28,
+      "text": "These results suggest that scene categorization demands different information depending on the required level of specificity.",
+      "page_number": 5
+    },
+    {
+      "text_id": 82,
+      "section_id": 10,
+      "paragraph_id": 28,
+      "text": "In order to further probe the changing nature of information accrual across hierarchical levels, we examined respective eye movement strategies.",
+      "page_number": 5
+    },
+    {
+      "text_id": 83,
+      "section_id": 10,
+      "paragraph_id": 28,
+      "text": "Both basic and subordinate categorization required HSF information in addition to LSF information, but if the respective sampling processes differed, then eye movement strategies should have differed as well.",
+      "page_number": 5
+    },
+    {
+      "text_id": 84,
+      "section_id": 10,
+      "paragraph_id": 29,
+      "text": "We first examined initial saccade latency: the time between scene onset and the initiation of the first saccade.",
+      "page_number": 5
+    },
+    {
+      "text_id": 85,
+      "section_id": 10,
+      "paragraph_id": 29,
+      "text": "There was a main effect of judgment, F(1, 26) = 5.720, p = .024, ηp2=.180 , with basic categorizations having longer saccade latencies (M=421 ms) than subordinate categorizations (M=352 ms), but no effect of stimuli type or interaction with judgment (Fs<1; Table 1).",
+      "page_number": 5
+    },
+    {
+      "text_id": 86,
+      "section_id": 10,
+      "paragraph_id": 29,
+      "text": "Thus, even within the first approximately 350 ms of scene onset, when the exact same visual image was available (the full-resolution window did not appear until after the first saccade), the respective information demands affected category processing.",
+      "page_number": 5
+    },
+    {
+      "text_id": 87,
+      "section_id": 10,
+      "paragraph_id": 30,
+      "text": "We then examined fixation durations (not including the initial saccade latency) and saccade amplitudes.",
+      "page_number": 5
+    },
+    {
+      "text_id": 88,
+      "section_id": 10,
+      "paragraph_id": 30,
+      "text": "There was a main effect of judgment on fixation duration, F (1, 2 6) = 8. 2 4 6 p=. 0 0 8 ηp2=. 2 4 1 (basic: M=3 8 1 ms; subordinate: M=3 0 0 ms), a trend for stimuli type, F (3, 7 8)=2. 2 4 2 p=. 0 9 ηp2=. 0 7 9 (M s=3 2 9, 3 5 4, 3 4 1 , and 335 ms for classrooms, pools, restaurants, and roads, respectively), as well as a significant interaction, F (3, 7 8)=3. 2 0 7 p=. 0 2 8 ηp2=. 1 1 0 .",
+      "page_number": 5
+    },
+    {
+      "text_id": 89,
+      "section_id": 10,
+      "paragraph_id": 30,
+      "text": "This interaction occurred because participants in the basic condition had numerically longer fixations when categorizing pool scenes (M=3 8 3 ms) compared with participants in the subordinate condition (M=3 2 5 ms), t(26) = 1.598, p = .122; fixation durations for all other scenes were significant, ts > 2.370, ps < .025 (Table 1).",
+      "page_number": 5
+    },
+    {
+      "text_id": 90,
+      "section_id": 10,
+      "paragraph_id": 30,
+      "text": "There was no effect of judgment on saccade amplitudes (F < 1); however, as one would expect given the different layouts between the different category groups, there was a main effect of stimuli type, F(3, 78) = 5.882, p = .001, ηp2= .184 (Ms = 2.75°, 2.31°, 2.72°, and 2.51° for classrooms, pools, restaurants, and roads, respectively; Table 1).",
+      "page_number": 5
+    },
+    {
+      "text_id": 91,
+      "section_id": 10,
+      "paragraph_id": 30,
+      "text": "There was no interaction, F(3, 78) = 1.444, p = .237, ηp2= .053.",
+      "page_number": 5
+    },
+    {
+      "text_id": 92,
+      "section_id": 10,
+      "paragraph_id": 30,
+      "text": "These results demonstrate that participants' initial and subsequent fixation durations differed depending on the categorization being made, a finding that supports different ongoing processes.",
+      "page_number": 5
+    },
+    {
+      "text_id": 93,
+      "section_id": 11,
+      "paragraph_id": 31,
+      "text": "Within the categorization hierarchy, there are more common attributes at the subordinate than at the basic category level; however, there are generally more features that allow viewers to differentiate one basic category from another than there are that allow viewers to differentiate one subordinate category from another (Rosch et al., 1976).",
+      "page_number": 5
+    },
+    {
+      "text_id": 94,
+      "section_id": 11,
+      "paragraph_id": 31,
+      "text": "Thus, subordinate diagnostic information is comparatively sparser and more difficult to locate in the image than the associated basic diagnostic information.",
+      "page_number": 5
+    },
+    {
+      "text_id": 95,
+      "section_id": 11,
+      "paragraph_id": 31,
+      "text": "This difference should affect information-sampling strategies.",
+      "page_number": 5
+    },
+    {
+      "text_id": 96,
+      "section_id": 11,
+      "paragraph_id": 31,
+      "text": "We analyzed gaze patterns over time by measuring the distance of fixations from the center of the image over the first five fixations.",
+      "page_number": 5
+    },
+    {
+      "text_id": 97,
+      "section_id": 11,
+      "paragraph_id": 31,
+      "text": "We found fixations distributed in a center-surround pattern for basic and subordinate judgments, respectively (Fig. 3).",
+      "page_number": 5
+    },
+    {
+      "text_id": 98,
+      "section_id": 11,
+      "paragraph_id": 32,
+      "text": "A three-way mixed-design 2 (judgment: basic, subordinate) ×4 (stimuli type: classroom, pool, restaurant, road) ×5 (ordinal fixation: 1, 2, 3, 4, 5)",
+      "page_number": 5
+    },
+    {
+      "text_id": 99,
+      "section_id": 11,
+      "paragraph_id": 32,
+      "text": "ANOVA on fixation distance from screen center revealed a critical interaction between judgment and ordinal fixation, F ( 4, 8 8 )= 3. 6 6 1 p=. 0 0 8 ηp2=. 1 4 3 ;",
+      "page_number": 5
+    },
+    {
+      "text_id": 100,
+      "section_id": 11,
+      "paragraph_id": 32,
+      "text": "this interaction indicates that participants carried out different sampling strategies over the first five fixations depending on the judgment they were assigned to make (Fig. 4).",
+      "page_number": 5
+    },
+    {
+      "text_id": 101,
+      "section_id": 11,
+      "paragraph_id": 33,
+      "text": "Participants directed fixations further into the periphery of the scene during their first five fixations in the subordinate condition than in the basic condition, which suggests a wider search for diagnostic object information.",
+      "page_number": 5
+    },
+    {
+      "text_id": 102,
+      "section_id": 11,
+      "paragraph_id": 33,
+      "text": "For the sake of completeness, there was no main effect of judgment, F(1, 22) = 2.163, p = .156, ηp2=.090 , though there was an effect of stimuli type, F(3, 66) = 4.342, p = .007, ηp2=.165 (Ms = 3.88 circ , 3.47 circ , 3.87 circ , and 3.52 circ for classrooms, pools, restaurants, and roads, respectively) as well as of ordinal fixation, F(2.286, 50.288) = 42.240, p < .001, ηp2=.658 (Ms = 2.55 circ , 3.28 circ , 3.86 circ , 4.26 circ , and 4.48 circ from the center for Fixations 1 through 5, respectively).",
+      "page_number": 5
+    },
+    {
+      "text_id": 103,
+      "section_id": 11,
+      "paragraph_id": 33,
+      "text": "There was no interaction between stimuli type and ordinal count (F < 1), no interaction between judgment and",
+      "page_number": 5
+    },
+    {
+      "text_id": 104,
+      "section_id": 11,
+      "paragraph_id": 34,
+      "text": "stimuli type, F(3, 66) = 2.012, p = .121, ηp2=.084 , and no three-way interaction (F<1).",
+      "page_number": 6
+    },
+    {
+      "text_id": 105,
+      "section_id": 12,
+      "paragraph_id": 35,
+      "text": "To ascertain which objects were diagnostic during categorization at each level, we calculated the mean proportion of fixations on each object in both conditions.",
+      "page_number": 6
+    },
+    {
+      "text_id": 106,
+      "section_id": 12,
+      "paragraph_id": 35,
+      "text": "All objects that fell within the gaze-contingent window during a fixation were considered fixated.",
+      "page_number": 6
+    },
+    {
+      "text_id": 107,
+      "section_id": 12,
+      "paragraph_id": 35,
+      "text": "To determine statistical validity, we compared the mean proportion of fixations per object and condition against the overall fixation proportion in a bootstrap analysis using 14,000 repetitions.",
+      "page_number": 6
+    },
+    {
+      "text_id": 108,
+      "section_id": 12,
+      "paragraph_id": 36,
+      "text": "In both the basic and subordinate conditions, each scene contained significantly fixated objects (ps < .05), which indicates that participants always accrued specific object information to complement the LSF gist.",
+      "page_number": 6
+    },
+    {
+      "text_id": 109,
+      "section_id": 12,
+      "paragraph_id": 36,
+      "text": "Additionally, as every scene contained at least one object—and usually many more—that was diagnostic for only one level, it is clear that participants strategically directed gaze to find and extract hierarchy-specific diagnostic information (Fig. 5).",
+      "page_number": 6
+    },
+    {
+      "text_id": 110,
+      "section_id": 13,
+      "paragraph_id": 37,
+      "text": "To verify that these significant objects were diagnostic, we asked 36 new participants to categorize scenes at either the basic or subordinate level using the same paradigm as in the gaze-contingent experiment, except that scenes were now masked after 150 ms, and eye movements were not recorded.",
+      "page_number": 6
+    },
+    {
+      "text_id": 111,
+      "section_id": 13,
+      "paragraph_id": 37,
+      "text": "During presentation, each scene was low-pass filtered except for the objects previously identified as diagnostic at either the basic or",
+      "page_number": 6
+    },
+    {
+      "text_id": 112,
+      "section_id": 13,
+      "paragraph_id": 38,
+      "text": "subordinate level, which were shown without filtering (Fig. 6).",
+      "page_number": 7
+    },
+    {
+      "text_id": 113,
+      "section_id": 13,
+      "paragraph_id": 38,
+      "text": "The two types of diagnostic information (basic vs. subordinate) for each scene were distributed evenly across participants in both categorization groups, creating a 2 x 2 mixed design (because there were only eight scenes per basic category and we were measuring accuracy, stimuli type was collapsed).",
+      "page_number": 7
+    },
+    {
+      "text_id": 114,
+      "section_id": 13,
+      "paragraph_id": 38,
+      "text": "We predicted that accuracy should be high when making a categorization with diagnostic information at the same level (i.e., subordinate objects with a subordinate judgment and basic objects with a basic judgment).",
+      "page_number": 7
+    },
+    {
+      "text_id": 115,
+      "section_id": 13,
+      "paragraph_id": 38,
+      "text": "We further predicted that because comparatively fewer objects distinguish one subordinate category from another than distinguish one basic category from another (Rosch et al., 1976), swapping the diagnostic objects (i.e., presenting basic objects for a subordinate judgment and vice versa) should have a minimal effect on basic-level categorization but a larger effect on subordinate judgments.",
+      "page_number": 7
+    },
+    {
+      "text_id": 116,
+      "section_id": 13,
+      "paragraph_id": 39,
+      "text": "We next calculated the mean proportion of hits in both conditions.",
+      "page_number": 7
+    },
+    {
+      "text_id": 117,
+      "section_id": 13,
+      "paragraph_id": 39,
+      "text": "Analyses revealed a main effect of judgment on accuracy, F(1,34) = 9.339, p = .004, ηp2=.215 (basic: M=.79; subordinate: M=.71) and a main effect",
+      "page_number": 7
+    },
+    {
+      "text_id": 118,
+      "section_id": 13,
+      "paragraph_id": 40,
+      "text": "of diagnostic information, F(1, 34) = 15.871, p < .001, ηp2=.318 (basic: M=.71; subordinate: M=.79).",
+      "page_number": 8
+    },
+    {
+      "text_id": 119,
+      "section_id": 13,
+      "paragraph_id": 40,
+      "text": "There was also a trend for an interaction, F(1, 34) = 3.456, p=.072, ηp2=.092 (Fig. 6), which was due to a significant change in subordinate categorization accuracy when basic or subordinate diagnostic objects were visible (Ms=.65 and.76, respectively), t(17) = 4.134, p=.001 but no significant difference during basic categorization (basic diagnostic objects: M=.77 and subordinate diagnostic objects: M=.81), t(17) = 1.506, p=.151.",
+      "page_number": 8
+    },
+    {
+      "text_id": 120,
+      "section_id": 13,
+      "paragraph_id": 40,
+      "text": "The results confirm that the objects fixated during the gaze-contingent experiment were indeed diagnostic for the respective categorization processes.",
+      "page_number": 8
+    },
+    {
+      "text_id": 121,
+      "section_id": 14,
+      "paragraph_id": 41,
+      "text": "To investigate whether categorizing normal, full-resolution scenes involves similar sampling strategies, we asked 28 new participants to categorize full-resolution images with no gaze-contingent window.",
+      "page_number": 8
+    },
+    {
+      "text_id": 122,
+      "section_id": 14,
+      "paragraph_id": 41,
+      "text": "Half were assigned to make basic judgments, and half were assigned to make subordinate judgments.",
+      "page_number": 8
+    },
+    {
+      "text_id": 123,
+      "section_id": 14,
+      "paragraph_id": 41,
+      "text": "During these normal viewing conditions, there was a strong trend of judgment on RT, F ( 1, 2 6 ) = 3. 5 6 8, p = . 0 7 0, ηp2 = . 1 2 1 , with basic categorization needing less time (1,062 ms) than subordinate categorization (1,272 ms).",
+      "page_number": 8
+    },
+    {
+      "text_id": 124,
+      "section_id": 14,
+      "paragraph_id": 41,
+      "text": "There was a main effect of stimuli type, F ( 2. 0 8 4, 5 4. 1 8 8 ) = 7. 0 8 0, p = . 0 0 2, ηp2 = . 2 1 4 ( M s = 1, 2 6 9 )",
+      "page_number": 8
+    },
+    {
+      "text_id": 125,
+      "section_id": 14,
+      "paragraph_id": 42,
+      "text": "1,128,1,273, and 998 ms for classrooms, pools, restaurants, and roads, respectively) as well as a trend for an interaction, F(3, 78) = 2.596, p = .058, ηp2=.091 , which was due to restaurants taking significantly longer to categorize at the subordinate level (M=1,471 ms) than at the basic level (M=1,075 ms), t(26) = 3.00, p = .006.",
+      "page_number": 9
+    },
+    {
+      "text_id": 126,
+      "section_id": 14,
+      "paragraph_id": 42,
+      "text": "Similar numerical patterns were obtained for classrooms (basic: M=1,204 ms; subordinate: M=1,333 ms), pools (basic: M=989 ms; subordinate: M=1,266 ms), and roads (basic: M=979 ms; subordinate: M=1,016 ms), but they were not significant (ts < 1.629, ps > .115).",
+      "page_number": 9
+    },
+    {
+      "text_id": 127,
+      "section_id": 14,
+      "paragraph_id": 43,
+      "text": "Fixation counts showed a similar pattern of results, with basic categorization requiring fewer fixations (M= 2.95) than subordinate categorization (M=4.01), F(1, 26) = 5.391, p = .028, ηp2=.172 .",
+      "page_number": 9
+    },
+    {
+      "text_id": 128,
+      "section_id": 14,
+      "paragraph_id": 43,
+      "text": "There was also a main effect of stimuli type, F(1.909, 49.641) = 8.239, p = .001, ηp2=.241 (Ms=3.96, 3.21, 3.85, and 2.89 for classrooms, pools, restaurants, and roads, respectively), and a trend for an interaction, F(3, 78) = 2.637, p = .055, ηp2=.092 which was due to significantly more fixations during subordinate than during basic decisions for pools (basic: M=2.52; subordinate: M=3.91), t(26) = 1.901, p = .068, and for restaurants (basic: M=3.01; subordinate: M= 4.69), t(26) = 3.363, p = .002.",
+      "page_number": 9
+    },
+    {
+      "text_id": 129,
+      "section_id": 14,
+      "paragraph_id": 43,
+      "text": "In contrast, there was a similar numerical pattern but no significant difference for classrooms (basic: M=3.57; subordinate: M=4.34) and roads (basic: M=2.69; subordinate: M=3.09), ts < 1.415, ps > .169.",
+      "page_number": 9
+    },
+    {
+      "text_id": 130,
+      "section_id": 14,
+      "paragraph_id": 43,
+      "text": "The similarity of the RT and fixation-count results with those from the gaze-contingent experiment demonstrates that even when viewing full-resolution images, participants need more time and fixations to accrue diagnostic information when making subordinate decisions.",
+      "page_number": 9
+    },
+    {
+      "text_id": 131,
+      "section_id": 14,
+      "paragraph_id": 44,
+      "text": "Additional analyses examined eye movement behaviors, including initial saccade latency, fixation duration, and saccade amplitude.",
+      "page_number": 9
+    },
+    {
+      "text_id": 132,
+      "section_id": 14,
+      "paragraph_id": 44,
+      "text": "For initial saccade latency, there was no main effect of judgment, F(1, 26) = 1.708, p = .203, ηp2=.062 , or stimuli type, nor was there an interaction between the two for initial saccade latency (Fs < 1).",
+      "page_number": 9
+    },
+    {
+      "text_id": 133,
+      "section_id": 14,
+      "paragraph_id": 44,
+      "text": "Fixation durations showed no main effect of judgment (F < 1), though there was an effect of stimuli type, F(2.288, 59.487) = 4.539, p = .011, ηp2=.149 , (Ms = 257, 312, 265, and 277 ms for classrooms, pools, restaurants, and roads, respectively).",
+      "page_number": 9
+    },
+    {
+      "text_id": 134,
+      "section_id": 14,
+      "paragraph_id": 44,
+      "text": "There was no interaction, F(3, 78) = 1.276, p = .288, ηp2=.047 .",
+      "page_number": 9
+    },
+    {
+      "text_id": 135,
+      "section_id": 14,
+      "paragraph_id": 44,
+      "text": "No main effect of saccade amplitude on judgment appeared, F(1, 26) = 1.122, p = .299, ηp2=.041 , but there was an effect of stimuli type, F(3, 78) = 20.836, p < .001, ηp2=.445 (Ms = 4.06 circ 3.33circ 4.31circ , and 3.44circ for classrooms, pools, restaurants, and roads, respectively), and an interaction, F(3, 78) = 4.869, p = .004, ηp2=.158 , with restaurants having a trend for longer saccades during subordinate categorizations (M = 4.62 circ ) than during basic categorizations (M = 3.99 circ ), t(26) = 1.735, p = .094.",
+      "page_number": 9
+    },
+    {
+      "text_id": 136,
+      "section_id": 14,
+      "paragraph_id": 44,
+      "text": "In contrast, there were similar, but not significant, numerical patterns for classrooms (basic: M = 3.81 circ ; subordinate: M = 4.31 circ ) and pools (basic: M = 3.04 circ ; subordinate: M = 3.63 circ ), ts < 1.560, ps > .131, whereas for roads, there were longer saccades in the basic condition (M = 3.61 circ ) than in the subordinate condition (M = 3.27 circ ), t < 1.",
+      "page_number": 9
+    },
+    {
+      "text_id": 137,
+      "section_id": 14,
+      "paragraph_id": 45,
+      "text": "In sum, the consistent RT and fixation count results between the gaze-contingent experiment and the unfiltered-image control experiment suggest that even when participants view unfiltered images, subordinate categorizations are a separate, slower process than basic categorizations.",
+      "page_number": 10
+    },
+    {
+      "text_id": 138,
+      "section_id": 14,
+      "paragraph_id": 45,
+      "text": "However, fixation durations are no longer affected as a function of task when participants view fullresolution images.",
+      "page_number": 10
+    },
+    {
+      "text_id": 139,
+      "section_id": 15,
+      "paragraph_id": 46,
+      "text": "Gist-processing research has generally focused on identifying the minimal common attributes that distinguish categories rather than examining the information demands that bias the categorization process.",
+      "page_number": 10
+    },
+    {
+      "text_id": 140,
+      "section_id": 15,
+      "paragraph_id": 46,
+      "text": "Here, we demonstrated that during scene viewing, there is a feedback component that creates a bidirectional interplay between available information and task goals and that this leads to categorization at a specified level.",
+      "page_number": 10
+    },
+    {
+      "text_id": 141,
+      "section_id": 15,
+      "paragraph_id": 47,
+      "text": "In particular, our data reveal that LSF information does not provide the full range of diagnostic information for basic-level access:",
+      "page_number": 10
+    },
+    {
+      "text_id": 142,
+      "section_id": 15,
+      "paragraph_id": 47,
+      "text": "The several fixations made prior to a category judgment indicate that there is often a need for additional object processing.",
+      "page_number": 10
+    },
+    {
+      "text_id": 143,
+      "section_id": 15,
+      "paragraph_id": 47,
+      "text": "Our data indicate that observers go beyond assumed LSF gist information to find an entry point into the categorical hierarchy, which means that global, coarse scene representations might be necessary but are not always sufficient.",
+      "page_number": 10
+    },
+    {
+      "text_id": 144,
+      "section_id": 15,
+      "paragraph_id": 47,
+      "text": "Given the nature of the paradigm we used, it is possible that some of the fixations were made in order to verify that a basic category decision was correct.",
+      "page_number": 10
+    },
+    {
+      "text_id": 145,
+      "section_id": 15,
+      "paragraph_id": 47,
+      "text": "However, even in such situations, coarse global properties clearly did not provide enough information to rapidly process gist, so additional object information was needed.",
+      "page_number": 10
+    },
+    {
+      "text_id": 146,
+      "section_id": 15,
+      "paragraph_id": 47,
+      "text": "Determining gist can therefore be thought of as a process of information sampling across multiple scales of information.",
+      "page_number": 10
+    },
+    {
+      "text_id": 147,
+      "section_id": 15,
+      "paragraph_id": 48,
+      "text": "In addition, the sampling strategy during basic categorization was found to differ from the strategy used during subordinate categorizations, which indicates that strategic acquisition processes vary as a function of the task and further corroborates that information demands bias the scene-categorization process.",
+      "page_number": 10
+    },
+    {
+      "text_id": 148,
+      "section_id": 15,
+      "paragraph_id": 48,
+      "text": "Because the original LSF information at scene onset was the same across both conditions, this difference in sampling extends soft-wired hypotheses (Oliva & Schyns, 1997) because it suggests that the visual system does not rely on a single mode of processing but that given the range of information available, it can adjust a sampling strategy to categorize an image with maximum efficiency.",
+      "page_number": 10
+    },
+    {
+      "text_id": 149,
+      "section_id": 15,
+      "paragraph_id": 48,
+      "text": "It should be noted that participants in our subordinate condition already knew the basic-level category prior to all trials, which possibly influenced their sampling strategy.",
+      "page_number": 10
+    },
+    {
+      "text_id": 150,
+      "section_id": 15,
+      "paragraph_id": 48,
+      "text": "However, given that the goal was to isolate the sampling strategy at the basic and subordinate levels, this detail was necessary to separate the two processes.",
+      "page_number": 10
+    },
+    {
+      "text_id": 151,
+      "section_id": 15,
+      "paragraph_id": 49,
+      "text": "Now that we have uncovered sampling strategy markers for these two hierarchical levels, it would be interesting to investigate with more ecologically valid, open-ended categorizations (e.g., participants categorize scenes at the subordinate level with no a priori basiclevel knowledge) when the shift in strategies takes place.",
+      "page_number": 10
+    },
+    {
+      "text_id": 152,
+      "section_id": 15,
+      "paragraph_id": 49,
+      "text": "It could be a strictly sequential process in which basiclevel categorization must be completed prior to subordinate-related information sampling, or there could be an overlap in which subordinate sampling strategies begin while basic-level categorizations are not fully formed.",
+      "page_number": 10
+    },
+    {
+      "text_id": 153,
+      "section_id": 15,
+      "paragraph_id": 49,
+      "text": "Such a distinction would help refine the understanding of how the viewer samples and integrates diagnostic information prior to a judgment.",
+      "page_number": 10
+    },
+    {
+      "text_id": 154,
+      "section_id": 16,
+      "paragraph_id": 50,
+      "text": "G. L. Malcolm and P. G. Schyns developed the study concept.",
+      "page_number": 10
+    },
+    {
+      "text_id": 155,
+      "section_id": 16,
+      "paragraph_id": 50,
+      "text": "All authors contributed to the study design.",
+      "page_number": 10
+    },
+    {
+      "text_id": 156,
+      "section_id": 16,
+      "paragraph_id": 50,
+      "text": "Testing and data collection were performed by G. L. Malcolm and A. Nuthmann.",
+      "page_number": 10
+    },
+    {
+      "text_id": 157,
+      "section_id": 16,
+      "paragraph_id": 50,
+      "text": "G. L. Malcolm analyzed the data, and all authors interpreted it.",
+      "page_number": 10
+    },
+    {
+      "text_id": 158,
+      "section_id": 16,
+      "paragraph_id": 50,
+      "text": "G. L. Malcolm drafted the manuscript, and A. Nuthmann and P. G. Schyns provided critical revisions.",
+      "page_number": 10
+    },
+    {
+      "text_id": 159,
+      "section_id": 16,
+      "paragraph_id": 50,
+      "text": "All authors approved the final version of the manuscript for submission.",
+      "page_number": 10
+    },
+    {
+      "text_id": 160,
+      "section_id": 17,
+      "paragraph_id": 51,
+      "text": "The authors declared that they had no conflicts of interest with respect to their authorship or the publication of this article.",
+      "page_number": 10
+    },
+    {
+      "text_id": 161,
+      "section_id": 18,
+      "paragraph_id": 52,
+      "text": "G. L. Malcolm was supported by Economic and Social Research Council Grant PTA-026-27-2500.",
+      "page_number": 10
+    },
+    {
+      "text_id": 162,
+      "section_id": 19,
+      "paragraph_id": 53,
+      "text": "Biederman, I. (1987). Recognition-by-components: A theory of human image understanding. Psychological Review, 94, 115-147.",
+      "page_number": 10
+    },
+    {
+      "text_id": 163,
+      "section_id": 19,
+      "paragraph_id": 54,
+      "text": "Biederman, I. (1995). Visual object recognition. In S. F. Kosslyn & D. N. Osherson (Eds.), An invitation to cognitive science (2nd ed., Vol. 2, pp. 121-165). Cambridge, MA: MIT Press.",
+      "page_number": 10
+    },
+    {
+      "text_id": 164,
+      "section_id": 19,
+      "paragraph_id": 55,
+      "text": "Delorme, A., Richard, G., & Fabre-Thorpe, M. (2000). Ultrarapid categorisation of natural scenes does not rely on colour cues: A study in monkeys and humans. Vision Research, 40, 2187-2200.",
+      "page_number": 10
+    },
+    {
+      "text_id": 165,
+      "section_id": 19,
+      "paragraph_id": 56,
+      "text": "Fei-Fei, L., Iyer, A., Koch, C., & Perona, P. (2007). What do we perceive in a glance of a real-world scene? Journal of Vision, 7(1), Article 10. Retrieved from http://www. journalofvision.org/content/7/1/10",
+      "page_number": 10
+    },
+    {
+      "text_id": 166,
+      "section_id": 19,
+      "paragraph_id": 57,
+      "text": "Gosselin, F., & Schyns, P. G. (2001). Why do we SLIP to the basic level? Computational constraints and their implementation. Psychological Review, 108, 735-758.",
+      "page_number": 10
+    },
+    {
+      "text_id": 167,
+      "section_id": 19,
+      "paragraph_id": 58,
+      "text": "Greene, M. R., & Oliva, A. (2009a). The briefest of glances: The time course of natural scene understanding. Psychological Science, 20, 464-472.",
+      "page_number": 10
+    },
+    {
+      "text_id": 168,
+      "section_id": 19,
+      "paragraph_id": 59,
+      "text": "Greene, M. R., & Oliva, A. (2009b). Recognition of natural scenes from global properties: Seeing the forest without representing the trees. Cognitive Psychology, 58, 137-179.",
+      "page_number": 10
+    },
+    {
+      "text_id": 169,
+      "section_id": 19,
+      "paragraph_id": 60,
+      "text": "Joubert, O., Rousselet, G., Fize, D., & Fabre-Thorpe, M. (2007). Processing scene context: Fast categorization and object interference. Vision Research, 47, 3286- 3297.",
+      "page_number": 11
+    },
+    {
+      "text_id": 170,
+      "section_id": 19,
+      "paragraph_id": 61,
+      "text": "Loschky, L. C., & Larson, A. M. (2010). The natural/man-made distinction is made prior to basic-level distinctions in scene gist processing. Visual Cognition, 18, 513-536.",
+      "page_number": 11
+    },
+    {
+      "text_id": 171,
+      "section_id": 19,
+      "paragraph_id": 62,
+      "text": "McConkie, G. W., & Rayner, K. (1975). The span of the effective stimulus during a fixation in reading. Perception & Psychophysics, 17, 578-586.",
+      "page_number": 11
+    },
+    {
+      "text_id": 172,
+      "section_id": 19,
+      "paragraph_id": 63,
+      "text": "Oliva, A., & Schyns, P. (1997). Coarse blobs or fine edges? Evidence that information diagnosticity changes the perception of complex visual stimuli. Cognitive Psychology, 34, 72-107.",
+      "page_number": 11
+    },
+    {
+      "text_id": 173,
+      "section_id": 19,
+      "paragraph_id": 64,
+      "text": "Oliva, A., & Torralba, A. (2001). Modeling the shape of the scene: A holistic representation of the spatial envelope. International Journal of Computer Vision, 42, 145- 175.",
+      "page_number": 11
+    },
+    {
+      "text_id": 174,
+      "section_id": 19,
+      "paragraph_id": 65,
+      "text": "Oliva, A., & Torralba, A. (2006). Building the gist of a scene: The role of global image features in recognition. Progress in Brain Research: Visual Perception, 155, 23-36.",
+      "page_number": 11
+    },
+    {
+      "text_id": 175,
+      "section_id": 19,
+      "paragraph_id": 66,
+      "text": "Potter, M. C. (1975). Meaning in visual scenes. Science, 187, 965-966.",
+      "page_number": 11
+    },
+    {
+      "text_id": 176,
+      "section_id": 19,
+      "paragraph_id": 67,
+      "text": "Potter, M. C. (1976). Short-term conceptual memory for pictures. Journal of Experimental Psychology: Human Learning and Memory, 2, 509-522.",
+      "page_number": 11
+    },
+    {
+      "text_id": 177,
+      "section_id": 19,
+      "paragraph_id": 68,
+      "text": "Rosch, E. (1978). Principles of categorization. In E. Rosch & B. B. Lloyd (Eds.), Cognition and categorization (pp. 28- 48). Hillsdale, NJ: Erlbaum.",
+      "page_number": 11
+    },
+    {
+      "text_id": 178,
+      "section_id": 19,
+      "paragraph_id": 69,
+      "text": "Rosch, E., Mervis, C. B., Gray, W. D., Johnson, D. M., & Boyes-Braem, P. (1976). Basic objects in natural categories. Cognitive Psychology, 8, 382-439.",
+      "page_number": 11
+    },
+    {
+      "text_id": 179,
+      "section_id": 19,
+      "paragraph_id": 70,
+      "text": "Rotshtein, P., Schofield, A., Funes, M. J., & Humphreys, G. W. (2010). Effects of spatial frequency bands on perceptual decision: It is not the stimuli but the comparison. Journal of Vision, 10(10), Article 25. Retrieved from http://www.journalofvision.org/content/10/10/25.full",
+      "page_number": 11
+    },
+    {
+      "text_id": 180,
+      "section_id": 19,
+      "paragraph_id": 71,
+      "text": "Rousselet, G. A., Joubert, O. R., & Fabre-Thorpe, M. (2005). How long to get to the \"gist\" of real-world natural scenes? Visual Cognition, 12, 852-877.",
+      "page_number": 11
+    },
+    {
+      "text_id": 181,
+      "section_id": 19,
+      "paragraph_id": 72,
+      "text": "Schyns, P. G. (1998). Diagnostic recognition: Task constraints, object information, and their interactions. Cognition, 67, 147-179.",
+      "page_number": 11
+    },
+    {
+      "text_id": 182,
+      "section_id": 19,
+      "paragraph_id": 73,
+      "text": "Schyns, P. G., & Oliva, A. (1994). From blobs to boundary edges: Evidence for time- and spatial-scale-dependent scene recognition. Psychological Science, 5, 195-200.",
+      "page_number": 11
+    },
+    {
+      "text_id": 183,
+      "section_id": 19,
+      "paragraph_id": 74,
+      "text": "Serre, T., Oliva, A., & Poggio, T. (2007). A feedforward architecture accounts for rapid categorization. Proceedings of the National Academy of Sciences, USA, 104, 6424-6429.",
+      "page_number": 11
+    },
+    {
+      "text_id": 184,
+      "section_id": 19,
+      "paragraph_id": 75,
+      "text": "Thorpe, S. J., Fize, D., & Marlot, C. (1996). Speed of processing in the human visual system. Nature, 381, 520-522.",
+      "page_number": 11
+    },
+    {
+      "text_id": 185,
+      "section_id": 19,
+      "paragraph_id": 76,
+      "text": "Torralba, A., & Oliva, A. (2003). Statistics of natural image categories. Network: Computation in Neural Systems, 14, 391-412.",
+      "page_number": 11
+    },
+    {
+      "text_id": 186,
+      "section_id": 19,
+      "paragraph_id": 77,
+      "text": "Tversky, B., & Hemenway, K. (1983). Categories of environmental scenes. Cognitive Psychology, 15, 121-149.",
+      "page_number": 11
+    },
+    {
+      "text_id": 187,
+      "section_id": 19,
+      "paragraph_id": 78,
+      "text": "VanRullen, R., & Thorpe, S. J. (2002). Surfing a spike wave down the ventral stream. Vision Research, 42, 2593-2615.",
+      "page_number": 11
+    },
+    {
+      "text_id": 188,
+      "section_id": 21,
+      "paragraph_id": 79,
+      "text": "Fig. 1. Examples of scenes from each category. Each scene could be categorized into one of four groups, both at the basic level (shown in boldface) and the subordinate level (shown in regular type). Stimuli consisted of 32 scenes, half of which are shown here.",
+      "page_number": 3
+    },
+    {
+      "text_id": 189,
+      "section_id": 22,
+      "paragraph_id": 80,
+      "text": "Fig. 2. Example of what a participant might have seen during the gaze-contingent experiment. Each scene was presented at low spatial frequencies. However, an area 2. 5circ in diameter appeared in full resolution wherever participants moved their eyes. A Gaussian low-pass filter was applied around the border of the window to avoid perceptual problems resulting from sharp boundaries.",
+      "page_number": 4
+    },
+    {
+      "text_id": 190,
+      "section_id": 26,
+      "paragraph_id": 81,
+      "text": "Fig. 3. All fixations made by participants in the basic condition (blue) and subordinate condition (red), during the gaze-contingent experiment. Overlapping areas appear as purple. Results are shown for one scene from each category.",
+      "page_number": 6
+    },
+    {
+      "text_id": 191,
+      "section_id": 30,
+      "paragraph_id": 82,
+      "text": "Fig. 4. Distance of fixations from the center of the screen as a function of ordinal fixation, separately for the four basic categories of stimuli. Black circles and crosses represent individual means for each participant in the basic and subordinate conditions, respectively. Means across the basic and subordinate conditions are indicated, respectively, by blue and red circles (lines connecting the condition means are shown for clarity). Errors bars represent ±1 SE.",
+      "page_number": 7
+    },
+    {
+      "text_id": 192,
+      "section_id": 35,
+      "paragraph_id": 83,
+      "text": "Fig. 5. Illustration showing fixated scene regions in the basic and subordinate conditions. Each panel shows a low-pass-filtered version of a scene from one of the four categories in which every fixated area in both categorization groups is mapped in full resolution (objects are outlined here for clarity). Blue regions indicate objects significantly fixated in the basic condition, red regions indicate objects significantly fixated in the subordinate condition, and purple areas indicate objects significantly fixated in both conditions.",
+      "page_number": 8
+    },
+    {
+      "text_id": 193,
+      "section_id": 38,
+      "paragraph_id": 84,
+      "text": "Fig. 6. Paradigm and results from the validation experiment. Participants were asked to categorize individual scenes, but unlike in the gaze-contingent experiment, each scene contained objects identified as diagnostic at either the basic level (example shown on left) or subordinate level (example shown in middle). These objects were revealed at full resolution while the rest of the scene was low-pass filtered. The graph shows mean accuracy as a function of condition and the type of diagnostic information presented. The dashed line indicates chance performance. Error bars represent ±1 SE.",
+      "page_number": 9
+    },
+    {
+      "text_id": 194,
+      "section_id": 39,
+      "paragraph_id": 85,
+      "text": "Table 1. Results From the Gaze-Contingent Experiment: Means for Key Variables for Each of the Four Scene Categories in Each Condition",
+      "page_number": 4
+    },
+    {
+      "text_id": 195,
+      "section_id": 40,
+      "paragraph_id": 86,
+      "text": "Note: Standard errors are given in parentheses. Number of fixations did not include the initial fixation at scene onset. Fixation durations did not include the initial saccade latency.",
+      "page_number": 4
+    }
+  ],
+  "section": [
+    {
+      "section_id": 1,
+      "header": "Beyond Gist: Strategic and Incremental Information Accumulation for Scene Categorization",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 2,
+      "header": "Abstract",
+      "parent_section_id": 1,
+      "section_type": "abstract",
+      "classification_score": 1
+    },
+    {
+      "section_id": 3,
+      "header": "Keywords",
+      "parent_section_id": 1,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 4,
+      "header": "Method",
+      "parent_section_id": 1,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 5,
+      "header": "Participants",
+      "parent_section_id": 1,
+      "section_type": "method",
+      "classification_score": 1
+    },
+    {
+      "section_id": 6,
+      "header": "Apparatus",
+      "parent_section_id": 1,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 7,
+      "header": "Stimuli and design",
+      "parent_section_id": 1,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 8,
+      "header": "Procedure",
+      "parent_section_id": 1,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 9,
+      "header": "Results",
+      "parent_section_id": 1,
+      "section_type": "results",
+      "classification_score": 1
+    },
+    {
+      "section_id": 10,
+      "header": "Eye movement strategies",
+      "parent_section_id": 1,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 11,
+      "header": "Gaze patterns",
+      "parent_section_id": 1,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 12,
+      "header": "Diagnostic objects",
+      "parent_section_id": 1,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 13,
+      "header": "Validation of diagnostic objects",
+      "parent_section_id": 1,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 14,
+      "header": "Behavior verification",
+      "parent_section_id": 1,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 15,
+      "header": "General Discussion",
+      "parent_section_id": 1,
+      "section_type": "discussion",
+      "classification_score": 1
+    },
+    {
+      "section_id": 16,
+      "header": "Author Contributions",
+      "parent_section_id": 1,
+      "section_type": "acknowledgment",
+      "classification_score": 1
+    },
+    {
+      "section_id": 17,
+      "header": "Declaration of Conflicting Interests",
+      "parent_section_id": 1,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 18,
+      "header": "Funding",
+      "parent_section_id": 1,
+      "section_type": "funding",
+      "classification_score": 1
+    },
+    {
+      "section_id": 19,
+      "header": "References",
+      "parent_section_id": 1,
+      "section_type": "references",
+      "classification_score": 1
+    },
+    {
+      "section_id": 20,
+      "header": "Figure 1",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 21,
+      "header": "Figure 2",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 22,
+      "header": "Figure 3",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 23,
+      "header": "Figure 4",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 24,
+      "header": "Figure 5",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 25,
+      "header": "Figure 6",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 26,
+      "header": "Figure 7",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 27,
+      "header": "Figure 8",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 28,
+      "header": "Figure 9",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 29,
+      "header": "Figure 10",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 30,
+      "header": "Figure 11",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 31,
+      "header": "Figure 12",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 32,
+      "header": "Figure 13",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 33,
+      "header": "Figure 14",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 34,
+      "header": "Figure 15",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 35,
+      "header": "Figure 16",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 36,
+      "header": "Figure 17",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 37,
+      "header": "Figure 18",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 38,
+      "header": "Figure 19",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 39,
+      "header": "Table 1",
+      "parent_section_id": null,
+      "section_type": "unknown",
+      "classification_score": 0
+    },
+    {
+      "section_id": 40,
+      "header": "Footnote 1",
+      "parent_section_id": null,
+      "section_type": "footnote",
+      "classification_score": 0.95
+    }
+  ],
+  "url": [
+    {
+      "href": "http://www",
+      "link_text": null,
+      "text_id": 165
+    },
+    {
+      "href": "http://www.journalofvision.org/content/10/10/25.full",
+      "link_text": null,
+      "text_id": 179
+    }
+  ],
+  "bib": [
+    {
+      "bib_id": 1,
+      "title": "Recognition-by-components: A theory of human image understanding",
+      "first_page": "115",
+      "volume": "94",
+      "authors": "Biederman, I.",
+      "container": "Psychological Review",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 162,
+      "last_page": "147",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1987,
+      "date": null
+    },
+    {
+      "bib_id": 2,
+      "title": "Visual object recognition",
+      "first_page": "121",
+      "volume": "2",
+      "authors": "Biederman, I.",
+      "container": "An invitation to cognitive science",
+      "doi": null,
+      "bib_type": "book_chapter",
+      "text_id": 163,
+      "last_page": "165",
+      "issue": null,
+      "editors": ["Kosslyn, S. F.", "Osherson, D. N."],
+      "publisher": "MIT Press",
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1995,
+      "date": null
+    },
+    {
+      "bib_id": 3,
+      "title": "Ultrarapid categorisation of natural scenes does not rely on colour cues: A study in monkeys and humans",
+      "first_page": "2187",
+      "volume": "40",
+      "authors": ["Delorme, A.", "Richard, G.", "Fabre-Thorpe, M."],
+      "container": "Vision Research",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 164,
+      "last_page": "2200",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2000,
+      "date": null
+    },
+    {
+      "bib_id": 4,
+      "title": "What do we perceive in a glance of a real-world scene?",
+      "first_page": null,
+      "volume": "7",
+      "authors": ["Fei-Fei, L.", "Iyer, A.", "Koch, C.", "Perona, P."],
+      "container": "Journal of Vision",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 165,
+      "last_page": null,
+      "issue": "1",
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2007,
+      "date": null
+    },
+    {
+      "bib_id": 5,
+      "title": "Why do we SLIP to the basic level? Computational constraints and their implementation",
+      "first_page": "735",
+      "volume": "108",
+      "authors": ["Gosselin, F.", "Schyns, P. G."],
+      "container": "Psychological Review",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 166,
+      "last_page": "758",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2001,
+      "date": null
+    },
+    {
+      "bib_id": 6,
+      "title": "The briefest of glances: The time course of natural scene understanding",
+      "first_page": "464",
+      "volume": "20",
+      "authors": ["Greene, M. R.", "Oliva, A."],
+      "container": "Psychological Science",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 167,
+      "last_page": "472",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2009,
+      "date": null
+    },
+    {
+      "bib_id": 7,
+      "title": "Recognition of natural scenes from global properties: Seeing the forest without representing the trees",
+      "first_page": "137",
+      "volume": "58",
+      "authors": ["Greene, M. R.", "Oliva, A."],
+      "container": "Cognitive Psychology",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 168,
+      "last_page": "179",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2009,
+      "date": null
+    },
+    {
+      "bib_id": 8,
+      "title": "Processing scene context: Fast categorization and object interference",
+      "first_page": "3286",
+      "volume": "47",
+      "authors": ["Joubert, O.", "Rousselet, G.", "Fize, D.", "Fabre-Thorpe, M."],
+      "container": "Vision Research",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 169,
+      "last_page": "3297",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2007,
+      "date": null
+    },
+    {
+      "bib_id": 9,
+      "title": "The natural/man-made distinction is made prior to basic-level distinctions in scene gist processing",
+      "first_page": "513",
+      "volume": "18",
+      "authors": ["Loschky, L. C.", "Larson, A. M."],
+      "container": "Visual Cognition",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 170,
+      "last_page": "536",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2010,
+      "date": null
+    },
+    {
+      "bib_id": 10,
+      "title": "The span of the effective stimulus during a fixation in reading",
+      "first_page": "578",
+      "volume": "17",
+      "authors": ["McConkie, G. W.", "Rayner, K."],
+      "container": "Perception & Psychophysics",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 171,
+      "last_page": "586",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1975,
+      "date": null
+    },
+    {
+      "bib_id": 11,
+      "title": "Coarse blobs or fine edges? Evidence that information diagnosticity changes the perception of complex visual stimuli",
+      "first_page": "72",
+      "volume": "34",
+      "authors": ["Oliva, A.", "Schyns, P. G."],
+      "container": "Cognitive Psychology",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 172,
+      "last_page": "107",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1997,
+      "date": null
+    },
+    {
+      "bib_id": 12,
+      "title": "Modeling the shape of the scene: A holistic representation of the spatial envelope",
+      "first_page": "145",
+      "volume": "42",
+      "authors": ["Oliva, A.", "Torralba, A."],
+      "container": "International Journal of Computer Vision",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 173,
+      "last_page": "175",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2001,
+      "date": null
+    },
+    {
+      "bib_id": 13,
+      "title": "Building the gist of a scene: The role of global image features in recognition",
+      "first_page": "23",
+      "volume": "155",
+      "authors": ["Oliva, A.", "Torralba, A."],
+      "container": "Progress in Brain Research: Visual Perception",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 174,
+      "last_page": "36",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2006,
+      "date": null
+    },
+    {
+      "bib_id": 14,
+      "title": "Meaning in visual scenes",
+      "first_page": "965",
+      "volume": "187",
+      "authors": "Potter, M. C.",
+      "container": "Science",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 175,
+      "last_page": "966",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1975,
+      "date": null
+    },
+    {
+      "bib_id": 15,
+      "title": "Short-term conceptual memory for pictures",
+      "first_page": "509",
+      "volume": "2",
+      "authors": "Potter, M. C.",
+      "container": "Journal of Experimental Psychology: Human Learning and Memory",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 176,
+      "last_page": "522",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1976,
+      "date": null
+    },
+    {
+      "bib_id": 16,
+      "title": "Principles of categorization",
+      "first_page": "28",
+      "volume": null,
+      "authors": "Rosch, E.",
+      "container": "Cognition and categorization",
+      "doi": null,
+      "bib_type": "book_chapter",
+      "text_id": 177,
+      "last_page": "48",
+      "issue": null,
+      "editors": ["Rosch, E.", "Lloyd, B. B."],
+      "publisher": "Erlbaum",
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1978,
+      "date": null
+    },
+    {
+      "bib_id": 17,
+      "title": "Basic objects in natural categories",
+      "first_page": "382",
+      "volume": "8",
+      "authors": ["Rosch, E.", "Mervis, C. B.", "Gray, W. D.", "Johnson, D. M.", "Boyes-Braem, P."],
+      "container": "Cognitive Psychology",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 178,
+      "last_page": "439",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1976,
+      "date": null
+    },
+    {
+      "bib_id": 18,
+      "title": "Effects of spatial frequency bands on perceptual decision: It is not the stimuli but the comparison",
+      "first_page": null,
+      "volume": "10",
+      "authors": ["Rotshtein, P.", "Schofield, A.", "Funes, M. J.", "Humphreys, G. W."],
+      "container": "Journal of Vision",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 179,
+      "last_page": null,
+      "issue": "10",
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2010,
+      "date": null
+    },
+    {
+      "bib_id": 19,
+      "title": "How long to get to the \"gist\" of real-world natural scenes?",
+      "first_page": "852",
+      "volume": "12",
+      "authors": ["Rousselet, G. A.", "Joubert, O. R.", "Fabre-Thorpe, M."],
+      "container": "Visual Cognition",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 180,
+      "last_page": "877",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2005,
+      "date": null
+    },
+    {
+      "bib_id": 20,
+      "title": "Diagnostic recognition: Task constraints, object information, and their interactions",
+      "first_page": "147",
+      "volume": "67",
+      "authors": "Schyns, P. G.",
+      "container": "Cognition",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 181,
+      "last_page": "179",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1998,
+      "date": null
+    },
+    {
+      "bib_id": 21,
+      "title": "From blobs to boundary edges: Evidence for time- and spatial-scale-dependent scene recognition",
+      "first_page": "195",
+      "volume": "5",
+      "authors": ["Schyns, P. G.", "Oliva, A."],
+      "container": "Psychological Science",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 182,
+      "last_page": "200",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1994,
+      "date": null
+    },
+    {
+      "bib_id": 22,
+      "title": "A feedforward architecture accounts for rapid categorization",
+      "first_page": "6424",
+      "volume": "104",
+      "authors": ["Serre, T.", "Oliva, A.", "Poggio, T."],
+      "container": "Proceedings of the National Academy of Sciences, USA",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 183,
+      "last_page": "6429",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2007,
+      "date": null
+    },
+    {
+      "bib_id": 23,
+      "title": "Speed of processing in the human visual system",
+      "first_page": "520",
+      "volume": "381",
+      "authors": ["Thorpe, S. J.", "Fize, D.", "Marlot, C."],
+      "container": "Nature",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 184,
+      "last_page": "522",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1996,
+      "date": null
+    },
+    {
+      "bib_id": 24,
+      "title": "Statistics of natural image categories",
+      "first_page": "391",
+      "volume": "14",
+      "authors": ["Torralba, A.", "Oliva, A."],
+      "container": "Network: Computation in Neural Systems",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 185,
+      "last_page": "412",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2003,
+      "date": null
+    },
+    {
+      "bib_id": 25,
+      "title": "Categories of environmental scenes",
+      "first_page": "121",
+      "volume": "15",
+      "authors": ["Tversky, B.", "Hemenway, K."],
+      "container": "Cognitive Psychology",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 186,
+      "last_page": "149",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 1983,
+      "date": null
+    },
+    {
+      "bib_id": 26,
+      "title": "Surfing a spike wave down the ventral stream",
+      "first_page": "2593",
+      "volume": "42",
+      "authors": ["VanRullen, R.", "Thorpe, S. J."],
+      "container": "Vision Research",
+      "doi": null,
+      "bib_type": "journal_article",
+      "text_id": 187,
+      "last_page": "2615",
+      "issue": null,
+      "editors": [],
+      "publisher": null,
+      "url": null,
+      "edition": null,
+      "version": null,
+      "year": 2002,
+      "date": null
+    }
+  ],
+  "xref": [
+    {
+      "xref_id": 1,
+      "xref_type": "figure",
+      "contents": "Fig.1",
+      "text_id": 39
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "figure",
+      "contents": "Fig. 2",
+      "text_id": 45
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "table",
+      "contents": "Table 1",
+      "text_id": 70
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "table",
+      "contents": "Table 1",
+      "text_id": 77
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "table",
+      "contents": "Table 1",
+      "text_id": 85
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "table",
+      "contents": "Table 1",
+      "text_id": 89
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "table",
+      "contents": "Table 1",
+      "text_id": 90
+    },
+    {
+      "xref_id": 3,
+      "xref_type": "figure",
+      "contents": "Fig. 3",
+      "text_id": 97
+    },
+    {
+      "xref_id": 4,
+      "xref_type": "figure",
+      "contents": "Fig. 4",
+      "text_id": 100
+    },
+    {
+      "xref_id": 5,
+      "xref_type": "figure",
+      "contents": "Fig. 5",
+      "text_id": 109
+    },
+    {
+      "xref_id": 6,
+      "xref_type": "figure",
+      "contents": "Fig. 6",
+      "text_id": 112
+    },
+    {
+      "xref_id": 6,
+      "xref_type": "figure",
+      "contents": "Fig. 6",
+      "text_id": 119
+    },
+    {
+      "xref_id": 40,
+      "xref_type": "foot",
+      "contents": "1",
+      "text_id": 74
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "bib",
+      "contents": "^{1}",
+      "text_id": 1
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 1
+    },
+    {
+      "xref_id": 3,
+      "xref_type": "bib",
+      "contents": "^{3}",
+      "text_id": 1
+    },
+    {
+      "xref_id": 1,
+      "xref_type": "bib",
+      "contents": "^{1}",
+      "text_id": 3
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 3
+    },
+    {
+      "xref_id": 3,
+      "xref_type": "bib",
+      "contents": "^{3}",
+      "text_id": 3
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 69
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 70
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 76
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 77
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 85
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 88
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 90
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 91
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 99
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 102
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 104
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 117
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 118
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 119
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 123
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 124
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 125
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 127
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 128
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 132
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 133
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 134
+    },
+    {
+      "xref_id": 2,
+      "xref_type": "bib",
+      "contents": "^{2}",
+      "text_id": 135
+    },
+    {
+      "xref_id": 20,
+      "xref_type": "bib",
+      "contents": "(Schyns, 1998)",
+      "text_id": 21
+    },
+    {
+      "xref_id": 17,
+      "xref_type": "bib",
+      "contents": "(Rosch et al., 1976)",
+      "text_id": 93
+    },
+    {
+      "xref_id": 17,
+      "xref_type": "bib",
+      "contents": "(Rosch et al., 1976)",
+      "text_id": 115
+    },
+    {
+      "xref_id": 11,
+      "xref_type": "bib",
+      "contents": "(Oliva & Schyns, 1997)",
+      "text_id": 148
+    }
+  ],
+  "figure": [
+    {
+      "figure_id": 1,
+      "section_id": 20,
+      "image": null,
+      "page_number": 1
+    },
+    {
+      "figure_id": 2,
+      "section_id": 21,
+      "image": null,
+      "page_number": 3
+    },
+    {
+      "figure_id": 3,
+      "section_id": 22,
+      "image": null,
+      "page_number": 4
+    },
+    {
+      "figure_id": 4,
+      "section_id": 23,
+      "image": null,
+      "page_number": 6
+    },
+    {
+      "figure_id": 5,
+      "section_id": 24,
+      "image": null,
+      "page_number": 6
+    },
+    {
+      "figure_id": 6,
+      "section_id": 25,
+      "image": null,
+      "page_number": 6
+    },
+    {
+      "figure_id": 7,
+      "section_id": 26,
+      "image": null,
+      "page_number": 6
+    },
+    {
+      "figure_id": 8,
+      "section_id": 27,
+      "image": null,
+      "page_number": 7
+    },
+    {
+      "figure_id": 9,
+      "section_id": 28,
+      "image": null,
+      "page_number": 7
+    },
+    {
+      "figure_id": 10,
+      "section_id": 29,
+      "image": null,
+      "page_number": 7
+    },
+    {
+      "figure_id": 11,
+      "section_id": 30,
+      "image": null,
+      "page_number": 7
+    },
+    {
+      "figure_id": 12,
+      "section_id": 31,
+      "image": null,
+      "page_number": 8
+    },
+    {
+      "figure_id": 13,
+      "section_id": 32,
+      "image": null,
+      "page_number": 8
+    },
+    {
+      "figure_id": 14,
+      "section_id": 33,
+      "image": null,
+      "page_number": 8
+    },
+    {
+      "figure_id": 15,
+      "section_id": 34,
+      "image": null,
+      "page_number": 8
+    },
+    {
+      "figure_id": 16,
+      "section_id": 35,
+      "image": null,
+      "page_number": 8
+    },
+    {
+      "figure_id": 17,
+      "section_id": 36,
+      "image": null,
+      "page_number": 9
+    },
+    {
+      "figure_id": 18,
+      "section_id": 37,
+      "image": null,
+      "page_number": 9
+    },
+    {
+      "figure_id": 19,
+      "section_id": 38,
+      "image": null,
+      "page_number": 9
+    }
+  ],
+  "table": [
+    {
+      "table_id": 1,
+      "section_id": 39,
+      "html": "<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th>0<\/th>\n      <th>1<\/th>\n      <th>2<\/th>\n      <th>3<\/th>\n      <th>4<\/th>\n      <th>5<\/th>\n      <th>6<\/th>\n      <th>7<\/th>\n      <th>8<\/th>\n    <\/tr>\n  <\/thead>\n  <tbody>\n    <tr>\n      <td><\/td>\n      <td>Classroom<\/td>\n      <td>Classroom<\/td>\n      <td>Pool<\/td>\n      <td>Pool<\/td>\n      <td>Restaurant<\/td>\n      <td>Restaurant<\/td>\n      <td>Road<\/td>\n      <td>Road<\/td>\n    <\/tr>\n    <tr>\n      <td>Measure<\/td>\n      <td>Basic condition<\/td>\n      <td>Subordinate condition<\/td>\n      <td>Basic condition<\/td>\n      <td>Subordinate condition<\/td>\n      <td>Basic condition<\/td>\n      <td>Subordinate condition<\/td>\n      <td>Basic condition<\/td>\n      <td>Subordinate condition<\/td>\n    <\/tr>\n    <tr>\n      <td>Response time(ms)<\/td>\n      <td>2402(252)<\/td>\n      <td>3262(352)<\/td>\n      <td>2428(269)<\/td>\n      <td>2990(245)<\/td>\n      <td>2676(212)<\/td>\n      <td>4162(366)<\/td>\n      <td>1715(170)<\/td>\n      <td>2598(331)<\/td>\n    <\/tr>\n    <tr>\n      <td>Number of fixations<\/td>\n      <td>5.74(0.72)<\/td>\n      <td>9.77(1.12)<\/td>\n      <td>5.64(0.60)<\/td>\n      <td>8.82(0.93)<\/td>\n      <td>6.54(0.64)<\/td>\n      <td>12.17(1.27)<\/td>\n      <td>3.66(0.32)<\/td>\n      <td>8.11(1.27)<\/td>\n    <\/tr>\n    <tr>\n      <td>Initial saccade latency(ms)<\/td>\n      <td>419(26.61)<\/td>\n      <td>371(22.97)<\/td>\n      <td>418(32.26)<\/td>\n      <td>327(16.98)<\/td>\n      <td>437(37.34)<\/td>\n      <td>357(19.09)<\/td>\n      <td>411(25.33)<\/td>\n      <td>351(17.61)<\/td>\n    <\/tr>\n    <tr>\n      <td>Fixation duration(ms)<\/td>\n      <td>369(21.14)<\/td>\n      <td>290(18.93)<\/td>\n      <td>383(24.07)<\/td>\n      <td>325(27.00)<\/td>\n      <td>377(22.80)<\/td>\n      <td>306(19.40)<\/td>\n      <td>394(23.17)<\/td>\n      <td>277(15.47)<\/td>\n    <\/tr>\n    <tr>\n      <td>Saccade amplitude(degrees)<\/td>\n      <td>2.55(0.25)<\/td>\n      <td>2.96(0.24)<\/td>\n      <td>2.14(0.17)<\/td>\n      <td>2.47(0.24)<\/td>\n      <td>2.70(0.24)<\/td>\n      <td>2.73(0.26)<\/td>\n      <td>2.50(0.28)<\/td>\n      <td>2.52(0.25)<\/td>\n    <\/tr>\n  <\/tbody>\n<\/table>",
+      "contents": [
+        ["0", "1", "2", "3", "4", "5", "6", "7", "8"],
+        ["", "Classroom", "Classroom", "Pool", "Pool", "Restaurant", "Restaurant", "Road", "Road"],
+        ["Measure", "Basic condition", "Subordinate condition", "Basic condition", "Subordinate condition", "Basic condition", "Subordinate condition", "Basic condition", "Subordinate condition"],
+        ["Response time(ms)", "2402(252)", "3262(352)", "2428(269)", "2990(245)", "2676(212)", "4162(366)", "1715(170)", "2598(331)"],
+        ["Number of fixations", "5.74(0.72)", "9.77(1.12)", "5.64(0.60)", "8.82(0.93)", "6.54(0.64)", "12.17(1.27)", "3.66(0.32)", "8.11(1.27)"],
+        ["Initial saccade latency(ms)", "419(26.61)", "371(22.97)", "418(32.26)", "327(16.98)", "437(37.34)", "357(19.09)", "411(25.33)", "351(17.61)"],
+        ["Fixation duration(ms)", "369(21.14)", "290(18.93)", "383(24.07)", "325(27.00)", "377(22.80)", "306(19.40)", "394(23.17)", "277(15.47)"],
+        ["Saccade amplitude(degrees)", "2.55(0.25)", "2.96(0.24)", "2.14(0.17)", "2.47(0.24)", "2.70(0.24)", "2.73(0.26)", "2.50(0.28)", "2.52(0.25)"]
+      ],
+      "page_number": 4
+    }
+  ],
+  "eq": [
+    {
+      "text_id": 33,
+      "grp_id": 1,
+      "lhs": "rate",
+      "comp": "=",
+      "rhs": "140"
+    },
+    {
+      "text_id": 69,
+      "grp_id": 2,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "2"
+    },
+    {
+      "text_id": 69,
+      "grp_id": 3,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3"
+    },
+    {
+      "text_id": 69,
+      "grp_id": 4,
+      "lhs": "F(1,26)",
+      "comp": "=",
+      "rhs": "9.277"
+    },
+    {
+      "text_id": 69,
+      "grp_id": 4,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".005"
+    },
+    {
+      "text_id": 69,
+      "grp_id": 5,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "2,305"
+    },
+    {
+      "text_id": 69,
+      "grp_id": 6,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3,253"
+    },
+    {
+      "text_id": 69,
+      "grp_id": 7,
+      "lhs": "F(1,26)",
+      "comp": "=",
+      "rhs": "9.277,p=.005,\\eta_{p}^{2}=.263"
+    },
+    {
+      "text_id": 70,
+      "grp_id": 8,
+      "lhs": "F(3,78)",
+      "comp": "=",
+      "rhs": "12.910"
+    },
+    {
+      "text_id": 70,
+      "grp_id": 8,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".001"
+    },
+    {
+      "text_id": 70,
+      "grp_id": 9,
+      "lhs": "F(3,78)",
+      "comp": "=",
+      "rhs": "1.805"
+    },
+    {
+      "text_id": 70,
+      "grp_id": 9,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".153"
+    },
+    {
+      "text_id": 70,
+      "grp_id": 10,
+      "lhs": "F(3,78)",
+      "comp": "=",
+      "rhs": "12.910,p<.001,"
+    },
+    {
+      "text_id": 70,
+      "grp_id": 11,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".332"
+    },
+    {
+      "text_id": 70,
+      "grp_id": 12,
+      "lhs": "F(3,78)",
+      "comp": "=",
+      "rhs": "1.805,p=.153,\\eta_{p}^{2}=.065"
+    },
+    {
+      "text_id": 70,
+      "grp_id": 13,
+      "lhs": "Ms",
+      "comp": "=",
+      "rhs": "2,832"
+    },
+    {
+      "text_id": 75,
+      "grp_id": 14,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "9"
+    },
+    {
+      "text_id": 75,
+      "grp_id": 15,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "5"
+    },
+    {
+      "text_id": 75,
+      "grp_id": 16,
+      "lhs": "( M",
+      "comp": "=",
+      "rhs": "9. 7 2 )"
+    },
+    {
+      "text_id": 75,
+      "grp_id": 17,
+      "lhs": "( M",
+      "comp": "=",
+      "rhs": "5. 4 0 )"
+    },
+    {
+      "text_id": 76,
+      "grp_id": 18,
+      "lhs": "F ( 1, 2 6 )",
+      "comp": "=",
+      "rhs": "1"
+    },
+    {
+      "text_id": 76,
+      "grp_id": 19,
+      "lhs": "F ( 1, 2 6 )",
+      "comp": "=",
+      "rhs": "1 7. 9 0 6"
+    },
+    {
+      "text_id": 76,
+      "grp_id": 20,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ". 0 0 1"
+    },
+    {
+      "text_id": 76,
+      "grp_id": 21,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ". 4 0 8"
+    },
+    {
+      "text_id": 77,
+      "grp_id": 22,
+      "lhs": "F ( 3, 7 8 )",
+      "comp": "=",
+      "rhs": "9"
+    },
+    {
+      "text_id": 77,
+      "grp_id": 23,
+      "lhs": "F ( 3, 7 8 )",
+      "comp": "=",
+      "rhs": "1"
+    },
+    {
+      "text_id": 77,
+      "grp_id": 24,
+      "lhs": "F ( 3, 7 8 )",
+      "comp": "=",
+      "rhs": "9. 5 5 8"
+    },
+    {
+      "text_id": 77,
+      "grp_id": 25,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ". 0 0 1"
+    },
+    {
+      "text_id": 77,
+      "grp_id": 26,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ". 2 6 9"
+    },
+    {
+      "text_id": 77,
+      "grp_id": 27,
+      "lhs": "( M s",
+      "comp": "=",
+      "rhs": "7. 7 6, 7. 2 3, 9. 3 6"
+    },
+    {
+      "text_id": 77,
+      "grp_id": 28,
+      "lhs": "F ( 3, 7 8 )",
+      "comp": "=",
+      "rhs": "1. 2 0 1"
+    },
+    {
+      "text_id": 77,
+      "grp_id": 29,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ". 3 1 5"
+    },
+    {
+      "text_id": 77,
+      "grp_id": 30,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ". 0 4 4"
+    },
+    {
+      "text_id": 77,
+      "grp_id": 31,
+      "lhs": "s",
+      "comp": "=",
+      "rhs": "7"
+    },
+    {
+      "text_id": 85,
+      "grp_id": 32,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "421"
+    },
+    {
+      "text_id": 85,
+      "grp_id": 33,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "352"
+    },
+    {
+      "text_id": 85,
+      "grp_id": 34,
+      "lhs": "F(1, 26)",
+      "comp": "=",
+      "rhs": "5.720"
+    },
+    {
+      "text_id": 85,
+      "grp_id": 34,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".024"
+    },
+    {
+      "text_id": 85,
+      "grp_id": 35,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".180"
+    },
+    {
+      "text_id": 85,
+      "grp_id": 36,
+      "lhs": "Fs",
+      "comp": "<",
+      "rhs": "1"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 37,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 37,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 38,
+      "lhs": "F (1, 2 6)",
+      "comp": "=",
+      "rhs": "8"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 39,
+      "lhs": "F (3, 7 8)",
+      "comp": "=",
+      "rhs": "2"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 40,
+      "lhs": "F (3, 7 8)",
+      "comp": "=",
+      "rhs": "3"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 41,
+      "lhs": "F (1, 2 6)",
+      "comp": "=",
+      "rhs": "8. 2 4 6"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 42,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ". 0 0 8"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 43,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ". 2 4 1"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 44,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3 8 1"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 45,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3 0 0"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 46,
+      "lhs": "F (3, 7 8)",
+      "comp": "=",
+      "rhs": "2. 2 4 2"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 47,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ". 0 9"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 48,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ". 0 7 9"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 49,
+      "lhs": "(M s",
+      "comp": "=",
+      "rhs": "3 2 9, 3 5 4, 3 4 1"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 50,
+      "lhs": "F (3, 7 8)",
+      "comp": "=",
+      "rhs": "3. 2 0 7"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 51,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ". 0 2 8"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 52,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ". 1 1 0"
+    },
+    {
+      "text_id": 88,
+      "grp_id": 53,
+      "lhs": "s",
+      "comp": "=",
+      "rhs": "3"
+    },
+    {
+      "text_id": 89,
+      "grp_id": 54,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3"
+    },
+    {
+      "text_id": 89,
+      "grp_id": 55,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3"
+    },
+    {
+      "text_id": 89,
+      "grp_id": 56,
+      "lhs": "t(26)",
+      "comp": "=",
+      "rhs": "1.598"
+    },
+    {
+      "text_id": 89,
+      "grp_id": 56,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".122"
+    },
+    {
+      "text_id": 89,
+      "grp_id": 57,
+      "lhs": "(M",
+      "comp": "=",
+      "rhs": "3 8 3"
+    },
+    {
+      "text_id": 89,
+      "grp_id": 58,
+      "lhs": "(M",
+      "comp": "=",
+      "rhs": "3 2 5"
+    },
+    {
+      "text_id": 89,
+      "grp_id": 59,
+      "lhs": "ts",
+      "comp": ">",
+      "rhs": "2.370"
+    },
+    {
+      "text_id": 89,
+      "grp_id": 59,
+      "lhs": "ps",
+      "comp": "<",
+      "rhs": ".025"
+    },
+    {
+      "text_id": 90,
+      "grp_id": 60,
+      "lhs": "F(3, 78)",
+      "comp": "=",
+      "rhs": "5.882"
+    },
+    {
+      "text_id": 90,
+      "grp_id": 60,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".001"
+    },
+    {
+      "text_id": 90,
+      "grp_id": 61,
+      "lhs": "F",
+      "comp": "<",
+      "rhs": "1"
+    },
+    {
+      "text_id": 90,
+      "grp_id": 62,
+      "lhs": "Ms",
+      "comp": "=",
+      "rhs": "2.75"
+    },
+    {
+      "text_id": 91,
+      "grp_id": 63,
+      "lhs": "F(3, 78)",
+      "comp": "=",
+      "rhs": "1.444"
+    },
+    {
+      "text_id": 91,
+      "grp_id": 63,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".237"
+    },
+    {
+      "text_id": 99,
+      "grp_id": 64,
+      "lhs": "F ( 4, 8 8 )",
+      "comp": "=",
+      "rhs": "3"
+    },
+    {
+      "text_id": 99,
+      "grp_id": 65,
+      "lhs": "F ( 4, 8 8 )",
+      "comp": "=",
+      "rhs": "3. 6 6 1"
+    },
+    {
+      "text_id": 99,
+      "grp_id": 66,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ". 0 0 8"
+    },
+    {
+      "text_id": 99,
+      "grp_id": 67,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ". 1 4 3"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 68,
+      "lhs": "F(1, 22)",
+      "comp": "=",
+      "rhs": "2.163"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 68,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".156"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 69,
+      "lhs": "F(3, 66)",
+      "comp": "=",
+      "rhs": "4.342"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 69,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".007"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 70,
+      "lhs": "F(2.286, 50.288)",
+      "comp": "=",
+      "rhs": "42.240"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 70,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".001"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 71,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".090"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 72,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".165"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 73,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".658"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 74,
+      "lhs": "Ms",
+      "comp": "=",
+      "rhs": "3.88"
+    },
+    {
+      "text_id": 102,
+      "grp_id": 75,
+      "lhs": "Ms",
+      "comp": "=",
+      "rhs": "2.55"
+    },
+    {
+      "text_id": 103,
+      "grp_id": 76,
+      "lhs": "F",
+      "comp": "<",
+      "rhs": "1"
+    },
+    {
+      "text_id": 104,
+      "grp_id": 77,
+      "lhs": "F(3, 66)",
+      "comp": "=",
+      "rhs": "2.012"
+    },
+    {
+      "text_id": 104,
+      "grp_id": 77,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".121"
+    },
+    {
+      "text_id": 104,
+      "grp_id": 78,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".084"
+    },
+    {
+      "text_id": 104,
+      "grp_id": 79,
+      "lhs": "F",
+      "comp": "<",
+      "rhs": "1"
+    },
+    {
+      "text_id": 108,
+      "grp_id": 80,
+      "lhs": "ps",
+      "comp": "<",
+      "rhs": ".05"
+    },
+    {
+      "text_id": 117,
+      "grp_id": 81,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": ".79"
+    },
+    {
+      "text_id": 117,
+      "grp_id": 81,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": ".71"
+    },
+    {
+      "text_id": 117,
+      "grp_id": 82,
+      "lhs": "F(1,34)",
+      "comp": "=",
+      "rhs": "9.339"
+    },
+    {
+      "text_id": 117,
+      "grp_id": 82,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".004"
+    },
+    {
+      "text_id": 117,
+      "grp_id": 83,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".215"
+    },
+    {
+      "text_id": 118,
+      "grp_id": 84,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": ".71"
+    },
+    {
+      "text_id": 118,
+      "grp_id": 84,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": ".79"
+    },
+    {
+      "text_id": 118,
+      "grp_id": 85,
+      "lhs": "F(1, 34)",
+      "comp": "=",
+      "rhs": "15.871"
+    },
+    {
+      "text_id": 118,
+      "grp_id": 85,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".001"
+    },
+    {
+      "text_id": 118,
+      "grp_id": 86,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".318"
+    },
+    {
+      "text_id": 119,
+      "grp_id": 87,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": ".77"
+    },
+    {
+      "text_id": 119,
+      "grp_id": 88,
+      "lhs": "F(1, 34)",
+      "comp": "=",
+      "rhs": "3.456"
+    },
+    {
+      "text_id": 119,
+      "grp_id": 88,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".072"
+    },
+    {
+      "text_id": 119,
+      "grp_id": 89,
+      "lhs": "t(17)",
+      "comp": "=",
+      "rhs": "4.134"
+    },
+    {
+      "text_id": 119,
+      "grp_id": 89,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".001"
+    },
+    {
+      "text_id": 119,
+      "grp_id": 90,
+      "lhs": "t(17)",
+      "comp": "=",
+      "rhs": "1.506"
+    },
+    {
+      "text_id": 119,
+      "grp_id": 90,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".151"
+    },
+    {
+      "text_id": 119,
+      "grp_id": 91,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".092"
+    },
+    {
+      "text_id": 119,
+      "grp_id": 92,
+      "lhs": "Ms",
+      "comp": "=",
+      "rhs": ".65"
+    },
+    {
+      "text_id": 123,
+      "grp_id": 93,
+      "lhs": "F ( 1, 2 6 )",
+      "comp": "=",
+      "rhs": "3"
+    },
+    {
+      "text_id": 123,
+      "grp_id": 94,
+      "lhs": "F ( 1, 2 6 )",
+      "comp": "=",
+      "rhs": "3. 5 6 8, p = . 0 7 0, \\eta_{p}^{2} = . 1 2 1"
+    },
+    {
+      "text_id": 124,
+      "grp_id": 95,
+      "lhs": "F ( 2. 0 8 4, 5 4. 1 8 8 )",
+      "comp": "=",
+      "rhs": "7"
+    },
+    {
+      "text_id": 124,
+      "grp_id": 96,
+      "lhs": "F ( 2. 0 8 4, 5 4. 1 8 8 )",
+      "comp": "=",
+      "rhs": "7. 0 8 0, p = . 0 0 2, \\eta_{p}^{2} = . 2 1 4 ( M s = 1, 2 6 9 )"
+    },
+    {
+      "text_id": 124,
+      "grp_id": 97,
+      "lhs": "s",
+      "comp": "=",
+      "rhs": "1"
+    },
+    {
+      "text_id": 125,
+      "grp_id": 98,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "1"
+    },
+    {
+      "text_id": 125,
+      "grp_id": 99,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "1"
+    },
+    {
+      "text_id": 125,
+      "grp_id": 100,
+      "lhs": "F(3, 78)",
+      "comp": "=",
+      "rhs": "2.596"
+    },
+    {
+      "text_id": 125,
+      "grp_id": 100,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".058"
+    },
+    {
+      "text_id": 125,
+      "grp_id": 101,
+      "lhs": "t(26)",
+      "comp": "=",
+      "rhs": "3.00"
+    },
+    {
+      "text_id": 125,
+      "grp_id": 101,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".006"
+    },
+    {
+      "text_id": 125,
+      "grp_id": 102,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".091"
+    },
+    {
+      "text_id": 126,
+      "grp_id": 103,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "1"
+    },
+    {
+      "text_id": 126,
+      "grp_id": 103,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "1"
+    },
+    {
+      "text_id": 126,
+      "grp_id": 104,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "989"
+    },
+    {
+      "text_id": 126,
+      "grp_id": 104,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "1"
+    },
+    {
+      "text_id": 126,
+      "grp_id": 105,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "979"
+    },
+    {
+      "text_id": 126,
+      "grp_id": 105,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "1"
+    },
+    {
+      "text_id": 126,
+      "grp_id": 106,
+      "lhs": "ts",
+      "comp": "<",
+      "rhs": "1.629"
+    },
+    {
+      "text_id": 126,
+      "grp_id": 106,
+      "lhs": "ps",
+      "comp": ">",
+      "rhs": ".115"
+    },
+    {
+      "text_id": 127,
+      "grp_id": 107,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "2.95"
+    },
+    {
+      "text_id": 127,
+      "grp_id": 108,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "4.01"
+    },
+    {
+      "text_id": 127,
+      "grp_id": 109,
+      "lhs": "F(1, 26)",
+      "comp": "=",
+      "rhs": "5.391"
+    },
+    {
+      "text_id": 127,
+      "grp_id": 109,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".028"
+    },
+    {
+      "text_id": 127,
+      "grp_id": 110,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".172"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 111,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "2.52"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 111,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3.91"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 112,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3.01"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 112,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "4.69"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 113,
+      "lhs": "F(1.909, 49.641)",
+      "comp": "=",
+      "rhs": "8.239"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 113,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".001"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 114,
+      "lhs": "F(3, 78)",
+      "comp": "=",
+      "rhs": "2.637"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 114,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".055"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 115,
+      "lhs": "t(26)",
+      "comp": "=",
+      "rhs": "1.901"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 115,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".068"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 116,
+      "lhs": "t(26)",
+      "comp": "=",
+      "rhs": "3.363"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 116,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".002"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 117,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".241"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 118,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".092"
+    },
+    {
+      "text_id": 128,
+      "grp_id": 119,
+      "lhs": "Ms",
+      "comp": "=",
+      "rhs": "3.96"
+    },
+    {
+      "text_id": 129,
+      "grp_id": 120,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3.57"
+    },
+    {
+      "text_id": 129,
+      "grp_id": 120,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "4.34"
+    },
+    {
+      "text_id": 129,
+      "grp_id": 121,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "2.69"
+    },
+    {
+      "text_id": 129,
+      "grp_id": 121,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3.09"
+    },
+    {
+      "text_id": 129,
+      "grp_id": 122,
+      "lhs": "ts",
+      "comp": "<",
+      "rhs": "1.415"
+    },
+    {
+      "text_id": 129,
+      "grp_id": 122,
+      "lhs": "ps",
+      "comp": ">",
+      "rhs": ".169"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 123,
+      "lhs": "F(1, 26)",
+      "comp": "=",
+      "rhs": "1.708"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 123,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".203"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 124,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".062"
+    },
+    {
+      "text_id": 132,
+      "grp_id": 125,
+      "lhs": "Fs",
+      "comp": "<",
+      "rhs": "1"
+    },
+    {
+      "text_id": 133,
+      "grp_id": 126,
+      "lhs": "F(2.288, 59.487)",
+      "comp": "=",
+      "rhs": "4.539"
+    },
+    {
+      "text_id": 133,
+      "grp_id": 126,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".011"
+    },
+    {
+      "text_id": 133,
+      "grp_id": 127,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".149"
+    },
+    {
+      "text_id": 133,
+      "grp_id": 128,
+      "lhs": "F",
+      "comp": "<",
+      "rhs": "1"
+    },
+    {
+      "text_id": 133,
+      "grp_id": 129,
+      "lhs": "Ms",
+      "comp": "=",
+      "rhs": "257"
+    },
+    {
+      "text_id": 134,
+      "grp_id": 130,
+      "lhs": "F(3, 78)",
+      "comp": "=",
+      "rhs": "1.276"
+    },
+    {
+      "text_id": 134,
+      "grp_id": 130,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".288"
+    },
+    {
+      "text_id": 134,
+      "grp_id": 131,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".047"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 132,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "4.62"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 133,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3.99"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 134,
+      "lhs": "F(1, 26)",
+      "comp": "=",
+      "rhs": "1.122"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 134,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".299"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 135,
+      "lhs": "F(3, 78)",
+      "comp": "=",
+      "rhs": "20.836"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 135,
+      "lhs": "p",
+      "comp": "<",
+      "rhs": ".001"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 136,
+      "lhs": "F(3, 78)",
+      "comp": "=",
+      "rhs": "4.869"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 136,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".004"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 137,
+      "lhs": "t(26)",
+      "comp": "=",
+      "rhs": "1.735"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 137,
+      "lhs": "p",
+      "comp": "=",
+      "rhs": ".094"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 138,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".041"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 139,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".445"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 140,
+      "lhs": "\\eta_{p}^{2}",
+      "comp": "=",
+      "rhs": ".158"
+    },
+    {
+      "text_id": 135,
+      "grp_id": 141,
+      "lhs": "Ms",
+      "comp": "=",
+      "rhs": "4.06"
+    },
+    {
+      "text_id": 136,
+      "grp_id": 142,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3.81"
+    },
+    {
+      "text_id": 136,
+      "grp_id": 142,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "4.31"
+    },
+    {
+      "text_id": 136,
+      "grp_id": 143,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3.04"
+    },
+    {
+      "text_id": 136,
+      "grp_id": 143,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3.63"
+    },
+    {
+      "text_id": 136,
+      "grp_id": 144,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3.61"
+    },
+    {
+      "text_id": 136,
+      "grp_id": 145,
+      "lhs": "M",
+      "comp": "=",
+      "rhs": "3.27"
+    },
+    {
+      "text_id": 136,
+      "grp_id": 146,
+      "lhs": "ts",
+      "comp": "<",
+      "rhs": "1.560"
+    },
+    {
+      "text_id": 136,
+      "grp_id": 146,
+      "lhs": "ps",
+      "comp": ">",
+      "rhs": ".131"
+    },
+    {
+      "text_id": 136,
+      "grp_id": 147,
+      "lhs": "t",
+      "comp": "<",
+      "rhs": "1"
+    }
+  ],
+  "bib_match": [
+    {
+      "score": 99.2248,
+      "title": "Recognition-by-components: A theory of human image understanding.",
+      "authors": [
+        {
+          "given": "Irving",
+          "family": "Biederman"
+        }
+      ],
+      "container": "Psychological Review",
+      "volume": "94",
+      "issue": "2",
+      "first_page": "115",
+      "last_page": "147",
+      "publisher": "American Psychological Association (APA)",
+      "editors": null,
+      "doi": "10.1037/0033-295x.94.2.115",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1037/0033-295x.94.2.115",
+      "edition": null,
+      "version": null,
+      "bib_id": 1,
+      "service": "crossref",
+      "service_id": "10.1037/0033-295x.94.2.115",
+      "year": 1987,
+      "date": "1987-04"
+    },
+    {
+      "score": 100,
+      "title": "Visual Object Recognition",
+      "authors": [
+        {
+          "given": "Irving",
+          "family": "Biederman"
+        }
+      ],
+      "container": "Readings in Philosophy and Cognitive Science",
+      "volume": null,
+      "issue": null,
+      "first_page": null,
+      "last_page": null,
+      "publisher": "The MIT Press",
+      "editors": null,
+      "doi": "10.7551/mitpress/5782.003.0004",
+      "bib_type": "book_chapter",
+      "url": "https://doi.org/10.7551/mitpress/5782.003.0004",
+      "edition": null,
+      "version": null,
+      "bib_id": 2,
+      "service": "crossref",
+      "service_id": "10.7551/mitpress/5782.003.0004",
+      "year": 1993,
+      "date": "1993-11-19"
+    },
+    {
+      "score": 99.5169,
+      "title": "Ultra-rapid categorisation of natural scenes does not rely on colour cues: a study in monkeys and humans",
+      "authors": [
+        {
+          "given": "A",
+          "family": "Delorme"
+        },
+        {
+          "given": "G",
+          "family": "Richard"
+        },
+        {
+          "given": "M",
+          "family": "Fabre-Thorpe"
+        }
+      ],
+      "container": "Vision Research",
+      "volume": "40",
+      "issue": "16",
+      "first_page": "2187",
+      "last_page": "2200",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/s0042-6989(00)00083-3",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/s0042-6989(00)00083-3",
+      "edition": null,
+      "version": null,
+      "bib_id": 3,
+      "service": "crossref",
+      "service_id": "10.1016/s0042-6989(00)00083-3",
+      "year": 2000,
+      "date": "2000-07"
+    },
+    {
+      "score": 100,
+      "title": "What do we perceive in a glance of a real-world scene?",
+      "authors": [
+        {
+          "given": "Li",
+          "family": "Fei-Fei"
+        },
+        {
+          "given": "Asha",
+          "family": "Iyer"
+        },
+        {
+          "given": "Christof",
+          "family": "Koch"
+        },
+        {
+          "given": "Pietro",
+          "family": "Perona"
+        }
+      ],
+      "container": "Journal of Vision",
+      "volume": "7",
+      "issue": "1",
+      "first_page": "10",
+      "last_page": null,
+      "publisher": "Association for Research in Vision and Ophthalmology (ARVO)",
+      "editors": null,
+      "doi": "10.1167/7.1.10",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1167/7.1.10",
+      "edition": null,
+      "version": null,
+      "bib_id": 4,
+      "service": "crossref",
+      "service_id": "10.1167/7.1.10",
+      "year": 2007,
+      "date": "2007-01-31"
+    },
+    {
+      "score": 99.4152,
+      "title": "Why do we SLIP to the basic level? Computational constraints and their implementation.",
+      "authors": [
+        {
+          "given": "Frédéric",
+          "family": "Gosselin"
+        },
+        {
+          "given": "Philippe G.",
+          "family": "Schyns"
+        }
+      ],
+      "container": "Psychological Review",
+      "volume": "108",
+      "issue": "4",
+      "first_page": "735",
+      "last_page": "758",
+      "publisher": "American Psychological Association (APA)",
+      "editors": null,
+      "doi": "10.1037//0033-295x.108.4.735",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1037//0033-295x.108.4.735",
+      "edition": null,
+      "version": null,
+      "bib_id": 5,
+      "service": "crossref",
+      "service_id": "10.1037//0033-295x.108.4.735",
+      "year": 2001,
+      "date": null
+    },
+    {
+      "score": 100,
+      "title": "Recognition of natural scenes from global properties: Seeing the forest without representing the trees",
+      "authors": [
+        {
+          "given": "M",
+          "family": "GREENE"
+        },
+        {
+          "given": "A",
+          "family": "OLIVA"
+        }
+      ],
+      "container": "Cognitive Psychology",
+      "volume": "58",
+      "issue": "2",
+      "first_page": "137",
+      "last_page": "176",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/j.cogpsych.2008.06.001",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/j.cogpsych.2008.06.001",
+      "edition": null,
+      "version": null,
+      "bib_id": 7,
+      "service": "crossref",
+      "service_id": "10.1016/j.cogpsych.2008.06.001",
+      "year": 2009,
+      "date": "2009-03"
+    },
+    {
+      "score": 100,
+      "title": "Processing scene context: Fast categorization and object interference",
+      "authors": [
+        {
+          "given": "Olivier R.",
+          "family": "Joubert"
+        },
+        {
+          "given": "Guillaume A.",
+          "family": "Rousselet"
+        },
+        {
+          "given": "Denis",
+          "family": "Fize"
+        },
+        {
+          "given": "Michèle",
+          "family": "Fabre-Thorpe"
+        }
+      ],
+      "container": "Vision Research",
+      "volume": "47",
+      "issue": "26",
+      "first_page": "3286",
+      "last_page": "3297",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/j.visres.2007.09.013",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/j.visres.2007.09.013",
+      "edition": null,
+      "version": null,
+      "bib_id": 8,
+      "service": "crossref",
+      "service_id": "10.1016/j.visres.2007.09.013",
+      "year": 2007,
+      "date": "2007-12"
+    },
+    {
+      "score": 91.8367,
+      "title": "The natural/man-made distinction is made before basic-level distinctions in scene gist processing",
+      "authors": [
+        {
+          "given": "Lester C.",
+          "family": "Loschky"
+        },
+        {
+          "given": "Adam M.",
+          "family": "Larson"
+        }
+      ],
+      "container": "Visual Cognition",
+      "volume": "18",
+      "issue": "4",
+      "first_page": "513",
+      "last_page": "536",
+      "publisher": "Informa UK Limited",
+      "editors": null,
+      "doi": "10.1080/13506280902937606",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1080/13506280902937606",
+      "edition": null,
+      "version": null,
+      "bib_id": 9,
+      "service": "crossref",
+      "service_id": "10.1080/13506280902937606",
+      "year": 2010,
+      "date": "2010-04"
+    },
+    {
+      "score": 100,
+      "title": "The span of the effective stimulus during a fixation in reading",
+      "authors": [
+        {
+          "given": "George W.",
+          "family": "McConkie"
+        },
+        {
+          "given": "Keith",
+          "family": "Rayner"
+        }
+      ],
+      "container": "Perception &amp; Psychophysics",
+      "volume": "17",
+      "issue": "6",
+      "first_page": "578",
+      "last_page": "586",
+      "publisher": "Springer Science and Business Media LLC",
+      "editors": null,
+      "doi": "10.3758/bf03203972",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.3758/bf03203972",
+      "edition": null,
+      "version": null,
+      "bib_id": 10,
+      "service": "crossref",
+      "service_id": "10.3758/bf03203972",
+      "year": 1975,
+      "date": "1975-11"
+    },
+    {
+      "score": 100,
+      "title": "Coarse Blobs or Fine Edges? Evidence That Information Diagnosticity Changes the Perception of Complex Visual Stimuli",
+      "authors": [
+        {
+          "given": "Aude",
+          "family": "Oliva"
+        },
+        {
+          "given": "Philippe G.",
+          "family": "Schyns"
+        }
+      ],
+      "container": "Cognitive Psychology",
+      "volume": "34",
+      "issue": "1",
+      "first_page": "72",
+      "last_page": "107",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1006/cogp.1997.0667",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1006/cogp.1997.0667",
+      "edition": null,
+      "version": null,
+      "bib_id": 11,
+      "service": "crossref",
+      "service_id": "10.1006/cogp.1997.0667",
+      "year": 1997,
+      "date": "1997-10"
+    },
+    {
+      "score": 100,
+      "title": "Modeling the Shape of the Scene: A Holistic Representation of the Spatial Envelope",
+      "authors": [
+        {
+          "given": "Aude",
+          "family": "Oliva"
+        },
+        {
+          "given": "Antonio",
+          "family": "Torralba"
+        }
+      ],
+      "container": "International Journal of Computer Vision",
+      "volume": "42",
+      "issue": "3",
+      "first_page": "145",
+      "last_page": "175",
+      "publisher": "Springer Science and Business Media LLC",
+      "editors": null,
+      "doi": "10.1023/a:1011139631724",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1023/a:1011139631724",
+      "edition": null,
+      "version": null,
+      "bib_id": 12,
+      "service": "crossref",
+      "service_id": "10.1023/a:1011139631724",
+      "year": 2001,
+      "date": "2001-05"
+    },
+    {
+      "score": 93.9759,
+      "title": "Chapter 2 Building the gist of a scene: the role of global image features in recognition",
+      "authors": [
+        {
+          "given": "Aude",
+          "family": "Oliva"
+        },
+        {
+          "given": "Antonio",
+          "family": "Torralba"
+        }
+      ],
+      "container": "Progress in Brain Research",
+      "volume": null,
+      "issue": null,
+      "first_page": "23",
+      "last_page": "36",
+      "publisher": "Elsevier",
+      "editors": null,
+      "doi": "10.1016/s0079-6123(06)55002-2",
+      "bib_type": "book_chapter",
+      "url": "https://doi.org/10.1016/s0079-6123(06)55002-2",
+      "edition": null,
+      "version": null,
+      "bib_id": 13,
+      "service": "crossref",
+      "service_id": "10.1016/s0079-6123(06)55002-2",
+      "year": 2006,
+      "date": null
+    },
+    {
+      "score": 83.3333,
+      "title": "Meaning in Visual Search",
+      "authors": [
+        {
+          "given": "Mary C.",
+          "family": "Potter"
+        }
+      ],
+      "container": "Science",
+      "volume": "187",
+      "issue": "4180",
+      "first_page": "965",
+      "last_page": "966",
+      "publisher": "American Association for the Advancement of Science (AAAS)",
+      "editors": null,
+      "doi": "10.1126/science.1145183",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1126/science.1145183",
+      "edition": null,
+      "version": null,
+      "bib_id": 14,
+      "service": "crossref",
+      "service_id": "10.1126/science.1145183",
+      "year": 1975,
+      "date": "1975-03-14"
+    },
+    {
+      "score": 98.7952,
+      "title": "Short-term conceptual memory for pictures.",
+      "authors": [
+        {
+          "given": "Mary C.",
+          "family": "Potter"
+        }
+      ],
+      "container": "Journal of Experimental Psychology: Human Learning and Memory",
+      "volume": "2",
+      "issue": "5",
+      "first_page": "509",
+      "last_page": "522",
+      "publisher": "American Psychological Association (APA)",
+      "editors": null,
+      "doi": "10.1037/0278-7393.2.5.509",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1037/0278-7393.2.5.509",
+      "edition": null,
+      "version": null,
+      "bib_id": 15,
+      "service": "crossref",
+      "service_id": "10.1037/0278-7393.2.5.509",
+      "year": 1976,
+      "date": null
+    },
+    {
+      "score": 100,
+      "title": "Principles of Categorization",
+      "authors": [
+        {
+          "given": "Eleanor",
+          "family": "Rosch"
+        }
+      ],
+      "container": "Cognition and Categorization",
+      "volume": null,
+      "issue": null,
+      "first_page": "27",
+      "last_page": "48",
+      "publisher": "Routledge",
+      "editors": null,
+      "doi": "10.4324/9781032633275-4",
+      "bib_type": "book_chapter",
+      "url": "https://doi.org/10.4324/9781032633275-4",
+      "edition": null,
+      "version": null,
+      "bib_id": 16,
+      "service": "crossref",
+      "service_id": "10.4324/9781032633275-4",
+      "year": 2024,
+      "date": "2024-02-26"
+    },
+    {
+      "score": 100,
+      "title": "Basic Objects in Natural Categories",
+      "authors": [
+        {
+          "given": "Eleanor",
+          "family": "Rosch"
+        }
+      ],
+      "container": "PsycEXTRA Dataset",
+      "volume": null,
+      "issue": null,
+      "first_page": null,
+      "last_page": null,
+      "publisher": "American Psychological Association (APA)",
+      "editors": null,
+      "doi": "10.1037/e666602011-017",
+      "bib_type": "dataset",
+      "url": "https://doi.org/10.1037/e666602011-017",
+      "edition": null,
+      "version": null,
+      "bib_id": 17,
+      "service": "crossref",
+      "service_id": "10.1037/e666602011-017",
+      "year": 1975,
+      "date": null
+    },
+    {
+      "score": 100,
+      "title": "Effects of spatial frequency bands on perceptual decision: It is not the stimuli but the comparison",
+      "authors": [
+        {
+          "given": "P.",
+          "family": "Rotshtein"
+        },
+        {
+          "given": "A.",
+          "family": "Schofield"
+        },
+        {
+          "given": "M. J.",
+          "family": "Funes"
+        },
+        {
+          "given": "G. W.",
+          "family": "Humphreys"
+        }
+      ],
+      "container": "Journal of Vision",
+      "volume": "10",
+      "issue": "10",
+      "first_page": "25",
+      "last_page": "25",
+      "publisher": "Association for Research in Vision and Ophthalmology (ARVO)",
+      "editors": null,
+      "doi": "10.1167/10.10.25",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1167/10.10.25",
+      "edition": null,
+      "version": null,
+      "bib_id": 18,
+      "service": "crossref",
+      "service_id": "10.1167/10.10.25",
+      "year": 2010,
+      "date": "2010-08-24"
+    },
+    {
+      "score": 88.1356,
+      "title": "How long to get to the “gist” of real-world natural scenes?",
+      "authors": [
+        {
+          "given": "Guillaume",
+          "family": "Rousselet"
+        },
+        {
+          "given": "Olivier",
+          "family": "Joubert"
+        },
+        {
+          "given": "Michèle",
+          "family": "Fabre-Thorpe"
+        }
+      ],
+      "container": "Visual Cognition",
+      "volume": "12",
+      "issue": "6",
+      "first_page": "852",
+      "last_page": "877",
+      "publisher": "Informa UK Limited",
+      "editors": null,
+      "doi": "10.1080/13506280444000553",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1080/13506280444000553",
+      "edition": null,
+      "version": null,
+      "bib_id": 19,
+      "service": "crossref",
+      "service_id": "10.1080/13506280444000553",
+      "year": 2005,
+      "date": "2005-08"
+    },
+    {
+      "score": 100,
+      "title": "Diagnostic recognition: task constraints, object information, and their interactions",
+      "authors": [
+        {
+          "given": "Philippe G",
+          "family": "Schyns"
+        }
+      ],
+      "container": "Cognition",
+      "volume": "67",
+      "issue": "1-2",
+      "first_page": "147",
+      "last_page": "179",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/s0010-0277(98)00016-x",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/s0010-0277(98)00016-x",
+      "edition": null,
+      "version": null,
+      "bib_id": 20,
+      "service": "crossref",
+      "service_id": "10.1016/s0010-0277(98)00016-x",
+      "year": 1998,
+      "date": "1998-07"
+    },
+    {
+      "score": 100,
+      "title": "From Blobs to Boundary Edges: Evidence for Time- and Spatial-Scale-Dependent Scene Recognition",
+      "authors": [
+        {
+          "given": "Philippe G.",
+          "family": "Schyns"
+        },
+        {
+          "given": "Aude",
+          "family": "Oliva"
+        }
+      ],
+      "container": "Psychological Science",
+      "volume": "5",
+      "issue": "4",
+      "first_page": "195",
+      "last_page": "200",
+      "publisher": "SAGE Publications",
+      "editors": null,
+      "doi": "10.1111/j.1467-9280.1994.tb00500.x",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1111/j.1467-9280.1994.tb00500.x",
+      "edition": null,
+      "version": null,
+      "bib_id": 21,
+      "service": "crossref",
+      "service_id": "10.1111/j.1467-9280.1994.tb00500.x",
+      "year": 1994,
+      "date": "1994-07"
+    },
+    {
+      "score": 100,
+      "title": "A feedforward architecture accounts for rapid categorization",
+      "authors": [
+        {
+          "given": "Thomas",
+          "family": "Serre"
+        },
+        {
+          "given": "Aude",
+          "family": "Oliva"
+        },
+        {
+          "given": "Tomaso",
+          "family": "Poggio"
+        }
+      ],
+      "container": "Proceedings of the National Academy of Sciences",
+      "volume": "104",
+      "issue": "15",
+      "first_page": "6424",
+      "last_page": "6429",
+      "publisher": "Proceedings of the National Academy of Sciences",
+      "editors": null,
+      "doi": "10.1073/pnas.0700622104",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1073/pnas.0700622104",
+      "edition": null,
+      "version": null,
+      "bib_id": 22,
+      "service": "crossref",
+      "service_id": "10.1073/pnas.0700622104",
+      "year": 2007,
+      "date": "2007-04-10"
+    },
+    {
+      "score": 100,
+      "title": "Speed of processing in the human visual system",
+      "authors": [
+        {
+          "given": "Simon",
+          "family": "Thorpe"
+        },
+        {
+          "given": "Denis",
+          "family": "Fize"
+        },
+        {
+          "given": "Catherine",
+          "family": "Marlot"
+        }
+      ],
+      "container": "Nature",
+      "volume": "381",
+      "issue": "6582",
+      "first_page": "520",
+      "last_page": "522",
+      "publisher": "Springer Science and Business Media LLC",
+      "editors": null,
+      "doi": "10.1038/381520a0",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1038/381520a0",
+      "edition": null,
+      "version": null,
+      "bib_id": 23,
+      "service": "crossref",
+      "service_id": "10.1038/381520a0",
+      "year": 1996,
+      "date": "1996-06"
+    },
+    {
+      "score": 100,
+      "title": "Statistics of natural image categories",
+      "authors": [
+        {
+          "given": "Antonio",
+          "family": "Torralba"
+        },
+        {
+          "given": "Aude",
+          "family": "Oliva"
+        }
+      ],
+      "container": "Network: Computation in Neural Systems",
+      "volume": "14",
+      "issue": "3",
+      "first_page": "391",
+      "last_page": "412",
+      "publisher": "Informa UK Limited",
+      "editors": null,
+      "doi": "10.1088/0954-898x_14_3_302",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1088/0954-898x_14_3_302",
+      "edition": null,
+      "version": null,
+      "bib_id": 24,
+      "service": "crossref",
+      "service_id": "10.1088/0954-898x_14_3_302",
+      "year": 2003,
+      "date": "2003-01"
+    },
+    {
+      "score": 100,
+      "title": "Categories of environmental scenes",
+      "authors": [
+        {
+          "given": "Barbara",
+          "family": "Tversky"
+        },
+        {
+          "given": "Kathleen",
+          "family": "Hemenway"
+        }
+      ],
+      "container": "Cognitive Psychology",
+      "volume": "15",
+      "issue": "1",
+      "first_page": "121",
+      "last_page": "149",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/0010-0285(83)90006-3",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/0010-0285(83)90006-3",
+      "edition": null,
+      "version": null,
+      "bib_id": 25,
+      "service": "crossref",
+      "service_id": "10.1016/0010-0285(83)90006-3",
+      "year": 1983,
+      "date": "1983-01"
+    },
+    {
+      "score": 100,
+      "title": "Surfing a spike wave down the ventral stream",
+      "authors": [
+        {
+          "given": "Rufin",
+          "family": "VanRullen"
+        },
+        {
+          "given": "Simon J",
+          "family": "Thorpe"
+        }
+      ],
+      "container": "Vision Research",
+      "volume": "42",
+      "issue": "23",
+      "first_page": "2593",
+      "last_page": "2615",
+      "publisher": "Elsevier BV",
+      "editors": null,
+      "doi": "10.1016/s0042-6989(02)00298-5",
+      "bib_type": "journal_article",
+      "url": "https://doi.org/10.1016/s0042-6989(02)00298-5",
+      "edition": null,
+      "version": null,
+      "bib_id": 26,
+      "service": "crossref",
+      "service_id": "10.1016/s0042-6989(02)00298-5",
+      "year": 2002,
+      "date": "2002-10"
+    }
+  ]
+}

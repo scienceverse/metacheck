@@ -2,7 +2,16 @@
 % Please edit documentation in R/osf.R
 \name{osf_node_data}
 \alias{osf_node_data}
-\title{Structure OSF Node Data}
+\title{#' Retrieve info from the OSF by ID
+#'
+#' @param osf_id an OSF ID or URL
+#' @param pb a progress bar passed from another function
+#'
+#' @returns a data frame of information
+#' @export
+#' @keywords internal
+osf_info <- function(osf_id,
+Structure OSF Node Data}
 \usage{
 osf_node_data(data)
 }
@@ -13,6 +22,15 @@ osf_node_data(data)
 a data frame with a subset of data
 }
 \description{
+#' Retrieve info from the OSF by ID
+#'
+#' @param osf_id an OSF ID or URL
+#' @param pb a progress bar passed from another function
+#'
+#' @returns a data frame of information
+#' @export
+#' @keywords internal
+osf_info <- function(osf_id,
 Structure OSF Node Data
 }
 \keyword{internal}

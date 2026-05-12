@@ -1,0 +1,627 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 8644,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            2,
+                            13
+                        ]
+                    ],
+                    "date-time": "2026-02-13T23:53:58Z",
+                    "timestamp": 1771026838507,
+                    "version": "3.50.1"
+                },
+                "reference-count": 30,
+                "publisher": "Elsevier BV",
+                "issue": "4",
+                "license": [
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2009,
+                                    4,
+                                    1
+                                ]
+                            ],
+                            "date-time": "2009-04-01T00:00:00Z",
+                            "timestamp": 1238544000000
+                        },
+                        "content-version": "tdm",
+                        "delay-in-days": 0,
+                        "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+                    },
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2009,
+                                    4,
+                                    1
+                                ]
+                            ],
+                            "date-time": "2009-04-01T00:00:00Z",
+                            "timestamp": 1238544000000
+                        },
+                        "content-version": "tdm",
+                        "delay-in-days": 0,
+                        "URL": "https://www.elsevier.com/legal/tdmrep-license"
+                    }
+                ],
+                "content-domain": {
+                    "domain": [
+                        "clinicalkey.com",
+                        "clinicalkey.com.au",
+                        "clinicalkey.es",
+                        "clinicalkey.fr",
+                        "clinicalkey.jp",
+                        "elsevier.com",
+                        "sciencedirect.com"
+                    ],
+                    "crossmark-restriction": true
+                },
+                "short-container-title": [
+                    "Clinical Neurophysiology"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2009,
+                            4
+                        ]
+                    ]
+                },
+                "DOI": "10.1016/j.clinph.2009.01.003",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2009,
+                            2,
+                            24
+                        ]
+                    ],
+                    "date-time": "2009-02-24T12:04:29Z",
+                    "timestamp": 1235477069000
+                },
+                "page": "796-801",
+                "update-policy": "https://doi.org/10.1016/elsevier_cm_policy",
+                "source": "Crossref",
+                "is-referenced-by-count": 90,
+                "title": [
+                    "The effect of continuous theta burst stimulation over premotor cortex on circuits in primary motor cortex and spinal cord"
+                ],
+                "prefix": "10.1016",
+                "volume": "120",
+                "author": [
+                    {
+                        "given": "Ying-Zu",
+                        "family": "Huang",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "John C.",
+                        "family": "Rothwell",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Chin-Song",
+                        "family": "Lu",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "JiunJie",
+                        "family": "Wang",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Yi-Hsin",
+                        "family": "Weng",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Szu-Chia",
+                        "family": "Lai",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Wen-Li",
+                        "family": "Chuang",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "June",
+                        "family": "Hung",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Rou-Shayn",
+                        "family": "Chen",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "78",
+                "reference": [
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib1",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "71",
+                        "DOI": "10.1113/jphysiol.1987.sp016726",
+                        "article-title": "Evidence favouring presynaptic inhibition between antagonist muscle afferents in the human forearm",
+                        "volume": "391",
+                        "author": "Berardelli",
+                        "year": "1987",
+                        "journal-title": "J Physiol"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib2",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1281",
+                        "DOI": "10.1093/cercor/bhm159",
+                        "article-title": "Dorsal premotor cortex exerts state-dependent causal influences on activity in contralateral primary motor and dorsal premotor cortex",
+                        "volume": "18",
+                        "author": "Bestmann",
+                        "year": "2008",
+                        "journal-title": "Cereb Cortex"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib3",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "189",
+                        "DOI": "10.1016/j.neulet.2004.06.003",
+                        "article-title": "Involvement of the human dorsal premotor cortex in unimanual motor control: an interference approach using transcranial magnetic stimulation",
+                        "volume": "367",
+                        "author": "Cincotta",
+                        "year": "2004",
+                        "journal-title": "Neurosci Lett"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib4",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "519",
+                        "DOI": "10.1113/jphysiol.1984.sp015171",
+                        "article-title": "Reciprocal inhibition between the muscles of the human forearm",
+                        "volume": "349",
+                        "author": "Day",
+                        "year": "1984",
+                        "journal-title": "J Physiol"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib5",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "2046",
+                        "DOI": "10.1093/cercor/bhm239",
+                        "article-title": "Depression of human corticospinal excitability induced by magnetic theta-burst stimulation: evidence of rapid polarity-reversing metaplasticity",
+                        "volume": "18",
+                        "author": "Gentner",
+                        "year": "2008",
+                        "journal-title": "Cereb Cortex"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib6",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "449",
+                        "DOI": "10.1212/WNL.57.3.449",
+                        "article-title": "Decreased corticospinal excitability after subthreshold 1Hz rTMS over lateral premotor cortex",
+                        "volume": "57",
+                        "author": "Gerschlager",
+                        "year": "2001",
+                        "journal-title": "Neurology"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib7",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1028",
+                        "DOI": "10.1016/j.clinph.2007.01.021",
+                        "article-title": "The after-effect of human theta burst stimulation is NMDA receptor dependent",
+                        "volume": "118",
+                        "author": "Huang",
+                        "year": "2007",
+                        "journal-title": "Clin Neurophysiol"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib8",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "54",
+                        "DOI": "10.1002/mds.10627",
+                        "article-title": "One-Hz repetitive transcranial magnetic stimulation of the premotor cortex alters reciprocal inhibition in DYT1 dystonia",
+                        "volume": "19",
+                        "author": "Huang",
+                        "year": "2004",
+                        "journal-title": "Mov Disord"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib9",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "201",
+                        "DOI": "10.1016/j.neuron.2004.12.033",
+                        "article-title": "Theta burst stimulation of the human motor cortex",
+                        "volume": "45",
+                        "author": "Huang",
+                        "year": "2005",
+                        "journal-title": "Neuron"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib10",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1069",
+                        "DOI": "10.1016/j.clinph.2003.12.026",
+                        "article-title": "The effect of short-duration bursts of high-frequency, low-intensity transcranial magnetic stimulation on the human motor cortex",
+                        "volume": "115",
+                        "author": "Huang",
+                        "year": "2004",
+                        "journal-title": "Clin Neurophysiol"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib11",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "563",
+                        "DOI": "10.1093/cercor/bhm087",
+                        "article-title": "Effect of physiological activity on an NMDA-dependent form of cortical plasticity in human",
+                        "volume": "18",
+                        "author": "Huang",
+                        "year": "2008",
+                        "journal-title": "Cereb Cortex"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib12",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "551",
+                        "DOI": "10.1113/jphysiol.2006.123562",
+                        "article-title": "Interactions between pairs of transcranial magnetic stimuli over the human left dorsal premotor cortex differ from those seen in primary motor cortex",
+                        "volume": "578",
+                        "author": "Koch",
+                        "year": "2007",
+                        "journal-title": "J Physiol"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib13",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "501",
+                        "DOI": "10.1113/jphysiol.1993.sp019912",
+                        "article-title": "Corticocortical inhibition in human motor cortex",
+                        "volume": "471",
+                        "author": "Kujirai",
+                        "year": "1993",
+                        "journal-title": "J Physiol"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib14",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "414",
+                        "DOI": "10.1007/s00221-005-0047-5",
+                        "article-title": "The role of dorsal premotor area in reaction task: comparing the virtual lesion effect of paired pulse or theta burst transcranial magnetic stimulation",
+                        "volume": "167",
+                        "author": "Mochizuki",
+                        "year": "2005",
+                        "journal-title": "Exp Brain Res"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib15",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "667",
+                        "DOI": "10.1007/s00221-007-0884-5",
+                        "article-title": "Hemoglobin concentration changes in the contralateral hemisphere during and after theta burst stimulation of the human sensorimotor cortices",
+                        "volume": "180",
+                        "author": "Mochizuki",
+                        "year": "2007",
+                        "journal-title": "Exp Brain Res"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib16",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "2416",
+                        "DOI": "10.1016/S1388-2457(03)00262-1",
+                        "article-title": "Depressed intracortical inhibition after long trains of subthreshold repetitive magnetic stimuli at low frequency",
+                        "volume": "114",
+                        "author": "Modugno",
+                        "year": "2003",
+                        "journal-title": "Clin Neurophysiol"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib17",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "554",
+                        "DOI": "10.1523/JNEUROSCI.22-02-00554.2002",
+                        "article-title": "Functional connectivity of human premotor and motor cortex explored with repetitive transcranial magnetic stimulation",
+                        "volume": "22",
+                        "author": "Munchau",
+                        "year": "2002",
+                        "journal-title": "J Neurosci"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib18",
+                        "article-title": "Continuous theta-burst stimulation over the dorsal premotor cortex interferes with associative learning during object lifting",
+                        "author": "Nowak",
+                        "year": "2008",
+                        "journal-title": "Cortex"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib19",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "21",
+                        "DOI": "10.1016/S0304-3940(00)01616-5",
+                        "article-title": "Subthreshold 5-Hz repetitive transcranial magnetic stimulation of the human primary motor cortex reduces intracortical paired-pulse inhibition",
+                        "volume": "296",
+                        "author": "Peinemann",
+                        "year": "2000",
+                        "journal-title": "Neurosci Lett"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib20",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "757",
+                        "DOI": "10.1111/j.1460-9568.2008.06044.x",
+                        "article-title": "The effect of rTMS over left and right dorsolateral premotor cortex on movement timing of either hand",
+                        "volume": "27",
+                        "author": "Pollok",
+                        "year": "2008",
+                        "journal-title": "Eur J Neurosci"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib21",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "483",
+                        "DOI": "10.1113/jphysiol.2003.048777",
+                        "article-title": "Shaping the excitability of human motor cortex with premotor rTMS",
+                        "volume": "554",
+                        "author": "Rizzo",
+                        "year": "2004",
+                        "journal-title": "J Physiol"
+                    },
+                    {
+                        "issue": "Suppl. 1",
+                        "key": "10.1016/j.clinph.2009.01.003_bib22",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "S89",
+                        "DOI": "10.1016/j.neuroimage.2003.09.011",
+                        "article-title": "The left parietal and premotor cortices: motor attention and selection",
+                        "volume": "20",
+                        "author": "Rushworth",
+                        "year": "2003",
+                        "journal-title": "Neuroimage"
+                    },
+                    {
+                        "issue": "Pt. 5",
+                        "key": "10.1016/j.clinph.2009.01.003_bib23",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "785",
+                        "DOI": "10.1093/brain/121.5.785",
+                        "article-title": "Temporary interference in human lateral premotor cortex suggests dominance for the selection of movements. A study using transcranial magnetic stimulation",
+                        "volume": "121",
+                        "author": "Schluter",
+                        "year": "1998",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib24",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "265",
+                        "DOI": "10.1016/j.neuroimage.2007.11.037",
+                        "article-title": "Theta-burst stimulation: remote physiological and local behavioral after-effects",
+                        "volume": "40",
+                        "author": "Stefan",
+                        "year": "2008",
+                        "journal-title": "Neuroimage"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib25",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1815",
+                        "DOI": "10.1016/j.clinph.2007.05.062",
+                        "article-title": "Pattern-specific role of the current orientation used to deliver theta burst stimulation",
+                        "volume": "118",
+                        "author": "Talelli",
+                        "year": "2007",
+                        "journal-title": "Clin Neurophysiol"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib26",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "58",
+                        "DOI": "10.1093/cercor/10.1.58",
+                        "article-title": "Organization of nonprimary motor cortical inputs on pyramidal and nonpyramidal tract neurons of primary motor cortex: an electrophysiological study in the macaque monkey",
+                        "volume": "10",
+                        "author": "Tokuno",
+                        "year": "2000",
+                        "journal-title": "Cereb Cortex"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib27",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "2138",
+                        "DOI": "10.1016/S1388-2457(01)00651-4",
+                        "article-title": "Are the after-effects of low-frequency rTMS on motor cortex excitability due to changes in the efficacy of cortical synapses?",
+                        "volume": "112",
+                        "author": "Touge",
+                        "year": "2001",
+                        "journal-title": "Clin Neurophysiol"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib28",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "13",
+                        "DOI": "10.1111/j.1600-0404.1997.tb00061.x",
+                        "article-title": "Reciprocal inhibition in Parkinson’s disease",
+                        "volume": "95",
+                        "author": "Tsai",
+                        "year": "1997",
+                        "journal-title": "Acta Neurol Scand"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib29",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "37",
+                        "DOI": "10.1016/S0304-3940(00)01132-0",
+                        "article-title": "Lasting influence of repetitive transcranial magnetic stimulation on intracortical excitability in human subjects",
+                        "volume": "287",
+                        "author": "Wu",
+                        "year": "2000",
+                        "journal-title": "Neurosci Lett"
+                    },
+                    {
+                        "key": "10.1016/j.clinph.2009.01.003_bib30",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1393",
+                        "DOI": "10.1016/j.clinph.2008.02.006",
+                        "article-title": "Comparative assessment of best conventional with best theta burst repetitive transcranial magnetic stimulation protocols on human motor cortex excitability",
+                        "volume": "119",
+                        "author": "Zafar",
+                        "year": "2008",
+                        "journal-title": "Clin Neurophysiol"
+                    }
+                ],
+                "container-title": [
+                    "Clinical Neurophysiology"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "https://api.elsevier.com/content/article/PII:S1388245709000303?httpAccept=text/xml",
+                        "content-type": "text/xml",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "https://api.elsevier.com/content/article/PII:S1388245709000303?httpAccept=text/plain",
+                        "content-type": "text/plain",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2025,
+                            10,
+                            25
+                        ]
+                    ],
+                    "date-time": "2025-10-25T10:52:28Z",
+                    "timestamp": 1761389548000
+                },
+                "score": 121.98983,
+                "resource": {
+                    "primary": {
+                        "URL": "https://linkinghub.elsevier.com/retrieve/pii/S1388245709000303"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2009,
+                            4
+                        ]
+                    ]
+                },
+                "references-count": 30,
+                "journal-issue": {
+                    "issue": "4",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2009,
+                                4
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "S1388245709000303"
+                ],
+                "URL": "https://doi.org/10.1016/j.clinph.2009.01.003",
+                "ISSN": [
+                    "1388-2457"
+                ],
+                "issn-type": [
+                    {
+                        "value": "1388-2457",
+                        "type": "print"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2009,
+                            4
+                        ]
+                    ]
+                },
+                "assertion": [
+                    {
+                        "value": "Elsevier",
+                        "name": "publisher",
+                        "label": "This article is maintained by"
+                    },
+                    {
+                        "value": "The effect of continuous theta burst stimulation over premotor cortex on circuits in primary motor cortex and spinal cord",
+                        "name": "articletitle",
+                        "label": "Article Title"
+                    },
+                    {
+                        "value": "Clinical Neurophysiology",
+                        "name": "journaltitle",
+                        "label": "Journal Title"
+                    },
+                    {
+                        "value": "https://doi.org/10.1016/j.clinph.2009.01.003",
+                        "name": "articlelink",
+                        "label": "CrossRef DOI link to publisher maintained version"
+                    },
+                    {
+                        "value": "article",
+                        "name": "content_type",
+                        "label": "Content Type"
+                    },
+                    {
+                        "value": "Copyright © 2009 International Federation of Clinical Neurophysiology. Published by Elsevier B.V. All rights reserved.",
+                        "name": "copyright",
+                        "label": "Copyright"
+                    }
+                ]
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

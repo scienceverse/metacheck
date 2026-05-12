@@ -1,0 +1,369 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    4
+                ]
+            ],
+            "date-time": "2026-05-04T19:54:20Z",
+            "timestamp": 1777924460272,
+            "version": "3.51.4"
+        },
+        "reference-count": 26,
+        "publisher": "SAGE Publications",
+        "issue": "5",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2014,
+                            3,
+                            6
+                        ]
+                    ],
+                    "date-time": "2014-03-06T00:00:00Z",
+                    "timestamp": 1394064000000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://journals.sagepub.com/page/policies/text-and-data-mining-license"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "journals.sagepub.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Psychol Sci"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2014,
+                    5
+                ]
+            ]
+        },
+        "abstract": "<jats:p>Research on scene categorization generally concentrates on gist processing, particularly the speed and minimal features with which the “story” of a scene can be extracted. However, this focus has led to a paucity of research into how scenes are categorized at specific hierarchical levels (e.g., a scene could be a road or more specifically a highway); consequently, research has disregarded a potential diagnostically driven feedback process. We presented participants with scenes that were low-pass filtered so only their gist was revealed, while a gaze-contingent window provided the fovea with full-resolution details. By recording where in a scene participants fixated prior to making a basic- or subordinate-level judgment, we identified the scene information accrued when participants made either categorization. We observed a feedback process, dependent on categorization level, that systematically accrues sufficient and detailed diagnostic information from the same scene. Our results demonstrate that during scene processing, a diagnostically driven bidirectional interplay between top-down and bottom-up information facilitates relevant category processing.<\/jats:p>",
+        "DOI": "10.1177/0956797614522816",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2014,
+                    3,
+                    7
+                ]
+            ],
+            "date-time": "2014-03-07T00:17:41Z",
+            "timestamp": 1394151461000
+        },
+        "page": "1087-1097",
+        "update-policy": "https://doi.org/10.1177/sage-journals-update-policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 32,
+        "title": [
+            "Beyond Gist"
+        ],
+        "prefix": "10.1177",
+        "volume": "25",
+        "author": [
+            {
+                "given": "George L.",
+                "family": "Malcolm",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "The George Washington University"
+                    }
+                ]
+            },
+            {
+                "given": "Antje",
+                "family": "Nuthmann",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "University of Edinburgh"
+                    }
+                ]
+            },
+            {
+                "given": "Philippe G.",
+                "family": "Schyns",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "University of Glasgow"
+                    }
+                ]
+            }
+        ],
+        "member": "179",
+        "published-online": {
+            "date-parts": [
+                [
+                    2014,
+                    3,
+                    6
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "bibr1-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-295X.94.2.115"
+            },
+            {
+                "key": "bibr2-0956797614522816",
+                "first-page": "121",
+                "volume-title": "An invitation to cognitive science",
+                "volume": "2",
+                "author": "Biederman I.",
+                "year": "1995",
+                "edition": "2"
+            },
+            {
+                "key": "bibr3-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0042-6989(00)00083-3"
+            },
+            {
+                "key": "bibr4-0956797614522816",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Fei-Fei L., Iyer A., Koch C., Perona P. (2007). What do we perceive in a glance of a real-world scene? Journal of Vision, 7(1), Article 10. Retrieved from http://www.journalofvision.org/content/7/1/10",
+                "DOI": "10.1167/7.1.10"
+            },
+            {
+                "key": "bibr5-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-295X.108.4.735"
+            },
+            {
+                "key": "bibr6-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-9280.2009.02316.x"
+            },
+            {
+                "key": "bibr7-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.cogpsych.2008.06.001"
+            },
+            {
+                "key": "bibr8-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.visres.2007.09.013"
+            },
+            {
+                "key": "bibr9-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/13506280902937606"
+            },
+            {
+                "key": "bibr10-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.3758/BF03203972"
+            },
+            {
+                "key": "bibr11-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1006/cogp.1997.0667"
+            },
+            {
+                "key": "bibr12-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1011139631724"
+            },
+            {
+                "key": "bibr13-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0079-6123(06)55002-2"
+            },
+            {
+                "key": "bibr14-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1126/science.1145183"
+            },
+            {
+                "key": "bibr15-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0278-7393.2.5.509"
+            },
+            {
+                "key": "bibr16-0956797614522816",
+                "first-page": "28",
+                "volume-title": "Cognition and categorization",
+                "author": "Rosch E.",
+                "year": "1978"
+            },
+            {
+                "key": "bibr17-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0010-0285(76)90013-X"
+            },
+            {
+                "key": "bibr18-0956797614522816",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Rotshtein P., Schofield A., Funes M. J., Humphreys G. W. (2010). Effects of spatial frequency bands on perceptual decision: It is not the stimuli but the comparison. Journal of Vision, 10(10), Article 25. Retrieved from http://www.journalofvision.org/content/10/10/25.full",
+                "DOI": "10.1167/10.10.25"
+            },
+            {
+                "key": "bibr19-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/13506280444000553"
+            },
+            {
+                "key": "bibr20-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0010-0277(98)00016-X"
+            },
+            {
+                "key": "bibr21-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-9280.1994.tb00500.x"
+            },
+            {
+                "key": "bibr22-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1073/pnas.0700622104"
+            },
+            {
+                "key": "bibr23-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1038/381520a0"
+            },
+            {
+                "key": "bibr24-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1088/0954-898X_14_3_302"
+            },
+            {
+                "key": "bibr25-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0010-0285(83)90006-3"
+            },
+            {
+                "key": "bibr26-0956797614522816",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0042-6989(02)00298-5"
+            }
+        ],
+        "container-title": [
+            "Psychological Science"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1177/0956797614522816",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/full-xml/10.1177/0956797614522816",
+                "content-type": "application/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1177/0956797614522816",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    1
+                ]
+            ],
+            "date-time": "2026-05-01T21:24:18Z",
+            "timestamp": 1777670658000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://journals.sagepub.com/doi/10.1177/0956797614522816"
+            }
+        },
+        "subtitle": [
+            "Strategic and Incremental Information Accumulation for Scene Categorization"
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2014,
+                    3,
+                    6
+                ]
+            ]
+        },
+        "references-count": 26,
+        "journal-issue": {
+            "issue": "5",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2014,
+                        5
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1177/0956797614522816"
+        ],
+        "URL": "https://doi.org/10.1177/0956797614522816",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0956-7976",
+            "1467-9280"
+        ],
+        "issn-type": [
+            {
+                "value": "0956-7976",
+                "type": "print"
+            },
+            {
+                "value": "1467-9280",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2014,
+                    3,
+                    6
+                ]
+            ]
+        }
+    }
+}

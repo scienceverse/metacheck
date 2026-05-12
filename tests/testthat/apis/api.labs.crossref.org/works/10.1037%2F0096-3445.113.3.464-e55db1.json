@@ -1,0 +1,175 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    12
+                ]
+            ],
+            "date-time": "2026-05-12T15:39:16Z",
+            "timestamp": 1778600356485,
+            "version": "3.51.4"
+        },
+        "reference-count": 0,
+        "publisher": "American Psychological Association (APA)",
+        "issue": "3",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Journal of Experimental Psychology: General"
+        ],
+        "DOI": "10.1037/0096-3445.113.3.464",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2006,
+                    6,
+                    9
+                ]
+            ],
+            "date-time": "2006-06-09T11:32:01Z",
+            "timestamp": 1149852721000
+        },
+        "page": "464-486",
+        "source": "Crossref",
+        "is-referenced-by-count": 545,
+        "title": [
+            "Concept of emotion viewed from a prototype perspective."
+        ],
+        "prefix": "10.1037",
+        "volume": "113",
+        "author": [
+            {
+                "given": "Beverley",
+                "family": "Fehr",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "James A.",
+                "family": "Russell",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "15",
+        "published-online": {
+            "date-parts": [
+                [
+                    1984,
+                    9
+                ]
+            ]
+        },
+        "container-title": [
+            "Journal of Experimental Psychology: General"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://psycnet.apa.org/journals/xge/113/3/464.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    2,
+                    6
+                ]
+            ],
+            "date-time": "2024-02-06T21:32:14Z",
+            "timestamp": 1707255134000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://doi.apa.org/doi/10.1037/0096-3445.113.3.464"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    1984,
+                    9
+                ]
+            ]
+        },
+        "references-count": 0,
+        "aliases": [
+            "10.1037//0096-3445.113.3.464"
+        ],
+        "journal-issue": {
+            "issue": "3",
+            "published-online": {
+                "date-parts": [
+                    [
+                        1984,
+                        9
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "1985-16442-001"
+        ],
+        "URL": "https://doi.org/10.1037/0096-3445.113.3.464",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1939-2222",
+            "0096-3445"
+        ],
+        "issn-type": [
+            {
+                "value": "1939-2222",
+                "type": "electronic"
+            },
+            {
+                "value": "0096-3445",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    1984,
+                    9
+                ]
+            ]
+        }
+    }
+}

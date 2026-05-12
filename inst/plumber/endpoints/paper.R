@@ -92,7 +92,7 @@ function(req, res) {
         return(error_response(res, 500, paper_obj$error))
     }
 
-    author_table(paper_obj$paper)
+    paper_table(paper_obj$paper, "author")
 }
 
 #* Get references from a paper
@@ -158,7 +158,7 @@ function(req, res) {
         return(error_response(res, 500, paper_obj$error))
     }
 
-    paper_obj$paper$xrefs
+    paper_obj$paper$xref
 }
 
 #* Search text in a paper
@@ -166,7 +166,7 @@ function(req, res) {
 #* @param file:file GROBID XML file to process
 #* @param pattern the regex pattern to search for (required)
 #* @param section the section(s) to search in (optional)
-#* @param return the kind of text to return: "sentence", "paragraph", "div", "section", "match", or "id" (optional, defaults to "sentence")
+#* @param return the kind of text to return: "sentence", "paragraph", "div", "section", "match", or "paper_id" (optional, defaults to "sentence")
 #* @param ignore.case whether to ignore case when text searching (optional, defaults to TRUE)
 #* @param fixed logical. If TRUE, pattern is a string to be matched as is (optional, defaults to FALSE)
 #* @param perl logical. Should Perl-compatible regexps be used? (optional, defaults to FALSE)
@@ -323,9 +323,9 @@ function(req, res) {
     }
 
     logger::log_info("Paper processed successfully, extracting metadata: {request_id}")
-    authors <- author_table(paper_obj$paper)
+    authors <- paper_table(paper_obj$paper, "author")
     references <- paper_obj$paper$bib
-    cross_references <- paper_obj$paper$xrefs
+    cross_references <- paper_obj$paper$xref
 
     logger::log_info("Running {length(modules)} module(s): {paste(modules, collapse = ', ')} - {request_id}")
     # Run all requested modules using module_run
@@ -366,7 +366,7 @@ function(req, res) {
     list(
         paper_info = info_table(
             paper_obj$paper,
-            c("title", "description", "keywords", "doi", "submission", "received", "accepted")
+            c("title", "keywords", "doi", "submission", "received", "accepted")
         ),
         authors = authors,
         references = references,

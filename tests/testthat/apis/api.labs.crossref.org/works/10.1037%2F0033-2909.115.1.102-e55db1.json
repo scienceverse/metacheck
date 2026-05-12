@@ -1,0 +1,164 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    11
+                ]
+            ],
+            "date-time": "2026-05-11T10:54:33Z",
+            "timestamp": 1778496873251,
+            "version": "3.51.4"
+        },
+        "reference-count": 0,
+        "publisher": "American Psychological Association (APA)",
+        "issue": "1",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Psychological Bulletin"
+        ],
+        "DOI": "10.1037/0033-2909.115.1.102",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2005,
+                    9,
+                    21
+                ]
+            ],
+            "date-time": "2005-09-21T16:13:40Z",
+            "timestamp": 1127319220000
+        },
+        "page": "102-141",
+        "source": "Crossref",
+        "is-referenced-by-count": 1085,
+        "title": [
+            "Is there universal recognition of emotion from facial expression? A review of the cross-cultural studies."
+        ],
+        "prefix": "10.1037",
+        "volume": "115",
+        "author": [
+            {
+                "given": "James A.",
+                "family": "Russell",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "15",
+        "published-online": {
+            "date-parts": [
+                [
+                    1994
+                ]
+            ]
+        },
+        "container-title": [
+            "Psychological Bulletin"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://psycnet.apa.org/journals/bul/115/1/102.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    2,
+                    6
+                ]
+            ],
+            "date-time": "2024-02-06T20:45:47Z",
+            "timestamp": 1707252347000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://doi.apa.org/doi/10.1037/0033-2909.115.1.102"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    1994
+                ]
+            ]
+        },
+        "references-count": 0,
+        "aliases": [
+            "10.1037//0033-2909.115.1.102"
+        ],
+        "journal-issue": {
+            "issue": "1",
+            "published-online": {
+                "date-parts": [
+                    [
+                        1994
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "1994-20274-001",
+            "8202574"
+        ],
+        "URL": "https://doi.org/10.1037/0033-2909.115.1.102",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1939-1455",
+            "0033-2909"
+        ],
+        "issn-type": [
+            {
+                "value": "1939-1455",
+                "type": "electronic"
+            },
+            {
+                "value": "0033-2909",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    1994
+                ]
+            ]
+        }
+    }
+}

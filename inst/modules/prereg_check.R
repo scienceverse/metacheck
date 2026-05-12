@@ -41,7 +41,7 @@ prereg_check <- function(paper) {
       traffic_light = "na",
       summary_text = "No preregistration links were found.",
       summary_table = data.frame(
-        id = info_table(paper, c())$id,
+        paper_id = paper_id(paper),
         preregistration = 0
       )
     )
@@ -52,7 +52,7 @@ prereg_check <- function(paper) {
   table_ap <- suppressMessages(
     aspredicted_retrieve(links_ap$text)
   )
-  ap_schema <- ap_schema(table_ap)
+  ap_schema_table <- ap_schema(table_ap)
 
   ## OSF prereg ----
   osf_ids <- links_osf$text |>
@@ -71,7 +71,7 @@ prereg_check <- function(paper) {
       ),
       na_replace = 0,
       summary_table = data.frame(
-        id = info_table(paper, c())$id,
+        paper_id = paper_id(paper),
         preregistration = 0
       )
     )
@@ -85,7 +85,7 @@ prereg_check <- function(paper) {
   )
   reg_info <- osf_get_all_pages(url)
 
-  osf_schemas <- lapply(seq_along(reg_info$id), \(i) {
+  osf_schema_table <- lapply(seq_along(reg_info$id), \(i) {
     info <- reg_info[i, ]
     template <- info$attributes$registration_supplement
     osf31 <- info$attributes$registration_responses$q25
@@ -113,10 +113,19 @@ prereg_check <- function(paper) {
   })
 
   # make sure all items are not lists
-  prereg_schemas <- c(osf_schemas, list(ap_schema))
+  prereg_schemas <- c(osf_schema_table, list(ap_schema_table))
   ps <- lapply(prereg_schemas, \(x) lapply(x, paste, collapse = "\n\n"))
   prereg_info <- do.call(dplyr::bind_rows, ps)
 
+  if (nrow(prereg_info)) {
+    paper_ids <- data.frame(
+      paper_id = c(links_ap$paper_id, links_osf$paper_id),
+      link = c(links_ap$text, links_osf$text)
+    )
+    paper_ids$link <- gsub("^(https://)?", "https://", paper_ids$link)
+
+    prereg_info <- dplyr::left_join(prereg_info, paper_ids, by = "link")
+  }
 
   # traffic light ----
   tl <- "info"
@@ -130,7 +139,7 @@ prereg_check <- function(paper) {
   # report ----
   has_sample_size <- "sample_size" %in% names(prereg_info)
   report_text <- sprintf(
-    "Meta-scientific research has shown that deviations from preregistrations are often not reported or checked, and that the most common deviations concern the sample size. We recommend manually checking the full preregistration at the link%s below%s.",
+    "Meta-scientific research has shown that deviations from preregistrations are often not reported or checked, and that the most common deviations concern the sample size. We recommend manually checking the full preregistration at the link%s above%s.",
     nrow(prereg_info) |> plural(),
     ifelse(has_sample_size, ", and have provided the preregistered sample size", "")
   )
@@ -148,7 +157,7 @@ prereg_check <- function(paper) {
   }
 
   ## summary output for paperlists ----
-  summary_table <- dplyr::count(prereg_info, id,
+  summary_table <- dplyr::count(prereg_info, paper_id,
     name = "preregistration",
     .drop = FALSE
   )
@@ -199,7 +208,7 @@ prereg_check <- function(paper) {
   )
 }
 
-# referelnces
+# references
 
 vandenAkker2024 <- bibentry(
   bibtype = "Article",

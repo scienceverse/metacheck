@@ -1,0 +1,1001 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 1029540,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            4,
+                            28
+                        ]
+                    ],
+                    "date-time": "2026-04-28T06:01:18Z",
+                    "timestamp": 1777356078380,
+                    "version": "3.51.4"
+                },
+                "reference-count": 142,
+                "publisher": "Informa UK Limited",
+                "issue": "1",
+                "license": [
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2024,
+                                    7,
+                                    22
+                                ]
+                            ],
+                            "date-time": "2024-07-22T00:00:00Z",
+                            "timestamp": 1721606400000
+                        },
+                        "content-version": "vor",
+                        "delay-in-days": 0,
+                        "URL": "http://creativecommons.org/licenses/by/4.0/"
+                    }
+                ],
+                "content-domain": {
+                    "domain": [
+                        "www.tandfonline.com"
+                    ],
+                    "crossmark-restriction": true
+                },
+                "short-container-title": [
+                    "Evidence-Based Toxicology"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2024,
+                            12,
+                            31
+                        ]
+                    ]
+                },
+                "DOI": "10.1080/2833373x.2024.2376046",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2024,
+                            7,
+                            22
+                        ]
+                    ],
+                    "date-time": "2024-07-22T14:05:11Z",
+                    "timestamp": 1721657111000
+                },
+                "update-policy": "https://doi.org/10.1080/tandf_crossmark_01",
+                "source": "Crossref",
+                "is-referenced-by-count": 47,
+                "title": [
+                    "The benefits of preregistration and Registered Reports"
+                ],
+                "prefix": "10.1080",
+                "volume": "2",
+                "author": [
+                    {
+                        "ORCID": "https://orcid.org/0000-0002-0247-239X",
+                        "authenticated-orcid": false,
+                        "given": "Daniël",
+                        "family": "Lakens",
+                        "sequence": "first",
+                        "affiliation": [
+                            {
+                                "name": "Eindhoven University of Technology, Eindhoven, Netherlands"
+                            }
+                        ]
+                    },
+                    {
+                        "ORCID": "https://orcid.org/0000-0002-1542-8355",
+                        "authenticated-orcid": false,
+                        "given": "Cristian",
+                        "family": "Mesquida",
+                        "sequence": "additional",
+                        "affiliation": [
+                            {
+                                "name": "Eindhoven University of Technology, Eindhoven, Netherlands"
+                            }
+                        ]
+                    },
+                    {
+                        "ORCID": "https://orcid.org/0009-0007-3416-7692",
+                        "authenticated-orcid": false,
+                        "given": "Sajedeh",
+                        "family": "Rasti",
+                        "sequence": "additional",
+                        "affiliation": [
+                            {
+                                "name": "Eindhoven University of Technology, Eindhoven, Netherlands"
+                            }
+                        ]
+                    },
+                    {
+                        "ORCID": "https://orcid.org/0000-0003-1021-0362",
+                        "authenticated-orcid": false,
+                        "given": "Massimiliano",
+                        "family": "Ditroilo",
+                        "sequence": "additional",
+                        "affiliation": [
+                            {
+                                "name": "School of Public Health, Physiotherapy and Sports Science, University College Dublin, Dublin, Ireland"
+                            }
+                        ]
+                    }
+                ],
+                "member": "301",
+                "published-online": {
+                    "date-parts": [
+                        [
+                            2024,
+                            7,
+                            22
+                        ]
+                    ]
+                },
+                "reference": [
+                    {
+                        "key": "e_1_3_4_2_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1371/journal.pone.0172792"
+                    },
+                    {
+                        "key": "e_1_3_4_3_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/25152459211018199"
+                    },
+                    {
+                        "key": "e_1_3_4_4_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1371/journal.pbio.3000246"
+                    },
+                    {
+                        "key": "e_1_3_4_5_1",
+                        "unstructured": "American Psychological Association. 2023. Open Science Badges. https://www.apa.org/pubs/journals/resources/open-science-badges"
+                    },
+                    {
+                        "key": "e_1_3_4_6_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1097/ACM.0000000000002412"
+                    },
+                    {
+                        "key": "e_1_3_4_7_1",
+                        "volume-title": "Reflections on the Decline of Science in England: And on Some of Its Causes",
+                        "author": "Babbage C.",
+                        "year": "1830",
+                        "unstructured": "Babbage, C. 1830. Reflections on the Decline of Science in England: And on Some of Its Causes. London: B. Fellowes."
+                    },
+                    {
+                        "key": "e_1_3_4_8_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/h0020412"
+                    },
+                    {
+                        "key": "e_1_3_4_9_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/joc/jqab031"
+                    },
+                    {
+                        "key": "e_1_3_4_10_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1371/journal.pbio.3000937"
+                    },
+                    {
+                        "key": "e_1_3_4_11_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.134.3479.596"
+                    },
+                    {
+                        "key": "e_1_3_4_12_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1017/iop.2022.67"
+                    },
+                    {
+                        "key": "e_1_3_4_13_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rsos.200048"
+                    },
+                    {
+                        "key": "e_1_3_4_14_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1026/0033-3042/a000562"
+                    },
+                    {
+                        "key": "e_1_3_4_15_1",
+                        "unstructured": "Brodeur A. N. M. Cook J. S. Hartley and A. Heyes. 2024. Do Pre-Registration and Pre-Analysis Plans Reduce p-Hacking and Publication Bias? Evidence from 15 992 Test Statistics and Suggestions for Improvement (Working Paper 101). I4R Discussion Paper Series. https://www.econstor.eu/handle/10419/281136"
+                    },
+                    {
+                        "key": "e_1_3_4_16_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/2515245919847196"
+                    },
+                    {
+                        "key": "e_1_3_4_17_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.cortex.2012.12.016"
+                    },
+                    {
+                        "key": "e_1_3_4_18_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/s41562-021-01193-7"
+                    },
+                    {
+                        "key": "e_1_3_4_19_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1136/bmj.e7586"
+                    },
+                    {
+                        "key": "e_1_3_4_20_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s10940-021-09525-6"
+                    },
+                    {
+                        "key": "e_1_3_4_21_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.31234/osf.io/d8wex"
+                    },
+                    {
+                        "key": "e_1_3_4_22_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.obhdp.2021.03.002"
+                    },
+                    {
+                        "key": "e_1_3_4_23_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1525/collabra.36306"
+                    },
+                    {
+                        "key": "e_1_3_4_24_1",
+                        "unstructured": "Declaration on Open Science. 2020. https://www.setac.org/resource/declaration-on-open-science.html"
+                    },
+                    {
+                        "key": "e_1_3_4_25_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rsos.200805"
+                    },
+                    {
+                        "key": "e_1_3_4_26_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1001/jama.1992.03480210049019"
+                    },
+                    {
+                        "key": "e_1_3_4_27_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1001/jama.290.4.516"
+                    },
+                    {
+                        "key": "e_1_3_4_28_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1001/jama.2012.4230"
+                    },
+                    {
+                        "key": "e_1_3_4_29_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1371/journal.pbio.3000690"
+                    },
+                    {
+                        "key": "e_1_3_4_30_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.31234/osf.io/qfjy7"
+                    },
+                    {
+                        "key": "e_1_3_4_31_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1002/ejsp.1932"
+                    },
+                    {
+                        "key": "e_1_3_4_32_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.31234/osf.io/wfe4r"
+                    },
+                    {
+                        "key": "e_1_3_4_33_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.31234/osf.io/5hkjz"
+                    },
+                    {
+                        "key": "e_1_3_4_34_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s11192-011-0494-7"
+                    },
+                    {
+                        "key": "e_1_3_4_35_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/s41467-023-41111-1"
+                    },
+                    {
+                        "key": "e_1_3_4_36_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/1948550615612150"
+                    },
+                    {
+                        "key": "e_1_3_4_37_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rsos.181351"
+                    },
+                    {
+                        "key": "e_1_3_4_38_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.31234/osf.io/23qsw"
+                    },
+                    {
+                        "key": "e_1_3_4_39_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/SCIENCE.1255484"
+                    },
+                    {
+                        "key": "e_1_3_4_40_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1371/journal.pone.0200303"
+                    },
+                    {
+                        "key": "e_1_3_4_41_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/1082-989X.1.4.379"
+                    },
+                    {
+                        "key": "e_1_3_4_42_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s12144-022-02797-6"
+                    },
+                    {
+                        "key": "e_1_3_4_43_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/j.2044-8317.2011.02037.x"
+                    },
+                    {
+                        "key": "e_1_3_4_44_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1136/bmj.k3218"
+                    },
+                    {
+                        "key": "e_1_3_4_45_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/h0076157"
+                    },
+                    {
+                        "key": "e_1_3_4_46_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/978-3-030-01051-5_3"
+                    },
+                    {
+                        "key": "e_1_3_4_47_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.metip.2020.100020"
+                    },
+                    {
+                        "key": "e_1_3_4_48_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.2307/2027007"
+                    },
+                    {
+                        "key": "e_1_3_4_49_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1080/08989621.2019.1580147"
+                    },
+                    {
+                        "key": "e_1_3_4_50_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.3102/10769986009001061"
+                    },
+                    {
+                        "key": "e_1_3_4_51_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.15626/MP.2021.2837"
+                    },
+                    {
+                        "key": "e_1_3_4_52_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/modl.12760"
+                    },
+                    {
+                        "key": "e_1_3_4_53_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/1948550618790227"
+                    },
+                    {
+                        "key": "e_1_3_4_54_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/0956797611430953"
+                    },
+                    {
+                        "key": "e_1_3_4_55_1",
+                        "first-page": "36",
+                        "article-title": "Models of Control and Control of Bias",
+                        "author": "Johnson M.",
+                        "year": "1975",
+                        "unstructured": "Johnson, M. 1975. “Models of Control and Control of Bias.” European Journal of Parapsychology 1: 36–44.",
+                        "journal-title": "European Journal of Parapsychology"
+                    },
+                    {
+                        "key": "e_1_3_4_56_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1371/journal.pone.0132382"
+                    },
+                    {
+                        "key": "e_1_3_4_57_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1207/s15327957pspr0203_4"
+                    },
+                    {
+                        "key": "e_1_3_4_58_1",
+                        "unstructured": "Keynes J. M. 1921. A Treatise on Probability. Cambrige: Cambridge University Press."
+                    },
+                    {
+                        "key": "e_1_3_4_59_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.csbj.2018.08.002"
+                    },
+                    {
+                        "key": "e_1_3_4_60_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1017/iop.2019.121"
+                    },
+                    {
+                        "key": "e_1_3_4_61_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/s41562-019-0787-z"
+                    },
+                    {
+                        "key": "e_1_3_4_62_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1056/NEJMe078110"
+                    },
+                    {
+                        "key": "e_1_3_4_63_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1017/CBO9780511621123"
+                    },
+                    {
+                        "key": "e_1_3_4_64_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1002/ejsp.2023"
+                    },
+                    {
+                        "key": "e_1_3_4_65_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.7717/peerj.1142"
+                    },
+                    {
+                        "key": "e_1_3_4_66_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.24602/sjpr.62.3_221"
+                    },
+                    {
+                        "key": "e_1_3_4_67_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1525/collabra.117094"
+                    },
+                    {
+                        "key": "e_1_3_4_68_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/2515245920970949"
+                    },
+                    {
+                        "key": "e_1_3_4_69_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1097/EDE.0b013e318245c05b"
+                    },
+                    {
+                        "key": "e_1_3_4_70_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s10551-021-04961-7"
+                    },
+                    {
+                        "key": "e_1_3_4_71_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1002/asi.22784"
+                    },
+                    {
+                        "key": "e_1_3_4_72_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/j.1748-720x.2004.tb01969.x"
+                    },
+                    {
+                        "key": "e_1_3_4_73_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1017/pan.2020.31"
+                    },
+                    {
+                        "key": "e_1_3_4_74_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.obhdp.2021.05.006"
+                    },
+                    {
+                        "key": "e_1_3_4_75_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/BF01173636"
+                    },
+                    {
+                        "key": "e_1_3_4_76_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.3102/0013189X211001356"
+                    },
+                    {
+                        "key": "e_1_3_4_77_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1017/9781107286184"
+                    },
+                    {
+                        "key": "e_1_3_4_78_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1017/pls.2022.4"
+                    },
+                    {
+                        "key": "e_1_3_4_79_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.cortex.2017.07.014"
+                    },
+                    {
+                        "key": "e_1_3_4_80_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/bjps/55.4.615"
+                    },
+                    {
+                        "key": "e_1_3_4_81_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1080/2833373X.2024.2314303"
+                    },
+                    {
+                        "key": "e_1_3_4_82_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.5334/pb.493"
+                    },
+                    {
+                        "key": "e_1_3_4_83_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.2307/2094423"
+                    },
+                    {
+                        "key": "e_1_3_4_84_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/cap0000326"
+                    },
+                    {
+                        "key": "e_1_3_4_85_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/pspa0000084"
+                    },
+                    {
+                        "key": "e_1_3_4_86_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/d41586-018-01023-3"
+                    },
+                    {
+                        "key": "e_1_3_4_87_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/biomet/20A.1-2.175"
+                    },
+                    {
+                        "key": "e_1_3_4_88_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1073/pnas.1708274114"
+                    },
+                    {
+                        "key": "e_1_3_4_89_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1027/1864-9335/a000192"
+                    },
+                    {
+                        "key": "e_1_3_4_90_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1017/S1537592721000931"
+                    },
+                    {
+                        "key": "e_1_3_4_91_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1257/jep.29.3.61"
+                    },
+                    {
+                        "key": "e_1_3_4_92_1",
+                        "unstructured": "Peer Community In – Registered Reports. n.d. Guide for Authors. https://rr.peercommunityin.org/help/guide_for_authors"
+                    },
+                    {
+                        "key": "e_1_3_4_93_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1002/jcpy.1209"
+                    },
+                    {
+                        "key": "e_1_3_4_94_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s11948-017-9886-2"
+                    },
+                    {
+                        "key": "e_1_3_4_95_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1063/1.3060577"
+                    },
+                    {
+                        "key": "e_1_3_4_96_1",
+                        "volume-title": "Conjectures and Refutations: The Growth of Scientific Knowledge",
+                        "author": "Popper K. R.",
+                        "year": "1962",
+                        "unstructured": "Popper, K. R. 1962. Conjectures and Refutations: The Growth of Scientific Knowledge. London: Routledge."
+                    },
+                    {
+                        "key": "e_1_3_4_97_1",
+                        "volume-title": "Statistical Monitoring of Clinical Trials: A Unified Approach",
+                        "author": "Proschan M. A.",
+                        "year": "2006",
+                        "unstructured": "Proschan, M. A., K. K. G. Lan, and J. T. Wittes. 2006. Statistical Monitoring of Clinical Trials: A Unified Approach. New York: Springer."
+                    },
+                    {
+                        "key": "e_1_3_4_98_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1186/s13063-022-06316-7"
+                    },
+                    {
+                        "key": "e_1_3_4_99_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1002/ijop.12632"
+                    },
+                    {
+                        "key": "e_1_3_4_100_1",
+                        "volume-title": "Experimenter Effects in Behavioral Research",
+                        "author": "Rosenthal R.",
+                        "year": "1966",
+                        "unstructured": "Rosenthal, R. 1966. Experimenter Effects in Behavioral Research. New York: Appleton-Century-Crofts."
+                    },
+                    {
+                        "key": "e_1_3_4_101_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1017/iop.2020.16"
+                    },
+                    {
+                        "key": "e_1_3_4_102_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/bjps/axz050"
+                    },
+                    {
+                        "key": "e_1_3_4_103_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1080/09515089.2022.2113771"
+                    },
+                    {
+                        "key": "e_1_3_4_104_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rsos.211997"
+                    },
+                    {
+                        "key": "e_1_3_4_105_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.2307/1958356"
+                    },
+                    {
+                        "key": "e_1_3_4_106_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.3389/fpsyg.2019.00813"
+                    },
+                    {
+                        "key": "e_1_3_4_107_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.12688/f1000research.17710.2"
+                    },
+                    {
+                        "key": "e_1_3_4_108_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/1745691620966795"
+                    },
+                    {
+                        "key": "e_1_3_4_109_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.31222/osf.io/r6j3z"
+                    },
+                    {
+                        "key": "e_1_3_4_110_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1039/D3DD00032J"
+                    },
+                    {
+                        "key": "e_1_3_4_111_1",
+                        "volume-title": "Experimental and Quasi-Experimental Designs for Generalized Causal Inference",
+                        "author": "Shadish W. R.",
+                        "year": "2001",
+                        "unstructured": "Shadish, W. R., T. D. Cook, and D. T. Campbell. 2001. Experimental and Quasi-Experimental Designs for Generalized Causal Inference. Boston: Houghton Mifflin."
+                    },
+                    {
+                        "key": "e_1_3_4_112_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/bjop.12700"
+                    },
+                    {
+                        "key": "e_1_3_4_113_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1002/jcpy.1208"
+                    },
+                    {
+                        "key": "e_1_3_4_114_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/2515245918757424"
+                    },
+                    {
+                        "key": "e_1_3_4_115_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/s41562-021-01142-4"
+                    },
+                    {
+                        "key": "e_1_3_4_116_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1371/journal.pone.0281086"
+                    },
+                    {
+                        "key": "e_1_3_4_117_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.2307/2282137"
+                    },
+                    {
+                        "key": "e_1_3_4_118_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/tep0000322"
+                    },
+                    {
+                        "key": "e_1_3_4_119_1",
+                        "unstructured": "Syed M. 2024. Preregistration: More Promises than Pitfalls [Substack newsletter]. Get Syeducated. https://web.archive.org/web/20240315201654/https://getsyeducated.substack.com/p/preregistration-more-promises-than"
+                    },
+                    {
+                        "key": "e_1_3_4_120_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/1745691620966796"
+                    },
+                    {
+                        "key": "e_1_3_4_121_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.tics.2019.11.009"
+                    },
+                    {
+                        "key": "e_1_3_4_122_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s10869-020-09695-3"
+                    },
+                    {
+                        "key": "e_1_3_4_123_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.31234/osf.io/ft8dc"
+                    },
+                    {
+                        "key": "e_1_3_4_124_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.15626/MP.2021.2756"
+                    },
+                    {
+                        "key": "e_1_3_4_125_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.3758/s13428-023-02277-0"
+                    },
+                    {
+                        "key": "e_1_3_4_126_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/25152459231187988"
+                    },
+                    {
+                        "key": "e_1_3_4_127_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.3758/s13423-022-02069-1"
+                    },
+                    {
+                        "key": "e_1_3_4_128_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/0198244274.001.0001"
+                    },
+                    {
+                        "key": "e_1_3_4_129_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.3233/DS-210031"
+                    },
+                    {
+                        "key": "e_1_3_4_130_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1097/EDE.0b013e3181e942b8"
+                    },
+                    {
+                        "key": "e_1_3_4_131_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s42113-019-00056-9"
+                    },
+                    {
+                        "key": "e_1_3_4_132_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.jesp.2016.03.004"
+                    },
+                    {
+                        "key": "e_1_3_4_133_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/09637214211067779"
+                    },
+                    {
+                        "key": "e_1_3_4_134_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/0956797621989733"
+                    },
+                    {
+                        "key": "e_1_3_4_135_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/jnci/djh075"
+                    },
+                    {
+                        "key": "e_1_3_4_136_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/1745691612463078"
+                    },
+                    {
+                        "key": "e_1_3_4_137_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/s41386-022-01418-x"
+                    },
+                    {
+                        "key": "e_1_3_4_138_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1080/00031305.1970.10478884"
+                    },
+                    {
+                        "key": "e_1_3_4_139_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s00204-007-0194-5"
+                    },
+                    {
+                        "key": "e_1_3_4_140_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/978-3-319-32562-0"
+                    },
+                    {
+                        "key": "e_1_3_4_141_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/2515245919848684"
+                    },
+                    {
+                        "key": "e_1_3_4_142_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.31234/osf.io/dwx69"
+                    },
+                    {
+                        "key": "e_1_3_4_143_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1056/NEJMsr1907644"
+                    }
+                ],
+                "container-title": [
+                    "Evidence-Based Toxicology"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "https://www.tandfonline.com/doi/pdf/10.1080/2833373X.2024.2376046",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2025,
+                            1,
+                            13
+                        ]
+                    ],
+                    "date-time": "2025-01-13T14:42:51Z",
+                    "timestamp": 1736779371000
+                },
+                "score": 114.67317,
+                "resource": {
+                    "primary": {
+                        "URL": "https://www.tandfonline.com/doi/full/10.1080/2833373X.2024.2376046"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2024,
+                            7,
+                            22
+                        ]
+                    ]
+                },
+                "references-count": 142,
+                "journal-issue": {
+                    "issue": "1",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2024,
+                                12,
+                                31
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "10.1080/2833373X.2024.2376046"
+                ],
+                "URL": "https://doi.org/10.1080/2833373x.2024.2376046",
+                "ISSN": [
+                    "2833-373X"
+                ],
+                "issn-type": [
+                    {
+                        "value": "2833-373X",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2024,
+                            7,
+                            22
+                        ]
+                    ]
+                },
+                "assertion": [
+                    {
+                        "value": "The publishing and review policy for this title is described in its Aims & Scope.",
+                        "order": 1,
+                        "name": "peerreview_statement",
+                        "label": "Peer Review Statement"
+                    },
+                    {
+                        "value": "http://www.tandfonline.com/action/journalInformation?show=aimsScope&journalCode=tebt20",
+                        "URL": "http://www.tandfonline.com/action/journalInformation?show=aimsScope&journalCode=tebt20",
+                        "order": 2,
+                        "name": "aims_and_scope_url",
+                        "label": "Aim & Scope"
+                    },
+                    {
+                        "value": "2024-03-26",
+                        "order": 0,
+                        "name": "received",
+                        "label": "Received",
+                        "group": {
+                            "name": "publication_history",
+                            "label": "Publication History"
+                        }
+                    },
+                    {
+                        "value": "2024-06-24",
+                        "order": 1,
+                        "name": "revised",
+                        "label": "Revised",
+                        "group": {
+                            "name": "publication_history",
+                            "label": "Publication History"
+                        }
+                    },
+                    {
+                        "value": "2024-06-30",
+                        "order": 2,
+                        "name": "accepted",
+                        "label": "Accepted",
+                        "group": {
+                            "name": "publication_history",
+                            "label": "Publication History"
+                        }
+                    },
+                    {
+                        "value": "2024-07-22",
+                        "order": 3,
+                        "name": "published",
+                        "label": "Published",
+                        "group": {
+                            "name": "publication_history",
+                            "label": "Publication History"
+                        }
+                    }
+                ],
+                "article-number": "2376046"
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

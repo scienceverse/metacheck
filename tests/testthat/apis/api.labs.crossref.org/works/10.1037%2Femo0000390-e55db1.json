@@ -1,0 +1,222 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    6
+                ]
+            ],
+            "date-time": "2026-04-06T20:22:06Z",
+            "timestamp": 1775506926194,
+            "version": "3.50.1"
+        },
+        "reference-count": 0,
+        "publisher": "American Psychological Association (APA)",
+        "issue": "8",
+        "funder": [
+            {
+                "name": "University of Leuven"
+            },
+            {
+                "name": "Research Foundation—Flanders"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Emotion"
+        ],
+        "DOI": "10.1037/emo0000390",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2018,
+                    2,
+                    1
+                ]
+            ],
+            "date-time": "2018-02-01T18:14:59Z",
+            "timestamp": 1517508899000
+        },
+        "page": "1142-1162",
+        "source": "Crossref",
+        "is-referenced-by-count": 51,
+        "title": [
+            "Beyond essentialism: Cultural differences in emotions revisited."
+        ],
+        "prefix": "10.1037",
+        "volume": "18",
+        "author": [
+            {
+                "ORCID": "https://orcid.org/0000-0003-4311-7236",
+                "authenticated-orcid": false,
+                "given": "Michael",
+                "family": "Boiger",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "ORCID": "https://orcid.org/0000-0002-7611-4683",
+                "authenticated-orcid": false,
+                "given": "Eva",
+                "family": "Ceulemans",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "ORCID": "https://orcid.org/0000-0002-4486-878X",
+                "authenticated-orcid": false,
+                "given": "Jozefien",
+                "family": "De Leersnyder",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "ORCID": "https://orcid.org/0000-0002-8336-2423",
+                "authenticated-orcid": false,
+                "given": "Yukiko",
+                "family": "Uchida",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Vinai",
+                "family": "Norasakkunkit",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "ORCID": "https://orcid.org/0000-0001-8065-1089",
+                "authenticated-orcid": false,
+                "given": "Batja",
+                "family": "Mesquita",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "15",
+        "published-online": {
+            "date-parts": [
+                [
+                    2018,
+                    12
+                ]
+            ]
+        },
+        "container-title": [
+            "Emotion"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://psycnet.apa.org/journals/emo/18/8/1142.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    2,
+                    5
+                ]
+            ],
+            "date-time": "2024-02-05T23:25:33Z",
+            "timestamp": 1707175533000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://doi.apa.org/doi/10.1037/emo0000390"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2018,
+                    12
+                ]
+            ]
+        },
+        "references-count": 0,
+        "journal-issue": {
+            "issue": "8",
+            "published-online": {
+                "date-parts": [
+                    [
+                        2018,
+                        12
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "2018-04139-001"
+        ],
+        "URL": "https://doi.org/10.1037/emo0000390",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1931-1516",
+            "1528-3542"
+        ],
+        "issn-type": [
+            {
+                "value": "1931-1516",
+                "type": "electronic"
+            },
+            {
+                "value": "1528-3542",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2018,
+                    12
+                ]
+            ]
+        }
+    }
+}

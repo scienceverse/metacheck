@@ -1,0 +1,642 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 2,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            5,
+                            1
+                        ]
+                    ],
+                    "date-time": "2026-05-01T18:37:27Z",
+                    "timestamp": 1777660647669,
+                    "version": "3.51.4"
+                },
+                "reference-count": 42,
+                "publisher": "Elsevier BV",
+                "issue": "2",
+                "license": [
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2004,
+                                    1,
+                                    1
+                                ]
+                            ],
+                            "date-time": "2004-01-01T00:00:00Z",
+                            "timestamp": 1072915200000
+                        },
+                        "content-version": "tdm",
+                        "delay-in-days": 0,
+                        "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+                    },
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2013,
+                                    7,
+                                    17
+                                ]
+                            ],
+                            "date-time": "2013-07-17T00:00:00Z",
+                            "timestamp": 1374019200000
+                        },
+                        "content-version": "vor",
+                        "delay-in-days": 3485,
+                        "URL": "https://www.elsevier.com/open-access/userlicense/1.0/"
+                    }
+                ],
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "short-container-title": [
+                    "Neuron"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2004,
+                            1
+                        ]
+                    ]
+                },
+                "DOI": "10.1016/s0896-6273(03)00838-9",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2004,
+                            3,
+                            30
+                        ]
+                    ],
+                    "date-time": "2004-03-30T10:20:36Z",
+                    "timestamp": 1080642036000
+                },
+                "page": "301-307",
+                "source": "Crossref",
+                "is-referenced-by-count": 1519,
+                "title": [
+                    "Somatotopic Representation of Action Words in Human Motor and Premotor Cortex"
+                ],
+                "prefix": "10.1016",
+                "volume": "41",
+                "author": [
+                    {
+                        "given": "Olaf",
+                        "family": "Hauk",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Ingrid",
+                        "family": "Johnsrude",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Friedemann",
+                        "family": "Pulvermüller",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "78",
+                "reference": [
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB1",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "103",
+                        "DOI": "10.1007/BF01131538",
+                        "article-title": "Entwurf einer neurologischen Theorie der Sprache",
+                        "volume": "79",
+                        "author": "Braitenberg",
+                        "year": "1992",
+                        "journal-title": "Naturwissenschaften"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB2",
+                        "unstructured": "Brett, M., Anton, J.-L., Valabregue, R., and Poline, J.-B. (2002a). Region of interest analysis using an SPM toolbox. Paper presented at: 8th International Conference on Functional Mapping of the Human Brain [Sendai, Japan: Neuroimage 16(2)]."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB3",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "243",
+                        "DOI": "10.1038/nrn756",
+                        "article-title": "The problem of functional localization in the human brain",
+                        "volume": "3",
+                        "author": "Brett",
+                        "year": "2002",
+                        "journal-title": "Nat. Rev. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB4",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "400",
+                        "DOI": "10.1111/j.1460-9568.2001.01385.x",
+                        "article-title": "Action observation activates premotor and parietal areas in a somatotopic manner",
+                        "volume": "13",
+                        "author": "Buccino",
+                        "year": "2001",
+                        "journal-title": "Eur. J. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB5",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "913",
+                        "DOI": "10.1038/13217",
+                        "article-title": "Attribute-based neural substrates in temporal cortex for perceiving and knowing about objects",
+                        "volume": "2",
+                        "author": "Chao",
+                        "year": "1999",
+                        "journal-title": "Nat. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB6",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "127",
+                        "DOI": "10.1006/nimg.2002.1281",
+                        "article-title": "An evaluation of the use of magnetic field maps to undistort echo-planar images",
+                        "volume": "18",
+                        "author": "Cusack",
+                        "year": "2003",
+                        "journal-title": "Neuroimage"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB7",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "2153",
+                        "DOI": "10.1097/00001756-199511000-00014",
+                        "article-title": "Electrophysiological evidence for category-specific word processing in the normal human brain",
+                        "volume": "6",
+                        "author": "Dehaene",
+                        "year": "1995",
+                        "journal-title": "Neuroreport"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB8",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "321",
+                        "DOI": "10.1097/00001756-200203040-00015",
+                        "article-title": "The visual word form area",
+                        "volume": "13",
+                        "author": "Dehaene",
+                        "year": "2002",
+                        "journal-title": "Neuroreport"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB9",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "675",
+                        "DOI": "10.1006/nimg.2001.1002",
+                        "article-title": "Anatomic constraints on cognitive theories of category specificity",
+                        "volume": "15",
+                        "author": "Devlin",
+                        "year": "2002",
+                        "journal-title": "Neuroimage"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB10",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "30",
+                        "DOI": "10.1006/nimg.1997.0306",
+                        "article-title": "Event-related fMRI",
+                        "volume": "7",
+                        "author": "Friston",
+                        "year": "1998",
+                        "journal-title": "Neuroimage"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB11",
+                        "series-title": "The Organization of Behavior. A Neuropsychological Theory",
+                        "author": "Hebb",
+                        "year": "1949"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB12",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "131",
+                        "DOI": "10.1016/S1364-6613(00)01463-7",
+                        "article-title": "Towards a functional neuroanatomy of speech perception",
+                        "volume": "4",
+                        "author": "Hickok",
+                        "year": "2000",
+                        "journal-title": "Trends Cogn. Sci."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB13",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "9379",
+                        "DOI": "10.1073/pnas.96.16.9379",
+                        "article-title": "Distributed representation of objects in the human ventral visual pathway",
+                        "volume": "96",
+                        "author": "Ishai",
+                        "year": "1999",
+                        "journal-title": "Proc. Natl. Acad. Sci. USA"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB14",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "65",
+                        "DOI": "10.1002/mrm.1910340111",
+                        "article-title": "Correction for geometric distortion in echo planar images from B0 field variations",
+                        "volume": "34",
+                        "author": "Jezzard",
+                        "year": "1995",
+                        "journal-title": "Magn. Reson. Med."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB15",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "561",
+                        "DOI": "10.1162/08989290260045819",
+                        "article-title": "Neural differentiation of lexico-syntactic categories or semantic features? Event-related potential evidence for both",
+                        "volume": "14",
+                        "author": "Kellenbach",
+                        "year": "2002",
+                        "journal-title": "J. Cogn. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB16",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "135",
+                        "DOI": "10.1113/expphysiol.1917.sp000240",
+                        "article-title": "Observations on the excitable cortex of the chimpanzee, orangutan, and gorilla",
+                        "volume": "11",
+                        "author": "Leyton",
+                        "year": "1917",
+                        "journal-title": "Q. J. Exp. Physiol."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB17",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "433",
+                        "DOI": "10.1093/brain/7.4.433",
+                        "article-title": "On aphasia",
+                        "volume": "7",
+                        "author": "Lichtheim",
+                        "year": "1885",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB18",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "187",
+                        "DOI": "10.1109/42.563664",
+                        "article-title": "Multimodality image registration by maximization of mutual information",
+                        "volume": "16",
+                        "author": "Maes",
+                        "year": "1997",
+                        "journal-title": "IEEE Trans. Med. Imaging"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB19",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "194",
+                        "DOI": "10.1016/S0959-4388(00)00196-3",
+                        "article-title": "Semantic memory and the brain",
+                        "volume": "11",
+                        "author": "Martin",
+                        "year": "2001",
+                        "journal-title": "Curr. Opin. Neurobiol."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB20",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "649",
+                        "DOI": "10.1038/379649a0",
+                        "article-title": "Neural correlates of category-specific knowledge",
+                        "volume": "379",
+                        "author": "Martin",
+                        "year": "1996",
+                        "journal-title": "Nature"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB21",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "766",
+                        "DOI": "10.1162/089892998563059",
+                        "article-title": "Functional neuroanatomy of the semantic system",
+                        "volume": "10",
+                        "author": "Mummery",
+                        "year": "1998",
+                        "journal-title": "J. Cogn. Neurosci"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB22",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "303",
+                        "DOI": "10.1093/neucas/7.4.303",
+                        "article-title": "The right hemisphere's role in action word processing",
+                        "volume": "7",
+                        "author": "Neininger",
+                        "year": "2001",
+                        "journal-title": "Neurocase"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB23",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "53",
+                        "DOI": "10.1016/S0028-3932(02)00126-4",
+                        "article-title": "Word-category specific deficits after lesions in the right hemisphere",
+                        "volume": "41",
+                        "author": "Neininger",
+                        "year": "2003",
+                        "journal-title": "Neuropsychologia"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB24",
+                        "series-title": "The Cerebral Cortex of Man",
+                        "author": "Penfield",
+                        "year": "1950"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB25",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "81",
+                        "DOI": "10.1016/0304-3940(95)11892-Z",
+                        "article-title": "Evoked potentials distinguish nouns from verbs",
+                        "volume": "197",
+                        "author": "Preissl",
+                        "year": "1995",
+                        "journal-title": "Neurosci. Lett."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB26",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "261",
+                        "DOI": "10.1006/nimg.1997.0269",
+                        "article-title": "Cognitive conjunction",
+                        "volume": "5",
+                        "author": "Price",
+                        "year": "1997",
+                        "journal-title": "Neuroimage"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB27",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "419",
+                        "DOI": "10.1162/08989290152001853",
+                        "article-title": "Dynamic diaschisis",
+                        "volume": "13",
+                        "author": "Price",
+                        "year": "2001",
+                        "journal-title": "J. Cogn. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB28",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "317",
+                        "DOI": "10.1111/j.1469-8986.1996.tb01057.x",
+                        "article-title": "Hebb's concept of cell assemblies and the psychophysiology of word processing",
+                        "volume": "33",
+                        "author": "Pulvermüller",
+                        "year": "1996",
+                        "journal-title": "Psychophysiology"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB29",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "253",
+                        "DOI": "10.1017/S0140525X9900182X",
+                        "article-title": "Words in the brain's language",
+                        "volume": "22",
+                        "author": "Pulvermüller",
+                        "year": "1999",
+                        "journal-title": "Behav. Brain Sci."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB30",
+                        "series-title": "The Neuroscience of Language",
+                        "author": "Pulvermüller",
+                        "year": "2003"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB31",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "937",
+                        "DOI": "10.1111/j.1460-9568.1996.tb01580.x",
+                        "article-title": "Brain rhythms of language",
+                        "volume": "8",
+                        "author": "Pulvermüller",
+                        "year": "1996",
+                        "journal-title": "Eur. J. Neurosci."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB32",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "498",
+                        "DOI": "10.1093/cercor/9.5.497",
+                        "article-title": "Nouns and verbs in the intact brain",
+                        "volume": "9",
+                        "author": "Pulvermüller",
+                        "year": "1999",
+                        "journal-title": "Cereb. Cortex"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB33",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "143",
+                        "DOI": "10.1006/brln.2000.2390",
+                        "article-title": "Walking or talking?",
+                        "volume": "78",
+                        "author": "Pulvermüller",
+                        "year": "2001",
+                        "journal-title": "Brain Lang."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB34",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "889",
+                        "DOI": "10.1016/S0896-6273(01)00423-8",
+                        "article-title": "The cortical motor system",
+                        "volume": "31",
+                        "author": "Rizzolatti",
+                        "year": "2001",
+                        "journal-title": "Neuron"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB35",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "149",
+                        "DOI": "10.1016/S0959-4388(02)00308-2",
+                        "article-title": "Motor and cognitive functions of the ventral premotor cortex",
+                        "volume": "12",
+                        "author": "Rizzolatti",
+                        "year": "2002",
+                        "journal-title": "Curr. Opin. Neurobiol."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB36",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "787",
+                        "DOI": "10.1006/nimg.2001.1043",
+                        "article-title": "Predicting perceptual events activates corresponding motor schemes in lateral premotor cortex",
+                        "volume": "15",
+                        "author": "Schubotz",
+                        "year": "2002",
+                        "journal-title": "Neuroimage"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB37",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "100",
+                        "DOI": "10.1016/S0166-2236(02)00037-1",
+                        "article-title": "The neuroanatomical and functional organization of speech perception",
+                        "volume": "26",
+                        "author": "Scott",
+                        "year": "2003",
+                        "journal-title": "Trends Neurosci."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB38",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "143",
+                        "DOI": "10.1002/hbm.10062",
+                        "article-title": "Fast robust automated brain extraction",
+                        "volume": "17",
+                        "author": "Smith",
+                        "year": "2002",
+                        "journal-title": "Hum. Brain Mapp."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB39",
+                        "series-title": "Co-planar stereotaxic atlas of the human brain",
+                        "author": "Talairach",
+                        "year": "1988"
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB40",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "209",
+                        "DOI": "10.1016/0301-0082(92)90011-3",
+                        "article-title": "Long-term potentiation and long-term depression in the neocortex",
+                        "volume": "39",
+                        "author": "Tsumoto",
+                        "year": "1992",
+                        "journal-title": "Prog. Neurobiol."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB41",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "244",
+                        "DOI": "10.1016/S1364-6613(00)01651-X",
+                        "article-title": "Towards a distributed account of conceptual knowledge",
+                        "volume": "5",
+                        "author": "Tyler",
+                        "year": "2001",
+                        "journal-title": "Trends Cogn. Sci."
+                    },
+                    {
+                        "key": "10.1016/S0896-6273(03)00838-9_BIB42",
+                        "series-title": "Der aphasische Symptomencomplex. Eine psychologische Studie auf anatomischer Basis",
+                        "author": "Wernicke",
+                        "year": "1874"
+                    }
+                ],
+                "container-title": [
+                    "Neuron"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "https://api.elsevier.com/content/article/PII:S0896627303008389?httpAccept=text/xml",
+                        "content-type": "text/xml",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "https://api.elsevier.com/content/article/PII:S0896627303008389?httpAccept=text/plain",
+                        "content-type": "text/plain",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2024,
+                            1,
+                            12
+                        ]
+                    ],
+                    "date-time": "2024-01-12T20:17:17Z",
+                    "timestamp": 1705090637000
+                },
+                "score": 113.33658,
+                "resource": {
+                    "primary": {
+                        "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0896627303008389"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2004,
+                            1
+                        ]
+                    ]
+                },
+                "references-count": 42,
+                "journal-issue": {
+                    "issue": "2",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2004,
+                                1
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "S0896627303008389"
+                ],
+                "URL": "https://doi.org/10.1016/s0896-6273(03)00838-9",
+                "ISSN": [
+                    "0896-6273"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0896-6273",
+                        "type": "print"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2004,
+                            1
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

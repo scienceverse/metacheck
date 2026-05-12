@@ -1,0 +1,657 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    30
+                ]
+            ],
+            "date-time": "2026-04-30T02:50:54Z",
+            "timestamp": 1777517454635,
+            "version": "3.51.4"
+        },
+        "reference-count": 44,
+        "publisher": "Elsevier BV",
+        "issue": "1",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2010,
+                            5,
+                            1
+                        ]
+                    ],
+                    "date-time": "2010-05-01T00:00:00Z",
+                    "timestamp": 1272672000000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Acta Psychologica"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2010,
+                    5
+                ]
+            ]
+        },
+        "DOI": "10.1016/j.actpsy.2009.12.006",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2010,
+                    1,
+                    16
+                ]
+            ],
+            "date-time": "2010-01-16T09:16:06Z",
+            "timestamp": 1263633366000
+        },
+        "page": "61-69",
+        "source": "Crossref",
+        "is-referenced-by-count": 59,
+        "title": [
+            "The automatic orienting of attention to goal-relevant stimuli"
+        ],
+        "prefix": "10.1016",
+        "volume": "134",
+        "author": [
+            {
+                "given": "Julia",
+                "family": "Vogt",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Jan",
+                "family": "De Houwer",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Agnes",
+                "family": "Moors",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Stefaan",
+                "family": "Van Damme",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Geert",
+                "family": "Crombez",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "78",
+        "reference": [
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib1",
+                "series-title": "Über die Willenstätigkeit und das Denken. Eine experimentelle Untersuchung mit einem Anhange: Über das Hippsche Chronoskop",
+                "author": "Ach",
+                "year": "1905"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib2",
+                "series-title": "Foundation of cognitive science",
+                "first-page": "631",
+                "article-title": "Visual attention",
+                "author": "Allport",
+                "year": "1989"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib3",
+                "doi-asserted-by": "crossref",
+                "first-page": "123",
+                "DOI": "10.1037/h0043805",
+                "article-title": "On perceptual readiness",
+                "volume": "64",
+                "author": "Bruner",
+                "year": "1957",
+                "journal-title": "Psychological Review"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib4",
+                "doi-asserted-by": "crossref",
+                "first-page": "193",
+                "DOI": "10.1146/annurev.ne.18.030195.001205",
+                "article-title": "Neural mechanisms of selective visual attention",
+                "volume": "18",
+                "author": "Desimone",
+                "year": "1995",
+                "journal-title": "Annual Review of Neuroscience"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib5",
+                "doi-asserted-by": "crossref",
+                "first-page": "467",
+                "DOI": "10.1111/1467-9280.00290",
+                "article-title": "Interactions between visual working memory and selective attention",
+                "volume": "11",
+                "author": "Downing",
+                "year": "2000",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib6",
+                "doi-asserted-by": "crossref",
+                "first-page": "488",
+                "DOI": "10.3758/BF03195595",
+                "article-title": "WordGen: A tool for word selection and non-word generation in Dutch, German, English, and French",
+                "volume": "36",
+                "author": "Duyck",
+                "year": "2004",
+                "journal-title": "Behavior Research Methods, Instruments and Computers"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib7",
+                "doi-asserted-by": "crossref",
+                "first-page": "356",
+                "DOI": "10.1037/0033-2909.125.3.356",
+                "article-title": "Pain demands attention: A cognitive-affective model of the interruptive function of pain",
+                "volume": "125",
+                "author": "Eccleston",
+                "year": "1999",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib8",
+                "doi-asserted-by": "crossref",
+                "first-page": "215",
+                "DOI": "10.1080/13506280701458804",
+                "article-title": "Bottom-up priming of top-down control settings",
+                "volume": "16",
+                "author": "Folk",
+                "year": "2008",
+                "journal-title": "Visual Cognition"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib9",
+                "first-page": "1030",
+                "article-title": "Involuntary covert orienting is contingent on attentional control settings",
+                "volume": "18",
+                "author": "Folk",
+                "year": "1992",
+                "journal-title": "Journal of Experimental Psychology: Human Perception and Performance"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib10",
+                "doi-asserted-by": "crossref",
+                "first-page": "211",
+                "DOI": "10.1177/1088868307303029",
+                "article-title": "Seven principles of goal activation: A systematic approach to distinguishing goal priming from priming of non-goal constructs",
+                "volume": "11",
+                "author": "Förster",
+                "year": "2007",
+                "journal-title": "Personality and Social Psychology Review"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib11",
+                "doi-asserted-by": "crossref",
+                "first-page": "681",
+                "DOI": "10.1037/0096-3445.130.4.681",
+                "article-title": "Do threatening stimuli draw or hold visual attention in sub-clinical anxiety?",
+                "volume": "130",
+                "author": "Fox",
+                "year": "2001",
+                "journal-title": "Journal of Experimental Psychology: General"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib12",
+                "doi-asserted-by": "crossref",
+                "first-page": "115",
+                "DOI": "10.5334/pb.864",
+                "article-title": "Affective and subjective familiarity ratings of 740 Dutch words",
+                "volume": "34",
+                "author": "Hermans",
+                "year": "1994",
+                "journal-title": "Psychologica Belgica"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib13",
+                "series-title": "Effortless attention: A new perspective in the cognitive science of attention and action",
+                "first-page": "121",
+                "article-title": "Grounding attention in action control: The intentional control of selection",
+                "author": "Hommel",
+                "year": "2010"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib14",
+                "doi-asserted-by": "crossref",
+                "first-page": "13",
+                "DOI": "10.1007/s00426-004-0184-7",
+                "article-title": "The time course of intended and unintended allocation of attention",
+                "volume": "70",
+                "author": "Horstmann",
+                "year": "2006",
+                "journal-title": "Psychological Research"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib15",
+                "unstructured": "Inquisit 2.0. [Computer software] (2005). Seattle, WA: Millisecond Software LLC."
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib16",
+                "series-title": "Attention and effort",
+                "author": "Kahneman",
+                "year": "1973"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib17",
+                "doi-asserted-by": "crossref",
+                "first-page": "312",
+                "DOI": "10.1037/1528-3542.4.3.312",
+                "article-title": "Does imminent threat capture and hold attention?",
+                "volume": "4",
+                "author": "Koster",
+                "year": "2004",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib18",
+                "doi-asserted-by": "crossref",
+                "first-page": "372",
+                "DOI": "10.1037/0003-066X.50.5.372",
+                "article-title": "The emotion probe",
+                "volume": "5",
+                "author": "Lang",
+                "year": "1995",
+                "journal-title": "American Psychologist"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib19",
+                "series-title": "Attention and orienting: Sensory and motivational processes",
+                "first-page": "97",
+                "article-title": "Motivated attention: Affect, activation and action",
+                "author": "Lang",
+                "year": "1997"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib20",
+                "doi-asserted-by": "crossref",
+                "first-page": "330",
+                "DOI": "10.1007/BF02424365",
+                "article-title": "Vorsatz, Wille und Bedürfnis",
+                "volume": "6",
+                "author": "Lewin",
+                "year": "1926",
+                "journal-title": "Psychologische Forschung"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib21",
+                "doi-asserted-by": "crossref",
+                "first-page": "15",
+                "DOI": "10.1037/0021-843X.95.1.15",
+                "article-title": "Attentional bias in emotional disorders",
+                "volume": "95",
+                "author": "MacLeod",
+                "year": "1986",
+                "journal-title": "Journal of Abnormal Psychology"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib22",
+                "doi-asserted-by": "crossref",
+                "first-page": "1107",
+                "DOI": "10.1037/0022-3514.85.6.1107",
+                "article-title": "Sexually selective cognition: Beauty captures the mind of the beholder",
+                "volume": "85",
+                "author": "Maner",
+                "year": "2003",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib23",
+                "doi-asserted-by": "crossref",
+                "first-page": "710",
+                "DOI": "10.3758/BF03196826",
+                "article-title": "Early activation of object names in visual search",
+                "volume": "14",
+                "author": "Meyer",
+                "year": "2007",
+                "journal-title": "Psychonomic Bulletin and Review"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib24",
+                "doi-asserted-by": "crossref",
+                "first-page": "182",
+                "DOI": "10.1038/nn996",
+                "article-title": "Associative knowledge controls deployment of visual selective attention",
+                "volume": "6",
+                "author": "Moores",
+                "year": "2003",
+                "journal-title": "Nature Neuroscience"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib25",
+                "doi-asserted-by": "crossref",
+                "first-page": "1238",
+                "DOI": "10.1080/02699930701438061",
+                "article-title": "Can cognitive methods be used to study the unique aspect of emotion? An appraisal theorist’s answer",
+                "volume": "21",
+                "author": "Moors",
+                "year": "2007",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib26",
+                "doi-asserted-by": "crossref",
+                "first-page": "297",
+                "DOI": "10.1037/0033-2909.132.2.297",
+                "article-title": "Automaticity: A theoretical and conceptual analysis",
+                "volume": "132",
+                "author": "Moors",
+                "year": "2006",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib27",
+                "series-title": "Advances in experimental social psychology",
+                "doi-asserted-by": "crossref",
+                "first-page": "317",
+                "DOI": "10.1016/S0065-2601(04)36006-5",
+                "article-title": "The implicit volition model: On the preconscious regulation of temporarily adopted goals",
+                "author": "Moskowitz",
+                "year": "2004"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib28",
+                "series-title": "Jenseits des Rubikon: Der Wille in den Humanwissenschaften [Beyond the rubicon: Volition in the humanities]",
+                "first-page": "195",
+                "article-title": "Kognitive Antezedenzien von Willkürhandlungen [Cognitive antecedences of voluntary actions]",
+                "author": "Neumann",
+                "year": "1987"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib29",
+                "doi-asserted-by": "crossref",
+                "first-page": "466",
+                "DOI": "10.1037/0096-3445.130.3.466",
+                "article-title": "Emotion drives attention: Detecting the snake in the grass",
+                "volume": "130",
+                "author": "Öhman",
+                "year": "2001",
+                "journal-title": "Journal of Experimental Psychology: General"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib30",
+                "doi-asserted-by": "crossref",
+                "first-page": "247",
+                "DOI": "10.1521/soco.2007.25.2.248",
+                "article-title": "Action control by implementation intentions: Effective cue detection and efficient response initiation",
+                "volume": "25",
+                "author": "Parks-Stamm",
+                "year": "2007",
+                "journal-title": "Social Cognition"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib31",
+                "doi-asserted-by": "crossref",
+                "first-page": "1",
+                "DOI": "10.1146/annurev.psych.58.110405.085516",
+                "article-title": "Research on attentional networks as a model for the integration of psychological science",
+                "volume": "58",
+                "author": "Posner",
+                "year": "2005",
+                "journal-title": "Annual Review of Psychology"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib32",
+                "first-page": "835",
+                "article-title": "Symbolic control of visual attention: The role of working memory and attentional control settings",
+                "volume": "29",
+                "author": "Pratt",
+                "year": "2003",
+                "journal-title": "Journal of Experimental Psychology: Human Perception and Performance"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib33",
+                "doi-asserted-by": "crossref",
+                "first-page": "1261",
+                "DOI": "10.1037/0022-3514.83.6.1261",
+                "article-title": "Forgetting all else: On the antecedents and consequences of goal shielding",
+                "volume": "83",
+                "author": "Shah",
+                "year": "2002",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib34",
+                "doi-asserted-by": "crossref",
+                "first-page": "342",
+                "DOI": "10.1016/j.tics.2008.05.007",
+                "article-title": "Automatic guidance of attention from working memory",
+                "volume": "12",
+                "author": "Soto",
+                "year": "2008",
+                "journal-title": "Trends in Cognitive Sciences"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib35",
+                "first-page": "187",
+                "article-title": "Exogenous orienting does not reflect an encapsulated set of processes",
+                "volume": "22",
+                "author": "Stolz",
+                "year": "1996",
+                "journal-title": "Journal of Experimental Psychology: Human Perception and Performance"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib36",
+                "series-title": "Neurobiology of attention",
+                "first-page": "418",
+                "article-title": "Irrelevant singletons capture attention",
+                "author": "Theeuwes",
+                "year": "2005"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib37",
+                "doi-asserted-by": "crossref",
+                "first-page": "392",
+                "DOI": "10.1016/j.pain.2004.07.022",
+                "article-title": "The anticipation of pain modulates spatial attention: Evidence for pain-specificity in high-pain catastrophizers",
+                "volume": "111",
+                "author": "Van Damme",
+                "year": "2004",
+                "journal-title": "Pain"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib38",
+                "doi-asserted-by": "crossref",
+                "first-page": "409",
+                "DOI": "10.1521/soco.2006.24.4.409",
+                "article-title": "Shielding intentions from distraction: Forming an intention induces inhibition of distracting stimuli",
+                "volume": "24",
+                "author": "Veling",
+                "year": "2006",
+                "journal-title": "Social Cognition"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib39",
+                "doi-asserted-by": "crossref",
+                "first-page": "45",
+                "DOI": "10.1016/j.actpsy.2007.09.010",
+                "article-title": "Intention formation induces episodic inhibition of distracting stimuli",
+                "volume": "128",
+                "author": "Veling",
+                "year": "2008",
+                "journal-title": "Acta Psychologica"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib40",
+                "doi-asserted-by": "crossref",
+                "first-page": "880",
+                "DOI": "10.1037/a0013981",
+                "article-title": "Allocation of spatial attention to emotional stimuli depends upon arousal and not valence",
+                "volume": "8",
+                "author": "Vogt",
+                "year": "2008",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib41",
+                "doi-asserted-by": "crossref",
+                "first-page": "118",
+                "DOI": "10.1093/cercor/bhm065",
+                "article-title": "The role of working memory representations in the control of attention",
+                "volume": "17",
+                "author": "Woodman",
+                "year": "2007",
+                "journal-title": "Cerebral Cortex"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib42",
+                "first-page": "73",
+                "article-title": "Goal-directed and stimulus-driven determinants of attentional control",
+                "volume": "Vol. 18",
+                "author": "Yantis",
+                "year": "2000"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib43",
+                "first-page": "601",
+                "article-title": "Abrupt visual onsets and selective attention: Evidence from visual search",
+                "volume": "10",
+                "author": "Yantis",
+                "year": "1984",
+                "journal-title": "Journal of Experimental Psychology: Human Perception and Performance"
+            },
+            {
+                "key": "10.1016/j.actpsy.2009.12.006_bib44",
+                "doi-asserted-by": "crossref",
+                "first-page": "665",
+                "DOI": "10.1080/713755991",
+                "article-title": "Anxiety and attention to threatening pictures",
+                "volume": "54",
+                "author": "Yiend",
+                "year": "2001",
+                "journal-title": "The Quarterly Journal of Experimental Psychology A"
+            }
+        ],
+        "container-title": [
+            "Acta Psychologica"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://api.elsevier.com/content/article/PII:S0001691809001863?httpAccept=text/xml",
+                "content-type": "text/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://api.elsevier.com/content/article/PII:S0001691809001863?httpAccept=text/plain",
+                "content-type": "text/plain",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2021,
+                    10,
+                    20
+                ]
+            ],
+            "date-time": "2021-10-20T11:27:55Z",
+            "timestamp": 1634729275000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0001691809001863"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2010,
+                    5
+                ]
+            ]
+        },
+        "references-count": 44,
+        "journal-issue": {
+            "issue": "1",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2010,
+                        5
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "S0001691809001863"
+        ],
+        "URL": "https://doi.org/10.1016/j.actpsy.2009.12.006",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0001-6918"
+        ],
+        "issn-type": [
+            {
+                "value": "0001-6918",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2010,
+                    5
+                ]
+            ]
+        }
+    }
+}

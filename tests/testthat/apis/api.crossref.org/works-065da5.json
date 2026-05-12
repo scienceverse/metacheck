@@ -1,0 +1,131 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 649307,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            2,
+                            28
+                        ]
+                    ],
+                    "date-time": "2026-02-28T07:14:43Z",
+                    "timestamp": 1772262883556,
+                    "version": "3.50.1"
+                },
+                "reference-count": 0,
+                "publisher": "Copernicus GmbH",
+                "content-domain": {
+                    "domain": [
+
+                    ]
+                },
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2020,
+                            3,
+                            16
+                        ]
+                    ]
+                },
+                "DOI": "10.5194/wes-2019-64-rc2",
+                "type": "peer-review",
+                "created": {
+                    "date-parts": [
+                        [
+                            2020,
+                            3,
+                            16
+                        ]
+                    ],
+                    "date-time": "2020-03-16T05:18:40Z",
+                    "timestamp": 1584335920000
+                },
+                "source": "Crossref",
+                "is-referenced-by-count": 0,
+                "title": [
+                    "Well written paper"
+                ],
+                "prefix": "10.5194",
+                "member": "3145",
+                "review": {
+                    "type": "referee-report",
+                    "running-number": "RC2",
+                    "stage": "pre-publication",
+                    "recommendation": "accept",
+                    "language": "en"
+                },
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2025,
+                            2,
+                            1
+                        ]
+                    ],
+                    "date-time": "2025-02-01T18:45:41Z",
+                    "timestamp": 1738435541000
+                },
+                "score": 21.84393,
+                "resource": {
+                    "primary": {
+                        "URL": "https://wes.copernicus.org/preprints/wes-2019-64/wes-2019-64-RC2.pdf"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2020,
+                            3,
+                            16
+                        ]
+                    ]
+                },
+                "references-count": 0,
+                "URL": "https://doi.org/10.5194/wes-2019-64-rc2",
+                "relation": {
+                    "is-review-of": [
+                        {
+                            "id-type": "doi",
+                            "id": "10.5194/wes-5-543-2020",
+                            "asserted-by": "subject"
+                        },
+                        {
+                            "id-type": "doi",
+                            "id": "10.5194/wes-5-543-2020",
+                            "asserted-by": "object"
+                        },
+                        {
+                            "id-type": "doi",
+                            "id": "10.5194/wes-2019-64",
+                            "asserted-by": "object"
+                        }
+                    ]
+                },
+                "published": {
+                    "date-parts": [
+                        [
+                            2020,
+                            3,
+                            16
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

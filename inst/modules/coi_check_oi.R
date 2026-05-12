@@ -49,7 +49,7 @@ coi_check <- function(paper) {
 
   # summary_table ----
   summary_table <- table |>
-    dplyr::summarise(coi_found = TRUE, .by = id)
+    dplyr::summarise(coi_found = TRUE, .by = paper_id)
 
   # traffic light ----
   tl <- ifelse(nrow(table), "green", "red")

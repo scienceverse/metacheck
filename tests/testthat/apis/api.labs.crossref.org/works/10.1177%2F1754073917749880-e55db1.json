@@ -1,0 +1,726 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    11
+                ]
+            ],
+            "date-time": "2026-05-11T15:14:37Z",
+            "timestamp": 1778512477889,
+            "version": "3.51.4"
+        },
+        "reference-count": 97,
+        "publisher": "SAGE Publications",
+        "issue": "2",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2018,
+                            5,
+                            4
+                        ]
+                    ],
+                    "date-time": "2018-05-04T00:00:00Z",
+                    "timestamp": 1525392000000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://journals.sagepub.com/page/policies/text-and-data-mining-license"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "journals.sagepub.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Emotion Review"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2019,
+                    4
+                ]
+            ]
+        },
+        "abstract": "<jats:p>Although scientists dating back to Darwin have noted the importance of the body in communicating emotion, current research on emotion communication tends to emphasize the face. In this article we review the evidence for bodily expressions of emotions—that is, the handful of emotions that are displayed and recognized from certain bodily behaviors (i.e., pride, joy, sadness, shame, embarrassment, anger, fear, and disgust). We also review the previously developed coding systems available for identifying emotions from bodily behaviors. Although no extant coding system provides an exhaustive list of bodily behaviors known to communicate a panoply of emotions, our review provides the foundation for developing such a system.<\/jats:p>",
+        "DOI": "10.1177/1754073917749880",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2018,
+                    5,
+                    4
+                ]
+            ],
+            "date-time": "2018-05-04T04:28:16Z",
+            "timestamp": 1525408096000
+        },
+        "page": "184-193",
+        "update-policy": "https://doi.org/10.1177/sage-journals-update-policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 91,
+        "title": [
+            "Bodily Communication of Emotion: Evidence for Extrafacial Behavioral Expressions and Available Coding Systems"
+        ],
+        "prefix": "10.1177",
+        "volume": "11",
+        "author": [
+            {
+                "given": "Zachary",
+                "family": "Witkower",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychology, University of British Columbia, Canada"
+                    }
+                ]
+            },
+            {
+                "given": "Jessica L.",
+                "family": "Tracy",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychology, University of British Columbia, Canada"
+                    }
+                ]
+            }
+        ],
+        "member": "179",
+        "published-online": {
+            "date-parts": [
+                [
+                    2018,
+                    5,
+                    4
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "e_1_3_3_2_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000252"
+            },
+            {
+                "key": "e_1_3_3_3_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0023164"
+            },
+            {
+                "key": "e_1_3_3_4_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1068/p5096"
+            },
+            {
+                "key": "e_1_3_3_5_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.cognition.2006.05.005"
+            },
+            {
+                "key": "e_1_3_3_6_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467–9280.2008.02148.x"
+            },
+            {
+                "key": "e_1_3_3_7_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0027411"
+            },
+            {
+                "key": "e_1_3_3_8_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0025827"
+            },
+            {
+                "key": "e_1_3_3_9_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1109/ROMAN.2010.5598649"
+            },
+            {
+                "key": "e_1_3_3_10_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1006733123708"
+            },
+            {
+                "key": "e_1_3_3_11_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF03395235"
+            },
+            {
+                "key": "e_1_3_3_12_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1068/p5203"
+            },
+            {
+                "key": "e_1_3_3_13_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/oso/9780195169157.003.0017"
+            },
+            {
+                "key": "e_1_3_3_14_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/B:JONB.0000023655.25550.be"
+            },
+            {
+                "key": "e_1_3_3_15_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919–013–0144–2"
+            },
+            {
+                "key": "e_1_3_3_16_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/00222895.1993.9942044"
+            },
+            {
+                "key": "e_1_3_3_17_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1068/p7364"
+            },
+            {
+                "key": "e_1_3_3_18_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0025737"
+            },
+            {
+                "key": "e_1_3_3_19_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919–012–0130–0"
+            },
+            {
+                "key": "e_1_3_3_20_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1525/mp.2007.24.5.433"
+            },
+            {
+                "key": "e_1_3_3_21_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/oso/9780195112719.001.0001"
+            },
+            {
+                "key": "e_1_3_3_22_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1038/nrn1872"
+            },
+            {
+                "key": "e_1_3_3_23_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1098/rstb.2009.0190"
+            },
+            {
+                "key": "e_1_3_3_24_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780195374346.001.0001"
+            },
+            {
+                "key": "e_1_3_3_25_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.3389/fpsyg.2011.00181"
+            },
+            {
+                "key": "e_1_3_3_26_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.neubiorev.2009.10.008"
+            },
+            {
+                "key": "e_1_3_3_27_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00990296"
+            },
+            {
+                "key": "e_1_3_3_28_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0022022189204002"
+            },
+            {
+                "key": "e_1_3_3_29_1",
+                "volume-title": "Facial Action Coding System",
+                "author": "Ekman P.",
+                "year": "1978",
+                "unstructured": "Ekman P., Friesen W. V. (1978). Facial Action Coding System. Palo Alto, CA: Consulting Psychologists Press."
+            },
+            {
+                "key": "e_1_3_3_30_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0025403"
+            },
+            {
+                "key": "e_1_3_3_31_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1109/CVPRW.2008.4563173"
+            },
+            {
+                "key": "e_1_3_3_32_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919–010–0094-x"
+            },
+            {
+                "key": "e_1_3_3_33_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.humov.2011.05.001"
+            },
+            {
+                "key": "e_1_3_3_34_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999399379267"
+            },
+            {
+                "key": "e_1_3_3_35_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1109/roman.2011.6005263"
+            },
+            {
+                "key": "e_1_3_3_36_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073912451331"
+            },
+            {
+                "key": "e_1_3_3_37_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/ejsp.2420200502"
+            },
+            {
+                "key": "e_1_3_3_38_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1040–3590.13.1.5"
+            },
+            {
+                "key": "e_1_3_3_39_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/1467–8624.00460"
+            },
+            {
+                "key": "e_1_3_3_40_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/17470919.2014.890668"
+            },
+            {
+                "key": "e_1_3_3_41_1",
+                "first-page": "1",
+                "article-title": "The Body Action Coding System II: Muscle activations during the perception and expression of emotion",
+                "volume": "8",
+                "author": "Huis In’t Veld E. M. J.",
+                "year": "2014",
+                "unstructured": "Huis In’t Veld E. M. J., van Boxtel G. J. M., de Gelder B. (2014b). The Body Action Coding System II: Muscle activations during the perception and expression of emotion. Frontiers in Behavioral Neuroscience, 8, 1–13.",
+                "journal-title": "Frontiers in Behavioral Neuroscience"
+            },
+            {
+                "key": "e_1_3_3_42_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/978-1-4899-0615-1"
+            },
+            {
+                "key": "e_1_3_3_43_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/00221309.1932.9918475"
+            },
+            {
+                "key": "e_1_3_3_44_1",
+                "first-page": "163",
+                "volume-title": "The sourcebook of nonverbal measures: Going beyond words",
+                "author": "Jones S.",
+                "year": "2005",
+                "unstructured": "Jones S., Carrere S., Gottman J. M. (2005). Specific affect coding system. In Manusov V. L. (Ed.), The sourcebook of nonverbal measures: Going beyond words (pp. 163–171). Mahwah, NJ: Lawrence Erlbaum."
+            },
+            {
+                "key": "e_1_3_3_45_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s12369–013–0183–1"
+            },
+            {
+                "key": "e_1_3_3_46_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.68.3.441"
+            },
+            {
+                "key": "e_1_3_3_47_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033–2909.122.3.250"
+            },
+            {
+                "key": "e_1_3_3_48_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1515/9783110261318.941"
+            },
+            {
+                "key": "e_1_3_3_49_1",
+                "volume-title": "The mastery of movement on the stage",
+                "author": "Laban R.",
+                "year": "1950",
+                "unstructured": "Laban R. (1950). The mastery of movement on the stage. London, UK: Macdonald & Evans."
+            },
+            {
+                "key": "e_1_3_3_50_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/1131351"
+            },
+            {
+                "key": "e_1_3_3_51_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000106"
+            },
+            {
+                "key": "e_1_3_3_52_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1515/9783110261318.904"
+            },
+            {
+                "key": "e_1_3_3_53_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2011.645281"
+            },
+            {
+                "key": "e_1_3_3_54_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2015.1035229"
+            },
+            {
+                "key": "e_1_3_3_55_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919–009–0068-z"
+            },
+            {
+                "key": "e_1_3_3_56_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1073/pnas.0507650102"
+            },
+            {
+                "key": "e_1_3_3_57_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1023914509763"
+            },
+            {
+                "key": "e_1_3_3_58_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1021435526134"
+            },
+            {
+                "key": "e_1_3_3_59_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00999605"
+            },
+            {
+                "key": "e_1_3_3_60_1",
+                "volume-title": "Body–language–communication: An international handbook on multimodality in human interaction",
+                "author": "Müller C.",
+                "year": "2013",
+                "unstructured": "Müller C., Cienki A. J., Fricke E., Ladewig S. H., McNeill D., Tessendorf S. (Eds.). (2013). Body–language–communication: An international handbook on multimodality in human interaction. Berlin, Germany: De Gruyter Mouton."
+            },
+            {
+                "key": "e_1_3_3_61_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.gmod.2005.03.003"
+            },
+            {
+                "key": "e_1_3_3_62_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0022576"
+            },
+            {
+                "key": "e_1_3_3_63_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jecp.2011.03.014"
+            },
+            {
+                "key": "e_1_3_3_64_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000194"
+            },
+            {
+                "key": "e_1_3_3_65_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/2167702612470645"
+            },
+            {
+                "key": "e_1_3_3_66_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0002764295038008006"
+            },
+            {
+                "key": "e_1_3_3_67_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1167/9.6.15"
+            },
+            {
+                "key": "e_1_3_3_68_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.cub.2008.02.044"
+            },
+            {
+                "key": "e_1_3_3_69_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0022490"
+            },
+            {
+                "key": "e_1_3_3_70_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0016356"
+            },
+            {
+                "key": "e_1_3_3_71_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2466/pms.2003.97.3.697"
+            },
+            {
+                "key": "e_1_3_3_72_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528–3542.7.1.158"
+            },
+            {
+                "key": "e_1_3_3_73_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919-005-0003-x"
+            },
+            {
+                "key": "e_1_3_3_74_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919–013–0148-y"
+            },
+            {
+                "key": "e_1_3_3_75_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1196/annals.1280.029"
+            },
+            {
+                "key": "e_1_3_3_76_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2466/pr0.1989.65.1.35"
+            },
+            {
+                "key": "e_1_3_3_77_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022–3514.70.6.1256"
+            },
+            {
+                "key": "e_1_3_3_78_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1073/pnas.0811460106"
+            },
+            {
+                "key": "e_1_3_3_79_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.0956-7976.2004.01503008.x"
+            },
+            {
+                "key": "e_1_3_3_80_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528–3542.7.4.789"
+            },
+            {
+                "key": "e_1_3_3_81_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528–3542.8.1.81"
+            },
+            {
+                "key": "e_1_3_3_82_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022–3514.94.3.516"
+            },
+            {
+                "key": "e_1_3_3_83_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528–3542.5.3.251"
+            },
+            {
+                "key": "e_1_3_3_84_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0015766"
+            },
+            {
+                "key": "e_1_3_3_85_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10803–010–1030-y"
+            },
+            {
+                "key": "e_1_3_3_86_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073909354627"
+            },
+            {
+                "key": "e_1_3_3_87_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0028412"
+            },
+            {
+                "key": "e_1_3_3_88_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528–3542.7.3.487"
+            },
+            {
+                "key": "e_1_3_3_89_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1109/ACII.2013.29"
+            },
+            {
+                "key": "e_1_3_3_90_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/(SICI)1099–0992(1998110)28:6<879::AID-EJSP901>3.0.CO;2-W"
+            },
+            {
+                "key": "e_1_3_3_91_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022–3514.51.4.690"
+            },
+            {
+                "key": "e_1_3_3_92_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1038/srep41349"
+            },
+            {
+                "key": "e_1_3_3_93_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00992459"
+            },
+            {
+                "key": "e_1_3_3_94_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0022571"
+            },
+            {
+                "key": "e_1_3_3_95_1",
+                "author": "Witkower Z.",
+                "year": "2018",
+                "unstructured": "Witkower Z., Tracy J. L. (2018). The illusion of a facial action: How head tilt influences perceptions of dominance from an inactive face. Manuscript in preparation.",
+                "journal-title": "The illusion of a facial action: How head tilt influences perceptions of dominance from an inactive face"
+            },
+            {
+                "key": "e_1_3_3_96_1",
+                "author": "Witkower Z.",
+                "year": "2018",
+                "unstructured": "Witkower Z., Tracy J. L., Cheng J. T., Henrich J. (2018). Two signals of social rank: Prestige and dominance are associated with distinct nonverbal displays. Accepted for publication, February 2018.",
+                "journal-title": "Two signals of social rank: Prestige and dominance are associated with distinct nonverbal displays"
+            },
+            {
+                "key": "e_1_3_3_97_1",
+                "author": "Witkower Z.",
+                "year": "2018",
+                "unstructured": "Witkower Z., Tracy J. L., Lange J. (2018). Illuminating the Schede: Uncovering a distinct expression of Schadenfreude. Manuscript in preparation.",
+                "journal-title": "Illuminating the Schede: Uncovering a distinct expression of Schadenfreude"
+            },
+            {
+                "key": "e_1_3_3_98_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/cdev.12134"
+            }
+        ],
+        "container-title": [
+            "Emotion Review"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1177/1754073917749880",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/full-xml/10.1177/1754073917749880",
+                "content-type": "application/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1177/1754073917749880",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    28
+                ]
+            ],
+            "date-time": "2026-04-28T20:00:30Z",
+            "timestamp": 1777406430000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://journals.sagepub.com/doi/10.1177/1754073917749880"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2018,
+                    5,
+                    4
+                ]
+            ]
+        },
+        "references-count": 97,
+        "journal-issue": {
+            "issue": "2",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2019,
+                        4
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1177/1754073917749880"
+        ],
+        "URL": "https://doi.org/10.1177/1754073917749880",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1754-0739",
+            "1754-0747"
+        ],
+        "issn-type": [
+            {
+                "value": "1754-0739",
+                "type": "print"
+            },
+            {
+                "value": "1754-0747",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2018,
+                    5,
+                    4
+                ]
+            ]
+        }
+    }
+}

@@ -8,7 +8,7 @@ osf_module <- function(paper) {
   contents <- osf_retrieve(links,
                            recursive = TRUE,
                            find_project = TRUE)
-  summary <- summarize_contents(contents)
+  summary <- file_category(contents)
 
   #return
   list(

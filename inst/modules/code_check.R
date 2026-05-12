@@ -57,7 +57,7 @@ code_check <- function(paper) {
       traffic_light = "na",
       summary_text = summary_code,
       summary_table = data.frame(
-        id = paper$id,
+        paper_id = paper$paper_id,
         code_file_n = 0
       )
     )
@@ -291,7 +291,7 @@ code_check <- function(paper) {
 
   # Aggregate by project
   summary_table <- data.frame(
-    id = paper$id,
+    paper_id = paper$paper_id,
     code_n = nrow(code_files),
     code_abs_path = sum(code_files$code_abs_path, na.rm = TRUE),
     code_missing_files = sum(code_files$loaded_files_missing, na.rm = TRUE),

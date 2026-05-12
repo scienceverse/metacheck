@@ -1,0 +1,497 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    11
+                ]
+            ],
+            "date-time": "2026-05-11T22:03:59Z",
+            "timestamp": 1778537039312,
+            "version": "3.51.4"
+        },
+        "reference-count": 55,
+        "publisher": "Informa UK Limited",
+        "issue": "1",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Cognition &amp; Emotion"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    1987,
+                    3
+                ]
+            ]
+        },
+        "DOI": "10.1080/02699938708408362",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2008,
+                    1,
+                    9
+                ]
+            ],
+            "date-time": "2008-01-09T10:05:04Z",
+            "timestamp": 1199873104000
+        },
+        "page": "29-50",
+        "source": "Crossref",
+        "is-referenced-by-count": 1018,
+        "title": [
+            "Towards a Cognitive Theory of Emotions"
+        ],
+        "prefix": "10.1080",
+        "volume": "1",
+        "author": [
+            {
+                "given": "Keith",
+                "family": "Oatley",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "P. N.",
+                "family": "Johnson-laird",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "301",
+        "reference": [
+            {
+                "key": "CIT0001",
+                "volume-title": "Infancy in Uganda: Infant care and the growth of attachment.",
+                "author": "Ainsworth M. D. S.",
+                "year": "1967"
+            },
+            {
+                "key": "CIT0002",
+                "volume-title": "Attachment and loss, Vols 1, 2 and 3.",
+                "author": "Bowlby J.",
+                "year": "1969"
+            },
+            {
+                "key": "CIT0003",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/1129122"
+            },
+            {
+                "key": "CIT0004",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/10001-000"
+            },
+            {
+                "key": "CIT0005",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0070927"
+            },
+            {
+                "key": "CIT0006",
+                "unstructured": "Draper, S. W. 1985. “A micro-survey of ten theories of emotion.”. University of Sussex. Unpublished technical memorandum"
+            },
+            {
+                "key": "CIT0007",
+                "volume-title": "Darwin and facial expression: A century of research in review.",
+                "author": "Ekman P.",
+                "year": "1973"
+            },
+            {
+                "key": "CIT0008",
+                "volume-title": "Approaches to emotion.",
+                "author": "Ekman P.",
+                "year": "1986"
+            },
+            {
+                "key": "CIT0009",
+                "volume-title": "Emotion in the human face",
+                "author": "Ekman P.",
+                "year": "1982",
+                "edition": "2"
+            },
+            {
+                "key": "CIT0010",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1126/science.6612338"
+            },
+            {
+                "key": "CIT0011",
+                "doi-asserted-by": "crossref",
+                "first-page": "165",
+                "DOI": "10.1080/00797308.1983.11823388",
+                "volume": "38",
+                "author": "Emde R. N.",
+                "year": "1983",
+                "journal-title": "The Psychoanalytic Study of the Child"
+            },
+            {
+                "key": "CIT0012",
+                "volume-title": "English translation Standard edition of the complete psychological works of Sigmund Freud",
+                "volume": "6",
+                "author": "Freud S.",
+                "year": "1901"
+            },
+            {
+                "key": "CIT0013",
+                "volume-title": "A history of the cognitive revolution.",
+                "author": "Gardner H.",
+                "year": "1985"
+            },
+            {
+                "key": "CIT0014",
+                "volume-title": "An enquiry into the functions of the septo-hippocampal system.",
+                "author": "Gray J. A.",
+                "year": "1982"
+            },
+            {
+                "key": "CIT0015",
+                "volume-title": "An introduction to the psychology of action.",
+                "author": "Harré R.",
+                "year": "1985"
+            },
+            {
+                "key": "CIT0016",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1469-7610.1981.tb00550.x"
+            },
+            {
+                "key": "CIT0017",
+                "volume-title": "The face of emotion.",
+                "author": "Izard C. E.",
+                "year": "1971"
+            },
+            {
+                "key": "CIT0018",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/10538-000"
+            },
+            {
+                "key": "CIT0019",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0163-6383(82)80041-6"
+            },
+            {
+                "key": "CIT0020",
+                "volume-title": "Towards a cognitive science of language, inference and consciousness.",
+                "author": "Johnson-Laird P. N.",
+                "year": "1983"
+            },
+            {
+                "key": "CIT0021",
+                "first-page": "499",
+                "volume": "6",
+                "author": "Johnson-Laird P. N.",
+                "year": "1983",
+                "journal-title": "Cognition and Brain Theory"
+            },
+            {
+                "key": "CIT0022",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1475-682X.1980.tb00382.x"
+            },
+            {
+                "key": "CIT0023",
+                "volume-title": "On the biology of learning.",
+                "author": "Lorenz K.",
+                "year": "1969"
+            },
+            {
+                "key": "CIT0024",
+                "first-page": "163",
+                "volume-title": "Nebraska symposium on motivation",
+                "author": "Mandler G.",
+                "year": "1964"
+            },
+            {
+                "key": "CIT0025",
+                "volume-title": "Mind and emotion.",
+                "author": "Mandler G.",
+                "year": "1975"
+            },
+            {
+                "key": "CIT0026",
+                "volume-title": "Mind and body; Psychology of emotion and stress.",
+                "author": "Mandler G.",
+                "year": "1984"
+            },
+            {
+                "key": "CIT0027",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF02979253"
+            },
+            {
+                "key": "CIT0028",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0096-3445.114.2.159"
+            },
+            {
+                "key": "CIT0029",
+                "volume-title": "Selected writings of George Herbert Mead",
+                "author": "Mead G. H.",
+                "year": "1912"
+            },
+            {
+                "key": "CIT0030",
+                "volume-title": "Selected writings of George Herbert Mead.",
+                "author": "Mead G. H.",
+                "year": "1913"
+            },
+            {
+                "key": "CIT0031",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/10039-000"
+            },
+            {
+                "key": "CIT0032",
+                "volume-title": "Semantic information processing",
+                "author": "Minsky M.",
+                "year": "1968"
+            },
+            {
+                "key": "CIT0033",
+                "volume-title": "Artificial Intelligence: An MIT perspective",
+                "volume": "1",
+                "author": "Minsky M.",
+                "year": "1979"
+            },
+            {
+                "key": "CIT0034",
+                "volume-title": "Life sentences: Aspects of the social role of language.",
+                "author": "Morsbach H.",
+                "year": "1976"
+            },
+            {
+                "key": "CIT0035",
+                "volume-title": "Motivational control systems analysis.",
+                "author": "Oatley K.",
+                "year": "1974"
+            },
+            {
+                "key": "CIT0036",
+                "volume-title": "Perceptions and representations: The theoretical bares of brain research.",
+                "author": "Oatley K.",
+                "year": "1978"
+            },
+            {
+                "key": "CIT0037",
+                "volume-title": "Brain and mind.",
+                "author": "Oatley K.",
+                "year": "1985"
+            },
+            {
+                "key": "CIT0038",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-295X.92.3.372"
+            },
+            {
+                "key": "CIT0039",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1017/S0140525X00012759"
+            },
+            {
+                "key": "CIT0040",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1468-5914.1984.tb00489.x"
+            },
+            {
+                "key": "CIT0041",
+                "volume-title": "A theory of justice.",
+                "author": "Rawls J.",
+                "year": "1972"
+            },
+            {
+                "key": "CIT0042",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.94.2.239"
+            },
+            {
+                "key": "CIT0043",
+                "volume-title": "Review of personality and social psychology, 5: Emotions, relationships, and health.",
+                "author": "Scherer K. R.",
+                "year": "1984"
+            },
+            {
+                "key": "CIT0044",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0046234"
+            },
+            {
+                "key": "CIT0045",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1017/CBO9781139173438",
+                "volume-title": "Speech am: An essay in the philosophy of language.",
+                "author": "Searle J. R.",
+                "year": "1969"
+            },
+            {
+                "key": "CIT0046",
+                "volume-title": "The growth of interpersonal understanding.",
+                "author": "Selman R.",
+                "year": "1980"
+            },
+            {
+                "key": "CIT0047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0024127"
+            },
+            {
+                "key": "CIT0048",
+                "volume-title": "Cognition and Emotion",
+                "author": "Sloman A."
+            },
+            {
+                "key": "CIT0049",
+                "unstructured": "Sloman, A. and Croucher, M. Why robots will have emotions. International joint conference on artificial intelligence, 7."
+            },
+            {
+                "key": "CIT0050",
+                "volume-title": "The problem of human-machine communication.",
+                "author": "Suchman L. A.",
+                "year": "1985"
+            },
+            {
+                "key": "CIT0051",
+                "volume-title": "A computer model of skill acquisition.",
+                "author": "Sussman G. J.",
+                "year": "1975"
+            },
+            {
+                "key": "CIT0052",
+                "volume-title": "The study of instinct.",
+                "author": "Tinbergen N.",
+                "year": "1951"
+            },
+            {
+                "key": "CIT0053",
+                "first-page": "201",
+                "volume": "26",
+                "author": "Tomkins S. S.",
+                "year": "1979",
+                "journal-title": "Nebraska Symposium on Motivation"
+            },
+            {
+                "key": "CIT0054",
+                "volume-title": "Computers and the human spirit.",
+                "author": "Turkle S.",
+                "year": "1984"
+            },
+            {
+                "key": "CIT0055",
+                "first-page": "151",
+                "volume-title": "American Psychologist",
+                "author": "Zajonc R. B.",
+                "year": "1980"
+            }
+        ],
+        "container-title": [
+            "Cognition &amp; Emotion"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://www.tandfonline.com/doi/pdf/10.1080/02699938708408362",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2019,
+                    5,
+                    6
+                ]
+            ],
+            "date-time": "2019-05-06T18:17:53Z",
+            "timestamp": 1557166673000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "http://www.tandfonline.com/doi/abs/10.1080/02699938708408362"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    1987,
+                    3
+                ]
+            ]
+        },
+        "references-count": 55,
+        "journal-issue": {
+            "issue": "1",
+            "published-print": {
+                "date-parts": [
+                    [
+                        1987,
+                        3
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1080/02699938708408362"
+        ],
+        "URL": "https://doi.org/10.1080/02699938708408362",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0269-9931",
+            "1464-0600"
+        ],
+        "issn-type": [
+            {
+                "value": "0269-9931",
+                "type": "print"
+            },
+            {
+                "value": "1464-0600",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    1987,
+                    3
+                ]
+            ]
+        }
+    }
+}

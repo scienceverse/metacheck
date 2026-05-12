@@ -97,9 +97,12 @@ github_repo <- function(repo) {
   simple_repo <- sub("\\.git$", "", x = thematch[[1]][[1]])
 
   url <- paste0("https://github.com/", simple_repo)
-  head <- httr::HEAD(url)
+  resp <- httr2::request(url) |>
+    httr2::req_method("HEAD") |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
 
-  if (head$status_code != 200) {
+  if (httr2::resp_status(resp) != 200) {
     return(NULL)
   }
 
@@ -133,9 +136,12 @@ github_readme <- function(repo) {
     repo
   )
 
-  results <- httr::GET(readme_url, github_config())
-  if (results$status_code == 200) {
-    content <- httr::content(results, "parsed")
+  resp <- httr2::request(readme_url) |>
+    github_config() |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
+  if (httr2::resp_status(resp) == 200) {
+    content <- httr2::resp_body_json(resp)
     readme <- base64enc::base64decode(content$content) |> rawToChar()
   } else {
     readme <- ""
@@ -182,12 +188,16 @@ github_files <- function(repo, dir = "",
     dir
   ) |> utils::URLencode()
 
-  response <- httr::GET(url, github_config())
-  headers <- httr::headers(response)
-  contents <- httr::content(response, "parsed")
+  resp <- httr2::request(url) |>
+    github_config() |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
+  headers <- httr2::resp_headers(resp)
+  contents <- tryCatch(httr2::resp_body_json(resp), error = \(e) list())
 
-  if (response$status_code != 200) {
-    if (as.integer(headers$`x-ratelimit-remaining`) == 0) {
+  if (httr2::resp_status(resp) != 200) {
+    rl <- headers$`x-ratelimit-remaining`
+    if (!is.null(rl) && as.integer(rl) == 0) {
       reset <- headers$`x-ratelimit-reset` |>
         as.integer() |>
         as.POSIXct() |>
@@ -249,30 +259,32 @@ github_files <- function(repo, dir = "",
 
 #' GitHub Configuration
 #'
-#' @returns a list of config items to use in httr::GET()
+#' Adds GitHub auth and accept headers to an httr2 request.
+#'
+#' @param req an httr2 request object
+#'
+#' @returns the modified request
 #' @export
 #'
 #' @keywords internal
-github_config <- function() {
+github_config <- function(req) {
   token <- tryCatch(
     gitcreds::gitcreds_get(),
     error = function(e) NULL
   )
 
+  req <- req |>
+    httr2::req_headers(
+      Accept = "application/vnd.github.v3+json",
+      `User-Agent` = "scienceverse/metacheck"
+    )
+
   if (!is.null(token)) {
-    config <- httr::add_headers(
-      Authorization = paste("token", token$password),
-      Accept = "application/vnd.github.v3+json",
-      `User-Agent` = "scienceverse/metacheck"
-    )
-  } else {
-    config <- httr::add_headers(
-      Accept = "application/vnd.github.v3+json",
-      `User-Agent` = "scienceverse/metacheck"
-    )
+    req <- req |>
+      httr2::req_headers(Authorization = paste("token", token$password))
   }
 
-  return(config)
+  return(req)
 }
 
 #' Get Languages from GitHub Repo
@@ -303,8 +315,11 @@ github_languages <- function(repo) {
     repo
   )
 
-  results <- httr::GET(url, github_config())
-  languages <- httr::content(results, "parsed")
+  resp <- httr2::request(url) |>
+    github_config() |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
+  languages <- tryCatch(httr2::resp_body_json(resp), error = \(e) list())
   if (length(languages)) {
     lang_df <- data.frame(
       repo = repo,
