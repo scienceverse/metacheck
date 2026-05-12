@@ -8,12 +8,13 @@ testthat::set_max_fails(1)
 
 email("metacheck@scienceverse.org")
 
-httptest::.mockPaths(NULL)
+httptest2::.mockPaths(NULL)
 apis <- normalizePath("apis")
-httptest::.mockPaths(apis)
+httptest2::.mockPaths(apis)
 
 # grobid_url <- "http://localhost:8070"
 grobid_url <- "https://grobid.metacheck.app"
+grobid_url <- "https://grobidorg-grobid.hf.space/"
 bibr_url <- "https://platform.metacheck.app"
 
 # change fancy quotes to straight for text matching with crossref

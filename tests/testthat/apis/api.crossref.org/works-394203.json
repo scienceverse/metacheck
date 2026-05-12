@@ -1,0 +1,808 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 87,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            5,
+                            11
+                        ]
+                    ],
+                    "date-time": "2026-05-11T23:30:13Z",
+                    "timestamp": 1778542213619,
+                    "version": "3.51.4"
+                },
+                "reference-count": 112,
+                "publisher": "The Royal Society",
+                "issue": "1511",
+                "license": [
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2008,
+                                    10,
+                                    1
+                                ]
+                            ],
+                            "date-time": "2008-10-01T00:00:00Z",
+                            "timestamp": 1222819200000
+                        },
+                        "content-version": "tdm",
+                        "delay-in-days": 0,
+                        "URL": "https://royalsociety.org/journals/ethics-policies/data-sharing-mining/"
+                    }
+                ],
+                "content-domain": {
+                    "domain": [
+                        "royalsocietypublishing.org"
+                    ],
+                    "crossmark-restriction": true
+                },
+                "short-container-title": [
+                    "Phil. Trans. R. Soc. B"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2008,
+                            12,
+                            12
+                        ]
+                    ]
+                },
+                "abstract": "<jats:p>Successful decision making in a social setting depends on our ability to understand the intentions, emotions and beliefs of others. The mirror system allows us to understand other people's motor actions and action intentions. ‘Empathy’ allows us to understand and share emotions and sensations with others. ‘Theory of mind’ allows us to understand more abstract concepts such as beliefs or wishes in others. In all these cases, evidence has accumulated that we use the specific neural networks engaged in processing mental states in ourselves to understand the same mental states in others. However, the magnitude of the brain activity in these shared networks is modulated by contextual appraisal of the situation or the other person. An important feature of decision making in a social setting concerns the interaction of reason and emotion. We consider four domains where such interactions occur: our sense of fairness, altruistic punishment, trust and framing effects. In these cases, social motivations and emotions compete with each other, while higher-level control processes modulate the interactions of these low-level biases.<\/jats:p>",
+                "DOI": "10.1098/rstb.2008.0156",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2008,
+                            10,
+                            1
+                        ]
+                    ],
+                    "date-time": "2008-10-01T21:55:05Z",
+                    "timestamp": 1222898105000
+                },
+                "page": "3875-3886",
+                "update-policy": "https://doi.org/10.1098/crossmark-policy",
+                "source": "Crossref",
+                "is-referenced-by-count": 252,
+                "title": [
+                    "The role of social cognition in decision making"
+                ],
+                "prefix": "10.1098",
+                "volume": "363",
+                "author": [
+                    {
+                        "given": "Chris D",
+                        "family": "Frith",
+                        "sequence": "first",
+                        "affiliation": [
+                            {
+                                "name": "Center for Functional Integrative Neuroscience, Aarhus University HospitalNørrebrogade 44, Building 30, 8000 Århus C, Denmark"
+                            },
+                            {
+                                "name": "Wellcome Trust Centre for Neuroimaging at University College London12 Queen Square, London WC1N 3BG, UK"
+                            }
+                        ]
+                    },
+                    {
+                        "given": "Tania",
+                        "family": "Singer",
+                        "sequence": "additional",
+                        "affiliation": [
+                            {
+                                "name": "Center for Social and Neural Systems, University of ZurichBlümlisalpstrasse 10, 8006 Zurich, Switzerland"
+                            }
+                        ]
+                    }
+                ],
+                "member": "175",
+                "published-online": {
+                    "date-parts": [
+                        [
+                            2008,
+                            10
+                        ]
+                    ]
+                },
+                "reference": [
+                    {
+                        "key": "e_1_3_2_2_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/30982"
+                    },
+                    {
+                        "key": "e_1_3_2_3_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/nrn1884"
+                    },
+                    {
+                        "key": "e_1_3_2_4_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/scan/nsl002"
+                    },
+                    {
+                        "key": "e_1_3_2_5_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.neuroimage.2006.03.010"
+                    },
+                    {
+                        "key": "e_1_3_2_6_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0022-3514.50.2.322"
+                    },
+                    {
+                        "key": "e_1_3_2_7_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/j.1467-9280.2006.01737.x"
+                    },
+                    {
+                        "key": "e_1_3_2_8_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.geb.2004.06.010"
+                    },
+                    {
+                        "key": "e_1_3_2_9_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/brain/123.11.2189"
+                    },
+                    {
+                        "key": "e_1_3_2_10_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/brain/awh500"
+                    },
+                    {
+                        "key": "e_1_3_2_11_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1006/obhd.1995.1068"
+                    },
+                    {
+                        "key": "e_1_3_2_12_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/415125a"
+                    },
+                    {
+                        "key": "e_1_3_2_13_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.tpb.2003.07.001"
+                    },
+                    {
+                        "key": "e_1_3_2_14_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1073/pnas.0630443100"
+                    },
+                    {
+                        "key": "e_1_3_2_15_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1006/nimg.1999.0525"
+                    },
+                    {
+                        "key": "e_1_3_2_16_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1257/jep.9.2.209"
+                    },
+                    {
+                        "key": "e_1_3_2_17_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1006/nimg.2000.0612"
+                    },
+                    {
+                        "key": "e_1_3_2_18_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0022-3514.76.6.893"
+                    },
+                    {
+                        "key": "e_1_3_2_19_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.cub.2007.09.020"
+                    },
+                    {
+                        "key": "e_1_3_2_20_1",
+                        "unstructured": "Clark H.H Using language. 1996 Cambridge MA:Cambridge University Press."
+                    },
+                    {
+                        "key": "e_1_3_2_21_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/nrn894"
+                    },
+                    {
+                        "key": "e_1_3_2_22_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/j.0956-7976.2004.00760.x"
+                    },
+                    {
+                        "key": "e_1_3_2_23_1",
+                        "unstructured": "Damasio A.R Descartes' error: emotion reason and the human brain. 1994 New York NY:G. P. Putnam's Sons."
+                    },
+                    {
+                        "key": "e_1_3_2_24_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.1128356"
+                    },
+                    {
+                        "key": "e_1_3_2_25_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.1100735"
+                    },
+                    {
+                        "key": "e_1_3_2_26_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.tics.2006.08.008"
+                    },
+                    {
+                        "key": "e_1_3_2_27_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/1534582304267187"
+                    },
+                    {
+                        "key": "e_1_3_2_28_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1100/tsw.2006.221"
+                    },
+                    {
+                        "key": "e_1_3_2_29_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1196/annals.1390.002"
+                    },
+                    {
+                        "key": "e_1_3_2_30_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/nn1575"
+                    },
+                    {
+                        "key": "e_1_3_2_31_1",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Dennett D.C The intentional stance. 1987 Cambridge MA:MIT Press.",
+                        "DOI": "10.1017/S0140525X00058611"
+                    },
+                    {
+                        "key": "e_1_3_2_32_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1152/jn.00238.2007"
+                    },
+                    {
+                        "key": "e_1_3_2_33_1",
+                        "unstructured": "Engel C& Singer W. 2008 Cambridge MA:MIT Press."
+                    },
+                    {
+                        "key": "e_1_3_2_34_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1212/WNL.35.12.1731"
+                    },
+                    {
+                        "key": "e_1_3_2_35_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.tics.2003.08.012"
+                    },
+                    {
+                        "key": "e_1_3_2_36_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.tics.2007.09.002"
+                    },
+                    {
+                        "key": "e_1_3_2_37_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/415137a"
+                    },
+                    {
+                        "key": "e_1_3_2_38_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/0010-0277(95)00692-R"
+                    },
+                    {
+                        "key": "e_1_3_2_39_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1006/game.1994.1021"
+                    },
+                    {
+                        "key": "e_1_3_2_40_1",
+                        "first-page": "549",
+                        "volume-title": "Control of cognitive processes",
+                        "author": "Frith C.D",
+                        "year": "2000"
+                    },
+                    {
+                        "key": "e_1_3_2_41_1",
+                        "unstructured": "Frith U Autism: explaining the enigma. 1989 Oxford UK:Blackwells."
+                    },
+                    {
+                        "key": "e_1_3_2_42_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rstb.2002.1218"
+                    },
+                    {
+                        "key": "e_1_3_2_43_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S0028-3932(99)00053-6"
+                    },
+                    {
+                        "key": "e_1_3_2_44_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1006/nimg.2002.1117"
+                    },
+                    {
+                        "key": "e_1_3_2_45_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rstb.2002.1234"
+                    },
+                    {
+                        "key": "e_1_3_2_46_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1006/jtbi.2000.2111"
+                    },
+                    {
+                        "key": "e_1_3_2_47_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rstb.2004.1552"
+                    },
+                    {
+                        "key": "e_1_3_2_48_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.1062872"
+                    },
+                    {
+                        "key": "e_1_3_2_49_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.1123633"
+                    },
+                    {
+                        "key": "e_1_3_2_50_1",
+                        "first-page": "653",
+                        "article-title": "Social distance and other-regarding behavior in dictator games",
+                        "volume": "86",
+                        "author": "Hoffman E",
+                        "year": "1996",
+                        "journal-title": "Am. Econ. Rev"
+                    },
+                    {
+                        "key": "e_1_3_2_51_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/8065"
+                    },
+                    {
+                        "key": "e_1_3_2_52_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.neuropsychologia.2005.07.015"
+                    },
+                    {
+                        "key": "e_1_3_2_53_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.tics.2004.11.003"
+                    },
+                    {
+                        "key": "e_1_3_2_54_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0033-2909.122.3.250"
+                    },
+                    {
+                        "key": "e_1_3_2_55_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S0896-6273(04)00156-4"
+                    },
+                    {
+                        "key": "e_1_3_2_56_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/scan/nsl017"
+                    },
+                    {
+                        "key": "e_1_3_2_57_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S0960-9822(03)00165-9"
+                    },
+                    {
+                        "key": "e_1_3_2_58_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.1129156"
+                    },
+                    {
+                        "key": "e_1_3_2_59_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1523/JNEUROSCI.4606-06.2007"
+                    },
+                    {
+                        "key": "e_1_3_2_60_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/nature05631"
+                    },
+                    {
+                        "key": "e_1_3_2_61_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/nature03701"
+                    },
+                    {
+                        "key": "e_1_3_2_62_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/1467-9280.14481"
+                    },
+                    {
+                        "key": "e_1_3_2_63_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1162/jocn.2007.19.1.42"
+                    },
+                    {
+                        "key": "e_1_3_2_64_1",
+                        "unstructured": "Levinson S.C Pragmatics. 1983 Cambridge MA:Cambridge University Press."
+                    },
+                    {
+                        "key": "e_1_3_2_65_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1257/aer.90.2.426"
+                    },
+                    {
+                        "key": "e_1_3_2_66_1",
+                        "unstructured": "Mauss M Essai sur le don. Forme et raison de l'échange dans les sociétés archaiques . First published by Presses Universitaires de France in ’Sociologie et Anthropologie’. English translation by W D Halls 1990. 1924 London UK:Routledge."
+                    },
+                    {
+                        "key": "e_1_3_2_67_1",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "McCabe K. & Singer T. 2008 Brain signatures of social decision making. In Strüngmann Forum report : better than conscious? Decision making the human mind and implications for institutions (eds C. Engél & W. Singer) pp. 103–122. Cambridge MA: MIT Press.",
+                        "DOI": "10.7551/mitpress/9780262195805.003.0005"
+                    },
+                    {
+                        "key": "e_1_3_2_68_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1073/pnas.211415698"
+                    },
+                    {
+                        "key": "e_1_3_2_69_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1162/0898929055002418"
+                    },
+                    {
+                        "key": "e_1_3_2_70_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/383812a0"
+                    },
+                    {
+                        "key": "e_1_3_2_71_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.3758/CABN.4.2.270"
+                    },
+                    {
+                        "key": "e_1_3_2_72_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/cercor/bhl129"
+                    },
+                    {
+                        "key": "e_1_3_2_73_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/31225"
+                    },
+                    {
+                        "key": "e_1_3_2_74_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1006/jtbi.1998.0775"
+                    },
+                    {
+                        "key": "e_1_3_2_75_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.tics.2005.03.010"
+                    },
+                    {
+                        "key": "e_1_3_2_76_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0003-066X.56.9.717"
+                    },
+                    {
+                        "key": "e_1_3_2_77_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1162/089892900562552"
+                    },
+                    {
+                        "key": "e_1_3_2_78_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1046/j.1467-9221.2003.00350.x"
+                    },
+                    {
+                        "key": "e_1_3_2_79_1",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Pickering M. J. & Garrod S. 2004 Toward a mechanistic psychology of dialogue. Behav. Brain Sci. 27 169–190. [Discussion 90–226.].",
+                        "DOI": "10.1017/S0140525X04000056"
+                    },
+                    {
+                        "key": "e_1_3_2_80_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1017/S0140525X00076512"
+                    },
+                    {
+                        "key": "e_1_3_2_81_1",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Preston S. D. & de Waal F. B. 2002 Empathy: its ultimate and proximate bases. Behav Brain Sci 25 1–20. [Discussion -71.].",
+                        "DOI": "10.1017/S0140525X02000018"
+                    },
+                    {
+                        "key": "e_1_3_2_82_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.biopsych.2006.07.021"
+                    },
+                    {
+                        "key": "e_1_3_2_83_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.neuroimage.2004.04.015"
+                    },
+                    {
+                        "key": "e_1_3_2_84_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1146/annurev.neuro.27.070203.144230"
+                    },
+                    {
+                        "key": "e_1_3_2_85_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.joep.2005.06.015"
+                    },
+                    {
+                        "key": "e_1_3_2_86_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.1082976"
+                    },
+                    {
+                        "key": "e_1_3_2_87_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/0028-3932(91)90037-9"
+                    },
+                    {
+                        "key": "e_1_3_2_88_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.conb.2006.03.001"
+                    },
+                    {
+                        "key": "e_1_3_2_89_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S1053-8119(03)00230-1"
+                    },
+                    {
+                        "key": "e_1_3_2_90_1",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "9",
+                        "DOI": "10.1111/j.0021-9916.2007.00326.x",
+                        "article-title": "Framing, agenda setting, and priming: the evolution of three media effects models",
+                        "volume": "57",
+                        "author": "Scheufele D.A",
+                        "year": "2007",
+                        "journal-title": "J. Commun"
+                    },
+                    {
+                        "key": "e_1_3_2_91_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S0010-0277(03)00043-X"
+                    },
+                    {
+                        "key": "e_1_3_2_92_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1080/17470910701237989"
+                    },
+                    {
+                        "key": "e_1_3_2_93_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.cognition.2005.11.001"
+                    },
+                    {
+                        "key": "e_1_3_2_94_1",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "435",
+                        "DOI": "10.1111/j.0956-7976.2005.01553.x",
+                        "article-title": "Investment behavior and the negative side of emotion",
+                        "volume": "16",
+                        "author": "Shiv B",
+                        "year": "2005",
+                        "journal-title": "Psychol. Sci"
+                    },
+                    {
+                        "key": "e_1_3_2_95_1",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "130",
+                        "DOI": "10.1017/CBO9781139173728.005",
+                        "volume-title": "Cultural psychology—essays on comparative human development",
+                        "author": "Shweder R.A",
+                        "year": "1990"
+                    },
+                    {
+                        "key": "e_1_3_2_96_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1257/000282805774670103"
+                    },
+                    {
+                        "key": "e_1_3_2_97_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S0896-6273(04)00014-5"
+                    },
+                    {
+                        "key": "e_1_3_2_98_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.1093535"
+                    },
+                    {
+                        "key": "e_1_3_2_99_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/nature04271"
+                    },
+                    {
+                        "key": "e_1_3_2_100_1",
+                        "unstructured": "Smith AThe theory of moral sentiments1759 London UK:A Millar in the Strand."
+                    },
+                    {
+                        "key": "e_1_3_2_101_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0096-1523.33.4.915"
+                    },
+                    {
+                        "key": "e_1_3_2_102_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1353/nlh.1996.0011"
+                    },
+                    {
+                        "key": "e_1_3_2_103_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.1125596"
+                    },
+                    {
+                        "key": "e_1_3_2_104_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/j.1467-9280.2007.02025.x"
+                    },
+                    {
+                        "key": "e_1_3_2_105_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s00221-006-0557-9"
+                    },
+                    {
+                        "key": "e_1_3_2_106_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.1133197"
+                    },
+                    {
+                        "key": "e_1_3_2_107_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.7455683"
+                    },
+                    {
+                        "key": "e_1_3_2_108_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/j.0963-7214.2004.01501012.x"
+                    },
+                    {
+                        "key": "e_1_3_2_109_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.288.5467.850"
+                    },
+                    {
+                        "key": "e_1_3_2_110_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S0896-6273(03)00679-2"
+                    },
+                    {
+                        "key": "e_1_3_2_111_1",
+                        "unstructured": "Winkielman P. & Schooler J. In press. Unconscious conscious and meta-conscious in social cognition. In Social cognition: The basis of human interaction (eds F. Strack J. Förster). Philadelphia: Psychology Press."
+                    },
+                    {
+                        "key": "e_1_3_2_112_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/nn816"
+                    },
+                    {
+                        "key": "e_1_3_2_113_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S0048-7333(03)00053-2"
+                    }
+                ],
+                "container-title": [
+                    "Philosophical Transactions of the Royal Society B: Biological Sciences"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "https://royalsocietypublishing.org/doi/pdf/10.1098/rstb.2008.0156",
+                        "content-type": "application/pdf",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "https://royalsocietypublishing.org/doi/full-xml/10.1098/rstb.2008.0156",
+                        "content-type": "application/xml",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "https://royalsocietypublishing.org/doi/pdf/10.1098/rstb.2008.0156",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2026,
+                            5,
+                            11
+                        ]
+                    ],
+                    "date-time": "2026-05-11T23:03:22Z",
+                    "timestamp": 1778540602000
+                },
+                "score": 76.77081,
+                "resource": {
+                    "primary": {
+                        "URL": "http://royalsocietypublishing.org/rstb/article/363/1511/3875-3886/58449"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2008,
+                            10
+                        ]
+                    ]
+                },
+                "references-count": 112,
+                "journal-issue": {
+                    "issue": "1511",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2008,
+                                12,
+                                12
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "10.1098/rstb.2008.0156"
+                ],
+                "URL": "https://doi.org/10.1098/rstb.2008.0156",
+                "ISSN": [
+                    "0962-8436",
+                    "1471-2970"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0962-8436",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1471-2970",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2008,
+                            10
+                        ]
+                    ]
+                },
+                "assertion": [
+                    {
+                        "value": "2008-10-01",
+                        "order": 2,
+                        "name": "published",
+                        "label": "Published",
+                        "group": {
+                            "name": "publication_history",
+                            "label": "Publication History"
+                        }
+                    }
+                ]
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

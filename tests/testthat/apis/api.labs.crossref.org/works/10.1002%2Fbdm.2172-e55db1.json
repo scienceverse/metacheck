@@ -1,0 +1,527 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    2,
+                    7
+                ]
+            ],
+            "date-time": "2026-02-07T19:05:50Z",
+            "timestamp": 1770491150826,
+            "version": "3.49.0"
+        },
+        "reference-count": 50,
+        "publisher": "Wiley",
+        "issue": "4",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2020,
+                            1,
+                            14
+                        ]
+                    ],
+                    "date-time": "2020-01-14T00:00:00Z",
+                    "timestamp": 1578960000000
+                },
+                "content-version": "vor",
+                "delay-in-days": 0,
+                "URL": "http://onlinelibrary.wiley.com/termsAndConditions#vor"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "onlinelibrary.wiley.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Behavioral Decision Making"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2020,
+                    10
+                ]
+            ]
+        },
+        "abstract": "<jats:title>Abstract<\/jats:title><jats:p>Existing work on the effects of social comparison on envy and generosity typically involves manipulation of social comparison with respect to dimensions that carry personal meaning and reflect upon the self, for example, performance, ability, or achievement. In the current work, we examine the effects of social comparison based on a purely arbitrary, manipulated situation. We measure malicious envy via monetary decisions that have real consequences for the target of comparison, in place of a self‐reported questionnaire. In addition, we test the effects of the preliminary social comparison on generosity in a subsequent and ostensibly unrelated situation. In Experiment 1 we demonstrate the effect of randomly manipulated upward social comparison on a monetary allocation decision, and we establish the link between this allocation decision and malicious envy. In Experiment 2 we show that upward comparison affects not only malicious envy towards the target of the comparison but also decreases generosity towards a third party in a subsequent, ostensibly unrelated situation. Experiment 3 shows the effect of this type of social comparison, beyond a specific direction, on reducing generosity towards a third party.<\/jats:p>",
+        "DOI": "10.1002/bdm.2172",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2020,
+                    1,
+                    15
+                ]
+            ],
+            "date-time": "2020-01-15T03:55:10Z",
+            "timestamp": 1579060510000
+        },
+        "page": "444-462",
+        "update-policy": "https://doi.org/10.1002/crossmark_policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 12,
+        "title": [
+            "Arbitrary social comparison, malicious envy, and generosity"
+        ],
+        "prefix": "10.1002",
+        "volume": "33",
+        "author": [
+            {
+                "ORCID": "https://orcid.org/0000-0001-6620-3175",
+                "authenticated-orcid": false,
+                "given": "Adiel",
+                "family": "Moyal",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "Department of Cognitive Sciences Hebrew University of Jerusalem  Jerusalem Israel"
+                    }
+                ]
+            },
+            {
+                "ORCID": "https://orcid.org/0000-0002-1532-9461",
+                "authenticated-orcid": false,
+                "given": "Marina",
+                "family": "Motsenok",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Faculty of Law Hebrew University of Jerusalem  Jerusalem Israel"
+                    }
+                ]
+            },
+            {
+                "given": "Ilana",
+                "family": "Ritov",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "School of Education &amp; The Federmann Center for the Study of Rationality Hebrew University of Jerusalem  Jerusalem Israel"
+                    }
+                ]
+            }
+        ],
+        "member": "311",
+        "published-online": {
+            "date-parts": [
+                [
+                    2020,
+                    1,
+                    14
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "e_1_2_10_2_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.60.6.941"
+            },
+            {
+                "key": "e_1_2_10_3_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1089-2680.5.4.323"
+            },
+            {
+                "key": "e_1_2_10_4_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10551-016-3224-5"
+            },
+            {
+                "key": "e_1_2_10_5_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1287/mnsc.2015.2257"
+            },
+            {
+                "key": "e_1_2_10_6_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2006.09.007"
+            },
+            {
+                "key": "e_1_2_10_7_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0001-8791(02)00015-5"
+            },
+            {
+                "key": "e_1_2_10_8_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1162/003355302760193904"
+            },
+            {
+                "key": "e_1_2_10_9_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1559-1816.2009.00519.x"
+            },
+            {
+                "key": "e_1_2_10_10_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2014.05.007"
+            },
+            {
+                "key": "e_1_2_10_11_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s00199-006-0153-z"
+            },
+            {
+                "key": "e_1_2_10_12_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jebo.2010.02.001"
+            },
+            {
+                "key": "e_1_2_10_13_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1257/0002828042002741"
+            },
+            {
+                "key": "e_1_2_10_14_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.3758/BF03193146"
+            },
+            {
+                "key": "e_1_2_10_15_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1257/aer.96.5.1912"
+            },
+            {
+                "key": "e_1_2_10_16_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1162/003355399556151"
+            },
+            {
+                "key": "e_1_2_10_17_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/001872675400700202"
+            },
+            {
+                "key": "e_1_2_10_18_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0003-066X.65.8.698"
+            },
+            {
+                "key": "e_1_2_10_19_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167206287640"
+            },
+            {
+                "key": "e_1_2_10_20_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1745691613504114"
+            },
+            {
+                "key": "e_1_2_10_21_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/jeea/jvw001"
+            },
+            {
+                "key": "e_1_2_10_22_1",
+                "volume-title": "Introduction to mediation, moderation, and conditional process analysis: A regression‐based approach",
+                "author": "Hayes A. F.",
+                "year": "2017"
+            },
+            {
+                "key": "e_1_2_10_23_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0029610"
+            },
+            {
+                "key": "e_1_2_10_24_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167203251195"
+            },
+            {
+                "key": "e_1_2_10_25_1",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Lange J.(2016).The elicitation of the most joyless of all sins: Determinants of benign and malicious envy(Doctoral Dissertation Universität zu Köln).",
+                "DOI": "10.1037/t40261-000"
+            },
+            {
+                "key": "e_1_2_10_26_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167214564959"
+            },
+            {
+                "key": "e_1_2_10_27_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/pspi0000026"
+            },
+            {
+                "key": "e_1_2_10_28_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/per.2047"
+            },
+            {
+                "key": "e_1_2_10_29_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/pspi0000118"
+            },
+            {
+                "key": "e_1_2_10_30_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.57.3.426"
+            },
+            {
+                "key": "e_1_2_10_31_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0035361"
+            },
+            {
+                "key": "e_1_2_10_32_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1750-4716.2007.00002.x"
+            },
+            {
+                "key": "e_1_2_10_33_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0022-1031(78)90049-5"
+            },
+            {
+                "key": "e_1_2_10_34_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167202287008"
+            },
+            {
+                "key": "e_1_2_10_35_1",
+                "first-page": "3",
+                "volume-title": "The Psychology of Envy and Jealousy",
+                "author": "Parrott W. G.",
+                "year": "1991"
+            },
+            {
+                "key": "e_1_2_10_36_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0022-1031(85)90015-0"
+            },
+            {
+                "key": "e_1_2_10_37_1",
+                "first-page": "193",
+                "volume-title": "A Boat Trip Through Economic Change: Proceedings of the IAREP/SABE/ICABEEP 2010 Conference",
+                "author": "Riyanto Y. E.",
+                "year": "2010"
+            },
+            {
+                "key": "e_1_2_10_38_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1019923923537"
+            },
+            {
+                "key": "e_1_2_10_39_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/S15327957PSPR0504_2"
+            },
+            {
+                "key": "e_1_2_10_40_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jcps.2016.02.002"
+            },
+            {
+                "key": "e_1_2_10_41_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1088868311430825"
+            },
+            {
+                "key": "e_1_2_10_42_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.133.1.46"
+            },
+            {
+                "key": "e_1_2_10_43_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/spc3.12253"
+            },
+            {
+                "key": "e_1_2_10_44_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2015.1087972"
+            },
+            {
+                "key": "e_1_2_10_45_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0015669"
+            },
+            {
+                "key": "e_1_2_10_46_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s11031-011-9235-8"
+            },
+            {
+                "key": "e_1_2_10_47_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.62.5.760"
+            },
+            {
+                "key": "e_1_2_10_48_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167296225009"
+            },
+            {
+                "key": "e_1_2_10_49_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1559-1816.2013.01039.x"
+            },
+            {
+                "key": "e_1_2_10_50_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0165-1765(03)00190-3"
+            },
+            {
+                "key": "e_1_2_10_51_1",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Zizzo D. J. &Oswald A.(2001).Are people willing to pay to reduce others' incomes?Annales d'Economie et de Statistique 39–65.",
+                "DOI": "10.2307/20076295"
+            }
+        ],
+        "container-title": [
+            "Journal of Behavioral Decision Making"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://onlinelibrary.wiley.com/doi/pdf/10.1002/bdm.2172",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://onlinelibrary.wiley.com/doi/full-xml/10.1002/bdm.2172",
+                "content-type": "application/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://onlinelibrary.wiley.com/doi/pdf/10.1002/bdm.2172",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2023,
+                    9,
+                    5
+                ]
+            ],
+            "date-time": "2023-09-05T21:08:17Z",
+            "timestamp": 1693948097000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://onlinelibrary.wiley.com/doi/10.1002/bdm.2172"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2020,
+                    1,
+                    14
+                ]
+            ]
+        },
+        "references-count": 50,
+        "journal-issue": {
+            "issue": "4",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2020,
+                        10
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1002/bdm.2172"
+        ],
+        "URL": "https://doi.org/10.1002/bdm.2172",
+        "archive": [
+            "Portico"
+        ],
+        "relation": {
+
+        },
+        "ISSN": [
+            "0894-3257",
+            "1099-0771"
+        ],
+        "issn-type": [
+            {
+                "value": "0894-3257",
+                "type": "print"
+            },
+            {
+                "value": "1099-0771",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2020,
+                    1,
+                    14
+                ]
+            ]
+        },
+        "assertion": [
+            {
+                "value": "2018-12-27",
+                "order": 0,
+                "name": "received",
+                "label": "Received",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            },
+            {
+                "value": "2019-12-17",
+                "order": 1,
+                "name": "accepted",
+                "label": "Accepted",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            },
+            {
+                "value": "2020-01-14",
+                "order": 2,
+                "name": "published",
+                "label": "Published",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            }
+        ]
+    }
+}

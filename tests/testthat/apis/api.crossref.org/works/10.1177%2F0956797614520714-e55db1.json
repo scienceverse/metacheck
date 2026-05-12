@@ -1,0 +1,259 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    4
+                ]
+            ],
+            "date-time": "2026-05-04T19:54:16Z",
+            "timestamp": 1777924456670,
+            "version": "3.51.4"
+        },
+        "reference-count": 1,
+        "publisher": "SAGE Publications",
+        "issue": "4",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2014,
+                            2,
+                            18
+                        ]
+                    ],
+                    "date-time": "2014-02-18T00:00:00Z",
+                    "timestamp": 1392681600000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://journals.sagepub.com/page/policies/text-and-data-mining-license"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "journals.sagepub.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Psychol Sci"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2014,
+                    4
+                ]
+            ]
+        },
+        "DOI": "10.1177/0956797614520714",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2014,
+                    2,
+                    19
+                ]
+            ],
+            "date-time": "2014-02-19T00:39:25Z",
+            "timestamp": 1392770365000
+        },
+        "page": "973-981",
+        "update-policy": "https://doi.org/10.1177/sage-journals-update-policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 156,
+        "title": [
+            "Retracted: Evil Genius? How Dishonesty Can Lead to Greater Creativity"
+        ],
+        "prefix": "10.1177",
+        "volume": "25",
+        "author": [
+            {
+                "given": "Francesca",
+                "family": "Gino",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "Harvard Business School, Harvard University"
+                    }
+                ]
+            },
+            {
+                "given": "Scott S.",
+                "family": "Wiltermuth",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Marshall School of Business, University of Southern California"
+                    }
+                ]
+            }
+        ],
+        "member": "179",
+        "published-online": {
+            "date-parts": [
+                [
+                    2014,
+                    2,
+                    18
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "bibr1-0956797614520714",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0048850"
+            }
+        ],
+        "updated-by": [
+            {
+                "DOI": "10.1177/09567976231187595",
+                "type": "retraction",
+                "label": "Retraction",
+                "source": "retraction-watch",
+                "updated": {
+                    "date-parts": [
+                        [
+                            2023,
+                            7,
+                            6
+                        ]
+                    ],
+                    "date-time": "2023-07-06T00:00:00Z",
+                    "timestamp": 1688601600000
+                },
+                "record-id": "45872"
+            },
+            {
+                "DOI": "10.1177/09567976231187595",
+                "type": "retraction",
+                "label": "Retraction",
+                "source": "publisher",
+                "updated": {
+                    "date-parts": [
+                        [
+                            2023,
+                            7,
+                            6
+                        ]
+                    ],
+                    "date-time": "2023-07-06T00:00:00Z",
+                    "timestamp": 1688601600000
+                }
+            }
+        ],
+        "container-title": [
+            "Psychological Science"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1177/0956797614520714",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/full-xml/10.1177/0956797614520714",
+                "content-type": "application/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1177/0956797614520714",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    1
+                ]
+            ],
+            "date-time": "2026-05-01T21:24:16Z",
+            "timestamp": 1777670656000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://journals.sagepub.com/doi/10.1177/0956797614520714"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2014,
+                    2,
+                    18
+                ]
+            ]
+        },
+        "references-count": 1,
+        "journal-issue": {
+            "issue": "4",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2014,
+                        4
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1177/0956797614520714"
+        ],
+        "URL": "https://doi.org/10.1177/0956797614520714",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0956-7976",
+            "1467-9280"
+        ],
+        "issn-type": [
+            {
+                "value": "0956-7976",
+                "type": "print"
+            },
+            {
+                "value": "1467-9280",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2014,
+                    2,
+                    18
+                ]
+            ]
+        }
+    }
+}

@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-A modular, extendable system for automatically checking research outputs for best practices using text search, R code, and/or (optional) LLM queries.
+A modular, extendable system for checking research outputs for best practices using text search, R code, and/or (optional) LLM queries.
 }
 \seealso{
 Useful links:

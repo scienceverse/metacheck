@@ -1,0 +1,11 @@
+structure(list(method = "GET", url = "https://api.crossref.org/works/10.0000%2F0123456789?mailto=metacheck@scienceverse.org", 
+    status_code = 404L, headers = structure(list(date = "Tue, 12 May 2026 16:44:55 GMT", 
+        `content-type` = "text/plain", `access-control-expose-headers` = "Link", 
+        `access-control-allow-headers` = "X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language, Accept-Ranges, Cache-Control", 
+        `access-control-allow-origin` = "*", server = "Jetty(9.4.40.v20210413)", 
+        `x-rate-limit-limit` = "10", `x-rate-limit-interval` = "1s", 
+        `x-concurrency-limit` = "3", `x-api-pool` = "polite", 
+        `permissions-policy` = "interest-cohort=()"), class = "httr2_headers"), 
+    body = charToRaw("Resource not found."), timing = c(redirect = 0, 
+    namelookup = 0, connect = 0, pretransfer = 0.000227, starttransfer = 0.101967, 
+    total = 0.104081), cache = new.env(parent = emptyenv())), class = "httr2_response")

@@ -1,5 +1,10 @@
-# httptest::start_capturing()
-# httptest::use_mock_api()
+# httptest2::start_capturing()
+httptest2::use_mock_api()
+
+# skip online checking in aspredicted_* functions
+testthat::local_mocked_bindings(
+  online = \(...) TRUE
+)
 
 test_that("errors", {
   expect_error(github_info(bad_arg))
@@ -7,8 +12,6 @@ test_that("errors", {
   expect_error(github_readme(bad_arg))
   expect_error(github_languages(bad_arg))
   expect_error(github_files(bad_arg))
-
-  skip_api("github.com")
 
   repo <- "scienceverse/norepo"
   expect_null(github_repo(repo))
@@ -52,8 +55,6 @@ test_that("github_config", {
   expect_true(is.function(metacheck::github_config))
   expect_no_error(helplist <- help(github_config, metacheck))
 
-  skip_api("api.github.com")
-
   h <- github_config(httr2::request("https://api.github.com"))
   expect_s3_class(h, "httr2_request")
 })
@@ -61,8 +62,6 @@ test_that("github_config", {
 test_that("github_repo", {
   expect_true(is.function(metacheck::github_repo))
   expect_no_error(helplist <- help(github_repo, metacheck))
-
-  skip_api("github.com")
 
   urls <- c(
     "scienceverse/metacheck",
@@ -96,8 +95,6 @@ test_that("github_readme", {
   expect_true(is.function(metacheck::github_readme))
   expect_no_error(helplist <- help(github_readme, metacheck))
 
-  skip_api("github.com")
-
   readme <- github_readme("scienceverse/metacheck")
   search <- "# metacheck\n\n"
   expect_true(grepl(search, readme, fixed = TRUE))
@@ -112,8 +109,6 @@ test_that("github_readme", {
 })
 
 test_that("github_languages", {
-  skip_if_offline("github.com")
-
   lang <- github_languages("scienceverse/metacheck")
   expect_true("R" %in% lang$language)
   expect_equal(names(lang), c("repo", "language", "bytes"))
@@ -131,8 +126,6 @@ test_that("github_languages", {
 test_that("github_files", {
   expect_true(is.function(metacheck::github_files))
   expect_no_error(helplist <- help(github_files, metacheck))
-
-  skip_api("github.com")
 
   # repo name already clean
   repo <- "scienceverse/metacheck"
@@ -175,8 +168,6 @@ test_that("github_info", {
   expect_true(is.function(metacheck::github_info))
   expect_no_error(helplist <- help(github_info, metacheck))
 
-  skip_api("github.com")
-
   repo <- "scienceverse/metacheck"
   info <- github_info(repo)
 
@@ -195,5 +186,5 @@ test_that("github_info", {
   expect_true(all(repo == info$languages$repo))
 })
 
-# httptest::stop_mocking()
-# httptest::stop_capturing()
+httptest2::stop_mocking()
+# httptest2::stop_capturing()

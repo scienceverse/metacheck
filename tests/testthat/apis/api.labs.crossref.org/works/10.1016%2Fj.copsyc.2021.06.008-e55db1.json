@@ -1,0 +1,1109 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    25
+                ]
+            ],
+            "date-time": "2026-04-25T02:42:17Z",
+            "timestamp": 1777084937457,
+            "version": "3.51.4"
+        },
+        "reference-count": 73,
+        "publisher": "Elsevier BV",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2022,
+                            2,
+                            1
+                        ]
+                    ],
+                    "date-time": "2022-02-01T00:00:00Z",
+                    "timestamp": 1643673600000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://www.elsevier.com/tdm/userlicense/1.0/"
+            },
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2022,
+                            2,
+                            1
+                        ]
+                    ],
+                    "date-time": "2022-02-01T00:00:00Z",
+                    "timestamp": 1643673600000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://www.elsevier.com/legal/tdmrep-license"
+            },
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2022,
+                            2,
+                            1
+                        ]
+                    ],
+                    "date-time": "2022-02-01T00:00:00Z",
+                    "timestamp": 1643673600000
+                },
+                "content-version": "stm-asf",
+                "delay-in-days": 0,
+                "URL": "https://doi.org/10.15223/policy-017"
+            },
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2022,
+                            2,
+                            1
+                        ]
+                    ],
+                    "date-time": "2022-02-01T00:00:00Z",
+                    "timestamp": 1643673600000
+                },
+                "content-version": "stm-asf",
+                "delay-in-days": 0,
+                "URL": "https://doi.org/10.15223/policy-037"
+            },
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2022,
+                            2,
+                            1
+                        ]
+                    ],
+                    "date-time": "2022-02-01T00:00:00Z",
+                    "timestamp": 1643673600000
+                },
+                "content-version": "stm-asf",
+                "delay-in-days": 0,
+                "URL": "https://doi.org/10.15223/policy-012"
+            },
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2022,
+                            2,
+                            1
+                        ]
+                    ],
+                    "date-time": "2022-02-01T00:00:00Z",
+                    "timestamp": 1643673600000
+                },
+                "content-version": "stm-asf",
+                "delay-in-days": 0,
+                "URL": "https://doi.org/10.15223/policy-029"
+            },
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2022,
+                            2,
+                            1
+                        ]
+                    ],
+                    "date-time": "2022-02-01T00:00:00Z",
+                    "timestamp": 1643673600000
+                },
+                "content-version": "stm-asf",
+                "delay-in-days": 0,
+                "URL": "https://doi.org/10.15223/policy-004"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "elsevier.com",
+                "sciencedirect.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Current Opinion in Psychology"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2022,
+                    2
+                ]
+            ]
+        },
+        "DOI": "10.1016/j.copsyc.2021.06.008",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2021,
+                    6,
+                    21
+                ]
+            ],
+            "date-time": "2021-06-21T01:44:32Z",
+            "timestamp": 1624239872000
+        },
+        "page": "85-90",
+        "update-policy": "https://doi.org/10.1016/elsevier_cm_policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 75,
+        "special_numbering": "C",
+        "title": [
+            "Reading emotions, reading people: Emotion perception and inferences drawn from perceived emotions"
+        ],
+        "prefix": "10.1016",
+        "volume": "43",
+        "author": [
+            {
+                "ORCID": "https://orcid.org/0000-0002-5375-3247",
+                "authenticated-orcid": false,
+                "given": "Jens",
+                "family": "Lange",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "ORCID": "https://orcid.org/0000-0002-6931-6519",
+                "authenticated-orcid": false,
+                "given": "Marc W.",
+                "family": "Heerdink",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "ORCID": "https://orcid.org/0000-0003-0823-7654",
+                "authenticated-orcid": false,
+                "given": "Gerben A.",
+                "family": "van Kleef",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "78",
+        "reference": [
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_sref1",
+                "doi-asserted-by": "crossref",
+                "first-page": "133",
+                "DOI": "10.1007/s10919-019-00293-3",
+                "article-title": "Emotional expression: advances in basic emotion theory",
+                "volume": "43",
+                "author": "Keltner",
+                "year": "2019",
+                "journal-title": "J Nonverbal Behav"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib2",
+                "doi-asserted-by": "crossref",
+                "first-page": "86",
+                "DOI": "10.1037/0022-3514.80.1.86",
+                "article-title": "Anger and advancement versus sadness and subjugation: the effect of negative emotion expressions on social status conferral",
+                "volume": "80",
+                "author": "Tiedens",
+                "year": "2001",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_sref3",
+                "doi-asserted-by": "crossref",
+                "first-page": "128",
+                "DOI": "10.1080/02699930802613828",
+                "article-title": "What emotional reactions can tell us about the nature of others: an appraisal perspective on person perception",
+                "volume": "24",
+                "author": "Hareli",
+                "year": "2010",
+                "journal-title": "Cognit Emot"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_sref4",
+                "doi-asserted-by": "crossref",
+                "first-page": "563",
+                "DOI": "10.1080/02699931.2018.1476324",
+                "article-title": "Emotions as guardians of group norms: expressions of anger and disgust drive inferences about autonomy and purity violations",
+                "volume": "33",
+                "author": "Heerdink",
+                "year": "2019",
+                "journal-title": "Cognit Emot"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib5",
+                "doi-asserted-by": "crossref",
+                "first-page": "262",
+                "DOI": "10.1037/a0033362",
+                "article-title": "On the social influence of emotions in groups: interpersonal effects of anger and happiness on conformity versus deviance",
+                "volume": "105",
+                "author": "Heerdink",
+                "year": "2013",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib6",
+                "doi-asserted-by": "crossref",
+                "first-page": "81",
+                "DOI": "10.1037/a0025403",
+                "article-title": "Flustered and faithful: embarrassment as a signal of prosociality",
+                "volume": "102",
+                "author": "Feinberg",
+                "year": "2012",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib7",
+                "doi-asserted-by": "crossref",
+                "first-page": "658",
+                "DOI": "10.1037/emo0000261",
+                "article-title": "We are sorry, they don't care: misinterpretation of facial embarrassment displays in Arab–White intergroup contexts",
+                "volume": "17",
+                "author": "Kommattam",
+                "year": "2017",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib8",
+                "doi-asserted-by": "crossref",
+                "first-page": "505",
+                "DOI": "10.1080/026999399379168",
+                "article-title": "Social functions of emotions at four levels of analysis",
+                "volume": "13",
+                "author": "Keltner",
+                "year": "1999",
+                "journal-title": "Cognit Emot"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib9",
+                "doi-asserted-by": "crossref",
+                "first-page": "625",
+                "DOI": "10.1080/02699930802645739",
+                "article-title": "Theories of emotion causation: a review",
+                "volume": "23",
+                "author": "Moors",
+                "year": "2009",
+                "journal-title": "Cognit Emot"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib10",
+                "doi-asserted-by": "crossref",
+                "first-page": "86",
+                "DOI": "10.1126/science.164.3875.86",
+                "article-title": "Pan-cultural elements in facial displays of emotion",
+                "volume": "164",
+                "author": "Ekman",
+                "year": "1969",
+                "journal-title": "Science"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib11",
+                "doi-asserted-by": "crossref",
+                "first-page": "124",
+                "DOI": "10.1037/h0030377",
+                "article-title": "Constants across cultures in the face and emotion",
+                "volume": "17",
+                "author": "Ekman",
+                "year": "1971",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib12",
+                "doi-asserted-by": "crossref",
+                "first-page": "203",
+                "DOI": "10.1037/0033-2909.128.2.203",
+                "article-title": "On the universality and cultural specificity of emotion recognition: a meta-analysis",
+                "volume": "128",
+                "author": "Elfenbein",
+                "year": "2002",
+                "journal-title": "Psychol Bull"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib13",
+                "doi-asserted-by": "crossref",
+                "first-page": "1292",
+                "DOI": "10.1037/emo0000576",
+                "article-title": "The recognition of 18 facial-bodily expressions across nine cultures",
+                "volume": "20",
+                "author": "Cordaro",
+                "year": "2020",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib14",
+                "doi-asserted-by": "crossref",
+                "first-page": "184",
+                "DOI": "10.1177/1754073917749880",
+                "article-title": "Bodily communication of emotion: evidence for extrafacial behavioral expressions and available coding systems",
+                "volume": "11",
+                "author": "Witkower",
+                "year": "2019",
+                "journal-title": "Emot Rev"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib15",
+                "doi-asserted-by": "crossref",
+                "first-page": "117",
+                "DOI": "10.1037/emo0000100",
+                "article-title": "The voice conveys emotion in ten globalized cultures and one remote village in Bhutan",
+                "volume": "16",
+                "author": "Cordaro",
+                "year": "2016",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib16",
+                "doi-asserted-by": "crossref",
+                "first-page": "293",
+                "DOI": "10.1037/a0015178",
+                "article-title": "“Worth a thousand words”: absolute and relative decoding of nonlinguistic affect vocalizations",
+                "volume": "9",
+                "author": "Hawk",
+                "year": "2009",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib17",
+                "doi-asserted-by": "crossref",
+                "first-page": "2408",
+                "DOI": "10.1073/pnas.0908239106",
+                "article-title": "Cross-cultural recognition of basic emotions through nonverbal emotional vocalizations",
+                "volume": "107",
+                "author": "Sauter",
+                "year": "2010",
+                "journal-title": "Proc Natl Acad Sci Unit States Am"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib18",
+                "doi-asserted-by": "crossref",
+                "first-page": "614",
+                "DOI": "10.1037/0022-3514.70.3.614",
+                "article-title": "Acoustic profiles in vocal emotion expression",
+                "volume": "70",
+                "author": "Banse",
+                "year": "1996",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib19",
+                "doi-asserted-by": "crossref",
+                "first-page": "686",
+                "DOI": "10.1037/pspi0000066",
+                "article-title": "The expression and recognition of emotions in the voice across five nations: a lens model analysis based on acoustic features",
+                "volume": "111",
+                "author": "Laukka",
+                "year": "2016",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib20",
+                "doi-asserted-by": "crossref",
+                "first-page": "3",
+                "DOI": "10.1177/1754073919897295",
+                "article-title": "Cross-cultural emotion recognition and in-group advantage in vocal expression: a meta-analysis",
+                "volume": "13",
+                "author": "Laukka",
+                "year": "2021",
+                "journal-title": "Emot Rev"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib21",
+                "doi-asserted-by": "crossref",
+                "first-page": "566",
+                "DOI": "10.1037/a0016108",
+                "article-title": "The communication of emotion via touch",
+                "volume": "9",
+                "author": "Hertenstein",
+                "year": "2009",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib22",
+                "doi-asserted-by": "crossref",
+                "first-page": "69",
+                "DOI": "10.1177/1529100619850176",
+                "article-title": "Mapping the passions: toward a high-dimensional taxonomy of emotional experience and expression",
+                "volume": "20",
+                "author": "Cowen",
+                "year": "2019",
+                "journal-title": "Psychol Sci Publ Interest"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib23",
+                "doi-asserted-by": "crossref",
+                "first-page": "106689",
+                "DOI": "10.1016/j.chb.2021.106689",
+                "article-title": "The recognition of emotions beyond facial expressions: comparing emoticons specifically designed to convey basic emotions with other modes of expression",
+                "volume": "118",
+                "author": "Cherbonnier",
+                "year": "2021",
+                "journal-title": "Comput Hum Behav"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib24",
+                "doi-asserted-by": "crossref",
+                "first-page": "2",
+                "DOI": "10.1016/j.obhdp.2011.06.002",
+                "article-title": "Anger and happiness in virtual teams: emotional influences of text and behavior on others' affect in the absence of non-verbal cues",
+                "volume": "116",
+                "author": "Cheshin",
+                "year": "2011",
+                "journal-title": "Organ Behav Hum Decis Process"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib25",
+                "doi-asserted-by": "crossref",
+                "first-page": "57",
+                "DOI": "10.1037/0022-3514.86.1.57",
+                "article-title": "The interpersonal effects of anger and happiness in negotiations",
+                "volume": "86",
+                "author": "Van Kleef",
+                "year": "2004",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib26",
+                "doi-asserted-by": "crossref",
+                "first-page": "565",
+                "DOI": "10.1177/0146167220936054",
+                "article-title": "Beyond the emoticon: are there unintentional cues of emotion in email?",
+                "volume": "47",
+                "author": "Blunden",
+                "year": "2021",
+                "journal-title": "Pers Soc Psychol Bull"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib27",
+                "series-title": "The science of facial expression",
+                "first-page": "107",
+                "article-title": "Coherence between emotions and facial expressions: a research synthesis",
+                "author": "Duran",
+                "year": "2017"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib28",
+                "doi-asserted-by": "crossref",
+                "first-page": "295",
+                "DOI": "10.1037/0022-3514.91.2.295",
+                "article-title": "Evidence for strong dissociation between emotion and facial displays: the case of surprise",
+                "volume": "91",
+                "author": "Reisenzein",
+                "year": "2006",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib29",
+                "doi-asserted-by": "crossref",
+                "first-page": "1142",
+                "DOI": "10.1037/emo0000390",
+                "article-title": "Beyond essentialism: cultural differences in emotions revisited",
+                "volume": "19",
+                "author": "Boiger",
+                "year": "2018",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib30",
+                "doi-asserted-by": "crossref",
+                "first-page": "1842",
+                "DOI": "10.1037/xge0000535",
+                "article-title": "Loud and unclear: intense real-life vocalizations during affective situations are perceptually ambiguous and contextually malleable",
+                "volume": "148",
+                "author": "Atias",
+                "year": "2019",
+                "journal-title": "J Exp Psychol Gen"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib31",
+                "doi-asserted-by": "crossref",
+                "first-page": "1225",
+                "DOI": "10.1126/science.1224313",
+                "article-title": "Body cues, not facial expressions, discriminate between intense positive and negative emotions",
+                "volume": "338",
+                "author": "Aviezer",
+                "year": "2012",
+                "journal-title": "Science"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib32",
+                "doi-asserted-by": "crossref",
+                "first-page": "736",
+                "DOI": "10.1037/1528-3542.7.4.736",
+                "article-title": "Judgments of emotion from spontaneous facial expressions of New Guineans",
+                "volume": "7",
+                "author": "Naab",
+                "year": "2007",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib33",
+                "doi-asserted-by": "crossref",
+                "first-page": "359",
+                "DOI": "10.1080/02699931.2019.1611542",
+                "article-title": "Faces in the wild: a naturalistic study of children's facial expressions in response to an Internet prank",
+                "volume": "34",
+                "author": "Shuster",
+                "year": "2020",
+                "journal-title": "Cognit Emot"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib34",
+                "doi-asserted-by": "crossref",
+                "first-page": "504",
+                "DOI": "10.1080/02699931.2017.1320978",
+                "article-title": "Can perceivers recognise emotions from spontaneous expressions?",
+                "volume": "32",
+                "author": "Sauter",
+                "year": "2018",
+                "journal-title": "Cognit Emot"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib35",
+                "doi-asserted-by": "crossref",
+                "first-page": "41",
+                "DOI": "10.1177/1754073912451349",
+                "article-title": "Effects of dynamic aspects of facial expressions: a review",
+                "volume": "5",
+                "author": "Krumhuber",
+                "year": "2013",
+                "journal-title": "Emot Rev"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_sref36",
+                "doi-asserted-by": "crossref",
+                "first-page": "102",
+                "DOI": "10.1037/0033-2909.115.1.102",
+                "article-title": "Is there universal recognition of emotion from facial expressions? A review of the cross-cultural studies",
+                "volume": "115",
+                "author": "Russell",
+                "year": "1994",
+                "journal-title": "Psychol Bull"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib37",
+                "doi-asserted-by": "crossref",
+                "first-page": "898",
+                "DOI": "10.1080/02699931.2010.508270",
+                "article-title": "Do proposed facial expressions of contempt, shame, embarrassment, and compassion communicate the predicted emotion?",
+                "volume": "25",
+                "author": "Widen",
+                "year": "2011",
+                "journal-title": "Cognit Emot"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib38",
+                "doi-asserted-by": "crossref",
+                "first-page": "538",
+                "DOI": "10.1037/emo0000247",
+                "article-title": "The emotion seen in a face can be a methodological artifact: the process of elimination hypothesis",
+                "volume": "17",
+                "author": "DiGirolamo",
+                "year": "2017",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib39",
+                "article-title": "On evidence for a dozen new basic emotions: a methodological critique",
+                "author": "Kollareth",
+                "year": "2020",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib40",
+                "doi-asserted-by": "crossref",
+                "first-page": "911",
+                "DOI": "10.1177/0956797613517239",
+                "article-title": "Cultural relativity in perceiving emotion from vocalizations",
+                "volume": "25",
+                "author": "Gendron",
+                "year": "2014",
+                "journal-title": "Psychol Sci"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib41",
+                "doi-asserted-by": "crossref",
+                "first-page": "354",
+                "DOI": "10.1177/0956797614560771",
+                "article-title": "Emotional vocalizations are recognized across cultures regardless of the valence of distractors",
+                "volume": "26",
+                "author": "Sauter",
+                "year": "2015",
+                "journal-title": "Psychol Sci"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib42",
+                "doi-asserted-by": "crossref",
+                "first-page": "830",
+                "DOI": "10.1037/xge0000172",
+                "article-title": "Reading emotions from faces in two indigenous societies",
+                "volume": "145",
+                "author": "Crivelli",
+                "year": "2016",
+                "journal-title": "J Exp Psychol Gen"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib43",
+                "doi-asserted-by": "crossref",
+                "first-page": "148",
+                "DOI": "10.1016/j.copsyc.2019.07.009",
+                "article-title": "How hierarchy shapes our emotional lives: effects of power and status on emotional experience, expression, and responsiveness",
+                "volume": "33",
+                "author": "Van Kleef",
+                "year": "2020",
+                "journal-title": "Curr Opin Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib44",
+                "doi-asserted-by": "crossref",
+                "first-page": "507",
+                "DOI": "10.1146/annurev.psych.59.103006.093646",
+                "article-title": "Human abilities: emotional intelligence",
+                "volume": "59",
+                "author": "Mayer",
+                "year": "2008",
+                "journal-title": "Annu Rev Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib45",
+                "doi-asserted-by": "crossref",
+                "first-page": "186",
+                "DOI": "10.1207/S15327957PSPR0402_06",
+                "article-title": "The emotional side of prejudice: the attribution of secondary emotions to ingroups and outgroups",
+                "volume": "4",
+                "author": "Leyens",
+                "year": "2000",
+                "journal-title": "Pers Soc Psychol Rev"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib46",
+                "first-page": "103809",
+                "article-title": "Perceived to feel less: intensity bias in interethnic emotion perception",
+                "volume": "84",
+                "author": "Kommattam",
+                "year": "2019",
+                "journal-title": "J Exp Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_sref47",
+                "doi-asserted-by": "crossref",
+                "first-page": "1",
+                "DOI": "10.1177/1529100619832930",
+                "article-title": "Emotional expressions reconsidered: challenges to inferring emotion from human facial movements",
+                "volume": "20",
+                "author": "Barrett",
+                "year": "2019",
+                "journal-title": "Psychol Sci Publ Interest"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_sref48",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1111/spc3.12393",
+                "article-title": "Context is everything (in emotion research)",
+                "volume": "12",
+                "author": "Greenaway",
+                "year": "2018",
+                "journal-title": "Soc Personal Psychol Compass"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_sref49",
+                "doi-asserted-by": "crossref",
+                "first-page": "251",
+                "DOI": "10.1038/s41586-020-3037-7",
+                "article-title": "Sixteen facial expressions occur in similar contexts worldwide",
+                "volume": "589",
+                "author": "Cowen",
+                "year": "2021",
+                "journal-title": "Nature"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib50",
+                "doi-asserted-by": "crossref",
+                "first-page": "202",
+                "DOI": "10.1038/d41586-020-03509-5",
+                "article-title": "AI weighs in on debate about universal facial expressions",
+                "volume": "589",
+                "author": "Barrett",
+                "year": "2021",
+                "journal-title": "Nature"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib51",
+                "doi-asserted-by": "crossref",
+                "first-page": "595",
+                "DOI": "10.1177/0956797610363547",
+                "article-title": "Context is routinely encoded during emotion perception",
+                "volume": "21",
+                "author": "Barrett",
+                "year": "2010",
+                "journal-title": "Psychol Sci"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib52",
+                "doi-asserted-by": "crossref",
+                "first-page": "205",
+                "DOI": "10.1037/0022-3514.70.2.205",
+                "article-title": "Do facial expressions signal specific emotions? Judging emotion from the face in context",
+                "volume": "70",
+                "author": "Carroll",
+                "year": "1996",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib53",
+                "doi-asserted-by": "crossref",
+                "first-page": "287",
+                "DOI": "10.1037/emo0000032",
+                "article-title": "Context is more powerful than we think: contextual cues override facial cues even for valence",
+                "volume": "15",
+                "author": "Kayyal",
+                "year": "2015",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib54",
+                "doi-asserted-by": "crossref",
+                "first-page": "184",
+                "DOI": "10.1111/j.1467-8721.2009.01633.x",
+                "article-title": "How emotions regulate social life: the emotions as social information (EASI) Model",
+                "volume": "18",
+                "author": "Van Kleef",
+                "year": "2009",
+                "journal-title": "Curr Dir Psychol Sci"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_sref55",
+                "unstructured": "Van Kleef GA, Côté S: The social effects of emotions. Annu Rev Psychol in press."
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib56",
+                "doi-asserted-by": "crossref",
+                "first-page": "73",
+                "DOI": "10.1037/a0034251",
+                "article-title": "Reading people's minds from emotion expressions in interdependent decision making",
+                "volume": "106",
+                "author": "de Melo",
+                "year": "2014",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib57",
+                "doi-asserted-by": "crossref",
+                "first-page": "150",
+                "DOI": "10.1037/1528-3542.3.2.150",
+                "article-title": "What do facial expressions convey: feeling states, behavioral intentions, or actions requests?",
+                "volume": "3",
+                "author": "Horstmann",
+                "year": "2003",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib58",
+                "doi-asserted-by": "crossref",
+                "first-page": "278",
+                "DOI": "10.1207/s15327957pspr0904_1",
+                "article-title": "Do facial movements express emotions or communicate motives?",
+                "volume": "9",
+                "author": "Parkinson",
+                "year": "2005",
+                "journal-title": "Pers Soc Psychol Rev"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib59",
+                "doi-asserted-by": "crossref",
+                "first-page": "789",
+                "DOI": "10.1080/02699930701516791",
+                "article-title": "Facial expressions allow inference of both emotions and their components",
+                "volume": "22",
+                "author": "Scherer",
+                "year": "2008",
+                "journal-title": "Cognit Emot"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib60",
+                "doi-asserted-by": "crossref",
+                "first-page": "47",
+                "DOI": "10.1080/02699931.2015.1075964",
+                "article-title": "Emotion perception from a componential perspective",
+                "volume": "31",
+                "author": "Shuman",
+                "year": "2017",
+                "journal-title": "Cognit Emot"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib61",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.3389/fpsyg.2015.01077",
+                "article-title": "Deriving meaning from others' emotions: attribution, appraisal, and the use of emotions as social information",
+                "volume": "6",
+                "author": "Van Doorn",
+                "year": "2015",
+                "journal-title": "Front Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib62",
+                "first-page": "103876",
+                "article-title": "When does anger boost status?",
+                "volume": "85",
+                "author": "Gaertig",
+                "year": "2019",
+                "journal-title": "J Exp Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib63",
+                "doi-asserted-by": "crossref",
+                "first-page": "24",
+                "DOI": "10.1037/a0032849",
+                "article-title": "Pride displays communicate self-interest and support for meritocracy",
+                "volume": "105",
+                "author": "Horberg",
+                "year": "2013",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib64",
+                "doi-asserted-by": "crossref",
+                "first-page": "1171",
+                "DOI": "10.1037/a0030074",
+                "article-title": "Looking down: the influence of contempt and compassion on emergent leadership categorizations",
+                "volume": "97",
+                "author": "Melwani",
+                "year": "2012",
+                "journal-title": "J Appl Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib65",
+                "doi-asserted-by": "crossref",
+                "first-page": "882",
+                "DOI": "10.1177/0956797610370755",
+                "article-title": "Cultural variance in the interpersonal effects of anger in negotiations",
+                "volume": "21",
+                "author": "Adam",
+                "year": "2010",
+                "journal-title": "Psychol Sci"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib66",
+                "doi-asserted-by": "crossref",
+                "first-page": "163",
+                "DOI": "10.1037/a0028412",
+                "article-title": "Cross-cultural evidence that the nonverbal expression of pride is an automatic status signal",
+                "volume": "142",
+                "author": "Tracy",
+                "year": "2013",
+                "journal-title": "J Exp Psychol Gen"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib67",
+                "doi-asserted-by": "crossref",
+                "first-page": "453",
+                "DOI": "10.1037/pspi0000026",
+                "article-title": "The tango of two deadly sins: the social-functional relation of envy and pride",
+                "volume": "109",
+                "author": "Lange",
+                "year": "2015",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib68",
+                "doi-asserted-by": "crossref",
+                "first-page": "442",
+                "DOI": "10.1080/02699931.2011.648174",
+                "article-title": "Emotion and the construal of social situations: inferences of cooperation versus competition from expressions of anger, happiness, and disappointment",
+                "volume": "26",
+                "author": "Van Doorn",
+                "year": "2012",
+                "journal-title": "Cognit Emot"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib69",
+                "doi-asserted-by": "crossref",
+                "first-page": "1395",
+                "DOI": "10.1080/02699931.2013.791615",
+                "article-title": "Emotions as signals of normative conduct",
+                "volume": "27",
+                "author": "Hareli",
+                "year": "2013",
+                "journal-title": "Cognit Emot"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib70",
+                "doi-asserted-by": "crossref",
+                "first-page": "40",
+                "DOI": "10.1037/pspi0000202",
+                "article-title": "A new perspective on the social functions of emotions: gratitude and the witnessing effect",
+                "volume": "119",
+                "author": "Algoe",
+                "year": "2020",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib71",
+                "doi-asserted-by": "crossref",
+                "first-page": "1124",
+                "DOI": "10.1037/apl0000003",
+                "article-title": "The persuasive power of emotions: effects of emotional expressions on attitude formation and change",
+                "volume": "100",
+                "author": "Van Kleef",
+                "year": "2015",
+                "journal-title": "J Appl Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_bib72",
+                "doi-asserted-by": "crossref",
+                "first-page": "503",
+                "DOI": "10.1037/a0023492",
+                "article-title": "Held in contempt: the psychological, interpersonal, and performance consequences of contempt in a work context",
+                "volume": "101",
+                "author": "Melwani",
+                "year": "2011",
+                "journal-title": "J Pers Soc Psychol"
+            },
+            {
+                "key": "10.1016/j.copsyc.2021.06.008_sref73",
+                "doi-asserted-by": "crossref",
+                "first-page": "1",
+                "DOI": "10.1016/j.psychsport.2018.11.004",
+                "article-title": "Emotional games: how coaches' emotional expressions shape players' emotions, inferences, and team performance",
+                "volume": "41",
+                "author": "Van Kleef",
+                "year": "2019",
+                "journal-title": "Psychol Sport Exerc"
+            }
+        ],
+        "container-title": [
+            "Current Opinion in Psychology"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://api.elsevier.com/content/article/PII:S2352250X21000774?httpAccept=text/xml",
+                "content-type": "text/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://api.elsevier.com/content/article/PII:S2352250X21000774?httpAccept=text/plain",
+                "content-type": "text/plain",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2025,
+                    11,
+                    6
+                ]
+            ],
+            "date-time": "2025-11-06T16:59:59Z",
+            "timestamp": 1762448399000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://linkinghub.elsevier.com/retrieve/pii/S2352250X21000774"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2022,
+                    2
+                ]
+            ]
+        },
+        "references-count": 73,
+        "alternative-id": [
+            "S2352250X21000774"
+        ],
+        "URL": "https://doi.org/10.1016/j.copsyc.2021.06.008",
+        "relation": {
+
+        },
+        "ISSN": [
+            "2352-250X"
+        ],
+        "issn-type": [
+            {
+                "value": "2352-250X",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2022,
+                    2
+                ]
+            ]
+        },
+        "assertion": [
+            {
+                "value": "Elsevier",
+                "name": "publisher",
+                "label": "This article is maintained by"
+            },
+            {
+                "value": "Reading emotions, reading people: Emotion perception and inferences drawn from perceived emotions",
+                "name": "articletitle",
+                "label": "Article Title"
+            },
+            {
+                "value": "Current Opinion in Psychology",
+                "name": "journaltitle",
+                "label": "Journal Title"
+            },
+            {
+                "value": "https://doi.org/10.1016/j.copsyc.2021.06.008",
+                "name": "articlelink",
+                "label": "CrossRef DOI link to publisher maintained version"
+            },
+            {
+                "value": "article",
+                "name": "content_type",
+                "label": "Content Type"
+            },
+            {
+                "value": "© 2021 Elsevier Ltd. All rights reserved.",
+                "name": "copyright",
+                "label": "Copyright"
+            }
+        ]
+    }
+}

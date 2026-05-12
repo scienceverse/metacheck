@@ -1,0 +1,1833 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    6
+                ]
+            ],
+            "date-time": "2026-05-06T23:09:58Z",
+            "timestamp": 1778108998163,
+            "version": "3.51.4"
+        },
+        "reference-count": 145,
+        "publisher": "Springer Science and Business Media LLC",
+        "issue": "2",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2019,
+                            2,
+                            7
+                        ]
+                    ],
+                    "date-time": "2019-02-07T00:00:00Z",
+                    "timestamp": 1549497600000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "http://www.springer.com/tdm"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "link.springer.com"
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "J Nonverbal Behav"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2019,
+                    6
+                ]
+            ]
+        },
+        "DOI": "10.1007/s10919-019-00293-3",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2019,
+                    2,
+                    7
+                ]
+            ],
+            "date-time": "2019-02-07T19:44:12Z",
+            "timestamp": 1549568652000
+        },
+        "page": "133-160",
+        "update-policy": "https://doi.org/10.1007/springer_crossmark_policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 343,
+        "title": [
+            "Emotional Expression: Advances in Basic Emotion Theory"
+        ],
+        "prefix": "10.1007",
+        "volume": "43",
+        "author": [
+            {
+                "ORCID": "https://orcid.org/0000-0001-9061-5292",
+                "authenticated-orcid": false,
+                "given": "Dacher",
+                "family": "Keltner",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Disa",
+                "family": "Sauter",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Jessica",
+                "family": "Tracy",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Alan",
+                "family": "Cowen",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "297",
+        "published-online": {
+            "date-parts": [
+                [
+                    2019,
+                    2,
+                    7
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "issue": "3",
+                "key": "293_CR1",
+                "doi-asserted-by": "publisher",
+                "first-page": "355",
+                "DOI": "10.1037/emo0000378",
+                "volume": "18",
+                "author": "CL Anderson",
+                "year": "2018",
+                "unstructured": "Anderson, C. L., Monroy, M., & Keltner, D. (2018). Emotion in the wilds of nature: The coherence and contagion of fear during threatening group-based outdoors experiences. Emotion, 18(3), 355–368.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR2",
+                "doi-asserted-by": "publisher",
+                "first-page": "603",
+                "DOI": "10.1037/a0023164",
+                "volume": "11",
+                "author": "B App",
+                "year": "2011",
+                "unstructured": "App, B., McIntosh, D. N., Reed, C. L., & Hertenstein, M. J. (2011). Nonverbal channel use in communication of emotion: How may depend on why. Emotion, 11(3), 603–617.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "7",
+                "key": "293_CR200",
+                "doi-asserted-by": "publisher",
+                "first-page": "724",
+                "DOI": "10.1111/j.1467-9280.2008.02148.x",
+                "volume": "19",
+                "author": "H Aviezer",
+                "year": "2008",
+                "unstructured": "Aviezer, H., Hassin, R. R., Ryan, J., Grady, C., Susskind, J., Anderson, A., et al. (2008). Angry, disgusted, or afraid?: Studies on the malleability of emotion perception. Psychological Science, 19(7), 724–732.",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "issue": "6111",
+                "key": "293_CR3",
+                "doi-asserted-by": "publisher",
+                "first-page": "1225",
+                "DOI": "10.1126/science.1224313",
+                "volume": "338",
+                "author": "H Aviezer",
+                "year": "2012",
+                "unstructured": "Aviezer, H., Trope, Y., & Todorov, A. (2012). Body cues, not facial expressions, discriminate between intense positive and negative emotions. Science, 338(6111), 1225–1229.",
+                "journal-title": "Science"
+            },
+            {
+                "key": "293_CR4",
+                "unstructured": "Bai, Y., McNeil, G., Cowen, A., & Keltner, D. (2018). Darwin’s Emoji: Dimensionality, structure, and conceptualization in the recognition of emotion. Manuscript under review."
+            },
+            {
+                "issue": "1",
+                "key": "293_CR5",
+                "doi-asserted-by": "publisher",
+                "first-page": "148",
+                "DOI": "10.1177/147470491301100114",
+                "volume": "11",
+                "author": "MJH Balsters",
+                "year": "2013",
+                "unstructured": "Balsters, M. J. H., Krahmer, E. J., Swerts, M. G. J., & Vingerhoets, A. J. J. M. (2013). Emotional tears facilitate the recognition of sadness and the perceived need for social support. Evolutionary Psychology, 11(1), 148–158.",
+                "journal-title": "Evolutionary Psychology"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR6",
+                "doi-asserted-by": "publisher",
+                "first-page": "614",
+                "DOI": "10.1037/0022-3514.70.3.614",
+                "volume": "70",
+                "author": "R Banse",
+                "year": "1996",
+                "unstructured": "Banse, R., & Scherer, K. R. (1996). Acoustic profiles in vocal emotion expression. Journal of Personality and Social Psychology, 70(3), 614.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "5",
+                "key": "293_CR7",
+                "doi-asserted-by": "publisher",
+                "first-page": "286",
+                "DOI": "10.1177/0963721411422522",
+                "volume": "20",
+                "author": "LF Barrett",
+                "year": "2011",
+                "unstructured": "Barrett, L. F., Mesquita, B., & Gendron, M. (2011). Context in emotion perception. Current Directions in Psychological Science, 20(5), 286–290.",
+                "journal-title": "Current Directions in Psychological Science"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR8",
+                "doi-asserted-by": "publisher",
+                "first-page": "312",
+                "DOI": "10.1016/j.neuroimage.2004.11.043",
+                "volume": "25",
+                "author": "M Botvinick",
+                "year": "2005",
+                "unstructured": "Botvinick, M., Jha, A. P., Bylsma, L. M., Fabian, S. A., Solomon, P. E., & Prkachin, K. M. (2005). Viewing facial expressions of pain engages cortical areas involved in the direct experience of pain. Neuroimage, 25(1), 312–319.",
+                "journal-title": "Neuroimage"
+            },
+            {
+                "key": "293_CR9",
+                "first-page": "131",
+                "volume-title": "The origins of fear",
+                "author": "I Bretherton",
+                "year": "1974",
+                "unstructured": "Bretherton, I., & Ainsworth, J. (1974). Responses of one-year-olds to a strange situation. In M. Lewis & L. A. Rosenbaum (Eds.), The origins of fear (pp. 131–164). New York: Wiley publishers."
+            },
+            {
+                "issue": "1",
+                "key": "293_CR10",
+                "doi-asserted-by": "publisher",
+                "first-page": "1",
+                "DOI": "10.1111/j.1469-7998.2012.00920.x",
+                "volume": "288",
+                "author": "EF Briefer",
+                "year": "2012",
+                "unstructured": "Briefer, E. F. (2012). Vocal expression of emotions in mammals: Mechanisms of production and evidence. Journal of Zoology, 288(1), 1–20.",
+                "journal-title": "Journal of Zoology"
+            },
+            {
+                "issue": "8",
+                "key": "293_CR11",
+                "doi-asserted-by": "publisher",
+                "first-page": "746",
+                "DOI": "10.1111/j.1467-9280.2007.01970.x",
+                "volume": "18",
+                "author": "GA Bryant",
+                "year": "2007",
+                "unstructured": "Bryant, G. A., & Barrett, H. C. (2007). Recognizing intentions in infant-directed speech: Evidence for universals. Psychological Science, 18(8), 746–751.",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "key": "293_CR12",
+                "doi-asserted-by": "publisher",
+                "first-page": "37",
+                "DOI": "10.1080/02699931.2012.683852",
+                "volume": "27",
+                "author": "B Campos",
+                "year": "2013",
+                "unstructured": "Campos, B., Shiota, M., Keltner, D., Gonzaga, G., & Goetz, J. (2013). What is shared, what is different? Core relational themes and expressive displays of eight positive emotions. Cognition and Emotion, 27, 37–52.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "issue": "5918",
+                "key": "293_CR13",
+                "doi-asserted-by": "publisher",
+                "first-page": "1222",
+                "DOI": "10.1126/science.1165565",
+                "volume": "323",
+                "author": "HA Chapman",
+                "year": "2009",
+                "unstructured": "Chapman, H. A., Kim, D. A., Susskind, J. M., & Anderson, A. K. (2009). In bad taste: Evidence for the oral origins of moral disgust. Science, 323(5918), 1222–1226.",
+                "journal-title": "Science"
+            },
+            {
+                "key": "293_CR14",
+                "doi-asserted-by": "publisher",
+                "first-page": "117",
+                "DOI": "10.1037/emo0000100",
+                "volume": "1",
+                "author": "DT Cordaro",
+                "year": "2016",
+                "unstructured": "Cordaro, D. T., Keltner, D., Tshering, S., Wangchuk, D., & Flynn, L. (2016). The voice conveys emotion in ten globalized cultures and one remote village in Bhutan. Emotion, 1, 117–128.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR15",
+                "doi-asserted-by": "publisher",
+                "first-page": "75",
+                "DOI": "10.1037/emo0000302",
+                "volume": "18",
+                "author": "DT Cordaro",
+                "year": "2018",
+                "unstructured": "Cordaro, D. T., Sun, R., Keltner, D., Kamble, S., Huddar, N., & McNeil, G. (2018). Universals and cultural variations in 22 emotional expressions across five cultures. Emotion, 18(1), 75–93.",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "293_CR16",
+                "doi-asserted-by": "publisher",
+                "first-page": "830",
+                "DOI": "10.1037/xge0000172",
+                "volume": "145",
+                "author": "C Crivelli",
+                "year": "2016",
+                "unstructured": "Crivelli, C., Jarillo, S., Russell, J. A., & Fernandez-Dols, J. M. (2016). Reading emotions from faces in two indigenous societies. Journal of Experimental Psychology: General, 145, 830–843.",
+                "journal-title": "Journal of Experimental Psychology: General"
+            },
+            {
+                "issue": "5",
+                "key": "293_CR17",
+                "doi-asserted-by": "publisher",
+                "first-page": "1085",
+                "DOI": "10.1037/a0025737",
+                "volume": "12",
+                "author": "N Dael",
+                "year": "2012",
+                "unstructured": "Dael, N., Mortillaro, M., & Scherer, K. R. (2012). Emotion expression in body action and posture. Emotion, 12(5), 1085.",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "293_CR18",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Darwin, C. (1872/1998). The expression of the emotions in man and animals (3rd ed.). New York: Oxford University Press.",
+                "DOI": "10.1037/10001-000"
+            },
+            {
+                "key": "293_CR19",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.4159/9780674033177",
+                "volume-title": "Good natured",
+                "author": "FB Waal De",
+                "year": "1996",
+                "unstructured": "De Waal, F. B. (1996). Good natured. Cambridge: Harvard University Press."
+            },
+            {
+                "issue": "15",
+                "key": "293_CR20",
+                "doi-asserted-by": "publisher",
+                "first-page": "E1454",
+                "DOI": "10.1073/pnas.1322355111",
+                "volume": "111",
+                "author": "S Du",
+                "year": "2014",
+                "unstructured": "Du, S., Tao, Y., & Martinez, A. M. (2014). Compound facial expressions of emotion. Proceedings of the National Academy of Sciences, 111(15), E1454–E1462.",
+                "journal-title": "Proceedings of the National Academy of Sciences"
+            },
+            {
+                "issue": "4",
+                "key": "293_CR21",
+                "doi-asserted-by": "publisher",
+                "first-page": "160",
+                "DOI": "10.1016/j.pmn.2007.10.003",
+                "volume": "9",
+                "author": "A Dubois",
+                "year": "2008",
+                "unstructured": "Dubois, A., Bringuier, S., Capdevilla, X., & Pry, R. (2008). Vocal and verbal expression of postoperative pain in preschoolers. Pain Management Nursing, 9(4), 160–165.",
+                "journal-title": "Pain Management Nursing"
+            },
+            {
+                "key": "293_CR22",
+                "first-page": "107",
+                "volume-title": "The science of facial expression",
+                "author": "JI Duran",
+                "year": "2017",
+                "unstructured": "Duran, J. I., Reisenzein, R., & Fernandez-Dols, J.-M. (2017). Coherence between emotions and facial expressions. In J.-M. Fernandez-Dols & J. A. Russell (Eds.), The science of facial expression (pp. 107–129). New York: Oxford University Press."
+            },
+            {
+                "key": "293_CR23",
+                "volume-title": "Human ethology",
+                "author": "I Eibl-Eibesfeldt",
+                "year": "1989",
+                "unstructured": "Eibl-Eibesfeldt, I. (1989). Human ethology. New York: Aldine De Gruyter."
+            },
+            {
+                "issue": "1",
+                "key": "293_CR24",
+                "doi-asserted-by": "publisher",
+                "first-page": "55",
+                "DOI": "10.1037/0022-3514.57.1.55",
+                "volume": "57",
+                "author": "N Eisenberg",
+                "year": "1989",
+                "unstructured": "Eisenberg, N., Fabes, R. A., Miller, P. A., Fultz, J., Shell, R., Mathy, R. M., et al. (1989). Relation of sympathy and personal distress to prosocial behavior: A multimethod study. Journal of Personality and Social Psychology, 57(1), 55.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "293_CR25",
+                "doi-asserted-by": "publisher",
+                "first-page": "169",
+                "DOI": "10.1080/02699939208411068",
+                "volume": "6",
+                "author": "P Ekman",
+                "year": "1992",
+                "unstructured": "Ekman, P. (1992). An argument for basic emotions. Cognition and Emotion, 6, 169–200.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "293_CR26",
+                "doi-asserted-by": "publisher",
+                "first-page": "384",
+                "DOI": "10.1037/0003-066X.48.4.384",
+                "volume": "48",
+                "author": "P Ekman",
+                "year": "1993",
+                "unstructured": "Ekman, P. (1993). Facial expression of emotion. American Psychologist, 48, 384–392.",
+                "journal-title": "American Psychologist"
+            },
+            {
+                "issue": "4",
+                "key": "293_CR27",
+                "doi-asserted-by": "publisher",
+                "first-page": "364",
+                "DOI": "10.1177/1754073911410740",
+                "volume": "3",
+                "author": "P Ekman",
+                "year": "2011",
+                "unstructured": "Ekman, P., & Cordaro, D. (2011). What is meant by calling emotions basic. Emotion Review, 3(4), 364–370.",
+                "journal-title": "Emotion Review"
+            },
+            {
+                "key": "293_CR28",
+                "volume-title": "The nature of emotion: Fundamental questions",
+                "author": "PE Ekman",
+                "year": "1994",
+                "unstructured": "Ekman, P. E., & Davidson, R. J. (1994). The nature of emotion: Fundamental questions. Oxford: Oxford University Press."
+            },
+            {
+                "key": "293_CR29",
+                "volume-title": "Facial action coding system: Investigatoris guide",
+                "author": "P Ekman",
+                "year": "1978",
+                "unstructured": "Ekman, P., & Friesen, W. V. (1978). Facial action coding system: Investigatoris guide. Washington: Consulting Psychologists Press."
+            },
+            {
+                "issue": "2",
+                "key": "293_CR30",
+                "doi-asserted-by": "publisher",
+                "first-page": "159",
+                "DOI": "10.1007/BF00992253",
+                "volume": "10",
+                "author": "P Ekman",
+                "year": "1986",
+                "unstructured": "Ekman, P., & Friesen, W. V. (1986). A new pan-cultural facial expression of emotion. Motivation and Emotion, 10(2), 159–168.",
+                "journal-title": "Motivation and Emotion"
+            },
+            {
+                "key": "293_CR31",
+                "volume-title": "What the face reveals: Basic and applied studies of spontaneous expression using the Facial Action Coding System (FACS)",
+                "year": "1997",
+                "unstructured": "Ekman, P., & Rosenberg, E. L. (Eds.). (1997). What the face reveals: Basic and applied studies of spontaneous expression using the Facial Action Coding System (FACS). New York: Oxford University Press."
+            },
+            {
+                "key": "293_CR32",
+                "doi-asserted-by": "publisher",
+                "first-page": "86",
+                "DOI": "10.1126/science.164.3875.86",
+                "volume": "164",
+                "author": "P Ekman",
+                "year": "1969",
+                "unstructured": "Ekman, P., Sorenson, E. R., & Friesen, W. V. (1969). Pan-cultural elements in the Facial Display of Emotions. Science, 164, 86–88.",
+                "journal-title": "Science"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR33",
+                "doi-asserted-by": "publisher",
+                "first-page": "90",
+                "DOI": "10.1177/1754073912451332",
+                "volume": "5",
+                "author": "HA Elfenbein",
+                "year": "2013",
+                "unstructured": "Elfenbein, H. A. (2013). Nonverbal dialects and accents in facial expressions of emotion. Emotion Review, 5(1), 90–96.",
+                "journal-title": "Emotion Review"
+            },
+            {
+                "issue": "2",
+                "key": "293_CR34",
+                "doi-asserted-by": "publisher",
+                "first-page": "203",
+                "DOI": "10.1037/0033-2909.128.2.203",
+                "volume": "128",
+                "author": "HA Elfenbein",
+                "year": "2002",
+                "unstructured": "Elfenbein, H. A., & Ambady, N. (2002). On the universality and cultural specificity of emotion recognition: A meta-analysis. Psychological Bulletin, 128(2), 203–235.",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR35",
+                "doi-asserted-by": "publisher",
+                "first-page": "131",
+                "DOI": "10.1037/1528-3542.7.1.131",
+                "volume": "7",
+                "author": "HA Elfenbein",
+                "year": "2007",
+                "unstructured": "Elfenbein, H. A., Beaupre, M., Levesque, M., & Hess, U. (2007). Toward a dialect theory: Cultural differences in the expression and recognition of posed facial expressions. Emotion, 7(1), 131–146.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR36",
+                "doi-asserted-by": "publisher",
+                "first-page": "130",
+                "DOI": "10.1177/0022022117736270",
+                "volume": "49",
+                "author": "X Fang",
+                "year": "2018",
+                "unstructured": "Fang, X., Sauter, D. A., & van Kleef, G. (2018). Mixed emotions: The specificity of emotion perception from static and dynamic faces across cultures. Journal of Cross-Cultural Psychology, 49(1), 130–148.",
+                "journal-title": "Journal of Cross-Cultural Psychology"
+            },
+            {
+                "key": "293_CR37",
+                "unstructured": "Fang, X., van Kleef, G., & Sauter, D. A. (in press). Person perception from changing emotional expressions: Primacy, recency, or averaging effect? Cognition and Emotion."
+            },
+            {
+                "key": "293_CR38",
+                "doi-asserted-by": "publisher",
+                "first-page": "81",
+                "DOI": "10.1037/a0025403",
+                "volume": "102",
+                "author": "M Feinberg",
+                "year": "2012",
+                "unstructured": "Feinberg, M., Willer, R., & Keltner, D. (2012). Flustered and faithful: Embarrassment as a signal of prosociality. Journal of Personality and Social Psychology, 102, 81–97.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "2–3",
+                "key": "293_CR39",
+                "doi-asserted-by": "publisher",
+                "first-page": "190",
+                "DOI": "10.1080/1047840X.2017.1338100",
+                "volume": "28",
+                "author": "AH Fischer",
+                "year": "2017",
+                "unstructured": "Fischer, A. H., & Sauter, D. A. (2017). What the theory of affective pragmatics does and doesn’t do. Psychological Inquiry, 28(2–3), 190–193.",
+                "journal-title": "Psychological Inquiry"
+            },
+            {
+                "issue": "2",
+                "key": "293_CR40",
+                "doi-asserted-by": "publisher",
+                "first-page": "177",
+                "DOI": "10.1080/02699930500359617",
+                "volume": "20",
+                "author": "W Flack",
+                "year": "2006",
+                "unstructured": "Flack, W. (2006). Peripheral feedback effects of facial expressions, bodily postures, and vocal expressions on emotional feelings. Cognition and Emotion, 20(2), 177–195.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR41",
+                "doi-asserted-by": "publisher",
+                "first-page": "3",
+                "DOI": "10.1016/0301-0511(91)90003-Y",
+                "volume": "32",
+                "author": "AJ Fridlund",
+                "year": "1991",
+                "unstructured": "Fridlund, A. J. (1991). Evolution and facial action in reflex, social motive, and paralanguage. Biological Psychology, 32(1), 3–100.",
+                "journal-title": "Biological Psychology"
+            },
+            {
+                "key": "293_CR42",
+                "volume-title": "The emotions",
+                "author": "NH Frijda",
+                "year": "1986",
+                "unstructured": "Frijda, N. H. (1986). The emotions. New York: Cambridge University Press."
+            },
+            {
+                "issue": "3",
+                "key": "293_CR43",
+                "doi-asserted-by": "publisher",
+                "first-page": "351",
+                "DOI": "10.1037/a0018807",
+                "volume": "136",
+                "author": "JL Goetz",
+                "year": "2010",
+                "unstructured": "Goetz, J. L., Keltner, D., & Simon-Thomas, E. (2010). Compassion: An evolutionary analysis and empirical review. Psychological Bulletin, 136(3), 351–374.",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "issue": "2",
+                "key": "293_CR44",
+                "doi-asserted-by": "publisher",
+                "first-page": "163",
+                "DOI": "10.1037/1528-3542.6.2.163",
+                "volume": "6",
+                "author": "GC Gonzaga",
+                "year": "2006",
+                "unstructured": "Gonzaga, G. C., Turner, R. A., Keltner, D., Campos, B., & Altemus, M. (2006). Romantic love and sexual desire in close relationships. Emotion, 6(2), 163–179.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "4",
+                "key": "293_CR45",
+                "doi-asserted-by": "publisher",
+                "first-page": "223",
+                "DOI": "10.1007/s10919-010-0094-x",
+                "volume": "34",
+                "author": "MM Gross",
+                "year": "2010",
+                "unstructured": "Gross, M. M., Crane, E. A., & Fredrickson, B. L. (2010). Methodology for assessing bodily expression of emotion. Journal of Nonverbal Behavior, 34(4), 223–248.",
+                "journal-title": "Journal of Nonverbal Behavior"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR46",
+                "doi-asserted-by": "publisher",
+                "first-page": "395",
+                "DOI": "10.1016/0304-3959(87)90073-X",
+                "volume": "28",
+                "author": "RV Grunau",
+                "year": "1987",
+                "unstructured": "Grunau, R. V., & Craig, K. D. (1987). Pain expression in neonates: Facial action and cry. Pain, 28(3), 395–410.",
+                "journal-title": "Pain"
+            },
+            {
+                "key": "293_CR47",
+                "doi-asserted-by": "publisher",
+                "first-page": "293",
+                "DOI": "10.1037/a0015178",
+                "volume": "9",
+                "author": "ST Hawk",
+                "year": "2009",
+                "unstructured": "Hawk, S. T., Kleef, G. A. V., Fischer, A. H., & Schalk, J. V. D. (2009). “Worth a thousand words”: Absolute and relative decoding of nonlinguistic affect vocalizations. Emotion, 9, 293–305. https://doi.org/10.1037/a0015178 .",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR48",
+                "doi-asserted-by": "publisher",
+                "first-page": "183",
+                "DOI": "10.1111/1467-9280.00239",
+                "volume": "11",
+                "author": "A Hejmadi",
+                "year": "2000",
+                "unstructured": "Hejmadi, A., Davidson, R. J., & Rozin, P. (2000). Exploring Hindu Indian emotion expressions: Evidence for accurate recognition by Americans and Indians. Psychological Science, 11(3), 183–187.",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "key": "293_CR49",
+                "doi-asserted-by": "publisher",
+                "first-page": "70",
+                "DOI": "10.1159/000048154",
+                "volume": "45",
+                "author": "MJ Hertenstein",
+                "year": "2002",
+                "unstructured": "Hertenstein, M. J. (2002). Touch: Its communicative functions in infancy. Human Development, 45, 70–94.",
+                "journal-title": "Human Development"
+            },
+            {
+                "issue": "4",
+                "key": "293_CR50",
+                "doi-asserted-by": "publisher",
+                "first-page": "566",
+                "DOI": "10.1037/a0016108",
+                "volume": "9",
+                "author": "MJ Hertenstein",
+                "year": "2009",
+                "unstructured": "Hertenstein, M. J., Holmes, R., McCullough, M., & Keltner, D. (2009). The communication of emotion via touch. Emotion, 9(4), 566–573.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR51",
+                "doi-asserted-by": "publisher",
+                "first-page": "528",
+                "DOI": "10.1037/1528-3542.6.3.528",
+                "volume": "6",
+                "author": "MJ Hertenstein",
+                "year": "2006",
+                "unstructured": "Hertenstein, M. J., Keltner, D., App, B., Bulleit, B. A., & Jaskolka, A. R. (2006). Touch communicates distinct emotions. Emotion, 6(3), 528–533.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "2",
+                "key": "293_CR52",
+                "doi-asserted-by": "publisher",
+                "first-page": "142",
+                "DOI": "10.1177/1088868312472607",
+                "volume": "17",
+                "author": "U Hess",
+                "year": "2013",
+                "unstructured": "Hess, U., & Fischer, A. (2013). Emotional mimicry as social regulation. Personality and Social Psychology Review, 17(2), 142–157.",
+                "journal-title": "Personality and Social Psychology Review"
+            },
+            {
+                "key": "293_CR53",
+                "first-page": "375",
+                "volume-title": "The psychology of facial expression",
+                "author": "U Hess",
+                "year": "2017",
+                "unstructured": "Hess, U., & Hareli, S. (2017). The social signal value of emotions: The role of contextual factors in social inferences from emotional displays. In J. Russell & J.-M. Fernandez-Dols (Eds.), The psychology of facial expression (pp. 375–392). New York: Oxford University Press."
+            },
+            {
+                "issue": "2",
+                "key": "293_CR54",
+                "doi-asserted-by": "publisher",
+                "first-page": "150",
+                "DOI": "10.1037/1528-3542.3.2.150",
+                "volume": "3",
+                "author": "G Horstmann",
+                "year": "2003",
+                "unstructured": "Horstmann, G. (2003). What do facial expressions convey: Feeling states, behavioral intentions, or actions requests? Emotion, 3(2), 150–166.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "6",
+                "key": "293_CR55",
+                "doi-asserted-by": "publisher",
+                "first-page": "640",
+                "DOI": "10.1046/j.0956-7976.2003.psci_1478.x",
+                "volume": "14",
+                "author": "K Hugenberg",
+                "year": "2003",
+                "unstructured": "Hugenberg, K., & Bodenhausen, G. (2003). Facing prejudice: Implicit prejudice and the perception of facial threat. Psychological Science, 14(6), 640–643.",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "issue": "19",
+                "key": "293_CR56",
+                "doi-asserted-by": "publisher",
+                "first-page": "7241",
+                "DOI": "10.1073/pnas.1200155109",
+                "volume": "109",
+                "author": "RE Jack",
+                "year": "2012",
+                "unstructured": "Jack, R. E., Garrod, O. G., Yu, H., Caldara, R., & Schyns, P. G. (2012). Facial expressions of emotion are not culturally universal. Proceedings of the National Academy of Sciences, 109(19), 7241–7244.",
+                "journal-title": "Proceedings of the National Academy of Sciences"
+            },
+            {
+                "issue": "5",
+                "key": "293_CR57",
+                "doi-asserted-by": "publisher",
+                "first-page": "770",
+                "DOI": "10.1037/0033-2909.129.5.770",
+                "volume": "129",
+                "author": "PN Juslin",
+                "year": "2003",
+                "unstructured": "Juslin, P. N., & Laukka, P. (2003). Communication of emotions in vocal expression and music performance: Different channels, same code? Psychological Bulletin, 129(5), 770–814.",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR58",
+                "doi-asserted-by": "publisher",
+                "first-page": "441",
+                "DOI": "10.1037/0022-3514.68.3.441",
+                "volume": "68",
+                "author": "D Keltner",
+                "year": "1995",
+                "unstructured": "Keltner, D. (1995). Signs of appeasement: Evidence for the distinct displays of embarrassment, amusement, and shame. Journal of Personality and Social Psychology, 68(3), 441–454.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "2",
+                "key": "293_CR59",
+                "doi-asserted-by": "publisher",
+                "first-page": "155",
+                "DOI": "10.1080/026999396380312",
+                "volume": "10",
+                "author": "D Keltner",
+                "year": "1996",
+                "unstructured": "Keltner, D. (1996). Evidence for the distinctness of embarrassment, shame, and guilt: A study of recalled antecedents and facial expressions of emotion. Cognition and Emotion, 10(2), 155–172.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "293_CR60",
+                "volume-title": "Born to be good: The science of a meaningful life",
+                "author": "D Keltner",
+                "year": "2009",
+                "unstructured": "Keltner, D. (2009). Born to be good: The science of a meaningful life. New York: WW Norton & Company."
+            },
+            {
+                "issue": "4",
+                "key": "293_CR61",
+                "doi-asserted-by": "publisher",
+                "first-page": "687",
+                "DOI": "10.1037/0022-3514.73.4.687",
+                "volume": "73",
+                "author": "D Keltner",
+                "year": "1997",
+                "unstructured": "Keltner, D., & Bonanno, G. A. (1997). A study of laughter and dissociation: Distinct correlates of laughter and smiling during bereavement. Journal of Personality and Social Psychology, 73(4), 687.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR62",
+                "doi-asserted-by": "publisher",
+                "first-page": "250",
+                "DOI": "10.1037/0033-2909.122.3.250",
+                "volume": "122",
+                "author": "D Keltner",
+                "year": "1997",
+                "unstructured": "Keltner, D., & Buswell, B. N. (1997). Embarrassment: Its distinct form and appeasement functions. Psychological Bulletin, 122(3), 250–264.",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "key": "293_CR63",
+                "unstructured": "Keltner, D., & Cordaro, D. T. (2016). Understanding multimodal emotional expressions: Recent advances in Basic Emotion Theory. Emotion Researcher, Andrea Scarantino (ed.). http://emotionresearcher.com/ ."
+            },
+            {
+                "issue": "5",
+                "key": "293_CR64",
+                "doi-asserted-by": "publisher",
+                "first-page": "505",
+                "DOI": "10.1080/026999399379168",
+                "volume": "13",
+                "author": "D Keltner",
+                "year": "1999",
+                "unstructured": "Keltner, D., & Haidt, J. (1999). Social functions of emotions at multiple levels of analysis. Cognition and Emotion, 13(5), 505–522.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "293_CR65",
+                "volume-title": "Emotions: Current issues and future directions",
+                "author": "D Keltner",
+                "year": "2001",
+                "unstructured": "Keltner, D., & Haidt, J. A. (2001). Social functions of emotions. In T. Mayne & G. Bonanno (Eds.), Emotions: Current issues and future directions. New York, NY: Guilford Press."
+            },
+            {
+                "issue": "2",
+                "key": "293_CR66",
+                "doi-asserted-by": "publisher",
+                "first-page": "297",
+                "DOI": "10.1080/02699930302297",
+                "volume": "17",
+                "author": "D Keltner",
+                "year": "2003",
+                "unstructured": "Keltner, D., & Haidt, J. (2003). Approaching awe, a moral, spiritual, and aesthetic emotion. Cognition and Emotion, 17(2), 297–314.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR67",
+                "doi-asserted-by": "publisher",
+                "first-page": "320",
+                "DOI": "10.1037/1089-2680.2.3.320",
+                "volume": "2",
+                "author": "D Keltner",
+                "year": "1998",
+                "unstructured": "Keltner, D., & Kring, A. M. (1998). Emotion, social function, and psychopathology. Review of General Psychology, 2(3), 320–342.",
+                "journal-title": "Review of General Psychology"
+            },
+            {
+                "key": "293_CR68",
+                "first-page": "317",
+                "volume-title": "Handbook of social psychology",
+                "author": "D Keltner",
+                "year": "2010",
+                "unstructured": "Keltner, D., & Lerner, J. (2010). Emotion. In S. T. Fiske, D. T. Giblert, & G. Lindzey (Eds.), Handbook of social psychology (Vol. 1, pp. 317–342). New Jersey: Wiley."
+            },
+            {
+                "key": "293_CR69",
+                "first-page": "467",
+                "volume-title": "Handbook of emotion",
+                "author": "D Keltner",
+                "year": "2016",
+                "unstructured": "Keltner, D., Sauter, D., Tracy, J., McNeil, G., & Cordaro, D. T. (2016). Expression. In L. F. Barrett, M. Lewis, & J. Haviland-Jones (Eds.), Handbook of emotion (pp. 467–482). New York, NY: Guilford Press."
+            },
+            {
+                "issue": "1",
+                "key": "293_CR70",
+                "doi-asserted-by": "publisher",
+                "first-page": "86",
+                "DOI": "10.1037/1528-3542.3.1.86",
+                "volume": "3",
+                "author": "D Keltner",
+                "year": "2003",
+                "unstructured": "Keltner, D., & Shiota, M. N. (2003). New displays and new emotions: A commentary on Rozin and Cohen (2003). Emotion, 3(1), 86–91.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "4",
+                "key": "293_CR71",
+                "doi-asserted-by": "publisher",
+                "first-page": "427",
+                "DOI": "10.1037/0012-1649.22.4.427",
+                "volume": "22",
+                "author": "MD Klinnert",
+                "year": "1986",
+                "unstructured": "Klinnert, M. D., Emde, R. N., Butterfield, P., & Campos, J. J. (1986). Social referencing: The infant’s use of emotional signals from a friendly adult with mother present. Developmental Psychology, 22(4), 427.",
+                "journal-title": "Developmental Psychology"
+            },
+            {
+                "key": "293_CR72",
+                "doi-asserted-by": "publisher",
+                "first-page": "165",
+                "DOI": "10.1007/BF02281954",
+                "volume": "20",
+                "author": "B Knutson",
+                "year": "1996",
+                "unstructured": "Knutson, B. (1996). Facial expressions of emotion influence interpersonal trait inferences. Journal of Nonverbal Behavior, 20, 165–182.",
+                "journal-title": "Journal of Nonverbal Behavior"
+            },
+            {
+                "key": "293_CR73",
+                "doi-asserted-by": "publisher",
+                "first-page": "1716",
+                "DOI": "10.1177/0956797610387613",
+                "volume": "21",
+                "author": "MW Kraus",
+                "year": "2010",
+                "unstructured": "Kraus, M. W., Côté, S., & Keltner, D. (2010). Social class, contextualism, and empathic accuracy. Psychological Science, 21, 1716–1723.",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR74",
+                "doi-asserted-by": "publisher",
+                "first-page": "41",
+                "DOI": "10.1177/1754073912451349",
+                "volume": "5",
+                "author": "EG Krumhuber",
+                "year": "2013",
+                "unstructured": "Krumhuber, E. G., Kappas, A., & Manstead, A. S. R. (2013). Effects of dynamic aspects of facial expressions: A review. Emotion Review, 5(1), 41–46.",
+                "journal-title": "Emotion Review"
+            },
+            {
+                "key": "293_CR75",
+                "doi-asserted-by": "publisher",
+                "first-page": "353",
+                "DOI": "10.3389/fpsyg.2013.00353",
+                "volume": "4",
+                "author": "P Laukka",
+                "year": "2013",
+                "unstructured": "Laukka, P., Elfenbein, H. A., Söder, N., Nordström, H., Althoff, J., Chui, W., et al. (2013). Cross-cultural decoding of positive and negative non-linguistic emotion vocalizations. Frontiers in Psychology, 4, 353. https://doi.org/10.3389/fpsyg.2013.00353 .",
+                "journal-title": "Frontiers in Psychology"
+            },
+            {
+                "issue": "5",
+                "key": "293_CR76",
+                "doi-asserted-by": "publisher",
+                "first-page": "686",
+                "DOI": "10.1037/pspi0000066",
+                "volume": "11",
+                "author": "P Laukka",
+                "year": "2016",
+                "unstructured": "Laukka, P., Elfenbein, H. A., Thingujam, N. S., Rockstuhl, T., Iraki, F., Wanda, C., et al. (2016). The expression and recognition of emotions in the voice across five nations: A lens model analysis based on acoustic features. Journal of Personaity and Social Psychology, 11(5), 686–705.",
+                "journal-title": "Journal of Personaity and Social Psychology"
+            },
+            {
+                "issue": "6",
+                "key": "293_CR77",
+                "doi-asserted-by": "publisher",
+                "first-page": "957",
+                "DOI": "10.1177/0956797612464500",
+                "volume": "24",
+                "author": "DH Lee",
+                "year": "2013",
+                "unstructured": "Lee, D. H., Susskind, J. M., & Anderson, A. K. (2013). Social transmission of the sensory benefits of eye widening in fear expressions. Psychological Science, 24(6), 957–965.",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "key": "293_CR78",
+                "doi-asserted-by": "publisher",
+                "first-page": "834",
+                "DOI": "10.1037/a0024244",
+                "volume": "137",
+                "author": "HC Lench",
+                "year": "2011",
+                "unstructured": "Lench, H. C., Flores, S. A., & Bench, S. W. (2011). Discrete emotions predict changes in cognition, judgment, experience, behavior, and physiology: A meta-analysis of experimental emotion elicitations. Psychological Bulletin, 137, 834–855.",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "issue": "4",
+                "key": "293_CR79",
+                "doi-asserted-by": "publisher",
+                "first-page": "363",
+                "DOI": "10.1111/j.1469-8986.1990.tb02330.x",
+                "volume": "27",
+                "author": "RW Levenson",
+                "year": "1990",
+                "unstructured": "Levenson, R. W., Ekman, P., & Friesen, W. V. (1990). Voluntary facial action generates emotion-specific autonomic nervous system activity. Psychophysiology, 27(4), 363–384.",
+                "journal-title": "Psychophysiology"
+            },
+            {
+                "key": "293_CR201",
+                "doi-asserted-by": "publisher",
+                "first-page": "492",
+                "DOI": "10.1177/1948550612457958",
+                "volume": "4",
+                "author": "JP Martens",
+                "year": "2013",
+                "unstructured": "Martens, J. P., & Tracy, J. L. (2013). The emotional origins of social learning bias: Does the Pride expression cue copying? Social Psychological and Personality Science, 4, 492–496.",
+                "journal-title": "Social Psychological and Personality Science"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR80",
+                "doi-asserted-by": "publisher",
+                "first-page": "135",
+                "DOI": "10.1037/a0028117",
+                "volume": "103",
+                "author": "LA Maruskin",
+                "year": "2012",
+                "unstructured": "Maruskin, L. A., Thrash, T. M., & Elliot, A. J. (2012). The chills as a psychological construct: Content universe, factor structure, affective composition, elicitors, trait antecedents, and consequences. Journal of Personality and Social Psychology, 103(1), 135–157.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "293_CR81",
+                "unstructured": "Masuda, T., Ellsworth, P. C., Mesquita, B., Leu, J., & van de Veerdonk, E. (2004). A face in the crowd or a crowd in the face: Japanese and American perceptions of others’ emotions. Unpublished manuscript, Hokkaido University."
+            },
+            {
+                "issue": "4",
+                "key": "293_CR82",
+                "doi-asserted-by": "publisher",
+                "first-page": "375",
+                "DOI": "10.1177/1754073916679008",
+                "volume": "9",
+                "author": "D Matsumoto",
+                "year": "2017",
+                "unstructured": "Matsumoto, D., & Hwang, H. C. (2017). Methodological issues regarding cross-cultural studies of judgments of facial expressions. Emotion Review, 9(4), 375–382.",
+                "journal-title": "Emotion Review"
+            },
+            {
+                "key": "293_CR83",
+                "first-page": "211",
+                "volume-title": "Handbook of emotions",
+                "author": "D Matsumoto",
+                "year": "2008",
+                "unstructured": "Matsumoto, D., et al. (2008). Facial expressions of emotion. In M. Lewis, J. M. Haviland-Jones, & L. F. Barrett (Eds.), Handbook of emotions (3rd ed., pp. 211–234). New York: The Guilford Press.",
+                "edition": "3"
+            },
+            {
+                "key": "293_CR84",
+                "doi-asserted-by": "publisher",
+                "first-page": "855",
+                "DOI": "10.1086/283219",
+                "volume": "111",
+                "author": "ES Morton",
+                "year": "1977",
+                "unstructured": "Morton, E. S. (1977). On the occurrence and significance of motivation-structural rules in some bird and mammal sounds. American Naturalist, 111, 855–869.",
+                "journal-title": "American Naturalist"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR85",
+                "doi-asserted-by": "publisher",
+                "first-page": "8",
+                "DOI": "10.1177/1754073912457227",
+                "volume": "5",
+                "author": "NL Nelson",
+                "year": "2013",
+                "unstructured": "Nelson, N. L., & Russell, J. A. (2013). Universality revisited. Emotion Review, 5(1), 8–15.",
+                "journal-title": "Emotion Review"
+            },
+            {
+                "issue": "06",
+                "key": "293_CR86",
+                "doi-asserted-by": "publisher",
+                "first-page": "417",
+                "DOI": "10.1017/S0140525X10000865",
+                "volume": "33",
+                "author": "PM Niedenthal",
+                "year": "2010",
+                "unstructured": "Niedenthal, P. M., Mermillod, M., Maringer, M., & Hess, U. (2010). The Simulation of Smiles (SIMS) model: Embodied simulation and the meaning of facial expression. Behavioral and Brain Sciences, 33(06), 417–433.",
+                "journal-title": "Behavioral and Brain Sciences"
+            },
+            {
+                "key": "293_CR87",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.neulet.2017.07.012",
+                "author": "L Nummenmaa",
+                "year": "2017",
+                "unstructured": "Nummenmaa, L., & Saarimäki, H. (2017). Emotions as discrete patterns of systemic activity. Neuroscience Letters. https://doi.org/10.1016/j.neulet.2017.07.012 .",
+                "journal-title": "Neuroscience Letters"
+            },
+            {
+                "key": "293_CR88",
+                "doi-asserted-by": "publisher",
+                "first-page": "323",
+                "DOI": "10.1037/1089-2680.8.4.323",
+                "volume": "8",
+                "author": "K Oatley",
+                "year": "2004",
+                "unstructured": "Oatley, K. (2004). Scripts, transformations, and suggestiveness, of emotions in Shakespeare and Chekhov. Review of General Psychology, 8, 323–340.",
+                "journal-title": "Review of General Psychology"
+            },
+            {
+                "key": "293_CR89",
+                "doi-asserted-by": "publisher",
+                "first-page": "1251",
+                "DOI": "10.1037/0022-3514.36.11.1251",
+                "volume": "36",
+                "author": "A Ohman",
+                "year": "1978",
+                "unstructured": "Ohman, A., & Dimberg, U. (1978). Facial expressions as conditioned stimuli for electrodermal responses: A case of “preparedness”? Journal of Personality and Social Psychology, 36, 1251–1258.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "293_CR90",
+                "doi-asserted-by": "publisher",
+                "first-page": "11087",
+                "DOI": "10.1073/pnas.0805664105",
+                "volume": "105",
+                "author": "NN Oosterhof",
+                "year": "2008",
+                "unstructured": "Oosterhof, N. N., & Todorov, A. (2008). The functional basis of face evaluation. Proceedings of the National Academy of Sciences of the USA, 105, 11087–11092.",
+                "journal-title": "Proceedings of the National Academy of Sciences of the USA"
+            },
+            {
+                "issue": "4",
+                "key": "293_CR91",
+                "doi-asserted-by": "publisher",
+                "first-page": "618",
+                "DOI": "10.1037/a0017628",
+                "volume": "98",
+                "author": "C Oveis",
+                "year": "2010",
+                "unstructured": "Oveis, C., Horberg, E. J., & Keltner, D. (2010). Compassion, pride, and social intuitions of self-other similarity. Journal of Personality and Social Psychology, 98(4), 618.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "293_CR92",
+                "first-page": "152",
+                "volume-title": "Emotions: Current issues and future directions",
+                "author": "MJ Owren",
+                "year": "2001",
+                "unstructured": "Owren, M. J., & Bachorowski, J. (2001). The evolution of emotional expression: A “selfish-gene” account of smiling and laughter in early hominids and humans. In T. J. Mayne & G. A. Bonanno (Eds.), Emotions: Current issues and future directions (pp. 152–191). New York, NY: Guilford."
+            },
+            {
+                "key": "293_CR93",
+                "doi-asserted-by": "publisher",
+                "first-page": "278",
+                "DOI": "10.1207/s15327957pspr0904_1",
+                "volume": "9",
+                "author": "B Parkinson",
+                "year": "2005",
+                "unstructured": "Parkinson, B. (2005). Do facial movements express emotion or communicate social motives? Personality and Social Psychology Review, 9, 278–311.",
+                "journal-title": "Personality and Social Psychology Review"
+            },
+            {
+                "key": "293_CR94",
+                "doi-asserted-by": "publisher",
+                "first-page": "107",
+                "DOI": "10.1007/s10919-008-0065-7",
+                "volume": "33",
+                "author": "MD Pell",
+                "year": "2009",
+                "unstructured": "Pell, M. D., Monetta, L., Paulmann, S., & Kots, S. A. (2009). Recognizing emotions in a foreign language. Journal of Nonverbal Behavior, 33, 107–120.",
+                "journal-title": "Journal of Nonverbal Behavior"
+            },
+            {
+                "issue": "6",
+                "key": "293_CR95",
+                "doi-asserted-by": "publisher",
+                "first-page": "1116",
+                "DOI": "10.1080/02699931.2011.633987",
+                "volume": "26",
+                "author": "PK Piff",
+                "year": "2012",
+                "unstructured": "Piff, P. K., Purcell, A., Gruber, J., Hertenstein, M. J., & Keltner, D. (2012). Contact high: Mania proneness and positive perception of emotional touches. Cognition and Emotion, 26(6), 1116–1123.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "issue": "6",
+                "key": "293_CR96",
+                "doi-asserted-by": "publisher",
+                "first-page": "1315",
+                "DOI": "10.1037/a0027998",
+                "volume": "12",
+                "author": "JT Pochedly",
+                "year": "2012",
+                "unstructured": "Pochedly, J. T., Widen, S. C., & Russell, J. A. (2012). What emotion does the “facial expression of disgust” express? Emotion, 12(6), 1315.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR97",
+                "doi-asserted-by": "publisher",
+                "first-page": "297",
+                "DOI": "10.1016/0304-3959(92)90213-U",
+                "volume": "51",
+                "author": "KM Prkachin",
+                "year": "1992",
+                "unstructured": "Prkachin, K. M. (1992). The consistency of facial expressions of pain: A comparison across modalities. Pain, 51(3), 297–306.",
+                "journal-title": "Pain"
+            },
+            {
+                "issue": "2",
+                "key": "293_CR98",
+                "doi-asserted-by": "publisher",
+                "first-page": "186",
+                "DOI": "10.1111/1467-7687.00112",
+                "volume": "3",
+                "author": "V Reddy",
+                "year": "2000",
+                "unstructured": "Reddy, V. (2000). Coyness in early infancy. Developmental Science, 3(2), 186–192.",
+                "journal-title": "Developmental Science"
+            },
+            {
+                "key": "293_CR99",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780198528845.003.0007",
+                "author": "V Reddy",
+                "year": "2005",
+                "unstructured": "Reddy, V. (2005). Feeling shy and showing-off: Self-conscious emotions must regulate self-awareness. Emotional Development. https://doi.org/10.1093/acprof:oso/9780198528845.003.0007 .",
+                "journal-title": "Emotional Development"
+            },
+            {
+                "issue": "4",
+                "key": "293_CR100",
+                "doi-asserted-by": "publisher",
+                "first-page": "353",
+                "DOI": "10.1007/BF00992325",
+                "volume": "17",
+                "author": "J Reeve",
+                "year": "1993",
+                "unstructured": "Reeve, J. (1993). The face of interest. Motivation and Emotion, 17(4), 353–375.",
+                "journal-title": "Motivation and Emotion"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR101",
+                "doi-asserted-by": "publisher",
+                "first-page": "68",
+                "DOI": "10.1037/1528-3542.3.1.68",
+                "volume": "3",
+                "author": "P Rozin",
+                "year": "2003",
+                "unstructured": "Rozin, P., & Cohen, A. B. (2003). High frequency of facial expressions corresponding to confusion, concentration, and worry in an analysis of naturally occurring facial expressions of Americans. Emotion, 3(1), 68–75.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "5",
+                "key": "293_CR102",
+                "doi-asserted-by": "publisher",
+                "first-page": "870",
+                "DOI": "10.1037/0022-3514.66.5.870",
+                "volume": "66",
+                "author": "P Rozin",
+                "year": "2004",
+                "unstructured": "Rozin, P., Lowery, L., & Ebert, R. (2004). Varieties of disgust faces and the structure of disgust. Journal of Personality and Social Psychology, 66(5), 870–881.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR103",
+                "doi-asserted-by": "publisher",
+                "first-page": "102",
+                "DOI": "10.1037/0033-2909.115.1.102",
+                "volume": "115",
+                "author": "JA Russell",
+                "year": "1994",
+                "unstructured": "Russell, J. A. (1994). Is there universal recognition of emotion from facial expressions? A review of the cross-cultural studies. Psychological Bulletin, 115(1), 102–141.",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR104",
+                "doi-asserted-by": "publisher",
+                "first-page": "470",
+                "DOI": "10.1080/09541440600757426",
+                "volume": "19",
+                "author": "D Sander",
+                "year": "2007",
+                "unstructured": "Sander, D., Grandjean, D., Kaiser, S., Wehrle, T., & Scherer, K. R. (2007). Interaction effects of perceived gaze direction and dynamic facial expression: Evidence for appraisal theories of emotion. European Journal of Cognitive Psychology, 19(3), 470–480.",
+                "journal-title": "European Journal of Cognitive Psychology"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR105",
+                "doi-asserted-by": "publisher",
+                "first-page": "E180",
+                "DOI": "10.1073/pnas.1209522110",
+                "volume": "110",
+                "author": "DA Sauter",
+                "year": "2013",
+                "unstructured": "Sauter, D. A., & Eisner, F. (2013). Commonalities outweigh differences in the communication of emotions across human cultures [Letter to the editor]. Proceedings of the National Academy of Sciences, 110(3), E180.",
+                "journal-title": "Proceedings of the National Academy of Sciences"
+            },
+            {
+                "issue": "11",
+                "key": "293_CR106",
+                "doi-asserted-by": "publisher",
+                "first-page": "2251",
+                "DOI": "10.1080/17470211003721642",
+                "volume": "63",
+                "author": "DA Sauter",
+                "year": "2010",
+                "unstructured": "Sauter, D. A., Eisner, F., Calder, A. J., & Scott, S. K. (2010a). Perceptual cues in non-verbal vocal expressions of emotion. Quarterly Journal of Experimental Psychology, 63(11), 2251–2272.",
+                "journal-title": "Quarterly Journal of Experimental Psychology"
+            },
+            {
+                "issue": "6",
+                "key": "293_CR107",
+                "doi-asserted-by": "publisher",
+                "first-page": "2408",
+                "DOI": "10.1073/pnas.0908239106",
+                "volume": "107",
+                "author": "DA Sauter",
+                "year": "2010",
+                "unstructured": "Sauter, D. A., Eisner, F., Ekman, P., & Scott, S. K. (2010b). Cross-cultural recognition of basic emotions through nonverbal emotional vocalizations. Proceedings of the National Academy of Sciences, 107(6), 2408–2412.",
+                "journal-title": "Proceedings of the National Academy of Sciences"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR108",
+                "doi-asserted-by": "publisher",
+                "first-page": "354",
+                "DOI": "10.1177/0956797614560771",
+                "volume": "26",
+                "author": "DA Sauter",
+                "year": "2015",
+                "unstructured": "Sauter, D. A., Eisner, F., Ekman, P., & Scott, S. K. (2015). Emotional vocalisations are recognised across cultures regardless of distractor valence. Psychological Science, 26(3), 354–356.",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR109",
+                "doi-asserted-by": "publisher",
+                "first-page": "97",
+                "DOI": "10.1111/j.2044-835X.2012.02081.x",
+                "volume": "31",
+                "author": "DA Sauter",
+                "year": "2013",
+                "unstructured": "Sauter, D. A., Panattoni, C., & Happe, F. (2013). Children’s recognition of emotions from vocal cues. British Journal of Developmental Psychology, 31(1), 97–113.",
+                "journal-title": "British Journal of Developmental Psychology"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR110",
+                "doi-asserted-by": "publisher",
+                "first-page": "192",
+                "DOI": "10.1007/s11031-007-9065-x",
+                "volume": "31",
+                "author": "DA Sauter",
+                "year": "2007",
+                "unstructured": "Sauter, D. A., & Scott, S. K. (2007). More than one kind of happiness: Can we recognize vocal expressions of different positive states? Motivation and Emotion, 31(3), 192–199.",
+                "journal-title": "Motivation and Emotion"
+            },
+            {
+                "issue": "2–3",
+                "key": "293_CR111",
+                "doi-asserted-by": "publisher",
+                "first-page": "165",
+                "DOI": "10.1080/1047840X.2017.1328951",
+                "volume": "28",
+                "author": "A Scarantino",
+                "year": "2017",
+                "unstructured": "Scarantino, A. (2017). How to do things with emotional expressions: The theory of affective pragmatics. Psychological Inquiry, 28(2–3), 165–185.",
+                "journal-title": "Psychological Inquiry"
+            },
+            {
+                "issue": "2",
+                "key": "293_CR112",
+                "doi-asserted-by": "publisher",
+                "first-page": "43",
+                "DOI": "10.1037/0033-2909.99.2.143",
+                "volume": "99",
+                "author": "KR Scherer",
+                "year": "1986",
+                "unstructured": "Scherer, K. R. (1986). Vocal affect expression: A review and a model for future research. Psychological Bulletin, 99(2), 43–65.",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR113",
+                "doi-asserted-by": "publisher",
+                "first-page": "113",
+                "DOI": "10.1037/1528-3542.7.1.113",
+                "volume": "7",
+                "author": "KR Scherer",
+                "year": "2007",
+                "unstructured": "Scherer, K. R., & Ellgring, H. (2007). Multimodal expression of emotion: Affect programs or componential appraisal patterns? Emotion, 7(1), 113–130.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "5",
+                "key": "293_CR114",
+                "doi-asserted-by": "publisher",
+                "first-page": "789",
+                "DOI": "10.1080/02699930701516791",
+                "volume": "22",
+                "author": "KR Scherer",
+                "year": "2008",
+                "unstructured": "Scherer, K. R., & Grandjean, D. (2008). Facial expressions allow inference of both emotions and their components. Cognition and Emotion, 22(5), 789–801.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR115",
+                "doi-asserted-by": "publisher",
+                "first-page": "99",
+                "DOI": "10.1016/S0167-6393(02)00078-X",
+                "volume": "40",
+                "author": "M Schröder",
+                "year": "2003",
+                "unstructured": "Schröder, M. (2003). Experimental study of affect bursts. Speech Communication, 40(1), 99–116.",
+                "journal-title": "Speech Communication"
+            },
+            {
+                "key": "293_CR116",
+                "doi-asserted-by": "publisher",
+                "first-page": "631",
+                "DOI": "10.1037/a0017089",
+                "volume": "9",
+                "author": "AF Shariff",
+                "year": "2009",
+                "unstructured": "Shariff, A. F., & Tracy, J. L. (2009). Knowing who’s boss: Implicit perceptions of status from the nonverbal expression of pride. Emotion, 9, 631–639.",
+                "journal-title": "Emotion"
+            },
+            {
+                "issue": "6",
+                "key": "293_CR117",
+                "doi-asserted-by": "publisher",
+                "first-page": "395",
+                "DOI": "10.1177/0963721411424739",
+                "volume": "20",
+                "author": "AF Shariff",
+                "year": "2011",
+                "unstructured": "Shariff, A. F., & Tracy, J. L. (2011). What are emotion expressions for? Current Directions in Psychological Science, 20(6), 395–399.",
+                "journal-title": "Current Directions in Psychological Science"
+            },
+            {
+                "key": "293_CR118",
+                "doi-asserted-by": "publisher",
+                "first-page": "1178",
+                "DOI": "10.1177/0146167212446834",
+                "volume": "38",
+                "author": "AF Shariff",
+                "year": "2012",
+                "unstructured": "Shariff, A. F., Tracy, J. L., & Markusoff, J. (2012). (Implicitly) judging a book by its cover: The power of pride and shame expressions in shaping judgments of social status. Personality and Social Psychology Bulletin, 38, 1178–1193.",
+                "journal-title": "Personality and Social Psychology Bulletin"
+            },
+            {
+                "key": "293_CR119",
+                "doi-asserted-by": "publisher",
+                "first-page": "296",
+                "DOI": "10.1196/annals.1280.029",
+                "volume": "1000",
+                "author": "MN Shiota",
+                "year": "2003",
+                "unstructured": "Shiota, M. N., Campos, B., & Keltner, D. (2003). The faces of positive emotion: Prototype displays of awe, amusement, and pride. Annals of the New York Academy of Sciences, 1000, 296.",
+                "journal-title": "Annals of the New York Academy of Sciences"
+            },
+            {
+                "issue": "7",
+                "key": "293_CR120",
+                "doi-asserted-by": "publisher",
+                "first-page": "617",
+                "DOI": "10.1037/a0040456",
+                "volume": "72",
+                "author": "MN Shiota",
+                "year": "2017",
+                "unstructured": "Shiota, M. N., Campos, B., Oveis, C., Hertenstein, M., Simon-Thomas, E., & Keltner, D. (2017). Beyond happiness: Toward a science of discrete positive emotions. American Psychologist, 72(7), 617–643.",
+                "journal-title": "American Psychologist"
+            },
+            {
+                "issue": "5",
+                "key": "293_CR121",
+                "doi-asserted-by": "publisher",
+                "first-page": "944",
+                "DOI": "10.1080/02699930600923668",
+                "volume": "21",
+                "author": "MN Shiota",
+                "year": "2007",
+                "unstructured": "Shiota, M. N., Keltner, D., & Mossman, A. (2007). The nature of awe: Elicitors, appraisals, and effects on self-concept. Cognition and Emotion, 21(5), 944–963.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR122",
+                "doi-asserted-by": "publisher",
+                "first-page": "47",
+                "DOI": "10.1080/02699931.2015.1075964",
+                "volume": "37",
+                "author": "V Shuman",
+                "year": "2015",
+                "unstructured": "Shuman, V., Clark-Polner, E., Meuleman, B., Sander, D., & Scherer, K. R. (2015). Emotion perception from a componential perspective. Cognition and Emotion, 37(1), 47–56.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR123",
+                "doi-asserted-by": "publisher",
+                "first-page": "57",
+                "DOI": "10.1111/j.1467-8721.2008.00548.x",
+                "volume": "17",
+                "author": "PJ Silvia",
+                "year": "2008",
+                "unstructured": "Silvia, P. J. (2008). Interest—The curious emotion. Current Directions in Psychological Science, 17(1), 57–60.",
+                "journal-title": "Current Directions in Psychological Science"
+            },
+            {
+                "issue": "6",
+                "key": "293_CR124",
+                "doi-asserted-by": "publisher",
+                "first-page": "838",
+                "DOI": "10.1037/a0017810",
+                "volume": "9",
+                "author": "ER Simon-Thomas",
+                "year": "2009",
+                "unstructured": "Simon-Thomas, E. R., Keltner, D. J., Sauter, D., Sinicropi-Yao, L., & Abramson, A. (2009). The voice conveys specific emotions: Evidence from vocal burst displays. Emotion, 9(6), 838.",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "293_CR125",
+                "first-page": "457",
+                "volume-title": "Handbook of affective sciences",
+                "author": "CT Snowdon",
+                "year": "2003",
+                "unstructured": "Snowdon, C. T. (2003). Expression of emotion in nonhuman animals. In R. J. Davidson, K. Scherer, & H. H. Goldsmith (Eds.), Handbook of affective sciences (pp. 457–534). New York: Oxford University Press."
+            },
+            {
+                "key": "293_CR126",
+                "doi-asserted-by": "publisher",
+                "first-page": "572",
+                "DOI": "10.1037/pspi0000010",
+                "volume": "108",
+                "author": "JE Stellar",
+                "year": "2015",
+                "unstructured": "Stellar, J. E., Cohen, A., Oveis, C., & Keltner, D. (2015). Affective and physiological responses to the suffering of others: Compassion and vagal activity. Journal of Personality and Social Psychology, 108, 572–585.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "7",
+                "key": "293_CR127",
+                "doi-asserted-by": "publisher",
+                "first-page": "843",
+                "DOI": "10.1038/nn.2138",
+                "volume": "11",
+                "author": "JM Susskind",
+                "year": "2008",
+                "unstructured": "Susskind, J. M., Lee, D. H., Cusi, A., Feiman, R., Grabski, W., & Anderson, A. K. (2008). Expressing fear enhances sensory acquisition. Nature Neuroscience, 11(7), 843–850.",
+                "journal-title": "Nature Neuroscience"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR128",
+                "doi-asserted-by": "publisher",
+                "first-page": "397",
+                "DOI": "10.1037/a0015692",
+                "volume": "9",
+                "author": "DP Szameitat",
+                "year": "2009",
+                "unstructured": "Szameitat, D. P., Alter, K., Szameitat, A. J., Darwin, C. J., Wildgruber, D., Dietrich, S., et al. (2009). Differentiation of emotions in laughter at the behavioral level. Emotion, 9(3), 397–405.",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "293_CR129",
+                "doi-asserted-by": "publisher",
+                "first-page": "558",
+                "DOI": "10.1037/0022-3514.84.3.558",
+                "volume": "84",
+                "author": "LZ Tiedens",
+                "year": "2003",
+                "unstructured": "Tiedens, L. Z., & Fragale, A. R. (2003). Power moves: Complementarity in submissive and dominant nonverbal behavior. Journal of Personality and Social Psychology, 84, 558–568.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "issue": "33",
+                "key": "293_CR130",
+                "doi-asserted-by": "publisher",
+                "first-page": "11655",
+                "DOI": "10.1073/pnas.0802686105",
+                "volume": "105",
+                "author": "JL Tracy",
+                "year": "2008",
+                "unstructured": "Tracy, J. L., & Matsumoto, D. (2008). The spontaneous expression of pride and shame: Evidence for biologically innate nonverbal displays. Proceedings of the National Academy of Sciences, 105(33), 11655–11660.",
+                "journal-title": "Proceedings of the National Academy of Sciences"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR131",
+                "doi-asserted-by": "publisher",
+                "first-page": "194",
+                "DOI": "10.1111/j.0956-7976.2004.01503008.x",
+                "volume": "15",
+                "author": "JL Tracy",
+                "year": "2004",
+                "unstructured": "Tracy, J. L., & Robins, R. W. (2004). Show your pride evidence for a discrete emotion expression. Psychological Science, 15(3), 194–197.",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "key": "293_CR132",
+                "doi-asserted-by": "publisher",
+                "first-page": "789",
+                "DOI": "10.1037/1528-3542.7.4.789",
+                "volume": "7",
+                "author": "JL Tracy",
+                "year": "2007",
+                "unstructured": "Tracy, J. L., & Robins, R. W. (2007). The prototypical pride expression: Development of a nonverbal behavioral coding system. Emotion, 7, 789–801.",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "293_CR133",
+                "doi-asserted-by": "publisher",
+                "first-page": "516",
+                "DOI": "10.1037/0022-3514.94.3.516",
+                "volume": "94",
+                "author": "JL Tracy",
+                "year": "2008",
+                "unstructured": "Tracy, J. L., & Robins, R. W. (2008). The nonverbal expression of pride: Evidence for cross-cultural recognition. Journal of Personality and Social Psychology, 94, 516–530.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "293_CR134",
+                "doi-asserted-by": "publisher",
+                "first-page": "554",
+                "DOI": "10.1037/a0015766",
+                "volume": "9",
+                "author": "JL Tracy",
+                "year": "2009",
+                "unstructured": "Tracy, J. L., Robins, R. W., & Schriber, R. A. (2009). Development of a FACS-verified set of basic and self-conscious emotion expressions. Emotion, 9, 554–559.",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "293_CR135",
+                "doi-asserted-by": "publisher",
+                "first-page": "163",
+                "DOI": "10.1037/a0028412",
+                "volume": "142",
+                "author": "JL Tracy",
+                "year": "2013",
+                "unstructured": "Tracy, J. L., Shariff, A. F., Zhao, W., & Henrich, J. (2013). Cross-cultural evidence that the pride expression is a universal automatic status signal. Journal of Experimental Psychology: General, 142, 163–180.",
+                "journal-title": "Journal of Experimental Psychology: General"
+            },
+            {
+                "key": "293_CR136",
+                "doi-asserted-by": "publisher",
+                "first-page": "112",
+                "DOI": "10.1037/0003-066X.44.2.112",
+                "volume": "44",
+                "author": "EZ Tronick",
+                "year": "1989",
+                "unstructured": "Tronick, E. Z. (1989). Emotions and emotional communications in infants. American Psychologist, 44, 112–119.",
+                "journal-title": "American Psychologist"
+            },
+            {
+                "key": "293_CR137",
+                "doi-asserted-by": "publisher",
+                "first-page": "287",
+                "DOI": "10.1037/a0015081",
+                "volume": "9",
+                "author": "C Dijk van",
+                "year": "2009",
+                "unstructured": "van Dijk, C., de Jong, P. J., & Peters, M. L. (2009). The remedial value of blushing in the context of transgressions and mishaps. Emotion, 9, 287–291.",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "293_CR138",
+                "doi-asserted-by": "publisher",
+                "first-page": "184",
+                "DOI": "10.1111/j.1467-8721.2009.01633.x",
+                "volume": "18",
+                "author": "GA Kleef Van",
+                "year": "2009",
+                "unstructured": "Van Kleef, G. A. (2009). How emotions regulate social life: The emotions as social information (EASI) model. Current Directions in Psychological Science, 18, 184–188.",
+                "journal-title": "Current Directions in Psychological Science"
+            },
+            {
+                "key": "293_CR139",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1017/CBO9781107261396",
+                "volume-title": "The interpersonal dynamics of emotion: Toward an integrative theory of emotions as social information",
+                "author": "GA Kleef Van",
+                "year": "2016",
+                "unstructured": "Van Kleef, G. A. (2016). The interpersonal dynamics of emotion: Toward an integrative theory of emotions as social information. Cambridge: Cambridge University Press."
+            },
+            {
+                "issue": "896",
+                "key": "293_CR140",
+                "first-page": "1",
+                "volume": "7",
+                "author": "GA Kleef Van",
+                "year": "2016",
+                "unstructured": "Van Kleef, G. A., Cheshin, A., Fischer, A. H., & Schneider, I. K. (2016). Editorial: The social nature of emotions. Frontiers in Psychology, 7(896), 1–5.",
+                "journal-title": "Frontiers in Psychology"
+            },
+            {
+                "issue": "3",
+                "key": "293_CR141",
+                "doi-asserted-by": "publisher",
+                "first-page": "207",
+                "DOI": "10.1177/1754073915586226",
+                "volume": "8",
+                "author": "AJJM Vingerhoets",
+                "year": "2016",
+                "unstructured": "Vingerhoets, A. J. J. M., & Bylsma, L. M. (2016). The riddle of human emotional crying: A challenge for emotion researchers. Emotion Review, 8(3), 207–217.",
+                "journal-title": "Emotion Review"
+            },
+            {
+                "issue": "04",
+                "key": "293_CR142",
+                "first-page": "475",
+                "volume": "25",
+                "author": "ACDC Williams",
+                "year": "2002",
+                "unstructured": "Williams, A. C. D. C. (2002). Facial expression of pain, empathy, evolution, and social learning. Behavioral and Brain Sciences, 25(04), 475–480.",
+                "journal-title": "Behavioral and Brain Sciences"
+            },
+            {
+                "issue": "1",
+                "key": "293_CR143",
+                "doi-asserted-by": "publisher",
+                "first-page": "49",
+                "DOI": "10.1007/BF00987054",
+                "volume": "5",
+                "author": "FN Willis",
+                "year": "1980",
+                "unstructured": "Willis, F. N., & Hamm, H. (1980). The use of interpersonal touch in securing compliance. Journal of Nonverbal Behavior, 5(1), 49–55.",
+                "journal-title": "Journal of Nonverbal Behavior"
+            }
+        ],
+        "container-title": [
+            "Journal of Nonverbal Behavior"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://link.springer.com/article/10.1007/s10919-019-00293-3/fulltext.html",
+                "content-type": "text/html",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "http://link.springer.com/content/pdf/10.1007/s10919-019-00293-3.pdf",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "http://link.springer.com/content/pdf/10.1007/s10919-019-00293-3.pdf",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2022,
+                    9,
+                    11
+                ]
+            ],
+            "date-time": "2022-09-11T15:35:11Z",
+            "timestamp": 1662910511000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "http://link.springer.com/10.1007/s10919-019-00293-3"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2019,
+                    2,
+                    7
+                ]
+            ]
+        },
+        "references-count": 145,
+        "journal-issue": {
+            "issue": "2",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2019,
+                        6
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "293"
+        ],
+        "URL": "https://doi.org/10.1007/s10919-019-00293-3",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0191-5886",
+            "1573-3653"
+        ],
+        "issn-type": [
+            {
+                "value": "0191-5886",
+                "type": "print"
+            },
+            {
+                "value": "1573-3653",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2019,
+                    2,
+                    7
+                ]
+            ]
+        },
+        "assertion": [
+            {
+                "value": "7 February 2019",
+                "order": 1,
+                "name": "first_online",
+                "label": "First Online",
+                "group": {
+                    "name": "ArticleHistory",
+                    "label": "Article History"
+                }
+            }
+        ]
+    }
+}

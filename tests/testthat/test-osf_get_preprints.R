@@ -5,12 +5,10 @@ test_that("osf_preprint_list", {
   expect_error(osf_preprint_list(bad_arg))
 })
 
-# httptest::start_capturing()
-httptest::use_mock_api()
+# httptest2::start_capturing()
+httptest2::use_mock_api()
 
 test_that("defaults", {
-  skip_osf()
-
   pp <- osf_preprint_list()
   expect_equal(nrow(pp), 10)
 
@@ -54,5 +52,5 @@ test_that("defaults", {
   expect_true(all(dates %in% date_modified))
 })
 
-httptest::stop_mocking()
-# httptest::stop_capturing()
+httptest2::stop_mocking()
+# httptest2::stop_capturing()

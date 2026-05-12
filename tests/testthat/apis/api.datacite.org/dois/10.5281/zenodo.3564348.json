@@ -1,0 +1,234 @@
+{
+    "data": {
+        "id": "10.5281/zenodo.3564348",
+        "type": "dois",
+        "attributes": {
+            "doi": "10.5281/zenodo.3564348",
+            "prefix": "10.5281",
+            "suffix": "zenodo.3564348",
+            "identifiers": [
+                {
+                    "identifier": "https://zenodo.org/record/3564555",
+                    "identifierType": "URL"
+                }
+            ],
+            "alternateIdentifiers": [
+                {
+                    "alternateIdentifierType": "URL",
+                    "alternateIdentifier": "https://zenodo.org/record/3564555"
+                }
+            ],
+            "creators": [
+                {
+                    "name": "DeBruine, Lisa",
+                    "nameType": "Personal",
+                    "givenName": "Lisa",
+                    "familyName": "DeBruine",
+                    "affiliation": [
+                        "University of Glasgow"
+                    ],
+                    "nameIdentifiers": [
+                        {
+                            "schemeUri": "https://orcid.org",
+                            "nameIdentifier": "https://orcid.org/0000-0002-7523-5539",
+                            "nameIdentifierScheme": "ORCID"
+                        }
+                    ]
+                },
+                {
+                    "name": "Barr, Dale",
+                    "nameType": "Personal",
+                    "givenName": "Dale",
+                    "familyName": "Barr",
+                    "affiliation": [
+                        "University of Glasgow"
+                    ],
+                    "nameIdentifiers": [
+                        {
+                            "schemeUri": "https://orcid.org",
+                            "nameIdentifier": "https://orcid.org/0000-0002-1121-4608",
+                            "nameIdentifierScheme": "ORCID"
+                        }
+                    ]
+                }
+            ],
+            "titles": [
+                {
+                    "title": "Data Skills for Reproducible Science"
+                }
+            ],
+            "publisher": "Zenodo",
+            "container": {
+
+            },
+            "publicationYear": 2019,
+            "subjects": [
+
+            ],
+            "contributors": [
+
+            ],
+            "dates": [
+                {
+                    "date": "2019-12-05",
+                    "dateType": "Issued"
+                }
+            ],
+            "language": null,
+            "types": {
+                "ris": "COMP",
+                "bibtex": "misc",
+                "citeproc": "article",
+                "schemaOrg": "SoftwareSourceCode",
+                "resourceTypeGeneral": "Software"
+            },
+            "relatedIdentifiers": [
+                {
+                    "relationType": "IsSupplementTo",
+                    "relatedIdentifier": "https://PsyTeachR.github.io/msc-data-skills/",
+                    "relatedIdentifierType": "URL"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.3564349",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.3564462",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.3564466",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.3564511",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.3564555",
+                    "relatedIdentifierType": "DOI"
+                }
+            ],
+            "relatedItems": [
+
+            ],
+            "sizes": [
+
+            ],
+            "formats": [
+
+            ],
+            "version": "1.0.0",
+            "rightsList": [
+                {
+                    "rights": "Creative Commons Attribution Share Alike 4.0 International",
+                    "rightsUri": "https://creativecommons.org/licenses/by-sa/4.0/legalcode",
+                    "schemeUri": "https://spdx.org/licenses/",
+                    "rightsIdentifier": "cc-by-sa-4.0",
+                    "rightsIdentifierScheme": "SPDX"
+                },
+                {
+                    "rights": "Open Access",
+                    "rightsUri": "info:eu-repo/semantics/openAccess"
+                }
+            ],
+            "descriptions": [
+                {
+                    "description": "The 2019-2020 version of the course book for the Data Skills for Reproducible Science MSc course in the Institute of Neuroscience and Psychology at the University of Glasgow.",
+                    "descriptionType": "Abstract"
+                }
+            ],
+            "geoLocations": [
+
+            ],
+            "fundingReferences": [
+
+            ],
+            "xml": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHJlc291cmNlIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiIHhtbG5zPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCIgeHNpOnNjaGVtYUxvY2F0aW9uPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCBodHRwOi8vc2NoZW1hLmRhdGFjaXRlLm9yZy9tZXRhL2tlcm5lbC00LjEvbWV0YWRhdGEueHNkIj4KICA8aWRlbnRpZmllciBpZGVudGlmaWVyVHlwZT0iRE9JIj4xMC41MjgxL1pFTk9ETy4zNTY0MzQ4PC9pZGVudGlmaWVyPgogIDxjcmVhdG9ycz4KICAgIDxjcmVhdG9yPgogICAgICA8Y3JlYXRvck5hbWU+TGlzYSBEZUJydWluZTwvY3JlYXRvck5hbWU+CiAgICAgIDxuYW1lSWRlbnRpZmllciBuYW1lSWRlbnRpZmllclNjaGVtZT0iT1JDSUQiIHNjaGVtZVVSST0iaHR0cDovL29yY2lkLm9yZy8iPjAwMDAtMDAwMi03NTIzLTU1Mzk8L25hbWVJZGVudGlmaWVyPgogICAgICA8YWZmaWxpYXRpb24+VW5pdmVyc2l0eSBvZiBHbGFzZ293PC9hZmZpbGlhdGlvbj4KICAgIDwvY3JlYXRvcj4KICAgIDxjcmVhdG9yPgogICAgICA8Y3JlYXRvck5hbWU+RGFsZSBCYXJyPC9jcmVhdG9yTmFtZT4KICAgICAgPG5hbWVJZGVudGlmaWVyIG5hbWVJZGVudGlmaWVyU2NoZW1lPSJPUkNJRCIgc2NoZW1lVVJJPSJodHRwOi8vb3JjaWQub3JnLyI+MDAwMC0wMDAyLTExMjEtNDYwODwvbmFtZUlkZW50aWZpZXI+CiAgICAgIDxhZmZpbGlhdGlvbj5Vbml2ZXJzaXR5IG9mIEdsYXNnb3c8L2FmZmlsaWF0aW9uPgogICAgPC9jcmVhdG9yPgogIDwvY3JlYXRvcnM+CiAgPHRpdGxlcz4KICAgIDx0aXRsZT5EYXRhIFNraWxscyBmb3IgUmVwcm9kdWNpYmxlIFNjaWVuY2U8L3RpdGxlPgogIDwvdGl0bGVzPgogIDxwdWJsaXNoZXI+WmVub2RvPC9wdWJsaXNoZXI+CiAgPHB1YmxpY2F0aW9uWWVhcj4yMDE5PC9wdWJsaWNhdGlvblllYXI+CiAgPGRhdGVzPgogICAgPGRhdGUgZGF0ZVR5cGU9Iklzc3VlZCI+MjAxOS0xMi0wNTwvZGF0ZT4KICA8L2RhdGVzPgogIDxyZXNvdXJjZVR5cGUgcmVzb3VyY2VUeXBlR2VuZXJhbD0iU29mdHdhcmUiLz4KICA8YWx0ZXJuYXRlSWRlbnRpZmllcnM+CiAgICA8YWx0ZXJuYXRlSWRlbnRpZmllciBhbHRlcm5hdGVJZGVudGlmaWVyVHlwZT0idXJsIj5odHRwczovL3plbm9kby5vcmcvcmVjb3JkLzM1NjQ1NTU8L2FsdGVybmF0ZUlkZW50aWZpZXI+CiAgPC9hbHRlcm5hdGVJZGVudGlmaWVycz4KICA8cmVsYXRlZElkZW50aWZpZXJzPgogICAgPHJlbGF0ZWRJZGVudGlmaWVyIHJlbGF0ZWRJZGVudGlmaWVyVHlwZT0iVVJMIiByZWxhdGlvblR5cGU9IklzU3VwcGxlbWVudFRvIj5odHRwczovL1BzeVRlYWNoUi5naXRodWIuaW8vbXNjLWRhdGEtc2tpbGxzLzwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uMzU2NDM0OTwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uMzU2NDQ2MjwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uMzU2NDQ2NjwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uMzU2NDUxMTwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uMzU2NDU1NTwvcmVsYXRlZElkZW50aWZpZXI+CiAgPC9yZWxhdGVkSWRlbnRpZmllcnM+CiAgPHZlcnNpb24+MS4wLjA8L3ZlcnNpb24+CiAgPHJpZ2h0c0xpc3Q+CiAgICA8cmlnaHRzIHJpZ2h0c1VSST0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbGljZW5zZXMvYnktc2EvNC4wL2xlZ2FsY29kZSI+Q3JlYXRpdmUgQ29tbW9ucyBBdHRyaWJ1dGlvbiBTaGFyZSBBbGlrZSA0LjAgSW50ZXJuYXRpb25hbDwvcmlnaHRzPgogICAgPHJpZ2h0cyByaWdodHNVUkk9ImluZm86ZXUtcmVwby9zZW1hbnRpY3Mvb3BlbkFjY2VzcyI+T3BlbiBBY2Nlc3M8L3JpZ2h0cz4KICA8L3JpZ2h0c0xpc3Q+CiAgPGRlc2NyaXB0aW9ucz4KICAgIDxkZXNjcmlwdGlvbiBkZXNjcmlwdGlvblR5cGU9IkFic3RyYWN0Ij5UaGUgMjAxOS0yMDIwIHZlcnNpb24gb2YgdGhlIGNvdXJzZSBib29rIGZvciB0aGUgRGF0YSBTa2lsbHMgZm9yIFJlcHJvZHVjaWJsZSBTY2llbmNlIE1TYyBjb3Vyc2UgaW4gdGhlIEluc3RpdHV0ZSBvZiBOZXVyb3NjaWVuY2UgYW5kIFBzeWNob2xvZ3kgYXQgdGhlIFVuaXZlcnNpdHkgb2YgR2xhc2dvdy48L2Rlc2NyaXB0aW9uPgogIDwvZGVzY3JpcHRpb25zPgo8L3Jlc291cmNlPg==",
+            "url": "https://zenodo.org/record/3564348",
+            "contentUrl": null,
+            "metadataVersion": 2,
+            "schemaVersion": null,
+            "source": "mds",
+            "isActive": true,
+            "state": "findable",
+            "reason": null,
+            "viewCount": 0,
+            "viewsOverTime": [
+
+            ],
+            "downloadCount": 0,
+            "downloadsOverTime": [
+
+            ],
+            "referenceCount": 0,
+            "citationCount": 0,
+            "citationsOverTime": [
+
+            ],
+            "partCount": 0,
+            "partOfCount": 0,
+            "versionCount": 0,
+            "versionOfCount": 0,
+            "created": "2019-12-05T13:07:26.000Z",
+            "registered": "2019-12-05T14:28:25.000Z",
+            "published": "2019",
+            "updated": "2020-07-30T10:24:50.000Z"
+        },
+        "relationships": {
+            "client": {
+                "data": {
+                    "id": "cern.zenodo",
+                    "type": "clients"
+                }
+            },
+            "provider": {
+                "data": {
+                    "id": "cern",
+                    "type": "providers"
+                }
+            },
+            "media": {
+                "data": {
+                    "id": "10.5281/zenodo.3564348",
+                    "type": "media"
+                }
+            },
+            "references": {
+                "data": [
+
+                ]
+            },
+            "citations": {
+                "data": [
+
+                ]
+            },
+            "parts": {
+                "data": [
+
+                ]
+            },
+            "partOf": {
+                "data": [
+
+                ]
+            },
+            "versions": {
+                "data": [
+
+                ]
+            },
+            "versionOf": {
+                "data": [
+
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,177 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    1,
+                    9
+                ]
+            ],
+            "date-time": "2026-01-09T18:40:58Z",
+            "timestamp": 1767984058819,
+            "version": "3.49.0"
+        },
+        "reference-count": 0,
+        "publisher": "American Psychological Association (APA)",
+        "issue": "3",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Emotion"
+        ],
+        "DOI": "10.1037/emo0000032",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2015,
+                    2,
+                    23
+                ]
+            ],
+            "date-time": "2015-02-23T18:43:11Z",
+            "timestamp": 1424716991000
+        },
+        "page": "287-291",
+        "source": "Crossref",
+        "is-referenced-by-count": 50,
+        "title": [
+            "Context is more powerful than we think: Contextual cues override facial cues even for valence."
+        ],
+        "prefix": "10.1037",
+        "volume": "15",
+        "author": [
+            {
+                "given": "Mary",
+                "family": "Kayyal",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Sherri",
+                "family": "Widen",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "James A.",
+                "family": "Russell",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "15",
+        "published-online": {
+            "date-parts": [
+                [
+                    2015
+                ]
+            ]
+        },
+        "container-title": [
+            "Emotion"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://psycnet.apa.org/journals/emo/15/3/287.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    2,
+                    6
+                ]
+            ],
+            "date-time": "2024-02-06T00:06:40Z",
+            "timestamp": 1707178000000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://doi.apa.org/doi/10.1037/emo0000032"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2015
+                ]
+            ]
+        },
+        "references-count": 0,
+        "journal-issue": {
+            "issue": "3",
+            "published-online": {
+                "date-parts": [
+                    [
+                        2015
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "2015-07291-001",
+            "25706831"
+        ],
+        "URL": "https://doi.org/10.1037/emo0000032",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1931-1516",
+            "1528-3542"
+        ],
+        "issn-type": [
+            {
+                "value": "1931-1516",
+                "type": "electronic"
+            },
+            {
+                "value": "1528-3542",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2015
+                ]
+            ]
+        }
+    }
+}

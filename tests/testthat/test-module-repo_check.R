@@ -21,10 +21,11 @@ test_that("repo_check offline", {
   expect_equal(mod_output$report, exp)
 })
 
+#httptest2::start_capturing()
+httptest2::use_mock_api()
+
 test_that("OSF no files", {
   # OSF but no R files
-  skip_if_quick()
-  skip_osf()
 
   module <- "repo_check"
   paper <- test_paper("https://osf.io/y6a34")
@@ -44,8 +45,6 @@ test_that("OSF no files", {
 })
 
 test_that("no code files", {
-  skip_osf()
-
   module <- "repo_check"
   paper <- test_paper("https://osf.io/m4nbv")
   mod_output <- module_run(paper, module)
@@ -62,8 +61,6 @@ test_that("no code files", {
 })
 
 test_that("OSF", {
-  skip_osf()
-
   module <- "repo_check"
   paper <- test_paper("https://osf.io/629bx")
   mod_output <- module_run(paper, module)
@@ -80,9 +77,6 @@ test_that("OSF", {
 })
 
 test_that("OSF, github and rb", {
-  skip_if_quick()
-  skip_osf()
-
   # relevant text - info
   module <- "repo_check"
   text <- c("osf.io/629bx",
@@ -106,3 +100,5 @@ test_that("OSF, github and rb", {
   expect_equal(mod_output$summary_table, exp)
 })
 
+httptest2::stop_mocking()
+#httptest2::stop_capturing()

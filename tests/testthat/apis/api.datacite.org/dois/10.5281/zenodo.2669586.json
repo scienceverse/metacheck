@@ -1,0 +1,261 @@
+{
+    "data": {
+        "id": "10.5281/zenodo.2669586",
+        "type": "dois",
+        "attributes": {
+            "doi": "10.5281/zenodo.2669586",
+            "prefix": "10.5281",
+            "suffix": "zenodo.2669586",
+            "identifiers": [
+                {
+                    "identifier": "https://zenodo.org/record/7852893",
+                    "identifierType": "URL"
+                }
+            ],
+            "alternateIdentifiers": [
+                {
+                    "alternateIdentifierType": "URL",
+                    "alternateIdentifier": "https://zenodo.org/record/7852893"
+                }
+            ],
+            "creators": [
+                {
+                    "name": "DeBruine, Lisa",
+                    "nameType": "Personal",
+                    "givenName": "Lisa",
+                    "familyName": "DeBruine",
+                    "affiliation": [
+                        "University of Glasgow"
+                    ],
+                    "nameIdentifiers": [
+                        {
+                            "schemeUri": "https://orcid.org",
+                            "nameIdentifier": "https://orcid.org/0000-0002-7523-5539",
+                            "nameIdentifierScheme": "ORCID"
+                        }
+                    ]
+                }
+            ],
+            "titles": [
+                {
+                    "title": "faux: Simulation for Factorial Designs"
+                }
+            ],
+            "publisher": "Zenodo",
+            "container": {
+
+            },
+            "publicationYear": 2023,
+            "subjects": [
+
+            ],
+            "contributors": [
+
+            ],
+            "dates": [
+                {
+                    "date": "2023-02-03",
+                    "dateType": "Issued"
+                }
+            ],
+            "language": "en",
+            "types": {
+                "ris": "COMP",
+                "bibtex": "misc",
+                "citeproc": "article",
+                "schemaOrg": "SoftwareSourceCode",
+                "resourceTypeGeneral": "Software"
+            },
+            "relatedIdentifiers": [
+                {
+                    "relationType": "IsSupplementTo",
+                    "relatedIdentifier": "https://debruine.github.io/faux/",
+                    "relatedIdentifierType": "URL"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.2669587",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.3569183",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.3594802",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.3594825",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.3688820",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.4056526",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.4641865",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.5513951",
+                    "relatedIdentifierType": "DOI"
+                },
+                {
+                    "relationType": "HasVersion",
+                    "relatedIdentifier": "10.5281/zenodo.7852893",
+                    "relatedIdentifierType": "DOI"
+                }
+            ],
+            "relatedItems": [
+
+            ],
+            "sizes": [
+
+            ],
+            "formats": [
+
+            ],
+            "version": "1.2.0",
+            "rightsList": [
+                {
+                    "rights": "MIT License",
+                    "rightsUri": "https://opensource.org/licenses/MIT",
+                    "schemeUri": "https://spdx.org/licenses/",
+                    "rightsIdentifier": "mit",
+                    "rightsIdentifierScheme": "SPDX"
+                },
+                {
+                    "rights": "Open Access",
+                    "rightsUri": "info:eu-repo/semantics/openAccess"
+                }
+            ],
+            "descriptions": [
+                {
+                    "description": "Create datasets with factorial structure through simulation by specifying variable parameters.",
+                    "descriptionType": "Abstract"
+                }
+            ],
+            "geoLocations": [
+
+            ],
+            "fundingReferences": [
+
+            ],
+            "xml": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHJlc291cmNlIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiIHhtbG5zPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCIgeHNpOnNjaGVtYUxvY2F0aW9uPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCBodHRwOi8vc2NoZW1hLmRhdGFjaXRlLm9yZy9tZXRhL2tlcm5lbC00LjEvbWV0YWRhdGEueHNkIj4KICA8aWRlbnRpZmllciBpZGVudGlmaWVyVHlwZT0iRE9JIj4xMC41MjgxL1pFTk9ETy4yNjY5NTg2PC9pZGVudGlmaWVyPgogIDxjcmVhdG9ycz4KICAgIDxjcmVhdG9yPgogICAgICA8Y3JlYXRvck5hbWU+TGlzYSBEZUJydWluZTwvY3JlYXRvck5hbWU+CiAgICAgIDxuYW1lSWRlbnRpZmllciBuYW1lSWRlbnRpZmllclNjaGVtZT0iT1JDSUQiIHNjaGVtZVVSST0iaHR0cDovL29yY2lkLm9yZy8iPjAwMDAtMDAwMi03NTIzLTU1Mzk8L25hbWVJZGVudGlmaWVyPgogICAgICA8YWZmaWxpYXRpb24+VW5pdmVyc2l0eSBvZiBHbGFzZ293PC9hZmZpbGlhdGlvbj4KICAgIDwvY3JlYXRvcj4KICA8L2NyZWF0b3JzPgogIDx0aXRsZXM+CiAgICA8dGl0bGU+ZmF1eDogU2ltdWxhdGlvbiBmb3IgRmFjdG9yaWFsIERlc2lnbnM8L3RpdGxlPgogIDwvdGl0bGVzPgogIDxwdWJsaXNoZXI+WmVub2RvPC9wdWJsaXNoZXI+CiAgPHB1YmxpY2F0aW9uWWVhcj4yMDIzPC9wdWJsaWNhdGlvblllYXI+CiAgPGRhdGVzPgogICAgPGRhdGUgZGF0ZVR5cGU9Iklzc3VlZCI+MjAyMy0wMi0wMzwvZGF0ZT4KICA8L2RhdGVzPgogIDxyZXNvdXJjZVR5cGUgcmVzb3VyY2VUeXBlR2VuZXJhbD0iU29mdHdhcmUiLz4KICA8YWx0ZXJuYXRlSWRlbnRpZmllcnM+CiAgICA8YWx0ZXJuYXRlSWRlbnRpZmllciBhbHRlcm5hdGVJZGVudGlmaWVyVHlwZT0idXJsIj5odHRwczovL3plbm9kby5vcmcvcmVjb3JkLzc4NTI4OTM8L2FsdGVybmF0ZUlkZW50aWZpZXI+CiAgPC9hbHRlcm5hdGVJZGVudGlmaWVycz4KICA8cmVsYXRlZElkZW50aWZpZXJzPgogICAgPHJlbGF0ZWRJZGVudGlmaWVyIHJlbGF0ZWRJZGVudGlmaWVyVHlwZT0iVVJMIiByZWxhdGlvblR5cGU9IklzU3VwcGxlbWVudFRvIj5odHRwczovL2RlYnJ1aW5lLmdpdGh1Yi5pby9mYXV4LzwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uMjY2OTU4NzwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uMzU2OTE4MzwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uMzU5NDgwMjwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uMzU5NDgyNTwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uMzY4ODgyMDwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uNDA1NjUyNjwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uNDY0MTg2NTwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uNTUxMzk1MTwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uNzg1Mjg5MzwvcmVsYXRlZElkZW50aWZpZXI+CiAgPC9yZWxhdGVkSWRlbnRpZmllcnM+CiAgPHZlcnNpb24+MS4yLjA8L3ZlcnNpb24+CiAgPHJpZ2h0c0xpc3Q+CiAgICA8cmlnaHRzIHJpZ2h0c1VSST0iaHR0cHM6Ly9vcGVuc291cmNlLm9yZy9saWNlbnNlcy9NSVQiPk1JVCBMaWNlbnNlPC9yaWdodHM+CiAgICA8cmlnaHRzIHJpZ2h0c1VSST0iaW5mbzpldS1yZXBvL3NlbWFudGljcy9vcGVuQWNjZXNzIj5PcGVuIEFjY2VzczwvcmlnaHRzPgogIDwvcmlnaHRzTGlzdD4KICA8ZGVzY3JpcHRpb25zPgogICAgPGRlc2NyaXB0aW9uIGRlc2NyaXB0aW9uVHlwZT0iQWJzdHJhY3QiPkNyZWF0ZSBkYXRhc2V0cyB3aXRoIGZhY3RvcmlhbCBzdHJ1Y3R1cmUgdGhyb3VnaCBzaW11bGF0aW9uIGJ5IHNwZWNpZnlpbmcgdmFyaWFibGUgcGFyYW1ldGVycy48L2Rlc2NyaXB0aW9uPgogIDwvZGVzY3JpcHRpb25zPgo8L3Jlc291cmNlPg==",
+            "url": "https://zenodo.org/record/2669586",
+            "contentUrl": null,
+            "metadataVersion": 10,
+            "schemaVersion": "http://datacite.org/schema/kernel-4",
+            "source": "mds",
+            "isActive": true,
+            "state": "findable",
+            "reason": null,
+            "viewCount": 0,
+            "viewsOverTime": [
+
+            ],
+            "downloadCount": 0,
+            "downloadsOverTime": [
+
+            ],
+            "referenceCount": 0,
+            "citationCount": 0,
+            "citationsOverTime": [
+
+            ],
+            "partCount": 0,
+            "partOfCount": 0,
+            "versionCount": 6,
+            "versionOfCount": 0,
+            "created": "2019-05-06T19:36:52.000Z",
+            "registered": "2019-05-06T19:36:53.000Z",
+            "published": "2023",
+            "updated": "2023-04-25T14:41:28.000Z"
+        },
+        "relationships": {
+            "client": {
+                "data": {
+                    "id": "cern.zenodo",
+                    "type": "clients"
+                }
+            },
+            "provider": {
+                "data": {
+                    "id": "cern",
+                    "type": "providers"
+                }
+            },
+            "media": {
+                "data": {
+                    "id": "10.5281/zenodo.2669586",
+                    "type": "media"
+                }
+            },
+            "references": {
+                "data": [
+
+                ]
+            },
+            "citations": {
+                "data": [
+
+                ]
+            },
+            "parts": {
+                "data": [
+
+                ]
+            },
+            "partOf": {
+                "data": [
+
+                ]
+            },
+            "versions": {
+                "data": [
+                    {
+                        "id": "10.5281/zenodo.3688820",
+                        "type": "dois"
+                    },
+                    {
+                        "id": "10.5281/zenodo.4056526",
+                        "type": "dois"
+                    },
+                    {
+                        "id": "10.5281/zenodo.4641865",
+                        "type": "dois"
+                    },
+                    {
+                        "id": "10.5281/zenodo.5513951",
+                        "type": "dois"
+                    },
+                    {
+                        "id": "10.5281/zenodo.7852893",
+                        "type": "dois"
+                    },
+                    {
+                        "id": "10.5281/zenodo.2669587",
+                        "type": "dois"
+                    }
+                ]
+            },
+            "versionOf": {
+                "data": [
+
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,155 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    3,
+                    19
+                ]
+            ],
+            "date-time": "2026-03-19T11:50:55Z",
+            "timestamp": 1773921055534,
+            "version": "3.50.1"
+        },
+        "reference-count": 0,
+        "publisher": "JSTOR",
+        "issue": "2",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Social Psychology"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    1978,
+                    6
+                ]
+            ]
+        },
+        "DOI": "10.2307/3033570",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2006,
+                    5,
+                    8
+                ]
+            ],
+            "date-time": "2006-05-08T03:33:26Z",
+            "timestamp": 1147059206000
+        },
+        "page": "105",
+        "source": "Crossref",
+        "is-referenced-by-count": 111,
+        "title": [
+            "The Perception of Envy"
+        ],
+        "prefix": "10.2307",
+        "volume": "41",
+        "author": [
+            {
+                "given": "Maury",
+                "family": "Silver",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "John",
+                "family": "Sabini",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "1121",
+        "container-title": [
+            "Social Psychology"
+        ],
+        "original-title": [
+
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2018,
+                    5,
+                    9
+                ]
+            ],
+            "date-time": "2018-05-09T11:52:17Z",
+            "timestamp": 1525866737000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://www.jstor.org/stable/3033570?origin=crossref"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    1978,
+                    6
+                ]
+            ]
+        },
+        "references-count": 0,
+        "journal-issue": {
+            "issue": "2",
+            "published-print": {
+                "date-parts": [
+                    [
+                        1978,
+                        6
+                    ]
+                ]
+            }
+        },
+        "URL": "https://doi.org/10.2307/3033570",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0147-829X"
+        ],
+        "issn-type": [
+            {
+                "value": "0147-829X",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    1978,
+                    6
+                ]
+            ]
+        }
+    }
+}

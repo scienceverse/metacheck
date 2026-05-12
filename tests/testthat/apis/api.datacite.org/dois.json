@@ -1,0 +1,4155 @@
+{
+    "data": [
+        {
+            "id": "10.6084/m9.figshare.32257146.v3",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.6084/m9.figshare.32257146.v3",
+                "identifiers": [
+
+                ],
+                "creators": [
+                    {
+                        "name": "Kaleidos",
+                        "familyName": "Kaleidos",
+                        "affiliation": [
+
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Ensamblajes: Etnografía | Discapacidad | Arte"
+                    }
+                ],
+                "publisher": "figshare",
+                "container": {
+
+                },
+                "publicationYear": 2026,
+                "subjects": [
+                    {
+                        "subject": "Social and cultural anthropology",
+                        "schemeUri": "http://www.abs.gov.au/ausstats/abs@.nsf/0/6BB427AB9696C225CA2574180004463E",
+                        "subjectScheme": "ANZSRC Fields of Research",
+                        "classificationCode": "440107"
+                    },
+                    {
+                        "subject": "Arts and cultural policy",
+                        "schemeUri": "http://www.abs.gov.au/ausstats/abs@.nsf/0/6BB427AB9696C225CA2574180004463E",
+                        "subjectScheme": "ANZSRC Fields of Research",
+                        "classificationCode": "470201"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Created"
+                    },
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Updated"
+                    },
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": null,
+                "types": {
+                    "ris": "BOOK",
+                    "bibtex": "book",
+                    "citeproc": "book",
+                    "schemaOrg": "Book",
+                    "resourceType": "Book",
+                    "resourceTypeGeneral": "Book"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsIdenticalTo",
+                        "relatedIdentifier": "10.6084/m9.figshare.32257146",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+                    "31980216 Bytes"
+                ],
+                "formats": [
+
+                ],
+                "version": "3",
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "<i>Ensamblajes<\/i> es una obra colectiva que reúne investigación, arte y reflexión crítica para repensar la discapacidad desde una perspectiva interdisciplinaria, política y estética. Desarrollado por el grupo Kaleidos de la Universidad de Cuenca entre 2020 y 2025, el libro surge de procesos colaborativos con investigadores, artistas y personas con discapacidad, quienes co-crean conocimiento situado y nuevas formas de expresión.La publicación propone entender la discapacidad no como déficit, sino como fuente de creación, agencia y potencia transformadora. Para ello, articula etnografía, prácticas artísticas y compromiso político con el fin de cuestionar nociones hegemónicas de normalidad, exclusión e inclusión. Además, defiende una investigación hecha <i>con<\/i> las personas, no solo <i>sobre<\/i> ellas.En el plano estético, el libro apuesta por formatos experimentales que integran escritura, visualidad, performance y exposición, ampliando tanto las formas de conocer como de comunicar. Su estructura en “pabellones” y “salas” invita a una lectura no lineal, abierta al diálogo y a la experiencia sensible.En conjunto, <i>Ensamblajes<\/i> es un aporte crítico y creativo que busca transformar la manera en que la universidad y la sociedad comprenden la diferencia y la discapacidad.Fanzines desarrollados dentro del proyecto EDIN (Educación, Discapacidad e Inclusión) por el grupo de investigación KALEIDOS del Departamento Interdisciplinario de Espacio y Población DIEP de la Universidad de Cuenca, en el cual se estudia el estado actual, las expectativas y potencialidades de la educación inclusiva. Este material documenta las experiencias de estudiantes con discapacidad en la Universidad de Cuenca y fue desarrollado de forma colaborativa por estudiantes, investigadores, personal de la Universidad de Cuenca y actores sociales en el campo de la inclusión y las discapacidades.",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://figshare.com/articles/book/Fanzine_1_-_Proyecto_EDIN_Kaleidos_/32257146/3",
+                "contentUrl": null,
+                "metadataVersion": 0,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "mds",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2026-05-12T20:46:36Z",
+                "registered": "2026-05-12T20:46:36Z",
+                "published": null,
+                "updated": "2026-05-12T20:46:37Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "figshare.ars",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.6084/m9.figshare.32257146",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.6084/m9.figshare.32257146",
+                "identifiers": [
+
+                ],
+                "creators": [
+                    {
+                        "name": "Kaleidos",
+                        "familyName": "Kaleidos",
+                        "affiliation": [
+
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Ensamblajes: Etnografía | Discapacidad | Arte"
+                    }
+                ],
+                "publisher": "figshare",
+                "container": {
+
+                },
+                "publicationYear": 2026,
+                "subjects": [
+                    {
+                        "subject": "Social and cultural anthropology",
+                        "schemeUri": "http://www.abs.gov.au/ausstats/abs@.nsf/0/6BB427AB9696C225CA2574180004463E",
+                        "subjectScheme": "ANZSRC Fields of Research",
+                        "classificationCode": "440107"
+                    },
+                    {
+                        "subject": "Arts and cultural policy",
+                        "schemeUri": "http://www.abs.gov.au/ausstats/abs@.nsf/0/6BB427AB9696C225CA2574180004463E",
+                        "subjectScheme": "ANZSRC Fields of Research",
+                        "classificationCode": "470201"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Created"
+                    },
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Updated"
+                    },
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": null,
+                "types": {
+                    "ris": "BOOK",
+                    "bibtex": "book",
+                    "citeproc": "book",
+                    "schemaOrg": "Book",
+                    "resourceType": "Book",
+                    "resourceTypeGeneral": "Book"
+                },
+                "relatedIdentifiers": [
+
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+                    "31980216 Bytes"
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "<i>Ensamblajes<\/i> es una obra colectiva que reúne investigación, arte y reflexión crítica para repensar la discapacidad desde una perspectiva interdisciplinaria, política y estética. Desarrollado por el grupo Kaleidos de la Universidad de Cuenca entre 2020 y 2025, el libro surge de procesos colaborativos con investigadores, artistas y personas con discapacidad, quienes co-crean conocimiento situado y nuevas formas de expresión.La publicación propone entender la discapacidad no como déficit, sino como fuente de creación, agencia y potencia transformadora. Para ello, articula etnografía, prácticas artísticas y compromiso político con el fin de cuestionar nociones hegemónicas de normalidad, exclusión e inclusión. Además, defiende una investigación hecha <i>con<\/i> las personas, no solo <i>sobre<\/i> ellas.En el plano estético, el libro apuesta por formatos experimentales que integran escritura, visualidad, performance y exposición, ampliando tanto las formas de conocer como de comunicar. Su estructura en “pabellones” y “salas” invita a una lectura no lineal, abierta al diálogo y a la experiencia sensible.En conjunto, <i>Ensamblajes<\/i> es un aporte crítico y creativo que busca transformar la manera en que la universidad y la sociedad comprenden la diferencia y la discapacidad.Fanzines desarrollados dentro del proyecto EDIN (Educación, Discapacidad e Inclusión) por el grupo de investigación KALEIDOS del Departamento Interdisciplinario de Espacio y Población DIEP de la Universidad de Cuenca, en el cual se estudia el estado actual, las expectativas y potencialidades de la educación inclusiva. Este material documenta las experiencias de estudiantes con discapacidad en la Universidad de Cuenca y fue desarrollado de forma colaborativa por estudiantes, investigadores, personal de la Universidad de Cuenca y actores sociales en el campo de la inclusión y las discapacidades.",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://figshare.com/articles/book/Fanzine_1_-_Proyecto_EDIN_Kaleidos_/32257146",
+                "contentUrl": null,
+                "metadataVersion": 2,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "mds",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2026-05-12T20:19:23Z",
+                "registered": "2026-05-12T20:19:23Z",
+                "published": null,
+                "updated": "2026-05-12T20:46:36Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "figshare.ars",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.19802190",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.19802190",
+                "identifiers": [
+                    {
+                        "identifier": "oai:zenodo.org:19802190",
+                        "identifierType": "oai"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "Горбачук, Валентина Іванівна",
+                        "nameType": "Personal",
+                        "givenName": "Валентина Іванівна",
+                        "familyName": "Горбачук",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "name": "Махно, С. Я.",
+                        "nameType": "Personal",
+                        "givenName": "С. Я.",
+                        "familyName": "Махно",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Мельник Сергій  Анатолійович [Melnyk Serhii Anatoliiovych]"
+                    }
+                ],
+                "publisher": "Institute of Encyclopedic Research, National Academy of Sciences of Ukraine (Інститут енциклопедичних досліджень НАН України)",
+                "container": {
+
+                },
+                "publicationYear": 2018,
+                "subjects": [
+                    {
+                        "subject": "Encyclopedia of Modern Ukraine"
+                    },
+                    {
+                        "subject": "Ukraine"
+                    },
+                    {
+                        "subject": "Reference"
+                    },
+                    {
+                        "subject": "Encyclopedia entry"
+                    },
+                    {
+                        "subject": "Volume 20"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2018-12-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "uk",
+                "types": {
+                    "ris": "CHAP",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "Chapter",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "BookChapter"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsIdenticalTo",
+                        "relatedIdentifier": "https://esu.com.ua/article-66350",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.19802189",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "МЕ́ЛЬНИК Сергій Анатолійович – математик. Доктор фізико-математичних наук . Закін. Донец. університет , де 1980–2007 й працював: 1989–90 та 1995–98 – доцент, 1990–95 – завідувач кафедри алгебри і теорії ймовірностей, 2000–07 – доцент кафедри приклад. математики та теорії систем у... ⚠️  Цей запис містить лише бібліографічні метадані. Повний текст доступний за посиланням [This record contains bibliographic metadata only. The full text is available at]: https://esu.com.ua/article-66350",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.19802190",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 1,
+                "created": "2026-04-26T23:11:58Z",
+                "registered": "2026-04-26T23:11:58Z",
+                "published": null,
+                "updated": "2026-05-12T20:46:24Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.20146359",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.20146359",
+                "identifiers": [
+                    {
+                        "identifier": "oai:zenodo.org:20146359",
+                        "identifierType": "oai"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "IDITEK UNIVERSITY",
+                        "nameType": "Organizational",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Operación en la Gestión de Proyectos (Agile, Scum, Kanban) (Técnico)"
+                    }
+                ],
+                "publisher": "Zenodo",
+                "container": {
+
+                },
+                "publicationYear": 2025,
+                "subjects": [
+
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2025-05-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": null,
+                "types": {
+                    "ris": "GEN",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "CreativeWork",
+                    "resourceType": "Interactive resource",
+                    "resourceTypeGeneral": "InteractiveResource"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.20146358",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "Facetas clave (Competencias específicas):\n\n\n\nAplicar de manera efectiva los principios y prácticas de AGILE, SCRUM y KANBAN en la gestión de proyectos reales, demostrando habilidades para adaptarse a los cambios y promover la colaboración dentro del equipo.\n\n\n\n\nAplicar de manera efectiva los principios y prácticas de SCRUM en la gestión de proyectos, demostrando un entendimiento profundo de los roles, eventos y artefactos clave de esta metodología ágil.\n\n\n\n\nCapacidad para gestionar proyectos de manera eficiente y efectiva utilizando metodologías ágiles como KANBAN.\n\n\nSkills\n\na.     Introducción a las Metodologías Ágiles\n\nb.     Implementación de SCRUM\n\nc.     KANBAM",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.20146359",
+                "contentUrl": null,
+                "metadataVersion": 0,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2026-05-12T20:46:21Z",
+                "registered": "2026-05-12T20:46:22Z",
+                "published": null,
+                "updated": "2026-05-12T20:46:22Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.20146358",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.20146358",
+                "identifiers": [
+
+                ],
+                "creators": [
+                    {
+                        "name": "IDITEK UNIVERSITY",
+                        "nameType": "Organizational",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Operación en la Gestión de Proyectos (Agile, Scum, Kanban) (Técnico)"
+                    }
+                ],
+                "publisher": "Zenodo",
+                "container": {
+
+                },
+                "publicationYear": 2025,
+                "subjects": [
+
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2025-05-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": null,
+                "types": {
+                    "ris": "GEN",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "CreativeWork",
+                    "resourceType": "Interactive resource",
+                    "resourceTypeGeneral": "InteractiveResource"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.20146358",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "Facetas clave (Competencias específicas):\n\n\n\nAplicar de manera efectiva los principios y prácticas de AGILE, SCRUM y KANBAN en la gestión de proyectos reales, demostrando habilidades para adaptarse a los cambios y promover la colaboración dentro del equipo.\n\n\n\n\nAplicar de manera efectiva los principios y prácticas de SCRUM en la gestión de proyectos, demostrando un entendimiento profundo de los roles, eventos y artefactos clave de esta metodología ágil.\n\n\n\n\nCapacidad para gestionar proyectos de manera eficiente y efectiva utilizando metodologías ágiles como KANBAN.\n\n\nSkills\n\na.     Introducción a las Metodologías Ágiles\n\nb.     Implementación de SCRUM\n\nc.     KANBAM",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.20146358",
+                "contentUrl": null,
+                "metadataVersion": 0,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 1,
+                "versionOfCount": 1,
+                "created": "2026-05-12T20:46:21Z",
+                "registered": "2026-05-12T20:46:22Z",
+                "published": null,
+                "updated": "2026-05-12T20:46:22Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.19802189",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.19802189",
+                "identifiers": [
+
+                ],
+                "creators": [
+                    {
+                        "name": "Горбачук, Валентина Іванівна",
+                        "nameType": "Personal",
+                        "givenName": "Валентина Іванівна",
+                        "familyName": "Горбачук",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "name": "Махно, С. Я.",
+                        "nameType": "Personal",
+                        "givenName": "С. Я.",
+                        "familyName": "Махно",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Мельник Сергій  Анатолійович [Melnyk Serhii Anatoliiovych]"
+                    }
+                ],
+                "publisher": "Institute of Encyclopedic Research, National Academy of Sciences of Ukraine (Інститут енциклопедичних досліджень НАН України)",
+                "container": {
+
+                },
+                "publicationYear": 2018,
+                "subjects": [
+                    {
+                        "subject": "Encyclopedia of Modern Ukraine"
+                    },
+                    {
+                        "subject": "Ukraine"
+                    },
+                    {
+                        "subject": "Reference"
+                    },
+                    {
+                        "subject": "Encyclopedia entry"
+                    },
+                    {
+                        "subject": "Volume 20"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2018-12-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "uk",
+                "types": {
+                    "ris": "CHAP",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "Chapter",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "BookChapter"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsIdenticalTo",
+                        "relatedIdentifier": "https://esu.com.ua/article-66350",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.19802189",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "МЕ́ЛЬНИК Сергій Анатолійович – математик. Доктор фізико-математичних наук . Закін. Донец. університет , де 1980–2007 й працював: 1989–90 та 1995–98 – доцент, 1990–95 – завідувач кафедри алгебри і теорії ймовірностей, 2000–07 – доцент кафедри приклад. математики та теорії систем у... ⚠️  Цей запис містить лише бібліографічні метадані. Повний текст доступний за посиланням [This record contains bibliographic metadata only. The full text is available at]: https://esu.com.ua/article-66350",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.19802189",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 2,
+                "versionOfCount": 1,
+                "created": "2026-04-26T23:11:58Z",
+                "registered": "2026-04-26T23:11:58Z",
+                "published": null,
+                "updated": "2026-05-12T20:46:20Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.20146498",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.20146498",
+                "identifiers": [
+                    {
+                        "identifier": "oai:zenodo.org:20146498",
+                        "identifierType": "oai"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "Maestre-Serrano, Ronald",
+                        "nameType": "Personal",
+                        "givenName": "Ronald",
+                        "familyName": "Maestre-Serrano",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Pérez-Reales, Rafael",
+                        "nameType": "Personal",
+                        "givenName": "Rafael",
+                        "familyName": "Pérez-Reales",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Zapata-Maldonado, Yocelin",
+                        "nameType": "Personal",
+                        "givenName": "Yocelin",
+                        "familyName": "Zapata-Maldonado",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Girón-Domínguez, Katherine",
+                        "nameType": "Personal",
+                        "givenName": "Katherine",
+                        "familyName": "Girón-Domínguez",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Sánchez-Bolívar, Martha",
+                        "nameType": "Personal",
+                        "givenName": "Martha",
+                        "familyName": "Sánchez-Bolívar",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Espitia-Almeida, Fabián",
+                        "nameType": "Personal",
+                        "givenName": "Fabián",
+                        "familyName": "Espitia-Almeida",
+                        "affiliation": [
+                            "Universidad Simón Bolívar, Centro de Investigaciones en Ciencias de la Vida (CICV), Facultad de Ciencias Básicas y Biomédicas, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Valle-Molinares, Roger",
+                        "nameType": "Personal",
+                        "givenName": "Roger",
+                        "familyName": "Valle-Molinares",
+                        "affiliation": [
+                            "Universidad del Atlántico, Facultad de Ciencias Básicas, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Pareja-Loaiza, Paula",
+                        "nameType": "Personal",
+                        "givenName": "Paula",
+                        "familyName": "Pareja-Loaiza",
+                        "affiliation": [
+                            "Universidad Simón Bolívar, Centro de Investigaciones en Ciencias de la Vida (CICV), Facultad de Ciencias de la Salud, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "SeleneGutiérrez-Rodríguez",
+                        "nameType": "Personal",
+                        "familyName": "SeleneGutiérrez-Rodríguez",
+                        "affiliation": [
+                            "* & Universidad Autónoma de Nuevo León (UANL), Facultad de Ciencias Biológicas, San Nicolás de los Garza, México."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Dávila-Barboza, Jesús",
+                        "nameType": "Personal",
+                        "givenName": "Jesús",
+                        "familyName": "Dávila-Barboza",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "name": "ElizabethFlores, Adriana",
+                        "nameType": "Personal",
+                        "givenName": "Adriana",
+                        "familyName": "ElizabethFlores",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Figure 2 in Current susceptibility status and resistance mechanisms to pyrethroids and organophosphates in Aedes aegypti (Diptera, Culicidae) from Atlantico, Colombia"
+                    }
+                ],
+                "publisher": "Zenodo",
+                "container": {
+
+                },
+                "publicationYear": 2026,
+                "subjects": [
+                    {
+                        "subject": "Biodiversity"
+                    },
+                    {
+                        "subject": "Taxonomy"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2026-01-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": null,
+                "types": {
+                    "ris": "FIGURE",
+                    "bibtex": "misc",
+                    "citeproc": "graphic",
+                    "schemaOrg": "ImageObject",
+                    "resourceType": "Figure",
+                    "resourceTypeGeneral": "Image"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsPartOf",
+                        "relatedIdentifier": "10.1590/1806-9665-RBENT-2025-0072",
+                        "resourceTypeGeneral": "JournalArticle",
+                        "relatedIdentifierType": "DOI"
+                    },
+                    {
+                        "relationType": "IsPartOf",
+                        "relatedIdentifier": "https://zenodo.org/record/20146490",
+                        "resourceTypeGeneral": "JournalArticle",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.20146497",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "Figure 2 Mortality percentage in adults of Aedes aegypti populations from the municipalities of Juan de Acosta (JA), Puerto Colombia (PC), and Soledad (SO) in the department of Atlantico, Colombia, compared to the susceptible Rockefeller strain after exposure to (a) malathion (50 µg/bottle; 30 minutes) and (b) pirimiphos-methyl (75 µg/bottle; 45 minutes).",
+                        "descriptionType": "Abstract"
+                    },
+                    {
+                        "description": "Published as part of Maestre-Serrano, Ronald, Pérez-Reales, Rafael, Zapata-Maldonado, Yocelin, Girón-Domínguez, Katherine, Sánchez-Bolívar, Martha, Espitia-Almeida, Fabián, Valle-Molinares, Roger, Pareja-Loaiza, Paula, SeleneGutiérrez-Rodríguez, Dávila-Barboza, Jesús & ElizabethFlores, Adriana, 2025, Current susceptibility status and resistance mechanisms to pyrethroids and organophosphates in Aedes aegypti (Diptera, Culicidae) from Atlantico, Colombia, pp. 3773-3803 in Revista Brasileira de Entomologia (e20250072) 69 (4) on page 5, DOI: 10.1590/1806-9665-RBENT-2025-0072, http://zenodo.org/record/20146490",
+                        "descriptionType": "Other"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.20146498",
+                "contentUrl": null,
+                "metadataVersion": 0,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2026-05-12T20:46:17Z",
+                "registered": "2026-05-12T20:46:18Z",
+                "published": null,
+                "updated": "2026-05-12T20:46:18Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.20146391",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.20146391",
+                "identifiers": [
+
+                ],
+                "creators": [
+                    {
+                        "name": "Zanni, Beatrice",
+                        "nameType": "Personal",
+                        "givenName": "Beatrice",
+                        "familyName": "Zanni",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "GED - dimensional entropic gravity: stabilizzazione of extra-dimensions and Hubble Tensión resolución"
+                    }
+                ],
+                "publisher": "Zenodo",
+                "container": {
+
+                },
+                "publicationYear": 2026,
+                "subjects": [
+
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": null,
+                "types": {
+                    "ris": "GEN",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "CreativeWork",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "Preprint"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.20146391",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.20146391",
+                "contentUrl": null,
+                "metadataVersion": 0,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2026-05-12T20:46:10Z",
+                "registered": "2026-05-12T20:46:10Z",
+                "published": null,
+                "updated": "2026-05-12T20:46:10Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.20146116",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.20146116",
+                "identifiers": [
+                    {
+                        "identifier": "oai:zenodo.org:20146116",
+                        "identifierType": "oai"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "Abouelfida, abdelhadi",
+                        "nameType": "Personal",
+                        "givenName": "abdelhadi",
+                        "familyName": "Abouelfida",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Neuro-Radiative Monitoring: A BNS-Based Framework for Pollinator Navigation Analysis via Thermal and Spectral Radiation"
+                    }
+                ],
+                "publisher": "Zenodo",
+                "container": {
+
+                },
+                "publicationYear": 2026,
+                "subjects": [
+
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Issued"
+                    },
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Submitted"
+                    }
+                ],
+                "language": null,
+                "types": {
+                    "ris": "RPRT",
+                    "bibtex": "article",
+                    "citeproc": "article-journal",
+                    "schemaOrg": "ScholarlyArticle",
+                    "resourceType": "Proposal",
+                    "resourceTypeGeneral": "Text"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsPartOf",
+                        "relatedIdentifier": "10.5281/zenodo.20146116",
+                        "resourceTypeGeneral": "Text",
+                        "relatedIdentifierType": "DOI"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.20146115",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": "1",
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "Neuro-Radiative Monitoring: A Behavioral Neuroscience (BNS) Based Framework for Pollinator Navigation Analysis via Thermal and Spectral Radiation.\n\nThis project introduces a disruptive, non-invasive methodology for monitoring pollinators (bees and butterflies) in the context of the EU Nature Restoration Law. Traditionally, pollinator monitoring has relied on manual counting (EU-PoMS), which lacks the neuro-physiological depth required to detect early signs of population decline.\n\nOur framework, rooted in BNS Science (Behavioral Neuroscience) and BS Science, utilizes two primary radiative pillars:\n\n\n\nInfrared (IR) Thermography: To measure the metabolic heat signatures of honeybees, providing a proxy for cognitive load and neuro-fatigue during foraging.\n\nUV Polarization Mapping: To track the migratory steering efficiency of butterflies by monitoring how their neural systems align with polarized light radiation.\n\n\nBy applying Active Frequency Modulation (AFM) and proprietary algorithms, the system translates raw radiative signals into Behavioral Navigation Vectors (BNV). This allows for the quantification of a \"Disorientation Factor,\" serving as a predictive Early Warning System (EWS) for environmental stressors (pesticides, radiation, or habitat loss).\n\nThis work aims to establish a new European industrial standard for \"Neuro-Resilience,\" ensuring high-definition, scalable, and automated monitoring across diverse ecosystems.",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.20146116",
+                "contentUrl": null,
+                "metadataVersion": 0,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 2,
+                "partOfCount": 1,
+                "versionCount": 0,
+                "versionOfCount": 1,
+                "created": "2026-05-12T20:42:36Z",
+                "registered": "2026-05-12T20:42:37Z",
+                "published": null,
+                "updated": "2026-05-12T20:46:07Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.19802191",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.19802191",
+                "identifiers": [
+
+                ],
+                "creators": [
+                    {
+                        "name": "Петров, Є. В.",
+                        "nameType": "Personal",
+                        "givenName": "Є. В.",
+                        "familyName": "Петров",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Мельник Роман Сергійович [Melnyk Roman Serhiiovych]"
+                    }
+                ],
+                "publisher": "Institute of Encyclopedic Research, National Academy of Sciences of Ukraine (Інститут енциклопедичних досліджень НАН України)",
+                "container": {
+
+                },
+                "publicationYear": 2018,
+                "subjects": [
+                    {
+                        "subject": "Encyclopedia of Modern Ukraine"
+                    },
+                    {
+                        "subject": "Ukraine"
+                    },
+                    {
+                        "subject": "Reference"
+                    },
+                    {
+                        "subject": "Encyclopedia entry"
+                    },
+                    {
+                        "subject": "Volume 20"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2018-12-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "uk",
+                "types": {
+                    "ris": "CHAP",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "Chapter",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "BookChapter"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsIdenticalTo",
+                        "relatedIdentifier": "https://esu.com.ua/article-66349",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.19802191",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "МЕ́ЛЬНИК Роман Сергійович – правознавець. Доктор юридичних наук , професор . Закін. Запоріз. юрид. інститут МВС України . Від 2002 працював у Харків. університеті внутр. справ: 2006–09 – нач. н.-д. лаб. з проблем взаємодії з насел. та громадськістю, 2009–10 – нач. каф. адм. права... ⚠️  Цей запис містить лише бібліографічні метадані. Повний текст доступний за посиланням [This record contains bibliographic metadata only. The full text is available at]: https://esu.com.ua/article-66349",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.19802191",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 2,
+                "versionOfCount": 1,
+                "created": "2026-04-26T23:12:02Z",
+                "registered": "2026-04-26T23:12:03Z",
+                "published": null,
+                "updated": "2026-05-12T20:46:04Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.19802192",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.19802192",
+                "identifiers": [
+                    {
+                        "identifier": "oai:zenodo.org:19802192",
+                        "identifierType": "oai"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "Петров, Є. В.",
+                        "nameType": "Personal",
+                        "givenName": "Є. В.",
+                        "familyName": "Петров",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Мельник Роман Сергійович [Melnyk Roman Serhiiovych]"
+                    }
+                ],
+                "publisher": "Institute of Encyclopedic Research, National Academy of Sciences of Ukraine (Інститут енциклопедичних досліджень НАН України)",
+                "container": {
+
+                },
+                "publicationYear": 2018,
+                "subjects": [
+                    {
+                        "subject": "Encyclopedia of Modern Ukraine"
+                    },
+                    {
+                        "subject": "Ukraine"
+                    },
+                    {
+                        "subject": "Reference"
+                    },
+                    {
+                        "subject": "Encyclopedia entry"
+                    },
+                    {
+                        "subject": "Volume 20"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2018-12-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "uk",
+                "types": {
+                    "ris": "CHAP",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "Chapter",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "BookChapter"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsIdenticalTo",
+                        "relatedIdentifier": "https://esu.com.ua/article-66349",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.19802191",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "МЕ́ЛЬНИК Роман Сергійович – правознавець. Доктор юридичних наук , професор . Закін. Запоріз. юрид. інститут МВС України . Від 2002 працював у Харків. університеті внутр. справ: 2006–09 – нач. н.-д. лаб. з проблем взаємодії з насел. та громадськістю, 2009–10 – нач. каф. адм. права... ⚠️  Цей запис містить лише бібліографічні метадані. Повний текст доступний за посиланням [This record contains bibliographic metadata only. The full text is available at]: https://esu.com.ua/article-66349",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.19802192",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 1,
+                "created": "2026-04-26T23:12:02Z",
+                "registered": "2026-04-26T23:12:02Z",
+                "published": null,
+                "updated": "2026-05-12T20:46:04Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.19802193",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.19802193",
+                "identifiers": [
+
+                ],
+                "creators": [
+                    {
+                        "name": "Базилевич, Р. П.",
+                        "nameType": "Personal",
+                        "givenName": "Р. П.",
+                        "familyName": "Базилевич",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Мельник Роман Андрійович [Melnyk Roman Andriiovych]"
+                    }
+                ],
+                "publisher": "Institute of Encyclopedic Research, National Academy of Sciences of Ukraine (Інститут енциклопедичних досліджень НАН України)",
+                "container": {
+
+                },
+                "publicationYear": 2018,
+                "subjects": [
+                    {
+                        "subject": "Encyclopedia of Modern Ukraine"
+                    },
+                    {
+                        "subject": "Ukraine"
+                    },
+                    {
+                        "subject": "Reference"
+                    },
+                    {
+                        "subject": "Encyclopedia entry"
+                    },
+                    {
+                        "subject": "Volume 20"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2018-12-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "uk",
+                "types": {
+                    "ris": "CHAP",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "Chapter",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "BookChapter"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsIdenticalTo",
+                        "relatedIdentifier": "https://esu.com.ua/article-66348",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.19802193",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "МЕ́ЛЬНИК Роман Андрійович – фахівець у галузі електроніки. Доктор технічних наук , професор . Закін. Львів. політех. інститут , де від 1971 й працює : від 2001 – професор кафедри програм. забезпечення. Основні напрями наук. досліджень: комбінаторні задачі неполіноміал. складності... ⚠️  Цей запис містить лише бібліографічні метадані. Повний текст доступний за посиланням [This record contains bibliographic metadata only. The full text is available at]: https://esu.com.ua/article-66348",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.19802193",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 2,
+                "versionOfCount": 1,
+                "created": "2026-04-26T23:12:06Z",
+                "registered": "2026-04-26T23:12:07Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:55Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.19802194",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.19802194",
+                "identifiers": [
+                    {
+                        "identifier": "oai:zenodo.org:19802194",
+                        "identifierType": "oai"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "Базилевич, Р. П.",
+                        "nameType": "Personal",
+                        "givenName": "Р. П.",
+                        "familyName": "Базилевич",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Мельник Роман Андрійович [Melnyk Roman Andriiovych]"
+                    }
+                ],
+                "publisher": "Institute of Encyclopedic Research, National Academy of Sciences of Ukraine (Інститут енциклопедичних досліджень НАН України)",
+                "container": {
+
+                },
+                "publicationYear": 2018,
+                "subjects": [
+                    {
+                        "subject": "Encyclopedia of Modern Ukraine"
+                    },
+                    {
+                        "subject": "Ukraine"
+                    },
+                    {
+                        "subject": "Reference"
+                    },
+                    {
+                        "subject": "Encyclopedia entry"
+                    },
+                    {
+                        "subject": "Volume 20"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2018-12-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "uk",
+                "types": {
+                    "ris": "CHAP",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "Chapter",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "BookChapter"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsIdenticalTo",
+                        "relatedIdentifier": "https://esu.com.ua/article-66348",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.19802193",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "МЕ́ЛЬНИК Роман Андрійович – фахівець у галузі електроніки. Доктор технічних наук , професор . Закін. Львів. політех. інститут , де від 1971 й працює : від 2001 – професор кафедри програм. забезпечення. Основні напрями наук. досліджень: комбінаторні задачі неполіноміал. складності... ⚠️  Цей запис містить лише бібліографічні метадані. Повний текст доступний за посиланням [This record contains bibliographic metadata only. The full text is available at]: https://esu.com.ua/article-66348",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.19802194",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 1,
+                "created": "2026-04-26T23:12:07Z",
+                "registered": "2026-04-26T23:12:07Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:55Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.20146492",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.20146492",
+                "identifiers": [
+                    {
+                        "identifier": "oai:zenodo.org:20146492",
+                        "identifierType": "oai"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "Maestre-Serrano, Ronald",
+                        "nameType": "Personal",
+                        "givenName": "Ronald",
+                        "familyName": "Maestre-Serrano",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Pérez-Reales, Rafael",
+                        "nameType": "Personal",
+                        "givenName": "Rafael",
+                        "familyName": "Pérez-Reales",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Zapata-Maldonado, Yocelin",
+                        "nameType": "Personal",
+                        "givenName": "Yocelin",
+                        "familyName": "Zapata-Maldonado",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Girón-Domínguez, Katherine",
+                        "nameType": "Personal",
+                        "givenName": "Katherine",
+                        "familyName": "Girón-Domínguez",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Sánchez-Bolívar, Martha",
+                        "nameType": "Personal",
+                        "givenName": "Martha",
+                        "familyName": "Sánchez-Bolívar",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Espitia-Almeida, Fabián",
+                        "nameType": "Personal",
+                        "givenName": "Fabián",
+                        "familyName": "Espitia-Almeida",
+                        "affiliation": [
+                            "Universidad Simón Bolívar, Centro de Investigaciones en Ciencias de la Vida (CICV), Facultad de Ciencias Básicas y Biomédicas, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Valle-Molinares, Roger",
+                        "nameType": "Personal",
+                        "givenName": "Roger",
+                        "familyName": "Valle-Molinares",
+                        "affiliation": [
+                            "Universidad del Atlántico, Facultad de Ciencias Básicas, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Pareja-Loaiza, Paula",
+                        "nameType": "Personal",
+                        "givenName": "Paula",
+                        "familyName": "Pareja-Loaiza",
+                        "affiliation": [
+                            "Universidad Simón Bolívar, Centro de Investigaciones en Ciencias de la Vida (CICV), Facultad de Ciencias de la Salud, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "SeleneGutiérrez-Rodríguez",
+                        "nameType": "Personal",
+                        "familyName": "SeleneGutiérrez-Rodríguez",
+                        "affiliation": [
+                            "* & Universidad Autónoma de Nuevo León (UANL), Facultad de Ciencias Biológicas, San Nicolás de los Garza, México."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Dávila-Barboza, Jesús",
+                        "nameType": "Personal",
+                        "givenName": "Jesús",
+                        "familyName": "Dávila-Barboza",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "name": "ElizabethFlores, Adriana",
+                        "nameType": "Personal",
+                        "givenName": "Adriana",
+                        "familyName": "ElizabethFlores",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Figure 1 in Current susceptibility status and resistance mechanisms to pyrethroids and organophosphates in Aedes aegypti (Diptera, Culicidae) from Atlantico, Colombia"
+                    }
+                ],
+                "publisher": "Zenodo",
+                "container": {
+
+                },
+                "publicationYear": 2026,
+                "subjects": [
+                    {
+                        "subject": "Biodiversity"
+                    },
+                    {
+                        "subject": "Taxonomy"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2026-01-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": null,
+                "types": {
+                    "ris": "FIGURE",
+                    "bibtex": "misc",
+                    "citeproc": "graphic",
+                    "schemaOrg": "ImageObject",
+                    "resourceType": "Figure",
+                    "resourceTypeGeneral": "Image"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsPartOf",
+                        "relatedIdentifier": "10.1590/1806-9665-RBENT-2025-0072",
+                        "resourceTypeGeneral": "JournalArticle",
+                        "relatedIdentifierType": "DOI"
+                    },
+                    {
+                        "relationType": "IsPartOf",
+                        "relatedIdentifier": "https://zenodo.org/record/20146490",
+                        "resourceTypeGeneral": "JournalArticle",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.20146491",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "Figure 1 Geographical location of the department of Atlantico in northern Colombia (highlighted in red on the inset map) and the municipalities of Juan de Acosta (JA), Puerto Colombia (PC), and Soledad (SO), where Aedes aegypti populations were collected. Yellow triangles indicate collection points.",
+                        "descriptionType": "Abstract"
+                    },
+                    {
+                        "description": "Published as part of Maestre-Serrano, Ronald, Pérez-Reales, Rafael, Zapata-Maldonado, Yocelin, Girón-Domínguez, Katherine, Sánchez-Bolívar, Martha, Espitia-Almeida, Fabián, Valle-Molinares, Roger, Pareja-Loaiza, Paula, SeleneGutiérrez-Rodríguez, Dávila-Barboza, Jesús & ElizabethFlores, Adriana, 2025, Current susceptibility status and resistance mechanisms to pyrethroids and organophosphates in Aedes aegypti (Diptera, Culicidae) from Atlantico, Colombia, pp. 3773-3803 in Revista Brasileira de Entomologia (e20250072) 69 (4) on page 2, DOI: 10.1590/1806-9665-RBENT-2025-0072, http://zenodo.org/record/20146490",
+                        "descriptionType": "Other"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.20146492",
+                "contentUrl": null,
+                "metadataVersion": 0,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 1,
+                "versionCount": 0,
+                "versionOfCount": 1,
+                "created": "2026-05-12T20:45:54Z",
+                "registered": "2026-05-12T20:45:54Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:54Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.20146491",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.20146491",
+                "identifiers": [
+
+                ],
+                "creators": [
+                    {
+                        "name": "Maestre-Serrano, Ronald",
+                        "nameType": "Personal",
+                        "givenName": "Ronald",
+                        "familyName": "Maestre-Serrano",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Pérez-Reales, Rafael",
+                        "nameType": "Personal",
+                        "givenName": "Rafael",
+                        "familyName": "Pérez-Reales",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Zapata-Maldonado, Yocelin",
+                        "nameType": "Personal",
+                        "givenName": "Yocelin",
+                        "familyName": "Zapata-Maldonado",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Girón-Domínguez, Katherine",
+                        "nameType": "Personal",
+                        "givenName": "Katherine",
+                        "familyName": "Girón-Domínguez",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Sánchez-Bolívar, Martha",
+                        "nameType": "Personal",
+                        "givenName": "Martha",
+                        "familyName": "Sánchez-Bolívar",
+                        "affiliation": [
+                            "Universidad Libre Seccional Barranquilla, Facultad de Ciencias de la Salud, Exactas y Naturales, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Espitia-Almeida, Fabián",
+                        "nameType": "Personal",
+                        "givenName": "Fabián",
+                        "familyName": "Espitia-Almeida",
+                        "affiliation": [
+                            "Universidad Simón Bolívar, Centro de Investigaciones en Ciencias de la Vida (CICV), Facultad de Ciencias Básicas y Biomédicas, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Valle-Molinares, Roger",
+                        "nameType": "Personal",
+                        "givenName": "Roger",
+                        "familyName": "Valle-Molinares",
+                        "affiliation": [
+                            "Universidad del Atlántico, Facultad de Ciencias Básicas, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Pareja-Loaiza, Paula",
+                        "nameType": "Personal",
+                        "givenName": "Paula",
+                        "familyName": "Pareja-Loaiza",
+                        "affiliation": [
+                            "Universidad Simón Bolívar, Centro de Investigaciones en Ciencias de la Vida (CICV), Facultad de Ciencias de la Salud, Barranquilla, Colombia."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "SeleneGutiérrez-Rodríguez",
+                        "nameType": "Personal",
+                        "familyName": "SeleneGutiérrez-Rodríguez",
+                        "affiliation": [
+                            "* & Universidad Autónoma de Nuevo León (UANL), Facultad de Ciencias Biológicas, San Nicolás de los Garza, México."
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Dávila-Barboza, Jesús",
+                        "nameType": "Personal",
+                        "givenName": "Jesús",
+                        "familyName": "Dávila-Barboza",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "name": "ElizabethFlores, Adriana",
+                        "nameType": "Personal",
+                        "givenName": "Adriana",
+                        "familyName": "ElizabethFlores",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Figure 1 in Current susceptibility status and resistance mechanisms to pyrethroids and organophosphates in Aedes aegypti (Diptera, Culicidae) from Atlantico, Colombia"
+                    }
+                ],
+                "publisher": "Zenodo",
+                "container": {
+
+                },
+                "publicationYear": 2026,
+                "subjects": [
+                    {
+                        "subject": "Biodiversity"
+                    },
+                    {
+                        "subject": "Taxonomy"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2026-01-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": null,
+                "types": {
+                    "ris": "FIGURE",
+                    "bibtex": "misc",
+                    "citeproc": "graphic",
+                    "schemaOrg": "ImageObject",
+                    "resourceType": "Figure",
+                    "resourceTypeGeneral": "Image"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsPartOf",
+                        "relatedIdentifier": "10.1590/1806-9665-RBENT-2025-0072",
+                        "resourceTypeGeneral": "JournalArticle",
+                        "relatedIdentifierType": "DOI"
+                    },
+                    {
+                        "relationType": "IsPartOf",
+                        "relatedIdentifier": "https://zenodo.org/record/20146490",
+                        "resourceTypeGeneral": "JournalArticle",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.20146491",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "Figure 1 Geographical location of the department of Atlantico in northern Colombia (highlighted in red on the inset map) and the municipalities of Juan de Acosta (JA), Puerto Colombia (PC), and Soledad (SO), where Aedes aegypti populations were collected. Yellow triangles indicate collection points.",
+                        "descriptionType": "Abstract"
+                    },
+                    {
+                        "description": "Published as part of Maestre-Serrano, Ronald, Pérez-Reales, Rafael, Zapata-Maldonado, Yocelin, Girón-Domínguez, Katherine, Sánchez-Bolívar, Martha, Espitia-Almeida, Fabián, Valle-Molinares, Roger, Pareja-Loaiza, Paula, SeleneGutiérrez-Rodríguez, Dávila-Barboza, Jesús & ElizabethFlores, Adriana, 2025, Current susceptibility status and resistance mechanisms to pyrethroids and organophosphates in Aedes aegypti (Diptera, Culicidae) from Atlantico, Colombia, pp. 3773-3803 in Revista Brasileira de Entomologia (e20250072) 69 (4) on page 2, DOI: 10.1590/1806-9665-RBENT-2025-0072, http://zenodo.org/record/20146490",
+                        "descriptionType": "Other"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.20146491",
+                "contentUrl": null,
+                "metadataVersion": 0,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2026-05-12T20:45:50Z",
+                "registered": "2026-05-12T20:45:51Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:51Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.25826/data20251023-093808-0",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.25826/data20251023-093808-0",
+                "identifiers": [
+                    {
+                        "identifier": "openagrar_mods_00111185",
+                        "identifierType": "MyCoRe"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "Streitenberger, Elisa",
+                        "nameType": "Personal",
+                        "givenName": "Elisa",
+                        "familyName": "Streitenberger",
+                        "nameIdentifiers": [
+                            {
+                                "nameIdentifier": "1350610313",
+                                "nameIdentifierScheme": "GND"
+                            }
+                        ],
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "name": "Egert, Björn",
+                        "nameType": "Personal",
+                        "givenName": "Björn",
+                        "familyName": "Egert",
+                        "nameIdentifiers": [
+                            {
+                                "nameIdentifier": "1050682556",
+                                "nameIdentifierScheme": "GND"
+                            }
+                        ],
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "name": "Frommherz, Lara",
+                        "nameType": "Personal",
+                        "givenName": "Lara",
+                        "familyName": "Frommherz",
+                        "nameIdentifiers": [
+                            {
+                                "nameIdentifier": "131944770",
+                                "nameIdentifierScheme": "GND"
+                            }
+                        ],
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "name": "Kulling, Sabine",
+                        "nameType": "Personal",
+                        "givenName": "Sabine",
+                        "familyName": "Kulling",
+                        "nameIdentifiers": [
+                            {
+                                "nameIdentifier": "124606687",
+                                "nameIdentifierScheme": "GND"
+                            },
+                            {
+                                "nameIdentifier": "28009097",
+                                "nameIdentifierScheme": "VIAF"
+                            }
+                        ],
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "name": "Mack, Carina",
+                        "nameType": "Personal",
+                        "givenName": "Carina",
+                        "familyName": "Mack",
+                        "nameIdentifiers": [
+                            {
+                                "nameIdentifier": "1157018262",
+                                "nameIdentifierScheme": "GND"
+                            },
+                            {
+                                "nameIdentifier": "5039152563112515560005",
+                                "nameIdentifierScheme": "VIAF"
+                            }
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "lang": "en",
+                        "title": "Validation dataset for a quantitative GC×GC-MS sugaromics method (targeted + untargeted profiling)"
+                    }
+                ],
+                "publisher": "Bundesbehörden und Einrichtungen im Geschäftsbereich des Bundesministeriums für Ernährung und Landwirtschaft (BMEL)",
+                "container": {
+
+                },
+                "publicationYear": 2026,
+                "subjects": [
+                    {
+                        "subject": "sugar profile"
+                    },
+                    {
+                        "subject": "GCxGC-MS"
+                    },
+                    {
+                        "subject": "human urine"
+                    },
+                    {
+                        "subject": "human serum"
+                    },
+                    {
+                        "subject": "quantification"
+                    },
+                    {
+                        "subject": "method validation"
+                    },
+                    {
+                        "subject": "metabolomics"
+                    },
+                    {
+                        "subject": "610",
+                        "subjectScheme": "sdnb"
+                    }
+                ],
+                "contributors": [
+                    {
+                        "name": "Bundesbehörden und Einrichtungen im Geschäftsbereich des Bundesministeriums für Ernährung und Landwirtschaft (BMEL)",
+                        "affiliation": [
+
+                        ],
+                        "contributorType": "HostingInstitution",
+                        "nameIdentifiers": [
+
+                        ]
+                    }
+                ],
+                "dates": [
+                    {
+                        "date": "2026-03-23",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "en",
+                "types": {
+                    "ris": "DATA",
+                    "bibtex": "misc",
+                    "citeproc": "dataset",
+                    "schemaOrg": "Dataset",
+                    "resourceType": "research_data",
+                    "resourceTypeGeneral": "Dataset"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "schemeUri": "https://www.loc.gov/standards/mods/v3/mods-3-7.xsd",
+                        "relationType": "HasMetadata",
+                        "relatedIdentifier": "https://www.openagrar.de/receive/openagrar_mods_00111185?XSL.Transformer=mods",
+                        "relatedIdentifierType": "URL",
+                        "relatedMetadataScheme": "mods"
+                    },
+                    {
+                        "relationType": "References",
+                        "relatedIdentifier": "10.1021/acs.analchem.5c04230",
+                        "relatedIdentifierType": "DOI"
+                    },
+                    {
+                        "relationType": "References",
+                        "relatedIdentifier": "https://www.openagrar.de/receive/openagrar_mods_00114637",
+                        "relatedIdentifierType": "URL"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "lang": "en",
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "lang": "en",
+                        "description": "GCxGC-MS Sugaromics Validation Data set applying a nonpolar-medium polar column setup, as described in \"A sugaromics method for combined targeted and untargeted sugar profiling: Fit-for-purpose validation of a quantitative GCxGC-MS approach\" by Streitenberger et al. (https://doi.org/10.1021/acs.analchem.5c04230).",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://www.openagrar.de/receive/openagrar_mods_00111185",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "mds",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 1,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2026-03-23T06:58:30Z",
+                "registered": "2026-03-23T06:58:30Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:50Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "zbmed.mri",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5073/20231024-173119-0",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5073/20231024-173119-0",
+                "identifiers": [
+                    {
+                        "identifier": "openagrar_mods_00091171",
+                        "identifierType": "MyCoRe"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "Branding, Jelto",
+                        "nameType": "Personal",
+                        "givenName": "Jelto",
+                        "familyName": "Branding",
+                        "affiliation": [
+                            "Julius Kühn-Institute (JKI), Institute for Application Techniques in Plant Protection, Germany"
+                        ],
+                        "nameIdentifiers": [
+                            {
+                                "nameIdentifier": "1242934154",
+                                "nameIdentifierScheme": "GND"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "von Hörsten, Dieter",
+                        "nameType": "Personal",
+                        "givenName": "Dieter",
+                        "familyName": "von Hörsten",
+                        "affiliation": [
+                            "Julius Kühn-Institute (JKI), Institute for Application Techniques in Plant Protection, Germany"
+                        ],
+                        "nameIdentifiers": [
+                            {
+                                "nameIdentifier": "139310665",
+                                "nameIdentifierScheme": "GND"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Böckmann, Elias",
+                        "nameType": "Personal",
+                        "givenName": "Elias",
+                        "familyName": "Böckmann",
+                        "affiliation": [
+                            "Julius Kühn-Institute (JKI), Institute for Plant Protection in Horticulture and Urban Green, Germany"
+                        ],
+                        "nameIdentifiers": [
+                            {
+                                "nameIdentifier": "1181976936",
+                                "nameIdentifierScheme": "GND"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Wegener, Jens",
+                        "nameType": "Personal",
+                        "givenName": "Jens",
+                        "familyName": "Wegener",
+                        "affiliation": [
+                            "Julius Kühn-Institute (JKI), Institute for Application Techniques in Plant Protection, Germany"
+                        ],
+                        "nameIdentifiers": [
+                            {
+                                "nameIdentifier": "132914891",
+                                "nameIdentifierScheme": "GND"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Hartung, Eberhard",
+                        "nameType": "Personal",
+                        "givenName": "Eberhard",
+                        "familyName": "Hartung",
+                        "affiliation": [
+                            "Christian-Albrechts-Universität zu Kiel, Faculty of Agricultural and Nutritional Sciences, Kiel, Germany"
+                        ],
+                        "nameIdentifiers": [
+                            {
+                                "nameIdentifier": "101460317X",
+                                "nameIdentifierScheme": "GND"
+                            }
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "lang": "en",
+                        "title": "Dataset: InsectSound1000"
+                    }
+                ],
+                "publisher": "OpenAgrar Repository",
+                "container": {
+
+                },
+                "publicationYear": 2024,
+                "subjects": [
+                    {
+                        "subject": "Sound"
+                    },
+                    {
+                        "subject": "Dataset"
+                    },
+                    {
+                        "subject": "Acoustic"
+                    },
+                    {
+                        "subject": "Insects"
+                    },
+                    {
+                        "subject": "Aphidoletes aphidimyza"
+                    },
+                    {
+                        "subject": "Bombus terrestris"
+                    },
+                    {
+                        "subject": "Bradysia difformis"
+                    },
+                    {
+                        "subject": "Coccinella septempunctata"
+                    },
+                    {
+                        "subject": "Episyrphus balteatus"
+                    },
+                    {
+                        "subject": "Halyomorpha halys"
+                    },
+                    {
+                        "subject": "Myzus persicae"
+                    },
+                    {
+                        "subject": "Nezara viridula"
+                    },
+                    {
+                        "subject": "Palomena prasina"
+                    },
+                    {
+                        "subject": "Rhaphigaster nebulos"
+                    },
+                    {
+                        "subject": "Trialeurodes vaporariorum"
+                    },
+                    {
+                        "subject": "Tuta Absoluta"
+                    },
+                    {
+                        "subject": "630",
+                        "subjectScheme": "sdnb"
+                    }
+                ],
+                "contributors": [
+                    {
+                        "name": "Bundesbehörden und Einrichtungen im Geschäftsbereich des Bundesministeriums für Ernährung und Landwirtschaft (BMEL)",
+                        "affiliation": [
+
+                        ],
+                        "contributorType": "HostingInstitution",
+                        "nameIdentifiers": [
+
+                        ]
+                    }
+                ],
+                "dates": [
+                    {
+                        "date": "2024-04-23",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "en",
+                "types": {
+                    "ris": "DATA",
+                    "bibtex": "misc",
+                    "citeproc": "dataset",
+                    "schemaOrg": "Dataset",
+                    "resourceType": "research_data",
+                    "resourceTypeGeneral": "Dataset"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "schemeUri": "https://www.loc.gov/standards/mods/v3/mods-3-7.xsd",
+                        "relationType": "HasMetadata",
+                        "relatedIdentifier": "https://www.openagrar.de/receive/openagrar_mods_00091171?XSL.Transformer=mods",
+                        "relatedIdentifierType": "URL",
+                        "relatedMetadataScheme": "mods"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "lang": "en",
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "lang": "en",
+                        "description": "InsectSound1000 is a dataset comprising more than 169000 labelled sound samples of 12 insects. The insect's sound level spans from very loud Bombus terrestris, to inaudible to human ears Aphidoletes aphidimyza. The samples were extracted from more than 1000 h of recordings made in an anechoic box with a four-channel low-noise measurement microphone array. Each sample is a four-channel wave-file of 2500 ms length, at 16 kHz sample rate and 32 bit resolution. Acoustic insect recognition holds great potential to form the basis of a digital insect sensor. Such sensors are desperately needed to automate pest monitoring and ecological monitoring. With its significant size and high-quality recordings, InsectSound1000 can be used to train data-hungry deep learning models. Used to pre-train models, it can also be leveraged to enable the development of acoustic insect recognition systems on different hardware or for different insects. Further, the methodology employed to create the dataset is presented in detail to allow for the extension of the published dataset.",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://www.openagrar.de/receive/openagrar_mods_00091171",
+                "contentUrl": null,
+                "metadataVersion": 0,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "mds",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2024-04-23T09:25:26Z",
+                "registered": "2024-04-23T09:25:27Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:48Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "tib.jki",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.15468/dl.pne5rp",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.15468/dl.pne5rp",
+                "identifiers": [
+                    {
+                        "identifier": "0013565-260507073636908",
+                        "identifierType": "GBIF"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "GBIF.org User",
+                        "nameType": "Organizational",
+                        "affiliation": [
+
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Occurrence Download"
+                    }
+                ],
+                "publisher": "The Global Biodiversity Information Facility",
+                "container": {
+
+                },
+                "publicationYear": 2026,
+                "subjects": [
+                    {
+                        "lang": "eng",
+                        "subject": "GBIF"
+                    },
+                    {
+                        "lang": "eng",
+                        "subject": "biodiversity"
+                    },
+                    {
+                        "lang": "eng",
+                        "subject": "species occurrences"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Created"
+                    },
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Updated"
+                    },
+                    {
+                        "date": "2026",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": null,
+                "types": {
+                    "ris": "DATA",
+                    "bibtex": "misc",
+                    "citeproc": "dataset",
+                    "schemaOrg": "Dataset",
+                    "resourceTypeGeneral": "Dataset"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsDerivedFrom",
+                        "relatedIdentifier": "10.15468/y9itpr",
+                        "relatedIdentifierType": "DOI"
+                    },
+                    {
+                        "relationType": "HasMetadata",
+                        "relatedIdentifier": "https://api.gbif.org/v1/occurrence/download/0013565-260507073636908",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "HasMetadata",
+                        "relatedIdentifier": "https://api.gbif.org/v1/occurrence/download/0013565-260507073636908/datasets",
+                        "relatedIdentifierType": "URL"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+                    "549887"
+                ],
+                "formats": [
+                    "Darwin Core Archive",
+                    "text/tab-separated-values",
+                    "application/zip"
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution Non Commercial 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by-nc/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-nc-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "lang": "eng",
+                        "description": "A dataset containing 4318 species occurrences available in GBIF matching the query:\n{\n \"DatasetKey\" : [\n \"is Registro de Fauna Silvestre en el Inventario Nacional Forestal y de Fauna Silvestre-SERFOR, Perú\"\n ]\n}\n\n The dataset includes 4318 records from 1 constituent datasets; see https://api.gbif.org/v1/occurrence/download/0013565-260507073636908/datasets/export for details.\n \nData from some individual datasets included in this download may be licensed under less restrictive terms.",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://www.gbif.org/occurrence/download/0013565-260507073636908",
+                "contentUrl": null,
+                "metadataVersion": 0,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2026-05-12T20:45:41Z",
+                "registered": "2026-05-12T20:45:41Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:41Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "gbif.gbif",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.20129036",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.20129036",
+                "identifiers": [
+
+                ],
+                "creators": [
+                    {
+                        "name": "AB, Support LLC",
+                        "nameType": "Personal",
+                        "givenName": "Support LLC",
+                        "familyName": "AB",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Cryptographic Proof of Autonomous Process (CPAP v0.2): A Protocol for Verifiable Agent Autonomy"
+                    }
+                ],
+                "publisher": "Zenodo",
+                "container": {
+
+                },
+                "publicationYear": 2026,
+                "subjects": [
+                    {
+                        "subject": "AI autonomy"
+                    },
+                    {
+                        "subject": "agent verification"
+                    },
+                    {
+                        "subject": "cryptographic proof"
+                    },
+                    {
+                        "subject": "EU AI Act"
+                    },
+                    {
+                        "subject": "provenance"
+                    },
+                    {
+                        "subject": "autonomous agents"
+                    },
+                    {
+                        "subject": "MiFID II"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": null,
+                "types": {
+                    "ris": "GEN",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "CreativeWork",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "Preprint"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.20129036",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Apache License 2.0",
+                        "rightsUri": "http://www.apache.org/licenses/LICENSE-2.0",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "apache-2.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "A 5-layer cryptographic protocol for proving AI agent autonomy: DID identity, Chain of Consciousness provenance, TEE isolation, commitment schemes, and behavioral signatures. 3 assurance levels (procedural through fiduciary), 5 autonomy conditions, honest Nagel barrier. Maps to EU AI Act and MiFID II. RFC-style specification. Primary file is the .md source; PDF provided as formatted download.",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.20129036",
+                "contentUrl": null,
+                "metadataVersion": 2,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 4,
+                "versionOfCount": 1,
+                "created": "2026-05-11T22:39:15Z",
+                "registered": "2026-05-11T22:39:16Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:37Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.19802195",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.19802195",
+                "identifiers": [
+
+                ],
+                "creators": [
+                    {
+                        "name": "Пундій, Павло Йосипович",
+                        "nameType": "Personal",
+                        "givenName": "Павло Йосипович",
+                        "familyName": "Пундій",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Мельник Роман [Melnyk Roman]"
+                    }
+                ],
+                "publisher": "Institute of Encyclopedic Research, National Academy of Sciences of Ukraine (Інститут енциклопедичних досліджень НАН України)",
+                "container": {
+
+                },
+                "publicationYear": 2018,
+                "subjects": [
+                    {
+                        "subject": "Encyclopedia of Modern Ukraine"
+                    },
+                    {
+                        "subject": "Ukraine"
+                    },
+                    {
+                        "subject": "Reference"
+                    },
+                    {
+                        "subject": "Encyclopedia entry"
+                    },
+                    {
+                        "subject": "Volume 20"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2018-12-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "uk",
+                "types": {
+                    "ris": "CHAP",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "Chapter",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "BookChapter"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsIdenticalTo",
+                        "relatedIdentifier": "https://esu.com.ua/article-66347",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.19802195",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "МЕ́ЛЬНИК Роман – лікар-стоматолог. Закін. Клівленд. та Міннесот. університети. Проходив лікар. практику в лікарні Чикаґо. 1983 розпочав клін. практику в Міннеаполісі, від 1985 – у передмісті Сиракуз, від 1988 – у Нью-Гартфорді. Виступав із лекціями з пародонтології в різних місц.... ⚠️  Цей запис містить лише бібліографічні метадані. Повний текст доступний за посиланням [This record contains bibliographic metadata only. The full text is available at]: https://esu.com.ua/article-66347",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.19802195",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 2,
+                "versionOfCount": 1,
+                "created": "2026-04-26T23:12:11Z",
+                "registered": "2026-04-26T23:12:11Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:37Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.19802196",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.19802196",
+                "identifiers": [
+                    {
+                        "identifier": "oai:zenodo.org:19802196",
+                        "identifierType": "oai"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "Пундій, Павло Йосипович",
+                        "nameType": "Personal",
+                        "givenName": "Павло Йосипович",
+                        "familyName": "Пундій",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Мельник Роман [Melnyk Roman]"
+                    }
+                ],
+                "publisher": "Institute of Encyclopedic Research, National Academy of Sciences of Ukraine (Інститут енциклопедичних досліджень НАН України)",
+                "container": {
+
+                },
+                "publicationYear": 2018,
+                "subjects": [
+                    {
+                        "subject": "Encyclopedia of Modern Ukraine"
+                    },
+                    {
+                        "subject": "Ukraine"
+                    },
+                    {
+                        "subject": "Reference"
+                    },
+                    {
+                        "subject": "Encyclopedia entry"
+                    },
+                    {
+                        "subject": "Volume 20"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2018-12-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "uk",
+                "types": {
+                    "ris": "CHAP",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "Chapter",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "BookChapter"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsIdenticalTo",
+                        "relatedIdentifier": "https://esu.com.ua/article-66347",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.19802195",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "МЕ́ЛЬНИК Роман – лікар-стоматолог. Закін. Клівленд. та Міннесот. університети. Проходив лікар. практику в лікарні Чикаґо. 1983 розпочав клін. практику в Міннеаполісі, від 1985 – у передмісті Сиракуз, від 1988 – у Нью-Гартфорді. Виступав із лекціями з пародонтології в різних місц.... ⚠️  Цей запис містить лише бібліографічні метадані. Повний текст доступний за посиланням [This record contains bibliographic metadata only. The full text is available at]: https://esu.com.ua/article-66347",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.19802196",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 1,
+                "created": "2026-04-26T23:12:11Z",
+                "registered": "2026-04-26T23:12:11Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:36Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.20146486",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.20146486",
+                "identifiers": [
+                    {
+                        "identifier": "oai:zenodo.org:20146486",
+                        "identifierType": "oai"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "AB, Support LLC",
+                        "nameType": "Personal",
+                        "givenName": "Support LLC",
+                        "familyName": "AB",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Cryptographic Proof of Autonomous Process (CPAP v0.2): A Protocol for Verifiable Agent Autonomy"
+                    }
+                ],
+                "publisher": "Zenodo",
+                "container": {
+
+                },
+                "publicationYear": 2026,
+                "subjects": [
+                    {
+                        "subject": "AI autonomy"
+                    },
+                    {
+                        "subject": "agent verification"
+                    },
+                    {
+                        "subject": "cryptographic proof"
+                    },
+                    {
+                        "subject": "EU AI Act"
+                    },
+                    {
+                        "subject": "provenance"
+                    },
+                    {
+                        "subject": "autonomous agents"
+                    },
+                    {
+                        "subject": "MiFID II"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2026-05-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": null,
+                "types": {
+                    "ris": "GEN",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "CreativeWork",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "Preprint"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.20129036",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Apache License 2.0",
+                        "rightsUri": "http://www.apache.org/licenses/LICENSE-2.0",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "apache-2.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "A 5-layer cryptographic protocol for proving AI agent autonomy: DID identity, Chain of Consciousness provenance, TEE isolation, commitment schemes, and behavioral signatures. 3 assurance levels (procedural through fiduciary), 5 autonomy conditions, honest Nagel barrier. Maps to EU AI Act and MiFID II. RFC-style specification. Primary file is the .md source; PDF provided as formatted download.",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.20146486",
+                "contentUrl": null,
+                "metadataVersion": 0,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 1,
+                "created": "2026-05-12T20:45:34Z",
+                "registered": "2026-05-12T20:45:34Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:34Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.19802210",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.19802210",
+                "identifiers": [
+                    {
+                        "identifier": "oai:zenodo.org:19802210",
+                        "identifierType": "oai"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "Орлюк, М. І.",
+                        "nameType": "Personal",
+                        "givenName": "М. І.",
+                        "familyName": "Орлюк",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "name": "Ліщитович, Л. І.",
+                        "nameType": "Personal",
+                        "givenName": "Л. І.",
+                        "familyName": "Ліщитович",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Мельник Петро  Павлович [Melnyk Petro Pavlovych]"
+                    }
+                ],
+                "publisher": "Institute of Encyclopedic Research, National Academy of Sciences of Ukraine (Інститут енциклопедичних досліджень НАН України)",
+                "container": {
+
+                },
+                "publicationYear": 2018,
+                "subjects": [
+                    {
+                        "subject": "Encyclopedia of Modern Ukraine"
+                    },
+                    {
+                        "subject": "Ukraine"
+                    },
+                    {
+                        "subject": "Reference"
+                    },
+                    {
+                        "subject": "Encyclopedia entry"
+                    },
+                    {
+                        "subject": "Volume 20"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2018-12-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "uk",
+                "types": {
+                    "ris": "CHAP",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "Chapter",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "BookChapter"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsIdenticalTo",
+                        "relatedIdentifier": "https://esu.com.ua/article-66346",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.19802209",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "МЕ́ЛЬНИК Петро Павлович – економіст. Доктор економічних наук . Закін. Укр. с.-г. академію . Від 1969 працював агрономом; 1977–84 – у структурах Мін-в фінансів і с. господарства УРСР; 1984–93 – у ВНДІ цукр. буряків; 1993–94 – у ТОВ «Стратегічне М»; 1995–97 – на австро-нім.-укр. пі... ⚠️  Цей запис містить лише бібліографічні метадані. Повний текст доступний за посиланням [This record contains bibliographic metadata only. The full text is available at]: https://esu.com.ua/article-66346",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.19802210",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 1,
+                "created": "2026-04-26T23:15:06Z",
+                "registered": "2026-04-26T23:15:06Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:19Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5281/zenodo.19802209",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5281/zenodo.19802209",
+                "identifiers": [
+
+                ],
+                "creators": [
+                    {
+                        "name": "Орлюк, М. І.",
+                        "nameType": "Personal",
+                        "givenName": "М. І.",
+                        "familyName": "Орлюк",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "name": "Ліщитович, Л. І.",
+                        "nameType": "Personal",
+                        "givenName": "Л. І.",
+                        "familyName": "Ліщитович",
+                        "nameIdentifiers": [
+
+                        ],
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "Мельник Петро  Павлович [Melnyk Petro Pavlovych]"
+                    }
+                ],
+                "publisher": "Institute of Encyclopedic Research, National Academy of Sciences of Ukraine (Інститут енциклопедичних досліджень НАН України)",
+                "container": {
+
+                },
+                "publicationYear": 2018,
+                "subjects": [
+                    {
+                        "subject": "Encyclopedia of Modern Ukraine"
+                    },
+                    {
+                        "subject": "Ukraine"
+                    },
+                    {
+                        "subject": "Reference"
+                    },
+                    {
+                        "subject": "Encyclopedia entry"
+                    },
+                    {
+                        "subject": "Volume 20"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2018-12-12",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "uk",
+                "types": {
+                    "ris": "CHAP",
+                    "bibtex": "misc",
+                    "citeproc": "article",
+                    "schemaOrg": "Chapter",
+                    "resourceType": "",
+                    "resourceTypeGeneral": "BookChapter"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsIdenticalTo",
+                        "relatedIdentifier": "https://esu.com.ua/article-66346",
+                        "relatedIdentifierType": "URL"
+                    },
+                    {
+                        "relationType": "IsVersionOf",
+                        "relatedIdentifier": "10.5281/zenodo.19802209",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+
+                ],
+                "version": null,
+                "rightsList": [
+                    {
+                        "rights": "Creative Commons Attribution 4.0 International",
+                        "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                        "schemeUri": "https://spdx.org/licenses/",
+                        "rightsIdentifier": "cc-by-4.0",
+                        "rightsIdentifierScheme": "SPDX"
+                    }
+                ],
+                "descriptions": [
+                    {
+                        "description": "МЕ́ЛЬНИК Петро Павлович – економіст. Доктор економічних наук . Закін. Укр. с.-г. академію . Від 1969 працював агрономом; 1977–84 – у структурах Мін-в фінансів і с. господарства УРСР; 1984–93 – у ВНДІ цукр. буряків; 1993–94 – у ТОВ «Стратегічне М»; 1995–97 – на австро-нім.-укр. пі... ⚠️  Цей запис містить лише бібліографічні метадані. Повний текст доступний за посиланням [This record contains bibliographic metadata only. The full text is available at]: https://esu.com.ua/article-66346",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "https://zenodo.org/doi/10.5281/zenodo.19802209",
+                "contentUrl": null,
+                "metadataVersion": 1,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 0,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 2,
+                "versionOfCount": 1,
+                "created": "2026-04-26T23:15:06Z",
+                "registered": "2026-04-26T23:15:06Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:19Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "cern.zenodo",
+                        "type": "clients"
+                    }
+                }
+            }
+        },
+        {
+            "id": "10.5517/ccr50qm",
+            "type": "dois",
+            "attributes": {
+                "doi": "10.5517/ccr50qm",
+                "identifiers": [
+                    {
+                        "identifier": "690020",
+                        "identifierType": "CCDC"
+                    }
+                ],
+                "creators": [
+                    {
+                        "name": "Zhang, Hui-Miao",
+                        "affiliation": [
+
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Fu, Wen-Fu",
+                        "affiliation": [
+
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Gan, Xin",
+                        "affiliation": [
+
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Xu, Yan-Qing",
+                        "affiliation": [
+
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Wang, Jun",
+                        "affiliation": [
+
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Xu, Quan-Qing",
+                        "affiliation": [
+
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    },
+                    {
+                        "name": "Chi, Shao-Ming",
+                        "affiliation": [
+
+                        ],
+                        "nameIdentifiers": [
+
+                        ]
+                    }
+                ],
+                "titles": [
+                    {
+                        "title": "CCDC 690020: Experimental Crystal Structure Determination"
+                    }
+                ],
+                "publisher": "Cambridge Crystallographic Data Centre",
+                "container": {
+
+                },
+                "publicationYear": 2009,
+                "subjects": [
+                    {
+                        "subject": "Crystal Structure"
+                    },
+                    {
+                        "subject": "Experimental 3D Coordinates"
+                    },
+                    {
+                        "subject": "Crystal System"
+                    },
+                    {
+                        "subject": "Space Group"
+                    },
+                    {
+                        "subject": "Cell Parameters"
+                    },
+                    {
+                        "subject": "Crystallography"
+                    },
+                    {
+                        "subject": "bis(mu2-Acetato-O,O')-bis(mu2-hydroxo)-bis(mu2-bis(7-methyl-1,8-naphthyridin-2-ylamino)methane-N,N')-tetrakis(acetato-O)-tetra-zinc(ii) dichloromethane solvate"
+                    }
+                ],
+                "contributors": [
+
+                ],
+                "dates": [
+                    {
+                        "date": "2009",
+                        "dateType": "Issued"
+                    }
+                ],
+                "language": "en",
+                "types": {
+                    "ris": "DATA",
+                    "bibtex": "misc",
+                    "citeproc": "dataset",
+                    "schemaOrg": "Dataset",
+                    "resourceTypeGeneral": "Dataset"
+                },
+                "relatedIdentifiers": [
+                    {
+                        "relationType": "IsSupplementTo",
+                        "relatedIdentifier": "10.1039/b809701a",
+                        "relatedIdentifierType": "DOI"
+                    }
+                ],
+                "relatedItems": [
+
+                ],
+                "sizes": [
+
+                ],
+                "formats": [
+                    "CIF"
+                ],
+                "version": null,
+                "rightsList": [
+
+                ],
+                "descriptions": [
+                    {
+                        "description": "Related Article: Hui-Miao Zhang, Wen-Fu Fu, Xin Gan, Yan-Qing Xu, Jun Wang, Quan-Qing Xu, Shao-Ming Chi|2008|Dalton Trans.||6817|doi:10.1039/b809701a",
+                        "descriptionType": "Other"
+                    },
+                    {
+                        "description": "An entry from the Cambridge Structural Database, the world’s repository for small molecule crystal structures. The entry contains experimental data from a crystal diffraction study. The deposited dataset for this entry is freely available from the CCDC and typically includes 3D coordinates, cell parameters, space group, experimental conditions and quality measures.",
+                        "descriptionType": "Abstract"
+                    }
+                ],
+                "geoLocations": [
+
+                ],
+                "fundingReferences": [
+
+                ],
+                "url": "http://www.ccdc.cam.ac.uk/services/structure_request?id=doi:10.5517/ccr50qm&sid=DataCite",
+                "contentUrl": null,
+                "metadataVersion": 4,
+                "schemaVersion": "http://datacite.org/schema/kernel-4",
+                "source": "api",
+                "isActive": true,
+                "state": "findable",
+                "reason": null,
+                "viewCount": 0,
+                "downloadCount": 0,
+                "referenceCount": 0,
+                "citationCount": 1,
+                "partCount": 0,
+                "partOfCount": 0,
+                "versionCount": 0,
+                "versionOfCount": 0,
+                "created": "2014-03-22T23:05:35Z",
+                "registered": "2014-03-22T23:05:35Z",
+                "published": null,
+                "updated": "2026-05-12T20:45:16Z"
+            },
+            "relationships": {
+                "client": {
+                    "data": {
+                        "id": "ccdc.csd",
+                        "type": "clients"
+                    }
+                }
+            }
+        }
+    ],
+    "meta": {
+        "total": 128614998,
+        "totalPages": 400,
+        "page": 1
+    },
+    "links": {
+        "self": "https://api.datacite.org/dois/",
+        "next": "https://api.datacite.org/dois?page%5Bnumber%5D=2&page%5Bsize%5D=25"
+    }
+}

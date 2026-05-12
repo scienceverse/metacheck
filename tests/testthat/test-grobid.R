@@ -1,5 +1,12 @@
 # grobid_to_bibr ----
 
+# httptest2::start_capturing()
+httptest2::use_mock_api()
+
+testthat::local_mocked_bindings(
+  online = \(...) TRUE
+)
+
 test_that("grobid_to_bibr", {
   expect_true(is.function(metacheck::grobid_to_bibr))
   expect_true(is.function(metacheck:::.grobid_to_bibr))
@@ -119,15 +126,13 @@ test_that("multiple papers, save_path, no CR lookup", {
 
 
 test_that("1 paper, NULL save_path, CR lookup", {
-  skip_api("api.labs.crossref.org")
-  xml_file <- system.file("demos/to_err_is_human.xml", package = "metacheck")
+  xml_file <- demofile("xml")
   paper_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
   expect_equal(paper_cr$bib_match$service[[1]], "crossref")
 })
 
 
 test_that("multiple papers, NULL save_path, CR lookup", {
-  skip_api("api.labs.crossref.org")
   xml_file <- c(
     system.file("demos/to_err_is_human.xml", package = "metacheck"),
     system.file("demos/to_err_is_human.xml", package = "metacheck")
@@ -190,31 +195,26 @@ test_that("convert_grobid", {
 
 test_that("invalid URL error", {
   filename <- demofile("pdf")
-  expect_error(convert_grobid(filename, api_url = "notawebsite"))
+  expect_error(suppressWarnings(
+    convert_grobid(filename, api_url = "notawebsite")
+  ))
 
   # URL without http/https detected"
-  expect_error(convert_grobid(filename, api_url = "kermitt2-grobid.hf.space"))
+  expect_error(suppressWarnings(
+    convert_grobid(filename, api_url = "kermitt2-grobid.hf.space")
+    ))
 })
 
 
 test_that("non-Grobid URL rejected", {
-  skip_if_offline("google.com")
-
   filename <- demofile("pdf")
   expect_error(convert_grobid(filename, api_url = "https://google.com"))
 })
 
 
-# TODO: figure out why mock_api isn't working
-# returns a different api file each time
-# httptest::start_capturing()
-# httptest::use_mock_api()
-
 test_that("bad PDF", {
-  skip_api(grobid_url)
-
   filename <- test_path("fixtures", "problems", "xml_with_pdf_extension.pdf")
-  expect_error(convert_grobid(filename))
+  expect_error(convert_grobid(filename, api_url = grobid_url))
 
   filename2 <- c(filename, "wrongfile.pdf")
   expect_error( x <- convert_grobid(filename2, api_url = grobid_url) )
@@ -225,8 +225,6 @@ test_that("bad PDF", {
 })
 
 test_that("makes missing save directory - single", {
-  skip_api(grobid_url)
-
   newdir <- file.path(withr::local_tempdir(), "testnewdir")
 
   # single file, path with uncreated dir
@@ -239,8 +237,6 @@ test_that("makes missing save directory - single", {
 })
 
 test_that("makes missing save directory - multiple", {
-  skip_api(grobid_url)
-
   save_path <- file.path(withr::local_tempdir(), "testnewdir")
 
   # multiple files with uncreated dir
@@ -259,8 +255,6 @@ test_that("makes missing save directory - multiple", {
 })
 
 test_that("makes missing save directory - specific", {
-  skip_api(grobid_url)
-
   newdir <- file.path(withr::local_tempdir(), "testnewdir")
 
   # multiple files with uncreated dir and specific file names (no .xml)
@@ -277,8 +271,6 @@ test_that("makes missing save directory - specific", {
 })
 
 test_that("defaults", {
-  skip_api(grobid_url)
-
   pdf <- demofile("pdf")
   paper <- convert_grobid(pdf, NULL, api_url = grobid_url)
   expect_s3_class(paper, "scivrs_paper")
@@ -354,8 +346,6 @@ test_that("reference consolidation", {
 })
 
 test_that("batch - directory", {
-  skip_api(grobid_url)
-
   grobid_dir <- test_path("fixtures", "debruine")
   save_path <- withr::local_tempdir()
 
@@ -366,8 +356,6 @@ test_that("batch - directory", {
 })
 
 test_that("batch - multiple filenames", {
-  skip_api(grobid_url)
-
   grobid_dir <- test_path("fixtures", "debruine")
   save_path <- withr::local_tempdir()
 
@@ -381,7 +369,7 @@ test_that("batch - multiple filenames", {
 test_that(".grobid_isalive", {
   expect_true(is.function(metacheck:::.grobid_isalive))
 
-  expect_error(.grobid_isalive())
+  expect_error(suppressWarnings(.grobid_isalive()))
 
   # not a url
   api_url <- "grobid"
@@ -393,10 +381,10 @@ test_that(".grobid_isalive", {
   expect_error(.grobid_isalive(api_url))
   expect_false(.grobid_isalive(api_url, error = FALSE))
 
-  # TODO: mock this
-  skip_api(grobid_url)
-
   api_url <- grobid_url
   alive <- .grobid_isalive(api_url, error = FALSE)
   expect_in(alive, c(TRUE, FALSE))
 })
+
+httptest2::stop_mocking()
+# httptest2::stop_capturing()

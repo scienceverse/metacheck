@@ -1,0 +1,368 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 53,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            3,
+                            31
+                        ]
+                    ],
+                    "date-time": "2026-03-31T21:52:14Z",
+                    "timestamp": 1774993934052,
+                    "version": "3.50.1"
+                },
+                "reference-count": 24,
+                "publisher": "The Royal Society",
+                "issue": "1390",
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "short-container-title": [
+                    "Proc. R. Soc. Lond. B"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            1998,
+                            1,
+                            7
+                        ]
+                    ]
+                },
+                "DOI": "10.1098/rspb.1998.0266",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2002,
+                            7,
+                            26
+                        ]
+                    ],
+                    "date-time": "2002-07-26T23:57:35Z",
+                    "timestamp": 1027727855000
+                },
+                "page": "71-77",
+                "source": "Crossref",
+                "is-referenced-by-count": 125,
+                "title": [
+                    "Improving vision: neural compensation for optical defocus"
+                ],
+                "prefix": "10.1098",
+                "volume": "265",
+                "author": [
+                    {
+                        "given": "Mark",
+                        "family": "Mon-Williams",
+                        "sequence": "first",
+                        "affiliation": [
+                            {
+                                "name": "Perception and Motor Control Laboratory, Department of Human Movement Studies, Connell Building, University of Queensland, St Lucia, Queensland 4072, Australia"
+                            },
+                            {
+                                "name": "Department of Psychology, University of Reading, 3 Earley Gate, Reading RG6 6AL, England"
+                            }
+                        ]
+                    },
+                    {
+                        "given": "James R",
+                        "family": "Tresilian",
+                        "sequence": "additional",
+                        "affiliation": [
+                            {
+                                "name": "Perception and Motor Control Laboratory, Department of Human Movement Studies, Connell Building, University of Queensland, St Lucia, Queensland 4072, Australia"
+                            }
+                        ]
+                    },
+                    {
+                        "given": "Niall C",
+                        "family": "Strang",
+                        "sequence": "additional",
+                        "affiliation": [
+                            {
+                                "name": "Centre for Eye Research, Queensland University ofTechnology, Kelvin Grove, Queensland 4059, Australia"
+                            }
+                        ]
+                    },
+                    {
+                        "given": "Puja",
+                        "family": "Kochhar",
+                        "sequence": "additional",
+                        "affiliation": [
+                            {
+                                "name": "Department of Psychology, University of Reading, 3 Earley Gate, Reading RG6 6AL, England"
+                            }
+                        ]
+                    },
+                    {
+                        "given": "John P",
+                        "family": "Wann",
+                        "sequence": "additional",
+                        "affiliation": [
+                            {
+                                "name": "Department of Psychology, University of Reading, 3 Earley Gate, Reading RG6 6AL, England"
+                            }
+                        ]
+                    }
+                ],
+                "member": "175",
+                "published-online": {
+                    "date-parts": [
+                        [
+                            1998,
+                            1,
+                            7
+                        ]
+                    ]
+                },
+                "reference": [
+                    {
+                        "key": "p_1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1097/00006324-197611000-00006"
+                    },
+                    {
+                        "key": "p_2",
+                        "unstructured": "Bennett A. G. & Rabbetts R. B. 1989 Clinical visual optics. Oxford: Butterworth-Heinmann."
+                    },
+                    {
+                        "key": "p_3",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Blakemore C. B. & Sutton P. 1969 Size adaptations: a new aftere¡ect. Science 166 245^247.",
+                        "DOI": "10.1126/science.166.3902.245"
+                    },
+                    {
+                        "key": "p_4",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Burton G. J. & Moorhead I. R. 1987 Color and spatial structure in natural scenes. Appl Opt. 26 157^170.",
+                        "DOI": "10.1364/AO.26.000157"
+                    },
+                    {
+                        "key": "p_5",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1113/jphysiol.1965.sp007784"
+                    },
+                    {
+                        "key": "p_6",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1113/jphysiol.1974.sp010652"
+                    },
+                    {
+                        "key": "p_7",
+                        "doi-asserted-by": "crossref",
+                        "DOI": "10.1364/JOSAA.4.002379",
+                        "article-title": "Relations between the statistics of natural images and the response properties of cortical cells",
+                        "volume": "4",
+                        "author": "Field D. J.",
+                        "year": "1987",
+                        "journal-title": "J. Opt. Soc. Am."
+                    },
+                    {
+                        "key": "p_8",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Georgeson M. A. & Harris M. G. 1984 Spatial selectivity of contrast adaptation: models and data. Vision Res. 24 729^ 741.",
+                        "DOI": "10.1016/0042-6989(84)90214-1"
+                    },
+                    {
+                        "key": "p_9",
+                        "article-title": "Contrast constancy: deblurring in human vision by spatial frequency channels",
+                        "volume": "252",
+                        "author": "Georgeson M. A.",
+                        "year": "1976",
+                        "journal-title": "J. Physiol."
+                    },
+                    {
+                        "key": "p_10",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/h0074626"
+                    },
+                    {
+                        "key": "p_11",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Greenlee M. W. & Magnussen S. 1988 Interactions among spatial frequency and orientation channels adapted concurently. Vision Res. 28 1303^1310.",
+                        "DOI": "10.1016/0042-6989(88)90061-2"
+                    },
+                    {
+                        "key": "p_12",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Harmon L. & Julesz B. 1973 Masking in two-dimensional recognition: e¡ects of two-dimensional ¢ltered noise. Science 180 1194^1197.",
+                        "DOI": "10.1126/science.180.4091.1194"
+                    },
+                    {
+                        "key": "p_13",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Jamar J. H. & Koenderink J. J. 1985 Contrast detection and detection of contrast modulation for noise gratings. Vision Res. 25 511^521.",
+                        "DOI": "10.1016/0042-6989(85)90154-3"
+                    },
+                    {
+                        "key": "p_14",
+                        "unstructured": "Keppel G. 1982 Design and analysis: a researcher's handbook. New Jersey: Prentice-Hall Inc."
+                    },
+                    {
+                        "key": "p_15",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "McGraw P. V. & Winn B. 1993 Glasgow acuity cards: a new test for the measurement of letter acuity in children. Ophthal. Physiol. Opt. 13 400^403.",
+                        "DOI": "10.1111/j.1475-1313.1993.tb00499.x"
+                    },
+                    {
+                        "key": "p_16",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Morgan M. J. & Watt R. J. 1984 Spatial frequency interference e¡ects and interpolation in vernier acuity. Vision Res. 24 1911^ 1919.",
+                        "DOI": "10.1016/0042-6989(84)90025-7"
+                    },
+                    {
+                        "key": "p_17",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Pesudovs K. & Brennan N. A. 1993 Decreased uncorrected vision after a period of distance ¢xation with spectacle wear. Optom.Vis. Sci. 70 528^531.",
+                        "DOI": "10.1097/00006324-199307000-00002"
+                    },
+                    {
+                        "key": "p_18",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Tolhurst D. J. Tadmor Y. & Tang C. 1992 The amplitude spectra of natural images. Ophthal. Physiol. Opt. 12 229^232.",
+                        "DOI": "10.1111/j.1475-1313.1992.tb00296.x"
+                    },
+                    {
+                        "key": "p_19",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/0167-8655(87)90035-3"
+                    },
+                    {
+                        "key": "p_20",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/BF02979265"
+                    },
+                    {
+                        "key": "p_21",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Watt R. J. & Morgan M. J. 1983 The recognition and representation of edge blur: evidence for spatial primitives in human vision. Vision Res. 23 1457^1477.",
+                        "DOI": "10.1016/0042-6989(83)90158-X"
+                    },
+                    {
+                        "key": "p_22",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Watt R. J. & Morgan M. J. 1984 Spatial ¢lters and the localization of Iuminance cahnges in human vision. Vision Res. 24 1387^1397.",
+                        "DOI": "10.1016/0042-6989(84)90194-9"
+                    },
+                    {
+                        "key": "p_23",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Watt R. J. & Morgan M. J. 1985 A theory of the primitive spatial code in human vision. Vision Res. 25 1661^1674.",
+                        "DOI": "10.1016/0042-6989(85)90138-5"
+                    },
+                    {
+                        "key": "p_24",
+                        "doi-asserted-by": "crossref",
+                        "unstructured": "Woods R. L. Bradley A. & Atchison D. A. 1996 Consequences of monocular diplopia for the contrast sensitivity function. Vision Res. 36 3587^3596.",
+                        "DOI": "10.1016/0042-6989(96)00091-0"
+                    }
+                ],
+                "container-title": [
+                    "Proceedings of the Royal Society of London. Series B: Biological Sciences"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "https://royalsocietypublishing.org/doi/pdf/10.1098/rspb.1998.0266",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2019,
+                            7,
+                            19
+                        ]
+                    ],
+                    "date-time": "2019-07-19T03:26:30Z",
+                    "timestamp": 1563506790000
+                },
+                "score": 116.52006,
+                "resource": {
+                    "primary": {
+                        "URL": "https://royalsocietypublishing.org/doi/10.1098/rspb.1998.0266"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            1998,
+                            1,
+                            7
+                        ]
+                    ]
+                },
+                "references-count": 24,
+                "journal-issue": {
+                    "issue": "1390",
+                    "published-online": {
+                        "date-parts": [
+                            [
+                                1998,
+                                1,
+                                7
+                            ]
+                        ]
+                    },
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                1998,
+                                1,
+                                7
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "10.1098/rspb.1998.0266"
+                ],
+                "URL": "https://doi.org/10.1098/rspb.1998.0266",
+                "ISSN": [
+                    "0962-8452",
+                    "1471-2954"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0962-8452",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1471-2954",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            1998,
+                            1,
+                            7
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

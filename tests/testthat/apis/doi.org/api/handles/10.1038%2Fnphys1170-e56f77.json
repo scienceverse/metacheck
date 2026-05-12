@@ -1,0 +1,16 @@
+{
+    "responseCode": 1,
+    "handle": "10.1038/nphys1170",
+    "values": [
+        {
+            "index": 1,
+            "type": "URL",
+            "data": {
+                "format": "string",
+                "value": "https://www.nature.com/articles/nphys1170"
+            },
+            "ttl": 86400,
+            "timestamp": "2023-05-19T00:23:01Z"
+        }
+    ]
+}

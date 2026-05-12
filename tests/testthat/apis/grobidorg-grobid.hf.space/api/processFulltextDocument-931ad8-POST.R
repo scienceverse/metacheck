@@ -1,0 +1,10 @@
+structure(list(method = "POST", url = "https://grobidorg-grobid.hf.space/api/processFulltextDocument", 
+    status_code = 500L, headers = structure(list(date = "Tue, 12 May 2026 16:06:33 GMT", 
+        `content-type` = "application/xml", `content-length` = "64", 
+        vary = "Origin", vary = "origin, access-control-request-method, access-control-request-headers", 
+        `x-proxied-host` = "http://10.111.6.4", `x-proxied-replica` = "okm6ki1e-nwtjd", 
+        `x-proxied-path` = "/api/processFulltextDocument", link = "<https://huggingface.co/spaces/grobidOrg/grobid>;rel=\"canonical\"", 
+        `x-request-id` = "DplhyJ", `access-control-allow-credentials` = "true"), class = "httr2_headers"), 
+    body = charToRaw("[BAD_INPUT_DATA] PDF to XML conversion failed with error code: 1"), 
+    timing = c(redirect = 0, namelookup = 0, connect = 0, pretransfer = 0.000729, 
+    starttransfer = 1.25828, total = 1.258552), cache = new.env(parent = emptyenv())), class = "httr2_response")

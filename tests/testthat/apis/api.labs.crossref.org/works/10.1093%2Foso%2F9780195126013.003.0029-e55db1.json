@@ -1,0 +1,160 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    7
+                ]
+            ],
+            "date-time": "2026-05-07T23:24:39Z",
+            "timestamp": 1778196279103,
+            "version": "3.51.4"
+        },
+        "reference-count": 0,
+        "publisher": "Oxford University PressNew York, NY",
+        "isbn-type": [
+            {
+                "value": "9780195126013",
+                "type": "print"
+            },
+            {
+                "value": "9780197735596",
+                "type": "electronic"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2002,
+                    12,
+                    19
+                ]
+            ]
+        },
+        "abstract": "<jats:title>Abstract<\/jats:title>\n               <jats:p>Usually, people’s emotions arise from their perceptions of their circumstances—immediate, imagined, or remembered. This idea has been implicit in many philosophical treatments of emotions (e.g., in Aristotle, Spinoza, and even Descartes and James; see Ellsworth 1994a; Gardiner, Clark-Metcalf, &amp; Beebe-Centa, 1980; Scherer, 2000) and explicit in some (e.g., Hume and Hobbes), and it is the central emphasis of current appraisal theories of emotion. Thinking and feeling are inextricably interrelated most of the time: Certain ways of interpreting one’s environment are inherently emotional, few thoughts are entirely free of feelings, and emotions influence thinking. Reason and passion are not independent domains, or are rarely so. Of course there are exceptions: Brain stimulation, hormones, and drugs can produce emotions without external environmental circumstances, just as they can produce sensations, cognitions, and ideas without external environmental circumstances (Penfield, 1975). The fact that exceptions exist does not mean that there is no rule. The general rule suggested by appraisal theorists is that emotions consist of patterns of perception, or rather interpretation, and their correlates in the central and peripheral nervous systems (see Ellsworth, 1994c; Roseman &amp; Smith, 2001; Scherer, 2001a, 2001b). A further assumption is that emotions are fundamentally adaptive, rather than maladaptive. In order to survive, an organism cannot simply understand its situation; it has to be motivated to do something about it. Many species have solved this problem with a mechanism that triggers fixed action patterns in response to appropriate stimuli. Emotions provide a more flexible alternative. They imply action tendencies (Frijda, 1986) without complete rigidity. Lower organisms respond to stimulus patterns with behavior. Emotions, although they still motivate behavior, “decouple” it from the perception of the stimulus so that reconsideration is possible (Scherer, 1984). Fear creates a tendency to flee, but a person may quickly realize that the threat is directed at someone else (reinterpretation of the event) or that an aggressive stance will intimidate the attacker (reinterpretation of response alternatives). Emotions allow flexibility both in event interpretation and in response choice. Emotions, from this point of view, represent an important evolutionary alternative. The phylogenetic expansion of the cerebral cortex enabled an increasing variety of interpretations, emotions, and behavioral options (see Hebb, 1949).<\/jats:p>",
+        "DOI": "10.1093/oso/9780195126013.003.0029",
+        "type": "book-chapter",
+        "created": {
+            "date-parts": [
+                [
+                    2023,
+                    11,
+                    3
+                ]
+            ],
+            "date-time": "2023-11-03T18:58:57Z",
+            "timestamp": 1699037937000
+        },
+        "page": "572-595",
+        "source": "Crossref",
+        "is-referenced-by-count": 153,
+        "title": [
+            "Appraisal Processes In Emotion"
+        ],
+        "prefix": "10.1093",
+        "author": [
+            {
+                "given": "Phoebe C",
+                "family": "Ellsworth",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Klaus R",
+                "family": "Scherer",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "286",
+        "container-title": [
+            "Handbook of Affective Sciences"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://academic.oup.com/book/chapter-pdf/52442966/isbn-9780195126013-book-part-29.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2023,
+                    11,
+                    3
+                ]
+            ],
+            "date-time": "2023-11-03T18:59:44Z",
+            "timestamp": 1699037984000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://academic.oup.com/book/53964/chapter/422200035"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2002,
+                    12,
+                    19
+                ]
+            ]
+        },
+        "ISBN": [
+            "9780195126013",
+            "9780197735596"
+        ],
+        "references-count": 0,
+        "URL": "https://doi.org/10.1093/oso/9780195126013.003.0029",
+        "relation": {
+
+        },
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2002,
+                    12,
+                    19
+                ]
+            ]
+        }
+    }
+}

@@ -11,31 +11,36 @@ aspredicted_links <- function(paper) {
   text <- NULL
 
   # search for "aspredicted"
-  # RGX_ASPREDICTED <- "/aspredicted>?\\s*\\.?org"
-  # found_ap <- search_text(paper, RGX_ASPREDICTED)
-
-  RGX_ASPREDICTED <- "aspredicted>?\\s*\\.?org"
-  urls <- paper_table(paper, "url")
-  urls$text <- urls$href
-  urls$href <- NULL
-  found_ap <- search_text(urls, RGX_ASPREDICTED)
+  RGX_ASPREDICTED <- "aspredicted>?\\s*\\.?org/\\s*"
+  # urls <- paper_table(paper, "url")
+  # urls$text <- urls$href
+  # urls$href <- NULL
+  # found_ap <- search_text(urls, RGX_ASPREDICTED)
+  found_ap <- search_text(paper, RGX_ASPREDICTED)
 
   # fix blind.php? with x=abcdef in the next sentence
-  blind <- grep("blind\\.php\\?$", found_ap$text)
+  blind <- grep("blind\\s*\\.php\\?$", found_ap$text)
   expanded <- expand_text(found_ap[blind, ], paper, plus = 1)
   found_ap$text[blind] <- expanded$expanded
 
   # fix space stuff
-  found_ap$text <- gsub(RGX_ASPREDICTED, "aspredicted\\.org",
+  found_ap$text <- gsub(RGX_ASPREDICTED, "aspredicted\\.org/",
     x = found_ap$text
   )
-  found_ap$text <- gsub("blind\\.php\\s*\\?\\s*x\\s*=\\s*",
+  found_ap$text <- gsub("blind\\s*\\.php\\s*\\?\\s*x\\s*=\\s*",
     "blind\\.php\\?x=",
     x = found_ap$text
   )
 
   # match up to ">"
-  match_ap <- search_text(found_ap, "aspredicted\\.org[^\\>]+", return = "match")
+  #pattern <- "aspredicted\\.org[^\\>]+"
+  pattern <- c(
+    "aspredicted\\.org/[A-Za-z0-9_]{5,7}(\\.pdf)?\\b",
+    "aspredicted\\.org/[A-Za-z0-9_]{7}",
+    "aspredicted\\.org/blind.php\\?x=[A-Za-z0-9_]{5,7}"
+  )
+  match_ap <- search_text(found_ap, pattern, return = "match") |>
+    search_text("aspredicted\\.org/blind$", exclude = TRUE)
 
   # clean up the text
   match_ap$text <- match_ap$text |>
@@ -46,7 +51,8 @@ aspredicted_links <- function(paper) {
   # remove trailing blind links
   unique_matches <- match_ap |>
     dplyr::filter(text != "https://aspredicted.org/blind.php?") |>
-    unique()
+    unique() |>
+    dplyr::arrange(text_id)
 
   return(unique_matches)
 }

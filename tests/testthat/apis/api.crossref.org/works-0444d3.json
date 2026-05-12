@@ -1,0 +1,645 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 59,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            3,
+                            28
+                        ]
+                    ],
+                    "date-time": "2026-03-28T06:21:05Z",
+                    "timestamp": 1774678865315,
+                    "version": "3.50.1"
+                },
+                "reference-count": 41,
+                "publisher": "Springer Science and Business Media LLC",
+                "issue": "3",
+                "license": [
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    1988,
+                                    1,
+                                    1
+                                ]
+                            ],
+                            "date-time": "1988-01-01T00:00:00Z",
+                            "timestamp": 567993600000
+                        },
+                        "content-version": "tdm",
+                        "delay-in-days": 0,
+                        "URL": "http://www.springer.com/tdm"
+                    }
+                ],
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "short-container-title": [
+                    "Exp Brain Res"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            1988
+                        ]
+                    ]
+                },
+                "DOI": "10.1007/bf00248742",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2004,
+                            10,
+                            2
+                        ]
+                    ],
+                    "date-time": "2004-10-02T21:46:12Z",
+                    "timestamp": 1096753572000
+                },
+                "page": "491-507",
+                "source": "Crossref",
+                "is-referenced-by-count": 1015,
+                "title": [
+                    "Functional organization of inferior area 6 in the macaque monkey"
+                ],
+                "prefix": "10.1007",
+                "volume": "71",
+                "author": [
+                    {
+                        "given": "G.",
+                        "family": "Rizzolatti",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "R.",
+                        "family": "Camarda",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "L.",
+                        "family": "Fogassi",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "M.",
+                        "family": "Gentilucci",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "G.",
+                        "family": "Luppino",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "M.",
+                        "family": "Matelli",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "297",
+                "reference": [
+                    {
+                        "key": "CR1",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "681",
+                        "DOI": "10.1152/jn.1979.42.3.681",
+                        "volume": "42",
+                        "author": "C Brinkman",
+                        "year": "1979",
+                        "unstructured": "Brinkman C, Porter R (1979) Supplementary motor area in the monkey: activity of neurons during performance of a learned motor task. J Neurophysiol 42: 681?709",
+                        "journal-title": "J Neurophysiol"
+                    },
+                    {
+                        "key": "CR2",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "529",
+                        "DOI": "10.1113/jphysiol.1986.sp016342",
+                        "volume": "381",
+                        "author": "EJ Buys",
+                        "year": "1986",
+                        "unstructured": "Buys EJ, Lemon RN, Mantel GWH, Muir RB (1986) Selective facilitation of different hand muscles by single corticospinal neurones in the conscious monkey. J Physiol (Lond) 381: 529?549",
+                        "journal-title": "J Physiol (Lond)"
+                    },
+                    {
+                        "key": "CR3",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1",
+                        "DOI": "10.1080/14640747908400703",
+                        "volume": "31",
+                        "author": "A Cowey",
+                        "year": "1979",
+                        "unstructured": "Cowey A (1979) Cortical maps and visual perception. Q J Exp Psychol 31: 1?17",
+                        "journal-title": "Q J Exp Psychol"
+                    },
+                    {
+                        "key": "CR4",
+                        "first-page": "557",
+                        "volume-title": "Dynamic aspects of neocortical functions",
+                        "author": "EV Evarts",
+                        "year": "1984",
+                        "unstructured": "Evarts EV (1984) Hierarchies and emergent features in motor control. In: Edelman G, Gall W, Cowan W (eds) Dynamic aspects of neocortical functions. Wiley, New York, pp 557?579"
+                    },
+                    {
+                        "key": "CR5",
+                        "volume-title": "Neurophysiological approaches to higher brain functions",
+                        "author": "EV Evarts",
+                        "year": "1984",
+                        "unstructured": "Evarts EV, Shinoda Y, Wise SP (1984) Neurophysiological approaches to higher brain functions. Wiley, New York, 193 p"
+                    },
+                    {
+                        "key": "CR6",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "751",
+                        "DOI": "10.1152/jn.1980.44.4.751",
+                        "volume": "44",
+                        "author": "EE Fetz",
+                        "year": "1980",
+                        "unstructured": "Fetz EE, Cheney PD (1980) Postspike facilitation of forelimb muscle activity by primate corticomotoneuronal cells. J Neurophysiol 44: 751?772",
+                        "journal-title": "J Neurophysiol"
+                    },
+                    {
+                        "key": "CR7",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "475",
+                        "DOI": "10.1007/BF00248741",
+                        "volume": "71",
+                        "author": "M Gentilucci",
+                        "year": "1988",
+                        "unstructured": "Gentilucci M, Fogassi L, Luppino G, Matelli M, Camarda R, Rizzolatti G (1988) Functional organization of inferior area 6 in the macaque monkey. I. Somatotopy and control of proximal movements. Exp Brain Res 71: 475?490",
+                        "journal-title": "Exp Brain Res"
+                    },
+                    {
+                        "key": "CR8",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "113",
+                        "DOI": "10.1007/BF00238755",
+                        "volume": "44",
+                        "author": "M Godschalk",
+                        "year": "1981",
+                        "unstructured": "Godschalk M, Lemon RN, Nijs HOT, Kuypers HGJM (1981) Behaviour of neurons in monkey peri-arcuate and precentral cortex before and during visually guided arm and hand movements. Exp Brain Res 44: 113?116",
+                        "journal-title": "Exp Brain Res"
+                    },
+                    {
+                        "key": "CR9",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "239",
+                        "DOI": "10.1093/brain/98.2.239",
+                        "volume": "98",
+                        "author": "R Haaxma",
+                        "year": "1975",
+                        "unstructured": "Haaxma R, Kuypers HGJM (1975) Intrahemispheric cortical connections and visual guidance of hand and finger movements in the rhesus monkey. Brain 98: 239?260",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "CR10",
+                        "first-page": "51",
+                        "volume-title": "Posture and movement",
+                        "author": "DR Humphrey",
+                        "year": "1979",
+                        "unstructured": "Humphrey DR (1979) On the cortical control of visually directed reaching: contributions by nonprecentral motor areas. In: Talbot RE, Humphrey DR (eds) Posture and movement. Raven Press, New York, pp 51?112"
+                    },
+                    {
+                        "key": "CR11",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "206",
+                        "DOI": "10.1152/physrev.1983.63.1.206",
+                        "volume": "63",
+                        "author": "JK Kaas",
+                        "year": "1983",
+                        "unstructured": "Kaas JK (1983) What, if anything, is SI? Organization of first somatosensory area of cortex. Physiol Rev 63: 206?231",
+                        "journal-title": "Physiol Rev"
+                    },
+                    {
+                        "key": "CR12",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "188",
+                        "DOI": "10.1007/BF00237031",
+                        "volume": "60",
+                        "author": "K Kurata",
+                        "year": "1985",
+                        "unstructured": "Kurata K, Okano K, Tanji J (1985) Distribution of neurons related to hindlimb as opposed to forelimb movement in the monkey premotor cortex. Exp Brain Res 60: 188?191",
+                        "journal-title": "Exp Brain Res"
+                    },
+                    {
+                        "key": "CR13",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "403",
+                        "DOI": "10.1523/JNEUROSCI.06-02-00403.1986",
+                        "volume": "6",
+                        "author": "K Kurata",
+                        "year": "1986",
+                        "unstructured": "Kurata K, Tanji J (1986) Premotor cortex neurons in macaques: activity before distal and proximal forelimb movements. J Neurosci 6: 403?411",
+                        "journal-title": "J Neurosci"
+                    },
+                    {
+                        "key": "CR14",
+                        "first-page": "321",
+                        "volume": "34",
+                        "author": "L Leinonen",
+                        "year": "1979",
+                        "unstructured": "Leinonen L, Nyman G (1979) II. Functional properties of cells in anterolateral part of area 7 associative face area of awake monkey. Exp Brain Res 34: 321?333",
+                        "journal-title": "Exp Brain Res"
+                    },
+                    {
+                        "key": "CR15",
+                        "first-page": "299",
+                        "volume": "34",
+                        "author": "L Leinonen",
+                        "year": "1979",
+                        "unstructured": "Leinonen L, Hyvärinen J, Nyman G, Linnankoski I (1979) I. Functional properties of neurons in lateral part of associative area 7 in awake monkeys. Exp Brain Res 34: 299?320",
+                        "journal-title": "Exp Brain Res"
+                    },
+                    {
+                        "key": "CR16",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "497",
+                        "DOI": "10.1113/jphysiol.1986.sp016341",
+                        "volume": "381",
+                        "author": "RN Lemon",
+                        "year": "1986",
+                        "unstructured": "Lemon RN, Mantel GWH, Muir RB (1986) Corticospinal facilitation of hand muscles during voluntary movement in the conscious monkey. J Physiol (Lond) 381: 497?527",
+                        "journal-title": "J Physiol (Lond)"
+                    },
+                    {
+                        "key": "CR17",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "307",
+                        "DOI": "10.1016/0006-8993(87)91384-9",
+                        "volume": "404",
+                        "author": "AM Martino",
+                        "year": "1987",
+                        "unstructured": "Martino AM, Strick PL (1987) Corticospinal projections originate from the arcuate premotor area. Brain Res 404: 307?312",
+                        "journal-title": "Brain Res"
+                    },
+                    {
+                        "key": "CR18",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "125",
+                        "DOI": "10.1016/0166-4328(85)90068-3",
+                        "volume": "18",
+                        "author": "M Matelli",
+                        "year": "1985",
+                        "unstructured": "Matelli M, Luppino G, Rizzolatti G (1985) Patterns of cytochrome oxidase activity in the frontal agranular cortex of the macaque monkey. Behav Brain Res 18: 125?137",
+                        "journal-title": "Behav Brain Res"
+                    },
+                    {
+                        "key": "CR19",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "317",
+                        "DOI": "10.1126/science.410103",
+                        "volume": "198",
+                        "author": "L Moll",
+                        "year": "1977",
+                        "unstructured": "Moll L, Kuypers HGJM (1977) Premotor cortical ablations in monkeys: contralateral changes in visually guided behavior. Science 198: 317?319",
+                        "journal-title": "Science"
+                    },
+                    {
+                        "key": "CR20",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "312",
+                        "DOI": "10.1016/0006-8993(83)90635-2",
+                        "volume": "261",
+                        "author": "RB Muir",
+                        "year": "1983",
+                        "unstructured": "Muir RB, Lemon RN (1983) Corticospinal neurons with a special role in precision grip. Brain Res 261: 312?316",
+                        "journal-title": "Brain Res"
+                    },
+                    {
+                        "key": "CR21",
+                        "first-page": "307",
+                        "volume-title": "Auditory system. Handbook of sensory physiology, Vol 5, Part 2",
+                        "author": "WD Neff",
+                        "year": "1975",
+                        "unstructured": "Neff WD, Diamond IT, Casseday JH (1975) Behavioral studies of auditory discrimination: central nervous system. In: Keidel WD, Neff WD (eds) Auditory system. Handbook of sensory physiology, Vol 5, Part 2. Springer, Berlin Heidelberg New York, pp 307?400"
+                    },
+                    {
+                        "key": "CR22",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "155",
+                        "DOI": "10.1007/BF00236211",
+                        "volume": "66",
+                        "author": "K Okano",
+                        "year": "1987",
+                        "unstructured": "Okano K, Tanji J (1987) Neuronal activities in the primate motor fields of the agranular frontal cortex preceding visually triggered and self-placed movement. Exp Brain Res 66: 155?166",
+                        "journal-title": "Exp Brain Res"
+                    },
+                    {
+                        "key": "CR23",
+                        "volume-title": "Epilepsy and the functional anatomy of the human brain",
+                        "author": "W Penfield",
+                        "year": "1954",
+                        "unstructured": "Penfield W, Jasper H (1954) Epilepsy and the functional anatomy of the human brain. Little Brown, Boston, Mass., 100 p"
+                    },
+                    {
+                        "key": "CR24",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "289",
+                        "DOI": "10.1001/archneurpsyc.1951.02320090038004",
+                        "volume": "66",
+                        "author": "W Penfield",
+                        "year": "1951",
+                        "unstructured": "Penfield W, Welch K (1951) Supplementary motor area of the cerebral cortex. Arch Neurol Psychiat 66: 289?317",
+                        "journal-title": "Arch Neurol Psychiat"
+                    },
+                    {
+                        "key": "CR25",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "105",
+                        "DOI": "10.1002/cne.902280110",
+                        "volume": "228",
+                        "author": "M Petrides",
+                        "year": "1984",
+                        "unstructured": "Petrides M, Pandya DN (1984) Projections to the frontal cortex from the posterior parietal region in the rhesus monkey. J Comp Neurol 228: 105?116",
+                        "journal-title": "J Comp Neurol"
+                    },
+                    {
+                        "key": "CR26",
+                        "first-page": "269",
+                        "volume-title": "Neurobilogy of Neocortex. Dahlem Konferenzen",
+                        "author": "G Rizzolatti",
+                        "year": "1988",
+                        "unstructured": "Rizzolatti G, Gentilucci M (1988) Motor and visual-motor functions of the premotor cortex. In: Rakic P, Singer W (eds) Neurobilogy of Neocortex. Dahlem Konferenzen. Wiley, New York, pp 269?284"
+                    },
+                    {
+                        "key": "CR27",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "421",
+                        "DOI": "10.1016/0006-8993(81)90847-7",
+                        "volume": "255",
+                        "author": "G Rizzolatti",
+                        "year": "1981",
+                        "unstructured": "Rizzolatti G, Scandolara C, Gentilucci M, Camarda R (1981a) Response properties and behavioral modulation of ?mouth? neurons of the postarcuate cortex (area 6) in macaque monkeys. Brain Res 255: 421?424",
+                        "journal-title": "Brain Res"
+                    },
+                    {
+                        "key": "CR28",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "125",
+                        "DOI": "10.1016/0166-4328(81)90052-8",
+                        "volume": "2",
+                        "author": "G Rizzolatti",
+                        "year": "1981",
+                        "unstructured": "Rizzolatti G, Scandolara C, Matelli M, Gentilucci M (1981b) Afferent properties of periarcuate neurons in macaque monkeys. I. Somato-sensory responses. Behav Brain Res 2: 125?146",
+                        "journal-title": "Behav Brain Res"
+                    },
+                    {
+                        "key": "CR29",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "147",
+                        "DOI": "10.1016/0166-4328(81)90053-X",
+                        "volume": "2",
+                        "author": "G Rizzolatti",
+                        "year": "1981",
+                        "unstructured": "Rizzolatti G, Scandolara C, Matelli M, Gentilucci M (1981c) Afferent properties of periarcuate neurons in macaque monkeys. II. Visual responses. Behav Brain Res 2: 147?163",
+                        "journal-title": "Behav Brain Res"
+                    },
+                    {
+                        "key": "CR30",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "220",
+                        "DOI": "10.1007/BF00269468",
+                        "volume": "67",
+                        "author": "G Rizzolatti",
+                        "year": "1987",
+                        "unstructured": "Rizzolatti G, Gentilucci M, Fogassi L, Luppino G, Matelli M, Ponzoni Maggi S (1987) Neurons related to goal-directed motor acts in inferior area 6 of the macaque monkey. Exp Brain Res 67: 220?224",
+                        "journal-title": "Exp Brain Res"
+                    },
+                    {
+                        "key": "CR31",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "444",
+                        "DOI": "10.1037/0096-3445.109.4.444",
+                        "volume": "109",
+                        "author": "DA Rosenbaum",
+                        "year": "1980",
+                        "unstructured": "Rosenbaum DA (1980) Human movement initiation: specification of arm, direction, and extent. J Exp Psychol [Gen] 109: 444?474",
+                        "journal-title": "J Exp Psychol [Gen]"
+                    },
+                    {
+                        "key": "CR32",
+                        "first-page": "81",
+                        "volume-title": "Cerebral cortex, Vol 3",
+                        "author": "AC Rosenquist",
+                        "year": "1985",
+                        "unstructured": "Rosenquist AC (1985) Connections of visual cortical areas in the cat. In: Peters A, Jones EG (eds) Cerebral cortex, Vol 3, Plenum Press, New York, pp 81?117"
+                    },
+                    {
+                        "key": "CR33",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "7",
+                        "DOI": "10.1016/0304-3940(81)90182-8",
+                        "volume": "23",
+                        "author": "Y Shinoda",
+                        "year": "1981",
+                        "unstructured": "Shinoda Y, Yokota JI, Futami T (1981) Divergent projection of individual corticospinal axons to motoneurons of multiple muscles in the monkey. Neurosci Lett 23: 7?12",
+                        "journal-title": "Neurosci Lett"
+                    },
+                    {
+                        "key": "CR34",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "282",
+                        "DOI": "10.1016/S0166-2236(84)80196-4",
+                        "volume": "7",
+                        "author": "J Tanji",
+                        "year": "1984",
+                        "unstructured": "Tanji J (1984) The neuronal activity in the supplementary motor area of primates. Trends Neurosci 7: 282?285",
+                        "journal-title": "Trends Neurosci"
+                    },
+                    {
+                        "key": "CR35",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "370",
+                        "DOI": "10.1016/0166-2236(83)90167-4",
+                        "volume": "6",
+                        "author": "DC Essen Van",
+                        "year": "1983",
+                        "unstructured": "Van Essen DC, Maunsell JHR (1983) Hierarchical organization and functional streams in the visual cortex. Trends Neurosci 6: 370?375",
+                        "journal-title": "Trends Neurosci"
+                    },
+                    {
+                        "key": "CR36",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1329",
+                        "DOI": "10.1523/JNEUROSCI.02-09-01329.1982",
+                        "volume": "2",
+                        "author": "M Weinrich",
+                        "year": "1982",
+                        "unstructured": "Weinrich M, Wise SP (1982) The premotor cortex of the monkey. J Neurosci 2: 1329?1345",
+                        "journal-title": "J Neurosci"
+                    },
+                    {
+                        "key": "CR37",
+                        "first-page": "1121",
+                        "volume-title": "Nervous system, Vol II, Motor control, Part 2. Handbook of physiology",
+                        "author": "M Wiesendanger",
+                        "year": "1981",
+                        "unstructured": "Wiesendanger M (1981) Organization of secondary motor areas of cerebral cortex. In: Brooks VB (ed) Nervous system, Vol II, Motor control, Part 2. Handbook of physiology. American Physiological Society, Bethesda, Md., pp 1121?1148"
+                    },
+                    {
+                        "key": "CR38",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "331",
+                        "DOI": "10.1007/978-1-4613-4547-3_26",
+                        "volume-title": "Control of posture and locomotion",
+                        "author": "M Wiesendanger",
+                        "year": "1973",
+                        "unstructured": "Wiesendanger M, Seguin JS, Künzle H (1973) The supplementary motor area ? a control system for posture? In: Stein RB, Pearson KC, Smith RS, Redford JB (eds) Control of posture and locomotion. Plenum Press, New York, pp 331?346"
+                    },
+                    {
+                        "key": "CR39",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1",
+                        "DOI": "10.1146/annurev.ne.08.030185.000245",
+                        "volume": "8",
+                        "author": "SP Wise",
+                        "year": "1985",
+                        "unstructured": "Wise SP (1985) The primate premotor cortex: past, present and preparatory. Annu Rev Neurosci 8: 1?19",
+                        "journal-title": "Annu Rev Neurosci"
+                    },
+                    {
+                        "key": "CR40",
+                        "first-page": "238",
+                        "volume": "30",
+                        "author": "CN Woolsey",
+                        "year": "1952",
+                        "unstructured": "Woolsey CN, Settlage PH, Meyer DR, Sencer W, Pinto Hamuy T, Travis AM (1952) Patterns of localization in precentral and ?supplementary? motor areas and their relation to the concept of a premotor area. Res Publ Assoc Nerv Ment Dis 30: 238?264",
+                        "journal-title": "Res Publ Assoc Nerv Ment Dis"
+                    },
+                    {
+                        "key": "CR41",
+                        "first-page": "105",
+                        "volume-title": "Brain mechanisms of sensation",
+                        "author": "SM Zeki",
+                        "year": "1982",
+                        "unstructured": "Zeki SM (1982) The mapping of visual functions in the cerebral cortex. In: Katsuki Y, Norgren R, Sato M (eds) Brain mechanisms of sensation. Wiley, New York, pp 105?128"
+                    }
+                ],
+                "container-title": [
+                    "Experimental Brain Research"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "http://link.springer.com/content/pdf/10.1007/BF00248742.pdf",
+                        "content-type": "application/pdf",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "http://link.springer.com/article/10.1007/BF00248742/fulltext.html",
+                        "content-type": "text/html",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "http://link.springer.com/content/pdf/10.1007/BF00248742",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2019,
+                            4,
+                            3
+                        ]
+                    ],
+                    "date-time": "2019-04-03T11:55:56Z",
+                    "timestamp": 1554292556000
+                },
+                "score": 130.809,
+                "resource": {
+                    "primary": {
+                        "URL": "http://link.springer.com/10.1007/BF00248742"
+                    }
+                },
+                "subtitle": [
+                    "II. Area F5 and the control of distal movements"
+                ],
+                "issued": {
+                    "date-parts": [
+                        [
+                            1988
+                        ]
+                    ]
+                },
+                "references-count": 41,
+                "journal-issue": {
+                    "issue": "3",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                1988
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "BF00248742"
+                ],
+                "URL": "https://doi.org/10.1007/bf00248742",
+                "ISSN": [
+                    "0014-4819",
+                    "1432-1106"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0014-4819",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1432-1106",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            1988
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

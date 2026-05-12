@@ -1,0 +1,1140 @@
+{
+    "id": "https://openalex.org/W2106303383",
+    "doi": "https://doi.org/10.1177/0956797614520714",
+    "title": "Retracted: Evil Genius? How Dishonesty Can Lead to Greater Creativity",
+    "display_name": "Retracted: Evil Genius? How Dishonesty Can Lead to Greater Creativity",
+    "publication_year": 2014,
+    "publication_date": "2014-02-18",
+    "ids": {
+        "openalex": "https://openalex.org/W2106303383",
+        "doi": "https://doi.org/10.1177/0956797614520714",
+        "mag": "2106303383",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/24549296"
+    },
+    "language": "en",
+    "primary_location": {
+        "id": "doi:10.1177/0956797614520714",
+        "is_oa": false,
+        "landing_page_url": "https://doi.org/10.1177/0956797614520714",
+        "pdf_url": null,
+        "source": {
+            "id": "https://openalex.org/S58854535",
+            "display_name": "Psychological Science",
+            "issn_l": "0956-7976",
+            "issn": [
+                "0956-7976",
+                "1467-9280"
+            ],
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": true,
+            "host_organization": "https://openalex.org/P4310320017",
+            "host_organization_name": "SAGE Publishing",
+            "host_organization_lineage": [
+                "https://openalex.org/P4310320017"
+            ],
+            "host_organization_lineage_names": [
+                "SAGE Publishing"
+            ],
+            "type": "journal"
+        },
+        "license": null,
+        "license_id": null,
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "Psychological Science",
+        "raw_type": "journal-article"
+    },
+    "type": "article",
+    "indexed_in": [
+        "crossref",
+        "pubmed"
+    ],
+    "open_access": {
+        "is_oa": false,
+        "oa_status": "closed",
+        "oa_url": null,
+        "any_repository_has_fulltext": false
+    },
+    "authorships": [
+        {
+            "author_position": "first",
+            "author": {
+                "id": "https://openalex.org/A5000930617",
+                "display_name": "Francesca Gino",
+                "orcid": "https://orcid.org/0000-0002-9794-482X"
+            },
+            "institutions": [
+                {
+                    "id": "https://openalex.org/I136199984",
+                    "display_name": "Harvard University",
+                    "ror": "https://ror.org/03vek6s52",
+                    "country_code": "US",
+                    "type": "education",
+                    "lineage": [
+                        "https://openalex.org/I136199984"
+                    ]
+                }
+            ],
+            "countries": [
+                "US"
+            ],
+            "is_corresponding": true,
+            "raw_author_name": "Francesca Gino",
+            "raw_affiliation_strings": [
+                "Harvard Business School, Harvard University",
+                "1Harvard Business School, Harvard University"
+            ],
+            "affiliations": [
+                {
+                    "raw_affiliation_string": "Harvard Business School, Harvard University",
+                    "institution_ids": [
+                        "https://openalex.org/I136199984"
+                    ]
+                },
+                {
+                    "raw_affiliation_string": "1Harvard Business School, Harvard University",
+                    "institution_ids": [
+                        "https://openalex.org/I136199984"
+                    ]
+                }
+            ]
+        },
+        {
+            "author_position": "last",
+            "author": {
+                "id": "https://openalex.org/A5053065635",
+                "display_name": "Scott S. Wiltermuth",
+                "orcid": "https://orcid.org/0000-0003-4560-7845"
+            },
+            "institutions": [
+                {
+                    "id": "https://openalex.org/I1174212",
+                    "display_name": "University of Southern California",
+                    "ror": "https://ror.org/03taz7m60",
+                    "country_code": "US",
+                    "type": "education",
+                    "lineage": [
+                        "https://openalex.org/I1174212"
+                    ]
+                }
+            ],
+            "countries": [
+                "US"
+            ],
+            "is_corresponding": false,
+            "raw_author_name": "Scott S. Wiltermuth",
+            "raw_affiliation_strings": [
+                "Marshall School of Business, University of Southern California",
+                "#N# 2Marshall School of Business, University of Southern California"
+            ],
+            "affiliations": [
+                {
+                    "raw_affiliation_string": "Marshall School of Business, University of Southern California",
+                    "institution_ids": [
+                        "https://openalex.org/I1174212"
+                    ]
+                },
+                {
+                    "raw_affiliation_string": "#N# 2Marshall School of Business, University of Southern California",
+                    "institution_ids": [
+                        "https://openalex.org/I1174212"
+                    ]
+                }
+            ]
+        }
+    ],
+    "institutions": [
+
+    ],
+    "countries_distinct_count": 1,
+    "institutions_distinct_count": 2,
+    "corresponding_author_ids": [
+        "https://openalex.org/A5000930617"
+    ],
+    "corresponding_institution_ids": [
+        "https://openalex.org/I136199984"
+    ],
+    "apc_list": null,
+    "apc_paid": null,
+    "fwci": 14.311,
+    "has_fulltext": false,
+    "cited_by_count": 185,
+    "citation_normalized_percentile": {
+        "value": 0.99165136,
+        "is_in_top_1_percent": true,
+        "is_in_top_10_percent": true
+    },
+    "cited_by_percentile_year": {
+        "min": 97,
+        "max": 100
+    },
+    "biblio": {
+        "volume": "25",
+        "issue": "4",
+        "first_page": "973",
+        "last_page": "981"
+    },
+    "is_retracted": true,
+    "is_paratext": false,
+    "is_xpac": false,
+    "primary_topic": {
+        "id": "https://openalex.org/T11079",
+        "display_name": "Creativity in Education and Neuroscience",
+        "score": 0.9998999834060669,
+        "subfield": {
+            "id": "https://openalex.org/subfields/3205",
+            "display_name": "Experimental and Cognitive Psychology"
+        },
+        "field": {
+            "id": "https://openalex.org/fields/32",
+            "display_name": "Psychology"
+        },
+        "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+        }
+    },
+    "topics": [
+        {
+            "id": "https://openalex.org/T11079",
+            "display_name": "Creativity in Education and Neuroscience",
+            "score": 0.9998999834060669,
+            "subfield": {
+                "id": "https://openalex.org/subfields/3205",
+                "display_name": "Experimental and Cognitive Psychology"
+            },
+            "field": {
+                "id": "https://openalex.org/fields/32",
+                "display_name": "Psychology"
+            },
+            "domain": {
+                "id": "https://openalex.org/domains/2",
+                "display_name": "Social Sciences"
+            }
+        },
+        {
+            "id": "https://openalex.org/T13219",
+            "display_name": "Mind wandering and attention",
+            "score": 0.9700000286102295,
+            "subfield": {
+                "id": "https://openalex.org/subfields/2805",
+                "display_name": "Cognitive Neuroscience"
+            },
+            "field": {
+                "id": "https://openalex.org/fields/28",
+                "display_name": "Neuroscience"
+            },
+            "domain": {
+                "id": "https://openalex.org/domains/1",
+                "display_name": "Life Sciences"
+            }
+        },
+        {
+            "id": "https://openalex.org/T10042",
+            "display_name": "Neural and Behavioral Psychology Studies",
+            "score": 0.9674000144004822,
+            "subfield": {
+                "id": "https://openalex.org/subfields/2805",
+                "display_name": "Cognitive Neuroscience"
+            },
+            "field": {
+                "id": "https://openalex.org/fields/28",
+                "display_name": "Neuroscience"
+            },
+            "domain": {
+                "id": "https://openalex.org/domains/1",
+                "display_name": "Life Sciences"
+            }
+        }
+    ],
+    "keywords": [
+        {
+            "id": "https://openalex.org/keywords/dishonesty",
+            "display_name": "Dishonesty",
+            "score": 0.9403327703475952
+        },
+        {
+            "id": "https://openalex.org/keywords/creativity",
+            "display_name": "Creativity",
+            "score": 0.8971049785614014
+        },
+        {
+            "id": "https://openalex.org/keywords/psychology",
+            "display_name": "Psychology",
+            "score": 0.7666693329811096
+        },
+        {
+            "id": "https://openalex.org/keywords/moderation",
+            "display_name": "Moderation",
+            "score": 0.5728552937507629
+        },
+        {
+            "id": "https://openalex.org/keywords/social-psychology",
+            "display_name": "Social psychology",
+            "score": 0.5711812973022461
+        },
+        {
+            "id": "https://openalex.org/keywords/mediation",
+            "display_name": "Mediation",
+            "score": 0.5189080834388733
+        },
+        {
+            "id": "https://openalex.org/keywords/feeling",
+            "display_name": "Feeling",
+            "score": 0.4858803153038025
+        },
+        {
+            "id": "https://openalex.org/keywords/genius",
+            "display_name": "Genius",
+            "score": 0.45464572310447693
+        },
+        {
+            "id": "https://openalex.org/keywords/cognitive-psychology",
+            "display_name": "Cognitive psychology",
+            "score": 0.3232603669166565
+        },
+        {
+            "id": "https://openalex.org/keywords/developmental-psychology",
+            "display_name": "Developmental psychology",
+            "score": 0.1137424111366272
+        }
+    ],
+    "concepts": [
+        {
+            "id": "https://openalex.org/C2778585151",
+            "wikidata": "https://www.wikidata.org/wiki/Q5282225",
+            "display_name": "Dishonesty",
+            "level": 2,
+            "score": 0.9403327703475952
+        },
+        {
+            "id": "https://openalex.org/C11012388",
+            "wikidata": "https://www.wikidata.org/wiki/Q170658",
+            "display_name": "Creativity",
+            "level": 2,
+            "score": 0.8971049785614014
+        },
+        {
+            "id": "https://openalex.org/C15744967",
+            "wikidata": "https://www.wikidata.org/wiki/Q9418",
+            "display_name": "Psychology",
+            "level": 0,
+            "score": 0.7666693329811096
+        },
+        {
+            "id": "https://openalex.org/C93225998",
+            "wikidata": "https://www.wikidata.org/wiki/Q1941972",
+            "display_name": "Moderation",
+            "level": 2,
+            "score": 0.5728552937507629
+        },
+        {
+            "id": "https://openalex.org/C77805123",
+            "wikidata": "https://www.wikidata.org/wiki/Q161272",
+            "display_name": "Social psychology",
+            "level": 1,
+            "score": 0.5711812973022461
+        },
+        {
+            "id": "https://openalex.org/C179420905",
+            "wikidata": "https://www.wikidata.org/wiki/Q223871",
+            "display_name": "Mediation",
+            "level": 2,
+            "score": 0.5189080834388733
+        },
+        {
+            "id": "https://openalex.org/C122980154",
+            "wikidata": "https://www.wikidata.org/wiki/Q205555",
+            "display_name": "Feeling",
+            "level": 2,
+            "score": 0.4858803153038025
+        },
+        {
+            "id": "https://openalex.org/C118563197",
+            "wikidata": "https://www.wikidata.org/wiki/Q185030",
+            "display_name": "Genius",
+            "level": 2,
+            "score": 0.45464572310447693
+        },
+        {
+            "id": "https://openalex.org/C180747234",
+            "wikidata": "https://www.wikidata.org/wiki/Q23373",
+            "display_name": "Cognitive psychology",
+            "level": 1,
+            "score": 0.3232603669166565
+        },
+        {
+            "id": "https://openalex.org/C138496976",
+            "wikidata": "https://www.wikidata.org/wiki/Q175002",
+            "display_name": "Developmental psychology",
+            "level": 1,
+            "score": 0.1137424111366272
+        },
+        {
+            "id": "https://openalex.org/C17744445",
+            "wikidata": "https://www.wikidata.org/wiki/Q36442",
+            "display_name": "Political science",
+            "level": 0,
+            "score": 0.0
+        },
+        {
+            "id": "https://openalex.org/C199539241",
+            "wikidata": "https://www.wikidata.org/wiki/Q7748",
+            "display_name": "Law",
+            "level": 1,
+            "score": 0.0
+        }
+    ],
+    "mesh": [
+        {
+            "descriptor_ui": "D000293",
+            "descriptor_name": "Adolescent",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D000293",
+            "descriptor_name": "Adolescent",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D000293",
+            "descriptor_name": "Adolescent",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D000328",
+            "descriptor_name": "Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D000328",
+            "descriptor_name": "Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D000328",
+            "descriptor_name": "Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D003405",
+            "descriptor_name": "Creativity",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D003405",
+            "descriptor_name": "Creativity",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D003405",
+            "descriptor_name": "Creativity",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D003657",
+            "descriptor_name": "Decision Making",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D003657",
+            "descriptor_name": "Decision Making",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D003657",
+            "descriptor_name": "Decision Making",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D005260",
+            "descriptor_name": "Female",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D005260",
+            "descriptor_name": "Female",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D005260",
+            "descriptor_name": "Female",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D006801",
+            "descriptor_name": "Humans",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D006801",
+            "descriptor_name": "Humans",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D006801",
+            "descriptor_name": "Humans",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D008192",
+            "descriptor_name": "Deception",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D008192",
+            "descriptor_name": "Deception",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D008192",
+            "descriptor_name": "Deception",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D008297",
+            "descriptor_name": "Male",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D008297",
+            "descriptor_name": "Male",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D008297",
+            "descriptor_name": "Male",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D009014",
+            "descriptor_name": "Morals",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D009014",
+            "descriptor_name": "Morals",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D009014",
+            "descriptor_name": "Morals",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D055815",
+            "descriptor_name": "Young Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D055815",
+            "descriptor_name": "Young Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D055815",
+            "descriptor_name": "Young Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        }
+    ],
+    "locations_count": 2,
+    "locations": [
+        {
+            "id": "doi:10.1177/0956797614520714",
+            "is_oa": false,
+            "landing_page_url": "https://doi.org/10.1177/0956797614520714",
+            "pdf_url": null,
+            "source": {
+                "id": "https://openalex.org/S58854535",
+                "display_name": "Psychological Science",
+                "issn_l": "0956-7976",
+                "issn": [
+                    "0956-7976",
+                    "1467-9280"
+                ],
+                "is_oa": false,
+                "is_in_doaj": false,
+                "is_core": true,
+                "host_organization": "https://openalex.org/P4310320017",
+                "host_organization_name": "SAGE Publishing",
+                "host_organization_lineage": [
+                    "https://openalex.org/P4310320017"
+                ],
+                "host_organization_lineage_names": [
+                    "SAGE Publishing"
+                ],
+                "type": "journal"
+            },
+            "license": null,
+            "license_id": null,
+            "version": "publishedVersion",
+            "is_accepted": true,
+            "is_published": true,
+            "raw_source_name": "Psychological Science",
+            "raw_type": "journal-article"
+        },
+        {
+            "id": "pmid:24549296",
+            "is_oa": false,
+            "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/24549296",
+            "pdf_url": null,
+            "source": {
+                "id": "https://openalex.org/S4306525036",
+                "display_name": "PubMed",
+                "issn_l": null,
+                "issn": null,
+                "is_oa": false,
+                "is_in_doaj": false,
+                "is_core": false,
+                "host_organization": "https://openalex.org/I1299303238",
+                "host_organization_name": "National Institutes of Health",
+                "host_organization_lineage": [
+                    "https://openalex.org/I1299303238"
+                ],
+                "host_organization_lineage_names": [
+
+                ],
+                "type": "repository"
+            },
+            "license": null,
+            "license_id": null,
+            "version": "publishedVersion",
+            "is_accepted": true,
+            "is_published": true,
+            "raw_source_name": "Psychological science",
+            "raw_type": null
+        }
+    ],
+    "best_oa_location": null,
+    "sustainable_development_goals": [
+
+    ],
+    "awards": [
+
+    ],
+    "funders": [
+
+    ],
+    "has_content": {
+        "pdf": false,
+        "grobid_xml": false
+    },
+    "content_urls": null,
+    "referenced_works_count": 37,
+    "referenced_works": [
+        "https://openalex.org/W100217140",
+        "https://openalex.org/W367711914",
+        "https://openalex.org/W1573747990",
+        "https://openalex.org/W1723899180",
+        "https://openalex.org/W1736435475",
+        "https://openalex.org/W1945085662",
+        "https://openalex.org/W1971440513",
+        "https://openalex.org/W1996372168",
+        "https://openalex.org/W2030947412",
+        "https://openalex.org/W2038669923",
+        "https://openalex.org/W2056688258",
+        "https://openalex.org/W2064625566",
+        "https://openalex.org/W2068304508",
+        "https://openalex.org/W2086438570",
+        "https://openalex.org/W2095930475",
+        "https://openalex.org/W2102205611",
+        "https://openalex.org/W2107719160",
+        "https://openalex.org/W2109200089",
+        "https://openalex.org/W2114385529",
+        "https://openalex.org/W2127784499",
+        "https://openalex.org/W2128974935",
+        "https://openalex.org/W2137983575",
+        "https://openalex.org/W2143078910",
+        "https://openalex.org/W2143563297",
+        "https://openalex.org/W2143815033",
+        "https://openalex.org/W2147784508",
+        "https://openalex.org/W2148905283",
+        "https://openalex.org/W2162052483",
+        "https://openalex.org/W2181854196",
+        "https://openalex.org/W2196042351",
+        "https://openalex.org/W2947714016",
+        "https://openalex.org/W3121586804",
+        "https://openalex.org/W3123620651",
+        "https://openalex.org/W3134297495",
+        "https://openalex.org/W3146361359",
+        "https://openalex.org/W3160009597",
+        "https://openalex.org/W4285719527"
+    ],
+    "related_works": [
+        "https://openalex.org/W4387497383",
+        "https://openalex.org/W3183948672",
+        "https://openalex.org/W3173606202",
+        "https://openalex.org/W3110381201",
+        "https://openalex.org/W2948807893",
+        "https://openalex.org/W2778153218",
+        "https://openalex.org/W2758277628",
+        "https://openalex.org/W2748952813",
+        "https://openalex.org/W1531601525",
+        "https://openalex.org/W1976243873"
+    ],
+    "abstract_inverted_index": {
+        "We": [
+            0
+        ],
+        "propose": [
+            1
+        ],
+        "that": [
+            2,
+            99
+        ],
+        "dishonest": [
+            3
+        ],
+        "and": [
+            4,
+            31,
+            111,
+            117,
+            137
+        ],
+        "creative": [
+            5,
+            78,
+            90
+        ],
+        "behavior": [
+            6
+        ],
+        "have": [
+            7
+        ],
+        "something": [
+            8
+        ],
+        "in": [
+            9,
+            28,
+            41,
+            88,
+            106
+        ],
+        "common:": [
+            10
+        ],
+        "They": [
+            11,
+            61
+        ],
+        "both": [
+            12,
+            133
+        ],
+        "involve": [
+            13
+        ],
+        "breaking": [
+            14
+        ],
+        "rules.": [
+            15
+        ],
+        "Because": [
+            16
+        ],
+        "of": [
+            17,
+            125
+        ],
+        "this": [
+            18,
+            42
+        ],
+        "shared": [
+            19
+        ],
+        "feature,": [
+            20
+        ],
+        "creativity": [
+            21,
+            36,
+            105,
+            118
+        ],
+        "may": [
+            22,
+            33
+        ],
+        "lead": [
+            23,
+            34
+        ],
+        "to": [
+            24,
+            35,
+            51,
+            69,
+            103
+        ],
+        "dishonesty": [
+            25,
+            32,
+            116
+        ],
+        "(as": [
+            26
+        ],
+        "shown": [
+            27
+        ],
+        "prior": [
+            29
+        ],
+        "work),": [
+            30
+        ],
+        "(the": [
+            37
+        ],
+        "hypothesis": [
+            38
+        ],
+        "we": [
+            39,
+            83,
+            97
+        ],
+        "tested": [
+            40
+        ],
+        "research).": [
+            43
+        ],
+        "In": [
+            44
+        ],
+        "five": [
+            45
+        ],
+        "experiments,": [
+            46
+        ],
+        "participants": [
+            47
+        ],
+        "had": [
+            48
+        ],
+        "the": [
+            49
+        ],
+        "opportunity": [
+            50
+        ],
+        "behave": [
+            52
+        ],
+        "dishonestly": [
+            53,
+            101
+        ],
+        "by": [
+            54,
+            121,
+            128,
+            132
+        ],
+        "overreporting": [
+            55
+        ],
+        "their": [
+            56,
+            89
+        ],
+        "performance": [
+            57
+        ],
+        "on": [
+            58
+        ],
+        "various": [
+            59
+        ],
+        "tasks.": [
+            60
+        ],
+        "then": [
+            62
+        ],
+        "completed": [
+            63
+        ],
+        "one": [
+            64
+        ],
+        "or": [
+            65
+        ],
+        "more": [
+            66,
+            77
+        ],
+        "tasks": [
+            67,
+            108
+        ],
+        "designed": [
+            68
+        ],
+        "measure": [
+            70
+        ],
+        "creativity.": [
+            71
+        ],
+        "Those": [
+            72
+        ],
+        "who": [
+            73
+        ],
+        "cheated": [
+            74
+        ],
+        "were": [
+            75
+        ],
+        "subsequently": [
+            76
+        ],
+        "than": [
+            79
+        ],
+        "noncheaters,": [
+            80
+        ],
+        "even": [
+            81
+        ],
+        "when": [
+            82
+        ],
+        "accounted": [
+            84
+        ],
+        "for": [
+            85
+        ],
+        "individual": [
+            86
+        ],
+        "differences": [
+            87
+        ],
+        "ability": [
+            91
+        ],
+        "(Experiment": [
+            92,
+            135,
+            139
+        ],
+        "1).": [
+            93
+        ],
+        "Using": [
+            94
+        ],
+        "random": [
+            95
+        ],
+        "assignment,": [
+            96
+        ],
+        "confirmed": [
+            98
+        ],
+        "acting": [
+            100
+        ],
+        "leads": [
+            102
+        ],
+        "greater": [
+            104
+        ],
+        "subsequent": [
+            107
+        ],
+        "(Experiments": [
+            109
+        ],
+        "2": [
+            110
+        ],
+        "3).": [
+            112
+        ],
+        "The": [
+            113
+        ],
+        "link": [
+            114
+        ],
+        "between": [
+            115
+        ],
+        "is": [
+            119
+        ],
+        "explained": [
+            120
+        ],
+        "a": [
+            122
+        ],
+        "heightened": [
+            123
+        ],
+        "feeling": [
+            124
+        ],
+        "being": [
+            126
+        ],
+        "unconstrained": [
+            127
+        ],
+        "rules,": [
+            129
+        ],
+        "as": [
+            130
+        ],
+        "indicated": [
+            131
+        ],
+        "mediation": [
+            134
+        ],
+        "4)": [
+            136
+        ],
+        "moderation": [
+            138
+        ],
+        "5).": [
+            140
+        ]
+    },
+    "counts_by_year": [
+        {
+            "year": 2025,
+            "cited_by_count": 6
+        },
+        {
+            "year": 2024,
+            "cited_by_count": 6
+        },
+        {
+            "year": 2023,
+            "cited_by_count": 17
+        },
+        {
+            "year": 2022,
+            "cited_by_count": 30
+        },
+        {
+            "year": 2021,
+            "cited_by_count": 24
+        },
+        {
+            "year": 2020,
+            "cited_by_count": 23
+        },
+        {
+            "year": 2019,
+            "cited_by_count": 17
+        },
+        {
+            "year": 2018,
+            "cited_by_count": 16
+        },
+        {
+            "year": 2017,
+            "cited_by_count": 17
+        },
+        {
+            "year": 2016,
+            "cited_by_count": 9
+        },
+        {
+            "year": 2015,
+            "cited_by_count": 16
+        },
+        {
+            "year": 2014,
+            "cited_by_count": 4
+        }
+    ],
+    "updated_date": "2025-11-06T03:46:38.306776",
+    "created_date": "2016-06-24T00:00:00"
+}

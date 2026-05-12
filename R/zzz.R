@@ -51,6 +51,9 @@
   toset <- !(names(op.pkg) %in% names(op))
   if (any(toset)) options(op.pkg[toset])
 
+  # check OSF PAT
+  osf_pat_validate()
+
   invisible()
 }
 

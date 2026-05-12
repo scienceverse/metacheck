@@ -1,0 +1,50 @@
+[
+    {
+        "name": "README.md",
+        "path": "README.md",
+        "sha": "36e9b62c5b5005055a029112774bc72f144816a6",
+        "size": 36,
+        "url": "https://api.github.com/repos/scienceverse/demo/contents/README.md?ref=main",
+        "html_url": "https://github.com/scienceverse/demo/blob/main/README.md",
+        "git_url": "https://api.github.com/repos/scienceverse/demo/git/blobs/36e9b62c5b5005055a029112774bc72f144816a6",
+        "download_url": "https://raw.githubusercontent.com/scienceverse/demo/main/README.md",
+        "type": "file",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/demo/contents/README.md?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/demo/git/blobs/36e9b62c5b5005055a029112774bc72f144816a6",
+            "html": "https://github.com/scienceverse/demo/blob/main/README.md"
+        }
+    },
+    {
+        "name": "folder",
+        "path": "folder",
+        "sha": "9c7cf73c6eba1e88214736756bbfc2b9a5ce98e8",
+        "size": 0,
+        "url": "https://api.github.com/repos/scienceverse/demo/contents/folder?ref=main",
+        "html_url": "https://github.com/scienceverse/demo/tree/main/folder",
+        "git_url": "https://api.github.com/repos/scienceverse/demo/git/trees/9c7cf73c6eba1e88214736756bbfc2b9a5ce98e8",
+        "download_url": null,
+        "type": "dir",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/demo/contents/folder?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/demo/git/trees/9c7cf73c6eba1e88214736756bbfc2b9a5ce98e8",
+            "html": "https://github.com/scienceverse/demo/tree/main/folder"
+        }
+    },
+    {
+        "name": "good-example.R",
+        "path": "good-example.R",
+        "sha": "e254fcdeaed36391976fcf83c0f9fc111a2d2090",
+        "size": 227,
+        "url": "https://api.github.com/repos/scienceverse/demo/contents/good-example.R?ref=main",
+        "html_url": "https://github.com/scienceverse/demo/blob/main/good-example.R",
+        "git_url": "https://api.github.com/repos/scienceverse/demo/git/blobs/e254fcdeaed36391976fcf83c0f9fc111a2d2090",
+        "download_url": "https://raw.githubusercontent.com/scienceverse/demo/main/good-example.R",
+        "type": "file",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/demo/contents/good-example.R?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/demo/git/blobs/e254fcdeaed36391976fcf83c0f9fc111a2d2090",
+            "html": "https://github.com/scienceverse/demo/blob/main/good-example.R"
+        }
+    }
+]

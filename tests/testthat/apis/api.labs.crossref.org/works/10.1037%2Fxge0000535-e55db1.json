@@ -1,0 +1,237 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    2,
+                    19
+                ]
+            ],
+            "date-time": "2026-02-19T08:19:38Z",
+            "timestamp": 1771489178526,
+            "version": "3.50.1"
+        },
+        "reference-count": 0,
+        "publisher": "American Psychological Association (APA)",
+        "issue": "10",
+        "funder": [
+            {
+                "DOI": "10.13039/501100003977",
+                "name": "Israel Science Foundation",
+                "doi-asserted-by": "publisher",
+                "award": [
+                    "259/18"
+                ],
+                "award-info": [
+                    {
+                        "award-number": [
+                            "259/18"
+                        ]
+                    }
+                ],
+                "id": [
+                    {
+                        "id": "10.13039/501100003977",
+                        "id-type": "DOI",
+                        "asserted-by": "publisher"
+                    }
+                ]
+            }
+        ],
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Journal of Experimental Psychology: General"
+        ],
+        "DOI": "10.1037/xge0000535",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2018,
+                    12,
+                    27
+                ]
+            ],
+            "date-time": "2018-12-27T14:25:27Z",
+            "timestamp": 1545920727000
+        },
+        "page": "1842-1848",
+        "source": "Crossref",
+        "is-referenced-by-count": 29,
+        "title": [
+            "Loud and unclear: Intense real-life vocalizations during affective situations are perceptually ambiguous and contextually malleable."
+        ],
+        "prefix": "10.1037",
+        "volume": "148",
+        "author": [
+            {
+                "given": "Doron",
+                "family": "Atias",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Alexander",
+                "family": "Todorov",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Shai",
+                "family": "Liraz",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Arella",
+                "family": "Eidinger",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Ilan",
+                "family": "Dror",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Yaacov",
+                "family": "Maymon",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Hillel",
+                "family": "Aviezer",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "15",
+        "published-online": {
+            "date-parts": [
+                [
+                    2019,
+                    10
+                ]
+            ]
+        },
+        "container-title": [
+            "Journal of Experimental Psychology: General"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://psycnet.apa.org/journals/xge/148/10/1842.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    2,
+                    5
+                ]
+            ],
+            "date-time": "2024-02-05T23:20:28Z",
+            "timestamp": 1707175228000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://doi.apa.org/doi/10.1037/xge0000535"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2019,
+                    10
+                ]
+            ]
+        },
+        "references-count": 0,
+        "journal-issue": {
+            "issue": "10",
+            "published-online": {
+                "date-parts": [
+                    [
+                        2019,
+                        10
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "2018-65354-001",
+            "30589289"
+        ],
+        "URL": "https://doi.org/10.1037/xge0000535",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1939-2222",
+            "0096-3445"
+        ],
+        "issn-type": [
+            {
+                "value": "1939-2222",
+                "type": "electronic"
+            },
+            {
+                "value": "0096-3445",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2019,
+                    10
+                ]
+            ]
+        }
+    }
+}

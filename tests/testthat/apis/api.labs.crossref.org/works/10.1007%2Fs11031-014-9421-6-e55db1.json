@@ -1,0 +1,1012 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    1,
+                    2
+                ]
+            ],
+            "date-time": "2026-01-02T17:25:55Z",
+            "timestamp": 1767374755501
+        },
+        "reference-count": 83,
+        "publisher": "Springer Science and Business Media LLC",
+        "issue": "1",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2014,
+                            8,
+                            9
+                        ]
+                    ],
+                    "date-time": "2014-08-09T00:00:00Z",
+                    "timestamp": 1407542400000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "http://www.springer.com/tdm"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "link.springer.com"
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Motiv Emot"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2015,
+                    2
+                ]
+            ]
+        },
+        "DOI": "10.1007/s11031-014-9421-6",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2014,
+                    8,
+                    8
+                ]
+            ],
+            "date-time": "2014-08-08T13:50:42Z",
+            "timestamp": 1407505842000
+        },
+        "page": "128-141",
+        "update-policy": "http://dx.doi.org/10.1007/springer_crossmark_policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 38,
+        "title": [
+            "How emotional expressions shape prosocial behavior: Interpersonal effects of anger and disappointment on compliance with requests"
+        ],
+        "prefix": "10.1007",
+        "volume": "39",
+        "author": [
+            {
+                "given": "Evert A.",
+                "family": "van Doorn",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Gerben A.",
+                "family": "van Kleef",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Joop",
+                "family": "van der Pligt",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "297",
+        "published-online": {
+            "date-parts": [
+                [
+                    2014,
+                    8,
+                    9
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "9421_CR1",
+                "doi-asserted-by": "crossref",
+                "first-page": "882",
+                "DOI": "10.1177/0956797610370755",
+                "volume": "21",
+                "author": "H Adam",
+                "year": "2010",
+                "unstructured": "Adam, H., Shirako, A., & Maddux, W. W. (2010). Cultural variance in the interpersonal effects of anger in negotiations. Psychological Science, 21, 882–889.",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "key": "9421_CR2",
+                "unstructured": "Asch, S. E. (1951). Effects of group pressure, upon the modification and distortion of judgments. In H. Guetzkow (Ed.), Groups, leadership, and men (pp. 177–190). Pittsburgh: Carnegie Press."
+            },
+            {
+                "key": "9421_CR3",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1007/978-1-4612-5743-1",
+                "volume-title": "Anger and aggression",
+                "author": "JR Averill",
+                "year": "1982",
+                "unstructured": "Averill, J. R. (1982). Anger and aggression. New York: Springer."
+            },
+            {
+                "key": "9421_CR4",
+                "doi-asserted-by": "crossref",
+                "first-page": "39",
+                "DOI": "10.1177/0022002709352443",
+                "volume": "54",
+                "author": "D Balliet",
+                "year": "2010",
+                "unstructured": "Balliet, D. (2010). Communication and cooperation in social dilemmas: A meta-analytic review. Journal of Conflict Resolution, 54, 39–57. doi: 10.1177/0022002709352443 .",
+                "journal-title": "Journal of Conflict Resolution"
+            },
+            {
+                "key": "9421_CR5",
+                "doi-asserted-by": "crossref",
+                "first-page": "629",
+                "DOI": "10.1037/0021-9010.90.4.629",
+                "volume": "90",
+                "author": "LJ Barclay",
+                "year": "2005",
+                "unstructured": "Barclay, L. J., Skarlicki, D. P., & Pugh, S. D. (2005). Exploring the role of emotions in injustice perceptions and retaliation. Journal of Applied Psychology, 90, 629–643.",
+                "journal-title": "Journal of Applied Psychology"
+            },
+            {
+                "key": "9421_CR6",
+                "doi-asserted-by": "crossref",
+                "first-page": "281",
+                "DOI": "10.1002/(SICI)1098-2337(1999)25:4<281::AID-AB4>3.0.CO;2-J",
+                "volume": "25",
+                "author": "RA Baron",
+                "year": "1999",
+                "unstructured": "Baron, R. A., Neuman, J. H., & Geddes, D. (1999). Social and personal determinants of workplace aggression: Evidence for the impact of perceived injustice and the type A behavior pattern. Aggressive Behavior, 25, 281–296.",
+                "journal-title": "Aggressive Behavior"
+            },
+            {
+                "key": "9421_CR7",
+                "doi-asserted-by": "crossref",
+                "first-page": "192",
+                "DOI": "10.1177/1043463102014002003",
+                "volume": "14",
+                "author": "C Bicchieri",
+                "year": "2002",
+                "unstructured": "Bicchieri, C. (2002). Covenants without swords: Group identity, norms and communication in social dilemmas. Rationality and Society, 14, 192–228. doi: 10.1177/1043463102014002003 .",
+                "journal-title": "Rationality and Society"
+            },
+            {
+                "key": "9421_CR8",
+                "unstructured": "Bicchieri, C. (2006). The grammar of society: The nature and dynamics of social norms. Cambridge: Cambridge University Press."
+            },
+            {
+                "key": "9421_CR9",
+                "doi-asserted-by": "crossref",
+                "first-page": "139",
+                "DOI": "10.1177/1470594X07077267",
+                "volume": "6",
+                "author": "C Bicchieri",
+                "year": "2007",
+                "unstructured": "Bicchieri, C., & Lev-On, A. (2007). Computer-mediated communication and cooperation in social dilemmas: An experimental analysis. Politics, Philosophy and Economics, 6, 139–168. doi: 10.1177/1470594X07077267 .",
+                "journal-title": "Politics, Philosophy and Economics"
+            },
+            {
+                "key": "9421_CR10",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Cann, A., & Blackwelder, J. G. (1984). Compliance and mood: A field investigation of the impact of embarrassment. Journal of Psychology: Interdisciplinary and Applied, 117, 221–226.",
+                "DOI": "10.1080/00223980.1984.9923681"
+            },
+            {
+                "key": "9421_CR11",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Carlsmith, J. M., & Gross, A. E. (1969). Some effects of guilt on compliance. Journal of Personality and Social Psychology, 11, 232–239.",
+                "DOI": "10.1037/h0027039"
+            },
+            {
+                "key": "9421_CR12",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Carlson, N., Charlin, V., & Miller, N. (1988). Positive mood and helping behavior: A test of six hypotheses. Journal of Personality and Social Psychology, 55, 211–229.",
+                "DOI": "10.1037/0022-3514.55.2.211"
+            },
+            {
+                "key": "9421_CR13",
+                "doi-asserted-by": "crossref",
+                "first-page": "183",
+                "DOI": "10.1037/a0013965",
+                "volume": "135",
+                "author": "CS Carver",
+                "year": "2009",
+                "unstructured": "Carver, C. S., & Harmon-Jones, E. (2009). Anger is an approach-related affect: Evidence and implications. Psychological Bulletin, 135, 183–204. doi: 10.1037/a0013965 .",
+                "journal-title": "Psychological Bulletin"
+            },
+            {
+                "key": "9421_CR15",
+                "doi-asserted-by": "crossref",
+                "first-page": "105",
+                "DOI": "10.1111/1467-8721.01242",
+                "volume": "12",
+                "author": "RB Cialdini",
+                "year": "2003",
+                "unstructured": "Cialdini, R. B. (2003). Crafting normative messages to protect the environment. Current Directions in Psychological Science, 12, 105–109. doi: 10.1111/1467-8721.01242 .",
+                "journal-title": "Current Directions in Psychological Science"
+            },
+            {
+                "key": "9421_CR16",
+                "doi-asserted-by": "crossref",
+                "first-page": "263",
+                "DOI": "10.1007/s11336-006-1560-6",
+                "volume": "72",
+                "author": "RB Cialdini",
+                "year": "2007",
+                "unstructured": "Cialdini, R. B. (2007). Descriptive social norms as underappreciated sources of social control. Psychometrika, 72, 263–268. doi: 10.1007/s11336-006-1560-6 .",
+                "journal-title": "Psychometrika"
+            },
+            {
+                "key": "9421_CR17",
+                "doi-asserted-by": "crossref",
+                "first-page": "3",
+                "DOI": "10.1080/15534510500181459",
+                "volume": "1",
+                "author": "RB Cialdini",
+                "year": "2006",
+                "unstructured": "Cialdini, R. B., Demain, L. J., Sagarin, B. J., Barrett, D. W., Rhoads, K., & Winter, P. L. (2006). Managing social norms for persuasive impact. Social Influence, 1, 3–15. doi: 10.1080/15534510500181459 .",
+                "journal-title": "Social Influence"
+            },
+            {
+                "key": "9421_CR18",
+                "doi-asserted-by": "crossref",
+                "first-page": "591",
+                "DOI": "10.1146/annurev.psych.55.090902.142015",
+                "volume": "55",
+                "author": "RB Cialdini",
+                "year": "2004",
+                "unstructured": "Cialdini, R. B., & Goldstein, N. J. (2004). Social influence: Compliance and conformity. Annual Review of Psychology, 55, 591–621.",
+                "journal-title": "Annual Review of Psychology"
+            },
+            {
+                "key": "9421_CR19",
+                "doi-asserted-by": "crossref",
+                "first-page": "201",
+                "DOI": "10.1016/S0065-2601(08)60330-5",
+                "volume": "24",
+                "author": "RB Cialdini",
+                "year": "1991",
+                "unstructured": "Cialdini, R. B., Kallgren, C. A., & Reno, R. R. (1991). A focus theory of normative conduct: A theoretical refinement and reevaluation of the role of norms in human behavior. Advances in Experimental Social Psychology, 24, 201–234.",
+                "journal-title": "Advances in Experimental Social Psychology"
+            },
+            {
+                "key": "9421_CR20",
+                "doi-asserted-by": "crossref",
+                "first-page": "1015",
+                "DOI": "10.1037/0022-3514.58.6.1015",
+                "volume": "58",
+                "author": "RB Cialdini",
+                "year": "1990",
+                "unstructured": "Cialdini, R. B., Reno, R. R., & Kallgren, C. A. (1990). A focus theory of normative conduct: Recycling the concept of norms to reduce littering in public places. Journal of Personality and Social Psychology, 58, 1015–1026. doi: 10.1037/0022-3514.58.6.1015 .",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9421_CR21",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Clark, M. S., Ouellette, R., Powell, M. C., & Milberg, S. (1987). Recipient’s mood, relationship type and helping. Journal of Personality and Social Psychology, 53, 94–103.",
+                "DOI": "10.1037/0022-3514.53.1.94"
+            },
+            {
+                "key": "9421_CR22",
+                "first-page": "247",
+                "volume-title": "Knowledge structures in close relationships: A social psychological approach",
+                "author": "MS Clark",
+                "year": "1996",
+                "unstructured": "Clark, M. S., Pataki, S. P., & Carver, V. H. (1996). Some thoughts and findings on self-presentation of emotions in relationships. In G. J. O. Fletcher & J. Fitness (Eds.), Knowledge structures in close relationships: A social psychological approach (pp. 247–274). Mahwah, NJ: Erlbaum."
+            },
+            {
+                "key": "9421_CR23",
+                "doi-asserted-by": "crossref",
+                "first-page": "39",
+                "DOI": "10.1016/j.jesp.2009.09.009",
+                "volume": "46",
+                "author": "TR Cohen",
+                "year": "2010",
+                "unstructured": "Cohen, T. R., Wildschut, T., & Insko, C. A. (2010). How communication increases interpersonal cooperation in mixed-motive situations. Journal of Experimental Social Psychology, 46, 39–50. doi: 10.1016/j.jesp.2009.09.009 .",
+                "journal-title": "Journal of Experimental Social Psychology"
+            },
+            {
+                "key": "9421_CR24",
+                "doi-asserted-by": "crossref",
+                "first-page": "868",
+                "DOI": "10.1111/j.1559-1816.2008.00330.x",
+                "volume": "38",
+                "author": "F Damen",
+                "year": "2008",
+                "unstructured": "Damen, F., Van Knippenberg, B., & Van Knippenberg, D. (2008). Affective match in leadership: Leader emotional display, follower positive affect, and follower performance. Journal of Applied Social Psychology, 38, 868–902.",
+                "journal-title": "Journal of Applied Social Psychology"
+            },
+            {
+                "key": "9421_CR25",
+                "doi-asserted-by": "crossref",
+                "first-page": "665",
+                "DOI": "10.1146/annurev.psych.51.1.665",
+                "volume": "51",
+                "author": "N Eisenberg",
+                "year": "2000",
+                "unstructured": "Eisenberg, N. (2000). Emotion, regulation, and moral development. Annual Review of Psychology, 51, 665–697. doi: 10.1146/annurev.psych.51.1.665 .",
+                "journal-title": "Annual Review of Psychology"
+            },
+            {
+                "key": "9421_CR26",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Eisenberg, N., & Miller, P. A. (1987). The relation of empathy to prosocial and related behaviors. Psychological Bulletin, 101, 91–119.",
+                "DOI": "10.1037/0033-2909.101.1.91"
+            },
+            {
+                "key": "9421_CR27",
+                "unstructured": "Fischer, A. H., & Manstead, A. S. R. (2008). Social functions of emotion. In M. Lewis, J. Haviland, & L. Feldman Barrett (Eds.), Handbook of emotion, 3rd ed. New York: Guilford."
+            },
+            {
+                "key": "9421_CR28",
+                "doi-asserted-by": "crossref",
+                "first-page": "103",
+                "DOI": "10.1037/0022-3514.93.1.103",
+                "volume": "93",
+                "author": "AH Fischer",
+                "year": "2007",
+                "unstructured": "Fischer, A. H., & Roseman, I. J. (2007). Beat them or ban them: The characteristics and social functions of anger and contempt. Journal of Personality and Social Psychology, 93, 103–115. doi: 10.1037/0022-3514.93.1.103 .",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9421_CR29",
+                "doi-asserted-by": "crossref",
+                "first-page": "208",
+                "DOI": "10.1177/1754073910361980",
+                "volume": "2",
+                "author": "AH Fischer",
+                "year": "2010",
+                "unstructured": "Fischer, A. H., & Van Kleef, G. A. (2010). Where have all the people gone? A plea for including social interaction in emotion research. Emotion Review, 2, 208–211. doi: 10.1177/1754073910361980 .",
+                "journal-title": "Emotion Review"
+            },
+            {
+                "key": "9421_CR30",
+                "volume-title": "The emotions",
+                "author": "NH Frijda",
+                "year": "1986",
+                "unstructured": "Frijda, N. H. (1986). The emotions. Cambridge: Cambridge University Press."
+            },
+            {
+                "key": "9421_CR31",
+                "doi-asserted-by": "crossref",
+                "first-page": "51",
+                "DOI": "10.1037/10152-002",
+                "volume-title": "Emotion and culture: Empirical studies of mutual influence",
+                "author": "NH Frijda",
+                "year": "1994",
+                "unstructured": "Frijda, N. H., & Mesquita, B. (1994). The social roles and functions of emotions. In S. Kitayama & H. Marcus (Eds.), Emotion and culture: Empirical studies of mutual influence (pp. 51–87). Washington, DC: American Psychological Association."
+            },
+            {
+                "key": "9421_CR32",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Fuchs-Beauchamp, K. D. (1994). Five-year-olds’ affective state and compliance to teachers. Journal of Genetic Psychology, 155, 313–319.",
+                "DOI": "10.1080/00221325.1994.9914781"
+            },
+            {
+                "key": "9421_CR33",
+                "doi-asserted-by": "crossref",
+                "first-page": "284",
+                "DOI": "10.1080/03637750500206524",
+                "volume": "72",
+                "author": "R Goei",
+                "year": "2005",
+                "unstructured": "Goei, R., & Boster, F. J. (2005). The roles of obligation and gratitude in explaining the effects of favors on compliance. Communication Monographs, 72, 284–300. doi: 10.1080/03637750500206524 .",
+                "journal-title": "Communication Monographs"
+            },
+            {
+                "key": "9421_CR34",
+                "doi-asserted-by": "crossref",
+                "first-page": "472",
+                "DOI": "10.1086/586910",
+                "volume": "35",
+                "author": "NJ Goldstein",
+                "year": "2008",
+                "unstructured": "Goldstein, N. J., Cialdini, R. B., & Griskevicius, V. (2008). A room with a viewpoint: Using social norms to motivate environmental conservation in hotels. Journal of Consumer Research, 35, 472–482. doi: 10.1086/586910 .",
+                "journal-title": "Journal of Consumer Research"
+            },
+            {
+                "key": "9421_CR35",
+                "doi-asserted-by": "crossref",
+                "first-page": "262",
+                "DOI": "10.1037/a0033362",
+                "volume": "105",
+                "author": "MW Heerdink",
+                "year": "2013",
+                "unstructured": "Heerdink, M. W., Van Kleef, G. A., Homan, A. C., & Fischer, A. H. (2013). On the social influence of emotions in groups: Interpersonal effects of anger and happiness on conformity versus deviance. Journal of Personality and Social Psychology, 105, 262–284.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9421_CR36",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Isen, A. M., Clarck, M., & Schwartz, M. F. (1976). Duration of the effects of good mood on helping: “Footprints in the sand of time”. Journal of Personality and Social Psychology, 34, 385–393.",
+                "DOI": "10.1037/0022-3514.34.3.385"
+            },
+            {
+                "key": "9421_CR37",
+                "doi-asserted-by": "crossref",
+                "first-page": "1002",
+                "DOI": "10.1177/01461672002610009",
+                "volume": "26",
+                "author": "CA Kallgren",
+                "year": "2000",
+                "unstructured": "Kallgren, C. A., Reno, R. R., & Cialdini, R. B. (2000). A focus theory of normative conduct: When norms do and do not affect behavior. Personality and Social Psychology Bulletin, 26, 1002–1012. doi: 10.1177/01461672002610009 .",
+                "journal-title": "Personality and Social Psychology Bulletin"
+            },
+            {
+                "key": "9421_CR38",
+                "doi-asserted-by": "crossref",
+                "first-page": "505",
+                "DOI": "10.1080/026999399379168",
+                "volume": "13",
+                "author": "D Keltner",
+                "year": "1999",
+                "unstructured": "Keltner, D., & Haidt, J. (1999). Social functions of emotions at four levels of analysis. Cognition and Emotion, 13, 505–521. doi: 10.1080/026999399379168 .",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "9421_CR39",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Konecni, V. J. (1972). Some effects of guilt on compliance: A field replication. Journal of Personality and Social Psychology, 23, 30–32.",
+                "DOI": "10.1037/h0032875"
+            },
+            {
+                "key": "9421_CR40",
+                "doi-asserted-by": "crossref",
+                "first-page": "56",
+                "DOI": "10.1080/02699930600562193",
+                "volume": "21",
+                "author": "P Kuppens",
+                "year": "2007",
+                "unstructured": "Kuppens, P., & Van Mechelen, I. (2007). Interactional appraisal models for the anger appraisals of threatened self-esteem, other-blame, and frustration. Cognition and Emotion, 21, 56–77. doi: 10.1080/02699930600859219 .",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "9421_CR41",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Lay, K. L., Waters, E., & Park, K. A. (1989). Maternal responsiveness and child compliance: The role of mood as a mediator. Child Development, 60, 1405–1411.",
+                "DOI": "10.2307/1130930"
+            },
+            {
+                "key": "9421_CR42",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1093/oso/9780195069945.001.0001",
+                "volume-title": "Emotion and adaptation",
+                "author": "RS Lazarus",
+                "year": "1991",
+                "unstructured": "Lazarus, R. S. (1991). Emotion and adaptation. New York: Oxford University Press."
+            },
+            {
+                "key": "9421_CR43",
+                "doi-asserted-by": "crossref",
+                "first-page": "635",
+                "DOI": "10.1016/j.jesp.2010.12.015",
+                "volume": "47",
+                "author": "G Lelieveld",
+                "year": "2011",
+                "unstructured": "Lelieveld, G., Van Dijk, E., Van Beest, I., Steinel, W., & Van Kleef, G. A. (2011). Disappointed in you, angry about your offer: Distinct negative emotions induce concessions via different mechanisms. Journal of Experimental Social Psychology, 47, 635–641. doi: 10.1016/j.jesp.2010.12.015 .",
+                "journal-title": "Journal of Experimental Social Psychology"
+            },
+            {
+                "key": "9421_CR44",
+                "doi-asserted-by": "crossref",
+                "first-page": "605",
+                "DOI": "10.1037/a0033345",
+                "volume": "105",
+                "author": "G-J Lelieveld",
+                "year": "2013",
+                "unstructured": "Lelieveld, G.-J., Van Dijk, E., Van Beest, I., & Van Kleef, G. A. (2013). Does communicating disappointment in negotiations help or hurt? Solving an apparent inconsistency in the social-functional approach to emotions. Journal of Personality and Social Psychology, 105, 605–620.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9421_CR45",
+                "doi-asserted-by": "crossref",
+                "first-page": "473",
+                "DOI": "10.1080/026999300402763",
+                "volume": "14",
+                "author": "JS Lerner",
+                "year": "2000",
+                "unstructured": "Lerner, J. S., & Keltner, D. (2000). Beyond valence: Toward a model of emotion-specific influences on judgment and choice. Cognition and Emotion, 14, 473–493. doi: 10.1080/026999300402763 .",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "9421_CR46",
+                "doi-asserted-by": "crossref",
+                "first-page": "146",
+                "DOI": "10.1037/0022-3514.81.1.146",
+                "volume": "81",
+                "author": "JS Lerner",
+                "year": "2001",
+                "unstructured": "Lerner, J. S., & Keltner, D. (2001). Fear, anger, and risk. Journal of Personality and Social Psychology, 81, 146–159. doi: 10.1037/0022-3514.81.1.146 .",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9421_CR47",
+                "doi-asserted-by": "crossref",
+                "first-page": "221",
+                "DOI": "10.1002/(SICI)1099-1379(200003)21:2<221::AID-JOB36>3.0.CO;2-0",
+                "volume": "21",
+                "author": "KM Lewis",
+                "year": "2000",
+                "unstructured": "Lewis, K. M. (2000). When leaders display emotion: How followers respond to negative emotional expression of male and female leaders. Journal of Organizational Behavior, 21, 221–234.",
+                "journal-title": "Journal of Organizational Behavior"
+            },
+            {
+                "key": "9421_CR48",
+                "doi-asserted-by": "crossref",
+                "first-page": "437",
+                "DOI": "10.1177/0018726710381149",
+                "volume": "64",
+                "author": "D Lindebaum",
+                "year": "2011",
+                "unstructured": "Lindebaum, D., & Fielden, S. L. (2011). “It’s good to be angry”: Enacting anger in construction project management to achieve perceived leader effectiveness. Human Relations, 64, 437–458.",
+                "journal-title": "Human Relations"
+            },
+            {
+                "key": "9421_CR49",
+                "volume-title": "The Karolinska directed emotional faces (KDEF)",
+                "author": "D Lundqvist",
+                "year": "1998",
+                "unstructured": "Lundqvist, D., Flykt, A., & Öhman, A. (1998). The Karolinska directed emotional faces (KDEF). Stockholm: Karolinska Institute."
+            },
+            {
+                "key": "9421_CR50",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Maddux, J. E., & Rogers, R. W. (1983). Protection motivation and self-efficacy: A revised theory of fear appeals and attitude change. Journal of Experimental Social Psychology, 19, 469–479.",
+                "DOI": "10.1016/0022-1031(83)90023-9"
+            },
+            {
+                "key": "9421_CR51",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Milgram, S., Bickman, L. & Berkowitz, O. (1969). Note on the drawing power of crowds of different size. Journal of Personality and Social Psychology, 13, 79–82.",
+                "DOI": "10.1037/h0028070"
+            },
+            {
+                "key": "9421_CR52",
+                "doi-asserted-by": "crossref",
+                "first-page": "213",
+                "DOI": "10.1111/j.1475-6811.2004.00079.x",
+                "volume": "11",
+                "author": "J Mills",
+                "year": "2004",
+                "unstructured": "Mills, J., Clark, M. S., Ford, T. E., & Johnson, M. (2004). Measurement of communal strength. Personal Relationships, 11, 213–230. doi: 10.1111/j.1475-6811.2004.00079.x .",
+                "journal-title": "Personal Relationships"
+            },
+            {
+                "key": "9421_CR53",
+                "doi-asserted-by": "crossref",
+                "first-page": "234",
+                "DOI": "10.1086/341051",
+                "volume": "69",
+                "author": "S Nicholls",
+                "year": "2002",
+                "unstructured": "Nicholls, S. (2002). On the genealogy of norms: A case for the role of emotion in cultural evolution. Philosophy of Science, 69, 234–255. doi: 10.1086/341051 .",
+                "journal-title": "Philosophy of Science"
+            },
+            {
+                "key": "9421_CR54",
+                "doi-asserted-by": "crossref",
+                "first-page": "913",
+                "DOI": "10.1177/0146167208316691",
+                "volume": "34",
+                "author": "JP Nolan",
+                "year": "2008",
+                "unstructured": "Nolan, J. P., Schultz, P. W., Cialdini, R. B., Goldstein, N. J., & Griskevicius, V. (2008). Normative social influence is underdetected. Personality and Social Psychology Bulletin, 34, 913–923. doi: 10.1177/0146167208316691 .",
+                "journal-title": "Personality and Social Psychology Bulletin"
+            },
+            {
+                "key": "9421_CR55",
+                "doi-asserted-by": "crossref",
+                "first-page": "64",
+                "DOI": "10.1111/j.1468-2958.1997.tb00587.x",
+                "volume": "24",
+                "author": "DJ O’Keefe",
+                "year": "1997",
+                "unstructured": "O’Keefe, D. J., & Figge, M. (1997). A guilt-based explanation of the door-in-the-face influence strategy. Human Communication Research, 24, 64–81. doi: 10.1111/j.1468-2958.1997.tb00587.x .",
+                "journal-title": "Human Communication Research"
+            },
+            {
+                "key": "9421_CR56",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Parkinson, B. (1996). Emotions are social. British Journal of Psychology, 87, 663–683.",
+                "DOI": "10.1111/j.2044-8295.1996.tb02615.x"
+            },
+            {
+                "key": "9421_CR57",
+                "doi-asserted-by": "crossref",
+                "first-page": "1444",
+                "DOI": "10.1016/j.jesp.2008.06.007",
+                "volume": "44",
+                "author": "D Pietroni",
+                "year": "2008",
+                "unstructured": "Pietroni, D., Van Kleef, G. A., De Dreu, C. K. W., & Pagliaro, S. (2008). Emotions as strategic information: Effects of other’s emotions on fixed-pie perception, demands and integrative behavior in negotiation. Journal of Experimental Social Psychology, 44, 1444–1454. doi: 10.1016/j.jesp.2008.06.007 .",
+                "journal-title": "Journal of Experimental Social Psychology"
+            },
+            {
+                "key": "9421_CR58",
+                "doi-asserted-by": "crossref",
+                "first-page": "717",
+                "DOI": "10.3758/BF03206553",
+                "volume": "36",
+                "author": "KJ Preacher",
+                "year": "2004",
+                "unstructured": "Preacher, K. J., & Hayes, A. F. (2004). SPSS and SAS procedures for estimating indirect effects in simple mediation models. Behavior Research Methods, Instruments & Computers, 36, 717–731. doi: 10.3758/BF03206553 .",
+                "journal-title": "Behavior Research Methods, Instruments & Computers"
+            },
+            {
+                "key": "9421_CR59",
+                "doi-asserted-by": "crossref",
+                "first-page": "879",
+                "DOI": "10.3758/BRM.40.3.879",
+                "volume": "40",
+                "author": "KJ Preacher",
+                "year": "2008",
+                "unstructured": "Preacher, K. J., & Hayes, A. F. (2008). Asymptotic and resampling strategies for assessing and comparing indirect effects in multiple mediator models. Behavior Research Methods, 40, 879–891. doi: 10.3758/BRM.40.3.879 .",
+                "journal-title": "Behavior Research Methods"
+            },
+            {
+                "key": "9421_CR60",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Regan, J. W. (1971). Guilt, perceived injustice and altruistic behavior. Journal of Personality and Social Psychology, 18, 124–132.",
+                "DOI": "10.1037/h0030712"
+            },
+            {
+                "key": "9421_CR61",
+                "volume-title": "Social psychology: Handbook of basic principles",
+                "author": "NJ Roese",
+                "year": "2007",
+                "unstructured": "Roese, N. J., & Sherman, J. W. (2007). Expectancy. In E. T. Higgins & A. W. Kruglanski (Eds.), Social psychology: Handbook of basic principles. New York, NY: The Guilford Press."
+            },
+            {
+                "key": "9421_CR62",
+                "doi-asserted-by": "crossref",
+                "first-page": "429",
+                "DOI": "10.1111/j.1467-9280.2007.01917.x",
+                "volume": "18",
+                "author": "PW Schultz",
+                "year": "2007",
+                "unstructured": "Schultz, P. W., Nolan, J. M., Cialdini, R. B., Goldstein, N. J., & Griskevicius, V. (2007). The constructive, destructive, and reconstructive power of social norms. Psychological Science, 18, 429–434. doi: 10.1111/j.1467-9280.2007.01917.x .",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "key": "9421_CR63",
+                "volume-title": "The psychology of social norms",
+                "author": "M Sherif",
+                "year": "1936",
+                "unstructured": "Sherif, M. (1936). The psychology of social norms. New York: Harper."
+            },
+            {
+                "key": "9421_CR64",
+                "doi-asserted-by": "crossref",
+                "first-page": "3",
+                "DOI": "10.1037/1089-2680.9.1.3",
+                "volume": "9",
+                "author": "SA Shields",
+                "year": "2005",
+                "unstructured": "Shields, S. A. (2005). The politics of emotion in everyday life: “Appropriate” emotions and claims on identity. Review of General Psychology, 9, 3–15. doi: 10.1037/1089-2680.9.1.3 .",
+                "journal-title": "Review of General Psychology"
+            },
+            {
+                "key": "9421_CR65",
+                "doi-asserted-by": "crossref",
+                "first-page": "314",
+                "DOI": "10.1016/j.jesp.2005.05.002",
+                "volume": "42",
+                "author": "M Sinaceur",
+                "year": "2006",
+                "unstructured": "Sinaceur, M., & Tiedens, L. Z. (2006). Get mad and get more than even: When and why anger expression is effective in negotiations. Journal of Experimental Social Psychology, 42, 314–322. doi: 10.1016/j.jesp.2005.05.002 .",
+                "journal-title": "Journal of Experimental Social Psychology"
+            },
+            {
+                "key": "9421_CR66",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Smith, C. A., Haynes, K. N., Lazarus, R. S., & Pope, L. K. (1993). In search of the “hot” cognitions: Attributions, appraisals, and their relation to emotion. Journal of Personality and Social Psychology, 65, 916–929.",
+                "DOI": "10.1037/0022-3514.65.5.916"
+            },
+            {
+                "key": "9421_CR67",
+                "doi-asserted-by": "crossref",
+                "first-page": "362",
+                "DOI": "10.1016/j.jesp.2006.12.002",
+                "volume": "44",
+                "author": "W Steinel",
+                "year": "2008",
+                "unstructured": "Steinel, W., Van Kleef, G. A., & Harinck, F. (2008). Are you talking to me?! Separating the people from the problem when expressing emotions in negotiation. Journal of Experimental Social Psychology, 44, 362–369. doi: 10.1016/j.jesp.2006.12.002 .",
+                "journal-title": "Journal of Experimental Social Psychology"
+            },
+            {
+                "key": "9421_CR68",
+                "doi-asserted-by": "crossref",
+                "first-page": "86",
+                "DOI": "10.1037/0022-3514.80.1.86",
+                "volume": "80",
+                "author": "LZ Tiedens",
+                "year": "2001",
+                "unstructured": "Tiedens, L. Z. (2001). Anger and advancement versus sadness and subjugation: The effect of negative emotion expressions on social status conferral. Journal of Personality and Social Psychology, 80, 86–94.",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9421_CR69",
+                "doi-asserted-by": "crossref",
+                "first-page": "560",
+                "DOI": "10.1177/0146167200267004",
+                "volume": "26",
+                "author": "LZ Tiedens",
+                "year": "2000",
+                "unstructured": "Tiedens, L. Z., Ellsworth, P. C., & Mesquita, B. (2000). Sentimental stereotypes: Emotional expectations for high- and low-status group members. Personality and Social Psychology Bulletin, 26, 560–575. doi: 10.1177/0146167200267004 .",
+                "journal-title": "Personality and Social Psychology Bulletin"
+            },
+            {
+                "key": "9421_CR70",
+                "doi-asserted-by": "crossref",
+                "first-page": "973",
+                "DOI": "10.1037/0022-3514.81.6.973",
+                "volume": "81",
+                "author": "LZ Tiedens",
+                "year": "2001",
+                "unstructured": "Tiedens, L. Z., & Linton, S. (2001). Judgment under emotional certainty and uncertainty: The effects of specific emotions on information processing. Journal of Personality and Social Psychology, 81, 973–988. doi: 10.1037/022-3514.81.6.973 .",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9421_CR71",
+                "doi-asserted-by": "crossref",
+                "first-page": "442",
+                "DOI": "10.1080/02699931.2011.648174",
+                "volume": "12",
+                "author": "EA Doorn Van",
+                "year": "2012",
+                "unstructured": "Van Doorn, E. A., Heerdink, M. W., & Van Kleef, G. A. (2012). Emotion and the construal of social situations: Inferences of cooperation versus competition from expressions of anger, happiness and disappointment. Cognition and Emotion, 12, 442–461.",
+                "journal-title": "Cognition and Emotion"
+            },
+            {
+                "key": "9421_CR72",
+                "doi-asserted-by": "crossref",
+                "first-page": "184",
+                "DOI": "10.1111/j.1467-8721.2009.01633.x",
+                "volume": "18",
+                "author": "GA Kleef Van",
+                "year": "2009",
+                "unstructured": "Van Kleef, G. A. (2009). How emotions regulate social life: The emotions as social information (EASI) model. Current Directions in Psychological Science, 18, 184–188. doi: 10.1111/j.1467-8721.2009.01633.x .",
+                "journal-title": "Current Directions in Psychological Science"
+            },
+            {
+                "key": "9421_CR73",
+                "author": "GA Kleef Van",
+                "year": "2014",
+                "unstructured": "Van Kleef, G. A. (2014). Understanding the positive and negative effects of emotional expressions in organizations: EASI does it. Human Relations, online first. doi: 10.1177/0018726713510329 .",
+                "journal-title": "Human Relations, online first."
+            },
+            {
+                "key": "9421_CR74",
+                "doi-asserted-by": "crossref",
+                "first-page": "1557",
+                "DOI": "10.1037/0021-9010.92.6.1557",
+                "volume": "92",
+                "author": "GA Kleef Van",
+                "year": "2007",
+                "unstructured": "Van Kleef, G. A., & Côté, S. (2007). Expressing anger in conflict: When it helps and when it hurts. Journal of Applied Psychology, 92, 1557–1569. doi: 10.1037/0021-9010.92.6.1557 .",
+                "journal-title": "Journal of Applied Psychology"
+            },
+            {
+                "key": "9421_CR75",
+                "doi-asserted-by": "crossref",
+                "first-page": "57",
+                "DOI": "10.1037/0022-3514.86.1.57",
+                "volume": "86",
+                "author": "GA Kleef Van",
+                "year": "2004",
+                "unstructured": "Van Kleef, G. A., De Dreu, C. K. W., & Manstead, A. S. R. (2004a). The interpersonal effects of anger and happiness in negotiations. Journal of Personality and Social Psychology, 86, 57–76. doi: 10.1037/0022-3514.86.1.57 .",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9421_CR76",
+                "doi-asserted-by": "crossref",
+                "first-page": "510",
+                "DOI": "10.1037/0022-3514.87.4.510",
+                "volume": "87",
+                "author": "GA Kleef Van",
+                "year": "2004",
+                "unstructured": "Van Kleef, G. A., De Dreu, C. K. W., & Manstead, A. S. R. (2004b). The interpersonal effects of emotions in negotiations: A motivated information processing approach. Journal of Personality and Social Psychology, 87, 510–528. doi: 10.1037/0022-3514.87.4.510 .",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9421_CR77",
+                "doi-asserted-by": "crossref",
+                "first-page": "124",
+                "DOI": "10.1037/0022-3514.91.1.124",
+                "volume": "91",
+                "author": "GA Kleef Van",
+                "year": "2006",
+                "unstructured": "Van Kleef, G. A., De Dreu, C. K. W., & Manstead, A. S. R. (2006). Supplication and appeasement in conflict and negotiation: The interpersonal effects of disappointment, worry, guilt, and regret. Journal of Personality and Social Psychology, 91, 124–142. doi: 10.1037/0022-3514.91.1.124 .",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9421_CR78",
+                "doi-asserted-by": "crossref",
+                "first-page": "45",
+                "DOI": "10.1016/S0065-2601(10)42002-X",
+                "volume": "42",
+                "author": "GA Kleef Van",
+                "year": "2010",
+                "unstructured": "Van Kleef, G. A., De Dreu, C. K. W., & Manstead, A. S. R. (2010a). An interpersonal approach to emotion in social decision making: The emotions as social information model. Advances in Experimental Social Psychology, 42, 45–96. doi: 10.1016/S0065-2601(10)42002-X .",
+                "journal-title": "Advances in Experimental Social Psychology"
+            },
+            {
+                "key": "9421_CR79",
+                "doi-asserted-by": "crossref",
+                "first-page": "1827",
+                "DOI": "10.1177/0956797610387438",
+                "volume": "21",
+                "author": "GA Kleef Van",
+                "year": "2010",
+                "unstructured": "Van Kleef, G. A., Homan, A. C., Beersma, B., & van Knippenberg, D. (2010b). On angry leaders and agreeable followers: How leader emotion and follower personality shape motivation and team performance. Psychological Science, 21, 1827–1834.",
+                "journal-title": "Psychological Science"
+            },
+            {
+                "key": "9421_CR80",
+                "doi-asserted-by": "crossref",
+                "first-page": "13",
+                "DOI": "10.1007/s10726-007-9092-8",
+                "volume": "17",
+                "author": "GA Kleef Van",
+                "year": "2008",
+                "unstructured": "Van Kleef, G. A., Van Dijk, E., Steinel, W., Harinck, F., & Van Beest, I. (2008). Anger in social conflict: Cross-situational comparisons and suggestions for the future. Group Decision and Negotiation [Special Issue on Emotions in Negotiation], 17, 13–30. doi: 10.1007/s10726-007-9092-8 .",
+                "journal-title": "Group Decision and Negotiation [Special Issue on Emotions in Negotiation]"
+            },
+            {
+                "key": "9421_CR81",
+                "doi-asserted-by": "crossref",
+                "first-page": "111",
+                "DOI": "10.1080/10463283.2011.627192",
+                "volume": "22",
+                "author": "GA Kleef Van",
+                "year": "2011",
+                "unstructured": "Van Kleef, G. A., Van Doorn, E. A., Heerdink, M. W., & Koning, L. F. (2011). Emotion is for influence. European Review of Social Psychology, 22, 111–163.",
+                "journal-title": "European Review of Social Psychology"
+            },
+            {
+                "key": "9421_CR82",
+                "doi-asserted-by": "crossref",
+                "first-page": "768",
+                "DOI": "10.1037/0022-3514.82.5.768",
+                "volume": "82",
+                "author": "PAM Lange Van",
+                "year": "2002",
+                "unstructured": "Van Lange, P. A. M., Ouwerkerk, J. W., & Tazelaar, M. J. A. (2002). How to overcome the detrimental effects of noise in social interaction: The benefits of generosity. Journal of Personality and Social Psychology, 82, 768–780. doi: 10.1037//0022-3514.82.5.768 .",
+                "journal-title": "Journal of Personality and Social Psychology"
+            },
+            {
+                "key": "9421_CR83",
+                "doi-asserted-by": "crossref",
+                "first-page": "987",
+                "DOI": "10.1016/j.jesp.2009.04.010",
+                "volume": "45",
+                "author": "MJJ Wubben",
+                "year": "2009",
+                "unstructured": "Wubben, M. J. J., De Cremer, D., & Van Dijk, E. (2009). How emotion communication guides reciprocity: Establishing cooperation through disappointment and anger. Journal of Experimental Social Psychology, 45, 987–990. doi: 10.1016/j.jesp.2009.04.010 .",
+                "journal-title": "Journal of Experimental Social Psychology"
+            },
+            {
+                "key": "9421_CR84",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Zeelenberg, M., van Dijk, W. W., van der Pligt, J., Manstead, A. S. R., van Empelen, P., & Reinderman, D. (1998). Emotional reactions to outcomes of decisions: The role of counterfactual thought in the experience of regret and disappointment. Organizational Behavior and Human Decision Processes, 75, 117–141. http://www.elsevier.com/locate/obhdp",
+                "DOI": "10.1006/obhd.1998.2784"
+            }
+        ],
+        "container-title": [
+            "Motivation and Emotion"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://link.springer.com/content/pdf/10.1007/s11031-014-9421-6.pdf",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "http://link.springer.com/article/10.1007/s11031-014-9421-6/fulltext.html",
+                "content-type": "text/html",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "http://link.springer.com/content/pdf/10.1007/s11031-014-9421-6",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    6,
+                    1
+                ]
+            ],
+            "date-time": "2024-06-01T02:25:52Z",
+            "timestamp": 1717208752000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "http://link.springer.com/10.1007/s11031-014-9421-6"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2014,
+                    8,
+                    9
+                ]
+            ]
+        },
+        "references-count": 83,
+        "journal-issue": {
+            "issue": "1",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2015,
+                        2
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "9421"
+        ],
+        "URL": "https://doi.org/10.1007/s11031-014-9421-6",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0146-7239",
+            "1573-6644"
+        ],
+        "issn-type": [
+            {
+                "value": "0146-7239",
+                "type": "print"
+            },
+            {
+                "value": "1573-6644",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2014,
+                    8,
+                    9
+                ]
+            ]
+        }
+    }
+}

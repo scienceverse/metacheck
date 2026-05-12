@@ -16,9 +16,12 @@ test_that("code_check offline", {
 })
 
 
+#httptest2::start_capturing()
+httptest2::use_mock_api()
+
+
 test_that("OSF no files", {
   # OSF but no R files
-  skip_osf()
 
   module <- "code_check"
   paper <- test_paper("https://osf.io/y6a34")
@@ -33,7 +36,6 @@ test_that("OSF no files", {
 })
 
 test_that("no code files", {
-  skip_osf()
 
   module <- "code_check"
   paper <- test_paper("https://osf.io/m4nbv")
@@ -49,8 +51,6 @@ test_that("no code files", {
 })
 
 test_that("OSF", {
-  skip_osf()
-
   module <- "code_check"
   paper <- test_paper("https://osf.io/629bx")
   mo <- module_run(paper, module)
@@ -62,6 +62,9 @@ test_that("OSF", {
                     code_missing_files = 0)
   expect_equal(mo$summary_table[, 1:4], exp[, 1:4])
 })
+
+httptest2::stop_mocking()
+#httptest2::stop_capturing()
 
 
 test_that("lang_load_regex", {

@@ -78,11 +78,11 @@ test_that("llm_max_calls", {
 
 # tests that require api.groq.com
 
-# httptest::start_capturing()
-httptest::use_mock_api()
+# httptest2::start_capturing()
+httptest2::use_mock_api()
 
 test_that("llm_use TRUE", {
-  skip_llm()
+  #skip_llm()
   llm_use(TRUE)
   llm_model("groq")
 
@@ -113,7 +113,7 @@ test_that("llm_model_list", {
 
   expect_error(llm_model_list("notamodel"), "Invalid platform")
 
-  skip_llm()
+  #skip_llm()
 
   models <- llm_model_list("groq")
   expect_contains(names(models), c("platform", "id", "created_at"))
@@ -129,7 +129,7 @@ test_that("llm_model_list", {
 })
 
 test_that("gemini", {
-  skip_llm()
+  #skip_llm()
   llm_use(TRUE)
 
   text <- LETTERS[1:2]
@@ -142,7 +142,7 @@ test_that("gemini", {
 
 test_that("openai", {
   skip("No KEY")
-  skip_llm()
+  #skip_llm()
   llm_use(TRUE)
 
   text <- LETTERS[1:2]
@@ -153,5 +153,5 @@ test_that("openai", {
                as.character(c(T, F)))
 })
 
-#httptest::stop_capturing()
-httptest::stop_mocking()
+#httptest2::stop_capturing()
+httptest2::stop_mocking()

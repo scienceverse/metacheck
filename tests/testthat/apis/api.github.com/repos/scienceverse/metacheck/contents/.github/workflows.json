@@ -50,16 +50,16 @@
     {
         "name": "upload_packages.yml",
         "path": ".github/workflows/upload_packages.yml",
-        "sha": "39db70d03f27d5cc6a5cdcf70e36e2a59c8554b4",
-        "size": 3231,
+        "sha": "f64395d77926b82c6ddefe093d899775fa50a401",
+        "size": 3362,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/.github/workflows/upload_packages.yml?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/blob/main/.github/workflows/upload_packages.yml",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/39db70d03f27d5cc6a5cdcf70e36e2a59c8554b4",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/f64395d77926b82c6ddefe093d899775fa50a401",
         "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/.github/workflows/upload_packages.yml",
         "type": "file",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/.github/workflows/upload_packages.yml?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/39db70d03f27d5cc6a5cdcf70e36e2a59c8554b4",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/f64395d77926b82c6ddefe093d899775fa50a401",
             "html": "https://github.com/scienceverse/metacheck/blob/main/.github/workflows/upload_packages.yml"
         }
     }

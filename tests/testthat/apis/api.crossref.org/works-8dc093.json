@@ -1,0 +1,186 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 116,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2025,
+                            11,
+                            1
+                        ]
+                    ],
+                    "date-time": "2025-11-01T05:29:25Z",
+                    "timestamp": 1761974965165
+                },
+                "reference-count": 0,
+                "publisher": "Oxford University Press (OUP)",
+                "issue": "3",
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "short-container-title": [
+                    "Brain"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            1987
+                        ]
+                    ]
+                },
+                "DOI": "10.1093/brain/110.3.747",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2007,
+                            1,
+                            4
+                        ]
+                    ],
+                    "date-time": "2007-01-04T04:37:03Z",
+                    "timestamp": 1167885423000
+                },
+                "page": "747-760",
+                "source": "Crossref",
+                "is-referenced-by-count": 67,
+                "title": [
+                    "RECOVERY FROM IDEOMOTOR APRAXIA"
+                ],
+                "prefix": "10.1093",
+                "volume": "110",
+                "author": [
+                    {
+                        "given": "ANNA",
+                        "family": "BASSO",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "ERMINIO",
+                        "family": "CAPITANI",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "SERGIO DELLA",
+                        "family": "SALA",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "MARCELLA",
+                        "family": "LAIACONA",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "HANS",
+                        "family": "SPINNLER",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "286",
+                "container-title": [
+                    "Brain"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "http://academic.oup.com/brain/article-pdf/110/3/747/1191525/110-3-747.pdf",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2017,
+                            8,
+                            22
+                        ]
+                    ],
+                    "date-time": "2017-08-22T20:33:17Z",
+                    "timestamp": 1503433997000
+                },
+                "score": 111.11768,
+                "resource": {
+                    "primary": {
+                        "URL": "https://academic.oup.com/brain/article-lookup/doi/10.1093/brain/110.3.747"
+                    }
+                },
+                "subtitle": [
+                    "A STUDY ON ACUTE STROKE PATIENTS"
+                ],
+                "issued": {
+                    "date-parts": [
+                        [
+                            1987
+                        ]
+                    ]
+                },
+                "references-count": 0,
+                "journal-issue": {
+                    "issue": "3",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                1987
+                            ]
+                        ]
+                    }
+                },
+                "URL": "https://doi.org/10.1093/brain/110.3.747",
+                "ISSN": [
+                    "0006-8950",
+                    "1460-2156"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0006-8950",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1460-2156",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            1987
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "id": "chatcmpl-ad91c811-8568-4f11-a029-d481787b59c7",
+    "object": "chat.completion",
+    "created": 1778628763,
+    "model": "llama-3.3-70b-versatile",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "```json\n[\n  {\n    \"text\": \"Our 12 participants have a lot of power to detect a moth.\",\n    \"power_type\": null,\n    \"statistical_test\": null,\n    \"statistical_test_other\": null,\n    \"sample_size\": 12,\n    \"alpha_level\": null,\n    \"power\": null,\n    \"effect_size\": null,\n    \"effect_size_metric\": null,\n    \"effect_size_metric_other\": null,\n    \"software\": null\n  }\n]\n```"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "queue_time": 0.094039663,
+        "prompt_tokens": 1059,
+        "prompt_time": 0.082285456,
+        "completion_tokens": 105,
+        "completion_time": 0.196580784,
+        "total_tokens": 1164,
+        "total_time": 0.27886624
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_dae98b5ecb",
+    "x_groq": {
+        "id": "req_01krf8j7w6f0ntsgjy2r9mh3j1",
+        "seed": 8675309
+    },
+    "service_tier": "on_demand"
+}

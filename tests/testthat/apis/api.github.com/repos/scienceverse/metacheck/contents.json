@@ -2,32 +2,32 @@
     {
         "name": ".Rbuildignore",
         "path": ".Rbuildignore",
-        "sha": "f876d38225e61439f990d4a5fa6e2be27f2e56a8",
-        "size": 223,
+        "sha": "656485dfdf93e7b6ec588ce736f7ee346fbb9e7a",
+        "size": 331,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/.Rbuildignore?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/blob/main/.Rbuildignore",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/f876d38225e61439f990d4a5fa6e2be27f2e56a8",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/656485dfdf93e7b6ec588ce736f7ee346fbb9e7a",
         "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/.Rbuildignore",
         "type": "file",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/.Rbuildignore?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/f876d38225e61439f990d4a5fa6e2be27f2e56a8",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/656485dfdf93e7b6ec588ce736f7ee346fbb9e7a",
             "html": "https://github.com/scienceverse/metacheck/blob/main/.Rbuildignore"
         }
     },
     {
         "name": ".github",
         "path": ".github",
-        "sha": "ddd0300d38a4e834627e5b5db63b8f4201a88ce2",
+        "sha": "547d9df50f346f129903ead9e7de001cee84e658",
         "size": 0,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/.github?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/tree/main/.github",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/ddd0300d38a4e834627e5b5db63b8f4201a88ce2",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/547d9df50f346f129903ead9e7de001cee84e658",
         "download_url": null,
         "type": "dir",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/.github?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/ddd0300d38a4e834627e5b5db63b8f4201a88ce2",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/547d9df50f346f129903ead9e7de001cee84e658",
             "html": "https://github.com/scienceverse/metacheck/tree/main/.github"
         }
     },
@@ -48,18 +48,82 @@
         }
     },
     {
+        "name": "AUTHORS.md",
+        "path": "AUTHORS.md",
+        "sha": "7ab3daff90dad0c99f8438ba6c0d03f3d911368c",
+        "size": 177,
+        "url": "https://api.github.com/repos/scienceverse/metacheck/contents/AUTHORS.md?ref=main",
+        "html_url": "https://github.com/scienceverse/metacheck/blob/main/AUTHORS.md",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/7ab3daff90dad0c99f8438ba6c0d03f3d911368c",
+        "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/AUTHORS.md",
+        "type": "file",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/metacheck/contents/AUTHORS.md?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/7ab3daff90dad0c99f8438ba6c0d03f3d911368c",
+            "html": "https://github.com/scienceverse/metacheck/blob/main/AUTHORS.md"
+        }
+    },
+    {
+        "name": "CODE_OF_CONDUCT.md",
+        "path": "CODE_OF_CONDUCT.md",
+        "sha": "5673b79f003ba73ff3456f123ce382fea9f958e9",
+        "size": 5240,
+        "url": "https://api.github.com/repos/scienceverse/metacheck/contents/CODE_OF_CONDUCT.md?ref=main",
+        "html_url": "https://github.com/scienceverse/metacheck/blob/main/CODE_OF_CONDUCT.md",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/5673b79f003ba73ff3456f123ce382fea9f958e9",
+        "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/CODE_OF_CONDUCT.md",
+        "type": "file",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/metacheck/contents/CODE_OF_CONDUCT.md?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/5673b79f003ba73ff3456f123ce382fea9f958e9",
+            "html": "https://github.com/scienceverse/metacheck/blob/main/CODE_OF_CONDUCT.md"
+        }
+    },
+    {
+        "name": "CONTRIBUTING.md",
+        "path": "CONTRIBUTING.md",
+        "sha": "37ce26b83924b0ccf4fe4401829731ea677cb249",
+        "size": 4768,
+        "url": "https://api.github.com/repos/scienceverse/metacheck/contents/CONTRIBUTING.md?ref=main",
+        "html_url": "https://github.com/scienceverse/metacheck/blob/main/CONTRIBUTING.md",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/37ce26b83924b0ccf4fe4401829731ea677cb249",
+        "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/CONTRIBUTING.md",
+        "type": "file",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/metacheck/contents/CONTRIBUTING.md?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/37ce26b83924b0ccf4fe4401829731ea677cb249",
+            "html": "https://github.com/scienceverse/metacheck/blob/main/CONTRIBUTING.md"
+        }
+    },
+    {
+        "name": "CONTRIBUTORS.md",
+        "path": "CONTRIBUTORS.md",
+        "sha": "3cb512d41a0fb5d4883fd3c38a53ffe07a773a5b",
+        "size": 133,
+        "url": "https://api.github.com/repos/scienceverse/metacheck/contents/CONTRIBUTORS.md?ref=main",
+        "html_url": "https://github.com/scienceverse/metacheck/blob/main/CONTRIBUTORS.md",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/3cb512d41a0fb5d4883fd3c38a53ffe07a773a5b",
+        "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/CONTRIBUTORS.md",
+        "type": "file",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/metacheck/contents/CONTRIBUTORS.md?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/3cb512d41a0fb5d4883fd3c38a53ffe07a773a5b",
+            "html": "https://github.com/scienceverse/metacheck/blob/main/CONTRIBUTORS.md"
+        }
+    },
+    {
         "name": "DESCRIPTION",
         "path": "DESCRIPTION",
-        "sha": "1b05575468162cf051a33f6741a228d68f0b592b",
-        "size": 1993,
+        "sha": "c277d3d204ab4d07e1111ce8b021de1606a67504",
+        "size": 2243,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/DESCRIPTION?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/blob/main/DESCRIPTION",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/1b05575468162cf051a33f6741a228d68f0b592b",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/c277d3d204ab4d07e1111ce8b021de1606a67504",
         "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/DESCRIPTION",
         "type": "file",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/DESCRIPTION?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/1b05575468162cf051a33f6741a228d68f0b592b",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/c277d3d204ab4d07e1111ce8b021de1606a67504",
             "html": "https://github.com/scienceverse/metacheck/blob/main/DESCRIPTION"
         }
     },
@@ -82,64 +146,64 @@
     {
         "name": "NAMESPACE",
         "path": "NAMESPACE",
-        "sha": "95c493b8ced979488891ee9d4ca60b86a6d77cfa",
-        "size": 2503,
+        "sha": "b05ef18e2cf87fcac3f6c635d23461aade29ef49",
+        "size": 2895,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/NAMESPACE?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/blob/main/NAMESPACE",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/95c493b8ced979488891ee9d4ca60b86a6d77cfa",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/b05ef18e2cf87fcac3f6c635d23461aade29ef49",
         "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/NAMESPACE",
         "type": "file",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/NAMESPACE?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/95c493b8ced979488891ee9d4ca60b86a6d77cfa",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/b05ef18e2cf87fcac3f6c635d23461aade29ef49",
             "html": "https://github.com/scienceverse/metacheck/blob/main/NAMESPACE"
         }
     },
     {
         "name": "NEWS.md",
         "path": "NEWS.md",
-        "sha": "8df9b3fe7b34eac912db08b8e86b4eea19ed18a7",
-        "size": 16238,
+        "sha": "030f0e68f890b976e6cbb0ad7da535fc81fecffa",
+        "size": 18431,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/NEWS.md?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/blob/main/NEWS.md",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/8df9b3fe7b34eac912db08b8e86b4eea19ed18a7",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/030f0e68f890b976e6cbb0ad7da535fc81fecffa",
         "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/NEWS.md",
         "type": "file",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/NEWS.md?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/8df9b3fe7b34eac912db08b8e86b4eea19ed18a7",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/030f0e68f890b976e6cbb0ad7da535fc81fecffa",
             "html": "https://github.com/scienceverse/metacheck/blob/main/NEWS.md"
         }
     },
     {
         "name": "R",
         "path": "R",
-        "sha": "7307d290061a9b8924f808f7b6ffc7c01741967e",
+        "sha": "eec222a020f51bdb5d8b911d6448059f98a4a097",
         "size": 0,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/R?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/tree/main/R",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/7307d290061a9b8924f808f7b6ffc7c01741967e",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/eec222a020f51bdb5d8b911d6448059f98a4a097",
         "download_url": null,
         "type": "dir",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/R?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/7307d290061a9b8924f808f7b6ffc7c01741967e",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/eec222a020f51bdb5d8b911d6448059f98a4a097",
             "html": "https://github.com/scienceverse/metacheck/tree/main/R"
         }
     },
     {
         "name": "README.md",
         "path": "README.md",
-        "sha": "e2ecdbc9742be4e78b2e641b0fc3eed7eaf21c1b",
-        "size": 887,
+        "sha": "5b31b73096eba093475a5b0296888b976a15166f",
+        "size": 995,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/README.md?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/blob/main/README.md",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/e2ecdbc9742be4e78b2e641b0fc3eed7eaf21c1b",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/5b31b73096eba093475a5b0296888b976a15166f",
         "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/README.md",
         "type": "file",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/README.md?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/e2ecdbc9742be4e78b2e641b0fc3eed7eaf21c1b",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/5b31b73096eba093475a5b0296888b976a15166f",
             "html": "https://github.com/scienceverse/metacheck/blob/main/README.md"
         }
     },
@@ -162,16 +226,16 @@
     {
         "name": "_stuff",
         "path": "_stuff",
-        "sha": "bc50234fdec65444f148ba14e094912202c37a45",
+        "sha": "c9afbf79254d0c6b8a1c714a0aef491ed8192817",
         "size": 0,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/_stuff?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/tree/main/_stuff",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/bc50234fdec65444f148ba14e094912202c37a45",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/c9afbf79254d0c6b8a1c714a0aef491ed8192817",
         "download_url": null,
         "type": "dir",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/_stuff?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/bc50234fdec65444f148ba14e094912202c37a45",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/c9afbf79254d0c6b8a1c714a0aef491ed8192817",
             "html": "https://github.com/scienceverse/metacheck/tree/main/_stuff"
         }
     },
@@ -194,128 +258,144 @@
     {
         "name": "data-raw",
         "path": "data-raw",
-        "sha": "42de94189a14ccc8ca69240891ee634444b01ca6",
+        "sha": "de08b7302c788d3a99547d8c568e9f91580c88d8",
         "size": 0,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/data-raw?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/tree/main/data-raw",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/42de94189a14ccc8ca69240891ee634444b01ca6",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/de08b7302c788d3a99547d8c568e9f91580c88d8",
         "download_url": null,
         "type": "dir",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/data-raw?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/42de94189a14ccc8ca69240891ee634444b01ca6",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/de08b7302c788d3a99547d8c568e9f91580c88d8",
             "html": "https://github.com/scienceverse/metacheck/tree/main/data-raw"
         }
     },
     {
         "name": "data",
         "path": "data",
-        "sha": "5e2e88da4af65387a193e1d6c70028e21b352f3c",
+        "sha": "555c289a7025473dde06b20f1d9449c3a52d848e",
         "size": 0,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/data?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/tree/main/data",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/5e2e88da4af65387a193e1d6c70028e21b352f3c",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/555c289a7025473dde06b20f1d9449c3a52d848e",
         "download_url": null,
         "type": "dir",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/data?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/5e2e88da4af65387a193e1d6c70028e21b352f3c",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/555c289a7025473dde06b20f1d9449c3a52d848e",
             "html": "https://github.com/scienceverse/metacheck/tree/main/data"
         }
     },
     {
         "name": "docs",
         "path": "docs",
-        "sha": "f35d1d102bb69ee6e5bb939bb24e99ce2e19ca47",
+        "sha": "7d758c5434f8709ed69f802ae16d4bae8bd6f5da",
         "size": 0,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/docs?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/tree/main/docs",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/f35d1d102bb69ee6e5bb939bb24e99ce2e19ca47",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/7d758c5434f8709ed69f802ae16d4bae8bd6f5da",
         "download_url": null,
         "type": "dir",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/docs?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/f35d1d102bb69ee6e5bb939bb24e99ce2e19ca47",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/7d758c5434f8709ed69f802ae16d4bae8bd6f5da",
             "html": "https://github.com/scienceverse/metacheck/tree/main/docs"
         }
     },
     {
         "name": "inst",
         "path": "inst",
-        "sha": "9080bc31fd6d6490bb54c6126d68e5905c377042",
+        "sha": "ba67e862cc299acc6a548592ced73ded962a9b18",
         "size": 0,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/inst?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/tree/main/inst",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/9080bc31fd6d6490bb54c6126d68e5905c377042",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/ba67e862cc299acc6a548592ced73ded962a9b18",
         "download_url": null,
         "type": "dir",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/inst?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/9080bc31fd6d6490bb54c6126d68e5905c377042",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/ba67e862cc299acc6a548592ced73ded962a9b18",
             "html": "https://github.com/scienceverse/metacheck/tree/main/inst"
+        }
+    },
+    {
+        "name": "makefile",
+        "path": "makefile",
+        "sha": "dcdb6e99e7e39155328edcb05196af7e7339f51c",
+        "size": 1407,
+        "url": "https://api.github.com/repos/scienceverse/metacheck/contents/makefile?ref=main",
+        "html_url": "https://github.com/scienceverse/metacheck/blob/main/makefile",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/dcdb6e99e7e39155328edcb05196af7e7339f51c",
+        "download_url": "https://raw.githubusercontent.com/scienceverse/metacheck/main/makefile",
+        "type": "file",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/metacheck/contents/makefile?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/blobs/dcdb6e99e7e39155328edcb05196af7e7339f51c",
+            "html": "https://github.com/scienceverse/metacheck/blob/main/makefile"
         }
     },
     {
         "name": "man",
         "path": "man",
-        "sha": "600cf7ace59c674007d0bbc09b142527bb86b69d",
+        "sha": "6c118c321af958c5a479e8a3772093f183e213aa",
         "size": 0,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/man?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/tree/main/man",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/600cf7ace59c674007d0bbc09b142527bb86b69d",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/6c118c321af958c5a479e8a3772093f183e213aa",
         "download_url": null,
         "type": "dir",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/man?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/600cf7ace59c674007d0bbc09b142527bb86b69d",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/6c118c321af958c5a479e8a3772093f183e213aa",
             "html": "https://github.com/scienceverse/metacheck/tree/main/man"
         }
     },
     {
         "name": "pkgdown",
         "path": "pkgdown",
-        "sha": "b65c461b7e4a0d4ee25c3ecb8c9c85e8d9965e55",
+        "sha": "55388fcfd75ef71feb21587371b5a2e6e7a4891f",
         "size": 0,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/pkgdown?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/tree/main/pkgdown",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/b65c461b7e4a0d4ee25c3ecb8c9c85e8d9965e55",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/55388fcfd75ef71feb21587371b5a2e6e7a4891f",
         "download_url": null,
         "type": "dir",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/pkgdown?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/b65c461b7e4a0d4ee25c3ecb8c9c85e8d9965e55",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/55388fcfd75ef71feb21587371b5a2e6e7a4891f",
             "html": "https://github.com/scienceverse/metacheck/tree/main/pkgdown"
         }
     },
     {
         "name": "tests",
         "path": "tests",
-        "sha": "83beaf90abd35ba8559422aab2e1882e55febbe3",
+        "sha": "be0ad6946a3e34f1de123f46d9965ca3433ea071",
         "size": 0,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/tests?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/tree/main/tests",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/83beaf90abd35ba8559422aab2e1882e55febbe3",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/be0ad6946a3e34f1de123f46d9965ca3433ea071",
         "download_url": null,
         "type": "dir",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/tests?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/83beaf90abd35ba8559422aab2e1882e55febbe3",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/be0ad6946a3e34f1de123f46d9965ca3433ea071",
             "html": "https://github.com/scienceverse/metacheck/tree/main/tests"
         }
     },
     {
         "name": "vignettes",
         "path": "vignettes",
-        "sha": "679fe68608b2b985710f23e938f9e4cf07b8de50",
+        "sha": "09555b09a46c8a6c0c4ba75deb7e14c31f4dcf3a",
         "size": 0,
         "url": "https://api.github.com/repos/scienceverse/metacheck/contents/vignettes?ref=main",
         "html_url": "https://github.com/scienceverse/metacheck/tree/main/vignettes",
-        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/679fe68608b2b985710f23e938f9e4cf07b8de50",
+        "git_url": "https://api.github.com/repos/scienceverse/metacheck/git/trees/09555b09a46c8a6c0c4ba75deb7e14c31f4dcf3a",
         "download_url": null,
         "type": "dir",
         "_links": {
             "self": "https://api.github.com/repos/scienceverse/metacheck/contents/vignettes?ref=main",
-            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/679fe68608b2b985710f23e938f9e4cf07b8de50",
+            "git": "https://api.github.com/repos/scienceverse/metacheck/git/trees/09555b09a46c8a6c0c4ba75deb7e14c31f4dcf3a",
             "html": "https://github.com/scienceverse/metacheck/tree/main/vignettes"
         }
     }

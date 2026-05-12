@@ -6,30 +6,36 @@ test_that("aspredicted_links", {
 
   links <- aspredicted_links(psychsci)
   expect_in("text_id", names(links))
-  expect_true(all(grepl("^https://aspredicted\\.org", links$text)))
+  expect_true(all(grepl("^https://aspredicted\\.org", links$text, ignore.case = TRUE)))
   # expect_equal(nrow(links), 74)
   expect_equal(links, unique(links))
 
   sentences <- expand_text(links, psychsci)
 
-  paper <- test_paper()
-  paper$url <- data.frame(
-    href = c(
-      "/aspredicted.org/stuff",
-      "https://aspredicted.org/stuff",
-      "https://aspredicted.org/ stuff",
-      "https://aspredicted.org/blind.php? x=stuff",
-      "https://aspredicted .org/stuff.pdf"
-    ),
-    text_id = 1:5
+  urls <- c(
+    "/aspredicted.org/abcd1",
+    "https://aspredicted.org/abcd2",
+    "https://aspredicted.org/ abcd3",
+    "https://aspredicted.org/blind.php? x=abcd4",
+    "https://aspredicted .org/abcd5.pdf",
+    "https://aspredicted.org/ABC_DE6",
+    "https://aspredicted.org/blind.php?",
+    "x=abcd7"
   )
+  paper <- test_paper(urls)
+  # paper$url <- data.frame(
+  #   href = urls,
+  #   text_id = 1:6
+  # )
 
   links <- aspredicted_links(paper)
-  exp <- c("https://aspredicted.org/stuff",
-           "https://aspredicted.org/stuff",
-           "https://aspredicted.org/stuff",
-           "https://aspredicted.org/blind.php?x=stuff",
-           "https://aspredicted.org/stuff.pdf")
+  exp <- c("https://aspredicted.org/abcd1",
+           "https://aspredicted.org/abcd2",
+           "https://aspredicted.org/abcd3",
+           "https://aspredicted.org/blind.php?x=abcd4",
+           "https://aspredicted.org/abcd5.pdf",
+           "https://aspredicted.org/ABC_DE6",
+           "https://aspredicted.org/blind.php?x=abcd7")
   expect_equal(links$text, exp)
 
   # second trailing blind links
@@ -41,16 +47,18 @@ test_that("aspredicted_links", {
   paper <- psychsci[[88]]
   links <- aspredicted_links(paper)
   expect_true(any(grepl("/vp4rg", links$text)))
-  # TODO: fix this one:
-  #  expect_true(any(grepl("/3kq9y", links$text)))
+  expect_true(any(grepl("/3kq9y", links$text)))
 })
 
-# httptest::start_capturing()
-httptest::use_mock_api()
+# httptest2::start_capturing()
+httptest2::use_mock_api()
+
+# skip online checking in aspredicted_* functions
+testthat::local_mocked_bindings(
+  online = \(...) TRUE
+)
 
 test_that("aspredicted_retrieve blind", {
-  skip_api("aspredicted.org")
-
   # single blind link
   ap_url <- "https://aspredicted.org/blind.php?x=nq4xa3"
   suppressMessages( info <- aspredicted_retrieve(ap_url) )
@@ -60,8 +68,6 @@ test_that("aspredicted_retrieve blind", {
 })
 
 test_that("aspredicted_retrieve pdf", {
-  skip_api("aspredicted.org")
-
   # single pdf
   ap_url <- "https://aspredicted.org/ve2qn.pdf"
   suppressMessages( info <- aspredicted_retrieve(ap_url) )
@@ -71,8 +77,6 @@ test_that("aspredicted_retrieve pdf", {
 })
 
 test_that("aspredicted_retrieve multiple", {
-  skip_api("aspredicted.org")
-
   # multiple links in a table
   ap_url <- data.frame(link = c(
     "https://aspredicted.org/ve2qn.pdf",
@@ -87,8 +91,6 @@ test_that("aspredicted_retrieve multiple", {
 })
 
 test_that("aspredicted_info proj", {
-  skip_api("aspredicted.org")
-
   ap_url <- "https://aspredicted.org/Y2F_6B7"
   suppressMessages( info <- aspredicted_info(ap_url) )
   title <- "Children's prosocial behavior in response to awe-inspiring art"
@@ -101,8 +103,6 @@ test_that("aspredicted_info proj", {
 
 
 test_that("aspredicted_info pdf", {
-  skip_api("aspredicted.org")
-
   ap_url <- "https://aspredicted.org/ve2qn.pdf"
   suppressMessages( info <- aspredicted_info(ap_url) )
   title <- "How infants encode unexpected events: a SSVEP study"
@@ -118,8 +118,6 @@ test_that("aspredicted_info pdf", {
 })
 
 test_that("aspredicted_info blind", {
-  skip_api("aspredicted.org")
-
   ap_url <- "https://aspredicted.org/blind.php?x=nq4xa3"
   suppressMessages( info <- aspredicted_info(ap_url) )
   title <- "Depre_ctrl_elicit [3x2] [N800 MT]"
@@ -144,5 +142,5 @@ test_that("aspredicted_info blind", {
   expect_equal(info$AP_version, "2.00")
 })
 
-httptest::stop_mocking()
-# httptest::stop_capturing()
+httptest2::stop_mocking()
+# httptest2::stop_capturing()

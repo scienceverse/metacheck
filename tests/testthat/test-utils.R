@@ -61,3 +61,41 @@ test_that("email", {
   email(orig)
 })
 
+
+#httptest2::start_capturing()
+httptest2::use_mock_api()
+
+test_that(".batch_query", {
+  expect_true(is.function(metacheck:::.batch_query))
+
+  expect_error(.batch_query())
+
+  urls <- c()
+  obs <- .batch_query(urls)
+  exp <- list()
+  expect_equal(obs, exp)
+
+  urls <- "notawebsite"
+  expect_warning(obs <- .batch_query(urls), "notawebsite")
+
+  # skip_api("httpbin.org")
+
+  urls <- "https://httpbin.org/get"
+  obs <- .batch_query(urls)
+  expect_equal(length(obs), 1)
+
+  urls <- c("https://httpbin.org/status/429",
+            "https://httpbin.org/status/404",
+            "https://httpbin.org/status/200")
+  batch_size <- 2
+  msg <- "X"
+  delay = 0
+  obs <- .batch_query(urls, batch_size, msg, delay)
+  expect_equal(length(obs), 3)
+  expect_equal(obs[[1]]$status_code, 429)
+  expect_equal(obs[[2]]$status_code, 404)
+  expect_equal(obs[[3]]$status_code, 200)
+})
+
+httptest2::stop_mocking()
+#httptest2::stop_capturing()

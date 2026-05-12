@@ -1,0 +1,11 @@
+structure(list(method = "GET", url = "https://doi.org/api/handles/10.1234%2Finvalid.doi?type=URL", 
+    status_code = 404L, headers = structure(list(date = "Tue, 12 May 2026 18:40:32 GMT", 
+        `content-type` = "application/json;charset=UTF-8", server = "cloudflare", 
+        vary = "Origin", vary = "accept-encoding", `content-encoding` = "gzip", 
+        `cf-cache-status` = "DYNAMIC", nel = "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}", 
+        `strict-transport-security` = "max-age=31536000; includeSubDomains; preload", 
+        `report-to` = "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=smvjyIqgfwPgASDL0v0J2WU%2FeoKxh%2BfOIB54aouNuZeftCuRiSo3Wo1UwJRRjbfEWyyHV6Cadp5%2FK8FpzFd88%2Fsphh9ZqhL%2Bal2FQUWOfa0xiSOfGNBTB%2FBMrkgTDaJaKM6zPf8%3D\"}]}", 
+        `cf-ray` = "9fab8d69cf8579bf-LHR", `alt-svc` = "h3=\":443\"; ma=86400"), class = "httr2_headers"), 
+    body = charToRaw("{\"responseCode\":100,\"message\":\"HandleException (SERVICE_NOT_FOUND) Unable to find service for prefix 0.NA/10.1234; prefix resolution response: version=2.11; oc=1; rc=1; snId=0 caCrt noAuth expires:Wed May 13 06:40:32 UTC 2026 0.NA/10.1234\\n    index=1 type=HS_NAMESPACE rwr- \\\"<namespace>\\n <contact>contact@doi.org</contact>\\n <status>inactive</status>\\n <statusmsg>This DOI prefix is currently inactive.</statusmsg>\\n </namespace>\\\"\\n\",\"handle\":\"10.1234/invalid.doi\"}"), 
+    timing = c(redirect = 0, namelookup = 0, connect = 0, pretransfer = 6.7e-05, 
+    starttransfer = 0.035131, total = 0.035244), cache = new.env(parent = emptyenv())), class = "httr2_response")

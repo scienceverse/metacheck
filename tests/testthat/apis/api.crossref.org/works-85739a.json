@@ -1,0 +1,176 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 37,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            5,
+                            9
+                        ]
+                    ],
+                    "date-time": "2026-05-09T09:46:13Z",
+                    "timestamp": 1778319973745,
+                    "version": "3.51.4"
+                },
+                "reference-count": 0,
+                "publisher": "Oxford University Press (OUP)",
+                "issue": "2",
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "short-container-title": [
+                    "Brain"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            1996
+                        ]
+                    ]
+                },
+                "DOI": "10.1093/brain/119.2.593",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2007,
+                            1,
+                            13
+                        ]
+                    ],
+                    "date-time": "2007-01-13T11:54:21Z",
+                    "timestamp": 1168689261000
+                },
+                "page": "593-609",
+                "source": "Crossref",
+                "is-referenced-by-count": 3328,
+                "title": [
+                    "Action recognition in the premotor cortex"
+                ],
+                "prefix": "10.1093",
+                "volume": "119",
+                "author": [
+                    {
+                        "given": "Vittorio",
+                        "family": "Gallese",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Luciano",
+                        "family": "Fadiga",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Leonardo",
+                        "family": "Fogassi",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Giacomo",
+                        "family": "Rizzolatti",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "286",
+                "container-title": [
+                    "Brain"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "http://academic.oup.com/brain/article-pdf/119/2/593/1084858/119-2-593.pdf",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2017,
+                            8,
+                            22
+                        ]
+                    ],
+                    "date-time": "2017-08-22T16:09:54Z",
+                    "timestamp": 1503418194000
+                },
+                "score": 100.12454,
+                "resource": {
+                    "primary": {
+                        "URL": "https://academic.oup.com/brain/article-lookup/doi/10.1093/brain/119.2.593"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            1996
+                        ]
+                    ]
+                },
+                "references-count": 0,
+                "journal-issue": {
+                    "issue": "2",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                1996
+                            ]
+                        ]
+                    }
+                },
+                "URL": "https://doi.org/10.1093/brain/119.2.593",
+                "ISSN": [
+                    "0006-8950",
+                    "1460-2156"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0006-8950",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1460-2156",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            1996
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

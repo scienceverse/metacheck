@@ -49,10 +49,6 @@ articles:
         - articles/github
 
 reference:
-- title: App
-  des: ~
-  contents:
-  - '`metacheck_app`'
 - title: Reading in Papers
   desc: ~
   contents:

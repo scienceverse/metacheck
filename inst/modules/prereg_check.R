@@ -52,7 +52,7 @@ prereg_check <- function(paper) {
   table_ap <- suppressMessages(
     aspredicted_retrieve(links_ap$text)
   )
-  ap_schema <- ap_schema(table_ap)
+  ap_schema_table <- ap_schema(table_ap)
 
   ## OSF prereg ----
   osf_ids <- links_osf$text |>
@@ -85,7 +85,7 @@ prereg_check <- function(paper) {
   )
   reg_info <- osf_get_all_pages(url)
 
-  osf_schemas <- lapply(seq_along(reg_info$id), \(i) {
+  osf_schema_table <- lapply(seq_along(reg_info$id), \(i) {
     info <- reg_info[i, ]
     template <- info$attributes$registration_supplement
     osf31 <- info$attributes$registration_responses$q25
@@ -113,10 +113,19 @@ prereg_check <- function(paper) {
   })
 
   # make sure all items are not lists
-  prereg_schemas <- c(osf_schemas, list(ap_schema))
+  prereg_schemas <- c(osf_schema_table, list(ap_schema_table))
   ps <- lapply(prereg_schemas, \(x) lapply(x, paste, collapse = "\n\n"))
   prereg_info <- do.call(dplyr::bind_rows, ps)
 
+  if (nrow(prereg_info)) {
+    paper_ids <- data.frame(
+      paper_id = c(links_ap$paper_id, links_osf$paper_id),
+      link = c(links_ap$text, links_osf$text)
+    )
+    paper_ids$link <- gsub("^(https://)?", "https://", paper_ids$link)
+
+    prereg_info <- dplyr::left_join(prereg_info, paper_ids, by = "link")
+  }
 
   # traffic light ----
   tl <- "info"
@@ -148,7 +157,7 @@ prereg_check <- function(paper) {
   }
 
   ## summary output for paperlists ----
-  summary_table <- dplyr::count(prereg_info, id,
+  summary_table <- dplyr::count(prereg_info, paper_id,
     name = "preregistration",
     .drop = FALSE
   )
@@ -199,7 +208,7 @@ prereg_check <- function(paper) {
   )
 }
 
-# referelnces
+# references
 
 vandenAkker2024 <- bibentry(
   bibtype = "Article",

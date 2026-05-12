@@ -1,0 +1,1108 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 6,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            5,
+                            9
+                        ]
+                    ],
+                    "date-time": "2026-05-09T09:46:11Z",
+                    "timestamp": 1778319971279,
+                    "version": "3.51.4"
+                },
+                "reference-count": 89,
+                "publisher": "MIT Press",
+                "issue": "7",
+                "content-domain": {
+                    "domain": [
+                        "direct.mit.edu"
+                    ],
+                    "crossmark-restriction": true
+                },
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2009,
+                            7,
+                            1
+                        ]
+                    ]
+                },
+                "abstract": "<jats:title>Abstract<\/jats:title><jats:p>The discovery of mirror neurons in macaque frontal cortex has sparked a resurgence of interest in motor/embodied theories of cognition. This critical review examines the evidence in support of one of these theories, namely, that mirror neurons provide the basis of action understanding. It is argued that there is no evidence from monkey data that directly tests this theory, and evidence from humans makes a strong case against the position.<\/jats:p>",
+                "DOI": "10.1162/jocn.2009.21189",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2009,
+                            3,
+                            6
+                        ]
+                    ],
+                    "date-time": "2009-03-06T00:12:34Z",
+                    "timestamp": 1236298354000
+                },
+                "page": "1229-1243",
+                "update-policy": "https://doi.org/10.1162/mitpressjournals.corrections.policy",
+                "source": "Crossref",
+                "is-referenced-by-count": 559,
+                "title": [
+                    "Eight Problems for the Mirror Neuron Theory of Action Understanding in Monkeys and Humans"
+                ],
+                "prefix": "10.1162",
+                "volume": "21",
+                "author": [
+                    {
+                        "given": "Gregory",
+                        "family": "Hickok",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "281",
+                "published-online": {
+                    "date-parts": [
+                        [
+                            2009,
+                            7,
+                            1
+                        ]
+                    ]
+                },
+                "reference": [
+                    {
+                        "key": "2021072818415995400_R1",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "556",
+                        "DOI": "10.1126/science.1736359",
+                        "article-title": "Working memory.",
+                        "volume": "255",
+                        "author": "Baddeley",
+                        "year": "1992",
+                        "journal-title": "Science"
+                    },
+                    {
+                        "key": "2021072818415995400_R2",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "84",
+                        "DOI": "10.1016/S0010-9452(77)80057-9",
+                        "article-title": "Phonemic identification defects in aphasia.",
+                        "volume": "13",
+                        "author": "Basso",
+                        "year": "1977",
+                        "journal-title": "Cortex"
+                    },
+                    {
+                        "key": "2021072818415995400_R3",
+                        "volume-title": "An essay towards a new theory of vision.",
+                        "author": "Berkeley",
+                        "year": "1709"
+                    },
+                    {
+                        "key": "2021072818415995400_R4",
+                        "first-page": "913",
+                        "article-title": "The neurobiology of the sound structure of language.",
+                        "volume-title": "The cognitive neurosciences",
+                        "author": "Blumstein",
+                        "year": "1995"
+                    },
+                    {
+                        "key": "2021072818415995400_R5",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "631",
+                        "DOI": "10.1093/brain/111.3.631",
+                        "article-title": "Acute transcortical mixed aphasia. A carotid occlusion syndrome with pial and watershed infarcts.",
+                        "volume": "111",
+                        "author": "Bogousslavsky",
+                        "year": "1988",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "2021072818415995400_R6",
+                        "article-title": "Remarks on the seat of the faculty of articulate language, followed by an observation of aphemia.",
+                        "volume-title": "Some papers on the cerebral cortex.",
+                        "author": "Broca",
+                        "year": "1861/1960"
+                    },
+                    {
+                        "key": "2021072818415995400_R7",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "114",
+                        "DOI": "10.1162/089892904322755601",
+                        "article-title": "Neural circuits involved in the recognition of actions performed by nonconspecifics: An fMRI study.",
+                        "volume": "16",
+                        "author": "Buccino",
+                        "year": "2004",
+                        "journal-title": "Journal of Cognitive Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R8",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "762",
+                        "DOI": "10.1162/jocn.2008.20501",
+                        "article-title": "The search for the phonological store: From loop to convolution.",
+                        "volume": "20",
+                        "author": "Buchsbaum",
+                        "year": "2008",
+                        "journal-title": "Journal of Cognitive Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R9",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "226",
+                        "DOI": "10.1016/j.cogbrainres.2005.05.014",
+                        "article-title": "On beyond mirror neurons: Internal representations subserving imitation and recognition of skilled object-related actions in humans.",
+                        "volume": "25",
+                        "author": "Buxbaum",
+                        "year": "2005",
+                        "journal-title": "Brain Research, Cognitive Brain Research"
+                    },
+                    {
+                        "key": "2021072818415995400_R10",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "293",
+                        "DOI": "10.1212/WNL.45.2.293",
+                        "article-title": "Analysis of lesions by MRI in stroke patients with acoustic–phonetic processing deficits.",
+                        "volume": "45",
+                        "author": "Caplan",
+                        "year": "1995",
+                        "journal-title": "Neurology"
+                    },
+                    {
+                        "key": "2021072818415995400_R11",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "572",
+                        "DOI": "10.1016/0093-934X(76)90048-1",
+                        "article-title": "Dissociation of algorithmic and heuristic processes in sentence comprehension: Evidence from aphasia.",
+                        "volume": "3",
+                        "author": "Caramazza",
+                        "year": "1976",
+                        "journal-title": "Brain and Language"
+                    },
+                    {
+                        "key": "2021072818415995400_R12",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1527",
+                        "DOI": "10.1016/j.cub.2007.08.006",
+                        "article-title": "Sensorimotor learning configures the human mirror system.",
+                        "volume": "17",
+                        "author": "Catmur",
+                        "year": "2007",
+                        "journal-title": "Current Biology"
+                    },
+                    {
+                        "key": "2021072818415995400_R13",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1576",
+                        "DOI": "10.1016/j.cub.2008.08.068",
+                        "article-title": "fMRI adaptation reveals mirror neurons in human inferior parietal cortex.",
+                        "volume": "18",
+                        "author": "Chong",
+                        "year": "2008",
+                        "journal-title": "Current Biology"
+                    },
+                    {
+                        "key": "2021072818415995400_R14",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "531",
+                        "DOI": "10.1056/NEJM199202203260806",
+                        "article-title": "Aphasia.",
+                        "volume": "326",
+                        "author": "Damasio",
+                        "year": "1992",
+                        "journal-title": "New England Journal of Medicine"
+                    },
+                    {
+                        "key": "2021072818415995400_R15",
+                        "first-page": "45",
+                        "article-title": "Neuroanatomical correlates of the aphasias.",
+                        "volume-title": "Acquired aphasia",
+                        "author": "Damasio",
+                        "year": "1991",
+                        "edition": "2nd ed."
+                    },
+                    {
+                        "key": "2021072818415995400_R16",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1763",
+                        "DOI": "10.1093/brain/120.10.1763",
+                        "article-title": "Brain activity during observation of actions: Influence of action content and subject's strategy.",
+                        "volume": "120",
+                        "author": "Decety",
+                        "year": "1997",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "2021072818415995400_R17",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "176",
+                        "DOI": "10.1007/BF00230027",
+                        "article-title": "Understanding motor events: A neurophysiological study.",
+                        "volume": "91",
+                        "author": "di Pellegrino",
+                        "year": "1992",
+                        "journal-title": "Experimental Brain Research"
+                    },
+                    {
+                        "key": "2021072818415995400_R18",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "R956",
+                        "DOI": "10.1016/j.cub.2008.09.007",
+                        "article-title": "Human cortex: Reflections of mirror neurons.",
+                        "volume": "18",
+                        "author": "Dinstein",
+                        "year": "2008",
+                        "journal-title": "Current Biology"
+                    },
+                    {
+                        "key": "2021072818415995400_R19",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1415",
+                        "DOI": "10.1152/jn.00238.2007",
+                        "article-title": "Brain areas selective for both observed and executed movements.",
+                        "volume": "98",
+                        "author": "Dinstein",
+                        "year": "2007",
+                        "journal-title": "Journal of Neurophysiology"
+                    },
+                    {
+                        "key": "2021072818415995400_R20",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "R13",
+                        "DOI": "10.1016/j.cub.2007.11.004",
+                        "article-title": "A mirror up to nature.",
+                        "volume": "18",
+                        "author": "Dinstein",
+                        "year": "2008",
+                        "journal-title": "Current Biology"
+                    },
+                    {
+                        "key": "2021072818415995400_R21",
+                        "first-page": "949",
+                        "article-title": "The neural architecture of language disorders.",
+                        "volume-title": "The new cognitive neurosciences",
+                        "author": "Dronkers",
+                        "year": "2000"
+                    },
+                    {
+                        "key": "2021072818415995400_R22",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "2608",
+                        "DOI": "10.1152/jn.1995.73.6.2608",
+                        "article-title": "Motor facilitation during action observation: A magnetic stimulation study.",
+                        "volume": "73",
+                        "author": "Fadiga",
+                        "year": "1995",
+                        "journal-title": "Journal of Neurophysiology"
+                    },
+                    {
+                        "key": "2021072818415995400_R23",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "212",
+                        "DOI": "10.1162/0898929053124910",
+                        "article-title": "Mirror neurons responding to observation of actions made with tools in monkey ventral premotor cortex.",
+                        "volume": "17",
+                        "author": "Ferrari",
+                        "year": "2005",
+                        "journal-title": "Journal of Cognitive Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R24",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "e302",
+                        "DOI": "10.1371/journal.pbio.0040302",
+                        "article-title": "Neonatal imitation in rhesus macaques.",
+                        "volume": "4",
+                        "author": "Ferrari",
+                        "year": "2006",
+                        "journal-title": "PLoS Biology"
+                    },
+                    {
+                        "key": "2021072818415995400_R25",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "662",
+                        "DOI": "10.1126/science.1106138",
+                        "article-title": "Parietal lobe: From action organization to intention understanding.",
+                        "volume": "308",
+                        "author": "Fogassi",
+                        "year": "2005",
+                        "journal-title": "Science"
+                    },
+                    {
+                        "key": "2021072818415995400_R26",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "571",
+                        "DOI": "10.1093/brain/124.3.571",
+                        "article-title": "Cortical mechanism for the visual guidance of hand grasping movements in the monkey: A reversible inactivation study.",
+                        "volume": "124",
+                        "author": "Fogassi",
+                        "year": "2001",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "2021072818415995400_R27",
+                        "volume-title": "Memory in the cerebral cortex.",
+                        "author": "Fuster",
+                        "year": "1995"
+                    },
+                    {
+                        "key": "2021072818415995400_R28",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "451",
+                        "DOI": "10.1016/0093-934X(76)90039-0",
+                        "article-title": "Comprehension of symbolic gestures in aphasia.",
+                        "volume": "3",
+                        "author": "Gainotti",
+                        "year": "1976",
+                        "journal-title": "Brain and Language"
+                    },
+                    {
+                        "key": "2021072818415995400_R29",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "361",
+                        "DOI": "10.3758/BF03193857",
+                        "article-title": "The motor theory of speech perception reviewed.",
+                        "volume": "13",
+                        "author": "Galantucci",
+                        "year": "2006",
+                        "journal-title": "Psychonomic Bulletin & Review"
+                    },
+                    {
+                        "key": "2021072818415995400_R30",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "593",
+                        "DOI": "10.1093/brain/119.2.593",
+                        "article-title": "Action recognition in the premotor cortex.",
+                        "volume": "119",
+                        "author": "Gallese",
+                        "year": "1996",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "2021072818415995400_R31",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "247",
+                        "DOI": "10.1093/oso/9780198510697.003.0017",
+                        "article-title": "Action representation and the inferior parietal lobule.",
+                        "volume-title": "Attention & performance: XIX. Common mechanisms in perception and action",
+                        "author": "Gallese",
+                        "year": "2002"
+                    },
+                    {
+                        "key": "2021072818415995400_R32",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "455",
+                        "DOI": "10.1080/02643290442000310",
+                        "article-title": "The brain's concepts: The role of the sensory–motor system in conceptual knowledge.",
+                        "volume": "22",
+                        "author": "Gallese",
+                        "year": "2005",
+                        "journal-title": "Cognitive Neuropsychology"
+                    },
+                    {
+                        "key": "2021072818415995400_R33",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "327",
+                        "DOI": "10.1016/0028-3932(68)90005-5",
+                        "article-title": "Isolation of the speech area.",
+                        "volume": "6",
+                        "author": "Geschwind",
+                        "year": "1968",
+                        "journal-title": "Neuropsychologia"
+                    },
+                    {
+                        "key": "2021072818415995400_R34",
+                        "volume-title": "Understanding aphasia.",
+                        "author": "Goodglass",
+                        "year": "1993"
+                    },
+                    {
+                        "key": "2021072818415995400_R35",
+                        "volume-title": "The assessment of aphasia and related disorders",
+                        "author": "Goodglass",
+                        "year": "2001",
+                        "edition": "(3rd ed.)"
+                    },
+                    {
+                        "key": "2021072818415995400_R36",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "553",
+                        "DOI": "10.1080/026432998381023",
+                        "article-title": "Top–down effect of strategy on the perception of human biological motion: A PET investigation.",
+                        "volume": "15",
+                        "author": "Grezes",
+                        "year": "1998",
+                        "journal-title": "Cognitive Neuropsychology"
+                    },
+                    {
+                        "key": "2021072818415995400_R37",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "342",
+                        "DOI": "10.1212/WNL.32.4.342",
+                        "article-title": "Two forms of ideomotor apraxia.",
+                        "volume": "32",
+                        "author": "Heilman",
+                        "year": "1982",
+                        "journal-title": "Neurology"
+                    },
+                    {
+                        "key": "2021072818415995400_R38",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "673",
+                        "DOI": "10.1162/089892903322307393",
+                        "article-title": "Auditory–motor interaction revealed by fMRI: Speech, music, and working memory in area Spt.",
+                        "volume": "15",
+                        "author": "Hickok",
+                        "year": "2003",
+                        "journal-title": "Journal of Cognitive Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R39",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "131",
+                        "DOI": "10.1016/S1364-6613(00)01463-7",
+                        "article-title": "Towards a functional neuroanatomy of speech perception.",
+                        "volume": "4",
+                        "author": "Hickok",
+                        "year": "2000",
+                        "journal-title": "Trends in Cognitive Sciences"
+                    },
+                    {
+                        "key": "2021072818415995400_R40",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "67",
+                        "DOI": "10.1016/j.cognition.2003.10.011",
+                        "article-title": "Dorsal and ventral streams: A framework for understanding aspects of the functional anatomy of language.",
+                        "volume": "92",
+                        "author": "Hickok",
+                        "year": "2004",
+                        "journal-title": "Cognition"
+                    },
+                    {
+                        "key": "2021072818415995400_R41",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "393",
+                        "DOI": "10.1038/nrn2113",
+                        "article-title": "The cortical organization of speech processing.",
+                        "volume": "8",
+                        "author": "Hickok",
+                        "year": "2007",
+                        "journal-title": "Nature Reviews Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R42",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "2526",
+                        "DOI": "10.1126/science.286.5449.2526",
+                        "article-title": "Cortical mechanisms of human imitation.",
+                        "volume": "286",
+                        "author": "Iacoboni",
+                        "year": "1999",
+                        "journal-title": "Science"
+                    },
+                    {
+                        "key": "2021072818415995400_R43",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "846",
+                        "DOI": "10.1126/science.1070311",
+                        "article-title": "Hearing sounds, understanding actions: Action representation in mirror neurons.",
+                        "volume": "297",
+                        "author": "Kohler",
+                        "year": "2002",
+                        "journal-title": "Science"
+                    },
+                    {
+                        "key": "2021072818415995400_R44",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "460",
+                        "DOI": "10.1152/jn.00248.2002",
+                        "article-title": "Modulation of cortical activity during different imitative behaviors.",
+                        "volume": "89",
+                        "author": "Koski",
+                        "year": "2003",
+                        "journal-title": "Journal of Neurophysiology"
+                    },
+                    {
+                        "key": "2021072818415995400_R45",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "847",
+                        "DOI": "10.1093/cercor/12.8.847",
+                        "article-title": "Modulation of motor and premotor activity during imitation of target-directed actions.",
+                        "volume": "12",
+                        "author": "Koski",
+                        "year": "2002",
+                        "journal-title": "Cerebral Cortex"
+                    },
+                    {
+                        "key": "2021072818415995400_R46",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "386",
+                        "DOI": "10.1007/s002210050412",
+                        "article-title": "The preparation, execution and suppression of copied movements in the human brain.",
+                        "volume": "120",
+                        "author": "Krams",
+                        "year": "1998",
+                        "journal-title": "Experimental Brain Research"
+                    },
+                    {
+                        "key": "2021072818415995400_R47",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "431",
+                        "DOI": "10.1037/h0020279",
+                        "article-title": "Perception of the speech code.",
+                        "volume": "74",
+                        "author": "Liberman",
+                        "year": "1967",
+                        "journal-title": "Psychological Review"
+                    },
+                    {
+                        "key": "2021072818415995400_R48",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1",
+                        "DOI": "10.1016/0010-0277(85)90021-6",
+                        "article-title": "The motor theory of speech perception revised.",
+                        "volume": "21",
+                        "author": "Liberman",
+                        "year": "1985",
+                        "journal-title": "Cognition"
+                    },
+                    {
+                        "key": "2021072818415995400_R49",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "480",
+                        "DOI": "10.1080/02643290442000446",
+                        "article-title": "The orchestration of the sensory–motor systems: Clues from neuropsychology.",
+                        "volume": "22",
+                        "author": "Mahon",
+                        "year": "2005",
+                        "journal-title": "Cognitive Neuropsychology"
+                    },
+                    {
+                        "key": "2021072818415995400_R50",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "59",
+                        "DOI": "10.1016/j.jphysparis.2008.03.004",
+                        "article-title": "A critical look at the embodied cognition hypothesis and a new proposal for grounding conceptual content.",
+                        "volume": "102",
+                        "author": "Mahon",
+                        "year": "2008",
+                        "journal-title": "Journal of Physiology (Paris)"
+                    },
+                    {
+                        "key": "2021072818415995400_R51",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "159",
+                        "DOI": "10.1016/0093-934X(80)90117-0",
+                        "article-title": "Some aspects of phonological impairment in aphasia.",
+                        "volume": "11",
+                        "author": "Miceli",
+                        "year": "1980",
+                        "journal-title": "Brain and Language"
+                    },
+                    {
+                        "key": "2021072818415995400_R52",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "884",
+                        "DOI": "10.1044/1092-4388(2005/061)",
+                        "article-title": "Exploring the processing continuum of single-word comprehension in aphasia.",
+                        "volume": "48",
+                        "author": "Moineau",
+                        "year": "2005",
+                        "journal-title": "Journal of Speech, Language, and Hearing Research"
+                    },
+                    {
+                        "key": "2021072818415995400_R53",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "189",
+                        "DOI": "10.1016/j.neucli.2008.02.005",
+                        "article-title": "What is “mirror” in the premotor cortex? A review.",
+                        "volume": "38",
+                        "author": "Morin",
+                        "year": "2008",
+                        "journal-title": "Neurophysiologie Clinique"
+                    },
+                    {
+                        "key": "2021072818415995400_R54",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "795",
+                        "DOI": "10.1080/02643290701707412",
+                        "article-title": "What is the role of motor simulation in action and object recognition? Evidence from apraxia.",
+                        "volume": "24",
+                        "author": "Negri",
+                        "year": "2007",
+                        "journal-title": "Cognitive Neuropsychology"
+                    },
+                    {
+                        "key": "2021072818415995400_R55",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "332",
+                        "DOI": "10.1126/science.1115593",
+                        "article-title": "Observing others: Multiple action representation in the frontal lobe.",
+                        "volume": "310",
+                        "author": "Nelissen",
+                        "year": "2005",
+                        "journal-title": "Science"
+                    },
+                    {
+                        "key": "2021072818415995400_R56",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "190",
+                        "DOI": "10.1016/j.cogbrainres.2005.01.014",
+                        "article-title": "EEG evidence for mirror neuron dysfunction in autism spectrum disorders.",
+                        "volume": "24",
+                        "author": "Oberman",
+                        "year": "2005",
+                        "journal-title": "Cognitive Brain Research"
+                    },
+                    {
+                        "key": "2021072818415995400_R57",
+                        "article-title": "Neural organization of linguistic short-term memory is sensory modality-dependent: Evidence from signed and spoken language.",
+                        "author": "Pa",
+                        "year": "",
+                        "journal-title": "Journal of Cognitive Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R58",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "97",
+                        "DOI": "10.1038/nrn1603",
+                        "article-title": "Working memory in primate sensory systems.",
+                        "volume": "6",
+                        "author": "Pasternak",
+                        "year": "2005",
+                        "journal-title": "Nature Reviews Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R59",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "3030",
+                        "DOI": "10.1523/JNEUROSCI.5748-07.2008",
+                        "article-title": "Neural underpinnings of gesture discrimination in patients with limb apraxia.",
+                        "volume": "28",
+                        "author": "Pazzaglia",
+                        "year": "2008",
+                        "journal-title": "Journal of Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R60",
+                        "first-page": "163",
+                        "article-title": "Understanding the visual appearance and consequence of hand actions.",
+                        "volume-title": "Vision and action: The control of grasping",
+                        "author": "Perrett",
+                        "year": "1990"
+                    },
+                    {
+                        "key": "2021072818415995400_R61",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "153",
+                        "DOI": "10.1016/0166-4328(85)90089-0",
+                        "article-title": "Visual analysis of body movements by neurones in the temporal cortex of the macaque monkey: A preliminary report.",
+                        "volume": "16",
+                        "author": "Perrett",
+                        "year": "1985",
+                        "journal-title": "Behavioural Brain Research"
+                    },
+                    {
+                        "key": "2021072818415995400_R62",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "83",
+                        "DOI": "10.1037/h0071192",
+                        "article-title": "The place of movement in consciousness.",
+                        "volume": "18",
+                        "author": "Pillsbury",
+                        "year": "1911",
+                        "journal-title": "Psychological Review"
+                    },
+                    {
+                        "key": "2021072818415995400_R63",
+                        "volume-title": "Learnability and cognition: The acquisition of argument structure.",
+                        "author": "Pinker",
+                        "year": "1989"
+                    },
+                    {
+                        "key": "2021072818415995400_R64",
+                        "author": "Pinker",
+                        "year": "2007",
+                        "journal-title": "The stuff of thought: Language as a window into human nature."
+                    },
+                    {
+                        "key": "2021072818415995400_R65",
+                        "doi-asserted-by": "crossref",
+                        "DOI": "10.7551/mitpress/7206.001.0001",
+                        "volume-title": "What the hands reveal about the brain.",
+                        "author": "Poizner",
+                        "year": "1987"
+                    },
+                    {
+                        "key": "2021072818415995400_R66",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "23",
+                        "DOI": "10.1016/j.neuroscience.2005.06.005",
+                        "article-title": "Working memory as an emergent property of the mind and brain.",
+                        "volume": "139",
+                        "author": "Postle",
+                        "year": "2006",
+                        "journal-title": "Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R67",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "188",
+                        "DOI": "10.1016/S0166-2236(98)01260-0",
+                        "article-title": "Language within our grasp.",
+                        "volume": "21",
+                        "author": "Rizzolatti",
+                        "year": "1998",
+                        "journal-title": "Trends in Neurosciences"
+                    },
+                    {
+                        "key": "2021072818415995400_R68",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "491",
+                        "DOI": "10.1007/BF00248742",
+                        "article-title": "Functional organization of inferior area 6 in the macaque monkey: II. Area F5 and the control of distal movements.",
+                        "volume": "71",
+                        "author": "Rizzolatti",
+                        "year": "1988",
+                        "journal-title": "Experimental Brain Research"
+                    },
+                    {
+                        "key": "2021072818415995400_R69",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "169",
+                        "DOI": "10.1146/annurev.neuro.27.070203.144230",
+                        "article-title": "The mirror-neuron system.",
+                        "volume": "27",
+                        "author": "Rizzolatti",
+                        "year": "2004",
+                        "journal-title": "Annual Review of Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R70",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "246",
+                        "DOI": "10.1007/BF00227301",
+                        "article-title": "Localization of grasp representations in humans by PET: 1. Observation versus execution.",
+                        "volume": "111",
+                        "author": "Rizzolatti",
+                        "year": "1996",
+                        "journal-title": "Experimental Brain Research"
+                    },
+                    {
+                        "key": "2021072818415995400_R71",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "661",
+                        "DOI": "10.1038/35090060",
+                        "article-title": "Neurophysiological mechanisms underlying the understanding and imitation of action.",
+                        "volume": "2",
+                        "author": "Rizzolatti",
+                        "year": "2001",
+                        "journal-title": "Nature Reviews Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R72",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "709",
+                        "DOI": "10.1017/S0140525X03000165",
+                        "article-title": "Working memory retention systems: A state of activated long-term memory.",
+                        "volume": "26",
+                        "author": "Ruchkin",
+                        "year": "2003",
+                        "journal-title": "Behavioral and Brain Sciences"
+                    },
+                    {
+                        "key": "2021072818415995400_R73",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1788",
+                        "DOI": "10.1016/j.neuropsychologia.2004.04.016",
+                        "article-title": "Action comprehension in aphasia: Linguistic and non-linguistic deficits and their lesion correlates.",
+                        "volume": "42",
+                        "author": "Saygin",
+                        "year": "2004",
+                        "journal-title": "Neuropsychologia"
+                    },
+                    {
+                        "key": "2021072818415995400_R74",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "77",
+                        "DOI": "10.1007/978-3-642-69382-3_6",
+                        "article-title": "Motor theories of cognitive structure: A historical review.",
+                        "volume-title": "Cognition and motor processes",
+                        "author": "Scheerer",
+                        "year": "1984"
+                    },
+                    {
+                        "key": "2021072818415995400_R75",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "638",
+                        "DOI": "10.1037/0894-4105.18.4.638",
+                        "article-title": "Motor areas beyond motor performance: Deficits in serial prediction following ventrolateral premotor lesions.",
+                        "volume": "18",
+                        "author": "Schubotz",
+                        "year": "2004",
+                        "journal-title": "Neuropsychology"
+                    },
+                    {
+                        "key": "2021072818415995400_R76",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "5467",
+                        "DOI": "10.1523/JNEUROSCI.1169-04.2004",
+                        "article-title": "Sequences of abstract nonbiological stimuli share ventral premotor cortex with action observation and imagery.",
+                        "volume": "24",
+                        "author": "Schubotz",
+                        "year": "2004",
+                        "journal-title": "Journal of Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R77",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1111",
+                        "DOI": "10.1093/brain/awm003",
+                        "article-title": "Neuropsychological evidence for a strategic control of multiple routes in imitation.",
+                        "volume": "130",
+                        "author": "Tessari",
+                        "year": "2007",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "2021072818415995400_R78",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "13241",
+                        "DOI": "10.1523/JNEUROSCI.2895-07.2007",
+                        "article-title": "Congruent activity during action and action observation in motor cortex.",
+                        "volume": "27",
+                        "author": "Tkach",
+                        "year": "2007",
+                        "journal-title": "Journal of Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R79",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "155",
+                        "DOI": "10.1016/S0896-6273(01)00337-3",
+                        "article-title": "I know what you are doing. A neurophysiological study.",
+                        "volume": "31",
+                        "author": "Umiltà",
+                        "year": "2001",
+                        "journal-title": "Neuron"
+                    },
+                    {
+                        "key": "2021072818415995400_R80",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "8023",
+                        "DOI": "10.1523/JNEUROSCI.0789-07.2007",
+                        "article-title": "Transcranial magnetic stimulation reveals two cortical pathways for visual body processing.",
+                        "volume": "27",
+                        "author": "Urgesi",
+                        "year": "2007",
+                        "journal-title": "Journal of Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R81",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "30",
+                        "DOI": "10.1038/nn1815",
+                        "article-title": "Representation of body identity and body actions in extrastriate body area and ventral premotor cortex.",
+                        "volume": "10",
+                        "author": "Urgesi",
+                        "year": "2007",
+                        "journal-title": "Nature Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R82",
+                        "article-title": "Do monkeys ape? Ten years after.",
+                        "author": "Visalberghi",
+                        "year": "2001",
+                        "journal-title": "Imitation in animals and artifacts."
+                    },
+                    {
+                        "key": "2021072818415995400_R83",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "376",
+                        "DOI": "10.1037/h0072419",
+                        "article-title": "The function of incipient motor processes.",
+                        "volume": "21",
+                        "author": "Washburn",
+                        "year": "1914",
+                        "journal-title": "Psychological Review"
+                    },
+                    {
+                        "key": "2021072818415995400_R84",
+                        "author": "Washburn",
+                        "year": "1916",
+                        "journal-title": "Movement and mental imagery: Outlines of a motor theory of the complexer mental processes."
+                    },
+                    {
+                        "key": "2021072818415995400_R85",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "158",
+                        "DOI": "10.1037/h0074428",
+                        "article-title": "Psychology as the behaviorist views it.",
+                        "volume": "20",
+                        "author": "Watson",
+                        "year": "1913",
+                        "journal-title": "Psychological Review"
+                    },
+                    {
+                        "key": "2021072818415995400_R86",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "385",
+                        "DOI": "10.1093/brain/107.2.385",
+                        "article-title": "A neurophysiological study of the premotor cortex in the rhesus monkey.",
+                        "volume": "107",
+                        "author": "Weinrich",
+                        "year": "1984",
+                        "journal-title": "Brain"
+                    },
+                    {
+                        "key": "2021072818415995400_R87",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "44",
+                        "DOI": "10.3758/BF03196138",
+                        "article-title": "The case for sensorimotor coding in working memory.",
+                        "volume": "8",
+                        "author": "Wilson",
+                        "year": "2001",
+                        "journal-title": "Psychonomic Bulletin & Review"
+                    },
+                    {
+                        "key": "2021072818415995400_R88",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "701",
+                        "DOI": "10.1038/nn1263",
+                        "article-title": "Listening to speech activates motor areas involved in speech production.",
+                        "volume": "7",
+                        "author": "Wilson",
+                        "year": "2004",
+                        "journal-title": "Nature Neuroscience"
+                    },
+                    {
+                        "key": "2021072818415995400_R89",
+                        "first-page": "331",
+                        "article-title": "Set-related neuronal activity in the premotor cortex of rhesus monkeys: Effects of changes in motor set.",
+                        "volume": "223",
+                        "author": "Wise",
+                        "year": "1985",
+                        "journal-title": "Proceedings of the Royal Society of London, Series B, Biological Sciences"
+                    }
+                ],
+                "container-title": [
+                    "Journal of Cognitive Neuroscience"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "http://direct.mit.edu/jocn/article-pdf/21/7/1229/1937789/jocn.2009.21189.pdf",
+                        "content-type": "application/pdf",
+                        "content-version": "vor",
+                        "intended-application": "syndication"
+                    },
+                    {
+                        "URL": "http://direct.mit.edu/jocn/article-pdf/21/7/1229/1937789/jocn.2009.21189.pdf",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2025,
+                            2,
+                            8
+                        ]
+                    ],
+                    "date-time": "2025-02-08T01:39:09Z",
+                    "timestamp": 1738978749000
+                },
+                "score": 89.01723,
+                "resource": {
+                    "primary": {
+                        "URL": "https://direct.mit.edu/jocn/article/21/7/1229/4778/Eight-Problems-for-the-Mirror-Neuron-Theory-of"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2009,
+                            7,
+                            1
+                        ]
+                    ]
+                },
+                "references-count": 89,
+                "journal-issue": {
+                    "issue": "7",
+                    "published-online": {
+                        "date-parts": [
+                            [
+                                2009,
+                                7,
+                                1
+                            ]
+                        ]
+                    },
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2009,
+                                7,
+                                1
+                            ]
+                        ]
+                    }
+                },
+                "URL": "https://doi.org/10.1162/jocn.2009.21189",
+                "ISSN": [
+                    "0898-929X",
+                    "1530-8898"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0898-929X",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1530-8898",
+                        "type": "electronic"
+                    }
+                ],
+                "published-other": {
+                    "date-parts": [
+                        [
+                            2009,
+                            7
+                        ]
+                    ]
+                },
+                "published": {
+                    "date-parts": [
+                        [
+                            2009,
+                            7,
+                            1
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

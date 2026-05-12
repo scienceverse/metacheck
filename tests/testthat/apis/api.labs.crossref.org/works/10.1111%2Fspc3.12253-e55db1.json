@@ -1,0 +1,562 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    3,
+                    26
+                ]
+            ],
+            "date-time": "2026-03-26T16:44:01Z",
+            "timestamp": 1774543441055,
+            "version": "3.50.1"
+        },
+        "reference-count": 61,
+        "publisher": "Wiley",
+        "issue": "6",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2016,
+                            6,
+                            7
+                        ]
+                    ],
+                    "date-time": "2016-06-07T00:00:00Z",
+                    "timestamp": 1465257600000
+                },
+                "content-version": "vor",
+                "delay-in-days": 6,
+                "URL": "http://onlinelibrary.wiley.com/termsAndConditions#vor"
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "compass.onlinelibrary.wiley.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Social &amp;amp; Personality Psych"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2016,
+                    6
+                ]
+            ]
+        },
+        "abstract": "<jats:title>Abstract<\/jats:title>\n                  <jats:p>Envy is the pain that arises from the good fortune of others. Recent research identified two subtypes of envy, benign and malicious envy. Malicious envy is the envy subtype with action tendencies aimed to pull down the envied person from their superior position. Benign envy is also a frustrating experience, but activates action tendencies aimed at improving oneself. This article provides an overview of the empirical support for making this distinction in envy subtypes. It then discusses the benefits of a subtype approach to envy, with the main advantages of distinguishing benign and malicious envy being that it (a) provides researchers with the language to be clear in how they conceptualize envy and (b) allows novel predictions. A next section provides a response to some criticism on making this distinction. Finally, I conclude with a section on how envy in general, and benign and malicious envy in particular, could be measured.<\/jats:p>",
+        "DOI": "10.1111/spc3.12253",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2016,
+                    6,
+                    7
+                ]
+            ],
+            "date-time": "2016-06-07T21:50:45Z",
+            "timestamp": 1465336245000
+        },
+        "page": "337-349",
+        "update-policy": "https://doi.org/10.1002/crossmark_policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 134,
+        "title": [
+            "Envy and Its Consequences: Why It Is Useful to Distinguish between Benign and Malicious Envy"
+        ],
+        "prefix": "10.1111",
+        "volume": "10",
+        "author": [
+            {
+                "given": "Niels",
+                "family": "van de Ven",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "Tilburg University"
+                    }
+                ]
+            }
+        ],
+        "member": "311",
+        "published-online": {
+            "date-parts": [
+                [
+                    2016,
+                    6,
+                    7
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "e_1_2_8_2_1",
+                "volume-title": "The rhetoric and the poetics of Aristotle",
+                "author": "Aristotle",
+                "year": "1954"
+            },
+            {
+                "key": "e_1_2_8_3_1",
+                "volume-title": "Emotion and personality",
+                "author": "Arnold M. B.",
+                "year": "1960"
+            },
+            {
+                "key": "e_1_2_8_4_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s13162-011-0018-x"
+            },
+            {
+                "key": "e_1_2_8_5_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1559-1816.2009.00519.x"
+            },
+            {
+                "key": "e_1_2_8_6_1",
+                "volume-title": "Envy at work and in organizations: Research, theory, and applications",
+                "author": "Cohen‐Charash Y."
+            },
+            {
+                "key": "e_1_2_8_7_1",
+                "first-page": "91",
+                "volume-title": "Handbook of emotions",
+                "author": "Cosmides L.",
+                "year": "2000"
+            },
+            {
+                "key": "e_1_2_8_8_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2014.05.007"
+            },
+            {
+                "key": "e_1_2_8_9_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0023523"
+            },
+            {
+                "key": "e_1_2_8_10_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.paid.2012.03.029"
+            },
+            {
+                "key": "e_1_2_8_11_1",
+                "first-page": "20",
+                "article-title": "The hidden cost of microtransactions: Buying in‐game advantages in online games decreases a player's status",
+                "volume": "10",
+                "author": "Evers E. R. K.",
+                "year": "2015",
+                "journal-title": "International Journal of Internet Science"
+            },
+            {
+                "key": "e_1_2_8_12_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.125.3.307"
+            },
+            {
+                "key": "e_1_2_8_13_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000102"
+            },
+            {
+                "key": "e_1_2_8_14_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/014616720202800708"
+            },
+            {
+                "key": "e_1_2_8_15_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/001872675400700202"
+            },
+            {
+                "key": "e_1_2_8_16_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037//0022-3514.82.6.878"
+            },
+            {
+                "key": "e_1_2_8_17_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1086/201267"
+            },
+            {
+                "key": "e_1_2_8_18_1",
+                "volume-title": "Luxury fever: Why money fails to satisfy in an era of excess",
+                "author": "Frank R. H.",
+                "year": "1999"
+            },
+            {
+                "key": "e_1_2_8_19_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0003-066X.56.3.218"
+            },
+            {
+                "key": "e_1_2_8_20_1",
+                "volume-title": "The emotions",
+                "author": "Frijda N. H.",
+                "year": "1986"
+            },
+            {
+                "key": "e_1_2_8_21_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1022818803399"
+            },
+            {
+                "key": "e_1_2_8_22_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0008"
+            },
+            {
+                "key": "e_1_2_8_23_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1754-9004.2012.00445.x"
+            },
+            {
+                "key": "e_1_2_8_24_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167214564959"
+            },
+            {
+                "key": "e_1_2_8_25_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/pspi0000026"
+            },
+            {
+                "key": "e_1_2_8_26_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0006"
+            },
+            {
+                "key": "e_1_2_8_27_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.chb.2015.04.064"
+            },
+            {
+                "key": "e_1_2_8_28_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699930600814735"
+            },
+            {
+                "key": "e_1_2_8_29_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.tourman.2015.01.003"
+            },
+            {
+                "key": "e_1_2_8_30_1",
+                "first-page": "3",
+                "volume-title": "The psychology of jealousy and envy",
+                "author": "Parrott W. G.",
+                "year": "1991"
+            },
+            {
+                "key": "e_1_2_8_31_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.64.6.906"
+            },
+            {
+                "key": "e_1_2_8_32_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.4159/9780674042605"
+            },
+            {
+                "key": "e_1_2_8_33_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0020965"
+            },
+            {
+                "key": "e_1_2_8_34_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999396380240"
+            },
+            {
+                "key": "e_1_2_8_35_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.67.2.206"
+            },
+            {
+                "key": "e_1_2_8_36_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.47.4.780"
+            },
+            {
+                "key": "e_1_2_8_37_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1521/jscp.1991.10.4.395"
+            },
+            {
+                "key": "e_1_2_8_38_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780199897728.001.0001"
+            },
+            {
+                "key": "e_1_2_8_39_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2004.01.001"
+            },
+            {
+                "key": "e_1_2_8_40_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2014.903230"
+            },
+            {
+                "key": "e_1_2_8_41_1",
+                "volume-title": "Envy: A theory of social behavior",
+                "author": "Schoeck H.",
+                "year": "1969"
+            },
+            {
+                "key": "e_1_2_8_42_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/978-1-4615-4237-7_10"
+            },
+            {
+                "key": "e_1_2_8_43_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780195327953.001.0001"
+            },
+            {
+                "key": "e_1_2_8_44_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.133.1.46"
+            },
+            {
+                "key": "e_1_2_8_45_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/01461672992511008"
+            },
+            {
+                "key": "e_1_2_8_46_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167296222005"
+            },
+            {
+                "key": "e_1_2_8_47_1",
+                "volume-title": "Envy at work and in organizations: Research, theory, and applications",
+                "author": "Sterling C."
+            },
+            {
+                "key": "e_1_2_8_48_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amr.2009.0484"
+            },
+            {
+                "key": "e_1_2_8_49_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2015.1087972"
+            },
+            {
+                "key": "e_1_2_8_50_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2014.961903"
+            },
+            {
+                "key": "e_1_2_8_51_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2014.957657"
+            },
+            {
+                "key": "e_1_2_8_52_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0015669"
+            },
+            {
+                "key": "e_1_2_8_53_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0956797610385352"
+            },
+            {
+                "key": "e_1_2_8_54_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1086/657239"
+            },
+            {
+                "key": "e_1_2_8_55_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167211400421"
+            },
+            {
+                "key": "e_1_2_8_56_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s11031-011-9235-8"
+            },
+            {
+                "key": "e_1_2_8_57_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1022823221146"
+            },
+            {
+                "key": "e_1_2_8_58_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.6.1.156"
+            },
+            {
+                "key": "e_1_2_8_59_1",
+                "author": "Veblen T",
+                "year": "1899",
+                "journal-title": "The theory of the leisure class"
+            },
+            {
+                "key": "e_1_2_8_60_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10804-006-9005-0"
+            },
+            {
+                "key": "e_1_2_8_61_1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/00213624.2015.1042796"
+            },
+            {
+                "issue": "64",
+                "key": "e_1_2_8_62_1",
+                "first-page": "39",
+                "article-title": "Are people willing to pay to reduce others' income?",
+                "volume": "63",
+                "author": "Zizzo D. J.",
+                "year": "2001",
+                "journal-title": "Annales d'Economie et de Statistique"
+            }
+        ],
+        "container-title": [
+            "Social and Personality Psychology Compass"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1111%2Fspc3.12253",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://compass.onlinelibrary.wiley.com/doi/pdf/10.1111/spc3.12253",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2025,
+                    11,
+                    5
+                ]
+            ],
+            "date-time": "2025-11-05T08:39:58Z",
+            "timestamp": 1762331998000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://compass.onlinelibrary.wiley.com/doi/10.1111/spc3.12253"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2016,
+                    6
+                ]
+            ]
+        },
+        "references-count": 61,
+        "journal-issue": {
+            "issue": "6",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2016,
+                        6
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1111/spc3.12253"
+        ],
+        "URL": "https://doi.org/10.1111/spc3.12253",
+        "archive": [
+            "Portico"
+        ],
+        "relation": {
+
+        },
+        "ISSN": [
+            "1751-9004",
+            "1751-9004"
+        ],
+        "issn-type": [
+            {
+                "value": "1751-9004",
+                "type": "print"
+            },
+            {
+                "value": "1751-9004",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2016,
+                    6
+                ]
+            ]
+        },
+        "assertion": [
+            {
+                "value": "2015-08-10",
+                "order": 0,
+                "name": "received",
+                "label": "Received",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            },
+            {
+                "value": "2016-02-17",
+                "order": 2,
+                "name": "accepted",
+                "label": "Accepted",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            },
+            {
+                "value": "2016-06-07",
+                "order": 3,
+                "name": "published",
+                "label": "Published",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            }
+        ]
+    }
+}

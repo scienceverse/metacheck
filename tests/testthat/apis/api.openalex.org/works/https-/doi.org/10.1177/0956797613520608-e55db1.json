@@ -1,0 +1,1815 @@
+{
+    "id": "https://openalex.org/W2134722098",
+    "doi": "https://doi.org/10.1177/0956797613520608",
+    "title": "Continuous Theta-Burst Stimulation Demonstrates a Causal Role of Premotor Homunculus in Action Understanding",
+    "display_name": "Continuous Theta-Burst Stimulation Demonstrates a Causal Role of Premotor Homunculus in Action Understanding",
+    "publication_year": 2014,
+    "publication_date": "2014-02-18",
+    "ids": {
+        "openalex": "https://openalex.org/W2134722098",
+        "doi": "https://doi.org/10.1177/0956797613520608",
+        "mag": "2134722098",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/24549297"
+    },
+    "language": "en",
+    "primary_location": {
+        "id": "doi:10.1177/0956797613520608",
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.1177/0956797613520608",
+        "pdf_url": "https://journals.sagepub.com/doi/pdf/10.1177/0956797613520608",
+        "source": {
+            "id": "https://openalex.org/S58854535",
+            "display_name": "Psychological Science",
+            "issn_l": "0956-7976",
+            "issn": [
+                "0956-7976",
+                "1467-9280"
+            ],
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": true,
+            "host_organization": "https://openalex.org/P4310320017",
+            "host_organization_name": "SAGE Publishing",
+            "host_organization_lineage": [
+                "https://openalex.org/P4310320017"
+            ],
+            "host_organization_lineage_names": [
+                "SAGE Publishing"
+            ],
+            "type": "journal"
+        },
+        "license": "cc-by",
+        "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "Psychological Science",
+        "raw_type": "journal-article"
+    },
+    "type": "article",
+    "indexed_in": [
+        "crossref",
+        "pubmed"
+    ],
+    "open_access": {
+        "is_oa": true,
+        "oa_status": "hybrid",
+        "oa_url": "https://journals.sagepub.com/doi/pdf/10.1177/0956797613520608",
+        "any_repository_has_fulltext": true
+    },
+    "authorships": [
+        {
+            "author_position": "first",
+            "author": {
+                "id": "https://openalex.org/A5042184721",
+                "display_name": "John Michael",
+                "orcid": "https://orcid.org/0000-0003-4516-196X"
+            },
+            "institutions": [
+                {
+                    "id": "https://openalex.org/I204337017",
+                    "display_name": "Aarhus University",
+                    "ror": "https://ror.org/01aj84f44",
+                    "country_code": "DK",
+                    "type": "education",
+                    "lineage": [
+                        "https://openalex.org/I204337017"
+                    ]
+                }
+            ],
+            "countries": [
+                "DK"
+            ],
+            "is_corresponding": true,
+            "raw_author_name": "John Michael",
+            "raw_affiliation_strings": [
+                "Center for Subjectivity Research, Copenhagen University",
+                "Interacting Minds Centre, Aarhus University"
+            ],
+            "raw_orcid": null,
+            "affiliations": [
+                {
+                    "raw_affiliation_string": "Center for Subjectivity Research, Copenhagen University",
+                    "institution_ids": [
+
+                    ]
+                },
+                {
+                    "raw_affiliation_string": "Interacting Minds Centre, Aarhus University",
+                    "institution_ids": [
+                        "https://openalex.org/I204337017"
+                    ]
+                }
+            ]
+        },
+        {
+            "author_position": "middle",
+            "author": {
+                "id": "https://openalex.org/A5051810580",
+                "display_name": "Kristian Sandberg",
+                "orcid": "https://orcid.org/0000-0001-6936-5487"
+            },
+            "institutions": [
+                {
+                    "id": "https://openalex.org/I204337017",
+                    "display_name": "Aarhus University",
+                    "ror": "https://ror.org/01aj84f44",
+                    "country_code": "DK",
+                    "type": "education",
+                    "lineage": [
+                        "https://openalex.org/I204337017"
+                    ]
+                },
+                {
+                    "id": "https://openalex.org/I45129253",
+                    "display_name": "University College London",
+                    "ror": "https://ror.org/02jx3x895",
+                    "country_code": "GB",
+                    "type": "education",
+                    "lineage": [
+                        "https://openalex.org/I124357947",
+                        "https://openalex.org/I45129253"
+                    ]
+                }
+            ],
+            "countries": [
+                "DK",
+                "GB"
+            ],
+            "is_corresponding": false,
+            "raw_author_name": "Kristian Sandberg",
+            "raw_affiliation_strings": [
+                "Cognitive Neuroscience Research Unit, Hammel Neurorehabilitation and Research Centre, Aarhus University",
+                "Institute of Cognitive Neuroscience, University College London"
+            ],
+            "raw_orcid": null,
+            "affiliations": [
+                {
+                    "raw_affiliation_string": "Cognitive Neuroscience Research Unit, Hammel Neurorehabilitation and Research Centre, Aarhus University",
+                    "institution_ids": [
+                        "https://openalex.org/I204337017"
+                    ]
+                },
+                {
+                    "raw_affiliation_string": "Institute of Cognitive Neuroscience, University College London",
+                    "institution_ids": [
+                        "https://openalex.org/I45129253"
+                    ]
+                }
+            ]
+        },
+        {
+            "author_position": "middle",
+            "author": {
+                "id": "https://openalex.org/A5027042497",
+                "display_name": "Joshua Skewes",
+                "orcid": "https://orcid.org/0000-0002-1165-7572"
+            },
+            "institutions": [
+                {
+                    "id": "https://openalex.org/I204337017",
+                    "display_name": "Aarhus University",
+                    "ror": "https://ror.org/01aj84f44",
+                    "country_code": "DK",
+                    "type": "education",
+                    "lineage": [
+                        "https://openalex.org/I204337017"
+                    ]
+                }
+            ],
+            "countries": [
+                "DK"
+            ],
+            "is_corresponding": false,
+            "raw_author_name": "Joshua Skewes",
+            "raw_affiliation_strings": [
+                "Interacting Minds Centre, Aarhus University"
+            ],
+            "raw_orcid": null,
+            "affiliations": [
+                {
+                    "raw_affiliation_string": "Interacting Minds Centre, Aarhus University",
+                    "institution_ids": [
+                        "https://openalex.org/I204337017"
+                    ]
+                }
+            ]
+        },
+        {
+            "author_position": "middle",
+            "author": {
+                "id": "https://openalex.org/A5078865608",
+                "display_name": "Thomas Wolf",
+                "orcid": "https://orcid.org/0000-0002-7134-7314"
+            },
+            "institutions": [
+                {
+                    "id": "https://openalex.org/I129774422",
+                    "display_name": "University of Vienna",
+                    "ror": "https://ror.org/03prydq77",
+                    "country_code": "AT",
+                    "type": "education",
+                    "lineage": [
+                        "https://openalex.org/I129774422"
+                    ]
+                }
+            ],
+            "countries": [
+                "AT"
+            ],
+            "is_corresponding": false,
+            "raw_author_name": "Thomas Wolf",
+            "raw_affiliation_strings": [
+                "Program in Cognitive Science, University of Vienna"
+            ],
+            "raw_orcid": null,
+            "affiliations": [
+                {
+                    "raw_affiliation_string": "Program in Cognitive Science, University of Vienna",
+                    "institution_ids": [
+                        "https://openalex.org/I129774422"
+                    ]
+                }
+            ]
+        },
+        {
+            "author_position": "middle",
+            "author": {
+                "id": "https://openalex.org/A5086940254",
+                "display_name": "Jakob Udby Blicher",
+                "orcid": "https://orcid.org/0000-0003-3443-4790"
+            },
+            "institutions": [
+                {
+                    "id": "https://openalex.org/I204337017",
+                    "display_name": "Aarhus University",
+                    "ror": "https://ror.org/01aj84f44",
+                    "country_code": "DK",
+                    "type": "education",
+                    "lineage": [
+                        "https://openalex.org/I204337017"
+                    ]
+                }
+            ],
+            "countries": [
+                "DK"
+            ],
+            "is_corresponding": false,
+            "raw_author_name": "Jakob Blicher",
+            "raw_affiliation_strings": [
+                "Cognitive Neuroscience Research Unit, Center of Functionally Integrative Neuroscience/MindLab, Aarhus University",
+                "Cognitive Neuroscience Research Unit, Hammel Neurorehabilitation and Research Centre, Aarhus University"
+            ],
+            "raw_orcid": null,
+            "affiliations": [
+                {
+                    "raw_affiliation_string": "Cognitive Neuroscience Research Unit, Center of Functionally Integrative Neuroscience/MindLab, Aarhus University",
+                    "institution_ids": [
+                        "https://openalex.org/I204337017"
+                    ]
+                },
+                {
+                    "raw_affiliation_string": "Cognitive Neuroscience Research Unit, Hammel Neurorehabilitation and Research Centre, Aarhus University",
+                    "institution_ids": [
+                        "https://openalex.org/I204337017"
+                    ]
+                }
+            ]
+        },
+        {
+            "author_position": "middle",
+            "author": {
+                "id": "https://openalex.org/A5061863972",
+                "display_name": "Morten Overgaard",
+                "orcid": "https://orcid.org/0000-0002-1215-5355"
+            },
+            "institutions": [
+                {
+                    "id": "https://openalex.org/I204337017",
+                    "display_name": "Aarhus University",
+                    "ror": "https://ror.org/01aj84f44",
+                    "country_code": "DK",
+                    "type": "education",
+                    "lineage": [
+                        "https://openalex.org/I204337017"
+                    ]
+                },
+                {
+                    "id": "https://openalex.org/I4210122262",
+                    "display_name": "Institut des Sciences Cognitives Marc Jeannerod",
+                    "ror": "https://ror.org/02he5dz58",
+                    "country_code": "FR",
+                    "type": "facility",
+                    "lineage": [
+                        "https://openalex.org/I100532134",
+                        "https://openalex.org/I1294671590",
+                        "https://openalex.org/I1294671590",
+                        "https://openalex.org/I203339264",
+                        "https://openalex.org/I4210096427",
+                        "https://openalex.org/I4210122262"
+                    ]
+                },
+                {
+                    "id": "https://openalex.org/I891191580",
+                    "display_name": "Aalborg University",
+                    "ror": "https://ror.org/04m5j1k67",
+                    "country_code": "DK",
+                    "type": "education",
+                    "lineage": [
+                        "https://openalex.org/I891191580"
+                    ]
+                }
+            ],
+            "countries": [
+                "DK",
+                "FR"
+            ],
+            "is_corresponding": false,
+            "raw_author_name": "Morten Overgaard",
+            "raw_affiliation_strings": [
+                "Centre for Cognitive Neuroscience, Department of Communication and Psychology, Aalborg University",
+                "Cognitive Neuroscience Research Unit, Center of Functionally Integrative Neuroscience/MindLab, Aarhus University"
+            ],
+            "raw_orcid": null,
+            "affiliations": [
+                {
+                    "raw_affiliation_string": "Centre for Cognitive Neuroscience, Department of Communication and Psychology, Aalborg University",
+                    "institution_ids": [
+                        "https://openalex.org/I4210122262",
+                        "https://openalex.org/I891191580"
+                    ]
+                },
+                {
+                    "raw_affiliation_string": "Cognitive Neuroscience Research Unit, Center of Functionally Integrative Neuroscience/MindLab, Aarhus University",
+                    "institution_ids": [
+                        "https://openalex.org/I204337017"
+                    ]
+                }
+            ]
+        },
+        {
+            "author_position": "last",
+            "author": {
+                "id": "https://openalex.org/A5023888505",
+                "display_name": "Chris Frith",
+                "orcid": "https://orcid.org/0000-0002-8665-0690"
+            },
+            "institutions": [
+                {
+                    "id": "https://openalex.org/I165524941",
+                    "display_name": "Wellcome Centre for Human Neuroimaging",
+                    "ror": "https://ror.org/02704qw51",
+                    "country_code": "GB",
+                    "type": "facility",
+                    "lineage": [
+                        "https://openalex.org/I124357947",
+                        "https://openalex.org/I165524941",
+                        "https://openalex.org/I45129253",
+                        "https://openalex.org/I87048295"
+                    ]
+                }
+            ],
+            "countries": [
+                "GB"
+            ],
+            "is_corresponding": false,
+            "raw_author_name": "Chris D. Frith",
+            "raw_affiliation_strings": [
+                "Wellcome Trust Centre for Neuroimaging, London, England"
+            ],
+            "raw_orcid": null,
+            "affiliations": [
+                {
+                    "raw_affiliation_string": "Wellcome Trust Centre for Neuroimaging, London, England",
+                    "institution_ids": [
+                        "https://openalex.org/I165524941"
+                    ]
+                }
+            ]
+        }
+    ],
+    "institutions": [
+
+    ],
+    "countries_distinct_count": 4,
+    "institutions_distinct_count": 7,
+    "corresponding_author_ids": [
+        "https://openalex.org/A5042184721"
+    ],
+    "corresponding_institution_ids": [
+        "https://openalex.org/I204337017"
+    ],
+    "apc_list": null,
+    "apc_paid": {
+        "value": 272,
+        "currency": "EUR",
+        "value_usd": 293
+    },
+    "fwci": 13.9974,
+    "has_fulltext": false,
+    "cited_by_count": 98,
+    "citation_normalized_percentile": {
+        "value": 0.98990125,
+        "is_in_top_1_percent": false,
+        "is_in_top_10_percent": true
+    },
+    "cited_by_percentile_year": {
+        "min": 94,
+        "max": 100
+    },
+    "biblio": {
+        "volume": "25",
+        "issue": "4",
+        "first_page": "963",
+        "last_page": "972"
+    },
+    "is_retracted": false,
+    "is_paratext": false,
+    "is_xpac": false,
+    "primary_topic": {
+        "id": "https://openalex.org/T11431",
+        "display_name": "Action Observation and Synchronization",
+        "score": 0.9998999834060669,
+        "subfield": {
+            "id": "https://openalex.org/subfields/3207",
+            "display_name": "Social Psychology"
+        },
+        "field": {
+            "id": "https://openalex.org/fields/32",
+            "display_name": "Psychology"
+        },
+        "domain": {
+            "id": "https://openalex.org/domains/2",
+            "display_name": "Social Sciences"
+        }
+    },
+    "topics": [
+        {
+            "id": "https://openalex.org/T11431",
+            "display_name": "Action Observation and Synchronization",
+            "score": 0.9998999834060669,
+            "subfield": {
+                "id": "https://openalex.org/subfields/3207",
+                "display_name": "Social Psychology"
+            },
+            "field": {
+                "id": "https://openalex.org/fields/32",
+                "display_name": "Psychology"
+            },
+            "domain": {
+                "id": "https://openalex.org/domains/2",
+                "display_name": "Social Sciences"
+            }
+        },
+        {
+            "id": "https://openalex.org/T10982",
+            "display_name": "Motor Control and Adaptation",
+            "score": 0.9986000061035156,
+            "subfield": {
+                "id": "https://openalex.org/subfields/2805",
+                "display_name": "Cognitive Neuroscience"
+            },
+            "field": {
+                "id": "https://openalex.org/fields/28",
+                "display_name": "Neuroscience"
+            },
+            "domain": {
+                "id": "https://openalex.org/domains/1",
+                "display_name": "Life Sciences"
+            }
+        },
+        {
+            "id": "https://openalex.org/T11274",
+            "display_name": "Botulinum Toxin and Related Neurological Disorders",
+            "score": 0.9847999811172485,
+            "subfield": {
+                "id": "https://openalex.org/subfields/2728",
+                "display_name": "Neurology"
+            },
+            "field": {
+                "id": "https://openalex.org/fields/27",
+                "display_name": "Medicine"
+            },
+            "domain": {
+                "id": "https://openalex.org/domains/4",
+                "display_name": "Health Sciences"
+            }
+        }
+    ],
+    "keywords": [
+        {
+            "id": "https://openalex.org/keywords/psychology",
+            "display_name": "Psychology",
+            "score": 0.8544908165931702
+        },
+        {
+            "id": "https://openalex.org/keywords/neuroscience",
+            "display_name": "Neuroscience",
+            "score": 0.6699607968330383
+        },
+        {
+            "id": "https://openalex.org/keywords/action",
+            "display_name": "Action (physics)",
+            "score": 0.6446614861488342
+        },
+        {
+            "id": "https://openalex.org/keywords/stimulation",
+            "display_name": "Stimulation",
+            "score": 0.5423865914344788
+        },
+        {
+            "id": "https://openalex.org/keywords/premotor-cortex",
+            "display_name": "Premotor cortex",
+            "score": 0.4559933841228485
+        },
+        {
+            "id": "https://openalex.org/keywords/cognitive-psychology",
+            "display_name": "Cognitive psychology",
+            "score": 0.4500758945941925
+        },
+        {
+            "id": "https://openalex.org/keywords/cognitive-science",
+            "display_name": "Cognitive science",
+            "score": 0.43127796053886414
+        },
+        {
+            "id": "https://openalex.org/keywords/anatomy",
+            "display_name": "Anatomy",
+            "score": 0.06763628125190735
+        }
+    ],
+    "concepts": [
+        {
+            "id": "https://openalex.org/C15744967",
+            "wikidata": "https://www.wikidata.org/wiki/Q9418",
+            "display_name": "Psychology",
+            "level": 0,
+            "score": 0.8544908165931702
+        },
+        {
+            "id": "https://openalex.org/C169760540",
+            "wikidata": "https://www.wikidata.org/wiki/Q207011",
+            "display_name": "Neuroscience",
+            "level": 1,
+            "score": 0.6699607968330383
+        },
+        {
+            "id": "https://openalex.org/C2780791683",
+            "wikidata": "https://www.wikidata.org/wiki/Q846785",
+            "display_name": "Action (physics)",
+            "level": 2,
+            "score": 0.6446614861488342
+        },
+        {
+            "id": "https://openalex.org/C24998067",
+            "wikidata": "https://www.wikidata.org/wiki/Q4114622",
+            "display_name": "Stimulation",
+            "level": 2,
+            "score": 0.5423865914344788
+        },
+        {
+            "id": "https://openalex.org/C2779534489",
+            "wikidata": "https://www.wikidata.org/wiki/Q2998090",
+            "display_name": "Premotor cortex",
+            "level": 3,
+            "score": 0.4559933841228485
+        },
+        {
+            "id": "https://openalex.org/C180747234",
+            "wikidata": "https://www.wikidata.org/wiki/Q23373",
+            "display_name": "Cognitive psychology",
+            "level": 1,
+            "score": 0.4500758945941925
+        },
+        {
+            "id": "https://openalex.org/C188147891",
+            "wikidata": "https://www.wikidata.org/wiki/Q147638",
+            "display_name": "Cognitive science",
+            "level": 1,
+            "score": 0.43127796053886414
+        },
+        {
+            "id": "https://openalex.org/C105702510",
+            "wikidata": "https://www.wikidata.org/wiki/Q514",
+            "display_name": "Anatomy",
+            "level": 1,
+            "score": 0.06763628125190735
+        },
+        {
+            "id": "https://openalex.org/C140530291",
+            "wikidata": "https://www.wikidata.org/wiki/Q1225063",
+            "display_name": "Dorsum",
+            "level": 2,
+            "score": 0.0
+        },
+        {
+            "id": "https://openalex.org/C71924100",
+            "wikidata": "https://www.wikidata.org/wiki/Q11190",
+            "display_name": "Medicine",
+            "level": 0,
+            "score": 0.0
+        },
+        {
+            "id": "https://openalex.org/C62520636",
+            "wikidata": "https://www.wikidata.org/wiki/Q944",
+            "display_name": "Quantum mechanics",
+            "level": 1,
+            "score": 0.0
+        },
+        {
+            "id": "https://openalex.org/C121332964",
+            "wikidata": "https://www.wikidata.org/wiki/Q413",
+            "display_name": "Physics",
+            "level": 0,
+            "score": 0.0
+        }
+    ],
+    "mesh": [
+        {
+            "descriptor_ui": "D000293",
+            "descriptor_name": "Adolescent",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D000293",
+            "descriptor_name": "Adolescent",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D000293",
+            "descriptor_name": "Adolescent",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D000293",
+            "descriptor_name": "Adolescent",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D000328",
+            "descriptor_name": "Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D000328",
+            "descriptor_name": "Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D000328",
+            "descriptor_name": "Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D000328",
+            "descriptor_name": "Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D004213",
+            "descriptor_name": "Dissociative Disorders",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D004213",
+            "descriptor_name": "Dissociative Disorders",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D004213",
+            "descriptor_name": "Dissociative Disorders",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D004213",
+            "descriptor_name": "Dissociative Disorders",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D005260",
+            "descriptor_name": "Female",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D005260",
+            "descriptor_name": "Female",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D005260",
+            "descriptor_name": "Female",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D005260",
+            "descriptor_name": "Female",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D006225",
+            "descriptor_name": "Hand",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D006225",
+            "descriptor_name": "Hand",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D006225",
+            "descriptor_name": "Hand",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D006225",
+            "descriptor_name": "Hand",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D006801",
+            "descriptor_name": "Humans",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D006801",
+            "descriptor_name": "Humans",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D006801",
+            "descriptor_name": "Humans",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D006801",
+            "descriptor_name": "Humans",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D008297",
+            "descriptor_name": "Male",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D008297",
+            "descriptor_name": "Male",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D008297",
+            "descriptor_name": "Male",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D008297",
+            "descriptor_name": "Male",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D009039",
+            "descriptor_name": "Motion Perception",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D009039",
+            "descriptor_name": "Motion Perception",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D009039",
+            "descriptor_name": "Motion Perception",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D009039",
+            "descriptor_name": "Motion Perception",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D009044",
+            "descriptor_name": "Motor Cortex",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D009044",
+            "descriptor_name": "Motor Cortex",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D009044",
+            "descriptor_name": "Motor Cortex",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D009044",
+            "descriptor_name": "Motor Cortex",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D012938",
+            "descriptor_name": "Social Perception",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D012938",
+            "descriptor_name": "Social Perception",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D012938",
+            "descriptor_name": "Social Perception",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D012938",
+            "descriptor_name": "Social Perception",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": true
+        },
+        {
+            "descriptor_ui": "D050781",
+            "descriptor_name": "Transcranial Magnetic Stimulation",
+            "qualifier_ui": "Q000379",
+            "qualifier_name": "methods",
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D050781",
+            "descriptor_name": "Transcranial Magnetic Stimulation",
+            "qualifier_ui": "Q000379",
+            "qualifier_name": "methods",
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D050781",
+            "descriptor_name": "Transcranial Magnetic Stimulation",
+            "qualifier_ui": "Q000379",
+            "qualifier_name": "methods",
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D050781",
+            "descriptor_name": "Transcranial Magnetic Stimulation",
+            "qualifier_ui": "Q000379",
+            "qualifier_name": "methods",
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D055815",
+            "descriptor_name": "Young Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D055815",
+            "descriptor_name": "Young Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D055815",
+            "descriptor_name": "Young Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D055815",
+            "descriptor_name": "Young Adult",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D059167",
+            "descriptor_name": "Mirror Neurons",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D059167",
+            "descriptor_name": "Mirror Neurons",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D059167",
+            "descriptor_name": "Mirror Neurons",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        },
+        {
+            "descriptor_ui": "D059167",
+            "descriptor_name": "Mirror Neurons",
+            "qualifier_ui": null,
+            "qualifier_name": null,
+            "is_major_topic": false
+        }
+    ],
+    "locations_count": 10,
+    "locations": [
+        {
+            "id": "doi:10.1177/0956797613520608",
+            "is_oa": true,
+            "landing_page_url": "https://doi.org/10.1177/0956797613520608",
+            "pdf_url": "https://journals.sagepub.com/doi/pdf/10.1177/0956797613520608",
+            "source": {
+                "id": "https://openalex.org/S58854535",
+                "display_name": "Psychological Science",
+                "issn_l": "0956-7976",
+                "issn": [
+                    "0956-7976",
+                    "1467-9280"
+                ],
+                "is_oa": false,
+                "is_in_doaj": false,
+                "is_core": true,
+                "host_organization": "https://openalex.org/P4310320017",
+                "host_organization_name": "SAGE Publishing",
+                "host_organization_lineage": [
+                    "https://openalex.org/P4310320017"
+                ],
+                "host_organization_lineage_names": [
+                    "SAGE Publishing"
+                ],
+                "type": "journal"
+            },
+            "license": "cc-by",
+            "license_id": "https://openalex.org/licenses/cc-by",
+            "version": "publishedVersion",
+            "is_accepted": true,
+            "is_published": true,
+            "raw_source_name": "Psychological Science",
+            "raw_type": "journal-article"
+        },
+        {
+            "id": "pmid:24549297",
+            "is_oa": false,
+            "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/24549297",
+            "pdf_url": null,
+            "source": {
+                "id": "https://openalex.org/S4306525036",
+                "display_name": "PubMed",
+                "issn_l": null,
+                "issn": null,
+                "is_oa": false,
+                "is_in_doaj": false,
+                "is_core": false,
+                "host_organization": "https://openalex.org/I1299303238",
+                "host_organization_name": "National Institutes of Health",
+                "host_organization_lineage": [
+                    "https://openalex.org/I1299303238"
+                ],
+                "host_organization_lineage_names": [
+
+                ],
+                "type": "repository"
+            },
+            "license": null,
+            "license_id": null,
+            "version": "publishedVersion",
+            "is_accepted": true,
+            "is_published": true,
+            "raw_source_name": "Psychological science",
+            "raw_type": null
+        },
+        {
+            "id": "pmh:oai:pure.atira.dk:openaire/64a59241-ce01-4648-921f-84d56ff33360",
+            "is_oa": true,
+            "landing_page_url": "https://vbn.aau.dk/da/publications/64a59241-ce01-4648-921f-84d56ff33360",
+            "pdf_url": null,
+            "source": {
+                "id": "https://openalex.org/S4306401731",
+                "display_name": "VBN Forskningsportal (Aalborg Universitet)",
+                "issn_l": null,
+                "issn": null,
+                "is_oa": false,
+                "is_in_doaj": false,
+                "is_core": false,
+                "host_organization": "https://openalex.org/I891191580",
+                "host_organization_name": "Aalborg University",
+                "host_organization_lineage": [
+                    "https://openalex.org/I891191580"
+                ],
+                "host_organization_lineage_names": [
+
+                ],
+                "type": "repository"
+            },
+            "license": "other-oa",
+            "license_id": "https://openalex.org/licenses/other-oa",
+            "version": "publishedVersion",
+            "is_accepted": true,
+            "is_published": true,
+            "raw_source_name": "Michael, J, Sandberg, K, Skewes, J, Wolf, T, Blicher, J, Overgaard, M & Frith, C D 2014, 'Continuous Theta-Burst Stimulation Demonstrates a Causal Role of Premotor Homunculus in Action Understanding', Psychological Science, vol. 25, no. 4, pp. 963-972. https://doi.org/10.1177/0956797613520608",
+            "raw_type": "info:eu-repo/semantics/publishedVersion"
+        },
+        {
+            "id": "pmh:oai:air.unimi.it:2434/923244",
+            "is_oa": true,
+            "landing_page_url": "http://hdl.handle.net/2434/923244",
+            "pdf_url": null,
+            "source": {
+                "id": "https://openalex.org/S4306400516",
+                "display_name": "Archivio Istituzionale della Ricerca (Universita Degli Studi Di Milano)",
+                "issn_l": null,
+                "issn": null,
+                "is_oa": false,
+                "is_in_doaj": false,
+                "is_core": false,
+                "host_organization": "https://openalex.org/I189158943",
+                "host_organization_name": "University of Milan",
+                "host_organization_lineage": [
+                    "https://openalex.org/I189158943"
+                ],
+                "host_organization_lineage_names": [
+
+                ],
+                "type": "repository"
+            },
+            "license": "other-oa",
+            "license_id": "https://openalex.org/licenses/other-oa",
+            "version": "submittedVersion",
+            "is_accepted": false,
+            "is_published": false,
+            "raw_source_name": "",
+            "raw_type": "info:eu-repo/semantics/article"
+        },
+        {
+            "id": "pmh:oai:dspace.stir.ac.uk:1893/31750",
+            "is_oa": true,
+            "landing_page_url": "http://hdl.handle.net/1893/31750",
+            "pdf_url": null,
+            "source": {
+                "id": "https://openalex.org/S4306400268",
+                "display_name": "Stirling Online Research Repository (University of Stirling)",
+                "issn_l": null,
+                "issn": null,
+                "is_oa": false,
+                "is_in_doaj": false,
+                "is_core": false,
+                "host_organization": "https://openalex.org/I12093191",
+                "host_organization_name": "University of Stirling",
+                "host_organization_lineage": [
+                    "https://openalex.org/I12093191"
+                ],
+                "host_organization_lineage_names": [
+
+                ],
+                "type": "repository"
+            },
+            "license": "cc-by",
+            "license_id": "https://openalex.org/licenses/cc-by",
+            "version": "submittedVersion",
+            "is_accepted": false,
+            "is_published": false,
+            "raw_source_name": "",
+            "raw_type": "Journal Article"
+        },
+        {
+            "id": "pmh:oai:eprints.ucl.ac.uk.OAI2:1420504",
+            "is_oa": false,
+            "landing_page_url": "https://discovery.ucl.ac.uk/id/eprint/1420504/",
+            "pdf_url": null,
+            "source": {
+                "id": "https://openalex.org/S4306400024",
+                "display_name": "UCL Discovery (University College London)",
+                "issn_l": null,
+                "issn": null,
+                "is_oa": false,
+                "is_in_doaj": false,
+                "is_core": false,
+                "host_organization": "https://openalex.org/I45129253",
+                "host_organization_name": "University College London",
+                "host_organization_lineage": [
+                    "https://openalex.org/I45129253"
+                ],
+                "host_organization_lineage_names": [
+
+                ],
+                "type": "repository"
+            },
+            "license": null,
+            "license_id": null,
+            "version": "submittedVersion",
+            "is_accepted": false,
+            "is_published": false,
+            "raw_source_name": "   PSYCHOLOGICAL SCIENCE , 25  (4)   963 - 972.   (2014)      ",
+            "raw_type": "Article"
+        },
+        {
+            "id": "pmh:oai:europepmc.org:3205756",
+            "is_oa": true,
+            "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/4232279",
+            "pdf_url": null,
+            "source": {
+                "id": "https://openalex.org/S4306400806",
+                "display_name": "Europe PMC (PubMed Central)",
+                "issn_l": null,
+                "issn": null,
+                "is_oa": false,
+                "is_in_doaj": false,
+                "is_core": false,
+                "host_organization": "https://openalex.org/I1303153112",
+                "host_organization_name": "European Bioinformatics Institute",
+                "host_organization_lineage": [
+                    "https://openalex.org/I1303153112"
+                ],
+                "host_organization_lineage_names": [
+
+                ],
+                "type": "repository"
+            },
+            "license": "cc-by",
+            "license_id": "https://openalex.org/licenses/cc-by",
+            "version": "submittedVersion",
+            "is_accepted": false,
+            "is_published": false,
+            "raw_source_name": null,
+            "raw_type": "Text"
+        },
+        {
+            "id": "pmh:oai:pure.atira.dk:openaire_cris_publications/effa6c42-e49d-4151-9e0a-bd05edacd8ec",
+            "is_oa": true,
+            "landing_page_url": "https://researchprofiles.ku.dk/da/publications/effa6c42-e49d-4151-9e0a-bd05edacd8ec",
+            "pdf_url": null,
+            "source": {
+                "id": "https://openalex.org/S4306401983",
+                "display_name": "Research at the University of Copenhagen (University of Copenhagen)",
+                "issn_l": null,
+                "issn": null,
+                "is_oa": false,
+                "is_in_doaj": false,
+                "is_core": false,
+                "host_organization": "https://openalex.org/I124055696",
+                "host_organization_name": "University of Copenhagen",
+                "host_organization_lineage": [
+                    "https://openalex.org/I124055696"
+                ],
+                "host_organization_lineage_names": [
+
+                ],
+                "type": "repository"
+            },
+            "license": "cc-by",
+            "license_id": "https://openalex.org/licenses/cc-by",
+            "version": "submittedVersion",
+            "is_accepted": false,
+            "is_published": false,
+            "raw_source_name": "Michael , J A 2014 , ' Continuous theta burst demonstrates a causal role of premotor homunculus in action interpretation ' , Psychological Science , vol. 25 , no. 4 , pp. 963-972 . https://doi.org/10.1177/0956797613520608",
+            "raw_type": "article"
+        },
+        {
+            "id": "pmh:oai:pure.atira.dk:publications/88b0757d-25fe-468f-a32f-48833101ae47",
+            "is_oa": false,
+            "landing_page_url": "https://pure.au.dk/portal/en/publications/88b0757d-25fe-468f-a32f-48833101ae47",
+            "pdf_url": null,
+            "source": null,
+            "license": null,
+            "license_id": null,
+            "version": "submittedVersion",
+            "is_accepted": false,
+            "is_published": false,
+            "raw_source_name": "Michael, J, Sandberg, K, Skewes, J, Wolf, T, Blicher, J, Overgaard, M & Frith, C D 2014, 'Continuous Theta-Burst Stimulation Demonstrates a Causal Role of Premotor Homunculus in Action Understanding', Psychological Science, vol. 25, no. 4, pp. 963-972. https://doi.org/10.1177/0956797613520608",
+            "raw_type": "info:eu-repo/semantics/publishedVersion"
+        },
+        {
+            "id": "pmh:oai:pure.atira.dk:publications/effa6c42-e49d-4151-9e0a-bd05edacd8ec",
+            "is_oa": true,
+            "landing_page_url": "https://curis.ku.dk/portal/da/publications/continuous-theta-burst-demonstrates-a-causal-role-of-premotor-homunculus-in-action-interpretation(effa6c42-e49d-4151-9e0a-bd05edacd8ec).html",
+            "pdf_url": null,
+            "source": {
+                "id": "https://openalex.org/S4306401983",
+                "display_name": "Research at the University of Copenhagen (University of Copenhagen)",
+                "issn_l": null,
+                "issn": null,
+                "is_oa": false,
+                "is_in_doaj": false,
+                "is_core": false,
+                "host_organization": "https://openalex.org/I124055696",
+                "host_organization_name": "University of Copenhagen",
+                "host_organization_lineage": [
+                    "https://openalex.org/I124055696"
+                ],
+                "host_organization_lineage_names": [
+
+                ],
+                "type": "repository"
+            },
+            "license": "cc-by",
+            "license_id": "https://openalex.org/licenses/cc-by",
+            "version": "submittedVersion",
+            "is_accepted": false,
+            "is_published": false,
+            "raw_source_name": "Michael , J A 2014 , ' Continuous theta burst demonstrates a causal role of premotor homunculus in action interpretation ' , Psychological Science , vol. 25 , no. 4 , pp. 963-972 . https://doi.org/10.1177/0956797613520608",
+            "raw_type": "article"
+        }
+    ],
+    "best_oa_location": {
+        "id": "doi:10.1177/0956797613520608",
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.1177/0956797613520608",
+        "pdf_url": "https://journals.sagepub.com/doi/pdf/10.1177/0956797613520608",
+        "source": {
+            "id": "https://openalex.org/S58854535",
+            "display_name": "Psychological Science",
+            "issn_l": "0956-7976",
+            "issn": [
+                "0956-7976",
+                "1467-9280"
+            ],
+            "is_oa": false,
+            "is_in_doaj": false,
+            "is_core": true,
+            "host_organization": "https://openalex.org/P4310320017",
+            "host_organization_name": "SAGE Publishing",
+            "host_organization_lineage": [
+                "https://openalex.org/P4310320017"
+            ],
+            "host_organization_lineage_names": [
+                "SAGE Publishing"
+            ],
+            "type": "journal"
+        },
+        "license": "cc-by",
+        "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "publishedVersion",
+        "is_accepted": true,
+        "is_published": true,
+        "raw_source_name": "Psychological Science",
+        "raw_type": "journal-article"
+    },
+    "sustainable_development_goals": [
+
+    ],
+    "awards": [
+
+    ],
+    "funders": [
+
+    ],
+    "has_content": {
+        "grobid_xml": true,
+        "pdf": true
+    },
+    "content_urls": {
+        "pdf": "https://content.openalex.org/works/W2134722098.pdf",
+        "grobid_xml": "https://content.openalex.org/works/W2134722098.grobid-xml"
+    },
+    "referenced_works_count": 42,
+    "referenced_works": [
+        "https://openalex.org/W49499802",
+        "https://openalex.org/W562570047",
+        "https://openalex.org/W1606726171",
+        "https://openalex.org/W1657449297",
+        "https://openalex.org/W1884715243",
+        "https://openalex.org/W1970287153",
+        "https://openalex.org/W1972844076",
+        "https://openalex.org/W1975909437",
+        "https://openalex.org/W1989477529",
+        "https://openalex.org/W1999441979",
+        "https://openalex.org/W2016740912",
+        "https://openalex.org/W2021596040",
+        "https://openalex.org/W2021613918",
+        "https://openalex.org/W2025642716",
+        "https://openalex.org/W2042526117",
+        "https://openalex.org/W2044334804",
+        "https://openalex.org/W2050166692",
+        "https://openalex.org/W2051082239",
+        "https://openalex.org/W2070882801",
+        "https://openalex.org/W2071674924",
+        "https://openalex.org/W2077805258",
+        "https://openalex.org/W2083920471",
+        "https://openalex.org/W2085287982",
+        "https://openalex.org/W2096117537",
+        "https://openalex.org/W2096522701",
+        "https://openalex.org/W2101131297",
+        "https://openalex.org/W2101313827",
+        "https://openalex.org/W2110631042",
+        "https://openalex.org/W2110997285",
+        "https://openalex.org/W2111726859",
+        "https://openalex.org/W2112154489",
+        "https://openalex.org/W2120019338",
+        "https://openalex.org/W2129991755",
+        "https://openalex.org/W2131001559",
+        "https://openalex.org/W2132960888",
+        "https://openalex.org/W2135099359",
+        "https://openalex.org/W2136894766",
+        "https://openalex.org/W2493455894",
+        "https://openalex.org/W2883524685",
+        "https://openalex.org/W3005001716",
+        "https://openalex.org/W3015738550",
+        "https://openalex.org/W3022532439"
+    ],
+    "related_works": [
+        "https://openalex.org/W2144201014",
+        "https://openalex.org/W2588658041",
+        "https://openalex.org/W2350233123",
+        "https://openalex.org/W2055241807",
+        "https://openalex.org/W2417990286",
+        "https://openalex.org/W2886641791",
+        "https://openalex.org/W2089986839",
+        "https://openalex.org/W2005915081",
+        "https://openalex.org/W2089916170",
+        "https://openalex.org/W1975077850"
+    ],
+    "abstract_inverted_index": {
+        "Although": [
+            0
+        ],
+        "it": [
+            1,
+            16
+        ],
+        "is": [
+            2
+        ],
+        "well": [
+            3
+        ],
+        "established": [
+            4
+        ],
+        "that": [
+            5,
+            136,
+            149
+        ],
+        "regions": [
+            6,
+            139
+        ],
+        "of": [
+            7,
+            53,
+            67,
+            131,
+            140
+        ],
+        "premotor": [
+            8
+        ],
+        "cortex": [
+            9
+        ],
+        "(PMC)": [
+            10
+        ],
+        "are": [
+            11
+        ],
+        "active": [
+            12
+        ],
+        "during": [
+            13
+        ],
+        "action": [
+            14,
+            26,
+            132,
+            145,
+            153,
+            156
+        ],
+        "observation,": [
+            15
+        ],
+        "remains": [
+            17
+        ],
+        "controversial": [
+            18
+        ],
+        "whether": [
+            19
+        ],
+        "they": [
+            20
+        ],
+        "play": [
+            21
+        ],
+        "a": [
+            22,
+            61,
+            83
+        ],
+        "causal": [
+            23
+        ],
+        "role": [
+            24
+        ],
+        "in": [
+            25,
+            56,
+            64,
+            90,
+            110
+        ],
+        "understanding.": [
+            27
+        ],
+        "In": [
+            28
+        ],
+        "the": [
+            29,
+            48,
+            68,
+            99,
+            104,
+            119,
+            124,
+            150
+        ],
+        "experiment": [
+            30
+        ],
+        "reported": [
+            31
+        ],
+        "here,": [
+            32
+        ],
+        "we": [
+            33
+        ],
+        "used": [
+            34
+        ],
+        "off-line": [
+            35
+        ],
+        "continuous": [
+            36
+        ],
+        "theta-burst": [
+            37
+        ],
+        "stimulation": [
+            38
+        ],
+        "(cTBS)": [
+            39
+        ],
+        "to": [
+            40,
+            144
+        ],
+        "investigate": [
+            41
+        ],
+        "this": [
+            42
+        ],
+        "question.": [
+            43
+        ],
+        "Participants": [
+            44,
+            86
+        ],
+        "received": [
+            45
+        ],
+        "cTBS": [
+            46,
+            97,
+            117
+        ],
+        "over": [
+            47,
+            98,
+            103,
+            118,
+            123
+        ],
+        "hand": [
+            49,
+            72,
+            93,
+            100,
+            125
+        ],
+        "and": [
+            50,
+            74,
+            107,
+            155
+        ],
+        "lip": [
+            51,
+            105,
+            120
+        ],
+        "areas": [
+            52
+        ],
+        "left": [
+            54
+        ],
+        "PMC,": [
+            55
+        ],
+        "separate": [
+            57
+        ],
+        "sessions,": [
+            58
+        ],
+        "before": [
+            59
+        ],
+        "completing": [
+            60
+        ],
+        "pantomime-recognition": [
+            62
+        ],
+        "task": [
+            63
+        ],
+        "which": [
+            65
+        ],
+        "half": [
+            66,
+            75
+        ],
+        "trials": [
+            69
+        ],
+        "contained": [
+            70,
+            76
+        ],
+        "pantomimed": [
+            71,
+            77,
+            92,
+            112
+        ],
+        "actions,": [
+            73
+        ],
+        "mouth": [
+            78,
+            113
+        ],
+        "actions.": [
+            79
+        ],
+        "The": [
+            80
+        ],
+        "results": [
+            81
+        ],
+        "reveal": [
+            82
+        ],
+        "double": [
+            84
+        ],
+        "dissociation:": [
+            85
+        ],
+        "were": [
+            87
+        ],
+        "less": [
+            88,
+            108
+        ],
+        "accurate": [
+            89,
+            109
+        ],
+        "recognizing": [
+            91,
+            111
+        ],
+        "actions": [
+            94,
+            114
+        ],
+        "after": [
+            95,
+            115
+        ],
+        "receiving": [
+            96,
+            116
+        ],
+        "area": [
+            101,
+            106,
+            121
+        ],
+        "than": [
+            102,
+            122
+        ],
+        "area.": [
+            126
+        ],
+        "This": [
+            127
+        ],
+        "finding": [
+            128
+        ],
+        "constrains": [
+            129
+        ],
+        "theories": [
+            130
+        ],
+        "understanding": [
+            133,
+            146,
+            154
+        ],
+        "by": [
+            134
+        ],
+        "showing": [
+            135
+        ],
+        "somatotopically": [
+            137
+        ],
+        "organized": [
+            138
+        ],
+        "PMC": [
+            141
+        ],
+        "contribute": [
+            142
+        ],
+        "causally": [
+            143
+        ],
+        "and,": [
+            147
+        ],
+        "thus,": [
+            148
+        ],
+        "mechanisms": [
+            151
+        ],
+        "underpinning": [
+            152
+        ],
+        "performance": [
+            157
+        ],
+        "overlap.": [
+            158
+        ]
+    },
+    "counts_by_year": [
+        {
+            "year": 2026,
+            "cited_by_count": 1
+        },
+        {
+            "year": 2025,
+            "cited_by_count": 4
+        },
+        {
+            "year": 2024,
+            "cited_by_count": 2
+        },
+        {
+            "year": 2023,
+            "cited_by_count": 16
+        },
+        {
+            "year": 2022,
+            "cited_by_count": 9
+        },
+        {
+            "year": 2021,
+            "cited_by_count": 4
+        },
+        {
+            "year": 2020,
+            "cited_by_count": 10
+        },
+        {
+            "year": 2019,
+            "cited_by_count": 7
+        },
+        {
+            "year": 2018,
+            "cited_by_count": 10
+        },
+        {
+            "year": 2017,
+            "cited_by_count": 11
+        },
+        {
+            "year": 2016,
+            "cited_by_count": 8
+        },
+        {
+            "year": 2015,
+            "cited_by_count": 8
+        },
+        {
+            "year": 2014,
+            "cited_by_count": 8
+        }
+    ],
+    "updated_date": "2026-05-05T06:06:40.768181",
+    "created_date": "2025-10-10T00:00:00"
+}

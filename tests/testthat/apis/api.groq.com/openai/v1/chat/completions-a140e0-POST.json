@@ -1,0 +1,33 @@
+{
+    "id": "chatcmpl-843d8424-f217-4b07-ba94-8b5f77781824",
+    "object": "chat.completion",
+    "created": 1778628770,
+    "model": "llama-3.3-70b-versatile",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "```json\n[\n  {\n    \"text\": \"An a priori power analysis for an independent samples t-test, conducted using the pwr.t.test function from pwr (Champely, 2020), indicated that for a Cohen's d = 0.5, and a desired power level of 80% required at least 64 participants in each group.\",\n    \"power_type\": \"apriori\",\n    \"statistical_test\": \"unpaired t-test\",\n    \"statistical_test_other\": null,\n    \"sample_size\": 128,\n    \"alpha_level\": null,\n    \"power\": 0.8,\n    \"effect_size\": 0.5,\n    \"effect_size_metric\": \"Cohen's d\",\n    \"effect_size_metric_other\": null,\n    \"software\": \"pwr\"\n  }\n]\n```"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "queue_time": 0.048849669,
+        "prompt_tokens": 1110,
+        "prompt_time": 0.067018031,
+        "completion_tokens": 175,
+        "completion_time": 0.289434651,
+        "total_tokens": 1285,
+        "total_time": 0.356452682
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_ce7bc1685b",
+    "x_groq": {
+        "id": "req_01krf8jdvcfmd8aqm4we7egc92",
+        "seed": 8675309
+    },
+    "service_tier": "on_demand"
+}

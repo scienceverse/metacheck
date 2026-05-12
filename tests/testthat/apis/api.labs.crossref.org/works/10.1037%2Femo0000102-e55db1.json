@@ -1,0 +1,161 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    10
+                ]
+            ],
+            "date-time": "2026-04-10T15:58:03Z",
+            "timestamp": 1775836683534,
+            "version": "3.50.1"
+        },
+        "reference-count": 0,
+        "publisher": "American Psychological Association (APA)",
+        "issue": "6",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Emotion"
+        ],
+        "DOI": "10.1037/emo0000102",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2015,
+                    7,
+                    27
+                ]
+            ],
+            "date-time": "2015-07-27T15:50:25Z",
+            "timestamp": 1438012225000
+        },
+        "page": "694-698",
+        "source": "Crossref",
+        "is-referenced-by-count": 28,
+        "title": [
+            "Is envy categorical or dimensional? An empirical investigation using taxometric analysis."
+        ],
+        "prefix": "10.1037",
+        "volume": "15",
+        "author": [
+            {
+                "given": "Rachael G.",
+                "family": "Falcon",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "15",
+        "published-online": {
+            "date-parts": [
+                [
+                    2015
+                ]
+            ]
+        },
+        "container-title": [
+            "Emotion"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://psycnet.apa.org/journals/emo/15/6/694.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    2,
+                    5
+                ]
+            ],
+            "date-time": "2024-02-05T23:19:27Z",
+            "timestamp": 1707175167000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://doi.apa.org/doi/10.1037/emo0000102"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2015
+                ]
+            ]
+        },
+        "references-count": 0,
+        "journal-issue": {
+            "issue": "6",
+            "published-online": {
+                "date-parts": [
+                    [
+                        2015
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "2015-34230-001",
+            "26214567"
+        ],
+        "URL": "https://doi.org/10.1037/emo0000102",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1931-1516",
+            "1528-3542"
+        ],
+        "issn-type": [
+            {
+                "value": "1931-1516",
+                "type": "electronic"
+            },
+            {
+                "value": "1528-3542",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2015
+                ]
+            ]
+        }
+    }
+}

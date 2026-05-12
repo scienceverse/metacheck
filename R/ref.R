@@ -129,31 +129,31 @@ bibtype_convert <- function(type) {
   #   "unpublished" = c("author", "title", "note")
   # )
 
-  dplyr::case_match(type,
-                    "journal-article"        ~ "article",
-                    "book"                   ~ "book",
-                    "book-chapter"           ~ "incollection",
-                    "book-part"              ~ "inbook",
-                    "book-section"           ~ "inbook",
-                    "book-series"            ~ "book",
-                    "edited-book"            ~ "book",
-                    "reference-book"         ~ "book",
-                    "monograph"              ~ "book",
-                    "report"                 ~ "techreport",
-                    "proceedings-article"    ~ "inproceedings",
-                    "proceedings"            ~ "proceedings",
-                    "conference-paper"       ~ "inproceedings",
-                    "conference-proceeding"  ~ "proceedings",
-                    "posted-content"         ~ "misc",
-                    "dissertation"           ~ "phdthesis",
-                    "thesis"                 ~ "phdthesis",
-                    "dataset"                ~ "misc",
-                    "standard"               ~ "misc",
-                    "reference-entry"        ~ "incollection",
-                    "reference-work"         ~ "book",
-                    "report-series"          ~ "techreport",
-                    "other"                  ~ "misc",
-                    .default = type)
+  dplyr::recode_values(type,
+    "journal-article"        ~ "article",
+    "book"                   ~ "book",
+    "book-chapter"           ~ "incollection",
+    "book-part"              ~ "inbook",
+    "book-section"           ~ "inbook",
+    "book-series"            ~ "book",
+    "edited-book"            ~ "book",
+    "reference-book"         ~ "book",
+    "monograph"              ~ "book",
+    "report"                 ~ "techreport",
+    "proceedings-article"    ~ "inproceedings",
+    "proceedings"            ~ "proceedings",
+    "conference-paper"       ~ "inproceedings",
+    "conference-proceeding"  ~ "proceedings",
+    "posted-content"         ~ "misc",
+    "dissertation"           ~ "phdthesis",
+    "thesis"                 ~ "phdthesis",
+    "dataset"                ~ "misc",
+    "standard"               ~ "misc",
+    "reference-entry"        ~ "incollection",
+    "reference-work"         ~ "book",
+    "report-series"          ~ "techreport",
+    "other"                  ~ "misc",
+    default = type)
 }
 
 
@@ -200,7 +200,7 @@ crossref_doi <- function(doi, select = c(
     doi <- paper_table(papers, "info", "doi")$doi
   }
 
-  if (!online("api.labs.crossref.org")) {
+  if (!online("api.crossref.org")) {
     message("Crossref is offline")
     return(data.frame(DOI = doi, error = "offline"))
   }
@@ -260,63 +260,6 @@ crossref_doi <- function(doi, select = c(
   return(table)
 }
 
-#' Batch query
-#'
-#' @param urls A vector of URLs
-#' @param batch_size Size of each batch
-#' @param msg Message to show in progress bar
-#' @param delay Courtesy delay between batches (in seconds)
-#'
-#' @returns a list of responses
-#' @keywords internal
-.batch_query <- function(urls,
-                         batch_size = 5,
-                         msg = "Batch Query",
-                         delay = 0.5) {
-  if (length(urls) == 0) return(list())
-
-  # set up requests from urls
-  reqs <- lapply(urls, \(url) {
-    tryCatch({
-      httr2::request(url) |>
-        httr2::req_headers(Accept = "application/json") |>
-        #httr2::req_throttle(rate = 30 / 1) |>
-        httr2::req_retry(max_tries = 3, is_transient = \(resp) {
-          status <- httr2::resp_status(resp)
-          status %in% c(429, 500, 502, 503)
-        }) |>
-        httr2::req_error(is_error = \(resp) FALSE)
-    }, error = \(e) {
-      warning("Bad URL: ", url, call. = FALSE)
-      return(NULL)
-    })
-  })
-
-  # batch to avoid rate limiting
-  n <- length(reqs)
-  resps <- vector("list", n)
-
-  batches <- split(seq_len(n), ceiling(seq_len(n) / batch_size))
-  format <- sprintf("%s [:bar] :current/:total", msg)
-  pb <- pb(n, format = format)
-
-  for (b in seq_along(batches)) {
-    idx <- batches[[b]]
-    valid_idx <- !sapply(reqs[idx], is.null) # skip errors
-
-    resps[idx][valid_idx] <- httr2::req_perform_parallel(
-      reqs[idx][valid_idx],
-      on_error = "continue",
-      progress = FALSE
-    )
-    pb$tick(length(idx))
-
-    # courtesy delay
-    Sys.sleep(delay)
-  }
-
-  resps
-}
 
 #' Parse a CrossRef item into a data frame row
 #' @param item a list from CrossRef API response
@@ -744,80 +687,43 @@ openalex_doi <- function(doi, select = NULL) {
     return(list(DOI = doi, error = "offline"))
   }
 
-  ## vectorise with parallel requests ----
-  if (length(doi) > 1) {
-    cleaned <- doi_clean(doi)
-    valid <- !is.na(doi) & doi_valid_format(cleaned)
-    valid_idx <- which(valid)
+  cleaned <- doi_clean(doi)
+  valid <- !is.na(doi) & doi_valid_format(cleaned)
 
-    if (length(valid_idx) > 0) {
-      reqs <- lapply(valid_idx, \(i) {
-        url <- sprintf(
-          "https://api.openalex.org/works/https://doi.org/%s?mailto=%s",
-          cleaned[i], email()
-        )
-        httr2::request(url) |>
-          httr2::req_headers(Accept = "application/json") |>
-          httr2::req_throttle(rate = 10 / 1) |>
-          httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
-          httr2::req_error(is_error = \(resp) FALSE)
-      })
+  # build requests only for valid DOIs
+  valid_idx <- which(valid)
+  invalid_idx <- which(!valid)
 
-      resps <- httr2::req_perform_parallel(reqs, on_error = "continue",
-                                            progress = verbose())
-    }
+  if (length(valid_idx) > 0) {
+    urls <- sprintf(
+      "https://api.openalex.org/works/https://doi.org/%s?mailto=%s",
+      utils::URLencode(cleaned[valid_idx], reserved = TRUE),
+      email()
+    )
 
-    oa <- vector("list", length(doi))
-    for (i in seq_along(doi)) {
-      if (is.na(doi[i])) {
-        oa[[i]] <- list(DOI = doi[i])
-      } else if (!valid[i]) {
-        oa[[i]] <- list(DOI = doi[i], error = "malformed")
-      }
-    }
-    for (j in seq_along(valid_idx)) {
-      i <- valid_idx[j]
-      oa[[i]] <- tryCatch({
-        resp <- resps[[j]]
-        if (inherits(resp, "error") || httr2::resp_status(resp) >= 400) {
-          return(list(DOI = doi[i], error = "not found"))
-        }
-        info <- httr2::resp_body_json(resp)
-        .openalex_add_abstract(info)
-      }, error = \(e) list(DOI = doi[i], error = "not found"))
-    }
-    return(oa)
+    resps <- .batch_query(urls, msg = "Querying CrossRef by DOI")
   }
 
-  ## single DOI checks ----
-  doi <- doi_clean(doi)
-
-  if (!doi_valid_format(doi)) {
-    message(doi, " is not a well-formed DOI\\n")
-    return(list(DOI = doi, error = "malformed"))
-  }
-
-  url <- sprintf(
-    "https://api.openalex.org/works/https://doi.org/%s?mailto=%s",
-    doi, email()
-  )
-
-  info <- tryCatch({
-    resp <- httr2::request(url) |>
-      httr2::req_headers(Accept = "application/json") |>
-      httr2::req_error(is_error = \(resp) FALSE) |>
-      httr2::req_perform()
-    httr2::resp_body_json(resp)
-  },
-    error = function(e) {
-      if (verbose()) {
-        warning(doi, " not found in OpenAlex", call. = FALSE)
-      }
-      return(data.frame(DOI = doi, error = "not found"))
+  oa <- vector("list", length(doi))
+  for (i in seq_along(doi)) {
+    if (is.na(doi[i])) {
+      oa[[i]] <- list(DOI = doi[i])
+    } else if (!valid[i]) {
+      oa[[i]] <- list(DOI = doi[i], error = "malformed")
     }
-  )
-
-  .openalex_add_abstract(info)
+  }
+  for (j in seq_along(valid_idx)) {
+    i <- valid_idx[j]
+    oa[[i]] <- tryCatch({
+      resp <- resps[[j]]
+      if (inherits(resp, "error") || httr2::resp_status(resp) >= 400) {
+        return(list(DOI = doi[i], error = "not found"))
+      }
+      info <- httr2::resp_body_json(resp)
+      .openalex_add_abstract(info)
+    }, error = \(e) list(DOI = doi[i], error = "not found"))
+  }
+  return(oa)
 }
 
 #' Add abstract from inverted index

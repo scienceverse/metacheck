@@ -1,0 +1,154 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "institution": [
+            {
+                "name": "Comprehensive R Archive Network",
+                "acronym": [
+                    "CRAN"
+                ]
+            }
+        ],
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    2,
+                    16
+                ]
+            ],
+            "date-time": "2026-02-16T03:01:57Z",
+            "timestamp": 1771210917048,
+            "version": "3.50.1"
+        },
+        "description": "Derives group sequential clinical trial designs and describes their properties. Particular focus on time-to-event, binary, and continuous outcomes. Largely based on methods described in Jennison, Christopher and Turnbull, Bruce W., 2000, \"Group Sequential Methods with Applications to Clinical Trials\" ISBN: 0-8493-0316-8.",
+        "reference-count": 0,
+        "publisher": "The R Foundation",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+
+        ],
+        "content-updated": {
+            "date-parts": [
+                [
+                    2026,
+                    2,
+                    15
+                ]
+            ]
+        },
+        "published-print": {
+            "date-parts": [
+                [
+                    2009,
+                    7,
+                    1
+                ]
+            ]
+        },
+        "DOI": "10.32614/cran.package.gsdesign",
+        "type": "dataset",
+        "created": {
+            "date-parts": [
+                [
+                    2024,
+                    6,
+                    13
+                ]
+            ],
+            "date-time": "2024-06-13T06:16:47Z",
+            "timestamp": 1718259407000
+        },
+        "source": "Crossref",
+        "is-referenced-by-count": 2,
+        "title": [
+            "gsDesign: Group Sequential Design"
+        ],
+        "prefix": "10.32614",
+        "author": [
+            {
+                "given": "Keaven",
+                "family": "Anderson",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "17266",
+        "content-created": {
+            "date-parts": [
+                [
+                    2009,
+                    7,
+                    1
+                ]
+            ]
+        },
+        "container-title": [
+            "CRAN: Contributed Packages"
+        ],
+        "original-title": [
+
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2026,
+                    2,
+                    16
+                ]
+            ],
+            "date-time": "2026-02-16T02:15:15Z",
+            "timestamp": 1771208115000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://CRAN.R-project.org/package=gsDesign"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2009,
+                    7,
+                    1
+                ]
+            ]
+        },
+        "references-count": 0,
+        "URL": "https://doi.org/10.32614/cran.package.gsdesign",
+        "relation": {
+
+        },
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2009,
+                    7,
+                    1
+                ]
+            ]
+        }
+    }
+}

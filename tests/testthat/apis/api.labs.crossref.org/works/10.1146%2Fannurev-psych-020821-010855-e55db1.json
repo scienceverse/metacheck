@@ -1,0 +1,1052 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    11
+                ]
+            ],
+            "date-time": "2026-05-11T13:13:11Z",
+            "timestamp": 1778505191797,
+            "version": "3.51.4"
+        },
+        "reference-count": 170,
+        "publisher": "Annual Reviews",
+        "issue": "1",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Annu. Rev. Psychol."
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2022,
+                    1,
+                    4
+                ]
+            ]
+        },
+        "abstract": "<jats:p>We review the burgeoning literature on the social effects of emotions, documenting the impact of emotional expressions on observers’ affect, cognition, and behavior. We find convergent evidence that emotional expressions influence observers’ affective reactions, inferential processes, and behaviors across various domains, including close relationships, group decision making, customer service, negotiation, and leadership. Affective reactions and inferential processes mediate the effects of emotional expressions on observers’ behaviors, and the relative potency of these mediators depends on the observers’ information processing and the perceived appropriateness of the emotional expressions. The social effects of emotions are similar across expressive modalities (face, voice, body, text, symbols). We discuss the findings in relation to emotional contagion, emotional intelligence, emotion regulation, emotions as social information (EASI) theory, and the functionality of emotions in engendering social influence. Finally, we identify gaps in our current understanding of the topic and call for interdisciplinary collaboration and methodological diversification.<\/jats:p>",
+        "DOI": "10.1146/annurev-psych-020821-010855",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2021,
+                    7,
+                    19
+                ]
+            ],
+            "date-time": "2021-07-19T22:57:22Z",
+            "timestamp": 1626735442000
+        },
+        "page": "629-658",
+        "source": "Crossref",
+        "is-referenced-by-count": 336,
+        "title": [
+            "The Social Effects of Emotions"
+        ],
+        "prefix": "10.1146",
+        "volume": "73",
+        "author": [
+            {
+                "given": "Gerben A.",
+                "family": "van Kleef",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "Department of Social Psychology, University of Amsterdam, 1001 NK Amsterdam, The Netherlands;"
+                    }
+                ]
+            },
+            {
+                "given": "Stéphane",
+                "family": "Côté",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Rotman School of Management, University of Toronto, Toronto, Ontario M5S 3E6, Canada;"
+                    }
+                ]
+            }
+        ],
+        "member": "22",
+        "reference": [
+            {
+                "key": "B1",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2015.07.001"
+            },
+            {
+                "key": "B2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2017.11.014"
+            },
+            {
+                "key": "B3",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0956797610370755"
+            },
+            {
+                "key": "B4",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1038/372669a0"
+            },
+            {
+                "key": "B5",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/pspi0000202"
+            },
+            {
+                "key": "B6",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.84.5.1054"
+            },
+            {
+                "key": "B7",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-9280.2007.01956.x"
+            },
+            {
+                "key": "B8",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/978-1-4612-5743-1"
+            },
+            {
+                "key": "B9",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0017088"
+            },
+            {
+                "key": "B10",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2016.05.006"
+            },
+            {
+                "key": "B11",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amj.2006.23478695"
+            },
+            {
+                "key": "B12",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/3094912"
+            },
+            {
+                "key": "B13",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/2667070"
+            },
+            {
+                "key": "B14",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.leaqua.2006.04.008"
+            },
+            {
+                "key": "B15",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-9280.2008.02079.x"
+            },
+            {
+                "key": "B16",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-295X.92.3.389"
+            },
+            {
+                "key": "B17",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.3.1.48"
+            },
+            {
+                "key": "B18",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-7687.2008.00802.x"
+            },
+            {
+                "key": "B19",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/apl0000072"
+            },
+            {
+                "key": "B20",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2017.10.002"
+            },
+            {
+                "key": "B21",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2011.06.002"
+            },
+            {
+                "key": "B22",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.53.1.94"
+            },
+            {
+                "key": "B23",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2019.04.002"
+            },
+            {
+                "key": "B24",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.leaqua.2010.07.005"
+            },
+            {
+                "key": "B25",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amr.2005.17293692"
+            },
+            {
+                "key": "B26",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1146/annurev-orgpsych-031413-091233"
+            },
+            {
+                "key": "B27",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2012.12.015"
+            },
+            {
+                "key": "B28",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0021-843X.85.2.186"
+            },
+            {
+                "key": "B29",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.43.4.742"
+            },
+            {
+                "key": "B30",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/10001-000"
+            },
+            {
+                "key": "B31",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0034251"
+            },
+            {
+                "key": "B32",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/peps.12292"
+            },
+            {
+                "key": "B33",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF02253869"
+            },
+            {
+                "key": "B34",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1146/annurev.psych.51.1.665"
+            },
+            {
+                "key": "B35",
+                "first-page": "207",
+                "volume-title": "Nebraska Symposium on Motivation 1971",
+                "volume": "19",
+                "author": "Ekman P.",
+                "year": "1972"
+            },
+            {
+                "key": "B36",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0003-066X.48.4.384"
+            },
+            {
+                "key": "B37",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/078559812"
+            },
+            {
+                "key": "B38",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/2041386614542889"
+            },
+            {
+                "key": "B39",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.128.2.203"
+            },
+            {
+                "key": "B40",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919-007-0033-7"
+            },
+            {
+                "key": "B41",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2018.1432476"
+            },
+            {
+                "key": "B42",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167299025003003"
+            },
+            {
+                "key": "B43",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0025403"
+            },
+            {
+                "key": "B44",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0023545"
+            },
+            {
+                "key": "B45",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.93.1.103"
+            },
+            {
+                "key": "B46",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0003-066X.56.3.218"
+            },
+            {
+                "key": "B47",
+                "volume-title": "Human Facial Expression: An Evolutionary View",
+                "author": "Fridlund AJ.",
+                "year": "1994"
+            },
+            {
+                "key": "B48",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0021-9010.89.2.369"
+            },
+            {
+                "key": "B49",
+                "first-page": "59",
+                "volume-title": "The Nature of Emotion: Fundamental Questions",
+                "author": "Frijda NH",
+                "year": "1994"
+            },
+            {
+                "key": "B50",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.57.2.212"
+            },
+            {
+                "key": "B51",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1948550617720269"
+            },
+            {
+                "key": "B52",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1006/obhd.1997.2741"
+            },
+            {
+                "key": "B53",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0028723"
+            },
+            {
+                "key": "B54",
+                "volume-title": "Meta-Emotion: How Families Communicate Emotionally",
+                "author": "Gottman JM",
+                "year": "1997"
+            },
+            {
+                "key": "B55",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.63.2.221"
+            },
+            {
+                "key": "B56",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167207311281"
+            },
+            {
+                "key": "B57",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/30040678"
+            },
+            {
+                "key": "B58",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000608"
+            },
+            {
+                "key": "B59",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.74.1.224"
+            },
+            {
+                "key": "B60",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amj.2009.44634116"
+            },
+            {
+                "key": "B61",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000262"
+            },
+            {
+                "key": "B62",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699930802613828"
+            },
+            {
+                "key": "B63",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2013.791615"
+            },
+            {
+                "key": "B64",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.80.1.112"
+            },
+            {
+                "key": "B65",
+                "volume-title": "Emotional Contagion",
+                "author": "Hatfield E",
+                "year": "1994"
+            },
+            {
+                "key": "B66",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0022762"
+            },
+            {
+                "key": "B67",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0026234"
+            },
+            {
+                "key": "B68",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2018.1476324"
+            },
+            {
+                "key": "B69",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0033362"
+            },
+            {
+                "key": "B70",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2014.09.004"
+            },
+            {
+                "key": "B71",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699930500450218"
+            },
+            {
+                "key": "B72",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0167-8760(00)00161-6"
+            },
+            {
+                "key": "B73",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1088868312472607"
+            },
+            {
+                "key": "B74",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/apl0000174"
+            },
+            {
+                "key": "B75",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2015.1039494"
+            },
+            {
+                "key": "B76",
+                "volume-title": "The Face of Emotion",
+                "author": "Izard CE.",
+                "year": "1971"
+            },
+            {
+                "key": "B77",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2019.06.002"
+            },
+            {
+                "key": "B78",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/mind/os-IX.34.188"
+            },
+            {
+                "key": "B79",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amj.2017.1423"
+            },
+            {
+                "key": "B80",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.leaqua.2007.12.001"
+            },
+            {
+                "key": "B81",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000222"
+            },
+            {
+                "key": "B82",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000480"
+            },
+            {
+                "key": "B83",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999396380312"
+            },
+            {
+                "key": "B84",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999399379168"
+            },
+            {
+                "key": "B85",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/(SICI)1098-2337(1997)23:5<359::AID-AB5>3.0.CO;2-D"
+            },
+            {
+                "key": "B86",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF02281954"
+            },
+            {
+                "key": "B87",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.leaqua.2015.03.001"
+            },
+            {
+                "key": "B88",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2005.08.003"
+            },
+            {
+                "key": "B89",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1073/pnas.1320040111"
+            },
+            {
+                "key": "B90",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.7.4.730"
+            },
+            {
+                "key": "B91",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1521/jscp.1995.14.1.53"
+            },
+            {
+                "key": "B92",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1948550616679236"
+            },
+            {
+                "key": "B93",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000454"
+            },
+            {
+                "key": "B94",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/pspi0000026"
+            },
+            {
+                "key": "B95",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.56.4.543"
+            },
+            {
+                "key": "B96",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1093/oso/9780195069945.001.0001",
+                "volume-title": "Emotion and Adaptation",
+                "author": "Lazarus RS.",
+                "year": "1991"
+            },
+            {
+                "key": "B97",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0956797620904975"
+            },
+            {
+                "key": "B98",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1146/annurev.ps.46.020195.001233"
+            },
+            {
+                "key": "B99",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167212446938"
+            },
+            {
+                "key": "B100",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0033345"
+            },
+            {
+                "key": "B101",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1469-8986.1990.tb02330.x"
+            },
+            {
+                "key": "B102",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/(SICI)1099-1379(200003)21:2<221::AID-JOB36>3.0.CO;2-0"
+            },
+            {
+                "key": "B103",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amj.2013.1082"
+            },
+            {
+                "key": "B104",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0038066"
+            },
+            {
+                "key": "B105",
+                "first-page": "203",
+                "volume": "9",
+                "author": "Lundquist L-O",
+                "year": "1995",
+                "journal-title": "J. Psychophysiol."
+            },
+            {
+                "key": "B106",
+                "doi-asserted-by": "crossref",
+                "first-page": "221",
+                "DOI": "10.1093/oso/9780195130072.003.0012",
+                "volume-title": "Appraisal Processes in Emotion: Theory, Research, Application",
+                "author": "Manstead ASR",
+                "year": "2001"
+            },
+            {
+                "key": "B107",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0023492"
+            },
+            {
+                "key": "B108",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0030074"
+            },
+            {
+                "key": "B109",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/000306515800600303"
+            },
+            {
+                "key": "B110",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1126/science.1136930"
+            },
+            {
+                "key": "B111",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1146/annurev.psych.121208.131605"
+            },
+            {
+                "key": "B112",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.56.2.219"
+            },
+            {
+                "key": "B113",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.4324/9780203644966"
+            },
+            {
+                "key": "B114",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167209336611"
+            },
+            {
+                "key": "B115",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0040112"
+            },
+            {
+                "key": "B116",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1089-2680.5.3.180"
+            },
+            {
+                "key": "B117",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/3069445"
+            },
+            {
+                "key": "B118",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0012-1649.34.5.1017"
+            },
+            {
+                "key": "B119",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2011.05.004"
+            },
+            {
+                "key": "B120",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1368430217702967"
+            },
+            {
+                "key": "B121",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2190/DUGG-P24E-52WK-6CDG"
+            },
+            {
+                "key": "B122",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699930701516791"
+            },
+            {
+                "key": "B123",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1089-2680.9.1.3"
+            },
+            {
+                "key": "B124",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2013.01.007"
+            },
+            {
+                "key": "B125",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0038783"
+            },
+            {
+                "key": "B126",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2005.05.002"
+            },
+            {
+                "key": "B127",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1509/jmkr.46.6.777"
+            },
+            {
+                "key": "B128",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0012-1649.21.1.195"
+            },
+            {
+                "key": "B129",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0014755"
+            },
+            {
+                "key": "B130",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/apl0000418"
+            },
+            {
+                "key": "B131",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2006.12.002"
+            },
+            {
+                "key": "B132",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/pspi0000010"
+            },
+            {
+                "key": "B133",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1754073916684557"
+            },
+            {
+                "key": "B134",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0021-9010.90.2.295"
+            },
+            {
+                "key": "B135",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/pspp0000053"
+            },
+            {
+                "key": "B136",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1006/jesp.1995.1021"
+            },
+            {
+                "key": "B137",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.80.1.86"
+            },
+            {
+                "key": "B138",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0162-3095(90)90017-Z"
+            },
+            {
+                "key": "B139",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0021-9010.85.6.848"
+            },
+            {
+                "key": "B140",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.74.6.1504"
+            },
+            {
+                "key": "B141",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0028412"
+            },
+            {
+                "key": "B142",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0021-9010.87.5.1001"
+            },
+            {
+                "key": "B143",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10803-012-1695-5"
+            },
+            {
+                "key": "B144",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2008.02.008"
+            },
+            {
+                "key": "B145",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0022582"
+            },
+            {
+                "key": "B146",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.94.4.600"
+            },
+            {
+                "key": "B147",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2011.648174"
+            },
+            {
+                "key": "B148",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0035226"
+            },
+            {
+                "key": "B149",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s11031-014-9421-6"
+            },
+            {
+                "key": "B150",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-8721.2009.01633.x"
+            },
+            {
+                "key": "B151",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1017/CBO9781107261396"
+            },
+            {
+                "key": "B152",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.psychsport.2018.11.004"
+            },
+            {
+                "key": "B153",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0021-9010.92.6.1557"
+            },
+            {
+                "key": "B154",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.86.1.57"
+            },
+            {
+                "key": "B155",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.87.4.510"
+            },
+            {
+                "key": "B156",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.91.1.124"
+            },
+            {
+                "key": "B157",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0956797610387438"
+            },
+            {
+                "key": "B158",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amj.2009.41331253"
+            },
+            {
+                "key": "B159",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-9280.2008.02241.x"
+            },
+            {
+                "key": "B160",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/apl0000003"
+            },
+            {
+                "key": "B161",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.leaqua.2012.09.003"
+            },
+            {
+                "key": "B162",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1745691616674458"
+            },
+            {
+                "key": "B163",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2012.05.002"
+            },
+            {
+                "key": "B164",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amj.2015.0460"
+            },
+            {
+                "key": "B165",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amj.2014.0367"
+            },
+            {
+                "key": "B166",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0011993"
+            },
+            {
+                "key": "B167",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000123"
+            },
+            {
+                "key": "B168",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2016.07.003"
+            },
+            {
+                "key": "B169",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2008.07.015"
+            },
+            {
+                "key": "B170",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2011.646956"
+            }
+        ],
+        "container-title": [
+            "Annual Review of Psychology"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://www.annualreviews.org/doi/pdf/10.1146/annurev-psych-020821-010855",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2023,
+                    11,
+                    6
+                ]
+            ],
+            "date-time": "2023-11-06T07:02:56Z",
+            "timestamp": 1699254176000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://www.annualreviews.org/doi/10.1146/annurev-psych-020821-010855"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2022,
+                    1,
+                    4
+                ]
+            ]
+        },
+        "references-count": 170,
+        "journal-issue": {
+            "issue": "1",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2022,
+                        1,
+                        4
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1146/annurev-psych-020821-010855"
+        ],
+        "URL": "https://doi.org/10.1146/annurev-psych-020821-010855",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0066-4308",
+            "1545-2085"
+        ],
+        "issn-type": [
+            {
+                "value": "0066-4308",
+                "type": "print"
+            },
+            {
+                "value": "1545-2085",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2022,
+                    1,
+                    4
+                ]
+            ]
+        }
+    }
+}

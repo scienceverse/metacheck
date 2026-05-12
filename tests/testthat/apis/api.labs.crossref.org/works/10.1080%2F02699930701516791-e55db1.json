@@ -1,0 +1,347 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    18
+                ]
+            ],
+            "date-time": "2026-04-18T01:02:20Z",
+            "timestamp": 1776474140298,
+            "version": "3.51.2"
+        },
+        "reference-count": 27,
+        "publisher": "Informa UK Limited",
+        "issue": "5",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Cognition &amp; Emotion"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2008,
+                    8
+                ]
+            ]
+        },
+        "DOI": "10.1080/02699930701516791",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2008,
+                    5,
+                    12
+                ]
+            ],
+            "date-time": "2008-05-12T15:57:09Z",
+            "timestamp": 1210607829000
+        },
+        "page": "789-801",
+        "source": "Crossref",
+        "is-referenced-by-count": 84,
+        "title": [
+            "Facial expressions allow inference of both emotions and their components"
+        ],
+        "prefix": "10.1080",
+        "volume": "22",
+        "author": [
+            {
+                "given": "Klaus R.",
+                "family": "Scherer",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Didier",
+                "family": "Grandjean",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "301",
+        "reference": [
+            {
+                "key": "CIT0001",
+                "first-page": "935",
+                "volume-title": "The basic works of Aristotle",
+                "author": "Aristotle",
+                "year": "1941"
+            },
+            {
+                "key": "CIT0002",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Bühler , K . 1990 . Theory of language: The representational function of language . Amsterdam : Benjamins . (Originally published 1934)",
+                "DOI": "10.1075/fos.25"
+            },
+            {
+                "key": "CIT0003",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699939208411068"
+            },
+            {
+                "key": "CIT0004",
+                "volume-title": "Pictures of facial affect [slides]",
+                "author": "Ekman P.",
+                "year": "1976"
+            },
+            {
+                "key": "CIT0005",
+                "first-page": "572",
+                "volume-title": "Handbook of the affective sciences",
+                "author": "Ellsworth P. C.",
+                "year": "2003"
+            },
+            {
+                "key": "CIT0006",
+                "volume-title": "Human facial expression: An evolutionary view",
+                "author": "Fridlund A. J.",
+                "year": "1994"
+            },
+            {
+                "key": "CIT0007",
+                "first-page": "57",
+                "volume-title": "The psychology of facial expression",
+                "author": "Frijda N. H.",
+                "year": "1997"
+            },
+            {
+                "key": "CIT0008",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.7551/mitpress/2867.001.0001",
+                "volume-title": "The evolution of communication",
+                "author": "Hauser M. D.",
+                "year": "1996"
+            },
+            {
+                "key": "CIT0009",
+                "first-page": "123",
+                "volume-title": "Advances in the social psychology of language",
+                "author": "Herrmann T.",
+                "year": "1982"
+            },
+            {
+                "key": "CIT0010",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.3.2.150"
+            },
+            {
+                "key": "CIT0011",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.115.2.288"
+            },
+            {
+                "key": "CIT0012",
+                "first-page": "200",
+                "volume-title": "Fundamentals of nonverbal behavior",
+                "author": "Kappas A.",
+                "year": "1991"
+            },
+            {
+                "key": "CIT0013",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00424518"
+            },
+            {
+                "key": "CIT0014",
+                "doi-asserted-by": "crossref",
+                "first-page": "3",
+                "DOI": "10.1093/oso/9780195130072.003.0001",
+                "volume-title": "Appraisal processes in emotion: Theory, methods, research",
+                "author": "Roseman I. J.",
+                "year": "2001"
+            },
+            {
+                "key": "CIT0015",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.115.1.102"
+            },
+            {
+                "key": "CIT0016",
+                "first-page": "293",
+                "volume-title": "Approaches to emotion",
+                "author": "Scherer K. R.",
+                "year": "1984"
+            },
+            {
+                "key": "CIT0017",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0261927X8800700201"
+            },
+            {
+                "key": "CIT0018",
+                "first-page": "139",
+                "volume-title": "International review of studies on emotion",
+                "volume": "2",
+                "author": "Scherer K. R",
+                "year": "1992"
+            },
+            {
+                "key": "CIT0019",
+                "first-page": "25",
+                "volume-title": "The nature of emotion: Fundamental questions",
+                "author": "Scherer K. R.",
+                "year": "1994"
+            },
+            {
+                "key": "CIT0020",
+                "doi-asserted-by": "crossref",
+                "first-page": "92",
+                "DOI": "10.1093/oso/9780195130072.003.0005",
+                "volume-title": "Appraisal processes in emotion: Theory, methods, research",
+                "author": "Scherer K. R.",
+                "year": "2001"
+            },
+            {
+                "key": "CIT0021",
+                "doi-asserted-by": "crossref",
+                "first-page": "136",
+                "DOI": "10.1017/CBO9780511806582.009",
+                "volume-title": "Feelings and emotions: The Amsterdam symposium",
+                "author": "Scherer K. R.",
+                "year": "2004"
+            },
+            {
+                "key": "CIT0022",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.7.1.113"
+            },
+            {
+                "key": "CIT0023",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.4.4.389"
+            },
+            {
+                "key": "CIT0024",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1017/CBO9780511659911.012"
+            },
+            {
+                "key": "CIT0025",
+                "first-page": "99",
+                "volume": "49",
+                "author": "Tcherkassof A.",
+                "year": "1999",
+                "journal-title": "Revue Européenne de Psychologie Appliquée"
+            },
+            {
+                "key": "CIT0026",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167200267004"
+            },
+            {
+                "key": "CIT0027",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999399379384"
+            }
+        ],
+        "container-title": [
+            "Cognition &amp; Emotion"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://www.tandfonline.com/doi/pdf/10.1080/02699930701516791",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2025,
+                    1,
+                    30
+                ]
+            ],
+            "date-time": "2025-01-30T06:31:56Z",
+            "timestamp": 1738218716000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "http://www.tandfonline.com/doi/abs/10.1080/02699930701516791"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2008,
+                    8
+                ]
+            ]
+        },
+        "references-count": 27,
+        "journal-issue": {
+            "issue": "5",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2008,
+                        8
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1080/02699930701516791"
+        ],
+        "URL": "https://doi.org/10.1080/02699930701516791",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0269-9931",
+            "1464-0600"
+        ],
+        "issn-type": [
+            {
+                "value": "0269-9931",
+                "type": "print"
+            },
+            {
+                "value": "1464-0600",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2008,
+                    8
+                ]
+            ]
+        }
+    }
+}

@@ -1,7 +1,7 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.0.1.0
-Date: 2025-04-24
+Version: 0.0.0.9100
+Date: 2026-05-13
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -28,7 +28,7 @@ Authors@R: c(
            role = c("ctb"),
            email = "l.wallrich@bbk.ac.uk",
            comment = c(ORCID = "0000-0003-2121-5177")))
-Description: A modular, extendable system for automatically checking research outputs for best practices using text search, R code, and/or (optional) LLM queries.
+Description: A modular, extendable system for checking research outputs for best practices using text search, R code, and/or (optional) LLM queries.
 License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -36,7 +36,7 @@ RoxygenNote: 7.3.3
 Suggests: 
     ggplot2,
     devtools,
-    httptest,
+    httptest2,
     readr,
     rmarkdown,
     shiny,

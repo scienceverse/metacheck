@@ -5,9 +5,8 @@ test_that("exists", {
   expect_error(pubpeer_comments(bad_arg))
 })
 
-# httptest::start_capturing()
-
-httptest::use_mock_api()
+# httptest2::start_capturing()
+httptest2::use_mock_api()
 
 test_that("defaults", {
   # both with comments
@@ -54,5 +53,5 @@ test_that("defaults", {
   expect_null(pp)
 })
 
-httptest::stop_mocking()
-# httptest::stop_capturing()
+httptest2::stop_mocking()
+# httptest2::stop_capturing()

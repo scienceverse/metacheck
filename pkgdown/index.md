@@ -110,16 +110,7 @@ Lisa’s visiting professorship at the Eindhoven Artificial Intelligence
 Systems Institute
 ([EAISI](https://www.tue.nl/en/research/institutes/eindhoven-artificial-intelligence-systems-institute)).
 
-<style>
-&#10;.people figure { 
-  width: 18%;
-  padding: 0;
-  margin: 1% 1% 0 1%;
-  float: left; 
-}
-&#10;</style>
-
-<div class="people" layout-ncol="4">
+<div class="people" layout-ncol="5">
 
 <figure>
 <img src="https://scienceverse.github.io/images/people/debruine.jpg"

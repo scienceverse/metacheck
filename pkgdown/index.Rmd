@@ -67,18 +67,7 @@ Mink Veltman (RA, TU/e)
 
 Metacheck was initially developed by Lisa and Daniël in 2024 during Lisa’s visiting professorship at the Eindhoven Artificial Intelligence Systems Institute ([EAISI](https://www.tue.nl/en/research/institutes/eindhoven-artificial-intelligence-systems-institute)). 
 
-<style>
-
-.people figure { 
-  width: 18%;
-  padding: 0;
-  margin: 1% 1% 0 1%;
-  float: left; 
-}
-
-</style>
-
-::: {.people layout-ncol=4}
+::: {.people layout-ncol=5}
 
 ![Lisa DeBruine](https://scienceverse.github.io/images/people/debruine.jpg)
 

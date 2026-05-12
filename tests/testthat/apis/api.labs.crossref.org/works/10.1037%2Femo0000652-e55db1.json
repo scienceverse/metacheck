@@ -1,0 +1,241 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    2
+                ]
+            ],
+            "date-time": "2026-04-02T21:17:26Z",
+            "timestamp": 1775164646958,
+            "version": "3.50.1"
+        },
+        "reference-count": 0,
+        "publisher": "American Psychological Association (APA)",
+        "issue": "8",
+        "funder": [
+            {
+                "DOI": "10.13039/501100001659",
+                "name": "Deutsche Forschungsgemeinschaft",
+                "doi-asserted-by": "crossref",
+                "award": [
+                    "LA 4029/1-1"
+                ],
+                "award-info": [
+                    {
+                        "award-number": [
+                            "LA 4029/1-1"
+                        ]
+                    }
+                ],
+                "id": [
+                    {
+                        "id": "10.13039/501100001659",
+                        "id-type": "DOI",
+                        "asserted-by": "crossref"
+                    }
+                ]
+            },
+            {
+                "DOI": "10.13039/501100001659",
+                "name": "Deutsche Forschungsgemeinschaft",
+                "doi-asserted-by": "crossref",
+                "award": [
+                    "RE 3718/3-1"
+                ],
+                "award-info": [
+                    {
+                        "award-number": [
+                            "RE 3718/3-1"
+                        ]
+                    }
+                ],
+                "id": [
+                    {
+                        "id": "10.13039/501100001659",
+                        "id-type": "DOI",
+                        "asserted-by": "crossref"
+                    }
+                ]
+            }
+        ],
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Emotion"
+        ],
+        "DOI": "10.1037/emo0000652",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2019,
+                    8,
+                    1
+                ]
+            ],
+            "date-time": "2019-08-01T13:44:08Z",
+            "timestamp": 1564667048000
+        },
+        "page": "1399-1410",
+        "source": "Crossref",
+        "is-referenced-by-count": 21,
+        "title": [
+            "Accuracy and bias in the social perception of envy."
+        ],
+        "prefix": "10.1037",
+        "volume": "20",
+        "author": [
+            {
+                "ORCID": "https://orcid.org/0000-0002-5375-3247",
+                "authenticated-orcid": false,
+                "given": "Jens",
+                "family": "Lange",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Birk",
+                "family": "Hagemeyer",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "ORCID": "https://orcid.org/0000-0002-2582-6787",
+                "authenticated-orcid": false,
+                "given": "Thomas",
+                "family": "Lösch",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "ORCID": "https://orcid.org/0000-0001-8632-6842",
+                "authenticated-orcid": false,
+                "given": "Katrin",
+                "family": "Rentzsch",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "15",
+        "published-online": {
+            "date-parts": [
+                [
+                    2020,
+                    12
+                ]
+            ]
+        },
+        "container-title": [
+            "Emotion"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://psycnet.apa.org/journals/emo/20/8/1399.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    5,
+                    16
+                ]
+            ],
+            "date-time": "2024-05-16T13:20:08Z",
+            "timestamp": 1715865608000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://doi.apa.org/doi/10.1037/emo0000652"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2020,
+                    12
+                ]
+            ]
+        },
+        "references-count": 0,
+        "journal-issue": {
+            "issue": "8",
+            "published-online": {
+                "date-parts": [
+                    [
+                        2020,
+                        12
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "2019-43727-001",
+            "31368748"
+        ],
+        "URL": "https://doi.org/10.1037/emo0000652",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1931-1516",
+            "1528-3542"
+        ],
+        "issn-type": [
+            {
+                "value": "1931-1516",
+                "type": "electronic"
+            },
+            {
+                "value": "1528-3542",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2020,
+                    12
+                ]
+            ]
+        }
+    }
+}

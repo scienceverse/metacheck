@@ -138,13 +138,13 @@ test_that("ref_retraction", {
   expect_equal(mod_output$table$retractionwatch, "Retraction")
 })
 
+#httptest2::start_capturing()
+httptest2::use_mock_api()
 
 test_that("ref_pubpeer", {
   module <- "ref_pubpeer"
   mods <- module_list()
   expect_true(module %in% mods$name)
-
-  skip_api("pubpeer.com")
 
   # no references
   paper <- demopaper()
@@ -182,6 +182,9 @@ test_that("ref_pubpeer", {
   expect_gte(nrow(mod_output$table), 2)
   expect_equal(mod_output$summary_table$paper_id, names(psychsci)[c(4, 9)])
 })
+
+httptest2::stop_mocking()
+#httptest2::stop_capturing()
 
 
 test_that("ref_summary", {

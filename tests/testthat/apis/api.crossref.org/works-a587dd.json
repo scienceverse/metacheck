@@ -1,0 +1,559 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 1,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            4,
+                            14
+                        ]
+                    ],
+                    "date-time": "2026-04-14T02:29:12Z",
+                    "timestamp": 1776133752636,
+                    "version": "3.50.1"
+                },
+                "reference-count": 32,
+                "publisher": "The Royal Society",
+                "issue": "1566",
+                "license": [
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2005,
+                                    5,
+                                    7
+                                ]
+                            ],
+                            "date-time": "2005-05-07T00:00:00Z",
+                            "timestamp": 1115424000000
+                        },
+                        "content-version": "tdm",
+                        "delay-in-days": 0,
+                        "URL": "https://royalsociety.org/journals/ethics-policies/data-sharing-mining/"
+                    }
+                ],
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2005,
+                            5,
+                            7
+                        ]
+                    ]
+                },
+                "abstract": "<jats:title>Abstract<\/jats:title>\n                  <jats:p>If humans are sensitive to the costs and benefits of favouring kin in different circumstances, a strong prediction is that cues of relatedness will have a positive effect on prosocial feelings, but a negative effect on sexual attraction. Indeed, positive effects of facial resemblance (a potential cue of kinship) have been demonstrated in prosocial contexts. Alternatively, such effects may be owing to a general preference for familiar stimuli. Here, I show that subtly manipulated images of other-sex faces were judged as more trustworthy by the participants they were made to resemble than by control participants. In contrast, the effects of resemblance on attractiveness were significantly lower. In the context of a long-term relationship, where both prosocial regard and sexual appeal are important criteria, facial resemblance had no effect. In the context of a short-term relationship, where sexual appeal is the dominant criterion, facial resemblance decreased attractiveness. The results provide evidence against explanations implicating a general preference for familiar-looking stimuli and suggest instead that facial resemblance is a kinship cue to which humans modulate responses in a context-sensitive manner.<\/jats:p>",
+                "DOI": "10.1098/rspb.2004.3003",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2005,
+                            5,
+                            25
+                        ]
+                    ],
+                    "date-time": "2005-05-25T16:01:24Z",
+                    "timestamp": 1117036884000
+                },
+                "page": "919-922",
+                "source": "Crossref",
+                "is-referenced-by-count": 184,
+                "title": [
+                    "Trustworthy but not lust-worthy: context-specific effects of facial resemblance"
+                ],
+                "prefix": "10.1098",
+                "volume": "272",
+                "author": [
+                    {
+                        "given": "Lisa M",
+                        "family": "DeBruine",
+                        "sequence": "first",
+                        "affiliation": [
+                            {
+                                "name": "Department of Psychology, McMaster University, Hamilton, Ontario L8S 4K1, Canada"
+                            }
+                        ]
+                    }
+                ],
+                "member": "175",
+                "published-online": {
+                    "date-parts": [
+                        [
+                            2005,
+                            5,
+                            7
+                        ]
+                    ]
+                },
+                "reference": [
+                    {
+                        "key": "2026010222301530800_bib1",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "677",
+                        "DOI": "10.1016/S0191-8869(01)00182-9",
+                        "article-title": "Homogamy, genetic similarity, and imprinting; parental influence on mate choice preferences",
+                        "volume": "33",
+                        "author": "Bereczkei,",
+                        "year": "2002",
+                        "journal-title": "Pers. Individ. Dif"
+                    },
+                    {
+                        "key": "2026010222301530800_bib2",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1129",
+                        "DOI": "10.1098/rspb.2003.2672",
+                        "article-title": "Sexual imprinting in human mate choice",
+                        "volume": "271",
+                        "author": "Bereczkei,",
+                        "year": "2004",
+                        "journal-title": "Proc. R. Soc. B"
+                    },
+                    {
+                        "key": "2026010222301530800_bib3",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "89",
+                        "DOI": "10.1034/j.1399-0004.2001.600201.x",
+                        "article-title": "Consanguinity and its relevance to clinical genetics",
+                        "volume": "60",
+                        "author": "Bittles,",
+                        "year": "2001",
+                        "journal-title": "Clin. Genet"
+                    },
+                    {
+                        "key": "2026010222301530800_bib4",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "117",
+                        "DOI": "10.1038/ng1094-117",
+                        "article-title": "The costs of human inbreeding and their implications for variations at the DNA level",
+                        "volume": "8",
+                        "author": "Bittles,",
+                        "year": "1994",
+                        "journal-title": "Nat. Genet"
+                    },
+                    {
+                        "key": "2026010222301530800_bib5",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "111",
+                        "DOI": "10.1080/03014460110075657",
+                        "article-title": "Does inbreeding lead to decreased human fertility?",
+                        "volume": "29",
+                        "author": "Bittles,",
+                        "year": "2002",
+                        "journal-title": "Ann. Hum. Biol"
+                    },
+                    {
+                        "key": "2026010222301530800_bib6",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "885",
+                        "DOI": "10.1068/p2851",
+                        "article-title": "On the other side of the mean: the perception of dissimilarity in faces",
+                        "volume": "29",
+                        "author": "Blanz,",
+                        "year": "2000",
+                        "journal-title": "Perception"
+                    },
+                    {
+                        "key": "2026010222301530800_bib7",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "265",
+                        "DOI": "10.1037/0033-2909.106.2.265",
+                        "article-title": "Exposure and affect: overview and meta-analysis of research, 1968–1987",
+                        "volume": "106",
+                        "author": "Bornstein,",
+                        "year": "1989",
+                        "journal-title": "Psychol. Bull"
+                    },
+                    {
+                        "key": "2026010222301530800_bib8",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1307",
+                        "DOI": "10.1098/rspb.2002.2034",
+                        "article-title": "Facial resemblance enhances trust",
+                        "volume": "269",
+                        "author": "DeBruine,",
+                        "year": "2002",
+                        "journal-title": "Proc. R. Soc. B"
+                    },
+                    {
+                        "key": "2026010222301530800_bib9",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "2085",
+                        "DOI": "10.1098/rspb.2004.2824",
+                        "article-title": "Facial resemblance increases the attractiveness of same-sex faces more than other-sex faces",
+                        "volume": "271",
+                        "author": "DeBruine,",
+                        "year": "2004",
+                        "journal-title": "Proc. R. Soc. B"
+                    },
+                    {
+                        "key": "2026010222301530800_bib10",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "142",
+                        "DOI": "10.1016/j.evolhumbehav.2004.03.003",
+                        "article-title": "Resemblance to self increases the appeal of child faces to both men and women",
+                        "volume": "25",
+                        "author": "DeBruine,",
+                        "year": "2004",
+                        "journal-title": "Evol. Hum. Behav"
+                    },
+                    {
+                        "key": "2026010222301530800_bib11",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "573",
+                        "DOI": "10.1017/S0140525X0000337X",
+                        "article-title": "The evolution of human mating: trade-offs and strategic pluralism",
+                        "volume": "23",
+                        "author": "Gangestad,",
+                        "year": "2000",
+                        "journal-title": "Behav. Brain Sci"
+                    },
+                    {
+                        "key": "2026010222301530800_bib12",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "448",
+                        "DOI": "10.1080/19485565.1973.9988075",
+                        "article-title": "Assortative mating: a study of physiognomic homogamy",
+                        "volume": "20",
+                        "author": "Griffths,",
+                        "year": "1973",
+                        "journal-title": "Soc. Biol"
+                    },
+                    {
+                        "key": "2026010222301530800_bib13",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "285",
+                        "DOI": "10.1111/1467-9280.00257",
+                        "article-title": "The attractiveness of nonface averages: implications for an evolutionary explanation of the attractiveness of average faces",
+                        "volume": "11",
+                        "author": "Halberstadt,",
+                        "year": "2000",
+                        "journal-title": "Psychol. Sci"
+                    },
+                    {
+                        "key": "2026010222301530800_bib14",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1",
+                        "DOI": "10.1016/0022-5193(64)90038-4",
+                        "article-title": "The genetical evolution of social behaviour, I",
+                        "volume": "7",
+                        "author": "Hamilton,",
+                        "year": "1964",
+                        "journal-title": "J. Theor. Biol"
+                    },
+                    {
+                        "key": "2026010222301530800_bib15",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "223",
+                        "DOI": "10.1177/026540758900600205",
+                        "article-title": "Facial resemblance in engaged and married couples",
+                        "volume": "6",
+                        "author": "Hinsz,",
+                        "year": "1989",
+                        "journal-title": "J. Soc. Pers. Relat"
+                    },
+                    {
+                        "key": "2026010222301530800_bib16",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "251",
+                        "DOI": "10.1016/S1090-5138(01)00066-6",
+                        "article-title": "Male facial attractiveness: evidence for a hormone-mediated adaptive design",
+                        "volume": "22",
+                        "author": "Johnston,",
+                        "year": "2001",
+                        "journal-title": "Evol. Hum. Behav"
+                    },
+                    {
+                        "key": "2026010222301530800_bib17",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "89",
+                        "DOI": "10.1038/82947",
+                        "article-title": "Prototype-referenced shape encoding revealed by high-level aftereffects",
+                        "volume": "4",
+                        "author": "Leopold,",
+                        "year": "2001",
+                        "journal-title": "Nat. Neurosci"
+                    },
+                    {
+                        "key": "2026010222301530800_bib18",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1095",
+                        "DOI": "10.1098/rspb.2002.1984",
+                        "article-title": "Partnership status and the temporal context of relationships influence human female preferences for sexual dimorphism in male face shape",
+                        "volume": "269",
+                        "author": "Little,",
+                        "year": "2002",
+                        "journal-title": "Proc. R. Soc. B"
+                    },
+                    {
+                        "key": "2026010222301530800_bib19",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "43",
+                        "DOI": "10.1016/S1090-5138(02)00119-8",
+                        "article-title": "Investigating an imprinting-like phenomenon in humans: partners and opposite-sex parents have similar hair and eye colour",
+                        "volume": "24",
+                        "author": "Little,",
+                        "year": "2003",
+                        "journal-title": "Evol. Hum. Behav"
+                    },
+                    {
+                        "key": "2026010222301530800_bib20",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "192",
+                        "DOI": "10.1038/279192a0",
+                        "article-title": "When to be incestuous",
+                        "volume": "279",
+                        "author": "May,",
+                        "year": "1979",
+                        "journal-title": "Nature"
+                    },
+                    {
+                        "key": "2026010222301530800_bib21",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "104",
+                        "DOI": "10.1007/s12144-999-1020-4",
+                        "article-title": "Computer graphic studies of the role of facial similarity in judgments of attractiveness",
+                        "volume": "18",
+                        "author": "Penton-Voak,",
+                        "year": "1999",
+                        "journal-title": "Curr. Psychol"
+                    },
+                    {
+                        "key": "2026010222301530800_bib22",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "264",
+                        "DOI": "10.1037/0735-7036.117.3.264",
+                        "article-title": "Female condition influences preferences for sexual dimorphism in faces of male humans (Homo sapiens)",
+                        "volume": "117",
+                        "author": "Penton-Voak,",
+                        "year": "2003",
+                        "journal-title": "J. Comp. Psychol"
+                    },
+                    {
+                        "key": "2026010222301530800_bib23",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "873",
+                        "DOI": "10.1098/rspb.2002.1971",
+                        "article-title": "Facial attractiveness judgments reflect learning of parental age characteristics",
+                        "volume": "269",
+                        "author": "Perrett,",
+                        "year": "2002",
+                        "journal-title": "Proc. R. Soc. B"
+                    },
+                    {
+                        "key": "2026010222301530800_bib24",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "159",
+                        "DOI": "10.1016/S1090-5138(01)00094-0",
+                        "article-title": "Reactions to children's faces: resemblance affects males more than females",
+                        "volume": "23",
+                        "author": "Platek,",
+                        "year": "2002",
+                        "journal-title": "Evol. Hum. Behav"
+                    },
+                    {
+                        "key": "2026010222301530800_bib25",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "81",
+                        "DOI": "10.1016/S1090-5138(02)00117-4",
+                        "article-title": "How much paternal resemblance is enough? Sex differences in hypothetical investment decisions but not in the detection of resemblance",
+                        "volume": "24",
+                        "author": "Platek,",
+                        "year": "2003",
+                        "journal-title": "Evol. Hum. Behav"
+                    },
+                    {
+                        "key": "2026010222301530800_bib26",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "57",
+                        "DOI": "10.1521/soco.19.1.57.18961",
+                        "article-title": "Generalization of mere exposure effects to averaged composite faces",
+                        "volume": "19",
+                        "author": "Rhodes,",
+                        "year": "2001",
+                        "journal-title": "Soc. Cogn"
+                    },
+                    {
+                        "key": "2026010222301530800_bib27",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "558",
+                        "DOI": "10.1046/j.0956-7976.2003.psci_1465.x",
+                        "article-title": "Fitting the mind to the world: face adaptation and attractiveness aftereffects",
+                        "volume": "14",
+                        "author": "Rhodes,",
+                        "year": "2003",
+                        "journal-title": "Psychol. Sci"
+                    },
+                    {
+                        "key": "2026010222301530800_bib28",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "375",
+                        "DOI": "10.1037/h0070754",
+                        "article-title": "Optimum orders for the presentation of pairs in the method of paired comparisons",
+                        "volume": "25",
+                        "author": "Ross,",
+                        "year": "1934",
+                        "journal-title": "J. Educ. Psychol"
+                    },
+                    {
+                        "key": "2026010222301530800_bib29",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "42",
+                        "DOI": "10.1109/38.946630",
+                        "article-title": "Prototyping and transforming facial textures for perception research",
+                        "volume": "21",
+                        "author": "Tiddeman,",
+                        "year": "2001",
+                        "journal-title": "IEEE Comput. Graph. Appl. Res"
+                    },
+                    {
+                        "key": "2026010222301530800_bib30",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "557",
+                        "DOI": "10.1038/nature02420",
+                        "article-title": "Adaptation to natural facial categories",
+                        "volume": "428",
+                        "author": "Webster,",
+                        "year": "2004",
+                        "journal-title": "Nature"
+                    },
+                    {
+                        "key": "2026010222301530800_bib31",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1S",
+                        "DOI": "10.1037/h0025848",
+                        "article-title": "Attitudinal effects of mere exposure",
+                        "volume": "9",
+                        "author": "Zajonc,",
+                        "year": "1968",
+                        "journal-title": "J. Pers. Soc. Psychol"
+                    },
+                    {
+                        "key": "2026010222301530800_bib32",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "335",
+                        "DOI": "10.1007/BF00992848",
+                        "article-title": "Convergence in the physical appearance of spouses",
+                        "volume": "11",
+                        "author": "Zajonc,",
+                        "year": "1987",
+                        "journal-title": "Motiv. Emotion"
+                    }
+                ],
+                "container-title": [
+                    "Proceedings of the Royal Society B: Biological Sciences"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "https://royalsocietypublishing.org/doi/pdf/10.1098/rspb.2004.3003",
+                        "content-type": "application/pdf",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "https://royalsocietypublishing.org/doi/full-xml/10.1098/rspb.2004.3003",
+                        "content-type": "application/xml",
+                        "content-version": "vor",
+                        "intended-application": "text-mining"
+                    },
+                    {
+                        "URL": "https://royalsocietypublishing.org/rspb/article-pdf/272/1566/919/584458/rspb.2004.3003.pdf",
+                        "content-type": "application/pdf",
+                        "content-version": "vor",
+                        "intended-application": "syndication"
+                    },
+                    {
+                        "URL": "https://royalsocietypublishing.org/rspb/article-pdf/272/1566/919/584458/rspb.2004.3003.pdf",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2026,
+                            1,
+                            3
+                        ]
+                    ],
+                    "date-time": "2026-01-03T03:30:45Z",
+                    "timestamp": 1767411045000
+                },
+                "score": 43.307137,
+                "resource": {
+                    "primary": {
+                        "URL": "https://royalsocietypublishing.org/rspb/article/272/1566/919/75800/Trustworthy-but-not-lust-worthy-context-specific"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2005,
+                            5,
+                            7
+                        ]
+                    ]
+                },
+                "references-count": 32,
+                "journal-issue": {
+                    "issue": "1566",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2005,
+                                5,
+                                7
+                            ]
+                        ]
+                    }
+                },
+                "URL": "https://doi.org/10.1098/rspb.2004.3003",
+                "ISSN": [
+                    "0962-8452",
+                    "1471-2954"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0962-8452",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1471-2954",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2005,
+                            5,
+                            7
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

@@ -1,0 +1,701 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    24
+                ]
+            ],
+            "date-time": "2026-04-24T14:41:41Z",
+            "timestamp": 1777041701768,
+            "version": "3.51.4"
+        },
+        "reference-count": 89,
+        "publisher": "Informa UK Limited",
+        "issue": "3",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Cognition &amp; Emotion"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2007,
+                    4
+                ]
+            ]
+        },
+        "DOI": "10.1080/02699930600814735",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2007,
+                    5,
+                    24
+                ]
+            ],
+            "date-time": "2007-05-24T18:14:32Z",
+            "timestamp": 1180030472000
+        },
+        "page": "449-479",
+        "source": "Crossref",
+        "is-referenced-by-count": 143,
+        "title": [
+            "The envious mind"
+        ],
+        "prefix": "10.1080",
+        "volume": "21",
+        "author": [
+            {
+                "given": "Maria",
+                "family": "Miceli",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Cristiano",
+                "family": "Castelfranchi",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "301",
+        "reference": [
+            {
+                "key": "CIT0001",
+                "volume-title": "On rhetoric. A theory of civic discourse",
+                "author": "Aristotle",
+                "year": "1991"
+            },
+            {
+                "key": "CIT0002",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.64.5.708"
+            },
+            {
+                "key": "CIT0003",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1007/978-1-4612-5743-1",
+                "volume-title": "Anger and aggression: An essay on emotion",
+                "author": "Averill J.",
+                "year": "1982"
+            },
+            {
+                "key": "CIT0004",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/2941056"
+            },
+            {
+                "key": "CIT0005",
+                "volume-title": "The tyranny of malice",
+                "author": "Berke J. K.",
+                "year": "1989"
+            },
+            {
+                "key": "CIT0006",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.106.1.59"
+            },
+            {
+                "key": "CIT0007",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/11164-000"
+            },
+            {
+                "key": "CIT0008",
+                "doi-asserted-by": "crossref",
+                "first-page": "363",
+                "DOI": "10.1207/s15324834basp1903_6",
+                "volume": "19",
+                "author": "Brigham N. L.",
+                "year": "1997",
+                "journal-title": "Basic and Applied Social Psychology"
+            },
+            {
+                "key": "CIT0009",
+                "first-page": "148",
+                "volume-title": "The psychology of jealousy and envy",
+                "author": "Buunk B. P.",
+                "year": "1991"
+            },
+            {
+                "key": "CIT0010",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.59.6.1238"
+            },
+            {
+                "key": "CIT0011",
+                "first-page": "95",
+                "volume": "7",
+                "author": "Castelfranchi C.",
+                "year": "1980",
+                "journal-title": "Giornale Italiano di Psicologia"
+            },
+            {
+                "key": "CIT0012",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.119.1.51"
+            },
+            {
+                "key": "CIT0013",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/001872678103400201"
+            },
+            {
+                "key": "CIT0014",
+                "doi-asserted-by": "crossref",
+                "first-page": "569",
+                "DOI": "10.1002/0470013494.ch27",
+                "volume-title": "Handbook of cognition and emotion",
+                "author": "East M. P.",
+                "year": "1999"
+            },
+            {
+                "key": "CIT0015",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.125.3.307"
+            },
+            {
+                "key": "CIT0016",
+                "volume-title": "The ways of the will",
+                "author": "Farber L. H.",
+                "year": "2000"
+            },
+            {
+                "key": "CIT0017",
+                "first-page": "245",
+                "volume-title": "Person to person",
+                "author": "Farrell D.",
+                "year": "1989"
+            },
+            {
+                "key": "CIT0018",
+                "doi-asserted-by": "crossref",
+                "first-page": "31",
+                "DOI": "10.1016/S0033-3182(96)71595-5",
+                "volume": "37",
+                "author": "Fava M.",
+                "year": "1996",
+                "journal-title": "Psychosomatics"
+            },
+            {
+                "key": "CIT0019",
+                "first-page": "1",
+                "volume-title": "Advances in experimental social psychology",
+                "volume": "26",
+                "author": "Feather N. T.",
+                "year": "1994"
+            },
+            {
+                "key": "CIT0020",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/s15327957pspr0302_1"
+            },
+            {
+                "key": "CIT0021",
+                "doi-asserted-by": "crossref",
+                "first-page": "953",
+                "DOI": "10.1177/014616720202800708",
+                "volume": "28",
+                "author": "Feather N. T.",
+                "year": "2002",
+                "journal-title": "Personality and Social Psychology Bulletin"
+            },
+            {
+                "key": "CIT0022",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/001872675400700202"
+            },
+            {
+                "key": "CIT0023"
+            },
+            {
+                "key": "CIT0024",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1086/201267"
+            },
+            {
+                "key": "CIT0025",
+                "volume-title": "Group psychology and the analysis of the ego",
+                "author": "Freud S.",
+                "year": "1990"
+            },
+            {
+                "key": "CIT0026",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699939308409193"
+            },
+            {
+                "key": "CIT0027",
+                "first-page": "259",
+                "volume-title": "Social comparison processes: Theoretical and empirical perspectives",
+                "author": "Goethals G. R.",
+                "year": "1977"
+            },
+            {
+                "key": "CIT0028",
+                "first-page": "21",
+                "volume-title": "Social comparison processes: Theoretical and empirical perspectives",
+                "author": "Gruder C.",
+                "year": "1977"
+            },
+            {
+                "key": "CIT0029",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1005666212320"
+            },
+            {
+                "key": "CIT0030",
+                "first-page": "163",
+                "volume-title": "The complete works of William Hazlitt",
+                "volume": "9",
+                "author": "Hazlitt W.",
+                "year": "1932"
+            },
+            {
+                "key": "CIT0031",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/10628-000"
+            },
+            {
+                "key": "CIT0032",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1017/CBO9780511809644",
+                "volume-title": "Foundations of the metaphysics of morals",
+                "author": "Kant I.",
+                "year": "1996"
+            },
+            {
+                "key": "CIT0033",
+                "first-page": "89",
+                "volume-title": "Anxiety and stress disorders: Cognitive-behavioral assessment and treatment",
+                "author": "Kendall P. C.",
+                "year": "1987"
+            },
+            {
+                "key": "CIT0034",
+                "volume-title": "Envy and gratitude: A study of unconscious forces",
+                "author": "Klein M.",
+                "year": "1957"
+            },
+            {
+                "key": "CIT0035",
+                "volume-title": "Maxims",
+                "author": "La Rochefoucauld F.",
+                "year": "1959"
+            },
+            {
+                "key": "CIT0036",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1093/oso/9780195069945.001.0001",
+                "volume-title": "Emotion and adaptation",
+                "author": "Lazarus R. S.",
+                "year": "1991"
+            },
+            {
+                "key": "CIT0037",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.73.1.91"
+            },
+            {
+                "key": "CIT0038",
+                "first-page": "237",
+                "volume-title": "Social comparison: Contemporary theory and research",
+                "author": "Major B.",
+                "year": "1991"
+            },
+            {
+                "key": "CIT0039",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/S15327558IJBM1004_4"
+            },
+            {
+                "key": "CIT0040",
+                "first-page": "52",
+                "volume-title": "The psychology of jealousy and envy",
+                "author": "Mathes E. W.",
+                "year": "1991"
+            },
+            {
+                "key": "CIT0041",
+                "volume-title": "Whatever became of sin?",
+                "author": "Menninger K.",
+                "year": "1973"
+            },
+            {
+                "key": "CIT0042",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1468-5914.1992.tb00211.x"
+            },
+            {
+                "key": "CIT0044",
+                "unstructured": "Mill , J. S. ( 1999 ). On liberty . ( Original work published 1859 ) Retrieved July 2, 2005 from Bartleby.com website: http://www.bartleby.com/130/"
+            },
+            {
+                "key": "CIT0045",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-295X.110.3.472"
+            },
+            {
+                "key": "CIT0046",
+                "first-page": "425",
+                "volume-title": "Explaining emotions",
+                "author": "Neu J.",
+                "year": "1980"
+            },
+            {
+                "key": "CIT0047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.48.3.624"
+            },
+            {
+                "key": "CIT0048",
+                "volume-title": "Seven sins and seven virtues",
+                "author": "Olsson K. A.",
+                "year": "1962"
+            },
+            {
+                "key": "CIT0049",
+                "first-page": "3",
+                "volume-title": "The psychology of jealousy and envy",
+                "author": "Parrott W. G.",
+                "year": "1991"
+            },
+            {
+                "key": "CIT0050",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.64.6.906"
+            },
+            {
+                "key": "CIT0051",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0022-1031(85)90015-0"
+            },
+            {
+                "key": "CIT0052",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0022-1031(66)90061-8"
+            },
+            {
+                "key": "CIT0053",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.4159/9780674042605",
+                "volume-title": "A theory of justice",
+                "author": "Rawls J.",
+                "year": "1971"
+            },
+            {
+                "key": "CIT0054",
+                "first-page": "13",
+                "volume": "28",
+                "author": "Roberts R.",
+                "year": "1991",
+                "journal-title": "American Philosophical Quarterly"
+            },
+            {
+                "key": "CIT0055",
+                "volume-title": "Moralities of everyday life",
+                "author": "Sabini J.",
+                "year": "1982"
+            },
+            {
+                "key": "CIT0056",
+                "first-page": "xi",
+                "volume-title": "The psychology of jealousy and envy",
+                "author": "Salovey P.",
+                "year": "1991"
+            },
+            {
+                "key": "CIT0057",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.47.4.780"
+            },
+            {
+                "key": "CIT0058",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.50.6.1100"
+            },
+            {
+                "key": "CIT0059",
+                "first-page": "271",
+                "volume-title": "The psychology of jealousy and envy",
+                "author": "Salovey P.",
+                "year": "1991"
+            },
+            {
+                "key": "CIT0060",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.obhdp.2004.01.001"
+            },
+            {
+                "key": "CIT0061",
+                "volume-title": "Ressentiment",
+                "author": "Scheler M.",
+                "year": "1961"
+            },
+            {
+                "key": "CIT0062",
+                "volume-title": "Envy: A theory of social behaviour",
+                "author": "Schoeck H.",
+                "year": "1969"
+            },
+            {
+                "key": "CIT0063",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/3033570"
+            },
+            {
+                "key": "CIT0064",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699939308409189"
+            },
+            {
+                "key": "CIT0065",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.65.5.916"
+            },
+            {
+                "key": "CIT0066",
+                "first-page": "79",
+                "volume-title": "The psychology of jealousy and envy",
+                "author": "Smith R. H.",
+                "year": "1991"
+            },
+            {
+                "key": "CIT0067",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167288142017"
+            },
+            {
+                "key": "CIT0068",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/01461672992511008"
+            },
+            {
+                "key": "CIT0069",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167294206008"
+            },
+            {
+                "key": "CIT0070",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167296222005"
+            },
+            {
+                "key": "CIT0071",
+                "volume-title": "The interpersonal theory of psychiatry",
+                "author": "Sullivan H. S.",
+                "year": "1953"
+            },
+            {
+                "key": "CIT0072",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1475-4975.1988.tb00124.x"
+            },
+            {
+                "key": "CIT0073",
+                "first-page": "3",
+                "volume-title": "Handbook of motivation and cognition",
+                "author": "Taylor S. E.",
+                "year": "1996"
+            },
+            {
+                "key": "CIT0074",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.55.5.695"
+            },
+            {
+                "key": "CIT0075",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.54.1.49"
+            },
+            {
+                "key": "CIT0076",
+                "first-page": "672",
+                "volume": "44",
+                "author": "Testa M.",
+                "year": "1990",
+                "journal-title": "Basic and Applied Social Psychology"
+            },
+            {
+                "key": "CIT0077",
+                "volume-title": "The Seasons",
+                "author": "Thomson J.",
+                "year": "1842"
+            },
+            {
+                "key": "CIT0078",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0022-1031(66)90064-3"
+            },
+            {
+                "key": "CIT0079",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0162-3095(90)90017-Z"
+            },
+            {
+                "key": "CIT0080",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699930541000066"
+            },
+            {
+                "key": "CIT0081",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.6.1.156"
+            },
+            {
+                "key": "CIT0082",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-295X.92.4.548"
+            },
+            {
+                "key": "CIT0083",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.97.1.74"
+            },
+            {
+                "key": "CIT0084",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0022-1031(66)90062-X"
+            },
+            {
+                "key": "CIT0085",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/s15327957pspr0101_4"
+            },
+            {
+                "key": "CIT0086",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1521/jscp.21.1.67.22406"
+            },
+            {
+                "key": "CIT0087",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.90.2.245"
+            },
+            {
+                "key": "CIT0088",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/2786255"
+            },
+            {
+                "key": "CIT0089",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.106.2.231"
+            },
+            {
+                "key": "CIT0090",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF00646459"
+            }
+        ],
+        "container-title": [
+            "Cognition &amp; Emotion"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "http://www.tandfonline.com/doi/pdf/10.1080/02699930600814735",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    2,
+                    14
+                ]
+            ],
+            "date-time": "2024-02-14T13:55:32Z",
+            "timestamp": 1707918932000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "http://www.tandfonline.com/doi/abs/10.1080/02699930600814735"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2007,
+                    4
+                ]
+            ]
+        },
+        "references-count": 89,
+        "journal-issue": {
+            "issue": "3",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2007,
+                        4
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1080/02699930600814735"
+        ],
+        "URL": "https://doi.org/10.1080/02699930600814735",
+        "relation": {
+
+        },
+        "ISSN": [
+            "0269-9931",
+            "1464-0600"
+        ],
+        "issn-type": [
+            {
+                "value": "0269-9931",
+                "type": "print"
+            },
+            {
+                "value": "1464-0600",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2007,
+                    4
+                ]
+            ]
+        }
+    }
+}

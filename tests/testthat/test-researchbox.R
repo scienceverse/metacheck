@@ -13,11 +13,11 @@ test_that("rbox_links", {
 })
 
 
-#httptest::start_capturing()
-httptest::use_mock_api()
+#httptest2::start_capturing()
+httptest2::use_mock_api()
 
 test_that("rbox_info", {
-  skip_api("researchbox.org")
+  #skip_api("researchbox.org")
 
   url <- "https://researchbox.org/801"
   info <- rbox_info(url)
@@ -49,8 +49,10 @@ test_that("rbox_info", {
 })
 
 test_that("rbox_retrieve", {
-  skip_if_quick()
-  skip_api("researchbox.org")
+  #skip_api("researchbox.org")
+  testthat::local_mocked_bindings(
+    online = \(...) TRUE
+  )
 
   paper <- test_paper(c(
     "https://researchbox.org/4377",
@@ -66,7 +68,7 @@ test_that("rbox_retrieve", {
   expect_equal(info$RB_public, public)
 })
 
+httptest2::stop_mocking()
+#httptest2::stop_capturing()
 
-httptest::stop_mocking()
-#httptest::stop_capturing()
 

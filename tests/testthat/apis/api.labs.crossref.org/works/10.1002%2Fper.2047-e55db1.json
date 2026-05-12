@@ -1,0 +1,692 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    5,
+                    12
+                ]
+            ],
+            "date-time": "2026-05-12T18:59:29Z",
+            "timestamp": 1778612369530,
+            "version": "3.51.4"
+        },
+        "reference-count": 82,
+        "publisher": "SAGE Publications",
+        "issue": "2",
+        "license": [
+            {
+                "start": {
+                    "date-parts": [
+                        [
+                            2016,
+                            3,
+                            1
+                        ]
+                    ],
+                    "date-time": "2016-03-01T00:00:00Z",
+                    "timestamp": 1456790400000
+                },
+                "content-version": "tdm",
+                "delay-in-days": 0,
+                "URL": "https://journals.sagepub.com/page/policies/text-and-data-mining-license"
+            }
+        ],
+        "funder": [
+            {
+                "DOI": "10.13039/501100001659",
+                "name": "German Research Foundation",
+                "doi-asserted-by": "crossref",
+                "award": [
+                    "CR 489/1-1"
+                ],
+                "award-info": [
+                    {
+                        "award-number": [
+                            "CR 489/1-1"
+                        ]
+                    }
+                ],
+                "id": [
+                    {
+                        "id": "10.13039/501100001659",
+                        "id-type": "DOI",
+                        "asserted-by": "crossref"
+                    }
+                ]
+            }
+        ],
+        "content-domain": {
+            "domain": [
+                "journals.sagepub.com"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Eur J Pers"
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2016,
+                    3
+                ]
+            ]
+        },
+        "abstract": "<jats:p>It is widely assumed that narcissists are envious. Nevertheless, evidence supporting this claim has remained elusive. In five studies (N = 1,225), we disentangle how grandiose narcissism predicts divergent envious inclinations. Specific facets of narcissism and forms of envy shared the same underlying motivational orientations (Study 1) and distinctively related to each other (Studies 1 to 5) via differences in emotional appraisal (Study 4). Moreover, envy was linked to opposing social consequences of different narcissism facets (Study 5). Specifically, hope for success related to narcissistic admiration, predicting benign envy, which entails the motivation to improve performance, translating into the ascription of social potency by the self and others. In contrast, fear of failure related to narcissistic rivalry, predicting malicious envy, which entails hostility, translating into the ascription of a proneness for social conflict by others. These results converged with envy measured as a trait (Studies 1 and 5) or state in recall tasks (Studies 2 and 4) and as response to an upward standard in the situation (Study 3). The findings provide important insights into narcissists‘ emotional complexities, integrate prior isolated and conflicting evidence, and open up new avenues for research on narcissism and envy. Copyright © 2016 European Association of Personality Psychology<\/jats:p>",
+        "DOI": "10.1002/per.2047",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2016,
+                    3,
+                    7
+                ]
+            ],
+            "date-time": "2016-03-07T09:16:53Z",
+            "timestamp": 1457342213000
+        },
+        "page": "168-188",
+        "update-policy": "https://doi.org/10.1177/sage-journals-update-policy",
+        "source": "Crossref",
+        "is-referenced-by-count": 153,
+        "title": [
+            "The Evil Queen's Dilemma: Linking Narcissistic Admiration and Rivalry to Benign and Malicious Envy"
+        ],
+        "prefix": "10.1177",
+        "volume": "30",
+        "author": [
+            {
+                "given": "Jens",
+                "family": "Lange",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "University of Cologne, Cologne, Germany"
+                    }
+                ]
+            },
+            {
+                "given": "Jan",
+                "family": "Crusius",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "University of Cologne, Cologne, Germany"
+                    }
+                ]
+            },
+            {
+                "given": "Birk",
+                "family": "Hagemeyer",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Friedrich-Schiller-Universität Jena, Jena, Germany"
+                    }
+                ]
+            }
+        ],
+        "member": "179",
+        "published-online": {
+            "date-parts": [
+                [
+                    2016,
+                    3,
+                    1
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "bibr1-per.2047",
+                "volume-title": "Diagnostic and statistical manual of mental disorders",
+                "author": "American Psychiatric Association",
+                "year": "2000",
+                "edition": "4"
+            },
+            {
+                "key": "bibr2-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/per.1999"
+            },
+            {
+                "key": "bibr3-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/per.811"
+            },
+            {
+                "key": "bibr4-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0034431"
+            },
+            {
+                "key": "bibr5-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0016338"
+            },
+            {
+                "key": "bibr6-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-295X.84.2.191"
+            },
+            {
+                "key": "bibr7-per.2047",
+                "volume-title": "Nothing compares to me: How narcissism shapes comparative thinking",
+                "author": "Burgmer P.",
+                "year": "2016"
+            },
+            {
+                "key": "bibr8-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/s15324834basp2601_4"
+            },
+            {
+                "key": "bibr9-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167208324101"
+            },
+            {
+                "key": "bibr10-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.75.1.219"
+            },
+            {
+                "key": "bibr11-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037//0022-3514.83.2.340"
+            },
+            {
+                "key": "bibr12-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/9781118093108"
+            },
+            {
+                "key": "bibr13-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167215581712"
+            },
+            {
+                "key": "bibr14-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0023781"
+            },
+            {
+                "key": "bibr15-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0030398"
+            },
+            {
+                "key": "bibr16-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.evolhumbehav.2010.02.004"
+            },
+            {
+                "key": "bibr17-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0034410"
+            },
+            {
+                "key": "bibr18-per.2047",
+                "first-page": "119",
+                "volume-title": "Theories in social psychology",
+                "author": "Corcoran K.",
+                "year": "2011"
+            },
+            {
+                "key": "bibr19-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jesp.2014.05.007"
+            },
+            {
+                "key": "bibr20-per.2047",
+                "volume-title": "Envy at work",
+                "author": "Crusius J."
+            },
+            {
+                "key": "bibr21-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0023523"
+            },
+            {
+                "key": "bibr22-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1521/pedi.17.3.188.22146"
+            },
+            {
+                "key": "bibr23-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/01461672982411003"
+            },
+            {
+                "key": "bibr24-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.5465/amj.2009.0804"
+            },
+            {
+                "key": "bibr25-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/1948550614564224"
+            },
+            {
+                "key": "bibr26-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167213483580"
+            },
+            {
+                "key": "bibr27-per.2047",
+                "first-page": "572",
+                "volume-title": "Handbook of affective sciences",
+                "author": "Ellsworth P. C.",
+                "year": "2003"
+            },
+            {
+                "key": "bibr28-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.52.1.11"
+            },
+            {
+                "key": "bibr29-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/emo0000102"
+            },
+            {
+                "key": "bibr30-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0029629"
+            },
+            {
+                "key": "bibr31-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.76.1.129"
+            },
+            {
+                "key": "bibr32-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0191-8869(96)00081-5"
+            },
+            {
+                "key": "bibr33-per.2047",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Grosz M. P., Dufner M., Back M. D. & Denissen J. J. A. (2015). Who is open to a narcissistic romantic partner? The roles of sensation seeking, trait anxiety, and similarity. Journal of Research in Personality, 58, 84–95. http://doi.org/10.1016/j.jrp.2015.05.007M",
+                "DOI": "10.1016/j.jrp.2015.05.007"
+            },
+            {
+                "key": "bibr34-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167215611636"
+            },
+            {
+                "key": "bibr35-per.2047",
+                "unstructured": "Grimm J. & Grimm W. (2002). Kinder– und Hausmärchen. (D. L. Ashliman, Trans.) Retrieved from www.pitt.edu/∼dash/grimmtales.html (Original work published in 1857)."
+            },
+            {
+                "key": "bibr36-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.paid.2013.05.009"
+            },
+            {
+                "key": "bibr37-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S1090-5138(00)00071-4"
+            },
+            {
+                "key": "bibr38-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1093/acprof:oso/9780195327953.003.0004"
+            },
+            {
+                "key": "bibr39-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0023904"
+            },
+            {
+                "key": "bibr40-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/per.1930"
+            },
+            {
+                "key": "bibr41-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.66.1.206"
+            },
+            {
+                "key": "bibr42-per.2047",
+                "volume-title": "Dyadic data analysis",
+                "author": "Kenny D. A.",
+                "year": "2006"
+            },
+            {
+                "key": "bibr43-per.2047",
+                "volume-title": "Borderline conditions and pathological narcissism",
+                "author": "Kernberg O. F.",
+                "year": "1975"
+            },
+            {
+                "key": "bibr44-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-6494.2012.00767.x"
+            },
+            {
+                "key": "bibr45-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/pspp0000013"
+            },
+            {
+                "key": "bibr46-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-6494.2012.00795.x"
+            },
+            {
+                "key": "bibr47-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1027/1015-5759.22.3.216"
+            },
+            {
+                "key": "bibr48-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167214564959"
+            },
+            {
+                "key": "bibr49-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/pspi0000026"
+            },
+            {
+                "key": "bibr50-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/pspp0000057"
+            },
+            {
+                "key": "bibr51-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1024/0044-3514.37.1.27"
+            },
+            {
+                "key": "bibr52-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0028085"
+            },
+            {
+                "key": "bibr53-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167293196001"
+            },
+            {
+                "key": "bibr54-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/S15327965PLI1204_1"
+            },
+            {
+                "key": "bibr55-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1006/jesp.1999.1421"
+            },
+            {
+                "key": "bibr56-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/jopy.12192"
+            },
+            {
+                "key": "bibr57-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.74.5.1197"
+            },
+            {
+                "key": "bibr58-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0016530"
+            },
+            {
+                "key": "bibr59-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.3758/BRM.40.3.879"
+            },
+            {
+                "key": "bibr60-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2466/pr0.1979.45.2.590"
+            },
+            {
+                "key": "bibr61-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.54.5.890"
+            },
+            {
+                "key": "bibr62-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.paid.2007.10.015"
+            },
+            {
+                "key": "bibr63-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/per.2012"
+            },
+            {
+                "key": "bibr64-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/1097-4679(198201)38:1<119::AID-JCLP2270380118>3.0.CO;2-I"
+            },
+            {
+                "key": "bibr65-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.74.3.672"
+            },
+            {
+                "key": "bibr66-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.67.2.206"
+            },
+            {
+                "key": "bibr67-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/01461672992511008"
+            },
+            {
+                "key": "bibr68-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0092-6566(02)00526-3"
+            },
+            {
+                "key": "bibr69-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/978-1-4939-0867-7_10"
+            },
+            {
+                "key": "bibr70-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/15298860802505053"
+            },
+            {
+                "key": "bibr71-per.2047",
+                "first-page": "57",
+                "volume": "14",
+                "author": "Tracy J. L.",
+                "year": "2003",
+                "journal-title": "Psychological Inquiry"
+            },
+            {
+                "key": "bibr72-per.2047",
+                "first-page": "187",
+                "volume-title": "The self in social psychology. Frontiers of social psychology series",
+                "author": "Tracy J. L.",
+                "year": "2007"
+            },
+            {
+                "key": "bibr73-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167202239051"
+            },
+            {
+                "key": "bibr74-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699931.2014.961903"
+            },
+            {
+                "key": "bibr75-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/a0015669"
+            },
+            {
+                "key": "bibr76-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0146167211400421"
+            },
+            {
+                "key": "bibr77-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s11031-011-9235-8"
+            },
+            {
+                "key": "bibr78-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jrp.2008.06.007"
+            },
+            {
+                "key": "bibr79-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037//0022-3514.82.5.819"
+            },
+            {
+                "key": "bibr80-per.2047",
+                "first-page": "929",
+                "volume": "6",
+                "author": "Watson P. J.",
+                "year": "1991",
+                "journal-title": "Journal of Social Behavior & Personality"
+            },
+            {
+                "key": "bibr81-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1089-2680.8.2.122"
+            },
+            {
+                "key": "bibr82-per.2047",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.jrp.2006.05.005"
+            }
+        ],
+        "container-title": [
+            "European Journal of Personality"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1002%2Fper.2047",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1002/per.2047",
+                "content-type": "application/pdf",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/full-xml/10.1002/per.2047",
+                "content-type": "application/xml",
+                "content-version": "vor",
+                "intended-application": "text-mining"
+            },
+            {
+                "URL": "https://journals.sagepub.com/doi/pdf/10.1002/per.2047",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    28
+                ]
+            ],
+            "date-time": "2026-04-28T20:42:47Z",
+            "timestamp": 1777408967000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://journals.sagepub.com/doi/10.1002/per.2047"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2016,
+                    3
+                ]
+            ]
+        },
+        "references-count": 82,
+        "journal-issue": {
+            "issue": "2",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2016,
+                        3
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1002/per.2047"
+        ],
+        "URL": "https://doi.org/10.1002/per.2047",
+        "relation": {
+            "has-preprint": [
+                {
+                    "id-type": "doi",
+                    "id": "10.31234/osf.io/zs7mc",
+                    "asserted-by": "object"
+                }
+            ]
+        },
+        "ISSN": [
+            "0890-2070",
+            "1099-0984"
+        ],
+        "issn-type": [
+            {
+                "value": "0890-2070",
+                "type": "print"
+            },
+            {
+                "value": "1099-0984",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2016,
+                    3
+                ]
+            ]
+        }
+    }
+}

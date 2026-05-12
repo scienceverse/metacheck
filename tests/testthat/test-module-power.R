@@ -59,9 +59,10 @@ test_that("power, no LLM", {
   expect_equal(mo$summary_table$power_n, 1)
 })
 
-test_that("power, with LLM", {
-  skip_llm()
+#httptest2::start_capturing()
+httptest2::use_mock_api()
 
+test_that("power, with LLM", {
   module <- "power"
   llm_use(TRUE)
   llm_model("groq/llama-3.3-70b-versatile")
@@ -174,4 +175,5 @@ test_that("power, with LLM", {
   expect_equal(mo$summary_table$power_complete, c(0,0))
 })
 
-
+httptest2::stop_mocking()
+#httptest2::stop_capturing()

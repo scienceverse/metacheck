@@ -1,0 +1,835 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    27
+                ]
+            ],
+            "date-time": "2026-04-27T13:44:54Z",
+            "timestamp": 1777297494689,
+            "version": "3.51.4"
+        },
+        "reference-count": 89,
+        "publisher": "American Psychological Association (APA)",
+        "issue": "2",
+        "content-domain": {
+            "domain": [
+
+            ],
+            "crossmark-restriction": false
+        },
+        "short-container-title": [
+            "Journal of Personality and Social Psychology"
+        ],
+        "DOI": "10.1037/0022-3514.91.2.295",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2006,
+                    8,
+                    2
+                ]
+            ],
+            "date-time": "2006-08-02T11:30:02Z",
+            "timestamp": 1154518202000
+        },
+        "page": "295-315",
+        "source": "Crossref",
+        "is-referenced-by-count": 88,
+        "title": [
+            "Evidence for strong dissociation between emotion and facial displays: The case of surprise."
+        ],
+        "prefix": "10.1037",
+        "volume": "91",
+        "author": [
+            {
+                "ORCID": "https://orcid.org/0000-0002-6091-108X",
+                "authenticated-orcid": false,
+                "given": "Rainer",
+                "family": "Reisenzein",
+                "sequence": "first",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Sandra",
+                "family": "Bördgen",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Thomas",
+                "family": "Holtbernd",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            },
+            {
+                "given": "Denise",
+                "family": "Matz",
+                "sequence": "additional",
+                "affiliation": [
+
+                ]
+            }
+        ],
+        "member": "15",
+        "published-online": {
+            "date-parts": [
+                [
+                    2006,
+                    8
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "r1_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "1034",
+                "DOI": "10.1126/science.142.3595.1034",
+                "article-title": "The evolution of facial expression.",
+                "volume": "141",
+                "author": "Andrew",
+                "year": "1963",
+                "journal-title": "Science",
+                "ISSN": "https://id.crossref.org/issn/0036-8075",
+                "issn-type": "print"
+            },
+            {
+                "key": "r2_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "27",
+                "DOI": "10.1093/brain/117.1.27",
+                "article-title": "Electromyographic features of levator palpebrae superioris and orbicularis oculi muscles in blepharospasm.",
+                "volume": "117",
+                "author": "Aramideh",
+                "year": "1994",
+                "journal-title": "Brain",
+                "ISSN": "https://id.crossref.org/issn/0006-8950",
+                "issn-type": "print"
+            },
+            {
+                "key": "r3_10.1037/0022-3514.91.2.295",
+                "first-page": "142",
+                "article-title": "The pupillary system.",
+                "volume-title": "Handbook of psychophysiology",
+                "author": "Beatty",
+                "year": "2000",
+                "edition": "2nd ed."
+            },
+            {
+                "key": "r4_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/15250000252828262"
+            },
+            {
+                "key": "r5_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "233",
+                "DOI": "10.1111/j.1469-7610.1970.tb01042.x",
+                "article-title": "An experiment on eyebrow-raising and visual searching in children.",
+                "volume": "11",
+                "author": "Blurton Jones",
+                "year": "1971",
+                "journal-title": "Journal of Child Psychology and Psychiatry, and Allied Disciplines",
+                "ISSN": "https://id.crossref.org/issn/0021-9630",
+                "issn-type": "print"
+            },
+            {
+                "key": "r6_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF02281955"
+            },
+            {
+                "key": "r7_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.2.2.179"
+            },
+            {
+                "key": "r8_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.72.1.164"
+            },
+            {
+                "key": "r9_10.1037/0022-3514.91.2.295",
+                "first-page": "1169",
+                "article-title": "Instigation and maintenance of curiosity behavior as a function of surprise versus novel and familiar stimuli.",
+                "volume": "35",
+                "author": "Charlesworth",
+                "year": "1964",
+                "journal-title": "Child Development",
+                "ISSN": "https://id.crossref.org/issn/0009-3920",
+                "issn-type": "print"
+            },
+            {
+                "key": "r10_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/BF01672216"
+            },
+            {
+                "key": "r11_10.1037/0022-3514.91.2.295",
+                "first-page": "91",
+                "article-title": "Evolutionary psychology and the emotions.",
+                "volume-title": "Handbook of emotions",
+                "author": "Cosmides",
+                "year": "2000",
+                "edition": "2nd ed."
+            },
+            {
+                "key": "r12_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Darwin. The expression of the emotions in man and animals 1998",
+                "DOI": "10.1093/oso/9780195112719.002.0002"
+            },
+            {
+                "key": "r13_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Deckers. On the validity of a weight-judging paradigm for the study of humor. Humor 6 43 1993",
+                "DOI": "10.1515/humr.1993.6.1.43"
+            },
+            {
+                "key": "r14_10.1037/0022-3514.91.2.295",
+                "unstructured": "Ekman. 1972"
+            },
+            {
+                "key": "r15_10.1037/0022-3514.91.2.295",
+                "first-page": "169",
+                "article-title": "About brows: Emotional and conversational signals.",
+                "volume-title": "Human ethology",
+                "author": "Ekman",
+                "year": "1979"
+            },
+            {
+                "key": "r16_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0003-066X.48.4.384"
+            },
+            {
+                "key": "r17_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "384",
+                "DOI": "10.1037/10242-008",
+                "article-title": "Expression or communication about emotion.",
+                "volume-title": "Uniting psychology and biology: Integrative perspectives on human development",
+                "volume": "Vol. 48",
+                "author": "Ekman",
+                "year": "1997"
+            },
+            {
+                "key": "r18_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "301",
+                "DOI": "10.1002/0470013494.ch16",
+                "article-title": "Facial expressions.",
+                "volume-title": "Handbook of cognition and emotion",
+                "author": "Ekman",
+                "year": "1999"
+            },
+            {
+                "key": "r19_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0077722"
+            },
+            {
+                "key": "r20_10.1037/0022-3514.91.2.295",
+                "first-page": "56",
+                "article-title": "Does the face provide accurate information?",
+                "volume-title": "Emotion in the human face",
+                "author": "Ekman",
+                "year": "1982",
+                "edition": "2nd ed."
+            },
+            {
+                "key": "r21_10.1037/0022-3514.91.2.295",
+                "unstructured": "Ekman. 2002"
+            },
+            {
+                "key": "r22_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.49.5.1416"
+            },
+            {
+                "key": "r23_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.53.4.712"
+            },
+            {
+                "key": "r24_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.128.2.203"
+            },
+            {
+                "key": "r25_10.1037/0022-3514.91.2.295",
+                "first-page": "74",
+                "article-title": "A practical guide to the use of response latency in social psychological research.",
+                "volume-title": "Research methods in personality and social psychology",
+                "author": "Fazio",
+                "year": "1990"
+            },
+            {
+                "key": "r26_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "255",
+                "DOI": "10.1017/CBO9780511659911.013",
+                "article-title": "Spontaneous facial behavior during intense emotional episodes: Artistic truth and optical truth.",
+                "volume-title": "The psychology of facial expression",
+                "author": "Fernandez-Dols",
+                "year": "1997"
+            },
+            {
+                "key": "r27_10.1037/0022-3514.91.2.295",
+                "first-page": "171",
+                "article-title": "Social influences on the emotion process.",
+                "volume-title": "European review of social psychology",
+                "volume": "Vol. 14",
+                "author": "Fischer",
+                "year": "2003"
+            },
+            {
+                "key": "r28_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.60.2.229"
+            },
+            {
+                "key": "r29_10.1037/0022-3514.91.2.295",
+                "volume-title": "Human facial expression: An evolutionary view.",
+                "author": "Fridlund",
+                "year": "1994"
+            },
+            {
+                "key": "r30_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "567",
+                "DOI": "10.1111/j.1469-8986.1986.tb00676.x",
+                "article-title": "Guidelines for human electromyographic research.",
+                "volume": "23",
+                "author": "Fridlund",
+                "year": "1986",
+                "journal-title": "Psychophysiology",
+                "ISSN": "https://id.crossref.org/issn/0048-5772",
+                "issn-type": "print"
+            },
+            {
+                "key": "r31_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/S15328031US0201_03"
+            },
+            {
+                "key": "r32_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/0022-1031(86)90040-5"
+            },
+            {
+                "key": "r33_10.1037/0022-3514.91.2.295",
+                "first-page": "323",
+                "article-title": "The inference to the best explanation.",
+                "volume-title": "Readings in the philosophy of science",
+                "author": "Harman",
+                "year": "1989"
+            },
+            {
+                "key": "r34_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0167-8760(00)00161-6"
+            },
+            {
+                "key": "r35_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.69.2.280"
+            },
+            {
+                "key": "r36_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.2307/1129328"
+            },
+            {
+                "key": "r37_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0012-1649.40.1.16"
+            },
+            {
+                "key": "r38_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.2.3.297"
+            },
+            {
+                "key": "r39_10.1037/0022-3514.91.2.295",
+                "first-page": "203",
+                "article-title": "Zum Einfluss der Verknupfungsstarke von Schemaelementen auf die Starke der Uberrraschungsreaktion",
+                "volume": "45",
+                "author": "Horstmann",
+                "year": "1998",
+                "journal-title": "Zeitschrift fur Experimentelle Psychologie",
+                "ISSN": "https://id.crossref.org/issn/0949-3964",
+                "issn-type": "print"
+            },
+            {
+                "key": "r40_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1007/978-1-4899-2209-0",
+                "volume-title": "Human emotions.",
+                "author": "Izard",
+                "year": "1977"
+            },
+            {
+                "key": "r41_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "DOI": "10.1007/978-1-4899-0615-1",
+                "volume-title": "The psychology of emotions.",
+                "author": "Izard",
+                "year": "1991"
+            },
+            {
+                "key": "r42_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.1.1.51"
+            },
+            {
+                "key": "r43_10.1037/0022-3514.91.2.295",
+                "first-page": "156",
+                "article-title": "Semantische Relationen: Erkennungsaufwand und psychophysiologische Reaktionstendenzen",
+                "volume-title": "Gedachtnis, Wissen, Wissensnutzung",
+                "author": "Klix",
+                "year": "1984"
+            },
+            {
+                "key": "r44_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/S0301-0082(98)00098-7"
+            },
+            {
+                "key": "r45_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.37.9.1539"
+            },
+            {
+                "key": "r46_10.1037/0022-3514.91.2.295",
+                "first-page": "213",
+                "article-title": "The process of emotional experience: A self-perception theory.",
+                "volume-title": "Review of personality and social psychology",
+                "volume": "Vol. 13",
+                "author": "Laird",
+                "year": "1992"
+            },
+            {
+                "key": "r47_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0073039"
+            },
+            {
+                "key": "r48_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/1469-8986.00078"
+            },
+            {
+                "key": "r49_10.1037/0022-3514.91.2.295",
+                "first-page": "117",
+                "article-title": "A perceptual-motor theory of emotion.",
+                "volume-title": "Advances in experimental social psychology",
+                "volume": "Vol. 17",
+                "author": "Leventhal",
+                "year": "1984"
+            },
+            {
+                "key": "r50_10.1037/0022-3514.91.2.295",
+                "first-page": "381",
+                "article-title": "A comparison of the pupillary and electrodermal components of the orienting reflex in sensitivity to initial stimulus presentation, repetition, and change.",
+                "volume-title": "The orienting reflex in humans",
+                "author": "Maher",
+                "year": "1979"
+            },
+            {
+                "key": "r51_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.5.2.175"
+            },
+            {
+                "key": "r52_10.1037/0022-3514.91.2.295",
+                "first-page": "353",
+                "article-title": "Surprise.",
+                "volume-title": "Encyclopedia of human behavior",
+                "volume": "Vol. 4",
+                "author": "Meyer",
+                "year": "1994"
+            },
+            {
+                "key": "r53_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "295",
+                "DOI": "10.1080/02699939108411042",
+                "article-title": "An experimental analysis of surprise.",
+                "volume": "5",
+                "author": "Meyer",
+                "year": "1991",
+                "journal-title": "Cognition and Emotion",
+                "ISSN": "https://id.crossref.org/issn/0269-9931",
+                "issn-type": "print"
+            },
+            {
+                "key": "r54_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/A:1024422330338"
+            },
+            {
+                "key": "r55_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/1469-8986.3810084"
+            },
+            {
+                "key": "r56_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0043424"
+            },
+            {
+                "key": "r57_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-295X.97.3.315"
+            },
+            {
+                "key": "r58_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1207/s15327957pspr0904_1"
+            },
+            {
+                "key": "r59_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "291",
+                "DOI": "10.1080/02699938908412710",
+                "article-title": "Infants' expectations in play: The joy of peek-a-boo.",
+                "volume": "3",
+                "author": "Parrott",
+                "year": "1989",
+                "journal-title": "Cognition and Emotion",
+                "ISSN": "https://id.crossref.org/issn/0269-9931",
+                "issn-type": "print"
+            },
+            {
+                "key": "r60_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.114.3.510"
+            },
+            {
+                "key": "r61_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/026999300378978"
+            },
+            {
+                "key": "r62_10.1037/0022-3514.91.2.295",
+                "first-page": "262",
+                "article-title": "The subjective experience of surprise.",
+                "volume-title": "The message within: The role of subjective experience in social cognition and behavior",
+                "author": "Reisenzein",
+                "year": "2000b"
+            },
+            {
+                "key": "r63_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "unstructured": "Reisenzein. On the expression and experience of surprise: No evidence for facial feedback, but evidence for a reverse self-perception effect. 2006",
+                "DOI": "10.1037/1528-3542.7.3.612"
+            },
+            {
+                "key": "r64_10.1037/0022-3514.91.2.295",
+                "unstructured": "Reisenzein. 1996"
+            },
+            {
+                "key": "r65_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1002/icd.258"
+            },
+            {
+                "key": "r66_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.59.1.38"
+            },
+            {
+                "key": "r67_10.1037/0022-3514.91.2.295",
+                "first-page": "323",
+                "article-title": "The orienting reflex: Performance and central nervous system manifestations.",
+                "volume-title": "Varieties of attention",
+                "author": "Rohrbaugh",
+                "year": "1984"
+            },
+            {
+                "key": "r68_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "201",
+                "DOI": "10.1080/02699939408408938",
+                "article-title": "Coherence between expressive and experiential systems in emotion.",
+                "volume": "8",
+                "author": "Rosenberg",
+                "year": "1994",
+                "journal-title": "Cognition and Emotion",
+                "ISSN": "https://id.crossref.org/issn/0269-9931",
+                "issn-type": "print"
+            },
+            {
+                "key": "r69_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "33",
+                "DOI": "10.1080/02699939508408964",
+                "article-title": "Will the real relationship between facial expression and affective experience please stand up: The case of exhilaration.",
+                "volume": "9",
+                "author": "Ruch",
+                "year": "1995",
+                "journal-title": "Cognition and Emotion",
+                "ISSN": "https://id.crossref.org/issn/0269-9931",
+                "issn-type": "print"
+            },
+            {
+                "key": "r70_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0012-1649.32.1.40"
+            },
+            {
+                "key": "r71_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699930302288"
+            },
+            {
+                "key": "r72_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.115.1.102"
+            },
+            {
+                "key": "r73_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1146/annurev.psych.54.101601.145102"
+            },
+            {
+                "key": "r74_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.4.4.389"
+            },
+            {
+                "key": "r75_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0278-7393.24.5.1182"
+            },
+            {
+                "key": "r76_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "41",
+                "DOI": "10.1026//0949-3946.48.1.41",
+                "article-title": "Die Struktur der Intensitat von Uberraschung",
+                "volume": "48",
+                "author": "Schutzwohl",
+                "year": "2001",
+                "journal-title": "Zeitschrift fur Experimentelle Psychologie",
+                "ISSN": "https://id.crossref.org/issn/0949-3964",
+                "issn-type": "print"
+            },
+            {
+                "key": "r77_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "429",
+                "DOI": "10.1111/j.1469-8986.1993.tb02066.x",
+                "article-title": "Effects of intermodality change on electrodermal orienting and on the allocation of processing resources.",
+                "volume": "30",
+                "author": "Siddle",
+                "year": "1993",
+                "journal-title": "Psychophysiology",
+                "ISSN": "https://id.crossref.org/issn/0048-5772",
+                "issn-type": "print"
+            },
+            {
+                "key": "r78_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "229",
+                "DOI": "10.1017/CBO9780511659911.012",
+                "article-title": "A componential approach to the meaning of facial expression.",
+                "volume-title": "The psychology of facial expression",
+                "author": "Smith",
+                "year": "1997"
+            },
+            {
+                "key": "r79_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "329",
+                "DOI": "10.1080/02699939408408945",
+                "article-title": "The structure of subjective emotional intensity.",
+                "volume": "8",
+                "author": "Sonnemans",
+                "year": "1994",
+                "journal-title": "Cognition and Emotion",
+                "ISSN": "https://id.crossref.org/issn/0269-9931",
+                "issn-type": "print"
+            },
+            {
+                "key": "r80_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/1469-8986.3960707"
+            },
+            {
+                "key": "r81_10.1037/0022-3514.91.2.295",
+                "first-page": "81",
+                "article-title": "A two-stage model for the appreciation of jokes and cartoons: An information-processing analysis.",
+                "volume-title": "The psychology of humor",
+                "author": "Suls",
+                "year": "1971"
+            },
+            {
+                "key": "r82_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1111/j.1467-9280.1992.tb00252.x"
+            },
+            {
+                "key": "r83_10.1037/0022-3514.91.2.295",
+                "volume-title": "The positive affects.",
+                "volume": "Volume I",
+                "author": "Tomkins",
+                "year": "1962"
+            },
+            {
+                "key": "r84_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.5.3.251"
+            },
+            {
+                "key": "r85_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1017/S004857720199016X"
+            },
+            {
+                "key": "r86_10.1037/0022-3514.91.2.295",
+                "first-page": "262",
+                "article-title": "Facial behavior alone and in the presence of others.",
+                "volume-title": "The social context of nonverbal behavior",
+                "author": "Wagner",
+                "year": "1999"
+            },
+            {
+                "key": "r87_10.1037/0022-3514.91.2.295",
+                "doi-asserted-by": "crossref",
+                "first-page": "57",
+                "DOI": "10.1111/j.1469-7610.1976.tb00373.x",
+                "article-title": "Eyebrow-raising, eye widening and visual search in nursery school children.",
+                "volume": "17",
+                "author": "Wheldall",
+                "year": "1976",
+                "journal-title": "Journal of Child Psychology and Psychiatry, and Allied Disciplines",
+                "ISSN": "https://id.crossref.org/issn/0021-9630",
+                "issn-type": "print"
+            },
+            {
+                "key": "r88_10.1037/0022-3514.91.2.295",
+                "first-page": "31",
+                "article-title": "Self-awareness theory: When the self makes a difference.",
+                "volume-title": "The self in social psychology",
+                "author": "Wicklund",
+                "year": "1980"
+            },
+            {
+                "key": "r89_10.1037/0022-3514.91.2.295",
+                "volume-title": "Experimental psychology.",
+                "author": "Woodworth",
+                "year": "1954"
+            }
+        ],
+        "container-title": [
+            "Journal of Personality and Social Psychology"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://psycnet.apa.org/journals/psp/91/2/295.pdf",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    27
+                ]
+            ],
+            "date-time": "2026-04-27T12:59:49Z",
+            "timestamp": 1777294789000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://doi.apa.org/doi/10.1037/0022-3514.91.2.295"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2006,
+                    8
+                ]
+            ]
+        },
+        "references-count": 89,
+        "journal-issue": {
+            "issue": "2",
+            "published-online": {
+                "date-parts": [
+                    [
+                        2006,
+                        8
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "2006-09808-008",
+            "16881766"
+        ],
+        "URL": "https://doi.org/10.1037/0022-3514.91.2.295",
+        "relation": {
+
+        },
+        "ISSN": [
+            "1939-1315",
+            "0022-3514"
+        ],
+        "issn-type": [
+            {
+                "value": "1939-1315",
+                "type": "electronic"
+            },
+            {
+                "value": "0022-3514",
+                "type": "print"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2006,
+                    8
+                ]
+            ]
+        }
+    }
+}

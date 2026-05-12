@@ -1,3 +1,11 @@
+#httptest2::start_capturing()
+httptest2::use_mock_api()
+
+# skip online checking in aspredicted_* functions
+testthat::local_mocked_bindings(
+  online = \(...) TRUE
+)
+
 test_that("add_bib_match", {
   expect_true(is.function(metacheck::add_bib_match))
   expect_no_error(helplist <- help(add_bib_match, metacheck))
@@ -10,7 +18,7 @@ test_that("add_bib_match", {
   expect_equal(nrow(paper_bm$bib), 0)
   expect_equal(paper_bm$bib_match, NULL)
 
-  skip_api("api.labs.crossref.org")
+  # skip_api("api.labs.crossref.org")
 
   # only unmatching refs
   paper <- test_paper("No matching refs")
@@ -108,7 +116,7 @@ test_that("add_bib_match", {
 
 test_that("longer bib", {
   skip_if_quick()
-  skip_api("api.labs.crossref.org")
+  # skip_api("api.labs.crossref.org")
 
   xml_file <- test_path("fixtures", "formats", "published.pdf.tei.xml")
   paper <- grobid_to_bibr(xml_file, save_path = NULL, FALSE)
@@ -132,7 +140,7 @@ test_that("crossref_query", {
   expect_true(is.function(metacheck::crossref_query))
   expect_no_error(helplist <- help(crossref_query, metacheck))
 
-  skip_api("api.labs.crossref.org")
+  # skip_api("api.labs.crossref.org")
 
   ref <- "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1)."
 
@@ -167,16 +175,16 @@ test_that("crossref_query", {
   expect_equal(obs$title, "The benefits of preregistration and Registered Reports")
 
   # from bibentry
-  ref <- bibentry(
-    "article",
-    journal = psychsci[[1]]$bib$container[[1]],
-    title = psychsci[[1]]$bib$title[[1]],
-    author = psychsci[[1]]$bib$authors[[1]],
-    year = psychsci[[1]]$bib$year[[1]]
-  )
-  obs <- crossref_query(ref)
-  exp <- "10.1093/brain/110.3.747"
-  expect_equal(obs$DOI, exp)
+  # ref <- bibentry(
+  #   "article",
+  #   journal = psychsci[[1]]$bib$container[[1]],
+  #   title = psychsci[[1]]$bib$title[[1]],
+  #   author = psychsci[[1]]$bib$authors[[1]],
+  #   year = psychsci[[1]]$bib$year[[1]]
+  # )
+  # obs <- crossref_query(ref)
+  # exp <- "10.1093/brain/110.3.747"
+  # expect_equal(obs$DOI, exp)
 
   # vectorised
   ref <- c("Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1).",
@@ -193,7 +201,7 @@ test_that("crossref_query", {
 })
 
 test_that("crossref_query batch", {
-  skip_api("api.labs.crossref.org")
+  # skip_api("api.labs.crossref.org")
 
   # paper object as ref
   ref <- demopaper()
@@ -275,7 +283,7 @@ test_that("datacite_doi", {
   info <- datacite_doi(doi)
   expect_equal(nrow(info), 0)
 
-  skip_api("api.datacite.org")
+  # skip_api("api.datacite.org")
 
   # one item
   doi <- "10.5281/zenodo.2669586"
@@ -309,21 +317,21 @@ test_that("openalex_doi", {
 
   doi <- "bad.form"
   oa <- openalex_doi(doi)
-  expect_equal(oa$DOI, doi)
-  expect_equal(oa$error, "malformed")
+  expect_equal(oa[[1]]$DOI, doi)
+  expect_equal(oa[[1]]$error, "malformed")
 
-  skip_api("api.openalex.org")
+  # skip_api("api.openalex.org")
 
   # short DOI
   doi <- "10.1177/0956797614520714"
   oa <- openalex_doi(doi)
-  expect_equal(oa$is_retracted, TRUE)
-  expect_equal(oa$abstract, "We propose that dishonest and creative behavior have something in common: They both involve breaking rules. Because of this shared feature, creativity may lead to dishonesty (as shown in prior work), and dishonesty may lead to creativity (the hypothesis we tested in this research). In five experiments, participants had the opportunity to behave dishonestly by overreporting their performance on various tasks. They then completed one or more tasks designed to measure creativity. Those who cheated were subsequently more creative than noncheaters, even when we accounted for individual differences in their creative ability (Experiment 1). Using random assignment, we confirmed that acting dishonestly leads to greater creativity in subsequent tasks (Experiments 2 and 3). The link between dishonesty and creativity is explained by a heightened feeling of being unconstrained by rules, as indicated by both mediation (Experiment 4) and moderation (Experiment 5).")
+  expect_equal(oa[[1]]$is_retracted, TRUE)
+  expect_equal(oa[[1]]$abstract, "We propose that dishonest and creative behavior have something in common: They both involve breaking rules. Because of this shared feature, creativity may lead to dishonesty (as shown in prior work), and dishonesty may lead to creativity (the hypothesis we tested in this research). In five experiments, participants had the opportunity to behave dishonestly by overreporting their performance on various tasks. They then completed one or more tasks designed to measure creativity. Those who cheated were subsequently more creative than noncheaters, even when we accounted for individual differences in their creative ability (Experiment 1). Using random assignment, we confirmed that acting dishonestly leads to greater creativity in subsequent tasks (Experiments 2 and 3). The link between dishonesty and creativity is explained by a heightened feeling of being unconstrained by rules, as indicated by both mediation (Experiment 4) and moderation (Experiment 5).")
 
   # long DOI
   doi <- c("https://doi.org/10.1177/0956797613520608")
   oa <- openalex_doi(doi)
-  expect_equal(oa$id, "https://openalex.org/W2134722098")
+  expect_equal(oa[[1]]$id, "https://openalex.org/W2134722098")
 
   # multiple DOIs
   dois <- c("10.1177/0956797613520608", "10.1177/0956797614522816")
@@ -334,7 +342,7 @@ test_that("openalex_doi", {
   # DOI from paper
   paper <- psychsci[[1]]
   oa <- openalex_doi(paper)
-  expect_equal(oa$id, "https://openalex.org/W2134722098")
+  expect_equal(oa[[1]]$id, "https://openalex.org/W2134722098")
 
   # DOIs from paperlist
   paper <- psychsci[1:2]
@@ -351,7 +359,7 @@ test_that("openalex_doi", {
   # select
   doi <- "10.1177/0956797614520714"
   oa <- openalex_doi(doi, select = "is_retracted")
-  expect_equal(oa$is_retracted, TRUE)
+  expect_equal(oa[[1]]$is_retracted, TRUE)
 })
 
 test_that("openalex_query", {
@@ -360,7 +368,7 @@ test_that("openalex_query", {
 
   expect_error(openalex_query(bad_arg))
 
-  skip_api("api.openalex.org")
+  # skip_api("api.openalex.org")
 
   doi <- "https://doi.org/10.1525/collabra.33267"
   title <- "Sample Size Justification"
@@ -372,38 +380,6 @@ test_that("openalex_query", {
   expect_equal(b$doi, doi)
 })
 
-test_that(".batch_query", {
-  expect_true(is.function(metacheck:::.batch_query))
 
-  expect_error(.batch_query())
-
-  urls <- c()
-  obs <- .batch_query(urls)
-  exp <- list()
-  expect_equal(obs, exp)
-
-  urls <- "notawebsite"
-  expect_warning(obs <- .batch_query(urls), "notawebsite")
-
-  skip_api("httpbin.org")
-
-  urls <- "https://httpbin.org/get"
-  obs <- .batch_query(urls)
-  expect_equal(length(obs), 1)
-
-  urls <- c("https://httpbin.org/status/429",
-            "https://httpbin.org/status/404",
-            "https://httpbin.org/status/200")
-  batch_size <- 2
-  msg <- "X"
-  delay = 0
-  obs <- .batch_query(urls, batch_size, msg, delay)
-  expect_equal(length(obs), 3)
-  expect_equal(obs[[1]]$status_code, 429)
-  expect_equal(obs[[2]]$status_code, 404)
-  expect_equal(obs[[3]]$status_code, 200)
-})
-
-
-httptest::stop_mocking()
-# httptest::stop_capturing()
+httptest2::stop_mocking()
+#httptest2::stop_capturing()

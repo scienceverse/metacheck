@@ -738,7 +738,7 @@ tei_xrefs <- function(xml, text_table) {
     unique() |>
     dplyr::left_join(text_table, by = "text") |>
     dplyr::select(xref_id, xref_type, contents, text_id, text) |>
-    dplyr::mutate(xref_type = dplyr::case_match(xref_type,
+    dplyr::mutate(xref_type = dplyr::recode_values(xref_type,
                                                 "bibr" ~ "bib",
                                                 "figure" ~ "figure",
                                                 "table" ~ "table"),

@@ -1,3 +1,6 @@
+#httptest2::start_capturing()
+httptest2::use_mock_api()
+
 test_that("doi_lookup", {
   expect_true(is.function(metacheck::doi_lookup))
   expect_no_error(helplist <- help(doi_lookup, metacheck))
@@ -16,7 +19,7 @@ test_that("doi_lookup", {
   info <- doi_lookup(doi)
   expect_equal(info, exp)
 
-  skip_api("doi.org")
+  #skip_api("doi.org")
 
   # one item
   doi <- "10.7717/peerj.4375"
@@ -135,9 +138,6 @@ test_that("doi_valid_format", {
   expect_equal(v, T)
 })
 
-# httptest::start_capturing()
-httptest::use_mock_api()
-
 test_that("doi_resolves", {
   expect_true(is.function(metacheck::doi_resolves))
   expect_no_error(helplist <- help(doi_resolves, metacheck))
@@ -193,8 +193,11 @@ test_that("doi_resolves", {
 
   # server not available - without_internet not working!
   doi <- c("10.1038/nphys1170", "10.1234/invalid.doi", "bad.doi", NA)
-  # httptest::without_internet({
+  # httptest2::without_internet({
   #   check <- doi_resolves(doi)
   #   expect_equal(check, c(NA, NA, NA, F))
   # })
 })
+
+httptest2::stop_mocking()
+#httptest2::stop_capturing()

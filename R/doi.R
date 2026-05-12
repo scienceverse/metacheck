@@ -76,89 +76,45 @@ doi_valid_format <- function(doi) {
 doi_resolves <- function(doi, timeout = 10) {
   doi <- doi_clean(doi)
 
-  if (length(doi) > 1) {
-    # separate valid/invalid DOIs upfront
-    valid_format <- doi_valid_format(doi)
-    na_or_empty <- is.na(doi) | !nzchar(doi)
-    needs_check <- !na_or_empty & valid_format
+  # separate valid/invalid DOIs upfront
+  valid_format <- doi_valid_format(doi)
+  na_or_empty <- is.na(doi) | !nzchar(doi)
+  needs_check <- !na_or_empty & valid_format
 
-    res <- rep(NA, length(doi))
-    res[!na_or_empty & !valid_format] <- FALSE
+  res <- rep(NA, length(doi))
+  res[!na_or_empty & !valid_format] <- FALSE
 
-    if (any(needs_check)) {
-      check_dois <- doi[needs_check]
-      reqs <- lapply(check_dois, \(d) {
-        url <- paste0(
-          "https://doi.org/api/handles/",
-          utils::URLencode(d, reserved = TRUE),
-          "?type=URL"
-        )
-        httr2::request(url) |>
-          httr2::req_timeout(timeout) |>
-          httr2::req_throttle(rate = 10 / 1) |>
-          httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
-          httr2::req_error(is_error = \(resp) FALSE)
-      })
+  if (any(needs_check)) {
+    check_dois <- doi[needs_check]
+    urls <- paste0(
+      "https://doi.org/api/handles/",
+      utils::URLencode(check_dois, reserved = TRUE),
+      "?type=URL"
+    )
 
-      resps <- httr2::req_perform_parallel(reqs, on_error = "continue",
-                                           progress = FALSE)
+    # only show progress bar if > batch_size
+    batch_size <- 500
+    msg <- if (length(urls) > batch_size) { "Checking DOIs" } else { NULL }
+    resps <- .batch_query(urls, batch_size = batch_size, msg = msg, delay = 0)
 
-      check_res <- vapply(resps, \(resp) {
-        if (inherits(resp, "error")) return(NA)
-        body <- tryCatch(httr2::resp_body_json(resp), error = \(e) NULL)
-        code <- body$responseCode
-        if (is.null(code) || length(code) != 1L) return(NA)
-        if (code == 1L) return(TRUE)
-        if (code == 100L) return(FALSE)
-        if (code == 2L) return(NA)
-        if (code == 200L) return(FALSE)
-        NA
-      }, logical(1))
+    check_res <- vapply(resps, \(resp) {
+      if (inherits(resp, "error")) return(NA)
+      if (!resp$status_code %in% 200L) return(FALSE)
 
-      res[needs_check] <- check_res
-    }
+      body <- tryCatch(httr2::resp_body_json(resp), error = \(e) NULL)
+      code <- body$responseCode
+      if (is.null(code) || length(code) != 1L) return(NA)
+      if (code == 1L) return(TRUE)
+      if (code == 100L) return(FALSE)
+      if (code == 2L) return(NA)
+      if (code == 200L) return(FALSE)
+      NA
+    }, logical(1))
 
-    return(res)
+    res[needs_check] <- check_res
   }
 
-  # single DOI
-  if (is.na(doi) || !nzchar(doi)) {
-    return(NA)
-  }
-  if (!doi_valid_format(doi)) {
-    return(FALSE)
-  }
-
-  url <- paste0(
-    "https://doi.org/api/handles/",
-    utils::URLencode(doi, reserved = TRUE),
-    "?type=URL"
-  )
-
-  resp <- tryCatch(
-    httr2::request(url) |>
-      httr2::req_timeout(timeout) |>
-      httr2::req_error(is_error = \(resp) FALSE) |>
-      httr2::req_perform(),
-    error = function(e) e
-  )
-
-  if (inherits(resp, "error")) {
-    return(NA)
-  }
-
-  body <- tryCatch(httr2::resp_body_json(resp), error = function(e) NULL)
-  code <- body$responseCode
-  if (is.null(code) || length(code) != 1L) {
-    return(NA)
-  }
-
-  if (code == 1L) return(TRUE)
-  if (code == 100L) return(FALSE)
-  if (code == 2L) return(NA)
-  if (code == 200L) return(FALSE)
-
-  NA
+  return(res)
 }
 
 #' Doi.org Info from DOI
@@ -180,19 +136,14 @@ doi_lookup <- function(doi) {
   # build requests for non-NA DOIs, perform in parallel
   cleaned <- doi_clean(doi)
   is_valid <- !is.na(doi)
-
   valid_idx <- which(is_valid)
-  valid_reqs <- lapply(valid_idx, \(i) {
-    paste0("https://doi.org/", cleaned[i]) |>
-      httr2::request() |>
-      httr2::req_headers(Accept = "application/json") |>
-      httr2::req_throttle(rate = 10 / 1) |>
-      httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429) |>
-      httr2::req_error(is_error = \(resp) FALSE)
-  })
 
-  resps <- httr2::req_perform_parallel(valid_reqs, on_error = "continue",
-                                       progress = verbose())
+  urls <- paste0(
+    "https://doi.org/",
+    utils::URLencode(cleaned[valid_idx], reserved = TRUE)
+  )
+  # small batch size because most lookups use crossref and email isn't supplied
+  resps <- .batch_query(urls, batch_size = 3, msg = "DOI Lookup")
 
   # process responses
   bibdata <- vector("list", length(doi))

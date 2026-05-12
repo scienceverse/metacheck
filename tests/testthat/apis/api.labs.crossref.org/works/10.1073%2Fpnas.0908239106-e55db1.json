@@ -1,0 +1,440 @@
+{
+    "status": "ok",
+    "message-type": "work",
+    "message-version": "1.0.0",
+    "message": {
+        "cr-labs-updates": {
+
+        },
+        "indexed": {
+            "date-parts": [
+                [
+                    2026,
+                    4,
+                    28
+                ]
+            ],
+            "date-time": "2026-04-28T04:01:46Z",
+            "timestamp": 1777348906846,
+            "version": "3.51.4"
+        },
+        "reference-count": 32,
+        "publisher": "Proceedings of the National Academy of Sciences",
+        "issue": "6",
+        "content-domain": {
+            "domain": [
+                "www.pnas.org"
+            ],
+            "crossmark-restriction": true
+        },
+        "short-container-title": [
+            "Proc. Natl. Acad. Sci. U.S.A."
+        ],
+        "published-print": {
+            "date-parts": [
+                [
+                    2010,
+                    2,
+                    9
+                ]
+            ]
+        },
+        "abstract": "<jats:p>Emotional signals are crucial for sharing important information, with conspecifics, for example, to warn humans of danger. Humans use a range of different cues to communicate to others how they feel, including facial, vocal, and gestural signals. We examined the recognition of nonverbal emotional vocalizations, such as screams and laughs, across two dramatically different cultural groups. Western participants were compared to individuals from remote, culturally isolated Namibian villages. Vocalizations communicating the so-called “basic emotions” (anger, disgust, fear, joy, sadness, and surprise) were bidirectionally recognized. In contrast, a set of additional emotions was only recognized within, but not across, cultural boundaries. Our findings indicate that a number of primarily negative emotions have vocalizations that can be recognized across cultures, while most positive emotions are communicated with culture-specific signals.<\/jats:p>",
+        "DOI": "10.1073/pnas.0908239106",
+        "type": "journal-article",
+        "created": {
+            "date-parts": [
+                [
+                    2010,
+                    1,
+                    25
+                ]
+            ],
+            "date-time": "2010-01-25T21:54:47Z",
+            "timestamp": 1264456487000
+        },
+        "page": "2408-2412",
+        "update-policy": "https://doi.org/10.1073/pnas.cm10313",
+        "source": "Crossref",
+        "is-referenced-by-count": 519,
+        "title": [
+            "Cross-cultural recognition of basic emotions through nonverbal emotional vocalizations"
+        ],
+        "prefix": "10.1073",
+        "volume": "107",
+        "author": [
+            {
+                "given": "Disa A.",
+                "family": "Sauter",
+                "sequence": "first",
+                "affiliation": [
+                    {
+                        "name": "Department of Psychology, University College London, London WC1E 6BT, United Kingdom;"
+                    },
+                    {
+                        "name": "Henry Wellcome Building, Birkbeck College, London WC1E 7HX, United Kingdom;"
+                    }
+                ]
+            },
+            {
+                "given": "Frank",
+                "family": "Eisner",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Institute of Cognitive Neuroscience, University College London, London WC1N 3AR, United Kingdom; and"
+                    }
+                ]
+            },
+            {
+                "given": "Paul",
+                "family": "Ekman",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "The Paul Ekman Group, San Francisco, CA 94104"
+                    }
+                ]
+            },
+            {
+                "given": "Sophie K.",
+                "family": "Scott",
+                "sequence": "additional",
+                "affiliation": [
+                    {
+                        "name": "Institute of Cognitive Neuroscience, University College London, London WC1N 3AR, United Kingdom; and"
+                    }
+                ]
+            }
+        ],
+        "member": "341",
+        "published-online": {
+            "date-parts": [
+                [
+                    2010,
+                    1,
+                    25
+                ]
+            ]
+        },
+        "reference": [
+            {
+                "key": "e_1_3_3_1_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1126/science.298.5598.1569"
+            },
+            {
+                "key": "e_1_3_3_2_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1023/B:JONB.0000023655.25550.be"
+            },
+            {
+                "key": "e_1_3_3_3_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s11031-007-9065-x"
+            },
+            {
+                "key": "e_1_3_3_4_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/h0077722"
+            },
+            {
+                "key": "e_1_3_3_5_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1068/p070491"
+            },
+            {
+                "key": "e_1_3_3_6_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1177/0022022101032001009"
+            },
+            {
+                "key": "e_1_3_3_7_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1007/s10919-008-0065-7"
+            },
+            {
+                "key": "e_1_3_3_8_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1163/156770908X289242"
+            },
+            {
+                "key": "e_1_3_3_9_2",
+                "first-page": "187",
+                "volume-title": "Handbook of Mammalian Vocalizations",
+                "author": "Scott SK",
+                "year": "2009",
+                "unstructured": "SK Scott, D Sauter, C McGettigan, Brain mechanisms for processing perceived emotional vocalizations in humans. Handbook of Mammalian Vocalizations, ed S Brudzynski (Academic Press, Oxford), pp. 187–198 (2009)."
+            },
+            {
+                "key": "e_1_3_3_10_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.131.5.763"
+            },
+            {
+                "key": "e_1_3_3_11_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1126/science.164.3875.86"
+            },
+            {
+                "key": "e_1_3_3_12_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.128.2.203"
+            },
+            {
+                "key": "e_1_3_3_13_2",
+                "article-title": "Perceptual cues in non-verbal vocal expressions of emotion",
+                "author": "Sauter D",
+                "unstructured": "D Sauter, AJ Calder, F Eisner, SK Scott, Perceptual cues in non-verbal vocal expressions of emotion. Q J Exp Psychol, in press.",
+                "journal-title": "Q J Exp Psychol"
+            },
+            {
+                "key": "e_1_3_3_14_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1080/02699939208411068"
+            },
+            {
+                "key": "e_1_3_3_15_2",
+                "first-page": "63",
+                "volume-title": "What the Face Reveals: Basic and Applied Studies of Spontaneous Expression",
+                "author": "Rosenberg EL",
+                "year": "2005",
+                "unstructured": "EL Rosenberg, P Ekman, Coherence between expressive and experiential systems in emotion. What the Face Reveals: Basic and Applied Studies of Spontaneous Expression, eds P Ekman, EL Rosenberg (Oxford University Press, New York), pp. 63–85 (2005)."
+            },
+            {
+                "key": "e_1_3_3_16_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1038/nn.2138"
+            },
+            {
+                "key": "e_1_3_3_17_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.8.3.435"
+            },
+            {
+                "key": "e_1_3_3_18_2",
+                "doi-asserted-by": "crossref",
+                "first-page": "301",
+                "DOI": "10.1002/0470013494.ch16",
+                "volume-title": "Handbook of Cognition and Emotion",
+                "author": "Ekman P",
+                "year": "1999",
+                "unstructured": "P Ekman, Facial expressions. Handbook of Cognition and Emotion, eds T Dalgleish, M Power (Wiley, New York), pp. 301–320 (1999)."
+            },
+            {
+                "key": "e_1_3_3_19_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.8.2.216"
+            },
+            {
+                "key": "e_1_3_3_20_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1196/annals.1280.004"
+            },
+            {
+                "key": "e_1_3_3_21_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/1528-3542.5.1.23"
+            },
+            {
+                "key": "e_1_3_3_22_2",
+                "first-page": "127",
+                "volume-title": "Emotion Regulation",
+                "author": "Shiota M",
+                "year": "2004",
+                "unstructured": "M Shiota, D Keltner, B Campos, M Hertenstein, Positive emotion and the regulation of interpersonal relationships. Emotion Regulation, eds P Phillipot, R Feldman (Erlbaum, Mahwah, NJ), pp. 127–156 (2004)."
+            },
+            {
+                "key": "e_1_3_3_23_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0022-3514.94.3.516"
+            },
+            {
+                "key": "e_1_3_3_24_2",
+                "article-title": "The voice conveys specific emotions: evidence from vocal burst displays",
+                "author": "Simon-Thomas E",
+                "unstructured": "E Simon-Thomas, D Keltner, D Sauter, L Sinicropi-Yao, A Abramson, The voice conveys specific emotions: evidence from vocal burst displays. Emotion, in press.",
+                "journal-title": "Emotion"
+            },
+            {
+                "key": "e_1_3_3_25_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1016/j.cub.2009.05.028"
+            },
+            {
+                "key": "e_1_3_3_26_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1037/0033-2909.128.6.961"
+            },
+            {
+                "key": "e_1_3_3_27_2",
+                "volume-title": "Emotion, Qualia and Consciousness",
+                "author": "Ruch W",
+                "year": "2001",
+                "unstructured": "W Ruch, P Ekman, The expressive pattern of laughter. Emotion, Qualia and Consciousness, ed A Kaszniak (Word Scientific Publisher, Tokyo, 2001)."
+            },
+            {
+                "key": "e_1_3_3_28_2",
+                "first-page": "280",
+                "volume-title": "Affective Neuroscience: the Foundations of Human and Animal Emotions",
+                "author": "Panksepp J",
+                "year": "2004",
+                "unstructured": "J Panksepp, Rough-and-tumble play: The brain sources to joy. Affective Neuroscience: the Foundations of Human and Animal Emotions, ed J Panksepp (Oxford University Press, New York), pp. 280–299 (2004)."
+            },
+            {
+                "key": "e_1_3_3_29_2",
+                "volume-title": "Nonverbal Communication",
+                "author": "van Hooff JARAM",
+                "year": "1972",
+                "unstructured": "JARAM van Hooff, A comparative approach to the phylogeny of laughter and smiling. Nonverbal Communication, ed RA Hinde (Cambridge University Press, Cambridge, England, 1972)."
+            },
+            {
+                "key": "e_1_3_3_30_2",
+                "article-title": "More than happy: the need for disentangling positive emotions",
+                "author": "Sauter D",
+                "unstructured": "D Sauter, More than happy: the need for disentangling positive emotions. Curr Dir Psychol Sci, in press.",
+                "journal-title": "Curr Dir Psychol Sci"
+            },
+            {
+                "key": "e_1_3_3_31_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1073/pnas.94.10.5489"
+            },
+            {
+                "key": "e_1_3_3_32_2",
+                "doi-asserted-by": "publisher",
+                "DOI": "10.1163/156856897X00357"
+            }
+        ],
+        "updated-by": [
+            {
+                "DOI": "10.1073/pnas.1508604112",
+                "type": "correction",
+                "label": "Correction",
+                "source": "publisher",
+                "updated": {
+                    "date-parts": [
+                        [
+                            2015,
+                            5,
+                            14
+                        ]
+                    ],
+                    "date-time": "2015-05-14T00:00:00Z",
+                    "timestamp": 1431561600000
+                }
+            }
+        ],
+        "container-title": [
+            "Proceedings of the National Academy of Sciences"
+        ],
+        "original-title": [
+
+        ],
+        "language": "en",
+        "link": [
+            {
+                "URL": "https://pnas.org/doi/pdf/10.1073/pnas.0908239106",
+                "content-type": "unspecified",
+                "content-version": "vor",
+                "intended-application": "similarity-checking"
+            }
+        ],
+        "deposited": {
+            "date-parts": [
+                [
+                    2024,
+                    3,
+                    22
+                ]
+            ],
+            "date-time": "2024-03-22T23:56:00Z",
+            "timestamp": 1711151760000
+        },
+        "score": 1,
+        "resource": {
+            "primary": {
+                "URL": "https://pnas.org/doi/full/10.1073/pnas.0908239106"
+            }
+        },
+        "subtitle": [
+
+        ],
+        "short-title": [
+
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    2010,
+                    1,
+                    25
+                ]
+            ]
+        },
+        "references-count": 32,
+        "journal-issue": {
+            "issue": "6",
+            "published-print": {
+                "date-parts": [
+                    [
+                        2010,
+                        2,
+                        9
+                    ]
+                ]
+            }
+        },
+        "alternative-id": [
+            "10.1073/pnas.0908239106"
+        ],
+        "URL": "https://doi.org/10.1073/pnas.0908239106",
+        "relation": {
+            "has-review": [
+                {
+                    "id-type": "doi",
+                    "id": "10.3410/f.2251956.1868055",
+                    "asserted-by": "object"
+                }
+            ]
+        },
+        "ISSN": [
+            "0027-8424",
+            "1091-6490"
+        ],
+        "issn-type": [
+            {
+                "value": "0027-8424",
+                "type": "print"
+            },
+            {
+                "value": "1091-6490",
+                "type": "electronic"
+            }
+        ],
+        "subject": [
+
+        ],
+        "published": {
+            "date-parts": [
+                [
+                    2010,
+                    1,
+                    25
+                ]
+            ]
+        },
+        "assertion": [
+            {
+                "value": "2010-01-25",
+                "order": 2,
+                "name": "published",
+                "label": "Published",
+                "group": {
+                    "name": "publication_history",
+                    "label": "Publication History"
+                }
+            }
+        ]
+    }
+}

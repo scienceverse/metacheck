@@ -1,0 +1,530 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 173939,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            4,
+                            29
+                        ]
+                    ],
+                    "date-time": "2026-04-29T07:27:44Z",
+                    "timestamp": 1777447664919,
+                    "version": "3.51.4"
+                },
+                "reference-count": 57,
+                "publisher": "Cambridge University Press (CUP)",
+                "issue": "2",
+                "license": [
+                    {
+                        "start": {
+                            "date-parts": [
+                                [
+                                    2014,
+                                    4,
+                                    29
+                                ]
+                            ],
+                            "date-time": "2014-04-29T00:00:00Z",
+                            "timestamp": 1398729600000
+                        },
+                        "content-version": "unspecified",
+                        "delay-in-days": 28,
+                        "URL": "https://www.cambridge.org/core/terms"
+                    }
+                ],
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "short-container-title": [
+                    "Behav Brain Sci"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2014,
+                            4
+                        ]
+                    ]
+                },
+                "abstract": "<jats:title>Abstract<\/jats:title><jats:p>Commentators have tended to focus on the conceptual framework of our article, the contrast between genetic and associative accounts of mirror neurons, and to challenge it with additional possibilities rather than empirical data. This makes the empirically focused comments especially valuable. The mirror neuron debate is replete with ideas; what it needs now are system-level theories and careful experiments – tests and testability.<\/jats:p>",
+                "DOI": "10.1017/s0140525x13002793",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2014,
+                            4,
+                            29
+                        ]
+                    ],
+                    "date-time": "2014-04-29T11:27:47Z",
+                    "timestamp": 1398770867000
+                },
+                "page": "221-241",
+                "source": "Crossref",
+                "is-referenced-by-count": 8,
+                "title": [
+                    "Mirror neurons: Tests and testability"
+                ],
+                "prefix": "10.1017",
+                "volume": "37",
+                "author": [
+                    {
+                        "given": "Caroline",
+                        "family": "Catmur",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Clare",
+                        "family": "Press",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Richard",
+                        "family": "Cook",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Geoffrey",
+                        "family": "Bird",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "Cecilia",
+                        "family": "Heyes",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "56",
+                "published-online": {
+                    "date-parts": [
+                        [
+                            2014,
+                            4,
+                            29
+                        ]
+                    ]
+                },
+                "reference": [
+                    {
+                        "key": "S0140525X13002793_ref44",
+                        "volume-title": "Animal learning and conditioning: An introduction",
+                        "author": "Pearce",
+                        "year": "2008"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref32",
+                        "first-page": "387",
+                        "article-title": "Response-effect compatibility in manual choice reaction tasks",
+                        "volume": "27",
+                        "author": "Kunde",
+                        "year": "2001",
+                        "journal-title": "Journal of Experimental Psychology: Human Perception and Performance"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref37",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.3758/BF03214421"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref52",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1146/annurev.neuro.23.1.473"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref41",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1523/JNEUROSCI.4803-10.2011"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref28",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.2307/1131603"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref56",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.cub.2012.12.006"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref53",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.tics.2008.03.005"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref48",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rsbl.2010.0850"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref46",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.neubiorev.2011.03.004"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref51",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/nrn2805"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref40",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/a0031127"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref57",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.bandc.2011.02.014"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref30",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s00221-003-1603-5"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref25",
+                        "author": "Heyes",
+                        "journal-title": "Philosophical Transactions of the Royal Society, Series B: Biological Sciences"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref20",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0033-295X.110.4.713"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref13",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/s00426-003-0151-8"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref16",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "157",
+                        "DOI": "10.1126/science.122.3160.157",
+                        "article-title": "Conditioned aversion to saccharin resulting from exposure to gamma radiation",
+                        "volume": "122",
+                        "author": "Garcia",
+                        "year": "1955",
+                        "journal-title": "Science"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref10",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1007/BF00230027"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref7",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.neulet.2012.10.002"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref27",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0012-1649.38.5.840"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref22",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/a0022288"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref23",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rstb.2012.0120"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref15",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1371/journal.pbio.0040302"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref24",
+                        "volume-title": "Cooperation and its evolution",
+                        "author": "Heyes",
+                        "year": "2013"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref12",
+                        "first-page": "229",
+                        "article-title": "Effect anticipation and action control",
+                        "volume": "27",
+                        "author": "Elsner",
+                        "year": "2001",
+                        "journal-title": "Journal of Experimental Psychology: Human Perception and Performance"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref17",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/h0077855"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref6",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/j.1551-6709.2012.01252.x"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref33",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.jneumeth.2008.07.021"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref42",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1126/science.1115593"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref50",
+                        "first-page": "64",
+                        "volume-title": "Classical conditioning: II. Current research and theory",
+                        "author": "Rescorla",
+                        "year": "1972"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref38",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0012-1649.31.5.838"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref4",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rsbl.2012.0192"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref35",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rstb.2010.0224"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref34",
+                        "first-page": "578",
+                        "article-title": "What is matched in direct matching? Intention attribution modulates motor priming",
+                        "volume": "34",
+                        "author": "Liepelt",
+                        "year": "2008b",
+                        "journal-title": "Journal of Experimental Psychology: Human Perception and Performance"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref8",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.2307/2024640"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref2",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.3758/BF03204964"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref5",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/a0027561"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref19",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/S0166-2236(96)10065-5"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref18",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.2307/2216063"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref45",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1038/nature06492"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref14",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1046/j.1460-9568.2003.02601.x"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref39",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.cub.2010.02.045"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref29",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.infbeh.2005.08.004"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref43",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1371/journal.pone.0028848"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref49",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.neuropsychologia.2010.07.012"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref11",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1111/j.1460-9568.2009.07067.x"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref55",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1523/JNEUROSCI.2895-07.2007"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref54",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1037/0022-3514.84.3.558"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref21",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.neubiorev.2009.11.007"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref9",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1093/cercor/bhq166"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref31",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1016/j.neuron.2009.12.010"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref36",
+                        "first-page": "75",
+                        "volume-title": "Constraints on learning",
+                        "author": "Mackintosh",
+                        "year": "1973"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref3",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rspb.2007.1019"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref26",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1177/070674371205700502"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref1",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1523/JNEUROSCI.0963-11.2011"
+                    },
+                    {
+                        "key": "S0140525X13002793_ref47",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.1098/rspb.2007.0774"
+                    }
+                ],
+                "container-title": [
+                    "Behavioral and Brain Sciences"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/S0140525X13002793",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2022,
+                            4,
+                            2
+                        ]
+                    ],
+                    "date-time": "2022-04-02T14:02:33Z",
+                    "timestamp": 1648908153000
+                },
+                "score": 47.566208,
+                "resource": {
+                    "primary": {
+                        "URL": "https://www.cambridge.org/core/product/identifier/S0140525X13002793/type/journal_article"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2014,
+                            4
+                        ]
+                    ]
+                },
+                "references-count": 57,
+                "journal-issue": {
+                    "issue": "2",
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2014,
+                                4
+                            ]
+                        ]
+                    }
+                },
+                "alternative-id": [
+                    "S0140525X13002793"
+                ],
+                "URL": "https://doi.org/10.1017/s0140525x13002793",
+                "ISSN": [
+                    "0140-525X",
+                    "1469-1825"
+                ],
+                "issn-type": [
+                    {
+                        "value": "0140-525X",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1469-1825",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2014,
+                            4
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}
