@@ -15,8 +15,8 @@ The goal of metacheck is to automatically check research outputs for best practi
 You can install the development version of metacheck from [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("scienceverse/metacheck")
+# install.packages("remotes")
+remotes::install_github("scienceverse/metacheck")
 ```
 
 ## API (optional)
@@ -41,4 +41,4 @@ Metacheck uses bibr format for the paper objects. The schema for this can be fou
 
 You may not contribute any code unless you also contribute a test of this code.
 
-Check tests/testthat/helper.R for custom test skip functions. By default, all tests requiring a web connection, LLM, or long tests are skipped. You can control this globally with the skip functions in this file (e.g., comment out the first `skip()` function in each custom function to run all tests of this type unless on cran/covr).
+Check tests/testthat/helper.R for custom test skip functions. By default, all tests requiring a web connection, LLM, or long tests are skipped or mocked. You can control this globally with the skip functions in this file (e.g., comment out the first `skip()` function in each custom function to run all tests of this type unless on cran/covr).

@@ -24,3 +24,4 @@ codecov.yml
 ^inst/templates/*.html
 ^\.positai$
 ^\.claude$
+^tests$
