@@ -24,6 +24,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Lisa DeBruine \email{debruine@gmail.com} (\href{https://orcid.org/0000-0002-7523-5539}{ORCID})
   \item Daniel Lakens \email{lakens@gmail.com} (\href{https://orcid.org/0000-0002-0247-239X}{ORCID})
   \item Jakub Werner \email{jakub@jakubwerner.com} (\href{https://orcid.org/0009-0004-0388-0362}{ORCID})
 }
