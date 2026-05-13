@@ -18,7 +18,7 @@ a list of information about the repo
 Get GitHub Repo Info
 }
 \examples{
-\donttest{
+\dontrun{
 github_info("scienceverse/metacheck")
 }
 }

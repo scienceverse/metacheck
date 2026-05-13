@@ -42,8 +42,8 @@ Suggests:
     shiny.i18n,
     shinydashboard,
     shinyjs,
-    testthat (>= 3.0.0),
     waiter,
+    testthat (>= 3.0.0),
     rstudioapi,
     knitr,
     withr

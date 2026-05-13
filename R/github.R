@@ -41,7 +41,7 @@ github_links <- function(paper) {
 #' @export
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' github_info("scienceverse/metacheck")
 #' }
 github_info <- function(repo, recursive = FALSE) {
@@ -117,7 +117,7 @@ github_repo <- function(repo) {
 #' @export
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' github_readme("scienceverse/metacheck")
 #' }
 github_readme <- function(repo) {
@@ -160,7 +160,7 @@ github_readme <- function(repo) {
 #' @export
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' github_files("scienceverse/metacheck")
 #' }
 github_files <- function(repo, dir = "",
@@ -295,7 +295,7 @@ github_config <- function(req) {
 #' @export
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' github_languages("scienceverse/metacheck")
 #' }
 github_languages <- function(repo) {

@@ -8,7 +8,7 @@
 #' @examples
 #' aspredicted_links(psychsci)
 aspredicted_links <- function(paper) {
-  text <- NULL
+  text <- text_id <- NULL
 
   # search for "aspredicted"
   RGX_ASPREDICTED <- "aspredicted>?\\s*\\.?org/\\s*"

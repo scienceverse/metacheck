@@ -333,7 +333,7 @@ crossref_doi <- function(doi, select = c(
 #'   "The benefits of preregistration and Registered Reports.",
 #'   "Evidence-Based Toxicology, 2(1)."
 #' )
-#' \donttest{
+#' \dontrun{
 #' cr <- crossref_query(ref)
 #' }
 crossref_query <- function(ref, min_score = 50, rows = 1,
@@ -665,7 +665,7 @@ add_bib_match <- function(paper, min_score = 50) {
 #'
 #' @examples
 #' doi <- "10.7717/peerj.4375"
-#' \donttest{
+#' \dontrun{
 #' oa_info <- openalex_doi(doi)
 #' oa_info <- openalex_doi(doi, "title")
 #' }
