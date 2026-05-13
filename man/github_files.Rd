@@ -20,7 +20,7 @@ a data frame of files
 Get File List from GitHub
 }
 \examples{
-\donttest{
+\dontrun{
 github_files("scienceverse/metacheck")
 }
 }

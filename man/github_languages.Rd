@@ -16,7 +16,7 @@ vector of languages
 Get Languages from GitHub Repo
 }
 \examples{
-\donttest{
+\dontrun{
 github_languages("scienceverse/metacheck")
 }
 }

@@ -7,9 +7,9 @@
 osf_info(osf_ids, pb = NULL)
 }
 \arguments{
-\item{pb}{a progress bar passed from another function}
+\item{osf_ids}{an vector of OSF IDs or URLs}
 
-\item{osf_id}{an OSF ID or URL}
+\item{pb}{a progress bar passed from another function}
 }
 \value{
 a data frame of information

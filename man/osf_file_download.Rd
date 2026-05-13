@@ -41,7 +41,7 @@ Some differences may exist because the OSF allows longer file names with charact
 You can limit downloads to only files under a specific size (defaults to 10MB) and only a maximum download size (largest files will be omitted until total size is under the limit). Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
 }
 \examples{
-\donttest{
+\dontrun{
 osf_file_download("6nt4v")
 }
 }

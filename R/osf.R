@@ -346,7 +346,7 @@ osf_request <- function(url) {
 
 #' Retrieve info from the OSF by ID
 #'
-#' @param osf_id an OSF ID or URL
+#' @param osf_ids an vector of OSF IDs or URLs
 #' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame of information
@@ -925,7 +925,7 @@ osf_type <- function(guid) {
 #' @export
 #' @examples
 #' # get the 20 newest preprints
-#' \donttest{
+#' \dontrun{
 #' osf_api <- getOption("metacheck.osf.api")
 #' url <- sprintf("%s/preprints/?search=date_created-desc", osf_api)
 #' preprints <- osf_get_all_pages(url, 2)
@@ -1173,7 +1173,7 @@ osf_api_calls <- function(calls = NULL) {
 #' @export
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' osf_file_download("6nt4v")
 #' }
 osf_file_download <- function(osf_id,
@@ -1435,7 +1435,7 @@ osf_file_download <- function(osf_id,
 #' @returns a table of preprint info
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' dc <- c("2025-09-01", "2025-10-01")
 #' pp <- osf_preprint_list("psyarxiv", date_created = dc)
 #' files <- pp$primary_file
