@@ -1,4 +1,4 @@
-#' Check PubPeer Comments
+#' PubPeer Comments
 #'
 #' @description
 #' This module checks references and warns for citations that have comments on pubpeer (excluding Statcheck comments).

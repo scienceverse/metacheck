@@ -50,12 +50,12 @@ prereg_check <- function(paper) {
 
   ## AsPredicted preregs ----
   table_ap <- suppressMessages(
-    aspredicted_retrieve(links_ap$text)
+    aspredicted_retrieve(links_ap$href)
   )
   ap_schema_table <- ap_schema(table_ap)
 
   ## OSF prereg ----
-  osf_ids <- links_osf$text |>
+  osf_ids <- links_osf$href |>
     osf_check_id() |>
     unique()
   link_types <- osf_type(osf_ids)
@@ -120,7 +120,7 @@ prereg_check <- function(paper) {
   if (nrow(prereg_info)) {
     paper_ids <- data.frame(
       paper_id = c(links_ap$paper_id, links_osf$paper_id),
-      link = c(links_ap$text, links_osf$text)
+      link = c(links_ap$href, links_osf$href)
     )
     paper_ids$link <- gsub("^(https://)?", "https://", paper_ids$link)
 

@@ -8,7 +8,8 @@ test_that("extract_urls", {
   valid_urls <- c(
     "https://osf.io/48ncu",
     "http://researchbox.org/4377",
-    "osf.io/48ncu"
+    "osf.io/48ncu",
+    "http://researchbox.org/4377?PASWORD=10&hi"
   )
 
   paper <- test_paper(valid_urls)

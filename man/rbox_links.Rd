@@ -10,7 +10,7 @@ rbox_links(paper)
 \item{paper}{a paper object or paperlist object}
 }
 \value{
-a table with the ResearchBox url in the first (text) column
+a table with the ResearchBox url in the first (href) column
 }
 \description{
 Find ResearchBox Links in Papers

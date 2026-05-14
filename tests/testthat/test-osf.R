@@ -169,19 +169,20 @@ test_that("osf_headers", {
 
 
 test_that("osf_links", {
-  paper <- test_paper(c("osf.io/e2aks", "osf.io/tvyxz/"))
+  exp <- c("osf.io/e2aks", "osf.io/tvyxz/", "osf.com/nope")
+  paper <- test_paper()
+  paper$url <- data.frame(href = exp)
   obs <- osf_links(paper)
-  exp <- c("osf.io/e2aks", "osf.io/tvyxz/")
-  expect_equal(obs$text, exp)
+  expect_equal(obs$href, exp[1:2])
 
-  # has view-only link across sentences
-  paper <- test_paper(c(
-    "osf.io/t9j8e/?",
-    "view_only=f171281f212f4435917b16a9e581a73b"
-  ))
-  obs <- osf_links(paper)
-  exp <- "osf.io/t9j8e/? view_only=f171281f212f4435917b16a9e581a73b"
-  expect_equal(obs$text, exp)
+  # # has view-only link across sentences
+  # paper <- test_paper(c(
+  #   "osf.io/t9j8e/?",
+  #   "view_only=f171281f212f4435917b16a9e581a73b"
+  # ))
+  # obs <- osf_links(paper)
+  # exp <- "osf.io/t9j8e/? view_only=f171281f212f4435917b16a9e581a73b"
+  # expect_equal(obs$text, exp)
 })
 
 test_that("osf_check_id", {

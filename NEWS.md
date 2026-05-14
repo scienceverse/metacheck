@@ -1,3 +1,16 @@
+# metacheck 0.0.0.9101
+
+* `metacheck_app()` the shiny app is back!
+* `grobid_convert()` now reads in the url table more accurately
+* `extract_urls()` uses a simplified regex that seems better at catching full URLs
+* updated FLoRA and rw databases
+* `osf_links()`, `rb_links()`, `github_links()` and `aspredicted_links()` simplified to use the more accurate url table instead of a full text search.
+
+# metacheck 0.0.0.9100
+
+* So many updates to fix things that broke with the new structure
+* Using httptest2 to mock tests that access external APIs
+
 # metacheck 0.0.0.9070
 
 * Major updates to replace grobid functions with bibr

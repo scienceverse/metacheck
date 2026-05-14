@@ -16,7 +16,7 @@ test_that("multiple prereg", {
 test_that("oer", {
   guid <- "5xysn"
   text <- paste0("https://osf.io/", guid)
-  paper <- test_paper(text)
+  paper <- test_paper(url = text)
   mo <- module_run(paper, "prereg_check")
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "Open-Ended Registration")
@@ -26,7 +26,7 @@ test_that("oer", {
 test_that("prc", {
   guid <- "jez3g"
   text <- paste0("https://osf.io/", guid)
-  paper <- test_paper(text)
+  paper <- test_paper(url = text)
   mo <- module_run(paper, "prereg_check")
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "Prereg Challenge")
@@ -36,7 +36,7 @@ test_that("prc", {
 test_that("osf_pr_28", {
   guid <- "g59u6"
   text <- paste0("https://osf.io/", guid)
-  paper <- test_paper(text)
+  paper <- test_paper(url = text)
   mo <- module_run(paper, "prereg_check")
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "OSF Preregistration")
@@ -46,7 +46,7 @@ test_that("osf_pr_28", {
 test_that("osf_pr_31", {
   guid <- "7qcxa"
   text <- paste0("https://osf.io/", guid)
-  paper <- test_paper(text)
+  paper <- test_paper(url = text)
   mo <- module_run(paper, "prereg_check")
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "OSF Preregistration")
@@ -56,7 +56,7 @@ test_that("osf_pr_31", {
 test_that("osf_pre", {
   guid <- "dr42m"
   text <- paste0("https://osf.io/", guid)
-  paper <- test_paper(text)
+  paper <- test_paper(url = text)
   mo <- module_run(paper, "prereg_check")
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "OSF-Standard Pre-Data Collection Registration")
@@ -66,7 +66,7 @@ test_that("osf_pre", {
 test_that("prap", {
   guid <- "7v28u"
   text <- paste0("https://osf.io/", guid)
-  paper <- test_paper(text)
+  paper <- test_paper(url = text)
   mo <- module_run(paper, "prereg_check")
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "Preregistration Template from AsPredicted.org")
@@ -76,7 +76,7 @@ test_that("prap", {
 test_that("rrbrandt", {
   guid <- "vzb48"
   text <- paste0("https://osf.io/", guid)
-  paper <- test_paper(text)
+  paper <- test_paper(url = text)
   mo <- module_run(paper, "prereg_check")
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "Replication Recipe (Brandt et al., 2013): Pre-Registration")
@@ -86,11 +86,11 @@ test_that("rrbrandt", {
 test_that("multiple papers", {
   guid1 <- "48ncu"
   text1 <- paste0("https://osf.io/", guid1)
-  paper1 <- test_paper(text1)
+  paper1 <- test_paper(url = text1)
 
   guid2 <- "by8i8v"
   text2 <- paste0("https://aspredicted.org/", guid2, ".pdf")
-  paper2 <- test_paper(text2)
+  paper2 <- test_paper(url = text2)
 
   paper <- paperlist(paper1, paper2)
 

@@ -31,9 +31,9 @@ repo_check <- function(paper) {
   ## get links ----
   osf_links_found <- osf_links(paper)
   # exclude psychsci badges
-  if ("repo_url" %in% names(osf_links_found)) {
+  if ("href" %in% names(osf_links_found)) {
     osf_links_found <- osf_links_found |>
-      dplyr::filter(!grepl("tvyxz", repo_url))
+      dplyr::filter(!grepl("tvyxz", href))
   }
   github_links_found <- github_links(paper)
   rb_links_found <- rbox_links(paper)
@@ -42,7 +42,7 @@ repo_check <- function(paper) {
   osf_links_found$repo_type <- "osf"
   github_links_found$repo_type <- "github"
   rb_links_found$repo_type <- "researchbox"
-  cols <- c("paper_id", "text", "repo_type")
+  cols <- c("paper_id", "href", "repo_type")
   repos <- dplyr::bind_rows(
     osf_links_found[, cols],
     github_links_found[, cols],

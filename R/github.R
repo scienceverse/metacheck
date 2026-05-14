@@ -10,12 +10,19 @@
 #' @examples
 #' github_links(psychsci)
 github_links <- function(paper) {
-  # strip punctuation off the end of sentences to avoid weird matches
-  strip_text <- search_text(paper, ".*[^\\.$]", return = "match", perl = TRUE)
+  href <- text <- text_id <- NULL
 
-  # search for github URLS
+  # # strip punctuation off the end of sentences to avoid weird matches
+  strip_text <- search_text(paper, ".*[^\\.$]", return = "match", perl = TRUE)
+  #
+  # # search for github URLS
   github_regex <- "(?:https?://)?github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*"
-  found_gh <- search_text(strip_text, github_regex, return = "match", perl = TRUE)
+  # found_gh <- search_text(strip_text, github_regex, return = "match", perl = TRUE)
+
+  found_gh <- paper_table(paper, "url") |>
+    search_text(github_regex, perl = TRUE) |>
+    dplyr::select(href, text_id, paper_id)
+
 
   # find github repos referenced only by org/repo near github (+-10 words)
   # like "See our github repo at scienceverse/metacheck"
@@ -25,7 +32,8 @@ github_links <- function(paper) {
     search_text(github_regex, exclude = TRUE, perl = TRUE) |>
     search_text("github.io", exclude = TRUE) |>
     search_text(plusminus, return = "match") |>
-    search_text(no_github_regex, return = "match", perl = TRUE)
+    search_text(no_github_regex, return = "match", perl = TRUE) |>
+    dplyr::select(href = text, text_id, paper_id)
 
   all_gh <- dplyr::bind_rows(found_gh, other_gh)
 

@@ -98,52 +98,58 @@ osf_pat_validate <- function(osf_pat = Sys.getenv("OSF_PAT")) {
 #'
 #' @param paper a paper object or paperlist object
 #'
-#' @returns a table with the OSF url in the first (text) column
+#' @returns a table with the OSF url in the first (href) column
 #' @export
 #'
 #' @examples
 #' osf_links(psychsci)
 osf_links <- function(paper) {
-  # get OSF links
-  OSF_RGX <- "\\bosf\\s*\\.\\s*io\\s*/\\s*[a-z0-9]{5}\\s*/?\\s*\\??\\b"
-  found_osf <- search_text(paper, OSF_RGX, return = "match")
+  href <- NULL
 
-  # get ? links (often in next sentence)
-  VO_RGX <- paste0(
-    "\\bosf\\s*\\.\\s*io\\s*/", # osf.io
-    "\\s*[a-z0-9]{5}", # 5-letter code
-    "\\s*/\\s*\\?\\s*view_only\\s*=\\s*[0-9a-f]+" # vo-link
-  )
-
-  has_quest <- grepl("\\?", found_osf$text)
-  expanded_vo <- found_osf[has_quest, , drop = FALSE] |>
-    expand_text(paper, plus = 1)
-
-  expanded_vo$old_text <- expanded_vo$text
-  expanded_vo$text <- expanded_vo$expanded
-
-  found_vo <- expanded_vo |>
-    search_text(VO_RGX, return = "match")
-
-  found_vo$expanded <- found_vo$text
-  found_vo$text <- found_vo$old_text
-  found_vo$old_text <- NULL
-
-  # combine
-  all_osf <- dplyr::left_join(found_osf, found_vo,
-    by = names(found_osf)
-  )
-  if (nrow(all_osf) > 0) {
-    all_osf$text <- ifelse(
-      is.na(all_osf$expanded),
-      all_osf$text,
-      all_osf$expanded
-    )
-  }
-  all_osf$expanded <- NULL
-
-  return(all_osf)
+  paper_table(paper, "url") |>
+    dplyr::filter(grepl("osf\\.io", href, ignore.case = TRUE))
 }
+# osf_links <- function(paper) {
+#   # get OSF links
+#   OSF_RGX <- "\\bosf\\s*\\.\\s*io\\s*/\\s*[a-z0-9]{5}\\s*/?\\s*\\??\\b"
+#   found_osf <- search_text(paper, OSF_RGX, return = "match")
+#
+#   # get ? links (often in next sentence)
+#   VO_RGX <- paste0(
+#     "\\bosf\\s*\\.\\s*io\\s*/", # osf.io
+#     "\\s*[a-z0-9]{5}", # 5-letter code
+#     "\\s*/\\s*\\?\\s*view_only\\s*=\\s*[0-9a-f]+" # vo-link
+#   )
+#
+#   has_quest <- grepl("\\?", found_osf$text)
+#   expanded_vo <- found_osf[has_quest, , drop = FALSE] |>
+#     expand_text(paper, plus = 1)
+#
+#   expanded_vo$old_text <- expanded_vo$text
+#   expanded_vo$text <- expanded_vo$expanded
+#
+#   found_vo <- expanded_vo |>
+#     search_text(VO_RGX, return = "match")
+#
+#   found_vo$expanded <- found_vo$text
+#   found_vo$text <- found_vo$old_text
+#   found_vo$old_text <- NULL
+#
+#   # combine
+#   all_osf <- dplyr::left_join(found_osf, found_vo,
+#     by = names(found_osf)
+#   )
+#   if (nrow(all_osf) > 0) {
+#     all_osf$text <- ifelse(
+#       is.na(all_osf$expanded),
+#       all_osf$text,
+#       all_osf$expanded
+#     )
+#   }
+#   all_osf$expanded <- NULL
+#
+#   return(all_osf)
+# }
 
 
 #' Check OSF API Server Status

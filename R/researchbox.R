@@ -2,25 +2,16 @@
 #'
 #' @param paper a paper object or paperlist object
 #'
-#' @returns a table with the ResearchBox url in the first (text) column
+#' @returns a table with the ResearchBox url in the first (href) column
 #' @export
 #'
 #' @examples
 #' rbox_links(psychsci)
 rbox_links <- function(paper) {
-  found <- search_text(paper, "researchbox")
+  href <- NULL
 
-  # match up to ">"
-  match_ap <- search_text(found, "/researchbox\\.org[^\\>]+", return = "match")
-
-  # clean up the text
-  match_ap$text <- match_ap$text |>
-    paste0("https:/", x = _)
-
-  unique_matches <- match_ap |>
-    unique()
-
-  return(unique_matches)
+  paper_table(paper, "url") |>
+    dplyr::filter(grepl("researchbox\\.org", href, ignore.case = TRUE))
 }
 
 #' Retrieve info from ResearchBox by URL

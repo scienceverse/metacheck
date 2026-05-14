@@ -70,11 +70,11 @@ funding_check <- function(paper) {
     # merge the text by section/id
     # search_text(return = "section") |>
     dplyr::filter(
-      !any(section %in% likely_section) |
-        section %in% likely_section,
+      !any(section_type %in% likely_section) |
+        section_type %in% likely_section,
       .by = paper_id
-    )
-
+    ) |>
+    dplyr::select(paper_id, text)
 
   # summary_table ----
   summary_table <- dplyr::summarise(table, funding_found = TRUE, .by = paper_id)

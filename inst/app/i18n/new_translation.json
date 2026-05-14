@@ -575,40 +575,25 @@
       "en": ""
     },
     {
-      "en": "all_p_values"
+      "en": "1"
     },
     {
-      "en": "all_urls"
+      "en": "3"
     },
     {
-      "en": "causal_claims"
+      "en": "4"
     },
     {
-      "en": "Check PubPeer Comments"
+      "en": "6"
     },
     {
       "en": "Code Check"
-    },
-    {
-      "en": "code_check"
     },
     {
       "en": "COI Check"
     },
     {
       "en": "COI Check (Overinclusive)"
-    },
-    {
-      "en": "coi_check"
-    },
-    {
-      "en": "coi_check_oi"
-    },
-    {
-      "en": "div"
-    },
-    {
-      "en": "DOI Check"
     },
     {
       "en": "Effect Sizes in t-tests and F-tests"
@@ -623,22 +608,22 @@
       "en": "Funding Check (Overinclusive)"
     },
     {
-      "en": "funding_check"
-    },
-    {
-      "en": "funding_check_oi"
-    },
-    {
       "en": "GROQ API Key"
     },
     {
-      "en": "id"
+      "en": "header"
     },
     {
-      "en": "marginal"
+      "en": "Load Demo Paper"
+    },
+    {
+      "en": "Load PsychSci"
     },
     {
       "en": "Miscitation"
+    },
+    {
+      "en": "Modules and External Resources"
     },
     {
       "en": "Non-Significant P Value Check"
@@ -647,46 +632,19 @@
       "en": "Open Practices Check"
     },
     {
-      "en": "open_practices"
-    },
-    {
-      "en": "power"
+      "en": "paper_id"
     },
     {
       "en": "Power Analysis Check"
     },
     {
-      "en": "prereg_check"
-    },
-    {
       "en": "Preregistration Check"
     },
     {
+      "en": "PubPeer Comments"
+    },
+    {
       "en": "Randomization and Causal Claims"
-    },
-    {
-      "en": "ref_accuracy"
-    },
-    {
-      "en": "ref_consistency"
-    },
-    {
-      "en": "ref_doi_check"
-    },
-    {
-      "en": "ref_miscitation"
-    },
-    {
-      "en": "ref_pubpeer"
-    },
-    {
-      "en": "ref_replication"
-    },
-    {
-      "en": "ref_retraction"
-    },
-    {
-      "en": "ref_summary"
     },
     {
       "en": "Reference Accuracy"
@@ -695,22 +653,7 @@
       "en": "Replication Check"
     },
     {
-      "en": "repo_check"
-    },
-    {
       "en": "Repository Check"
-    },
-    {
-      "en": "stat_check"
-    },
-    {
-      "en": "stat_effect_size"
-    },
-    {
-      "en": "stat_p_exact"
-    },
-    {
-      "en": "stat_p_nonsig"
     },
     {
       "en": "StatCheck"
@@ -719,7 +662,7 @@
       "en": "Summarise References"
     },
     {
-      "en": "Use `pdf2grobid()` to create XML files from PDFs. This relies on an external or local grobid server, and will save files to your machine, so needs to run outside this app."
+      "en": "The report will only run on the first paper in a set. You can download the quarto file and render it yourself, or download an html version. We currently can't show the HTML version embedded in the shiny app, but are working on it."
     }
   ]
 }

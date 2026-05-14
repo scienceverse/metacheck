@@ -9,7 +9,7 @@ text_tab <- tabItem(
       ),
       fluidRow(
         column(width = 4, selectInput("search_section", "Section", c("all"))),
-        column(width = 4, selectInput("search_return", "Return", c("sentence", "paragraph", "div", "section", "match", "paper_id"))),
+        column(width = 4, selectInput("search_return", "Return", c("sentence", "paragraph", "section", "header", "match", "paper_id"))),
         column(width = 4, div(
           checkboxGroupInput("search_options", NULL,
                              c("Search this table" = "table",

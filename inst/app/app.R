@@ -39,10 +39,11 @@ ui <- dashboardPage(
       # menuItem("LLM", tabName = "llm_tab",
       #          icon = icon("robot"))
     ),
-    actionButton("demo", "Load Demo File"),
-    actionButton("batch_demo", "Load Batch Demo"),
+    actionButton("demo", "Load Demo Paper"),
+    actionButton("batch_demo", "Load PsychSci"),
     #actionButton("reset_paper", "Reset"),
     actionButton("return_paper", "Quit & Return"),
+    uiOutput("files_loaded"),
     tags$br(),
 
     selectInput("lang", "Change language",
@@ -51,7 +52,9 @@ ui <- dashboardPage(
                             Spanish = "es",
                             Chinese = "zh"),
                 selected = "en"),
-    p("Most of the phrases have not been translated; this is just a proof of concept.", style="margin: 0 1em;")
+    p("Most of the phrases have not been translated; this is just a proof of concept.",
+      style="margin: 0 1em;"),
+    HTML("<img src='images/logo.png' alt='Logo' style='width: 85%; margin: 1em;' />")
   ),
   dashboardBody(
     shinyjs::useShinyjs(),
@@ -84,8 +87,10 @@ server <- function(input, output, session) {
   text_table <- reactiveVal( data.frame() )
   llm_table <- reactiveVal( data.frame() )
   mod_table <- reactiveVal( data.frame() )
-  mod_report <- reactiveVal( "" )
+  mod_summary <- reactiveVal( "" )
   mod_title <- reactiveVal( "" )
+  mod_desc <- reactiveVal( "" )
+  mod_details <- reactiveVal( "" )
   report_path <- reactiveVal( "" )
   total_cost <- reactiveVal(0)
 
@@ -148,12 +153,7 @@ server <- function(input, output, session) {
   observeEvent(input$demo, {
     debug_msg("demo")
 
-    p <- list(demopaper())
-    id <- "to_err_is_human.xml"
-    names(p) <- id
-    p[[1]]$name <- id
-    p[[1]]$info$filename <- id
-    p[[1]]$text$id = id
+    p <- paperlist(demopaper())
     update_from_paper(p)
   })
 
@@ -161,39 +161,72 @@ server <- function(input, output, session) {
   observeEvent(input$batch_demo, {
     debug_msg("batch_demo")
 
-    s <- psychsci[c(48, 91)]
-    update_from_paper(s)
+    #s <- psychsci[c(48, 91)]
+    update_from_paper(psychsci)
   })
 
-  ### load_xml ----
-  observeEvent(input$load_xml, {
-    debug_msg("load_xml")
+  ### convert_paper ----
+  observeEvent(input$convert_paper, {
+    debug_msg("convert_paper")
+    update_from_paper(list()) # clear interface
+    files <- input$convert_paper
 
     tryCatch({
-      n <- length(input$load_xml$datapath)
-      s <- vector("list", n)
-      withProgress(message = 'Processing files', value = 0, {
-        detail <- paste("1/", n, " (", input$load_xml$name[[1]], ")")
+      n <- length(files$datapath)
+      s <- vector("character", n)
+      tmp <- tempfile()
+      dir.create(tmp, showWarnings = FALSE)
+      on.exit(unlink(tmp, recursive = TRUE))
+
+      withProgress(message = 'Converting files', value = 0, {
+        detail <- paste0("1/", n, " (", files$name[[1]], ")")
         incProgress(0, detail = detail)
 
-        for (i in seq_along(input$load_xml$datapath)) {
-          path <- input$load_xml$datapath[[i]]
-          s[[i]] <- read(path)
+        for (i in seq_along(files$datapath)) {
+          path <- files$datapath[[i]]
+          s[[i]] <- convert(path, tmp, crossref_lookup=FALSE)
           if (i < n) {
-            detail <- paste(i+1, "/", n, " (",
-                            input$load_xml$name[[i+1]], ")")
+            detail <- paste0(i+1, "/", n, " (",
+                             files$name[[i+1]], ")")
           }
           incProgress(1/n, detail = detail)
         }
       })
 
+      papers <- read(tmp) |> paperlist()
+
       # fix filename because of shiny upload
-      names(s) <- basename(input$load_xml$name)
+      names(papers) <- basename(files$name) |>
+        gsub("\\.(pdf|PDF)$", "", x = _)
+      for (i in seq_along(papers)) {
+        name <- names(papers)[[i]]
+        papers[[i]]$paper_id <- name
+        papers[[i]]$info$filename <- basename(files$name[[i]])
+      }
+
+      update_from_paper(papers)
+    }, error = function(e) {
+      shinyjs::alert(e$message)
+    })
+
+  }, ignoreNULL = TRUE)
+
+  ### load_paper ----
+  observeEvent(input$load_paper, {
+    debug_msg("load_paper")
+    update_from_paper(list()) # clear interface
+    files <- input$load_paper
+
+    tryCatch({
+      s <- read(files$datapath) |> paperlist()
+
+      # fix filename because of shiny upload
+      names(s) <- basename(files$name) |>
+        gsub("\\.json$", "", x = _)
       for (i in seq_along(s)) {
         name <- names(s)[[i]]
-        s[[i]]$name <- name
-        s[[i]]$info$filename <- name
-        s[[i]]$text$id <- name
+        s[[i]]$paper_id <- name
+        s[[i]]$info$filename <- basename(files$name[[i]])
       }
 
       update_from_paper(s)
@@ -209,7 +242,7 @@ server <- function(input, output, session) {
     text_table(data.frame())
     llm_table(data.frame())
     mod_table(data.frame())
-    mod_report("")
+    mod_summary("")
     mod_title("")
     report_path("")
 
@@ -226,8 +259,13 @@ server <- function(input, output, session) {
   ### n_papers_loaded ----
   output$n_papers_loaded <- renderText({
     n <- length(my_paper())
-    p <- ifelse(n==1, "paper", "papers")
-    paste(n, p, "loaded")
+    paste0(n, " Paper", plural(n), " Loaded")
+  })
+
+  ### files_loaded ----
+  output$files_loaded <- renderText({
+    n <- length(my_paper())
+    paste0("<p style = 'margin: 0 1em;'>", n, " Paper", plural(n), " Loaded</p>")
   })
 
   ### paper_name ----
@@ -249,11 +287,15 @@ server <- function(input, output, session) {
   })
   output$paper_desc <- renderUI({
     req(input$paper_name, my_paper())
-    p(my_paper()[[input$paper_name]]$info$abstract)
+    abstract <- search_text(my_paper()[[input$paper_name]], return = "section") |>
+      dplyr::filter(section_type == "abstract") |>
+      _$text
+    p(abstract)
   })
   output$paper_keywords <- renderText({
     req(input$paper_name, my_paper())
     my_paper()[[input$paper_name]]$info$keywords |>
+      unlist() |>
       paste(collapse = "; ")
   })
 
@@ -263,7 +305,13 @@ server <- function(input, output, session) {
   output$text_table <- renderDT({
     debug_msg("text_table")
 
-    text_table()
+    cols <- c("text", "text_id", "paper_id", "header", "section_type")
+    tt <- text_table()
+    if (length(unique(tt$paper_id)) == 1) {
+      cols <- setdiff(cols, "paper_id")
+    }
+
+    tt[, cols]
   },
   selection = 'none',
   rownames = FALSE,
@@ -286,7 +334,6 @@ server <- function(input, output, session) {
 
       tt <- search_text(text,
                         pattern = input$search_pattern,
-                        section = sec,
                         return = input$search_return,
                         ignore.case = "ignore.case" %in% input$search_options,
                         fixed = "fixed" %in% input$search_options,
@@ -300,7 +347,7 @@ server <- function(input, output, session) {
       #                          selected = "file",
       #                          inline = TRUE)
 
-      sec <- unique(tt$section)
+      sec <- unique(tt$section_type)
       sec <- sec[!is.na(sec)] |> sort()
       sec <- c("all", sec)
       updateSelectInput(session, "search_section",
@@ -376,14 +423,17 @@ server <- function(input, output, session) {
     waiter$show()
     on.exit(waiter$hide())
 
-    modules <- input$report_module_list
+    # get checked values from module lists
+    modlists <- names(input) |> grep("^report_module_list_.+", x = _, value = TRUE)
+    modules <- sapply(modlists, \(x) input[[x]]) |> unlist() |> unname()
 
     if (length(my_paper()) == 0) return(NULL)
 
-    path <- tryCatch({
+    path <- tempfile(fileext = ".qmd")
+    sink <- tryCatch({
        report(my_paper()[[1]],
               modules = modules,
-              output_file = tempfile(fileext = ".qmd"),
+              output_file = path,
               output_format = "qmd")
     }, error = function(e) {
       showModal(modalDialog(
@@ -403,24 +453,32 @@ server <- function(input, output, session) {
   ### report_defaults ----
 
   update_report_modules <- function(modules) {
-    updateCheckboxGroupInput(session, "report_module_list", selected = modules)
+    modlists <- names(input) |> grep("^report_module_list_.+", x = _, value = TRUE)
+
+    for (ml in modlists) {
+      updateCheckboxGroupInput(session, ml, selected = modules)
+    }
   }
 
   observeEvent(input$report_defaults, {
     debug_msg("report_defaults")
 
     modules <- c("prereg_check",
+                 "funding_check",
+                 "coi_check",
                  "power",
-                 "stat_p_exact",
-                 "stat_p_nonsig",
-                 "marginal",
-                 "stat_effect_size",
+                 "repo_check",
                  "code_check",
                  "stat_check",
-                 "ref_doi_check",
+                 "stat_p_exact",
+                 "stat_p_nonsig",
+                 "stat_effect_size",
+                 "marginal",
+                 "ref_accuracy",
                  "ref_replication",
                  "ref_retraction",
-                 "ref_pubpeer")
+                 "ref_pubpeer",
+                 "ref_summary")
 
     update_report_modules(modules)
   })
@@ -499,8 +557,33 @@ server <- function(input, output, session) {
 
   ## modules ----
 
+  ### module_list ---
+  observeEvent(input$module_list, {
+    debug_msg("module_list")
+
+    info <- module_info(input$module_list)
+
+    mod_desc(info$description)
+    mod_details(info$details)
+
+    # reset module output
+    mod_title("")
+    mod_table(data.frame())
+    mod_summary("")
+    removeCssClass("mod_title", "red")
+    removeCssClass("mod_title", "yellow")
+    removeCssClass("mod_title", "green")
+    removeCssClass("mod_title", "na")
+    removeCssClass("mod_title", "fail")
+    removeCssClass("mod_title", "info")
+  }, ignoreNULL = FALSE)
+
   ### run_module ----
   observeEvent(input$run_module, {
+    shinyjs::disable("run_module")
+    on.exit(shinyjs::enable("run_module"))
+    if (length(my_paper()) == 0) return(NULL)
+
     output <- tryCatch({
       module_run(my_paper(), input$module_list)
     }, error = function(e) {
@@ -524,8 +607,7 @@ server <- function(input, output, session) {
 
     addCssClass("mod_title", output$traffic_light)
     mod_table(output$table %||% data.frame())
-    mod_report(output$summary_text %||% "")
-
+    mod_summary(output$summary_text %||% "")
   })
 
   ### mod_table ----
@@ -546,11 +628,25 @@ server <- function(input, output, session) {
     mod_title()
   })
 
-  ### mod_report ----
-  output$mod_report <- renderText({
-    debug_msg("mod_report")
+  ### mod_desc----
+  output$mod_desc <- renderText({
+    debug_msg("mod_desc")
 
-    mod_report()
+    mod_desc()
+  })
+
+  ### mod_details----
+  output$mod_details <- renderText({
+    debug_msg("mod_details")
+
+    mod_details() |> md2html()
+  })
+
+  ### mod_summary ----
+  output$mod_summary <- renderText({
+    debug_msg("mod_summary")
+
+    mod_summary() |> md2html()
   })
 
   ## llm ----

@@ -4,10 +4,12 @@
 \alias{test_paper}
 \title{Test paper}
 \usage{
-test_paper(text = LETTERS)
+test_paper(text = LETTERS, url = character(0))
 }
 \arguments{
 \item{text}{a vector of text to add}
+
+\item{url}{a vector of URLs to add}
 }
 \value{
 a paper object

@@ -6,10 +6,10 @@ test_that("exists", {
 })
 
 test_that("rbox_links", {
-  paper <- test_paper("I like research box: https://researchbox.org/801")
+  paper <- test_paper(url = "https://researchbox.org/801")
   links <- rbox_links(paper)
   expect_equal(nrow(links), 1)
-  expect_equal(links$text[[1]], "https://researchbox.org/801")
+  expect_equal(links$href[[1]], "https://researchbox.org/801")
 })
 
 
@@ -54,17 +54,17 @@ test_that("rbox_retrieve", {
     online = \(...) TRUE
   )
 
-  paper <- test_paper(c(
+  paper <- test_paper(url = c(
     "https://researchbox.org/4377",
     "https://researchbox.org/6018"
   ))
   links <- rbox_links(paper)
-  info <- rbox_retrieve(links, "text")
+  info <- rbox_retrieve(links, "href")
 
   #expected
   public <- c("November 28, 2025", "February 15, 2026")
 
-  expect_equal(info$text, links$text)
+  expect_equal(info$href, links$href)
   expect_equal(info$RB_public, public)
 })
 

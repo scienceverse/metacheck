@@ -27,3 +27,13 @@ debug_msg <- function(...) {
       shinyjs::logjs()
   }
 }
+
+md2html <- function(md) {
+  tmp_in <- tempfile(fileext = ".md")
+  tmp_out <- tempfile(fileext = ".html")
+
+  writeLines(md, tmp_in)
+  rmarkdown::pandoc_convert(tmp_in, to = "html", output = tmp_out)
+
+  readLines(tmp_out)
+}

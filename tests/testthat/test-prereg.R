@@ -6,27 +6,23 @@ test_that("aspredicted_links", {
 
   links <- aspredicted_links(psychsci)
   expect_in("text_id", names(links))
-  expect_true(all(grepl("^https://aspredicted\\.org", links$text, ignore.case = TRUE)))
+  expect_true(all(grepl("^https://aspredicted\\.org", links$href, ignore.case = TRUE)))
   # expect_equal(nrow(links), 74)
   expect_equal(links, unique(links))
 
-  sentences <- expand_text(links, psychsci)
+  sentences <- links |>
+    dplyr::rename(text = href) |>
+    expand_text(psychsci)
 
   urls <- c(
-    "/aspredicted.org/abcd1",
+    "https://aspredicted.org/abcd1",
     "https://aspredicted.org/abcd2",
-    "https://aspredicted.org/ abcd3",
-    "https://aspredicted.org/blind.php? x=abcd4",
-    "https://aspredicted .org/abcd5.pdf",
-    "https://aspredicted.org/ABC_DE6",
-    "https://aspredicted.org/blind.php?",
-    "x=abcd7"
+    "https://aspredicted.org/abcd3",
+    "https://aspredicted.org/blind.php?x=abcd4",
+    "https://aspredicted.org/abcd5.pdf",
+    "https://aspredicted.org/ABC_DE6"
   )
-  paper <- test_paper(urls)
-  # paper$url <- data.frame(
-  #   href = urls,
-  #   text_id = 1:6
-  # )
+  paper <- test_paper(url = urls)
 
   links <- aspredicted_links(paper)
   exp <- c("https://aspredicted.org/abcd1",
@@ -34,20 +30,19 @@ test_that("aspredicted_links", {
            "https://aspredicted.org/abcd3",
            "https://aspredicted.org/blind.php?x=abcd4",
            "https://aspredicted.org/abcd5.pdf",
-           "https://aspredicted.org/ABC_DE6",
-           "https://aspredicted.org/blind.php?x=abcd7")
-  expect_equal(links$text, exp)
+           "https://aspredicted.org/ABC_DE6")
+  expect_equal(links$href, exp)
 
   # second trailing blind links
   paper <- psychsci[[220]]
   links <- aspredicted_links(paper)
-  expect_true(all(links$text != "https://aspredicted.org/blind.php?"))
+  expect_true(all(links$href != "https://aspredicted.org/blind.php?"))
 
   # wierd aspredicted> .org
   paper <- psychsci[[88]]
   links <- aspredicted_links(paper)
-  expect_true(any(grepl("/vp4rg", links$text)))
-  expect_true(any(grepl("/3kq9y", links$text)))
+  expect_true(any(grepl("/vp4rg", links$href)))
+  expect_true(any(grepl("/3kq9y", links$href)))
 })
 
 # httptest2::start_capturing()

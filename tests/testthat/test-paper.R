@@ -216,7 +216,7 @@ test_that("paper_id", {
 
   paper <- demopaper()
   obs <- paper_id(paper)
-  exp <- data.frame(paper_id = paper$paper_id)
+  exp <- dplyr::tibble(paper_id = paper$paper_id)
   expect_equal(obs, exp)
 
   paper <- psychsci

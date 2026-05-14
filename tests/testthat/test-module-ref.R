@@ -138,7 +138,7 @@ test_that("ref_retraction", {
   expect_equal(mod_output$table$retractionwatch, "Retraction")
 })
 
-#httptest2::start_capturing()
+httptest2::start_capturing()
 httptest2::use_mock_api()
 
 test_that("ref_pubpeer", {
