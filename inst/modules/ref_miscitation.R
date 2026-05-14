@@ -64,7 +64,7 @@ ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.R
 
     for (i in seq_along(to_warn$doi)) {
       warn_doi <- to_warn$doi[[i]]
-      all_instances <- xrefs$text[xrefs$doi == warn_doi]
+      all_instances <- xrefs$citation[xrefs$doi == warn_doi]
       instances <- head(all_instances, 5)
 
       n_head <- length(instances)

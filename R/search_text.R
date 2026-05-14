@@ -91,7 +91,7 @@ search_text <- function(paper, pattern = ".*",
   }
 
   # make sure all columns exist
-  required_cols <- c("text_id", "section_id", "paragraph_id", "text",
+  required_cols <- c("text", "text_id", "section_id", "paragraph_id",
                      "paper_id", "header", "section_type")
   missing_cols <- setdiff(required_cols, names(text))
   for (m in missing_cols) {

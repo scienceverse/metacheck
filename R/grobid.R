@@ -408,12 +408,29 @@ grobid_to_bibr <- function(xml_file,
   paper$xref <- tei_xrefs(xml, text_table = paper$text)
 
   # url ----
-  links <- extract_urls(paper)
+  #links <- extract_urls(paper)
+
+  urls <- xml2::xml_find_all(xml, "//ref[@type='url']")
+  href <- xml2::xml_attr(urls, "target")
+  link_text <- xml2::xml_text(urls) |> gsub("\\s+", " ", x = _)
+  text_id <- sapply(link_text, \(lt) {
+    id <- grep(lt, paper$text$text, fixed = TRUE)
+    if (length(id)) id[[1]] else NA_integer_
+  }, USE.NAMES = FALSE)
   paper$url <- data.frame(
-    href = links$text,
-    link_text = rep(NA_character_, nrow(links)),
-    text_id = links$text_id
-  )
+    href = href,
+    link_text = link_text,
+    text_id = text_id
+  ) |> unique()
+
+  # fix URLs in text that have rogue spaces
+  same <- paper$url$href  == gsub("\\s", "", paper$url$link_text)
+  for (i in seq_along(same)) {
+    paper$text$text <- gsub(paper$url$link_text[[i]],
+         paper$url$href[[i]],
+         paper$text$text, fixed = TRUE)
+  }
+  paper$url$link_text[same] <- NA_character_
 
   # eq ----
   paper$eq <- extract_equations(paper)
@@ -531,6 +548,7 @@ tei_text <- function(xml) {
   abst_table <- data.frame(
     header = "Abstract",
     text = xml_find(xml, ".//abstract //p"),
+    #formatted = xml2::xml_find_all(xml, ".//abstract //p") |> as.character(),
     div = 0
   )
   abst_table$p <- seq_along(abst_table$text)

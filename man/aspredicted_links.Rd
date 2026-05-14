@@ -10,7 +10,7 @@ aspredicted_links(paper)
 \item{paper}{a paper object or paperlist object}
 }
 \value{
-a table with the AsPredicted url in the first (text) column
+a table with the AsPredicted url in the first (href) column
 }
 \description{
 Find AsPredicted Links in Papers

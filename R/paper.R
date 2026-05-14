@@ -120,6 +120,7 @@ paperlist <- function(..., merge_duplicates = FALSE) {
 #' Create a paper object with the specified text (mainly for testing/demos).
 #'
 #' @param text a vector of text to add
+#' @param url a vector of URLs to add
 #'
 #' @returns a paper object
 #' @export
@@ -127,7 +128,7 @@ paperlist <- function(..., merge_duplicates = FALSE) {
 #' @examples
 #' # to test a paper with a specific URL
 #' p <- test_paper("https://osf.io/abcde")
-test_paper <- function(text = LETTERS) {
+test_paper <- function(text = LETTERS, url = character(0)) {
   p <- paper()
 
   p$text <- data.frame(
@@ -149,6 +150,12 @@ test_paper <- function(text = LETTERS) {
     title = "Test Paper",
     file_hash = p$paper_id,
     input_format = "test"
+  )
+
+  p$url <- data.frame(
+    href = url,
+    link_text = rep(NA_character_, length(url)),
+    text_id = seq_along(url)
   )
 
   return(p)
@@ -521,7 +528,7 @@ paper_table <- function(paper, table, cols = NULL) {
     merged_table <- merged_table[, keep, drop = FALSE]
   }
 
-  merged_table
+  dplyr::as_tibble(merged_table)
 }
 
 

@@ -28,7 +28,8 @@ test_that("OSF no files", {
   # OSF but no R files
 
   module <- "repo_check"
-  paper <- test_paper("https://osf.io/y6a34")
+  paper <- test_paper()
+  paper$url <- data.frame(href = "https://osf.io/y6a34", text_id = 1)
   mod_output <- module_run(paper, module)
 
   expect_equal(mod_output$traffic_light, "yellow")
@@ -46,7 +47,8 @@ test_that("OSF no files", {
 
 test_that("no code files", {
   module <- "repo_check"
-  paper <- test_paper("https://osf.io/m4nbv")
+  paper <- test_paper()
+  paper$url <- data.frame(href = "https://osf.io/m4nbv", text_id = 1)
   mod_output <- module_run(paper, module)
 
   expect_true(grepl("We found 2 files ", mod_output$summary_text))
@@ -62,7 +64,8 @@ test_that("no code files", {
 
 test_that("OSF", {
   module <- "repo_check"
-  paper <- test_paper("https://osf.io/629bx")
+  paper <- test_paper()
+  paper$url <- data.frame(href = "https://osf.io/629bx", text_id = 1)
   mod_output <- module_run(paper, module)
 
   expect_true(grepl("We found 4 files ", mod_output$summary_text))
@@ -82,7 +85,8 @@ test_that("OSF, github and rb", {
   text <- c("osf.io/629bx",
             "github.com/scienceverse/demo",
             "https://researchbox.org/4377")
-  paper <- test_paper(text)
+  paper <- test_paper()
+  paper$url <- data.frame(href = text, text_id = 1:3)
   mod_output <- module_run(paper, module)
 
   expect_equal(mod_output$traffic_light, "yellow")

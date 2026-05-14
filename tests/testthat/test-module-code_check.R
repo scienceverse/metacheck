@@ -24,7 +24,8 @@ test_that("OSF no files", {
   # OSF but no R files
 
   module <- "code_check"
-  paper <- test_paper("https://osf.io/y6a34")
+  paper <- test_paper()
+  paper$url <- data.frame(href = "https://osf.io/y6a34", text_id = 1)
   mo <- module_run(paper, module)
 
   expect_equal(mo$traffic_light, "na")
@@ -38,7 +39,8 @@ test_that("OSF no files", {
 test_that("no code files", {
 
   module <- "code_check"
-  paper <- test_paper("https://osf.io/m4nbv")
+  paper <- test_paper()
+  paper$url <- data.frame(href = "https://osf.io/m4nbv", text_id = 1)
   mo <- module_run(paper, module)
 
   exp <- data.frame(paper_id = paper$paper_id,
@@ -52,7 +54,8 @@ test_that("no code files", {
 
 test_that("OSF", {
   module <- "code_check"
-  paper <- test_paper("https://osf.io/629bx")
+  paper <- test_paper()
+  paper$url <- data.frame(href = "https://osf.io/629bx", text_id = 1)
   mo <- module_run(paper, module)
 
   expect_equal(mo$traffic_light, "yellow")

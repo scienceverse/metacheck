@@ -29,12 +29,17 @@ api_url <- "http://localhost:8070"
 convert_grobid(file_path[199:250], save_path, api_url)
 
 # # grobid to bibr ----
-grobid <- "data-raw/psychsci/grobid_0.9.0-full"
+grobid <- "data-raw/psychsci/grobid_0.9.0-crf"
 xml_file <- list.files(grobid, full.names = T)
-save_path <- "data-raw/psychsci/bibr_from_grobid_0.9.0-full"
+save_path <- "data-raw/psychsci/bibr_from_grobid_0.9.0-crf2"
 dir.create(save_path, showWarnings = FALSE)
 json_paths <- grobid_to_bibr(xml_file, save_path, FALSE)
 psychsci <- read(save_path)
+
+for ( i in 1:250) {
+  psychsci[[i]]$bib_match <- metacheck::psychsci[[i]]$bib_match
+}
+paper_write(psychsci, paste0(save_path, "/", names(psychsci)))
 
 # fix names
 names <- list.files(grobid) |> gsub("\\.xml", "", x = _)
