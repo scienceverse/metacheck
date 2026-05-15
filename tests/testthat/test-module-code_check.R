@@ -66,6 +66,21 @@ test_that("OSF", {
   expect_equal(mo$summary_table[, 1:4], exp[, 1:4])
 })
 
+
+test_that("multiple paper issue", {
+  # https://github.com/scienceverse/metacheck/issues/260
+  #paper <- psychsci[6:10]
+
+  # problem is multiple papers with no code files
+  paper <- paperlist(
+    test_paper(url = "https://osf.io/t9j8e/"),
+    test_paper()
+  )
+  mo <- module_run(paper, "code_check")
+  # Error: Running the module 'code_check' produced errors: arguments imply differing number of rows: 0, 1
+})
+
+
 httptest2::stop_mocking()
 #httptest2::stop_capturing()
 

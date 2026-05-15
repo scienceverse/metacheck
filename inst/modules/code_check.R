@@ -57,7 +57,7 @@ code_check <- function(paper) {
       traffic_light = "na",
       summary_text = summary_code,
       summary_table = data.frame(
-        paper_id = paper$paper_id,
+        paper_id = paper_id(paper),
         code_file_n = 0
       )
     )
