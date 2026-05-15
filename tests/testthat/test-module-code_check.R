@@ -66,9 +66,33 @@ test_that("OSF", {
   expect_equal(mo$summary_table[, 1:4], exp[, 1:4])
 })
 
+test_that("file_limit", {
+  # default limit
+  paper <- test_paper(url = "https://github.com/scienceverse/demo")
+  mo <- module_run(paper, "code_check")
+  expect_equal(nrow(mo$table), 20)
+  expect_equal(mo$summary_table$code_n, 20)
+
+  # lower limit
+  mo <- module_run(paper, module = "code_check", file_limit = 2)
+  expect_equal(nrow(mo$table), 2)
+  expect_equal(mo$summary_table$code_n, 2)
+
+  # multiple repos
+  repos <- c("https://github.com/scienceverse/demo",
+             "https://osf.io/629bx")
+  paper <- test_paper(url = repos)
+  mo <- module_run(paper, module = "code_check", file_limit = 2)
+  expect_equal(nrow(mo$table), 4)
+  expect_equal(mo$summary_table$code_n, 4)
+  expect_setequal(mo$table$repo_url, repos)
+})
+
 
 test_that("multiple paper issue", {
   # https://github.com/scienceverse/metacheck/issues/260
+  # Error: Running the module 'code_check' produced errors: arguments imply differing number of rows: 0, 1
+
   #paper <- psychsci[6:10]
 
   # problem is multiple papers with no code files
@@ -77,7 +101,8 @@ test_that("multiple paper issue", {
     test_paper()
   )
   mo <- module_run(paper, "code_check")
-  # Error: Running the module 'code_check' produced errors: arguments imply differing number of rows: 0, 1
+
+  expect_setequal(mo$summary_table$paper_id, paper_id(paper)$paper_id)
 })
 
 
