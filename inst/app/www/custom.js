@@ -1,4 +1,8 @@
 $(function() {
+  Shiny.addCustomMessageHandler('openTab', function(url) {
+    window.open(url, '_blank');
+  });
+
   $("#var_list").on("click", "button", function() {
     $("#var_list button").removeClass("btn-primary");
     $(this).addClass("btn-primary");
