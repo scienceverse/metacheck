@@ -58,7 +58,6 @@ ui <- dashboardPage(
   ),
   dashboardBody(
     shinyjs::useShinyjs(),
-    waiter::use_waiter(),
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
       tags$script(src = "custom.js")
@@ -418,37 +417,83 @@ server <- function(input, output, session) {
     debug_msg("report_run")
 
     report_path("")
+    qmdpath <- tempfile(fileext = ".qmd")
+    path <- sub("qmd$", "html", qmdpath)
 
-    waiter <- waiter::Waiter$new(id = "report_text")
-    waiter$show()
-    on.exit(waiter$hide())
+    withProgress(message = "Run Report:", value = 0, {
+      # get checked values from module lists
+      modlists <- names(input) |> grep("^report_module_list_.+", x = _, value = TRUE)
+      modules <- sapply(modlists, \(x) input[[x]]) |> unlist() |> unname()
 
-    # get checked values from module lists
-    modlists <- names(input) |> grep("^report_module_list_.+", x = _, value = TRUE)
-    modules <- sapply(modlists, \(x) input[[x]]) |> unlist() |> unname()
+      if (length(my_paper()) == 0) return(NULL)
 
-    if (length(my_paper()) == 0) return(NULL)
+      incProgress(1/3, detail = "Modules")
+      sink <- tryCatch({
+         report(my_paper()[[1]],
+                modules = modules,
+                output_file = qmdpath,
+                output_format = "qmd")
+      }, error = function(e) {
+        showModal(modalDialog(
+          title = "Report Error",
+          e$message,
+          easyClose = TRUE,
+          footer = tagList(
+            modalButton("Dismiss")
+          )
+        ))
+        return("")
+      })
 
-    path <- tempfile(fileext = ".qmd")
-    sink <- tryCatch({
-       report(my_paper()[[1]],
-              modules = modules,
-              output_file = path,
-              output_format = "qmd")
-    }, error = function(e) {
-      showModal(modalDialog(
-        title = "Report Error",
-        e$message,
-        easyClose = TRUE,
-        footer = tagList(
-          modalButton("Dismiss")
-        )
-      ))
-      return("")
+      incProgress(1/3, detail = "Rendering HTML")
+      sink <- tryCatch({
+        quarto::quarto_render(input = qmdpath,
+                              quiet = TRUE,
+                              output_format = "html",
+                              metadata = list(html = list(theme = NULL))
+                              )
+      }, error = function(e) {
+        showModal(modalDialog(
+          title = "HTML Render Error",
+          e$message,
+          easyClose = TRUE,
+          footer = tagList(
+            modalButton("Dismiss")
+          )
+        ))
+        return("")
+      })
+
+      incProgress(1/3, detail = "Complete!")
     })
 
     report_path(path)
+    shinyjs::click("report_view")
   })
+
+  ### report_view ----
+  observeEvent(input$report_view, {
+    debug_msg("report_view")
+
+    report_file <- report_path()
+    if (!file.exists(report_file)) return(NULL)
+
+    addResourcePath("tmp", dirname(report_file))
+    url <- paste0("tmp/", basename(report_file))
+
+    session$sendCustomMessage(
+      type = "openTab",
+      message = url
+    )
+  })
+  # output$report_view <- renderUI({
+  #   debug_msg("report_view")
+  #
+  #   report_file <- report_path()
+  #   if (!file.exists(report_file)) return("")
+  #
+  #   sprintf("<a href='file://%s' target='_blank'>View Report</a>", report_file) |> HTML()
+  # })
 
   ### report_defaults ----
 
@@ -498,10 +543,6 @@ server <- function(input, output, session) {
     if (!file.exists(report_path())) {
       return("")
     }
-
-    # waiter <- waiter::Waiter$new(id = "report_text")
-    # waiter$show()
-    # on.exit(waiter$hide())
     #
     # tryCatch({
     #   quarto::quarto_render(input = report_path(),
@@ -512,11 +553,18 @@ server <- function(input, output, session) {
     # })
 
     report_text <- report_path() |>
-      #sub("qmd$", "html", x = _) |>
+      sub("qmd$", "html", x = _) |>
       readLines() |>
       paste(collapse = "\n") |>
       #HTML()
       tags$textarea(rows = 20, readonly = "readonly")
+
+    # report_text <- tags$iframe(
+    #   src = report_path(),
+    #   width = "100%",
+    #   height = "800px",
+    #   style = "border:none;"
+    # )
 
     return(report_text)
   })
@@ -528,7 +576,9 @@ server <- function(input, output, session) {
       paste0("metacheck_report.qmd")
     },
     content = function(file) {
-      file.copy(report_path(), file)
+      output_file <- sub("html$", "qmd", report_path())
+      if (!file.exists(output_file)) return(NULL)
+      file.copy(output_file, file)
     }
   )
 
@@ -539,17 +589,14 @@ server <- function(input, output, session) {
       paste0("metacheck_report.html")
     },
     content = function(file) {
-      waiter <- waiter::Waiter$new(id = "report_text")
-      waiter$show()
-      on.exit(waiter$hide())
-
-      tryCatch({
-        quarto::quarto_render(input = report_path(),
-                              quiet = TRUE,
-                              output_format = "html")
-      })
-
-      output_file <- sub("qmd$", "html", report_path())
+      # tryCatch({
+      #   quarto::quarto_render(input = report_path(),
+      #                         quiet = TRUE,
+      #                         output_format = "html")
+      # })
+      #
+      # output_file <- sub("qmd$", "html", report_path())
+      output_file <- report_path()
       if (!file.exists(output_file)) return(NULL)
       file.copy(output_file, file)
     }

@@ -663,6 +663,9 @@
     },
     {
       "en": "The report will only run on the first paper in a set. You can download the quarto file and render it yourself, or download an html version. We currently can't show the HTML version embedded in the shiny app, but are working on it."
+    },
+    {
+      "en": "View Report"
     }
   ]
 }

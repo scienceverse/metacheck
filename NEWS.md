@@ -1,3 +1,7 @@
+# metacheck 0.0.0.9102
+
+* Shiny app improvements: you can now view HTML reports in the browser
+
 # metacheck 0.0.0.9101
 
 * `metacheck_app()` the shiny app is back!

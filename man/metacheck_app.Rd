@@ -4,20 +4,20 @@
 \alias{metacheck_app}
 \title{Launch Shiny App}
 \usage{
-metacheck_app(study = NULL, quiet = FALSE, ...)
+metacheck_app(paper = NULL, quiet = FALSE, ...)
 }
 \arguments{
-\item{study}{optional study to load}
+\item{paper}{optional paper or paperlist to load}
 
 \item{quiet}{whether to show the debugging messages in the console}
 
 \item{...}{arguments to pass to shiny::runApp}
 }
 \value{
-A study object created or edited by the app
+A paper object created or edited by the app
 }
 \description{
-Create a meta-study file interactively in a shiny app that runs locally in RStudio or your web browser (recommended). It does not connect to the web at all, so your data are completely private.
+Create a meta-study file interactively in a shiny app that runs locally in RStudio or your web browser (recommended).
 }
 \examples{
 \dontrun{

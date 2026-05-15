@@ -258,7 +258,8 @@ report_qmd <- function(module_output, paper = list()) {
   # turn real % to %%, leave %s, %d, %f, %i
   rt_head <- gsub("\\%(?![sdfi])", "%%", rt_head, perl = TRUE)
   subtitle <- gsub('"', '\\\\"', paper$info$title %||% "")
-  doi_text <- ifelse((paper$info$doi %||% "") == "", "",
+  doi_text <- ifelse(is.na(paper$info$doi) |
+                       (paper$info$doi %||% "") == "", "",
     sprintf("DOI: [%s](https://doi.org/%s)", paper$info$doi, paper$info$doi)
   )
 
