@@ -79,42 +79,49 @@ prereg_check <- function(paper) {
   }
 
   ## get reg info from OSF ----
-  url <- sprintf(
+  urls <- sprintf(
     "https://api.osf.io/v2/registrations/?filter[id]=%s",
-    paste(reg_ids, collapse = ",")
+    reg_ids #paste(reg_ids, collapse = ",")
+
   )
-  reg_info <- osf_get_all_pages(url)
+  # have to iterate, process then merge
+  # because pagination > 10 usually returns unmergeable dfs
+  ps <- lapply(urls, \(url) {
+    reg_info <- osf_get_all_pages(url)
 
-  osf_schema_table <- lapply(seq_along(reg_info$id), \(i) {
-    info <- reg_info[i, ]
-    template <- info$attributes$registration_supplement
-    osf31 <- info$attributes$registration_responses$q25
+    osf_schema_table <- lapply(seq_along(reg_info$id), \(i) {
+      info <- reg_info[i, ]
+      template <- info$attributes$registration_supplement
+      osf31 <- info$attributes$registration_responses$q25
 
-    if (info$attributes$withdrawn) {
-      withdrawn(info)
-    } else if (template == "OSF Preregistration" &&
-      !is.null(osf31) && !is.na(osf31)) {
-      osf_pr_31(info)
-    } else if (template == "OSF Preregistration") {
-      osf_pr_28(info)
-    } else if (template == "Open-Ended Registration") {
-      oer(info)
-    } else if (template == "Prereg Challenge") {
-      prc(info)
-    } else if (template == "Preregistration Template from AsPredicted.org") {
-      prap(info)
-    } else if (template == "Pre-Registration in Social Psychology (van 't Veer & Giner-Sorolla, 2016): Pre-Registration") {
-      prsp(info)
-    } else if (template == "Replication Recipe (Brandt et al., 2013): Pre-Registration") {
-      rrbrandt(info)
-    } else if (template == "OSF-Standard Pre-Data Collection Registration") {
-      osfpre(info)
-    }
+      if (info$attributes$withdrawn) {
+        withdrawn(info)
+      } else if (template == "OSF Preregistration" &&
+        !is.null(osf31) && !is.na(osf31)) {
+        osf_pr_31(info)
+      } else if (template == "OSF Preregistration") {
+        osf_pr_28(info)
+      } else if (template == "Open-Ended Registration") {
+        oer(info)
+      } else if (template == "Prereg Challenge") {
+        prc(info)
+      } else if (template == "Preregistration Template from AsPredicted.org") {
+        prap(info)
+      } else if (template == "Pre-Registration in Social Psychology (van 't Veer & Giner-Sorolla, 2016): Pre-Registration") {
+        prsp(info)
+      } else if (template == "Replication Recipe (Brandt et al., 2013): Pre-Registration") {
+        rrbrandt(info)
+      } else if (template == "OSF-Standard Pre-Data Collection Registration") {
+        osfpre(info)
+      }
+    })
+
+    # make sure all items are not lists
+    prereg_schemas <- c(osf_schema_table, list(ap_schema_table))
+    lapply(prereg_schemas, \(x) lapply(x, paste, collapse = "\n\n"))
+
   })
 
-  # make sure all items are not lists
-  prereg_schemas <- c(osf_schema_table, list(ap_schema_table))
-  ps <- lapply(prereg_schemas, \(x) lapply(x, paste, collapse = "\n\n"))
   prereg_info <- do.call(dplyr::bind_rows, ps)
 
   if (nrow(prereg_info)) {

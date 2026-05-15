@@ -119,3 +119,72 @@ email <- function(email = NULL) {
 #' @format A list of 250 paper objects
 #' @source \url{https://journals.sagepub.com/home/pss}
 "psychsci"
+
+
+# bind_rows <- function(..., .id = NULL) {
+#   # try to bind and try to fix if error
+#   df <- tryCatch(
+#     dplyr::bind_rows(..., .id = .id),
+#     error = \(e) {}
+#   )
+#
+#   if (!is.null(df)) return(df)
+#
+#   dfs <- list(...)
+#
+#   if (length(dfs > 2)) stop("Data frames are imcompatible for binding.")
+#   x <- dfs[[1]]
+#   y <- dfs[[2]]
+#
+#   # find data types for all shared columns
+#   x_types <- flatten(x) |> sapply(typeof)
+#   y_types <- flatten(y) |> sapply(typeof)
+#   share <- intersect(names(x_types), names(y_types))
+#   mismatch <- x_types[share] != y_types[share]
+#
+#   find_var <- function(df, flat_name) {
+#     path <- strsplit(flat_name, "\\.")[[1]]
+#     Reduce(function(acc, name) acc[[name]], path, init = df)
+#   }
+#
+#   change_type <- function(df, flat_name, type) {
+#     fname <- paste0("as.", type)
+#     if (!exists(fname, mode = "function")) {
+#       warning(type)
+#       return(df)
+#     }
+#     f <- get(fname, mode = "function")
+#
+#     new_var <- find_var(df, flat_name) |> f()
+#
+#     path <- strsplit(flat_name, "\\.")[[1]]
+#
+#     if (length(path) == 1) {
+#       df[[path[[1]]]] <- new_var
+#     } else if (length(path) == 2) {
+#       df[[path[[1]]]][[path[[2]]]] <- new_var
+#     } else if (length(path) == 3) {
+#       df[[path[[1]]]][[path[[2]]]][[path[[3]]]] <- new_var
+#     } else if (length(path) == 4) {
+#       df[[path[[1]]]][[path[[2]]]][[path[[3]]]][[path[[4]]]] <- new_var
+#     } else if (length(path) == 5) {
+#       df[[path[[1]]]][[path[[2]]]][[path[[3]]]][[path[[4]]]][[path[[5]]]] <- new_var
+#     } else {
+#       warning("Path too long:", length(path))
+#     }
+#
+#     df
+#   }
+#
+#   for (flat_name in names(mismatch[mismatch])) {
+#     #flat_name <- names(mismatch[mismatch])[[1]]
+#     x_var <- find_var(x, flat_name)
+#     y_var <- find_var(y, flat_name)
+#     newtype <- typeof(c(x_var, y_var))
+#
+#     x <- change_type(x, flat_name, newtype)
+#     y <- change_type(y, flat_name, newtype)
+#   }
+#
+#   dplyr::bind_rows(x, y, .id = .id)
+# }

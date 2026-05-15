@@ -1,6 +1,7 @@
 # metacheck 0.0.0.9102
 
 * Shiny app improvements: you can now view HTML reports in the browser
+* Fixes the to "prereg_check" module to address an error when there are more than 10 OSF registrations in a batch that caused unmergable data frames. 
 
 # metacheck 0.0.0.9101
 
