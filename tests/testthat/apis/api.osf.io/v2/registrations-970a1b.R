@@ -1,12 +1,12 @@
 structure(list(method = "GET", url = "https://api.osf.io/v2/registrations/?filter[id]=jez3g", 
     status_code = 200L, headers = structure(list(server = "nginx", 
-        date = "Tue, 12 May 2026 14:04:00 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
+        date = "Fri, 15 May 2026 13:20:04 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
         vary = "Accept-Encoding", vary = "Accept, Cookie, origin", 
         allow = "GET, POST, PUT, PATCH, HEAD, OPTIONS", `x-content-type-options` = "nosniff", 
         `referrer-policy` = "same-origin", `cross-origin-opener-policy` = "same-origin", 
         `x-frame-options` = "DENY", `cache-control` = "no-cache, no-store, max-age=0, must-revalidate", 
         expires = "-1", pragma = "no-cache", `content-encoding` = "gzip", 
-        via = "1.1 google", `alt-svc` = "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"), class = "httr2_headers"), 
+        via = "1.1 google", `alt-svc` = "h3=\":443\"; ma=2592000"), class = "httr2_headers"), 
     body = as.raw(c(0x7b, 0x22, 0x64, 0x61, 0x74, 0x61, 0x22, 
     0x3a, 0x5b, 0x7b, 0x22, 0x69, 0x64, 0x22, 0x3a, 0x22, 0x6a, 
     0x65, 0x7a, 0x33, 0x67, 0x22, 0x2c, 0x22, 0x74, 0x79, 0x70, 
@@ -1616,5 +1616,5 @@ structure(list(method = "GET", url = "https://api.osf.io/v2/registrations/?filte
     0x6d, 0x65, 0x74, 0x61, 0x22, 0x3a, 0x7b, 0x22, 0x76, 0x65, 
     0x72, 0x73, 0x69, 0x6f, 0x6e, 0x22, 0x3a, 0x22, 0x32, 0x2e, 
     0x30, 0x22, 0x7d, 0x7d)), timing = c(redirect = 0, namelookup = 0, 
-    connect = 0, pretransfer = 0.00025, starttransfer = 1.167841, 
-    total = 1.168358), cache = new.env(parent = emptyenv())), class = "httr2_response")
+    connect = 0, pretransfer = 9.8e-05, starttransfer = 0.720115, 
+    total = 0.720537), cache = new.env(parent = emptyenv())), class = "httr2_response")

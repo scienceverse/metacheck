@@ -1,6 +1,6 @@
 # Contributing to MetaCheck
 
-We welcome contributions to metacheck. Small bug fixes can be made as a simple pull request, but contributing a new built-in module or function to the package needs to follow the guidance below.
+We welcome human contributions to metacheck (we do not accept pull requests with a bot or agent as a named contributor). Small bug fixes can be made as a simple pull request, but contributing a new built-in module or function to the package needs to follow the guidance below.
 
 - [Intro to R Packages](https://psyteachr.github.io/intro-r-pkgs/) for a quick focused intro 
 - [R Packages](https://r-pkgs.org/) for all the details

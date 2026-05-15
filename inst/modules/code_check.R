@@ -19,9 +19,10 @@
 #' @import jsonlite
 #'
 #' @param paper a paper object or paperlist object
+#' @param file_limit the maximum number of fiiles per reppository to assess. This prevents downloading and processing hundreds of .R files from, e.g., an R package repo.
 #'
 #' @returns a list
-code_check <- function(paper) {
+code_check <- function(paper, file_limit = 20) {
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
   # example with missing data files: paper <- psychsci[[221]]
   # Many R files, some with library in different places. paper <- psychsci[[225]]
@@ -46,9 +47,13 @@ code_check <- function(paper) {
     plural(nrow(code_files))
   )
 
-  # only look at first 20
-  if (nrow(code_files) > 20) {
-    summary_code <- paste(summary_code, "Only the first 20 were analysed.")
+  # only look at first file_limit files in each repo
+  n_files <- dplyr::count(code_files, repo_url)$n
+
+  if (any(n_files > file_limit)) {
+    summary_code <- paste(summary_code, "Only the first", file_limit, "files per repository were analysed.")
+
+    code_files <- code_files |> dplyr::slice_head(n = file_limit, by = repo_url)
   }
 
   # no relevant code files found ----
@@ -57,7 +62,7 @@ code_check <- function(paper) {
       traffic_light = "na",
       summary_text = summary_code,
       summary_table = data.frame(
-        paper_id = paper$paper_id,
+        paper_id = paper_id(paper),
         code_file_n = 0
       )
     )
@@ -73,9 +78,9 @@ code_check <- function(paper) {
   # Shared absolute path pattern and quoted filename pattern
   absolute_path_pattern <- '(?<![A-Za-z0-9_])(["\'])(?:(?!https?://)(?:[A-Za-z]:[\\\\/]|(?:\\\\\\\\|//)[^\\\\/]+[\\\\/]|~[/\\\\]|/(?:Users|home|var|etc|opt|srv|mnt|Volumes|Library|Applications|gpfs|data|tmp|media|root)\\b)[^"\']*)\\1'
 
-  # --- Process each code file (up to 20) ---
-  maxfile <- min(nrow(code_files), 20)
-  collected <- lapply(1:maxfile, \(i) {
+  # --- Process each code file (up to file_limit) ---
+  #maxfile <- min(nrow(code_files), file_limit)
+  collected <- lapply(seq_along(code_files$file_location), \(i) {
     tryCatch({
       collector <- list()
       # access via URL if not local
@@ -164,7 +169,7 @@ code_check <- function(paper) {
   }) # end of loop over code files
 
   code_check <- dplyr::bind_rows(collected)
-  code_files <- dplyr::bind_cols(code_files[1:maxfile, ], code_check)
+  code_files <- dplyr::bind_cols(code_files, code_check)
 
   # Reporting ----
 

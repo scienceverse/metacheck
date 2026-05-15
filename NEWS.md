@@ -1,3 +1,10 @@
+# metacheck 0.0.0.9102
+
+* Shiny app improvements: you can now view HTML reports in the browser
+* Fixes the "prereg_check" module to address an error when there are more than 10 OSF registrations in a batch that caused unmergable data frames.
+* Fixes the "code_check" module to address an error when checking multiple files that have no repositories with code.
+* The module "code_check" now has an argument "file_limit" to control how many code files per repo are downloaded and processed. The default is 20.
+
 # metacheck 0.0.0.9101
 
 * `metacheck_app()` the shiny app is back!

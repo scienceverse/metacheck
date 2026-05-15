@@ -16,6 +16,22 @@
         }
     },
     {
+        "name": "code",
+        "path": "code",
+        "sha": "72dcf41ca4ba0789f81c61fa483cb82f0d7f6316",
+        "size": 0,
+        "url": "https://api.github.com/repos/scienceverse/demo/contents/code?ref=main",
+        "html_url": "https://github.com/scienceverse/demo/tree/main/code",
+        "git_url": "https://api.github.com/repos/scienceverse/demo/git/trees/72dcf41ca4ba0789f81c61fa483cb82f0d7f6316",
+        "download_url": null,
+        "type": "dir",
+        "_links": {
+            "self": "https://api.github.com/repos/scienceverse/demo/contents/code?ref=main",
+            "git": "https://api.github.com/repos/scienceverse/demo/git/trees/72dcf41ca4ba0789f81c61fa483cb82f0d7f6316",
+            "html": "https://github.com/scienceverse/demo/tree/main/code"
+        }
+    },
+    {
         "name": "folder",
         "path": "folder",
         "sha": "9c7cf73c6eba1e88214736756bbfc2b9a5ce98e8",
