@@ -89,7 +89,21 @@ code_check <- function(paper, file_limit = 20) {
       } else {
         con <- url(code_files$file_url[i])
       }
-
+      
+      # detect language (function below)
+      lang <- detect_lang(con)
+      collector$language <- lang
+      
+      # try parse R type code (function below)
+      parsing_error_df <- try_parse_code(file_path = con, lang = lang)
+      if (length(parsing_error_df) == 0){ # if no error --> code is parsable and there is no error message
+        collector$parsing_error <- 0
+        collector$parsing_error_message <- NA
+      } else if (length(parsing_error_df) == 1) { # if error --> code is not parsable and store error message
+        collector$parsing_error <- 1
+        collector$parsing_error_message <- parsing_error_df$message
+      }
+      
       # read in files
       file_lines <- readLines(con, warn = FALSE)
       close(con)
@@ -282,13 +296,32 @@ code_check <- function(paper, file_limit = 20) {
     "#### Libraries / Imports",
     report_library
   )
+  
+  ## Parsable Code ----
+  parsing_issues <- code_files$file_name[code_files$parsing_error == 1]
+  if (length(parsing_issues) == 0) {
+    report_parsable <- "All R-type code files (.R, .Rmd, .Qmd) could be read in. There were no parsing issues."
+    summary_parsable <- "No parsing issues of R-type files were found."
+    report_table_parsable <- NULL
+  } else {
+    report_parsable <- sprintf(
+      "We encountered parsing issues when trying to read in R-type code files. The following error were found in %d code file%s:",
+      length(parsing_issues),
+      plural(length(parsing_issues))
+    )
+    summary_parsable <- "Parsing issues of R-type files were found."
+    cols <- c("file_name", "parsing_error_message")
+    report_table_absolute <- code_files[code_files$parsing_error == 1, cols]
+    colnames(report_table_absolute) <- c("File name", "Parsing Error Message")
+  }
 
   # traffic_light ----
   # green only if no issues across all code files
   if (length(missingfiles_issue) == 0 &&
       length(comment_issue) == 0 &&
       length(absolute_issues) == 0 &&
-      length(library_issue) == 0) {
+      length(library_issue) == 0 &&
+      length(parsing_issues) == 0) {
     tl <- "green"
   } else {
     tl <- "yellow"
@@ -300,7 +333,8 @@ code_check <- function(paper, file_limit = 20) {
     code_n = nrow(code_files),
     code_abs_path = sum(code_files$code_abs_path, na.rm = TRUE),
     code_missing_files = sum(code_files$loaded_files_missing, na.rm = TRUE),
-    code_min_comments = min(code_files$percentage_comment, na.rm = TRUE)
+    code_min_comments = min(code_files$percentage_comment, na.rm = TRUE),
+    code_not_parsable = sum(code_files$parsing_error, na.rm = TRUE)
   )
 
   # summary_text ----
@@ -309,7 +343,8 @@ code_check <- function(paper, file_limit = 20) {
     summary_comments,
     summary_missingfiles,
     summary_absolute,
-    summary_library
+    summary_library,
+    summary_parsable
   ) |>
     paste("\n- ", x = _, collapse = "")
 
@@ -566,5 +601,47 @@ get_missing_files <- function(file_nc, lang, files_in_repository) {
   missing_files <- loaded_file[!tolower(loaded_file) %in% tolower(files_in_repository)]
 
   return(missing_files)
+}
+
+# Helper: Try parsing code and storing any resulting errors
+try_parse_code <- function(file_path, lang = lang) {
+  if (lang == "R") {
+    
+    ### Initiate df to store results
+    parsing_error_df <- data.frame()
+    
+    ### Initiate errors_parsable list
+    errors_parsable <- list()
+    
+    
+    code_files_RType_lower <- str_to_lower(file_path)
+    
+    tryCatch(
+      {
+        if (endsWith(code_files_RType_lower, ".r")) {
+          
+          parse(file = file_path, keep.source = TRUE)
+          
+        } else if (endsWith(code_files_RType_lower, ".rmd") || endsWith(code_files_RType_lower, ".qmd")) {
+          
+          knitr::purl(input = file_path, output = "tmp_r_file.R", documentation = 0)
+          parse(file = "tmp_r_file.R", keep.source = TRUE)
+          
+          file.remove("tmp_r_file.R") # to delete temp_file for .rmd/.qmd files
+          
+        }
+      },
+      error = function(e_parse) {
+        errors_parsable[[length(errors_parsable) + 1]] <- list(
+          path = code_file,
+          message = e_parse$message
+        )
+      }
+    )
+    
+    parsing_error_df <- dplyr::bind_rows(errors_parsable)
+    
+  }
+  return(parsing_error_df)
 }
 
