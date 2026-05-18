@@ -611,7 +611,8 @@ tei_text <- function(xml) {
       section = sub("_\\d+$", "", x = figid),
       div = sub("^(fig|tab)_", "", x = figid) |> as.numeric(),
       p = 1
-    )
+    ) |>
+      dplyr::filter(trimws(text) != "")
   }) |> do.call(rbind, args = _)
   figtbl <- figtbl %||% data.frame()
 
@@ -643,7 +644,7 @@ tei_text <- function(xml) {
   ft$p <- seq_along(ft$p)
   figtab <- ft[ft$section %in% c("fig", "tab"), ]
   nofigtab <- ft[!ft$section %in% c("fig", "tab"), ]
-  divmax <- ifelse(nrow(nofigtab), max(nofigtab$div), 0)
+  divmax <- ifelse(nrow(nofigtab), max(nofigtab$div, na.rm = TRUE), 0)
   figtab$div <- divmax + seq_along(figtab$div)
   ft <- dplyr::bind_rows(nofigtab, figtab)
 

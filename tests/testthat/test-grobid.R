@@ -388,3 +388,13 @@ test_that(".grobid_isalive", {
 
 httptest2::stop_mocking()
 # httptest2::stop_capturing()
+
+
+test_that{"null section import", {
+  xml_file <- test_path("fixtures", "problems", "203020.xml")
+  dir <- test_path("fixtures", "problems")
+  json <- convert(xml_file, dir)
+
+  paper <- read(json)
+  expect_true(!any(is.na(paper$section$section_id)))
+})

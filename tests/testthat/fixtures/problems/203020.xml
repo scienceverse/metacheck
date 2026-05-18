@@ -1,0 +1,2220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Healthy aging delays the neural processing of face features relevant for behavior by 40 ms</title>
+				<funder ref="#_cSnPRQN">
+					<orgName type="full">U.K. Biotechnology and Biological Sciences Research Council</orgName>
+					<orgName type="abbreviated">BBSRC</orgName>
+				</funder>
+				<funder ref="#_c38aPz6">
+					<orgName type="full">Biological Sciences Research Council</orgName>
+				</funder>
+				<funder ref="#_hJV37bQ #_ntSPDzN">
+					<orgName type="full">Wellcome Trust</orgName>
+				</funder>
+				<funder ref="#_Kb537BB">
+					<orgName type="full">BBSRC</orgName>
+				</funder>
+				<funder ref="#_Uq4PYDG #_Za3q7XE">
+					<orgName type="full">Multidisciplinary University Research Initiative/Engineering and Physical Sciences Research Council</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Katarzyna</forename><surname>Jaworska</surname></persName>
+							<email>katarzyna.jaworska@glasgow.ac.uk</email>
+						</author>
+						<author>
+							<persName><forename type="first">|</forename><surname>Fei</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Robin</forename><forename type="middle">A A</forename><surname>Ince</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Nicola</forename><forename type="middle">J</forename><surname>Van Rijsbergen</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">G</forename><surname>Schyns</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Guillaume</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+							<email>guillaume.rousselet@glasgow.ac.uk</email>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="department">Institute of Neuroscience and Psychology</orgName>
+								<orgName type="institution">University of Glasgow</orgName>
+								<address>
+									<settlement>Glasgow</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff1">
+								<orgName type="department">Institute of Neuroscience and Psychology</orgName>
+								<orgName type="institution">University of Glasgow</orgName>
+								<address>
+									<settlement>Glasgow</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Healthy aging delays the neural processing of face features relevant for behavior by 40 ms</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">410696318BDB1AC45D571A9770DAB14F</idno>
+					<idno type="DOI">10.1002/hbm.24869</idno>
+					<note type="submission">Received: 27 May 2019 Revised: 16 October 2019 Accepted: 10 November 2019</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.2" ident="GROBID" when="2026-02-04T16:41+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">a91ee48</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=true, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], sentenceSegmentation=false, flavor=null</label>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>aging</term>
+					<term>EEG</term>
+					<term>face processing</term>
+					<term>information processing</term>
+					<term>mutual information</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Fast and accurate face processing is critical for everyday social interactions, but it declines and becomes delayed with age, as measured by both neural and behavioral responses. Here, we addressed the critical challenge of understanding how aging changes neural information processing mechanisms to delay behavior. Young (20-36 years) and older (60-86 years) adults performed the basic social interaction task of detecting a face versus noise while we recorded their electroencephalogram (EEG).</p><p>In each participant, using a new information theoretic framework we reconstructed the features supporting face detection behavior, and also where, when and how EEG activity represents them. We found that occipital-temporal pathway activity dynamically represents the eyes of the face images for behavior ~170 ms poststimulus, with a 40 ms delay in older adults that underlies their 200 ms behavioral deficit of slower reaction times.</p><p>Our results therefore demonstrate how aging can change neural information processing mechanisms that underlie behavioral slow down.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">| INTRODUCTION</head><p>There is strong evidence that an age-related slowing down occurs when performing various behavioral tasks <ref type="bibr" target="#b56">(Salthouse, 2000)</ref>. There is also parallel evidence that age-related changes in the brain can slow down neural processing <ref type="bibr" target="#b17">(Gazzaley et al., 2008;</ref><ref type="bibr" target="#b41">Nakamura et al., 2001;</ref><ref type="bibr" target="#b52">Rousselet et al., 2010</ref><ref type="bibr" target="#b53">Rousselet et al., , 2009;;</ref><ref type="bibr" target="#b70">Wiese, Schweinberger, &amp; Hansen, 2008)</ref>.</p><p>Although these studies can inform where and when, in the brain, aging can impact neural activity, a critical challenge remains to develop theories of cognitive aging that explain how the neural information processes that are involved in a cognitive task contribute to slow down behavior. It is imperative to address this challenge to understand how aging impacts the specific cognitive mechanisms that mediate behavior.</p><p>To illustrate, consider the fundamental social cognition task of detecting a face (see Figure <ref type="figure">1</ref>). Although we expect older participants to detect faces in this task more slowly, a more complete understanding of the effects of aging on cognitive processing requires richer data. At a minimum, we need to characterize the face information that young and older participants selectively use when detecting faces, for example, because slower face detection could result from older adults needing more facial features, or simply because older participants do not use the same features. We also need to characterize the information content of the neural activity underlying the behavioral task at hand, because the age-related slowing could arise from neural representation of several task-irrelevant features (a decline of selectivity). Finally, we would also need to trace the origin of the behavioral delay in the neural mechanisms that represent the face for the detection task per se, for example, because older brains could be generally delayed in their onset of neural activity when responding to any visual stimuli, rather than specifically delayed when processing the task-relevant face features.</p><p>F I G U R E 1 Legend on next page.</p><p>In this study, we present a new paradigm to advance and deepen our understanding of information processing in cognitive aging. We developed stimulus information representation (SIR), an information theoretic framework, to tease apart stimulus information that supports behavior from that which does not. This new framework considers the interactions between three important variables, not just two, as is the norm: stimulus information, neural electroencephalogram (EEG) activity, and behavior. We used the Bubbles technique <ref type="bibr" target="#b19">(Gosselin &amp; Schyns, 2001)</ref> to randomly sample visual information from the stimulus on each trial (see Figure <ref type="figure">1a</ref>), which limits researcher bias by not making a priori assumptions about the features that participants in different groups use for the task. With the double relationship &lt;stimulus information; behavior&gt;, we coupled the stimulus information sampled on each trial with the corresponding participant detection behavior to reconstruct the features that underlie their detection behavior (see Figure <ref type="figure">1b</ref>). With the double relationship &lt;stimulus information; EEG activity&gt;, we coupled the same sampled information with the corresponding EEG activity of each participant's brain engaging with the detection task, to independently characterize where, when and how brain activity represents face features (see Figure <ref type="figure">1c-e</ref>). Finally, with the new triple relationship &lt;stimulus information; EEG activity; behavior&gt;, we directly visualized with a single F I G U R E 2 Behavioral information. (a) Significant effects. The white number in the left (vs. right) upper corner of each face image indicates the maximum number of participants showing a significant relationship between pixel visibility and RT at the same (vs. any) face pixel. Yellow colors reflect that a high number of significant effects across participants cluster in the left eye region of the image in young and older participants. As such, for most young and older participants, the left eye of the face image was associated with faster RTs (see also Supplementary Results). (b) Mean difference. Images show the differences between average mutual information (MI) images (young-older) for face trials (top) and noise trials (bottom). The scale represents normalized MI values (see Section 4). (c) Individual participants. Dot plot shows, for each participant (colored dot), MI values summed within a mask that captures left eye pixels (represented as a red circle in the face inset; see Supplementary Methods). Red bars correspond to the median of these per-participant averages. Distributions of individual participant values were similar between the two groups</p><formula xml:id="formula_0">F I G U R E 1</formula><p>Illustration of the experimental paradigm and analyses. (a) Stimuli. Eighteen young and 19 older participants each detected faces versus noise textures from 2,220 pictures that revealed information through Gaussian apertures ("Bubbles" <ref type="bibr" target="#b19">Gosselin &amp; Schyns, 2001)</ref>, while we recorded their face detection behavior (with key presses) and electroencephalogram (EEG) brain activity. We performed the following computations in each individual observer. (b) Behavioral information. We used mutual information (MI) to compute &lt;stimulus information; behavior&gt;, the relationship between stimulus pixel visibility on each trial and the corresponding reaction times (RTs). The same left eye of faces was associated with faster RTs in both young and older participants. (c) Event-related potentials (ERPs). Based on these trials, a full brain analysis revealed larger average ERPs associated with face detection at the right hemisphere occipital-temporal electrode (right electrode <ref type="bibr">[RE]</ref>, whose location is sketched with a cranial view of the head underneath) of both young and older adults. (d) Brain information. Using MI, we computed &lt;stimulus information; EEG activity&gt; every 2 ms poststimulus, which represents the relationship between stimulus pixel visibility in a single trial and the corresponding electrode voltage amplitudes, to reveal the dynamics of any visual feature represented in the variations of the EEG. For illustration, we plotted examples of these classification images every 12 ms between 118 and 238 ms poststimulus. The resulting MI images revealed that the N170 of both young and older adults represented the same left eye, although older adults did so with a delay. (e) Max (brain information). To precisely estimate this age-related, feature-processing delay, we plotted the time course of maximum MI (across the pixels of each MI image in (d)) between 0 and 400 ms poststimulus, which peaked 40 ms later in older participants. (f) Representation for behavior. Finally, we confirmed that these features are represented in the brain to support face detection behavior. To do this, we computed feature redundancy (FeatRed), which quantifies the common effect of stimulus information on both EEG activity and behavior from the triple relationship &lt;stimulus information; EEG activity; behavior&gt; integrated measure the dynamic development of the representation of a face in the brain to support face detection behavior (see Figure <ref type="figure">1f</ref>). We computed the dynamics of representation individually in 17 young and 18 older participants and showed, using information theoretic redundancy across participants, that delayed behavioral information processing and delayed reaction time (RT) reflect a common aging factor within our sample. We now present each double relationship in turn, followed by the triple relationship, and the group redundancy analysis. Section titles indicate the specific relationship that we evaluate between the three variables. To determine the relationship between sampled face information (pixels) and the varying RTs on each trial, we computed mutuaI information (MI) between &lt;stimulus information; RT &gt; (see Section 4). We found that the presence of the left eye in image samples modulated RTs in all young participants (17/17) and in most older participants (16/18; see Figure <ref type="figure">2</ref>). The presence of the right eye also modulated RTs in a few young and older participants. However, whereas young participants could use many other features to perform the task accurately, older participants specifically used the eyes (see Supplementary Results and Supplementary Figures <ref type="figure">S1-S4</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">| RESULTS</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">| Behavioral information: &lt;stimulus information; behavior&gt;</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">| EEG face information representation: &lt;stimulus information; EEG activity&gt;</head><p>We now turn to the important question of where, when and how brain processes represent task-relevant features to support behavioral decisions. Before we proceed, we must first rule out low-level optical factors as the main contributor to any age-related delay in our analyses. To do this, we computed the time course of the standard deviation of the mean ERP across electrodes (ERP STD ) using causal-filtered data (see Section 4 and Figure <ref type="figure">3a</ref>). ERP STD onsets correspond to the initial activation of the occipital cortex that follows stimulus presentation <ref type="bibr" target="#b15">(Foxe &amp; Simpson, 2002)</ref>, which could</p><formula xml:id="formula_1">F I G U R E 3 N170 event-</formula><p>related potentials (ERPs). (a) ERP onsets. Thin gray lines show individual participants' ERP STD (μV/cm 2 ). Colored thick lines show group averages with shaded areas indicating 95% confidence intervals around the group means. Vertical dashed lines mark the overlapped onset times of cortical activity in each group. (b) ERP topographies. For face only trials, we averaged across participants the largest squared ERP amplitude at the time of its peak. (c). Right occipital-temporal ERP. Thick lines show averaged ERPs across young (green) and older (blue) participants, for face (top panel) and noise bubble trials (bottom panel), with shaded areas corresponding to 95% confidence intervals. In each panel, numbers indicate the group median (and confidence intervals) of N170 latencies, which are delayed by ~20 ms in older adults reveal generic, age-related delays already present in the earliest stages of the visual processing pathway. However, we found similar ERP STD onsets in young <ref type="bibr">(68 ms [64, 72]</ref>) and older (69 ms <ref type="bibr">[62,</ref><ref type="bibr">75]</ref>) participants (Figure <ref type="figure">3a</ref>), with a negligible difference between them (-0.5 ms <ref type="bibr">[-7, 5]</ref>), which suggests that there is no clear evidence for a generic delay in the onset of cortical activity in response to visual stimuli in older participants.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.1">| N170 is delayed in older participants</head><p>Despite no clear generic neural delay in older participants, their peak N170 response latencies to full faces on the right occipital electrode (RE) were delayed relative to the N170 response of young participants by 18 ms <ref type="bibr">[9,</ref><ref type="bibr">24]</ref> (and by 23 ms <ref type="bibr">[9,</ref><ref type="bibr">38]</ref>, in response to the practice full noise trials; see Section 4.2). These N170 peak delays on the RE were confirmed in bubbles trials that sampled face and noise information  <ref type="bibr">(i.e., 22 ms [10, 32]</ref> and 18 ms <ref type="bibr">[7,</ref><ref type="bibr">31]</ref>, respectively, see Figure <ref type="figure">3c</ref>; see Figure <ref type="figure">3b</ref> for a summary topography). The N170 latency delay on bubble noise trials was unlikely to be attributable to false alarms. Analysis of behavioral responses revealed that older adults were less accurate than young adults only on face trials (i.e., had more "misses"; see also Supplementary Results), whereas both groups were highly accurate on noise trials. N170 peak amplitudes were similar in young and older participants, except on practice noise trials, where they were larger in older than young participants (see Supplementary Results and Supplementary Figure <ref type="figure">S5</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.2">| Contralateral eye representation over the N170 time course</head><p>Our novel methodology enables us to directly visualize the dynamic representation of facial features in the single-trial amplitude variations of EEG activity during the detection task. To do this, we computed the MI relationship between &lt;pixel visibility information; EEG activ-ity&gt;, for each stimulus pixel, on the left (LE) and right (RE) electrode (see Section 4.5), every 2 ms between 0 and 400 ms post-stimulus.  <ref type="bibr">[42,</ref><ref type="bibr">82]</ref> of that of young adults, see Figure <ref type="figure">4b</ref>,<ref type="figure">c</ref>).</p><p>We then used the resulting images of brain information to compute their maximum MI across all time points and pixel locations (see Figure <ref type="figure">4d</ref>). Peak EEG representation of the left eye occurred 40 ms <ref type="bibr">[23,</ref><ref type="bibr">57]</ref> earlier in young adults relative to older adults (i.e., ~164 ms in young vs. ~204 ms in older adults).</p><p>To rule out the possibility that maximum information was represented on other electrodes, we independently performed a full brainby-time analysis. To this end, we again computed the MI relationship between &lt;pixel visibility information; EEG activity&gt; at each pixel and time point between 0 and 400 ms poststimulus, on all electrodes. We found that maximum MI peaked primarily in the left and right lateraloccipital region in both young and older observers (see Figure <ref type="figure">4e</ref>). Furthermore, computing the maximum MI across all electrodes revealed similar results to those reported here for RE (see Supplementary Figure <ref type="figure">S6</ref>).</p><p>At this juncture, it is important to emphasize that we also ruled out a potential effect of participants paying spatial attention to the location of the eyes in sample images (rather than one of representation of the eyes per se) by repeating the above analyses using only noise trials. In these noise trials, we did not find sensitivity to the image locations of the eyes (i.e., where the eyes of a face would be in face trials), in any participant. Note that the midline electrode (Oz, see Supplementary Figures <ref type="figure">S7</ref> and <ref type="figure">S8</ref>) also revealed the weaker representation of various other facial features (such as eyes, chin, mouth, nose, and forehead) in some participants. As these representations were inconsistent across participants, we did not analyze them further.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">| Stimulus representations in the brain to support behavioral decision: &lt;stimulus information; EEG activity; behavior&gt;</head><p>So far, we have shown that face detection behavior in all participants involves the processing of eyes in the stimulus (particularly the left one), with a ~200 ms decision response delay in the older group. We have also shown that this left eye impacted neural EEG responses in most participants, with a 40 ms representation delay in the older group. Now, we integrate behavioral and brain results by showing where the representation of the eyes in the EEG also modulates face detection behavior, on the same trials.</p><p>To do this, we computed separately for each participant the information theoretic feature redundancy <ref type="bibr" target="#b25">(Ince et al., 2017)</ref>, red (eye; EEG; RT), which is the shared variability between three variable: single-trial visibility of the left and right eye in the stimulus, at contralateral electrodes (RE and LE), together with the corresponding RTs (see Section 4.10). In this application, redundancy measures the strength of the representational similarity of a given stimulus feature (e.g., relative visibility of the left eye) between variations of EEG amplitude (e.g., on the RE) and variations of face detection RT. On the RE, we found a 46 ms <ref type="bibr">[30,</ref><ref type="bibr">81]</ref> redundancy delay between the young and older participants (i.e., 165 ms peak <ref type="bibr">[155,</ref><ref type="bibr">178]</ref> for young, and a 215 ms peak <ref type="bibr">[196,</ref><ref type="bibr">246]</ref> for older adults; see Figure <ref type="figure">4f</ref>). We observed a similar 42 ms <ref type="bibr">[20,</ref><ref type="bibr">86]</ref> delay between young and older participants on the LE, where right eye redundancy peaked at 172 ms <ref type="bibr">[161,</ref><ref type="bibr">186]</ref> for young, and at 220 ms <ref type="bibr">[196,</ref><ref type="bibr">261]</ref> for older adults (see Supplementary Figure <ref type="figure">S10</ref>). These results confirm that the EEG and RT similarly represent the eyes, but with a 42 ms delay in older adults.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">| Delayed stimulus representations in the brain underlie delayed behavioral RTs</head><p>We now demonstrate that the delayed representation of the eyes in the EEG underpins delayed RT in older adults. We tested this by computing the redundancy between the age groups, RT latency, and the peak latency of EEG eye representation (see Section 4.11). Specifically, we first quantified (with MI) the strength of the relationship between age group and each participant's median RT-it was 0.5 [0.36 0.81] bits-and also between age group and redundant eye representation latency in the EEG-it was 0.28 [0.08 0.64] bits for the left eye (at RE) and 0.29 [0.08 0.69] bits for the right eye (at LE). Having shown that both RT latency and EEG eye representation associate with age group, we asked whether these two associations themselves overlap-i.e., whether we can similarly predict age group from RT latency and EEG eye representation. We found that the redundancy between latency of the left eye representation (at RE) and RT was 0.28 [0.06 0.51] bits. This was 100% of the age prediction obtained from the left eye representation alone (0.28 [0.08 0.64]). We also found that redundancy between latency of the right eye (at LE) and RT was 0.12 [-0.09 0.43] bits. This was 40% of the age prediction obtained from the right eye representation alone (0.29 [0.08 0.69]).</p><p>These results demonstrate that only the left eye (at RE) representation is purely related to the RT deficit between age groups. The results also reflect the strongly lateralized relationship between stimulus and RT (Figure <ref type="figure">2</ref>).</p><p>To summarize, we used information theoretic redundancy at two levels (within and across participants) to demonstrate a direct link between behaviorally relevant neural information processing change </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">| DISCUSSION</head><p>Here, we set out to investigate how information-processing delays in the aging brain could slow down face detection behavior (a fundamental social interaction task), using the novel information theoretic measures of the SIR framework. Specifically, we considered the interactions between three variables: stimulus information, neural EEG activity, and RT, and compared the results between young and older adults. We characterized the face information that young and older participants selectively use when detecting faces (i.e., the eyes of a face), and we traced the origin of the behavioral delay with aging to a delay in the neural processes that represent the eyes of faces for the task during the N170 period. We ensured that the neural eye representation delay could not be explained by generic delays of onsets of cortical activity in young and older participants.</p><p>This study provides an important step toward understanding visual cognitive aging. First, we demonstrate that young and older adults can use the same face information (the eyes) to quickly detect faces. As such, our results contrast with previously published findings that suggest that a differential use of horizontal versus vertical information might underlie the impairment of older adults when identifying faces <ref type="bibr" target="#b7">(Chaby, Narme, &amp; George, 2011;</ref><ref type="bibr" target="#b42">Obermeyer, Kolling, Schaich, &amp; Knopf, 2012)</ref>. Here, although older adults had fewer correct responses when detecting faces, the same face information modulated their slower RTs. Our analyses of correct versus incorrect responses (see Supplementary Results) revealed that while young adults can use any facial features to detect a face, older adults relied heavily on the eyes for correct detection. As such, it is possible that rather than inefficiently extracting information from faces, older adults were more conservative, detecting a face only when its eyes were visible (see also <ref type="bibr" target="#b66">van Rijsbergen, Jaworska, Rousselet, &amp; Schyns, 2014)</ref>, although another possibility is that older adults relied more on local contrast information contained within the eye region of the face, in line with previous studies showing that they require more contrast to detect and discriminate faces <ref type="bibr" target="#b38">(Lott, Haegerstrom-Portnoy, Schneck, &amp; Brabyn, 2005;</ref><ref type="bibr" target="#b43">Owsley, Sekuler, &amp; Boldt, 1981)</ref>. In any case, the uncovering of such difference was made possible by Bubbles sampling <ref type="bibr" target="#b19">(Gosselin &amp; Schyns, 2001)</ref>, which limits researcher bias by not making a priori assumptions about the features that participants should use <ref type="bibr" target="#b9">(Creighton, Bennett, &amp; Sekuler, 2018;</ref><ref type="bibr" target="#b14">Éthier-Majcher, Joubert, &amp; Gosselin, 2013;</ref><ref type="bibr" target="#b66">van Rijsbergen et al., 2014)</ref>.</p><p>Establishing equivalence of behavioral information in the two groups is an important benchmark for comparing the task-relevant neural coding of information. Here, we found that the EEG activity of both young and older adults represented the eye pixels contralateral to the lateral-occipital recording electrodes, an effect that was stronger at the right hemisphere electrodes in both groups, in agreement with the reported right hemisphere dominance for face processing <ref type="bibr" target="#b60">(Sergent, Ohta, &amp; MacDonald, 1992)</ref>. Although feature representation was qualitatively similar across young and older adults, it was delayed by 40 ms and weaker in older adults, in the absence of generic delays in the onset of visual cortical activity in older participants. This suggests that the reported delay occurred at the stages of cortical information processing, and was not due to precortical neural factors; thereby adding to the evidence that processing speed delays are unlikely to be due to bottom-up optical factors, such as senile miosis, contrast sensitivity <ref type="bibr" target="#b4">(Bieniek, Bennett, Sekuler, &amp; Rousselet, 2016;</ref><ref type="bibr" target="#b5">Bieniek, Frei, &amp; Rousselet, 2013)</ref>, or visual acuity <ref type="bibr" target="#b49">(Price et al., 2017)</ref>.</p><p>Furthermore, we believe that bottom-up optical factors were unlikely contributors to the observed differences at the neural level, because any bottom-up factors should affect all neural responses irrespectively of their category, whereas we observed much larger N170 to noise textures in older than in young participants.</p><p>Although our stimuli were only frontal views of faces, it would be interesting to test side views, in line with previous studies showing age-related behavioral decrement on perception of faces across viewpoints <ref type="bibr" target="#b21">(Habak, Wilkinson, &amp; Wilson, 2008;</ref><ref type="bibr" target="#b71">Wilson, Mei, Habak, &amp; Wilkinson, 2011)</ref>. Processing of facial/head viewpoints follows a distinct sequence of encoding that reflects different levels of computational complexity <ref type="bibr" target="#b34">(Kietzmann, Gert, Tong, &amp; König, 2017)</ref>. Whether aging affects different stages of viewpoint processing similarly would inform whether processing speed is delayed in a constant or cumulative manner along the visual cortical hierarchy <ref type="bibr" target="#b49">(Price et al., 2017)</ref>.</p><p>The age-related delay that we report here agrees with previous cross-sectional results, which suggest that face processing slows down from 20 years of age and onwards <ref type="bibr" target="#b5">(Bieniek et al., 2013;</ref><ref type="bibr" target="#b52">Rousselet et al., 2010</ref><ref type="bibr" target="#b53">Rousselet et al., , 2009))</ref>. However, previous studies could not ascribe these delays to the representation of task-relevant features, as reported here (see also <ref type="bibr" target="#b54">Rousselet, Ince, van Rijsbergen, &amp; Schyns, 2014;</ref><ref type="bibr" target="#b57">Schyns, Petro, &amp; Smith, 2007;</ref><ref type="bibr" target="#b61">Smith, Gosselin, &amp; Schyns, 2004)</ref>.</p><p>Such task-relevant feature representations in the brain are important for two main reasons. First, by demonstrating the neural representation of task-relevant face features in older adults, we can show that the reported delays (neural and behavioral) do not arise from an inability to inhibit the task-irrelevant information that increases with age <ref type="bibr" target="#b17">(Gazzaley et al., 2008;</ref><ref type="bibr" target="#b73">Zanto, Toy, &amp; Gazzaley, 2010)</ref>. Second, we can use the direct evidence of neural representation of the same features to demonstrate that the N170 time window is functionally equivalent in young and older adults (cf. <ref type="bibr" target="#b52">Rousselet et al., 2010)</ref>. The N170 is an early component of face processing <ref type="bibr" target="#b3">(Bentin, Allison, Puce, Perez, &amp; McCarthy, 1996;</ref><ref type="bibr" target="#b30">Itier, Alain, Sedore, &amp; McIntosh, 2007;</ref><ref type="bibr" target="#b54">Rousselet et al., 2014)</ref> that is delayed in older participants <ref type="bibr" target="#b17">(Gazzaley et al., 2008;</ref><ref type="bibr" target="#b41">Nakamura et al., 2001;</ref><ref type="bibr" target="#b53">Rousselet et al., 2009;</ref><ref type="bibr" target="#b70">Wiese et al., 2008)</ref>.</p><p>Comparing the latencies from the same component across age groups presumes that it indexes the same neuronal processes over a life span. However, prior to this current study, it was unclear whether the single-trial activity evoked during the N170 time window represents the same information content across age groups. Here, we show that the N170 performs the same representation function in two age groups detecting faces, albeit with a delay in older adults <ref type="bibr" target="#b53">(Rousselet et al., 2009;</ref><ref type="bibr" target="#b57">Schyns et al., 2007;</ref><ref type="bibr" target="#b61">Smith et al., 2004;</ref><ref type="bibr" target="#b67">van Rijsbergen &amp; Schyns, 2009)</ref>. In fact, our results suggest that the 40 ms representation delay of the eyes over the N170 in older adults was directly related to their 200 ms RT delay when using this information to detect faces. We can thus trace the origin of the behavioral slowing to the early stages of stimulus processing, which could complement other studies that have indicated that slowing originates from motor response generation <ref type="bibr" target="#b36">(Kolev, Falkenstein, &amp; Yordanova, 2006;</ref><ref type="bibr" target="#b72">Yordanova, Kolev, Hohnsbein, &amp; Falkenstein, 2004)</ref>.</p><p>At this juncture, it is important to emphasize that the age-related delay in the processing of the eye information from the sample image cannot be attributed to the presence of Bubble masks. Bubbles can be thought of as a "masking procedure" that degrades the visual input and possibly entails object completion <ref type="bibr" target="#b64">(Tang et al., 2014)</ref>. The processing of occluded stimuli by the visual system might require additional resources to perform the task, leading to longer processing times <ref type="bibr" target="#b59">(Sekuler, Gold, Murray, &amp; Bennett, 2000)</ref>. As such, any delay observed in a sample of older adults could be due to a combination of factors: a genuine slowing down of processing speed, as well as an increase in the time needed to process the occluded stimulus with respect to young adults. However, our ERP results show that the extra processing time of Bubbled images compared with full images differed very little between young and older participants. Specifically, even though the processing of the Bubbled stimuli was delayed with respect to full images by about 20 ms in both young and older participants, there was only a weak interaction between age and masking condition. In both practice (unmasked) and Bubble (masked) trials, the N170 latency to face images in older participants was delayed by about 20 ms (18 ms in practice trials and 22 ms in Bubble trials) with respect to that in young participants. This agrees with a recent study <ref type="bibr" target="#b5">(Bieniek et al., 2013)</ref>, which showed that even though stimulus luminance affects the entire ERP time course in both young and older participants, it does not affect age-related differences in processing speed.</p><p>Whether other stimulus characteristics (e.g., external features, color pigmentation) affect processing speed and use of diagnostic information with age remains to be explored. Here, we used relatively sparse images of grayscale faces, presented in an oval mask, without any external features such as hair. Additional information such as color might increase the diagnostic information across the whole face, whereas external features might become more relevant at longer viewing distances. Furthermore, we only used images of young faces.</p><p>Aging is associated with changes to the physical appearance of the face (e.g., wrinkling, pigmentation; van Rijsbergen et al., 2014) that might affect the diagnostic information for a particular task. While face processing strategies might vary depending on the age of the observer relative to the age of the stimuli shown (own-age bias; van <ref type="bibr">Rijsbergen et al., 2014;</ref><ref type="bibr" target="#b1">Anastasi &amp; Rhodes, 2005;</ref><ref type="bibr" target="#b70">Wiese et al., 2008)</ref>, we do not know whether these will affect N170 latencies or amplitudes <ref type="bibr" target="#b37">(Komes, Schweinberger, &amp; Wiese, 2015;</ref><ref type="bibr" target="#b70">Wiese et al., 2008)</ref>.</p><p>Altogether, future studies should aim to uncover the extent to which delays in other processing stages (i.e., postperceptual decision, sensorimotor integration, or motor generation processes) influence the observed behavioral slow down. Our results also raise further considerations regarding their generalization to other stimulus categories, both simple and complex, such as scenes, objects, words, but also sensory modalities and tasks. Recent evidence suggests that aging cannot be regarded as a unitary concept that affects functionally relevant brain regions in the same manner <ref type="bibr" target="#b49">(Price et al., 2017)</ref>. Instead, whether the observed age-related delay is constant or cumulative, may depend on a variety of factors other than structural differences in brain regions <ref type="bibr" target="#b48">(Peters, 2009;</ref><ref type="bibr" target="#b49">Price et al., 2017;</ref><ref type="bibr" target="#b50">Raz et al., 2005;</ref><ref type="bibr" target="#b68">Wang, Zhou, Ma, &amp; Leventhal, 2005)</ref>, such as the sensory modality, task, and stimulus complexity. Our new methods can address some of these issues by linking tightly controlled stimulus information to brain response and decision behavior in important social cognition tasks. These methods can also be extended to other sensory modalities to study group differences (i.e., cultural, developmental, clinical) in perception and cognition.</p><p>To summarize, our results provide the first functional account that advancing age involves differences in neural delays in the representation of task-relevant information for behavior. They address the fundamental challenge of developing theories of cognitive aging that explain how the neural information processes involved in a cognitive task slow down behavior.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">| METHODS</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">| Participants</head><p>Eighteen young (nine females, median age = 23, min 20, max 36) and 19 older adults (seven females, median age = 66, min 60, max 86) participated in the study (data of 15 of the young participants were used in <ref type="bibr" target="#b54">Rousselet et al. (2014)</ref>). Only one participant was &gt;80 years, the age range of all other older adults was 60-77, comparable to that of the young adults. In a face discrimination task, we have shown a qualitative shift in the time course of brain activity around 47 years of age <ref type="bibr" target="#b52">(Rousselet et al., 2010)</ref>, which we investigated here with age ranges appropriate for the research question.</p><p>All older adults were local residents. We excluded participants if they reported any current eye condition (i.e., lazy eye, glaucoma, macular degeneration, cataract), had a history of mental illness, were currently taking psychotropic medications or used to take them, suffered from any neurological condition, had diabetes, or had suffered a stroke or a serious head injury. We also excluded participants if their latest eye test was more than a year (for older participants) or 2 years (for young participants) prior to the study taking place. Two older participants reported having cataracts removed, and one older participant reported having undergone a laser surgery. We included them because their corrected vision was within normal range. In addition, older participants completed the Montreal Cognitive Assessment to screen for cognitive impairment. All participants achieved a score of 26 or above, indicating normal cognitive performance. We assessed all participants' visual acuity and contrast sensitivity in the lab using a Colenbrander mixed contrast card set and a Pelli-Robson chart. All participants had normal or near-normal visual acuity as measured with the 63 cm viewing distance (computer distance) chart (Table <ref type="table">1</ref>). Three older participants had contrast sensitivity of 1.65, and all others had contrast sensitivity of 1.95 log units, within the normal range of contrast sensitivity for that age group <ref type="bibr" target="#b13">(Elliott, Sanderson, &amp; Conkey, 1990)</ref>. All young participants had contrast sensitivity of 1.95 log units or above. During the experimental session, participants wore their habitual correction if needed.</p><p>The study was approved by the local ethics committee at the College of Science and Engineering, University of Glasgow (approval no. FIMS00740), and conducted in line with the British Psychological Society ethics guidelines. Informed written consent was obtained from each participant before the study. Participants were compensated £6/h.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">| Stimuli</head><p>We used a set of 10 grayscaled, front-view photographs of faces, oval cropped to remove external features, and pasted onto a uniform gray background <ref type="bibr" target="#b18">(Gold, Bennett, &amp; Sekuler, 1999)</ref>. The pictures spanned 9.3 × 9.3 of visual angle; the face oval was 4.9 × 7.0 of visual angle.</p><p>A unique image was presented on each trial by introducing phase noise (70% phase coherence) into the face images <ref type="bibr" target="#b55">(Rousselet, Pernet, Bennett, &amp; Sekuler, 2008)</ref>. Noisy textures were created by fully randomizing the phase of the face images (0% phase coherence). All stimuli had the same amplitude spectrum, set to the mean amplitude of the face images. Face and noise images were revealed through "bubble masks," that is, masks containing 10 two-dimensional Gaussian apertures (σ = 0.36 ), with the constraint that the center of the aperture remained in the face oval <ref type="bibr" target="#b54">(Rousselet et al., 2014)</ref>. We wrote our experiments in MATLAB using the Psychophysics Toolbox extensions <ref type="bibr" target="#b6">(Brainard, 1997;</ref><ref type="bibr" target="#b35">Kleiner, Brainard, &amp; Pelli, 2007;</ref><ref type="bibr" target="#b45">Pelli, 1997)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">| Procedure</head><p>Participants came in for two experimental sessions on separate days.</p><p>During each session, we asked participants to minimize movement and blinking, or blink only when hitting a response button. We maintained a viewing distance of 80 cm using a chinrest.</p><p>In each experimental session, participants completed 12 blocks of 100 trials each, seated in a sound-attenuated booth. The first block was a practice block of images without bubble masks. As such, across the two sessions participants performed 200 trials without bubble masks, and 2,200 trials with bubble masks. Practice blocks used a set of 10 face identities and 10 unique noise textures, each repeated five times were randomized within each block. Each practice session lasted about 60-75 min, including breaks, but excluding EEG electrode application.</p><p>On each trial, we instructed participants to categorize stimuli as fast and as accurately as possible, by pressing "1" for face, and "2" for texture on the numerical pad of a keyboard, using the index and middle finger of their dominant hand. Each trial began with a small black fixation cross (12 × 12 pixels, 0.4 × 0.4 of visual angle) displayed at the center of the monitor screen for a random time interval of 500-1,000 ms, followed by an image of a face or a texture presented for seven frames (~82 ms). After the stimulus, a blank gray screen was displayed until the participant responded. The fixation cross, the stimulus, and the blank response screen were all displayed on a uniform gray background with mean luminance of ~43 cd/m 2 . After each block of 100 trials, participants could take a break, and they received feedback on their performance in the previous block and on their overall performance in the experiment (median RT and percentage of correct responses). The next block started after participants pressed a key.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">| EEG recording and preprocessing</head><p>We recorded EEG data at 512 Hz using a 128-channel BioSemi ActiveTwo EEG system (BioSemi, Amsterdam, the Netherlands). Four</p><p>T A B L E 1 Visual test scores. Visual acuity scores are reported for HC and LC charts presented at the 63 cm viewing distance, and expressed as raw VAS HC 63 LC 63 CS Young 108 [95, 110] 99 [94, 104] 1.95 [1.95, 2.25] -0.16 [0.10, -0.20] 0.02 [0.12, -0.08] Older 98 [93, 105] 89 [82, 95] 1.95 [1.65, 1.95] 0.04 [0.14, -0.10] 0.22 [0.36, 0.10] Note: The corresponding logMAR scores are presented below in italics. Square brackets indicate the minimum and maximum scores across participants in each age group. CS scores for young and older participants correspond to median log units across all participants in each age group. Abbreviations: CS, contrast sensitivity; HC, high contrast; LC, low contrast; VASs, visual acuity scores.</p><p>additional UltraFlat Active BioSemi electrodes were placed below and at the outer canthi of both eyes. Electrode offsets were kept between ±20 μV.</p><p>EEG data were preprocessed using MATLAB 2013b and the opensource EEGLAB toolbox <ref type="bibr" target="#b11">(Delorme et al., 2011;</ref><ref type="bibr" target="#b10">Delorme &amp; Makeig, 2004)</ref>. Data were first average referenced and detrended. Two types of filtering were then performed. First, data were band-pass filtered between 1 and 30 Hz using a noncausal fourth-order Butterworth filter. Independently, another dataset was created in which data were preprocessed with fourth-order Butterworth filters: a high-pass causal filter at 2 Hz and a low-pass noncausal filter at 30 Hz, to preserve accurate timing of onsets <ref type="bibr" target="#b0">(Acunzo, MacKenzie, &amp; van Rossum, 2012;</ref><ref type="bibr" target="#b39">Luck, 2005;</ref><ref type="bibr" target="#b51">Rousselet, 2012;</ref><ref type="bibr" target="#b69">Widmann &amp; Schröger, 2012)</ref>.</p><p>Data from both datasets were then downsampled to 500 Hz, and epoched between -300 and 1,000 ms around stimulus onset. Mean baseline was removed from the causal-filtered data, and channel mean was removed from each channel in the noncausal-filtered data in order to increase the reliability of independent component analysis (ICA) <ref type="bibr" target="#b20">(Groppe, Makeig, &amp; Kutas, 2009)</ref>. Noisy electrodes and trials Subsequently, we performed ICA on the noncausal filtered dataset using the Infomax algorithm as implemented in the runica function in EEGLAB <ref type="bibr" target="#b10">(Delorme &amp; Makeig, 2004;</ref><ref type="bibr" target="#b12">Delorme, Sejnowski, &amp; Makeig, 2007)</ref>. The ICA weights were then applied to the causal filtered dataset to ensure removal of the same components, and artifactual the CSD toolbox <ref type="bibr" target="#b32">(Kayser, 2009;</ref><ref type="bibr" target="#b65">Tenke &amp; Kayser, 2012)</ref>. CSD waveforms were computed using parameters 50 iterations, m = 4, and λ = 10 -5 . The head radius was arbitrarily set to 10 cm, so that the ERP units are μV/cm 2 . The CSD transformation is a spatial high-pass filtering of the data, which sharpens ERP topographies and reduces the influence of volume-conducted activity. CSD waveforms are also reference free.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5">| Electrode selection</head><p>We performed detailed analyses on the subset of four posterior midline electrodes that are sensitive to face features or conjunction of features: from top to bottom CPz, Pz, POz, and Oz <ref type="bibr" target="#b54">(Rousselet et al., 2014;</ref><ref type="bibr" target="#b58">Schyns, Thut, &amp; Gross, 2011)</ref>. We only report the results of Oz because the other three electrodes had weak MI to face features in the two groups. We also selected two posterior-lateral electrodes, one in the right hemisphere (RE), and one in the left hemisphere (LE) by measuring the difference between all bubble face trials and all bubble noise trials at all posterior-lateral electrodes, squaring it, and selecting the left and the REs that showed the maximum difference in the period 130-250 ms. Across participants, the selected LE and RE were P7/8, or PO7/8, or their immediate neighbors. These electrodes are typically associated with large face ERPs in the literature.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.6">| Event-related potentials</head><p>We compared the amplitude and latency of the N170 between the two age groups. To this end, we computed mean ERPs across trials for each participant, separately for face and noise trials, and for practice (without Bubbles) and regular (with Bubbles) trials. For ERPs recorded at the lateral-occipital electrode in the right hemisphere (RE), we defined the N170 peak in individual participants as the minimum mean ERP between 110 and 230 ms, and considered separately its latency and amplitude.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.7">| Statistical analyses</head><p>We conducted statistical analyses using MATLAB 2013b and the LIMO EEG toolbox <ref type="bibr" target="#b47">(Pernet et al., 2011)</ref>. Throughout the paper, square brackets indicate 95% confidence intervals computed using the percentile bootstrap technique, with 1,000 bootstrap samples. Unless otherwise stated, median values are Harrell-Davis estimates of the second quartile <ref type="bibr" target="#b22">(Harrell &amp; Davis, 1982)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.8">| Mutual information</head><p>We used MI to quantify the dependence between stimulus features and behavioral and brain responses <ref type="bibr" target="#b25">(Ince et al., 2017;</ref><ref type="bibr" target="#b28">Ince, Petersen, Swan, &amp; Panzeri, 2009;</ref><ref type="bibr" target="#b33">Kayser, Ince, Gross, &amp; Kayser, 2015;</ref><ref type="bibr" target="#b44">Park, Ince, Schyns, Thut, &amp; Gross, 2015;</ref><ref type="bibr" target="#b58">Schyns et al., 2011)</ref>. We binned pixel visibility across trials (due to random bubbles sampling), and behavioral and EEG responses into three equiprobable bins (for details, see <ref type="bibr" target="#b54">Rousselet et al., 2014)</ref>. We then calculated several MI quantities in single participants: MI(PIX; RT) to establish the relationship between image pixels and RTs; MI(PIX; CORRECT) to establish the relationship between image pixels and correct responses; MI(PIX; RESP) between pixels and response category; and MI(PIX; ERP) to establish the relationship between image pixels and ERPs. We computed these quantities separately for face and noise trials. To control for the variable number of trials in each participant arising as a result of EEG preprocessing, we scaled every MI quantity for every participant by a factor of 2Nln2 <ref type="bibr" target="#b27">(Ince, Mazzoni, Bartels, Logothetis, &amp; Panzeri, 2012)</ref>, using the formula:</p><formula xml:id="formula_2">MI scaled = MI × 2 × Nt × log 2 ,</formula><p>where MI refers to mutual information values and Nt is the number of trials. MI scaled , therefore, reflects a measure of MI adjusted for a systematic upward bias in the information estimate that might arise due to limited data sampling, especially if the numbers of trials in the two age groups are systematically different. It also converts MI to be the effect size for a log-likelihood test of independence <ref type="bibr" target="#b63">(Sokal &amp; Rohlf, 2012)</ref>. All group-difference analyses were performed using the scaled MI values.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.9">| MI: Classification images</head><p>We refer to MI between pixels and behavior or ERPs as classification images: they reveal the image pixels associated with modulations of the responses. We computed the MI(PIX, ERP) classification images at every time point within the first 400 ms following stimulus onset, using the noncausal and causal-filtered datasets, and at each of the six electrodes specified above. We summarized each classification image with its maximum MI and reported these time courses per electrode.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.9.1">| Single-subject analyses</head><p>To establish the statistical significance of the classification image pixels while controlling for multiple comparisons arising from testing at multiple pixels, we performed a permutation test coupled with the threshold-free cluster enhancement technique <ref type="bibr" target="#b62">(Smith &amp; Nichols, 2009)</ref> on individual participants' data <ref type="bibr" target="#b54">(Rousselet et al., 2014)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.10">| Feature redundancy</head><p>We computed coinformation (coI) <ref type="bibr" target="#b2">(Bell, 2003)</ref> (equivalent to interaction information <ref type="bibr" target="#b40">(McGill, 1954)</ref> but with opposite sign for three variables) to quantify the triple dependence between eye visibility, RTs, and brain responses <ref type="bibr" target="#b24">(Ince, 2017;</ref><ref type="bibr" target="#b25">Ince et al., 2017</ref><ref type="bibr" target="#b26">Ince et al., , 2016</ref><ref type="bibr" target="#b29">Ince et al., , 2015</ref>; Zhan, Ince, Van Rijsbergen, &amp; Schyns, 2018), that is, coI(eye; RT; EEG). Positive values of coI quantify redundancy, specifically here redundant or overlapping information about the stimulus eye visibility, which is common to both EEG and RT responses. We computed coinformation redundancy with the following expression: FeatRed = MIðEEG; eye visibilityÞ + MIðRT; eye visibility -MIð½EEGRT; eye visibilityÞ We used here Gaussian-Copula Mutual Information a semiparametric rank-based estimator suitable for continuous variables (Ince et al., 2017) (see also Supplementary Methods) and considered a two-dimensional EEG signal consisting of voltage together with its instantaneous temporal derivative (see Supplementary Methods). If there is less information about eye visibility available from EEG and RT considered jointly, MI([EEG RT]; eye visibility), than there is when the two responses are considered independently, MI(EEG; eye visibility) + MI(RT; eye visibility), then this shows that part of the relationship quantified by MI(EEG; eye visibility) overlaps with that quantified by MI(RT; eye visibility). As such, redundancy quantifies the overlapping information content (i.e., a common driving effect) within</p><p>both EEG and RT, about eye visibility. We computed this measure at all time points and electrodes for each participant independently.</p><p>Then, for each participant, we plotted the time course of redundancy at occipital-temporal electrodes specified above (i.e., <ref type="bibr">RE and LE)</ref> between 0 and 400 ms poststimulus.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.11">| Group redundancy</head><p>We computed group-level redundancy to quantify the degree to which median RT and individual peak redundancy time provide a common prediction of the age group (young vs. older) across individual participants. For these analyses, we quantized RT and peak redundancy time into three equally populated bins (splitting on tertiles of the distribution across participants) and calculated MI from the standard discrete definition <ref type="bibr" target="#b8">(Cover &amp; Thomas, 2005;</ref><ref type="bibr" target="#b25">Ince et al., 2017)</ref>. We applied Miller-Madow bias correction to the individual MI estimated before calculating group redundancy as: GroupRed = MIðFRP; groupÞ+ MIðRT; groupÞ-MIð½FRP RT; groupÞ where FRP is feature redundancy peak time, RT is reaction time, and group is age group for each participant. We determined bootstrap confidence intervals via resampling participants with replacement 1,000 times.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.12">| ERP onset analyses</head><p>We quantified ERP onsets using the causal-filtered datasets. To control for multiple comparisons, we used a bootstrap temporal clustering technique as implemented in LIMO EEG <ref type="bibr" target="#b47">(Pernet et al., 2011;</ref><ref type="bibr" target="#b46">Pernet, Latinus, Nichols, &amp; Rousselet, 2015)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.12.1">| ERP STD onset</head><p>To test whether age-related delays reflect differences in the onset of afferent activity to the visual cortex, we looked at the time course of the SD across electrodes of the mean ERP (ERP STD ). ERP STD provides a compact description of the global ERP response, summarizing each participant's evoked brain activity across electrodes in one vector.</p><p>This analysis was based on the notion that early visual activity can be characterized by a sudden increase in SD of the mean ERP across electrodes <ref type="bibr" target="#b15">(Foxe &amp; Simpson, 2002)</ref>. We computed the ERP STD time course for each individual participant and mean baseline centered it. Then, we localized the first peak the minimum height of which was five times the height of any peak in the baseline. Then, using ARESLab toolbox <ref type="bibr" target="#b31">(Jekabsons, 2015)</ref>, we built a piecewise-linear regression model with three basis functions using the multivariate adaptive regression splines <ref type="bibr" target="#b16">(Friedman, 1991)</ref> method. This approach divided the data into two segments and fitted each segment with separate models (regression splines). Onsets were defined as the location in time of the first knot of the fitted spline, that is, the point where division between the two models occurred.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.12.2">| MI onset</head><p>We quantified MI onsets using the same technique as with ERP STD onsets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.13">| Topographic analyses</head><p>We computed topographic maps for each participant from the wholescalp MI(PIX; ERP) results, and for the whole-scalp ERP results, at the individual MI peak, or ERP peak latency, respectively. Individual ERP topographic maps were squared. All topographic maps were interpolated and rendered in a 67 × 67 pixel image using the EEGLAB function topoplot, and then averaged across participants in each age group.</p><p>Using the interpolated head maps, we then computed a hemispheric lateralization index for each participant using MI results. First, we normalized MI values in each participant between 0 and 1. Then, we saved the maximum pixel intensity in the left and the right hemisphere (lower left and right quadrants of the interpolated image), excluding the midline. </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><figDesc>Seventeen young (median age = 23) and 18 older (median age = 66) participants categorized 2,200 pictures of faces and noise textures revealed through Gaussian apertures (so-called "Bubbles," Gosselin &amp; Schyns, 2001), which sample random spatial regions of face and noise images on each trial. Young participants were 198 ms faster to detect faces (median RT in young = 378 ms, 95% confidence interval = [349, 401] vs. RT in older participants = 576 ms [527, 604]).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>F</head><figDesc>I G U R E 4 Brain information. (a) Right electrode (RE): frequency of significant effects. Using the maximum mutual information (MI) image across time points on RE in each participant, the white number in the left upper corner of every image corresponds to the maximum number of participants showing a significant effect at the same face pixel (on face and noise trials separately), whereas the number in the right upper corner corresponds to the total number of participants showing significant effects at any pixel. (b) RE: mean difference. Averaging the maximum MI images across young and older participants separately produced images of group differences (young-older) for face trials (left) and noise trials (right). Average MI in the left eye region of the face image was higher for young than older participants. Throughout the figure, MI represents normalized MI values (see Section 4). (c) Individual participants. Dot plot shows, for each participant (colored dot), MI values summed within a mask that captures left eye-only pixels (represented as a red circle in the face inset; see Supplementary Methods). Red bars correspond to the median of these per-participant averages. Distributions of individual participant values were different between the two groups. (d) RE: time course of brain information are presented for both face and noise (insets) bubbles trials on RE. Color-coded numbers correspond to median latencies of maximum MI in both groups. Shaded areas correspond to bootstrap 95% confidence intervals around the 20% trimmed mean. (e) MI topographies. MI &lt;face information; electroencephalogram (EEG) activity&gt; (i.e., brain information) averaged across young and older participants for each electrode across time points and face pixels. (f) Right electrode (RE): representation for behavior. A time course of behavioral redundancy shows a 46 ms delay in the representation of the left eye on the RE for delayed face detection reaction time (RT) in older adults</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure</head><figDesc>Figure 1d illustrates example MI classification images of brain information on electrode RE. As shown in Figure 4a, EEG activity at RE contralaterally represented the left eye in most young (N = 16/17) and older (N = 12/18) adults (see Supplementary Figures S7 and S8 for LE results), with a weaker overall representation in older adults (their peak MI was 57%</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>(</head><figDesc>48 ms delay in left eye redundancy) and a behavioral aging deficit (200 ms RT delay across participants of our sample). Specifically, within participants, we explicitly quantified the triple relationship &lt;stimulus information; EEG activity; behavior&gt; within SIR to focus on the aspects of information processing reflected in EEG signals that are directly relevant to face detection RT. Across participants, quantification of the triple relationship &lt;age group; representational delay; RT delay&gt; suggests a group level interpretation in which right-lateralized (but not left-lateralized) neural representational delays underlie behavioral slowdown in aging.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><figDesc>were then detected by visual inspection of the noncausal dataset, and rejected on a participant-by-participant basis. Following visual inspection, one young participant and one older participant were excluded from further analyses due to noisy EEG signal. MI analysis confirmed the lack of sensitivity to any facial features in these participants. The resulting sample size was 17 young and 18 older participants. In this sample, more noisy channels were on average removed from older than from young participants' datasets (older participants: median = 10, min = 0, max = 24; young participants: median = 5, min = 0, max = 28; median difference = 4 [2, 7]). More noisy Bubble trials were also removed from older than from young participants' datasets (trials included in analyses, older participants: median 2,130, min 1987, max 2,180; young participants: median 2,178, min 2,023, max 2,198;   median difference = 42 [23, 64]).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><figDesc>components were rejected from both datasets (median = 4, min = 1, max = 27 for one older participant who displayed excessive blink activity; the second max was 17). Then, baseline correction was performed again, and data epochs were removed based on an absolute threshold value larger than 100 μV and the presence of a linear trend with an absolute slope larger than 75 μV per epoch and R 2 larger than .3. The median number of bubble trials accepted for analysis was, out of 1,100, for older participants: face trials = 1,069 [min = 999, max = 1,092]; noise trials = 1,067 [min = 986, max = 1,088]; for young participants: face trials = 1,090 [min = 1,006, max = 1,100]; noise trials = 1,089 [min = 1,014, max = 1,098]. Finally, we computed single-trial spherical spline current source density waveforms using</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Finally, we computed</head><figDesc>the lateralization index in each group as the ratio (MI left -MI right )/(MI left + MI right ). Whole-scalp MI was strongest at posterior-lateral electrodes, and tended to be right lateralized in both groups (lateralization index for face trials, young = -0.18 [-0.31, -0.05]; older = -0.23 [-0.37, -0.09]; group difference = 0.07 [-0.07, 0.21]).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><graphic coords="3,128.18,50.23,340.75,193.04" type="bitmap" /></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>ACKNOWLEDGMENTS</head><p>This work has been funded by the <rs type="funder">U.K. Biotechnology and Biological Sciences Research Council (BBSRC)</rs> grant <rs type="grantNumber">BB/J018929/1</rs> awarded to N.J.V.R., G.A.R., and <rs type="person">P.G.S. K.J.</rs> was supported by the <rs type="funder">BBSRC</rs> <rs type="grantName">Doctoral Training Partnership (WestBio) Studentship</rs>. P.G.S. received support from the <rs type="funder">Wellcome Trust</rs> (<rs type="grantName">Senior Investigator Award</rs>, <rs type="person">United Kingdom</rs>; <rs type="grantNumber">107802</rs>) and the <rs type="funder">Multidisciplinary University Research Initiative/Engineering and Physical Sciences Research Council</rs> (<rs type="affiliation">United States, United Kingdom</rs>; <rs type="grantNumber">172046-01</rs>).</p></div>
+			</div>
+			<div type="funding">
+<div><head>Funding information</head><p>Biotechnology and <rs type="funder">Biological Sciences Research Council</rs>, Grant/Award Number: <rs type="grantNumber">BB/ J018929/1</rs>; <rs type="funder">Multidisciplinary University Research Initiative/Engineering and Physical Sciences Research Council</rs>, Grant/Award Number: <rs type="grantNumber">172046-01</rs>; <rs type="funder">Wellcome Trust</rs>, Grant/ Award Number: <rs type="grantNumber">107802</rs>; <rs type="grantName">BBSRC West Bio Doctoral Training Partnership</rs></p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_cSnPRQN">
+					<idno type="grant-number">BB/J018929/1</idno>
+				</org>
+				<org type="funding" xml:id="_Kb537BB">
+					<orgName type="grant-name">Doctoral Training Partnership (WestBio) Studentship</orgName>
+				</org>
+				<org type="funding" xml:id="_hJV37bQ">
+					<idno type="grant-number">107802</idno>
+					<orgName type="grant-name">Senior Investigator Award</orgName>
+				</org>
+				<org type="funding" xml:id="_Uq4PYDG">
+					<idno type="grant-number">172046-01</idno>
+				</org>
+				<org type="funding" xml:id="_c38aPz6">
+					<idno type="grant-number">BB/ J018929/1</idno>
+				</org>
+				<org type="funding" xml:id="_Za3q7XE">
+					<idno type="grant-number">172046-01</idno>
+				</org>
+				<org type="funding" xml:id="_ntSPDzN">
+					<idno type="grant-number">107802</idno>
+					<orgName type="grant-name">BBSRC West Bio Doctoral Training Partnership</orgName>
+				</org>
+			</listOrg>
+
+			<div type="availability">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>DATA AVAILABILITY STATEMENT</head><p>A reproducibility package with data and code is available on figshare: <ref type="url" target="https://doi.org/10.6084/m9.figshare.10744937">https://doi.org/10.6084/m9.figshare.10744937</ref>. Single-trial data from the young participants are available on Dryad: https:// datadryad.org/stash/dataset/doi:10.5061/dryad.8m2g3</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>SUPPORTING INFORMATION</head><p>Additional supporting information may be found online in the Supporting Information section at the end of this article. </p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Systematic biases in early ERP and ERF components as a result of high-pass filtering</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Acunzo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Mackenzie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C W</forename><surname>Van Rossum</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jneumeth.2012.06.011</idno>
+		<ptr target="https://doi.org/10.1016/j.jneumeth.2012.06.011" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Neuroscience Methods</title>
+		<imprint>
+			<biblScope unit="volume">209</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="212" to="218" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Acunzo, D. J., MacKenzie, G., &amp; van Rossum, M. C. W. (2012). Systematic biases in early ERP and ERF components as a result of high-pass filter- ing. Journal of Neuroscience Methods, 209(1), 212-218. https://doi. org/10.1016/j.jneumeth.2012.06.011</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">An own-age bias in face recognition for children and older adults</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Anastasi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Rhodes</surname></persName>
+		</author>
+		<idno type="DOI">10.3758/BF03206441</idno>
+		<ptr target="https://doi.org/10.3758/BF03206441" />
+	</analytic>
+	<monogr>
+		<title level="j">Psychonomic Bulletin &amp; Review</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1043" to="1047" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Anastasi, J. S., &amp; Rhodes, M. G. (2005). An own-age bias in face recognition for children and older adults. Psychonomic Bulletin &amp; Review, 12(6), 1043-1047. https://doi.org/10.3758/BF03206441</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">The co-information lattice</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Bell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 4th International Symposium on Independent Component Analysis and Blind Signal Separation (ICA2003)</title>
+		<meeting>the 4th International Symposium on Independent Component Analysis and Blind Signal Separation (ICA2003)<address><addrLine>Nara, Japan</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2003-01-04">2003. 1-4 April</date>
+			<biblScope unit="page" from="921" to="926" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bell, A. J. (2003). The co-information lattice. In Proceedings of the 4th Inter- national Symposium on Independent Component Analysis and Blind Signal Separation (ICA2003), Nara, Japan, 1-4 April (pp. 921-926).</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Electrophysiological studies of face perception in humans</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bentin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Allison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Puce</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Perez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Mccarthy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Cognitive Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="551" to="565" />
+			<date type="published" when="1996">1996</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bentin, S., Allison, T., Puce, A., Perez, E., &amp; McCarthy, G. (1996). Electro- physiological studies of face perception in humans. Journal of Cognitive Neuroscience, 8(6), 551-565.</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">A robust and representative lower bound on object processing speed in humans</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Bieniek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Bennett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Sekuler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/ejn.13100</idno>
+		<ptr target="https://doi.org/10.1111/ejn.13100" />
+	</analytic>
+	<monogr>
+		<title level="j">European Journal of Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="1804" to="1814" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bieniek, M. M., Bennett, P. J., Sekuler, A. B., &amp; Rousselet, G. A. (2016). A robust and representative lower bound on object processing speed in humans. European Journal of Neuroscience, 44(2), 1804-1814. https:// doi.org/10.1111/ejn.13100</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Early ERPs to faces: Aging, luminance, and individual differences</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Bieniek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">S</forename><surname>Frei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fpsyg.2013.00268</idno>
+		<ptr target="https://doi.org/10.3389/fpsyg.2013.00268" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Psychology</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page">268</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Bieniek, M. M., Frei, L. S., &amp; Rousselet, G. A. (2013). Early ERPs to faces: Aging, luminance, and individual differences. Frontiers in Psychology, 4, 268. https://doi.org/10.3389/fpsyg.2013.00268</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">The psychophysics toolbox</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Brainard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Spatial Vision</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="433" to="436" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Brainard, D. H. (1997). The psychophysics toolbox. Spatial Vision, 10(4), 433-436.</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Older adults&apos; configural processing of faces: Role of second-order information</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chaby</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Narme</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>George</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/a0020873</idno>
+		<ptr target="https://doi.org/10.1037/a0020873" />
+	</analytic>
+	<monogr>
+		<title level="j">Psychology and Aging</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="71" to="79" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Chaby, L., Narme, P., &amp; George, N. (2011). Older adults&apos; configural processing of faces: Role of second-order information. Psychology and Aging, 26(1), 71-79. https://doi.org/10.1037/a0020873</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Elements of information theory</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Cover</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Thomas</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/047174882X</idno>
+		<ptr target="https://doi.org/10.1002/047174882X" />
+		<imprint>
+			<date type="published" when="2005">2005</date>
+			<publisher>Wiley-Interscience</publisher>
+			<pubPlace>New York, NY</pubPlace>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Cover, T. M., &amp; Thomas, J. A. (2005). Elements of information theory. New York, NY: Wiley-Interscience. https://doi.org/10.1002/ 047174882X</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Classification images characterize age-related deficits in face discrimination</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Creighton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Bennett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Sekuler</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/J.VISRES.2018.07.002</idno>
+		<ptr target="https://doi.org/10.1016/J.VISRES.2018.07" />
+	</analytic>
+	<monogr>
+		<title level="j">Vision Research</title>
+		<imprint>
+			<biblScope unit="volume">157</biblScope>
+			<biblScope unit="page">2</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Creighton, S. E., Bennett, P. J., &amp; Sekuler, A. B. (2018). Classification images characterize age-related deficits in face discrimination. Vision Research, 157, 97-104. https://doi.org/10.1016/J.VISRES.2018. 07.002</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">EEGLAB: An open source toolbox for analysis of single-trial EEG dynamics including independent component analysis</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Delorme</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Makeig</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jneumeth.2003.10.009</idno>
+		<ptr target="https://doi.org/10.1016/j.jneumeth.2003.10.009" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Neuroscience Methods</title>
+		<imprint>
+			<biblScope unit="volume">134</biblScope>
+			<biblScope unit="page" from="9" to="21" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Delorme, A., &amp; Makeig, S. (2004). EEGLAB: An open source toolbox for analysis of single-trial EEG dynamics including independent compo- nent analysis. Journal of Neuroscience Methods, 134, 9-21. https://doi. org/10.1016/j.jneumeth.2003.10.009</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">EEGLAB, SIFT, NFT, BCILAB, and ERICA: New tools for advanced EEG processing</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Delorme</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mullen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kothe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Akalin Acar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Bigdely-Shamlo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vankov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Makeig</surname></persName>
+		</author>
+		<idno type="DOI">10.1155/2011/130714</idno>
+		<ptr target="https://doi.org/10.1155/2011/130714" />
+	</analytic>
+	<monogr>
+		<title level="j">Computational Intelligence and Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">130714</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2011">2011. 2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Delorme, A., Mullen, T., Kothe, C., Akalin Acar, Z., Bigdely-Shamlo, N., Vankov, A., … Makeig, S. (2011). EEGLAB, SIFT, NFT, BCILAB, and ERICA: New tools for advanced EEG processing. Computational Intelli- gence and Neuroscience, 2011, 130714, 1-12. https://doi.org/10. 1155/2011/130714</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Enhanced detection of artifacts in EEG data using higher-order statistics and independent component analysis</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Delorme</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Sejnowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Makeig</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuroimage.2006.11.004</idno>
+		<ptr target="https://doi.org/10.1016/j.neuroimage.2006.11.004" />
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1443" to="1449" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Delorme, A., Sejnowski, T., &amp; Makeig, S. (2007). Enhanced detection of artifacts in EEG data using higher-order statistics and independent component analysis. NeuroImage, 34(4), 1443-1449. https://doi.org/ 10.1016/j.neuroimage.2006.11.004</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">The reliability of the Pelli-Robson contrast sensitivity chart</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">B</forename><surname>Elliott</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sanderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Conkey</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.1475-1313.1990.tb01100.x</idno>
+		<ptr target="https://doi.org/10.1111/j.1475-1313.1990.tb01100.x" />
+	</analytic>
+	<monogr>
+		<title level="j">Ophthalmic and Physiological Optics</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="21" to="24" />
+			<date type="published" when="1990">1990</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Elliott, D. B., Sanderson, K., &amp; Conkey, A. (1990). The reliability of the Pelli-Robson contrast sensitivity chart. Ophthalmic and Physiological Optics, 10(1), 21-24. https://doi.org/10.1111/j.1475-1313.1990. tb01100.x</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Reverse correlating trustworthy faces in young and older adults</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Éthier-Majcher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Joubert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Gosselin</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fpsyg.2013.00592</idno>
+		<ptr target="https://doi.org/10.3389/fpsyg.2013.00592" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Psychology</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page">592</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Éthier-Majcher, C., Joubert, S., &amp; Gosselin, F. (2013). Reverse correlating trustworthy faces in young and older adults. Frontiers in Psychology, 4, 592. https://doi.org/10.3389/fpsyg.2013.00592</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Flow of activation from V1 to frontal cortex in humans: A framework for defining &quot;early&quot; visual processing</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Foxe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">V</forename><surname>Simpson</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s00221-001-0906-7</idno>
+		<idno>1007/s00221-001-0906-7</idno>
+		<ptr target="https://doi.org/10" />
+	</analytic>
+	<monogr>
+		<title level="j">Experimental Brain Research</title>
+		<imprint>
+			<biblScope unit="volume">142</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="139" to="150" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Foxe, J. J., &amp; Simpson, G. V. (2002). Flow of activation from V1 to frontal cortex in humans: A framework for defining &quot;early&quot; visual processing. Experimental Brain Research, 142(1), 139-150. https://doi.org/10. 1007/s00221-001-0906-7</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Multivariate adaptive regression splines</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Friedman</surname></persName>
+		</author>
+		<idno type="DOI">10.1214/aos/1176347963</idno>
+		<ptr target="https://doi.org/10.1214/aos/1176347963" />
+	</analytic>
+	<monogr>
+		<title level="j">The Annals of Statistics</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="67" />
+			<date type="published" when="1991">1991</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Friedman, J. H. (1991). Multivariate adaptive regression splines. The Annals of Statistics, 19(1), 1-67. https://doi.org/10.1214/aos/1176347963</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Age-related top-down suppression deficit in the early stages of cortical visual memory processing</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gazzaley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Clapp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kelley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mcevoy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Knight</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Esposito</surname></persName>
+		</author>
+		<idno type="DOI">10.1073/pnas.0806074105</idno>
+		<ptr target="https://doi.org/10.1073/pnas.0806074105" />
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences of the United States of America</title>
+		<imprint>
+			<biblScope unit="volume">105</biblScope>
+			<biblScope unit="issue">35</biblScope>
+			<biblScope unit="page" from="13122" to="13126" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gazzaley, A., Clapp, W., Kelley, J., McEvoy, K., Knight, R. T., &amp; D&apos;Esposito, M. (2008). Age-related top-down suppression deficit in the early stages of cortical visual memory processing. Proceedings of the National Academy of Sciences of the United States of America, 105 (35), 13122-13126. https://doi.org/10.1073/pnas.0806074105</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Identification of band-pass filtered letters and faces by human and ideal observers</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gold</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Bennett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Sekuler</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S0042-6989(99)00080-2</idno>
+		<ptr target="https://doi.org/10.1016/S0042-6989" />
+	</analytic>
+	<monogr>
+		<title level="j">Vision Research</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">21</biblScope>
+			<biblScope unit="page" from="80" to="82" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gold, J., Bennett, P. J., &amp; Sekuler, A. B. (1999). Identification of band-pass filtered letters and faces by human and ideal observers. Vision Research, 39(21), 3537-3560. https://doi.org/10.1016/S0042-6989 (99)00080-2</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Bubbles: A technique to reveal the use of information in recognition tasks</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Gosselin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Schyns</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S0042-6989(01)00097-9</idno>
+		<ptr target="https://doi.org/10.1016/S0042-6989(01)00097-9" />
+	</analytic>
+	<monogr>
+		<title level="j">Vision Research</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">17</biblScope>
+			<biblScope unit="page" from="2261" to="2271" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Gosselin, F., &amp; Schyns, P. G. (2001). Bubbles: A technique to reveal the use of information in recognition tasks. Vision Research, 41(17), 2261-2271. https://doi.org/10.1016/S0042-6989(01)00097-9</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Identifying reliable independent components via split-half comparisons</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Groppe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Makeig</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kutas</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuroimage.2008.12.038</idno>
+		<ptr target="https://doi.org/10.1016/j.neuroimage.2008.12.038" />
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1199" to="1211" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Groppe, D. M., Makeig, S., &amp; Kutas, M. (2009). Identifying reliable indepen- dent components via split-half comparisons. NeuroImage, 45(4), 1199-1211. https://doi.org/10.1016/j.neuroimage.2008.12.038</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Aging disrupts the neural transformations that link facial identity across views</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Habak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Wilkinson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Wilson</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.visres.2007.10.007</idno>
+		<ptr target="https://doi.org/10.1016/j.visres.2007.10.007" />
+	</analytic>
+	<monogr>
+		<title level="j">Vision Research</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="9" to="15" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Habak, C., Wilkinson, F., &amp; Wilson, H. R. (2008). Aging disrupts the neural transformations that link facial identity across views. Vision Research, 48(1), 9-15. https://doi.org/10.1016/j.visres.2007.10.007</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">A new distribution-free quantile estimator</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">E</forename><surname>Harrell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">E</forename><surname>Davis</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1982">1982</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Harrell, F. E., &amp; Davis, C. E. (1982). A new distribution-free quantile esti- mator.</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title/>
+		<idno type="DOI">10.1093/biomet/69.3.635</idno>
+		<ptr target="https://doi.org/10.1093/biomet/69.3.635" />
+	</analytic>
+	<monogr>
+		<title level="j">Biometrika</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="635" to="640" />
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Biometrika, 69(3), 635-640. https://doi.org/10.1093/biomet/ 69.3.635</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Measuring multivariate redundant information with pointwise common change in surprisal</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A A</forename><surname>Ince</surname></persName>
+		</author>
+		<idno type="DOI">10.3390/e19070318</idno>
+		<ptr target="https://doi.org/10.3390/e19070318" />
+	</analytic>
+	<monogr>
+		<title level="j">Entropy</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page">318</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ince, R. A. A. (2017). Measuring multivariate redundant information with pointwise common change in surprisal. Entropy, 19(7), 318. https:// doi.org/10.3390/e19070318</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">A statistical framework for neuroimaging data analysis based on mutual information estimated via a Gaussian copula</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A A</forename><surname>Ince</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">L</forename><surname>Giordano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kayser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gross</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Schyns</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/hbm.23471</idno>
+		<ptr target="https://doi.org/10.1002/hbm.23471" />
+	</analytic>
+	<monogr>
+		<title level="j">Human Brain Mapping</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1541" to="1573" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ince, R. A. A., Giordano, B. L., Kayser, C., Rousselet, G. A., Gross, J., &amp; Schyns, P. G. (2017). A statistical framework for neuroimaging data analysis based on mutual information estimated via a Gaussian copula. Human Brain Mapping, 38(3), 1541-1573. https://doi.org/10.1002/ hbm.23471</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">The deceptively simple N170 reflects network information processing mechanisms involving visual feature coding and transfer across hemispheres</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A A</forename><surname>Ince</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jaworska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gross</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Panzeri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Van Rijsbergen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Schyns</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/cercor/bhw196</idno>
+		<ptr target="https://doi.org/10.1093/cercor/bhw196" />
+	</analytic>
+	<monogr>
+		<title level="j">Cerebral Cortex</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="4123" to="4135" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ince, R. A. A., Jaworska, K., Gross, J., Panzeri, S., van Rijsbergen, N. J., Rousselet, G. A., &amp; Schyns, P. G. (2016). The deceptively simple N170 reflects network information processing mechanisms involving visual feature coding and transfer across hemispheres. Cerebral Cortex, 26 (11), 4123-4135. https://doi.org/10.1093/cercor/bhw196</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">A novel test to determine the significance of neural selectivity to single and multiple potentially correlated stimulus features</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A A</forename><surname>Ince</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mazzoni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bartels</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">K</forename><surname>Logothetis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Panzeri</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jneumeth.2011.11.013</idno>
+		<ptr target="https://doi.org/10.1016/j.jneumeth.2011.11.013" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Neuroscience Methods</title>
+		<imprint>
+			<biblScope unit="volume">210</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="49" to="65" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ince, R. A. A., Mazzoni, A., Bartels, A., Logothetis, N. K., &amp; Panzeri, S. (2012). A novel test to determine the significance of neural selectivity to single and multiple potentially correlated stimulus features. Journal of Neuroscience Methods, 210(1), 49-65. https://doi.org/10.1016/j. jneumeth.2011.11.013</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Python for information theoretic analysis of neural data</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A A</forename><surname>Ince</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">C</forename><surname>Swan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Panzeri</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/neuro.11.004.2009</idno>
+		<ptr target="https://doi.org/10.3389/neuro.11.004.2009" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Neuroinformatics</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="15" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ince, R. A. A., Petersen, R. S., Swan, D. C., &amp; Panzeri, S. (2009). Python for information theoretic analysis of neural data. Frontiers in Neu- roinformatics, 3(4), 1-15. https://doi.org/10.3389/neuro.11.004.2009</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Tracing the flow of perceptual features in an algorithmic brain network</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A A</forename><surname>Ince</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Van Rijsbergen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Thut</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gross</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Panzeri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Schyns</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/srep17681</idno>
+		<ptr target="https://doi.org/10.1038/srep17681" />
+	</analytic>
+	<monogr>
+		<title level="j">Scientific Reports</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">17681</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Ince, R. A. A., van Rijsbergen, N. J., Thut, G., Rousselet, G. A., Gross, J., Panzeri, S., &amp; Schyns, P. G. (2015). Tracing the flow of perceptual fea- tures in an algorithmic brain network. Scientific Reports, 5(1), 17681. https://doi.org/10.1038/srep17681</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Early face processing specificity: It&apos;s in the eyes</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Itier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Alain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sedore</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">R</forename><surname>Mcintosh</surname></persName>
+		</author>
+		<idno type="DOI">10.1162/jocn.2007.19.11.1815</idno>
+		<ptr target="https://doi.org/10.1162/jocn.2007.19.11" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Cognitive Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page">1815</biblScope>
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Itier, R. J., Alain, C., Sedore, K., &amp; McIntosh, A. R. (2007). Early face processing specificity: It&apos;s in the eyes! Journal of Cognitive Neurosci- ence, 19(11), 1815-1826. https://doi.org/10.1162/jocn.2007.19.11. 1815</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<author>
+			<persName><forename type="first">G</forename><surname>Jekabsons</surname></persName>
+		</author>
+		<title level="m">ARESLab: Adaptive Regression Splines toolbox for Matlab/Octave</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Jekabsons, G. (2015). ARESLab: Adaptive Regression Splines toolbox for Matlab/Octave.</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">Current source density (CSD) interpolation using spherical splines -CSD Toolbox (Version 1.1)</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kayser</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009">2009</date>
+			<publisher>Division of Cognitive Neuroscience</publisher>
+			<pubPlace>New York State Psychiatric Institute</pubPlace>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kayser, J. (2009). Current source density (CSD) interpolation using spheri- cal splines -CSD Toolbox (Version 1.1). New York State Psychiatric Institute: Division of Cognitive Neuroscience.</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Irregular speech rate dissociates auditory cortical entrainment, evoked responses, and frontal alpha</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Kayser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A A</forename><surname>Ince</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gross</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kayser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">44</biblScope>
+			<biblScope unit="page" from="14691" to="14701" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kayser, S. J., Ince, R. A. A., Gross, J., &amp; Kayser, C. (2015). Irregular speech rate dissociates auditory cortical entrainment, evoked responses, and frontal alpha. Journal of Neuroscience, 35(44), 14691-14701.</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Representational dynamics of facial viewpoint encoding</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">C</forename><surname>Kietzmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Gert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Tong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>König</surname></persName>
+		</author>
+		<idno type="DOI">10.1162/jocn_a_01070</idno>
+		<ptr target="https://doi.org/10.1162/jocn_a_01070" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Cognitive Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="637" to="651" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kietzmann, T. C., Gert, A. L., Tong, F., &amp; König, P. (2017). Representational dynamics of facial viewpoint encoding. Journal of Cognitive Neurosci- ence, 29(4), 637-651. https://doi.org/10.1162/jocn_a_01070</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<monogr>
+		<title level="m" type="main">What&apos;s new in Psychtoolbox-3? Perception</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kleiner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Brainard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Pelli</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2007">2007</date>
+			<publisher>ECVP Abstract Supplement</publisher>
+			<biblScope unit="volume">36</biblScope>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kleiner, M., Brainard, D. H., &amp; Pelli, D. (2007). What&apos;s new in Psychtoolbox-3? Perception, 36 (ECVP Abstract Supplement).</note>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Motor-response generation as a source of aging-related behavioural slowing in choicereaction tasks</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Kolev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Falkenstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yordanova</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neurobiolaging.2005.09.027</idno>
+		<ptr target="https://doi.org/10.1016/j.neurobiolaging.2005.09.027" />
+	</analytic>
+	<monogr>
+		<title level="j">Neurobiology of Aging</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="1719" to="1730" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Kolev, V., Falkenstein, M., &amp; Yordanova, J. (2006). Motor-response genera- tion as a source of aging-related behavioural slowing in choice- reaction tasks. Neurobiology of Aging, 27(11), 1719-1730. https://doi. org/10.1016/j.neurobiolaging.2005.09.027</note>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Neural correlates of cognitive aging during the perception of facial age: The role of relatively distant and local texture information</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Komes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">R</forename><surname>Schweinberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wiese</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fpsyg.2015.01420</idno>
+		<ptr target="https://doi.org/10.3389/fpsyg.2015.01420" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Psychology</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page">1420</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Komes, J., Schweinberger, S. R., &amp; Wiese, H. (2015). Neural correlates of cognitive aging during the perception of facial age: The role of relatively distant and local texture information. Frontiers in Psychology, 6, 1420. https://doi.org/10.3389/fpsyg.2015.01420</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Face recognition in the elderly</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Lott</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Haegerstrom-Portnoy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Schneck</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Brabyn</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Optometry and Vision Science</title>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="874" to="881" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Lott, L. A., Haegerstrom-Portnoy, G., Schneck, M. E., &amp; Brabyn, J. A. (2005). Face recognition in the elderly. Optometry and Vision Science, 82(10), 874-881.</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<title level="m" type="main">An introduction to the event-related potential technique</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Luck</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005">2005</date>
+			<publisher>MIT Press</publisher>
+			<pubPlace>Cambridge</pubPlace>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Luck, S. J. (2005). An introduction to the event-related potential technique. Cambridge: MIT Press.</note>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Multivariate information transmission</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">J</forename><surname>Mcgill</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/BF02289159</idno>
+		<ptr target="https://doi.org/10.1007/BF02289159" />
+	</analytic>
+	<monogr>
+		<title level="j">Psychometrika</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="97" to="116" />
+			<date type="published" when="1954">1954</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">McGill, W. J. (1954). Multivariate information transmission. Psychometrika, 19(2), 97-116. https://doi.org/10.1007/BF02289159</note>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Age-related changes in brain neuromagnetic responses to face perception in humans</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nakamura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Yamada</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Abe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Nakamura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Sato</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Horibe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Ito</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S0304-3940(01)02168-1</idno>
+		<ptr target="https://doi.org/10.1016/S0304-3940(01)02168-1" />
+	</analytic>
+	<monogr>
+		<title level="j">Neuroscience Letters</title>
+		<imprint>
+			<biblScope unit="volume">312</biblScope>
+			<biblScope unit="page" from="13" to="16" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Nakamura, A., Yamada, T., Abe, Y., Nakamura, K., Sato, N., Horibe, K., … Ito, K. (2001). Age-related changes in brain neuromagnetic responses to face perception in humans. Neuroscience Letters, 312, 13-16. https://doi.org/10.1016/S0304-3940(01)02168-1</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Differences between old and young adults&apos; ability to recognize human faces underlie processing of horizontal information</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Obermeyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kolling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Schaich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Knopf</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fnagi.2012.00003</idno>
+		<ptr target="https://doi.org/10.3389/fnagi.2012.00003" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Aging Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Obermeyer, S., Kolling, T., Schaich, A., &amp; Knopf, M. (2012). Differences between old and young adults&apos; ability to recognize human faces under- lie processing of horizontal information. Frontiers in Aging Neurosci- ence, 4, 1-9. https://doi.org/10.3389/fnagi.2012.00003</note>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Aging and low-contrast vision: Face perception</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Owsley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sekuler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Boldt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Investigative Ophthalmology and Visual Science</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="362" to="365" />
+			<date type="published" when="1981">1981</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Owsley, C., Sekuler, R., &amp; Boldt, C. (1981). Aging and low-contrast vision: Face perception. Investigative Ophthalmology and Visual Science, 21(2), 362-365.</note>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Frontal top-down signals increase coupling of auditory low-frequency oscillations to continuous speech in human listeners</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A A</forename><surname>Ince</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Schyns</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Thut</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gross</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.cub.2015.04.049</idno>
+		<ptr target="https://doi.org/10.1016/j.cub.2015.04.049" />
+	</analytic>
+	<monogr>
+		<title level="j">Current Biology</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="1649" to="1653" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Park, H., Ince, R. A. A., Schyns, P. G., Thut, G., &amp; Gross, J. (2015). Frontal top-down signals increase coupling of auditory low-frequency oscilla- tions to continuous speech in human listeners. Current Biology, 25, 1649-1653. https://doi.org/10.1016/j.cub.2015.04.049</note>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">The VideoToolbox software for visual psychophysics: Transforming numbers into movies</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Pelli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Spatial Vision</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="437" to="442" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Pelli, D. G. (1997). The VideoToolbox software for visual psychophysics: Transforming numbers into movies. Spatial Vision, 10(4), 437-442.</note>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Clusterbased computational methods for mass univariate analyses of eventrelated brain potentials/fields: A simulation study</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Pernet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Latinus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">E</forename><surname>Nichols</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jneumeth.2014.08.003</idno>
+		<ptr target="https://doi.org/10.1016/j.jneumeth.2014.08.003" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Neuroscience Methods</title>
+		<imprint>
+			<biblScope unit="volume">250</biblScope>
+			<biblScope unit="page" from="85" to="93" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Pernet, C. R., Latinus, M., Nichols, T. E., &amp; Rousselet, G. A. (2015). Cluster- based computational methods for mass univariate analyses of event- related brain potentials/fields: A simulation study. Journal of Neurosci- ence Methods, 250, 85-93. https://doi.org/10.1016/j.jneumeth.2014. 08.003</note>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">LIMO EEG: A toolbox for hierarchical LInear MOdeling of ElectroEncephaloGraphic data</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Pernet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Chauveau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Gaspar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Pernet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Chauveau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<idno type="DOI">10.1155/2011/831409</idno>
+		<ptr target="https://doi.org/10.1155/2011/831409" />
+	</analytic>
+	<monogr>
+		<title level="j">Computational Intelligence and Neuroscience</title>
+		<imprint>
+			<biblScope unit="page" from="831409" to="831410" />
+			<date type="published" when="2011">2011. 2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Pernet, C. R., Chauveau, N., Gaspar, C., Rousselet, G. A., Pernet, C. R., Chauveau, N., … Rousselet, G. A. (2011). LIMO EEG: A toolbox for hierarchical LInear MOdeling of ElectroEncephaloGraphic data. Com- putational Intelligence and Neuroscience, 2011, 831409, 1-11. https:// doi.org/10.1155/2011/831409</note>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">The effects of normal aging on myelinated nerve fibers in monkey central nervous system</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Peters</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/neuro.05.011.2009</idno>
+		<ptr target="https://doi.org/10.3389/neuro.05.011.2009" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Neuroanatomy</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="1" to="10" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Peters, A. (2009). The effects of normal aging on myelinated nerve fibers in monkey central nervous system. Frontiers in Neuroanatomy, 3(11), 1-10. https://doi.org/10.3389/neuro.05.011.2009</note>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Age-related delay in visual and auditory evoked responses is mediated by white-and grey-matter differences</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Price</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">K</forename><surname>Tyler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Neto Henriques</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">L</forename><surname>Campbell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Williams</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Treder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">N A</forename><surname>Henson</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/ncomms15671</idno>
+		<ptr target="https://doi.org/10.1038/ncomms15671" />
+	</analytic>
+	<monogr>
+		<title level="j">Nature Communications</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page">15671</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Price, D., Tyler, L. K., Neto Henriques, R., Campbell, K. L., Williams, N., Treder, M. S., … Henson, R. N. A. (2017). Age-related delay in visual and auditory evoked responses is mediated by white-and grey-matter differences. Nature Communications, 8, 15671. https://doi.org/10. 1038/ncomms15671</note>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Regional brain changes in aging healthy adults: General trends, individual differences and modifiers</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Raz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Lindenberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Rodrigue</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Kennedy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Head</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Williamson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Acker</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/cercor/bhi044</idno>
+		<ptr target="https://doi.org/10.1093/cercor/bhi044" />
+	</analytic>
+	<monogr>
+		<title level="j">Cerebral Cortex</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="1676" to="1689" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Raz, N., Lindenberger, U., Rodrigue, K. M., Kennedy, K. M., Head, D., Williamson, A., … Acker, J. D. (2005). Regional brain changes in aging healthy adults: General trends, individual differences and modifiers. Cerebral Cortex, 15(11), 1676-1689. https://doi.org/10.1093/cercor/ bhi044</note>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Does filtering preclude us from studying ERP time-courses?</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fpsyg.2012.00131</idno>
+		<ptr target="https://doi.org/10.3389/fpsyg.2012.00131" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Psychology</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page">131</biblScope>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rousselet, G. A. (2012). Does filtering preclude us from studying ERP time-courses? Frontiers in Psychology, 3, 131. https://doi.org/10.3389/ fpsyg.2012.00131</note>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">Healthy aging delays scalp EEG sensitivity to noise in a face discrimination task</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Gaspar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Pernet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Husk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Bennett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Sekuler</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fpsyg.2010.00019</idno>
+		<ptr target="https://doi.org/10.3389/fpsyg.2010.00019" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Psychology</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="1" to="14" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rousselet, G. A., Gaspar, C. M., Pernet, C. R., Husk, J. S., Bennett, P. J., &amp; Sekuler, A. B. (2010). Healthy aging delays scalp EEG sensitivity to noise in a face discrimination task. Frontiers in Psychology, 1, 1-14. https://doi.org/10.3389/fpsyg.2010.00019</note>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Age-related delay in information accrual for faces: Evidence from a parametric, single-trial EEG approach</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Husk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Pernet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Gaspar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Bennett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Sekuler</surname></persName>
+		</author>
+		<idno type="DOI">10.1186/1471-2202-10-114</idno>
+		<ptr target="https://doi.org/10.1186/1471-2202-10-114" />
+	</analytic>
+	<monogr>
+		<title level="j">BMC Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page">114</biblScope>
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rousselet, G. A., Husk, J. S., Pernet, C. R., Gaspar, C. M., Bennett, P. J., &amp; Sekuler, A. B. (2009). Age-related delay in informa- tion accrual for faces: Evidence from a parametric, single-trial EEG approach. BMC Neuroscience, 10, 114. https://doi.org/10.1186/ 1471-2202-10-114</note>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">Eye coding mechanisms in early human face event-related potentials</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A A</forename><surname>Ince</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Van Rijsbergen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Schyns</surname></persName>
+		</author>
+		<idno type="DOI">10.1167/14.13.7.doi</idno>
+		<ptr target="https://doi.org/10.1167/14.13.7.doi" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Vision</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="1" to="24" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rousselet, G. A., Ince, R. A. A., van Rijsbergen, N. J., &amp; Schyns, P. G. (2014). Eye coding mechanisms in early human face event-related potentials. Journal of Vision, 14, 1-24. https://doi.org/10.1167/14.13.7.doi</note>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<analytic>
+		<title level="a" type="main">Parametric study of EEG sensitivity to phase noise during face processing</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Pernet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Bennett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Sekuler</surname></persName>
+		</author>
+		<idno type="DOI">10.1186/1471-2202-9-98</idno>
+		<ptr target="https://doi.org/10.1186/1471-2202-9-98" />
+	</analytic>
+	<monogr>
+		<title level="j">BMC Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page">98</biblScope>
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Rousselet, G. A., Pernet, C. R., Bennett, P. J., &amp; Sekuler, A. B. (2008). Para- metric study of EEG sensitivity to phase noise during face processing. BMC Neuroscience, 9, 98. https://doi.org/10.1186/1471-2202-9-98</note>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">Aging and measures of processing speed</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">A</forename><surname>Salthouse</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biological Psychology</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="issue">1-3</biblScope>
+			<biblScope unit="page" from="35" to="54" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Salthouse, T. A. (2000). Aging and measures of processing speed. Biological Psychology, 54(1-3), 35-54.</note>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Dynamics of visual information integration in the brain for categorizing facial expressions</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Schyns</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">S</forename><surname>Petro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Smith</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.cub.2007.08.048</idno>
+		<ptr target="https://doi.org/10.1016/j.cub.2007.08.048" />
+	</analytic>
+	<monogr>
+		<title level="j">Current Biology</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">18</biblScope>
+			<biblScope unit="page" from="1580" to="1585" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Schyns, P. G., Petro, L. S., &amp; Smith, M. L. (2007). Dynamics of visual infor- mation integration in the brain for categorizing facial expressions. Current Biology, 17(18), 1580-1585. https://doi.org/10.1016/j.cub.2007.08.048</note>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Cracking the code of oscillatory activity</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Schyns</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Thut</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gross</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pbio.1001064</idno>
+		<ptr target="https://doi.org/10.1371/journal.pbio.1001064" />
+	</analytic>
+	<monogr>
+		<title level="j">PLoS Biology</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page">1001064</biblScope>
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Schyns, P. G., Thut, G., &amp; Gross, J. (2011). Cracking the code of oscillatory activity. PLoS Biology, 9(5), e1001064. https://doi.org/10.1371/ journal.pbio.1001064</note>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">Visual completion of partly occluded objects: Insights from behavioral studies</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Sekuler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Gold</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">F</forename><surname>Murray</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bennett</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuro-Ophtalmology</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="page" from="165" to="168" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Sekuler, A. B., Gold, J. M., Murray, R. F., &amp; Bennett, P. (2000). Visual com- pletion of partly occluded objects: Insights from behavioral studies. Neuro-Ophtalmology, 23, 165-168.</note>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Functional neuroanatomy of face and object processing. A Positron Emission Tomography Study</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sergent</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ohta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Macdonald</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brain</title>
+		<imprint>
+			<biblScope unit="volume">115</biblScope>
+			<biblScope unit="page" from="15" to="36" />
+			<date type="published" when="1992">1992</date>
+		</imprint>
+	</monogr>
+	<note>Pt. 1</note>
+	<note type="raw_reference">Sergent, J., Ohta, S., &amp; MacDonald, B. (1992). Functional neuroanatomy of face and object processing. A Positron Emission Tomography Study. Brain, 115(Pt. 1), 15-36.</note>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">Receptive fields for flexible face categorizations</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Gosselin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Schyns</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.0956-7976.2004.00752.x</idno>
+		<ptr target="https://doi.org/10.1111/j.0956-7976.2004.00752.x" />
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Science</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="753" to="761" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Smith, M. L., Gosselin, F., &amp; Schyns, P. G. (2004). Receptive fields for flexi- ble face categorizations. Psychological Science, 15(11), 753-761. https://doi.org/10.1111/j.0956-7976.2004.00752.x</note>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Threshold-free cluster enhancement: Addressing problems of smoothing, threshold dependence and localisation in cluster inference</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">E</forename><surname>Nichols</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuroimage.2008.03.061</idno>
+		<ptr target="https://doi.org/10.1016/j.neuroimage.2008.03.061" />
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="83" to="98" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Smith, S. M., &amp; Nichols, T. E. (2009). Threshold-free cluster enhancement: Addressing problems of smoothing, threshold dependence and localisation in cluster inference. NeuroImage, 44(1), 83-98. https://doi. org/10.1016/j.neuroimage.2008.03.061</note>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<monogr>
+		<title level="m" type="main">Biometry: The principles and practice of statistics in biological research</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">R</forename><surname>Sokal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">J</forename><surname>Rohlf</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2012">2012</date>
+			<publisher>W.H. Freeman</publisher>
+			<pubPlace>San Francisco</pubPlace>
+		</imprint>
+	</monogr>
+	<note>th ed.</note>
+	<note type="raw_reference">Sokal, R. R., &amp; Rohlf, F. J. (2012). Biometry: The principles and practice of statistics in biological research (4th ed.). San Francisco: W.H. Freeman.</note>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<analytic>
+		<title level="a" type="main">Spatiotemporal dynamics underlying object completion in human ventral visual cortex</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Buia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Madhavan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">E</forename><surname>Crone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Madsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">S</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kreiman</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuron.2014.06.017</idno>
+		<ptr target="https://doi.org/10.1016/j.neuron.2014.06.017" />
+	</analytic>
+	<monogr>
+		<title level="j">Neuron</title>
+		<imprint>
+			<biblScope unit="volume">83</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="736" to="748" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Tang, H., Buia, C., Madhavan, R., Crone, N. E., Madsen, J. R., Anderson, W. S., &amp; Kreiman, G. (2014). Spatiotemporal dynamics underlying object completion in human ventral visual cortex. Neuron, 83(3), 736-748. https://doi.org/10.1016/j.neuron.2014.06.017</note>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<analytic>
+		<title level="a" type="main">Generator localization by current source density (CSD): Implications of volume conduction and field closure at intracranial and scalp resolutions</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">E</forename><surname>Tenke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kayser</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.clinph.2012.06.005</idno>
+		<ptr target="https://doi.org/10.1016/j.clinph.2012.06.005" />
+	</analytic>
+	<monogr>
+		<title level="j">Clinical Neurophysiology</title>
+		<imprint>
+			<biblScope unit="volume">123</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2328" to="2345" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Tenke, C. E., &amp; Kayser, J. (2012). Generator localization by current source density (CSD): Implications of volume conduction and field closure at intracranial and scalp resolutions. Clinical Neurophysiology, 123(12), 2328-2345. https://doi.org/10.1016/j.clinph.2012.06.005</note>
+</biblStruct>
+
+<biblStruct xml:id="b66">
+	<analytic>
+		<title level="a" type="main">With age comes representational wisdom in social signals</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Van Rijsbergen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jaworska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Rousselet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Schyns</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.cub.2014.09.075</idno>
+		<ptr target="https://doi.org/10.1016/j.cub.2014.09.075" />
+	</analytic>
+	<monogr>
+		<title level="j">Current Biology</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">23</biblScope>
+			<biblScope unit="page" from="2792" to="2796" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">van Rijsbergen, N. J., Jaworska, K., Rousselet, G. A., &amp; Schyns, P. G. (2014). With age comes representational wisdom in social signals. Current Biol- ogy, 24(23), 2792-2796. https://doi.org/10.1016/j.cub.2014.09.075</note>
+</biblStruct>
+
+<biblStruct xml:id="b67">
+	<analytic>
+		<title level="a" type="main">Dynamics of trimming the content of face representations for categorization in the brain</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Van Rijsbergen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Schyns</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pcbi.1000561</idno>
+		<ptr target="https://doi.org/10.1371/journal.pcbi.1000561" />
+	</analytic>
+	<monogr>
+		<title level="j">PLoS Computational Biology</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page">1000561</biblScope>
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">van Rijsbergen, N. J., &amp; Schyns, P. G. (2009). Dynamics of trimming the content of face representations for categorization in the brain. PLoS Computational Biology, 5(11), e1000561. https://doi.org/10.1371/journal.pcbi.1000561</note>
+</biblStruct>
+
+<biblStruct xml:id="b68">
+	<analytic>
+		<title level="a" type="main">Degradation of signal timing in cortical areas V1 and V2 of senescent monkeys</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Leventhal</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/cercor/bhh143</idno>
+		<ptr target="https://doi.org/10.1093/cercor/bhh143" />
+	</analytic>
+	<monogr>
+		<title level="j">Cerebral Cortex</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="403" to="408" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wang, Y., Zhou, Y., Ma, Y., &amp; Leventhal, A. G. (2005). Degradation of signal timing in cortical areas V1 and V2 of senescent monkeys. Cerebral Cor- tex, 15(4), 403-408. https://doi.org/10.1093/cercor/bhh143</note>
+</biblStruct>
+
+<biblStruct xml:id="b69">
+	<analytic>
+		<title level="a" type="main">Filter effects and filter artifacts in the analysis of electrophysiological data</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Widmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Schröger</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fpsyg.2012.00233</idno>
+		<ptr target="https://doi.org/10.3389/fpsyg.2012.00233" />
+	</analytic>
+	<monogr>
+		<title level="j">Frontiers in Psychology</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page">233</biblScope>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Widmann, A., &amp; Schröger, E. (2012). Filter effects and filter artifacts in the analysis of electrophysiological data. Frontiers in Psychology, 3, 233. https://doi.org/10.3389/fpsyg.2012.00233</note>
+</biblStruct>
+
+<biblStruct xml:id="b70">
+	<analytic>
+		<title level="a" type="main">The age of the beholder: ERP evidence of an own-age bias in face memory</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wiese</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">R</forename><surname>Schweinberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Hansen</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuropsychologia.2008.06.007</idno>
+		<idno>06.007</idno>
+		<ptr target="https://doi.org/10.1016/j.neuropsychologia" />
+	</analytic>
+	<monogr>
+		<title level="j">Neuropsychologia</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2973" to="2985" />
+			<date type="published" when="2008">2008. 2008</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wiese, H., Schweinberger, S. R., &amp; Hansen, K. (2008). The age of the beholder: ERP evidence of an own-age bias in face memory. Neuropsychologia, 46(12), 2973-2985. https://doi.org/10.1016/j. neuropsychologia.2008.06.007</note>
+</biblStruct>
+
+<biblStruct xml:id="b71">
+	<analytic>
+		<title level="a" type="main">Visual bandwidths for face orientation increase during healthy aging</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Wilson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Habak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Wilkinson</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.visres.2010.10.026</idno>
+		<ptr target="https://doi.org/10.1016/j.visres.2010.10.026" />
+	</analytic>
+	<monogr>
+		<title level="j">Vision Research</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="160" to="164" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Wilson, H. R., Mei, M., Habak, C., &amp; Wilkinson, F. (2011). Visual band- widths for face orientation increase during healthy aging. Vision Research, 51(1), 160-164. https://doi.org/10.1016/j.visres.2010.10.026</note>
+</biblStruct>
+
+<biblStruct xml:id="b72">
+	<analytic>
+		<title level="a" type="main">Sensorimotor slowing with ageing is mediated by a functional dysregulation of motor-generation processes: Evidence from high-resolution eventrelated potentials</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yordanova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Kolev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hohnsbein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Falkenstein</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/brain/awh042</idno>
+		<ptr target="https://doi.org/10.1093/brain/awh042" />
+	</analytic>
+	<monogr>
+		<title level="j">Brain</title>
+		<imprint>
+			<biblScope unit="volume">127</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="351" to="362" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Yordanova, J., Kolev, V., Hohnsbein, J., &amp; Falkenstein, M. (2004). Sensori- motor slowing with ageing is mediated by a functional dysregulation of motor-generation processes: Evidence from high-resolution event- related potentials. Brain, 127(2), 351-362. https://doi.org/10.1093/ brain/awh042</note>
+</biblStruct>
+
+<biblStruct xml:id="b73">
+	<analytic>
+		<title level="a" type="main">Delays in neural processing during working memory encoding in normal aging</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">P</forename><surname>Zanto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Toy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gazzaley</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuropsychologia.2009.08.003</idno>
+		<ptr target="https://doi.org/10.1016/j.neuropsychologia.2009.08.003" />
+	</analytic>
+	<monogr>
+		<title level="j">Neuropsychologia</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="13" to="25" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Zanto, T. P., Toy, B., &amp; Gazzaley, A. (2010). Delays in neural processing dur- ing working memory encoding in normal aging. Neuropsychologia, 48(1), 13-25. https://doi.org/10.1016/j.neuropsychologia.2009.08.003</note>
+</biblStruct>
+
+<biblStruct xml:id="b74">
+	<analytic>
+		<title level="a" type="main">Dynamic construction of reduced representations in the brain for perceptual decision behavior</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A A</forename><surname>Ince</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Van Rijsbergen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Schyns</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Current Biology</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="319" to="326" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="raw_reference">Zhan, J., Ince, R. A. A., Van Rijsbergen, N. J., &amp; Schyns, P. G. (2018). Dynamic construction of reduced representations in the brain for per- ceptual decision behavior. Current Biology, 29(2), 319-326.</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
