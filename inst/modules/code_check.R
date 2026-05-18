@@ -13,6 +13,7 @@
 #' @keywords results
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @author Raphael Merz (\email{r.t.p.merz@tue.nl})
 #'
 #' @import dplyr
 #' @import httr
@@ -134,10 +135,6 @@ code_check <- function(paper, file_limit = 20) {
       file_lines <- iconv(file_lines, from = "UTF-8", to = "UTF-8", sub = "byte")
       # Remove any NA entries resulting from failed conversions
       file_lines <- file_lines[!is.na(file_lines)]
-
-      # detect language (function below)
-      lang <- detect_lang(code_files$file_name[i])
-      collector$language <- lang
 
       # Create a comment-less version, per language
       file_nc <- remove_comments(file_lines, lang)
@@ -607,6 +604,8 @@ get_missing_files <- function(file_nc, lang, files_in_repository) {
 try_parse_code <- function(file_path, lang = lang) {
   if (lang == "R") {
     
+    print("Running try_parse_code() now!")
+    
     ### Initiate df to store results
     parsing_error_df <- data.frame()
     
@@ -620,10 +619,13 @@ try_parse_code <- function(file_path, lang = lang) {
       {
         if (endsWith(code_files_RType_lower, ".r")) {
           
+          print("Trying to parse normal .R file now!")
           parse(file = file_path, keep.source = TRUE)
+
           
         } else if (endsWith(code_files_RType_lower, ".rmd") || endsWith(code_files_RType_lower, ".qmd")) {
           
+          print("Converting Rmd/Qmd file now!")
           knitr::purl(input = file_path, output = "tmp_r_file.R", documentation = 0)
           parse(file = "tmp_r_file.R", keep.source = TRUE)
           
@@ -644,4 +646,3 @@ try_parse_code <- function(file_path, lang = lang) {
   }
   return(parsing_error_df)
 }
-
