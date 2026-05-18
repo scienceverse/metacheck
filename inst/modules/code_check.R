@@ -279,20 +279,7 @@ code_check <- function(paper, file_limit = 20) {
   report_table$percentage_comment <- sprintf("%.0f%%", report_table$percentage_comment * 100)
   names(report_table) <- c("File Name", "% Comments", "Missing Files", "Absolute Paths", "Code Between Libraries")
 
-  report <- c(
-    "Below, we describe some best coding practices and give the results of automatic evaluation of these practices in the code files below. This check may miss things or produce false positives if your scripts are less typical.",
-    scroll_table(report_table, maxrows = 5),
-    "#### Code Comments",
-    report_comments,
-    "#### Missing Files",
-    report_missingfiles,
-    scroll_table(report_table_files_missing, maxrows = 5),
-    "#### Absolute Paths",
-    report_absolute,
-    scroll_table(report_table_absolute, maxrows = 5),
-    "#### Libraries / Imports",
-    report_library
-  )
+  
   
   ## Parsable Code ----
   parsing_issues <- code_files$file_name[code_files$parsing_error == 1]
@@ -308,9 +295,27 @@ code_check <- function(paper, file_limit = 20) {
     )
     summary_parsable <- "Parsing issues of R-type files were found."
     cols <- c("file_name", "parsing_error_message")
-    report_table_absolute <- code_files[code_files$parsing_error == 1, cols]
+    report_table_parsable <- code_files[code_files$parsing_error == 1, cols]
     colnames(report_table_absolute) <- c("File name", "Parsing Error Message")
   }
+  
+  
+  report <- c(
+    "Below, we describe some best coding practices and give the results of automatic evaluation of these practices in the code files below. This check may miss things or produce false positives if your scripts are less typical.",
+    scroll_table(report_table, maxrows = 5),
+    "#### Code Comments",
+    report_comments,
+    "#### Missing Files",
+    report_missingfiles,
+    scroll_table(report_table_files_missing, maxrows = 5),
+    "#### Absolute Paths",
+    report_absolute,
+    scroll_table(report_table_absolute, maxrows = 5),
+    "#### Libraries / Imports",
+    report_library,
+    "#### Parsable code",
+    scroll_table(report_table_parsable)
+  )
 
   # traffic_light ----
   # green only if no issues across all code files
