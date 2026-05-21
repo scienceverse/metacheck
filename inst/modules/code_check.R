@@ -97,10 +97,10 @@ code_check <- function(paper, file_limit = 20) {
       
       # try parse R type code (function below)
       parsing_error_df <- try_parse_code(file_path = con, lang = lang)
-      if (length(parsing_error_df) == 0){ # if no error --> code is parsable and there is no error message
+      if (nrow(parsing_error_df) == 0){ # if no error --> code is parsable and there is no error message
         collector$parsing_error <- 0
         collector$parsing_error_message <- NA
-      } else if (length(parsing_error_df) == 1) { # if error --> code is not parsable and store error message
+      } else if (nrow(parsing_error_df) == 1) { # if error --> code is not parsable and store error message
         collector$parsing_error <- 1
         collector$parsing_error_message <- parsing_error_df$message
       }
@@ -607,47 +607,69 @@ get_missing_files <- function(file_nc, lang, files_in_repository) {
 
 # Helper: Try parsing code and storing any resulting errors
 try_parse_code <- function(file_path, lang = lang) {
+  
+  print("Running try_parse_code() now!")
+  
+  ### Initiate df to store results
+  parsing_error_df <- data.frame()
+  
+  ### Initiate errors_parsable list
+  errors_parsable <- list()
+  
+  ### Initialize tmp_file so finally() always knows it
+  tmp_file <- NULL
+  
   if (lang == "R") {
     
-    print("Running try_parse_code() now!")
-    
-    ### Initiate df to store results
-    parsing_error_df <- data.frame()
-    
-    ### Initiate errors_parsable list
-    errors_parsable <- list()
-    
-    
-    code_files_RType_lower <- str_to_lower(file_path)
+    ext <- tools::file_ext(file_path)
+    ext <- tolower(ext)
     
     tryCatch(
       {
-        if (endsWith(code_files_RType_lower, ".r")) {
+        if (ext == "r") {
           
-          print("Trying to parse normal .R file now!")
+          # print("Trying to parse normal .R file now!")
+          
           parse(file = file_path, keep.source = TRUE)
-
           
-        } else if (endsWith(code_files_RType_lower, ".rmd") || endsWith(code_files_RType_lower, ".qmd")) {
           
-          print("Converting Rmd/Qmd file now!")
-          knitr::purl(input = file_path, output = "tmp_r_file.R", documentation = 0)
-          parse(file = "tmp_r_file.R", keep.source = TRUE)
+        } else if (ext %in% c("rmd", "qmd")) {
           
-          file.remove("tmp_r_file.R") # to delete temp_file for .rmd/.qmd files
+          # print("Converting Rmd/Qmd file now!")
+          
+          tmp_file <- tempfile(fileext = ".R")
+          
+          knitr::purl(
+            input = file_path,
+            output = tmp_file,
+            documentation = 0
+          )
+          
+          parse(file = tmp_file, keep.source = TRUE)
           
         }
       },
+      
       error = function(e_parse) {
-        errors_parsable[[length(errors_parsable) + 1]] <- list(
-          path = code_file,
+        
+        # print("Caught parsing error!")
+        # print(e_parse$message)
+        
+        errors_parsable[[length(errors_parsable) + 1]] <<- list(
+          path = file_path,
           message = e_parse$message
         )
+      },
+      
+      finally = {
+        
+        ### Remove temp file if it exists
+        if (!is.null(tmp_file) && file.exists(tmp_file)) {
+          file.remove(tmp_file)
+        }
       }
     )
-    
     parsing_error_df <- dplyr::bind_rows(errors_parsable)
-    
   }
   return(parsing_error_df)
 }
