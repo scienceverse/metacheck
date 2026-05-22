@@ -32,7 +32,7 @@ code_check <- function(paper, file_limit = 20) {
   all_files <- get_prev_outputs("repo_check", "table")
   if (is.null(all_files)) {
     mo <- module_run(paper, "repo_check")
-    all_files <- mo$table %||% data.frame(file_name = character(0))
+    all_files <- mo$table %||% data.frame(file_name = character(0), repo_url = character(0)) # Ensure repo_url exists for dplyr::count(..., repo_url)
   }
 
   ## find code files ----
