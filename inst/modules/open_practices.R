@@ -145,6 +145,9 @@ open_practices <- function(paper) {
       sum(!summary_table$data_open & summary_table$code_open),
       sum(!summary_table$data_open & !summary_table$code_open)
     )
+  } else if (nrow(summary_table) == 0) {
+      summary_text <- "Neither shared data nor code detected."
+      tl <- "red"
   } else {
     # summary for a single paper
     if (summary_table$data_open == TRUE &

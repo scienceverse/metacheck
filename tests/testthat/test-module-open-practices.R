@@ -64,3 +64,12 @@ test_that("open_practices both open data and code", {
   expect_equal(mo$summary_table$code_open, T)
 })
 
+
+test_that("error: argument is of length zero", {
+  module <- "open_practices"
+  paper <- psychsci$`0956797617714811`
+  mo <- module_run(paper, module)
+
+  expect_equal(nrow(mo$table), 0)
+  expect_equal(mo$summary_table$data_open, FALSE)
+})
