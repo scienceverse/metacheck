@@ -608,8 +608,8 @@ get_missing_files <- function(file_nc, lang, files_in_repository) {
 # Helper: Try parsing code and storing any resulting errors
 try_parse_code <- function(file_path, lang = lang) {
   
-  print("Running try_parse_code() now!")
-  print(paste0("lang seems to be: ", lang))
+  # print("Running try_parse_code() now!")
+  # print(paste0("lang seems to be: ", lang))
   
   ### Initiate df to store results
   parsing_error_df <- data.frame()
@@ -629,15 +629,15 @@ try_parse_code <- function(file_path, lang = lang) {
       {
         if (ext == "r") {
           
-          print("Trying to parse normal .R file now!")
+          # print("Trying to parse normal .R file now!")
           
           parse(file = file_path, keep.source = TRUE)
           
-          print("Tried to parse R type code file.")
+          # print("Tried to parse R type code file.")
           
         } else if (ext %in% c("rmd", "qmd")) {
           
-          print("Converting Rmd/Qmd file now!")
+          # print("Converting Rmd/Qmd file now!")
           
           tmp_file <- tempfile(fileext = ".R")
           
