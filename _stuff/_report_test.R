@@ -23,7 +23,7 @@ modules <- c(
   # in reports ----
   # "prereg_check",
   # # "causal_claims",
-  # "open_practices",
+  "open_practices"
   # "funding_check",
   # "coi_check",
   # "power",
@@ -34,11 +34,11 @@ modules <- c(
   # "repo_check",
   # "code_check",
   # "stat_check",
-  "ref_accuracy",
-  "ref_replication",
-  "ref_retraction",
-  "ref_pubpeer",
-  "ref_summary"
+  # "ref_accuracy",
+  # "ref_replication",
+  # "ref_retraction",
+  # "ref_pubpeer",
+  # "ref_summary"
 )
 
 # generate reports for a sample of n papers

@@ -1,182 +1,221 @@
 #' Open Practices Check
 #'
 #' @description
-#' This module incorporates ODDPub into metacheck. ODDPub is a text mining algorithm that detects which publications disseminated Open Data or Open Code together with the publication.
+#' This module searches for open data, code, materials, and registration statements.
 #'
 #' @details
-#' The Open Practices Check runs Open Data Detection in Publications (ODDPub). ODDPub searches for text expressions that indicate that an article shared Open Data or Open Code together with the publication. More information on the package can be found at <https://github.com/quest-bih/oddpub>. The module only returns whether open data and code is found (the original package offers more fine-grained results). The tool was validated in the biomedical literature, see <https://osf.io/yv5rx/>.
-#'
-#' ODDPub was developed by Nico Riedel, Vladislav Nachev, Miriam Kip, and Evgeny Bobrov at the QUEST Center for Transforming Biomedical Research, Berlin Institute of Health. <https://doi.org/10.5334/dsj-2020-042>
-#'
-#' It might miss open data and code declarations when the words used in the manuscript are not in the pattern that ODDPub searches for, or when the repositories are not in the ODDpub code (e.g., ResearchBox).
-#'
-#' From ODDPub: "To validate the algorithm, we manually screened a sample of 792 publications that were randomly selected from PubMed. On this validation dataset, our algorithm detects Open Data publications with a sensitivity of 0.73 and specificity of 0.97."
+#' It is much faster than the previous ODDPub version of this module, and has a lower false negative rate, but also a higher false positive rate.
 #'
 #'
 #' @keywords general
 #'
-#' @author Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
 #'
 #' @import dplyr
-#' @import oddpub
 #'
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a list
 open_practices <- function(paper) {
-  # devtools::install_github("quest-bih/oddpub")
+  # search for words associated with shared data, code, materials or reg
 
-  # format text for oddpub as vectors of sentences for each paper
-  text <- search_text(paper)
+  ## patterns ----
+  on_request <- "(on|by)\\s+(reasonable\\s+)?request"
+  availability <- c("\\bavailab",
+                    "\\bsupplement",
+                    "\\barchive",
+                    "\\baccess",
+                    "\\bshare",
+                    "\\bonline\\b",
+                    "\\bfound\\b",
+                    "\\bfind\\b",
+                    "\\bdetailed\\b",
+                    "\\bsee\\b")
+  repo_words <- c("http", # url
+                  "repository",
+                  "archive",
+                  #"\\b\\d{4}\\b", # year in a citations
+                  "\\bosf\\b",
+                  "open science framework",
+                  "researchbox",
+                  "zenodo",
+                  "github",
+                  "figshare",
+                  "datadryad",
+                  "kaggle",
+                  "mendeley",
+                  "ukbiobank",
+                  "ukdataservice",
+                  "dataverse",
+                  "clinicalstudydatarequest",
+                  "ourworldindata",
+                  on_request)
 
-  # Check if text is NULL or empty, happens in correction notices.
-  if (is.null(text) || nrow(text) == 0 || all(text$text == "")) {
-    report <- list(
-      traffic_light = "na",
-      summary_text = "There was no text to search through"
-    )
-    return(report)
-  }
+  data_words <- c("data")
+  code_words <- c("\\bcode\\b",
+                  "\\bsoftware\\b",
+                  "\\bscript",
+                  "\\banaly",
+                  "\\bR\\b",
+                  "\\bpython\\b")
+  materials_words <- c("\\bmaterials?\\b",
+                       "\\bquestionnaires?\\b",
+                       "\\binstruments?\\b",
+                       "\\bfigures?\\b",
+                       "\\bplots?\\b")
+  # omit "supplemental material"?
+  prereg_words <- c("pre-?regist",
+                    "aspredicted")
+  data <- paper |>
+    search_text(data_words) |>
+    search_text(repo_words) |>
+    search_text(availability)
+  data$data <- TRUE
 
-  ids <- unique(text$paper_id)
-  paper_oddpub <- lapply(ids, \(paper_id) {
-    text[text$paper_id == paper_id, ]$text
-  })
-  names(paper_oddpub) <- ids
+  code <- paper |>
+    search_text(code_words) |>
+    search_text(repo_words) |>
+    search_text(availability)
+  code$code <- TRUE
 
-  # categorise with oddpub
-  oddpub_results <- suppressMessages(
-    oddpub::open_data_search(paper_oddpub, screen_das = "extra")
-  )
+  materials <- paper |>
+    search_text(materials_words) |>
+    search_text(repo_words) |>
+    search_text(availability)
+  materials$materials <- TRUE
+
+  prereg <- paper |>
+    search_text(prereg_words) |>
+    search_text("non-?pre-?regist", exclude = TRUE) |>
+    search_text("not\\s+pre-?regist", exclude = TRUE) |>
+    search_text(repo_words)
+  prereg$prereg <- TRUE
 
   # table ----
   # put in a sensible naming scheme and order
-  table <- dplyr::select(oddpub_results,
-    paper_id = article,
-    data_open = is_open_data,
-    data_statements = open_data_statements,
-    data_reuse = is_reuse,
-    data_category = open_data_category,
-    data_das = is_open_data_das,
-    das = das,
-    code_open = is_open_code,
-    code_statements = open_code_statements,
-    code_reuse = is_code_reuse,
-    code_supplement = is_code_supplement,
-    code_cas = is_open_code_cas,
-    cas = cas
-  )
+  by <- setdiff(names(code), "code")
+  table <- dplyr::full_join(data, code, by = by) |>
+    dplyr::full_join(materials, by = by) |>
+    dplyr::full_join(prereg, by = by)
+  # replace NAs with FALSE
+  table$data[is.na(table$data)] <- FALSE
+  table$code[is.na(table$code)] <- FALSE
+  table$materials[is.na(table$materials)] <- FALSE
+  table$prereg[is.na(table$prereg)] <- FALSE
 
-  # Oddpub can return the same info multiple times, reduce text
-  table$data_statements <- strsplit(table$data_statements, ";") |>
-    sapply(\(x) {
-      trimws(x) |>
-        unique() |>
-        paste(collapse = "\n\n")
-    })
+  # flag on_request
+  table$on_request <- grepl(on_request, table$text)
 
-  table$code_statements <- strsplit(table$code_statements, ";") |>
-    sapply(\(x) {
-      trimws(x) |>
-        unique() |>
-        paste(collapse = "\n\n")
-    })
+  # re-order by paper_id (same as paper) and text_id (inc)
+  paper_ids <- paper_id(paper)$paper_id
+  table$paper_id <- factor(table$paper_id, paper_ids)
+  table <- dplyr::arrange(table, paper_id, text_id)
+  table$paper_id <- as.character(table$paper_id)
+
+  # summary_table ----
+  summary_table <- table |>
+    summarise(data_open = any(data),
+              code_open = any(code),
+              materials_open = any(materials),
+              prereg_open = any(prereg),
+              on_request = any(on_request),
+              data_statements = list(unique(text[data])),
+              code_statements = list(unique(text[code])),
+              materials_statements = list(unique(text[materials])),
+              prereg_statements = list(unique(text[prereg])),
+              .by = paper_id)
+  data_na <- sapply(summary_table$data_statements, length) == 0
+  summary_table$data_statements[data_na] <- NA_character_
+  code_na <- sapply(summary_table$code_statements, length) == 0
+  summary_table$code_statements[code_na] <- NA_character_
+  materials_na <- sapply(summary_table$materials_statements, length) == 0
+  summary_table$materials_statements[materials_na] <- NA_character_
+  prereg_na <- sapply(summary_table$prereg_statements, length) == 0
+  summary_table$prereg_statements[prereg_na] <- NA_character_
 
   # traffic_light ----
   # summary_text ----
-  if (nrow(table) > 1) {
+  if (nrow(summary_table) > 1) {
     tl <- "info"
     # summary for a paperlist
     summary_text <- sprintf(
       "%d papers shared both data and code, %d only data, %d only code, and %d neither.",
-      sum(table$data_open & table$code_open),
-      sum(table$data_open & !table$code_open),
-      sum(!table$data_open & table$code_open),
-      sum(!table$data_open & !table$code_open)
+      sum(summary_table$data_open & summary_table$code_open),
+      sum(summary_table$data_open & !summary_table$code_open),
+      sum(!summary_table$data_open & summary_table$code_open),
+      sum(!summary_table$data_open & !summary_table$code_open)
     )
   } else {
     # summary for a single paper
-    if (table$data_open == TRUE &
-      table$code_open == TRUE) {
+    if (summary_table$data_open == TRUE &
+        summary_table$code_open == TRUE) {
       summary_text <- "Shared data and code detected."
       tl <- "green"
-    } else if (table$data_open == TRUE &
-      table$code_open == FALSE) {
+    } else if (summary_table$data_open == TRUE &
+               summary_table$code_open == FALSE) {
       summary_text <- "Shared data detected."
       tl <- "yellow"
-    } else if (table$data_open == FALSE &
-      table$code_open == TRUE) {
+    } else if (summary_table$data_open == FALSE &
+               summary_table$code_open == TRUE) {
       summary_text <- "Shared code detected."
       tl <- "yellow"
     } else {
       summary_text <- "Neither shared data nor code detected."
       tl <- "red"
     }
-  }
 
-  # summary_table ----
-  summary_table <- table
+    if (summary_table$on_request) {
+      summary_text <- gsub("\\.$", ", but on request.", summary_text)
+      tl <- "red"
+    }
+  }
 
   # report ----
   data_report <- NULL
   code_report <- NULL
+  on_request_report <- NULL
 
-  if (nrow(table) == 1) {
+  if (nrow(summary_table) == 1) {
     # data_report
-    if (!table$data_open) {
-      data_report <- "We did not detect open sharing of data, which could be because there is no data related to this article, or the repository is not recognized by ODDPub. If there is data, please consider sharing it in a repository."
-    } else if (nzchar(table$data_statements)) {
+    if (!summary_table$data_open) {
+      data_report <- "We did not detect open sharing of data, which could be because there is no data related to this article, or the repository is not recognized by our code. If there is data, please consider sharing it in a repository."
+    } else {
       data_report <- sprintf(
         "Data was openly shared for this article, based on the following text:\n\n> %s",
-        gsub("\n\n", "\n\n> ", table$data_statements)
+        paste(table$text[table$data], collapse = "\n\n> ")
       )
-    } else {
-      data_report <- "Data was openly shared for this article."
     }
 
     # code_report
-    if (!table$code_open) {
-      code_report <- "We did not detect open sharing of code, which could be because there is no code related to this article, or the repository is not recognized by ODDPub. If there is code, please consider sharing it in a repository."
-    } else if (nzchar(table$code_statements)) {
+    if (!summary_table$code_open) {
+      code_report <- "We did not detect open sharing of code, which could be because there is no code related to this article, or the repository is not reconized by our code. If there is code, please consider sharing it in a repository."
+    } else {
       code_report <- sprintf(
         "Code was openly shared for this article, based on the following text:\n\n> %s",
-        gsub("\n\n", "\n\n> ", table$code_statements)
+        paste(table$text[table$code], collapse = "\n\n> ")
       )
-    } else {
-      code_report <- "Code was openly shared for this article."
+    }
+
+    # on_request
+    if (summary_table$on_request) {
+      on_request_report <- sprintf(
+        "Some materials are shared on request, which is not an acceptable method of sharing. This is based on the following text:\n\n> %s",
+        gsub("\n\n", "\n\n> ", table$text[table$on_request])
+      )
     }
   }
 
-  guidance <- c(
-    "Data and code sharing was determined using ODDPub. ODDPub searches for text expressions that indicate that an article shared Open Data or Open Code together with the publication.  More information on the package can be found at <https://github.com/quest-bih/oddpub>. The module only returns whether open data and code is found (the original package offers more fine-grained results). The tool was validated in the biomedical literature, see <https://osf.io/yv5rx/>.",
-    bibentry(
-      bibtype = "Article",
-      author = c(
-        person("Nina", "Riedel"),
-        person("Mareike", "Kip"),
-        person("Evgeny", "Bobrov")
-      ),
-      year = 2020,
-      title = "ODDPub – a Text-Mining Algorithm to Detect Data Sharing in Biomedical Publications",
-      journal = "Data Science Journal",
-      volume = "19",
-      number = "1",
-      pages = "42",
-      doi = "10.5334/dsj-2020-042"
-    ) |> format_ref()
-  )
-
   report <- c(
     data_report,
-    code_report
+    code_report,
+    on_request_report
   )
-  # collapse_section(guidance))
 
   # return a list ----
   list(
     table = table,
     summary_table = summary_table,
-    na_replace = 0,
+    na_replace = list(data_open = FALSE, code_open = FALSE),
     traffic_light = tl,
     summary_text = summary_text,
     report = report

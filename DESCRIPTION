@@ -68,7 +68,6 @@ Imports:
     base64enc,
     gitcreds, 
     roxygen2, 
-    oddpub,
     jpeg
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
@@ -79,6 +78,5 @@ LazyData: true
 LazyDataCompression: xz
 Config/Needs/website: rmarkdown
 Remotes:
-  quest-bih/oddpub,
   scienceverse/svutils
 Config/roxygen2/version: 8.0.0

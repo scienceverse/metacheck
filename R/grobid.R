@@ -204,9 +204,11 @@ grobid_to_bibr <- function(xml_file,
       p <- add_bib_match(p)
     }
 
+    # return paper object
     if (is.null(save_path)) return(p)
 
-    # save and return file name
+    # or save paper and return file name
+    # save here instead of after iteration so batches can be cancelled with partial return
     file_name <- basename(xml_file1) |> gsub("\\.xml$", "", x = _)
     json_path <- paper_write(p, file_name, save_path)
     return(json_path)

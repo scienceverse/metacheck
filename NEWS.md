@@ -1,7 +1,7 @@
 # metacheck 0.0.0.9103
 
 * converting grobid xml to bibr json now saves the file after each conversion, instead of at the end, making it better for large batches (although slightly less efficient by potentially duplicating crossref lookups shared between papers)
-* Added "open_practices_oi" module, which is much faster than the ODDPub version of this module (about 40x faster than "open_practices"), also returns open materials and registrations, and has a lower false negative rate, but also a higher false positive rate.
+* Updated the "open_practices" module, which is much faster than the ODDPub version of this module (about 40x faster), also returns open materials and registrations, and has a lower false negative rate, but also a higher false positive rate. This removes the oddpub dependency.
 
 # metacheck 0.0.0.9102
 
