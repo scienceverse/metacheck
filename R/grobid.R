@@ -180,47 +180,55 @@ grobid_to_bibr <- function(xml_file,
                            full.names = TRUE)
   }
 
-  if (length(xml_file) > 1) {
-    pb <- pb(length(xml_file), "Converting :step [:bar] (:what) :current/:total")
-    errors <- 0
-    paper <- lapply(xml_file, \(xml_file1) {
-      what <- basename(xml_file1)
-      pb$tick(0, list(step = "", what = what))
-      p <- tryCatch(
-        .grobid_to_bibr(xml_file = xml_file1, pb),
-        error = \(e) {
-          errors <<- errors + 1
-          logger("grobid_to_bibr", list(xml_path = xml_file1, error = e$message))
-          return(NULL)
-        })
-      pb$tick(1, list(step = "complete", what = what))
-      p
-    })
+  pb <- pb(length(xml_file), "Converting :step [:bar] (:what) :current/:total")
+  errors <- 0
+  paper <- lapply(xml_file, \(xml_file1) {
+    what <- basename(xml_file1)
+    pb$tick(0, list(step = "", what = what))
+    p <- tryCatch(
+      .grobid_to_bibr(xml_file = xml_file1, pb),
+      error = \(e) {
+        errors <<- errors + 1
+        logger("grobid_to_bibr", list(xml_path = xml_file1, error = e$message))
+        return(NULL)
+      })
 
-    if (errors > 0) {
-      warning("There ", plural(errors, "was", "were"), " ",
-              errors, " error", plural(errors),
-              "; use lastlog(1:", errors, ")")
+    pb$tick(1, list(step = "", what = what))
 
-      # remove NULLS
-      paper <- Filter(Negate(is.null), paper)
+    if (!is_paper(p)) { # error
+      if (is.null(save_path)) return(NULL)
+      return(NA_character_)
     }
 
-    paper <- paperlist(paper)
-  } else {
-    paper <- .grobid_to_bibr(xml_file)
+    if (isTRUE(crossref_lookup)) {
+      p <- add_bib_match(p)
+    }
+
+    if (is.null(save_path)) return(p)
+
+    # save and return file name
+    file_name <- basename(xml_file1) |> gsub("\\.xml$", "", x = _)
+    json_path <- paper_write(p, file_name, save_path)
+    return(json_path)
+  })
+
+  if (errors > 0) {
+    e <- ifelse(errors == 1, "", paste0("1:", errors))
+    warning("There ", plural(errors, "was", "were"), " ",
+            errors, " error", plural(errors),
+            "; use lastlog(", e, ")")
   }
 
-  if (isTRUE(crossref_lookup)) {
-    paper <- add_bib_match(paper)
-  }
-  if (is.null(save_path)) {
-    return(paper)
+  if (!is.null(save_path)) return(unlist(paper))
+
+  if (length(paper) > 1) {
+    # remove NULLS and return paper list
+    paper <- Filter(Negate(is.null), paper)
+    paper <- paperlist(paper)
   } else {
-    file_name <- basename(xml_file) |> gsub("\\.xml$", "", x = _)
-    json_paths <- paper_write(paper, file_name, save_path)
-    return(json_paths)
+    paper <- paper[[1]]
   }
+  return(paper)
 }
 
 

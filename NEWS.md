@@ -1,3 +1,8 @@
+# metacheck 0.0.0.9103
+
+* converting grobid xml to bibr json now saves the file after each conversion, instead of at the end, making it better for large batches (although slightly less efficient by potentially duplicating crossref lookups shared between papers)
+* Added "open_practices_oi" module, which is much faster than the ODDPub version of this module (about 40x faster than "open_practices"), also returns open materials and registrations, and has a lower false negative rate, but also a higher false positive rate.
+
 # metacheck 0.0.0.9102
 
 * Shiny app improvements: you can now view HTML reports in the browser

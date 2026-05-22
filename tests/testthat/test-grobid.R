@@ -12,12 +12,13 @@ test_that("grobid_to_bibr", {
   expect_true(is.function(metacheck:::.grobid_to_bibr))
   expect_no_error(helplist <- help(grobid_to_bibr, metacheck))
 
-  expect_error(grobid_to_bibr(NULL))
+  expect_error(grobid_to_bibr(1))
 })
 
-test_that("1 paper, fails", {
+test_that("1 paper, fail", {
   xml_file <- test_path("fixtures", "problems", "corrupt.xml")
-  expect_error( paper <- grobid_to_bibr(xml_file, NULL) )
+  expect_warning(paper <- grobid_to_bibr(xml_file, NULL))
+  expect_null(paper)
 })
 
 test_that("multiple paper, one fails", {
@@ -390,7 +391,7 @@ httptest2::stop_mocking()
 # httptest2::stop_capturing()
 
 
-test_that{"null section import", {
+test_that("null section import", {
   xml_file <- test_path("fixtures", "problems", "203020.xml")
   dir <- test_path("fixtures", "problems")
   json <- convert(xml_file, dir)

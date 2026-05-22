@@ -7,7 +7,7 @@
       "doi": "10.1002/hbm.24869",
       "file_hash": "e2a14192f498d5c6",
       "input_format": "grobid 0.8.2",
-      "file_name": "tests/testthat/fixtures/problems/203020.xml",
+      "file_name": "fixtures/problems/203020.xml",
       "bibr_version": "10.0",
       "paper_type": "unknown",
       "paper_type_confidence": 0,
