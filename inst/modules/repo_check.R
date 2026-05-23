@@ -193,7 +193,8 @@ repo_check <- function(paper) {
 
         if (nrow(zenodo_files_df) > 0) {
           zenodo_files_df$ext <- tolower(sub("^.*\\.", "", basename(zenodo_files_df$file_name)))
-          no_ext <- !grepl("\\.", basename(zenodo_files_df$file_name))
+          no_ext <- !is.na(zenodo_files_df$file_name) &
+            !grepl("\\.", basename(zenodo_files_df$file_name))
           zenodo_files_df$ext[no_ext] <- NA_character_
 
           # Normalize x*/s* extension aliases used in file_types.
