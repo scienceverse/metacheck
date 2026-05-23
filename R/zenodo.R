@@ -119,12 +119,9 @@ zenodo_retrieve <- function(zenodo_url, id_col = 1, pb = NULL) {
 
   id_info <- vector("list", length(valid_ids))
   i <- 0
-  error <- FALSE
-  while (!error && i < length(valid_ids)) {
+  while (i < length(valid_ids)) {
     i <- i + 1
-    info <- zenodo_info(valid_ids[[i]], pb = pb)
-    if ("error" %in% names(info)) error <- TRUE
-    id_info[[i]] <- info
+    id_info[[i]] <- zenodo_info(valid_ids[[i]], pb = pb)
   }
 
   info <- id_info |>
