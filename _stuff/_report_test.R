@@ -23,7 +23,7 @@ modules <- c(
   # in reports ----
   # "prereg_check",
   # # "causal_claims",
-  "open_practices"
+  # "open_practices",
   # "funding_check",
   # "coi_check",
   # "power",
@@ -33,7 +33,7 @@ modules <- c(
   # "stat_effect_size",
   # "repo_check",
   # "code_check",
-  # "stat_check",
+  "stat_check"
   # "ref_accuracy",
   # "ref_replication",
   # "ref_retraction",
@@ -42,9 +42,10 @@ modules <- c(
 )
 
 # generate reports for a sample of n papers
-n <- 10
-output <- "html"
+n <- 1
+output <- "qmd"
 paper <- sample(psychsci, n)
+paper <- demopaper()
 
 # paper <- psychsci$`0956797620954815`
 # paper <- add_bib_match(paper)
