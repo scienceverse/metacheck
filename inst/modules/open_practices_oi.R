@@ -17,7 +17,7 @@
 #'
 #' @returns a list
 open_practices <- function(paper) {
-  # search for words associated with dhared data, code, materials or reg
+  # search for words associated with shared data, code, materials or reg
 
   ## patterns ----
   availability <- c("\\bavailab",
