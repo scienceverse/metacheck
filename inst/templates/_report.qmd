@@ -85,7 +85,7 @@ Our modules are validated on sets of open-access papers. In each validated modul
 There is an inherent tradeoff between false positives and false negatives. Many of our modules are designed like "smoke detectors", where they are more likely to detect a practice that needs attention, but also more likely to incorrectly flag something. Therefore, you need to check the output of each module, keeping the validated error rates in mind.
 :::
 
-Metacheck is under continuous development. Issues can be submitted [on Github](https://github.com/scienceverse/metacheck/issues), and suggestions for improvement or feedback can be sent to D.Lakens@tue.nl.
+Metacheck is under continuous development. Issues can be submitted [on Github](https://github.com/scienceverse/metacheck/issues), and suggestions for improvement or feedback can be sent to [metacheck@scienceverse.org](mailto:metacheck@scienceverse.org).
 
 <!-- Demo -->
 
