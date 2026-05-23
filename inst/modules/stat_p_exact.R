@@ -105,6 +105,7 @@ stat_p_exact <- function(paper) {
     table = p,
     summary_table = summary_table,
     traffic_light = tl,
+    na_replace = 0,
     summary_text = summary_text,
     report = report
   )
