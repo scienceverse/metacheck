@@ -147,7 +147,6 @@ zenodo_retrieve <- function(zenodo_url, id_col = 1, pb = NULL) {
 #' @export
 #' @keywords internal
 zenodo_info <- function(zenodo_id, pb = NULL) {
-  # TEMP_COMMENT: was documented with mismatched title/param names; now docs and function signature both use zenodo_id consistently.
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")
     on.exit(pb$terminate())
