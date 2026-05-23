@@ -179,6 +179,23 @@ test_that("both grobid xml and bibr", {
   expect_s3_class(obs, "scivrs_paperlist")
 })
 
+test_that("tei_xrefs handles URL refs with query strings", {
+  xml <- xml2::read_xml(
+    "<TEI><text><body><p>The gridded soil data are available at <ref type='url' target='https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2358'>ORNL DAAC</ref> for download.</p></body></text></TEI>"
+  )
+
+  text_table <- data.frame(
+    text_id = 1,
+    text = "The gridded soil data are available at ORNL DAAC for download.",
+    stringsAsFactors = FALSE
+  )
+
+  expect_no_error(
+    xrefs <- metacheck:::tei_xrefs(xml, text_table)
+  )
+  expect_s3_class(xrefs, "data.frame")
+})
+
 # convert_grobid ----
 
 test_that("convert_grobid", {

@@ -719,6 +719,17 @@ tei_authors <- function(xml) {
 #' @keywords internal
 tei_xrefs <- function(xml, text_table) {
   text <- text_id <- xref_id <- xref_type <- NULL
+  safe_html_text <- function(x) {
+    out <- tryCatch(
+      xml2::xml_text(xml2::read_html(x)),
+      error = function(e) NA_character_
+    )
+    if (length(out) == 0) {
+      return(NA_character_)
+    }
+    out[[1]]
+  }
+
   xrefs <- xml2::xml_find_all(xml, "//ref")
   if (length(xrefs) == 0) {
     return(data.frame(
@@ -749,14 +760,22 @@ tei_xrefs <- function(xml, text_table) {
     tidytext::unnest_sentences(output = "text", input = "p", to_lower = FALSE) |>
     dplyr::filter(grepl("<ref", text, fixed = TRUE)) |>
     dplyr::rowwise() |>
-    dplyr::filter(
-      (is.na(xref_id) & grepl(contents, xml2::read_html(text) |> xml2::xml_text(), fixed = TRUE)) |
-        grepl(paste0("#", xref_id), text, fixed = TRUE)
-    )
+    dplyr::filter({
+      id_match <- !is.na(xref_id) && grepl(paste0("#", xref_id), text, fixed = TRUE)
+      if (id_match) {
+        TRUE
+      } else if (is.na(xref_id)) {
+        text_plain <- safe_html_text(text)
+        !is.na(text_plain) && grepl(contents, text_plain, fixed = TRUE)
+      } else {
+        FALSE
+      }
+    })
 
   if (nrow(xref_data) > 0) {
     xref_data <- xref_data |>
-      dplyr::mutate(text = xml2::read_html(text) |> xml2::xml_text()) |>
+      dplyr::mutate(text = sapply(text, safe_html_text)) |>
+      dplyr::mutate(text = ifelse(is.na(text), p, text)) |>
       dplyr::ungroup() |>
       dplyr::arrange(xref_type, gsub("\\D", "", x = xref_id) |> as.integer())
   }
