@@ -379,14 +379,27 @@ module_report <- function(module_output,
   }
 
   # set up report
+  summary <- module_output$summary_text
   report <- module_output$report %||% module_output$summary_text
   if (all(report == "")) report <- NULL
+
 
   # how it works
   hiw <- tryCatch(
     {
       info <- module_info(module_output$module)
 
+      # set up validation section if tagged
+      validation <- NULL
+      m <- gregexpr("<validation>.*</validation>", info$details)
+      if (m > -1) {
+        validation <- regmatches(info$details, m) |>
+          _[[1]] |>
+          sub("<validation>\\s*", "<p class='validation'>", x = _) |>
+          sub("\\s*</validation>", "</p>", x = _)
+      }
+
+      # get authors
       author_ack <- tryCatch({
         if (!is.null(info$author)) {
           a <- info$author |>
@@ -401,7 +414,10 @@ module_report <- function(module_output,
         }
       })
 
-      c(info$description, info$details, author_ack) |>
+      # remove validation section
+      details <- gsub("\\s*<validation>.*</validation>\\s*", "", info$details)
+
+      c(info$description, details, author_ack) |>
         collapse_section("How It Works", callout = "note")
     },
     error = \(e) {
@@ -410,16 +426,14 @@ module_report <- function(module_output,
   )
 
   # create collapsible boxes around substantial reports (> 300 char)
-  pre <- paste(module_output$summary_text,
-    "<details><summary>View detailed feedback</summary><div>",
-    sep = "\n\n"
-  )
+  pre <- "<details><summary>View detailed feedback</summary><div>"
   post <- "</div></details>"
   if (is.null(report) ||
-    all(module_output$summary_text == report) ||
-    paste(report, collapse = "\n\n") |> nchar() < 300) {
+    all(module_output$summary_text == report)) {
+    pre <- post <- report <- NULL
+  } else if (paste(report, collapse = "\n\n") |> nchar() < 300) {
     pre <- post <- NULL
   }
 
-  paste0(c(head, pre, report, post, hiw), collapse = "\n\n")
+  paste0(c(head, summary, validation, pre, report, post, hiw), collapse = "\n\n")
 }

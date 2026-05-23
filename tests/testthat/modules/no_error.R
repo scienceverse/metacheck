@@ -6,6 +6,10 @@
 #' @details
 #' Demo details...
 #'
+#' <validation>
+#' Here is my demo validation information.
+#' </validation>
+#'
 #' @keywords results
 #'
 #' @author Lisa DeBruine (\email{debruine@gmail.com})
@@ -39,7 +43,7 @@ pvals2 <- function(paper, demo_arg = "", ...) {
     na_replace = 0,
     traffic_light = tl,
     summary_text = paste0("summary text", demo_arg),
-    report = "report text"
+    report = "This is the report text."
   )
 }
 
