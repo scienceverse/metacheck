@@ -154,7 +154,7 @@ open_practices <- function(paper) {
 
     # code_report
     if (!summary_table$code_open) {
-      code_report <- "We did not detect open sharing of code, which could be because there is no code related to this article, or the repository is not reconized by our code. If there is code, please consider sharing it in a repository."
+      code_report <- "We did not detect open sharing of code, which could be because there is no code related to this article, or the repository is not recognized by our code. If there is code, please consider sharing it in a repository."
     } else {
       code_report <- sprintf(
         "Code was openly shared for this article, based on the following text:\n\n> %s",
