@@ -395,7 +395,7 @@ module_report <- function(module_output,
       if (m > -1) {
         validation <- regmatches(info$details, m) |>
           _[[1]] |>
-          sub("<validation>\\s*", "<p class='validation'>", x = _) |>
+          sub("<validation>\\s*", "<p class='validation'>**Validation**: ", x = _) |>
           sub("\\s*</validation>", "</p>", x = _)
       }
 
@@ -435,5 +435,5 @@ module_report <- function(module_output,
     pre <- post <- NULL
   }
 
-  paste0(c(head, summary, validation, pre, report, post, hiw), collapse = "\n\n")
+  paste0(c(head, summary, pre, report, post, hiw, validation), collapse = "\n\n")
 }
