@@ -5,27 +5,15 @@ test_that("open_practices", {
 })
 
 test_that("single paper", {
-  skip_if_quick()
-
   module <- "open_practices"
   paper <- demopaper()
   mo <- module_run(paper, module)
 
   expect_equal(mo$traffic_light, "green")
-  expect_equal(mo$table$data_open, TRUE)
-  expect_equal(mo$table$data_category, "general-purpose repository")
-  expect_equal(mo$table$data_reuse, FALSE)
-  expect_equal(mo$table$code_open, TRUE)
-  expect_equal(mo$table$code_supplement, FALSE)
-  expect_equal(mo$table$code_reuse, FALSE)
-  expect_equal(mo$table$data_das, FALSE)
-  expect_equal(mo$table$code_cas, FALSE)
-  expect_equal(mo$table$das, "")
-  expect_equal(mo$table$cas, "")
-  expect_equal(mo$table$data_statements, "Data is also available from https://osf.io/5tbm9 and code is also available from https://osf.io/629bx.")
-  expect_equal(mo$table$code_statements, "Data and analysis code is available on GitHub from https://github.com/Lakens/to_err_is_human and from https://researchbox.org/4377.")
-  expect_true(grepl("Data and analysis code is available on GitHub ",
-                    mo$table$code_statements, fixed = TRUE))
+  expect_true(any(mo$table$data))
+  expect_true(any(mo$table$code))
+  expect_false(any(mo$table$materials))
+  expect_true(any(mo$table$prereg))
 })
 
 test_that("open_practices paperlist", {
@@ -36,34 +24,21 @@ test_that("open_practices paperlist", {
   )
   mo <- module_run(paper, module)
   expect_equal(nrow(mo$table), length(paper))
-  expect_equal(mo$table$paper_id, mo$summary_table$paper_id)
-  expect_equal(mo$table$data_open, c(F, F))
-  expect_equal(mo$table$data_category, c("", "upon request"))
-  expect_equal(mo$table$data_reuse, c(F, F))
-  expect_equal(mo$table$code_open, c(T, F))
-  expect_equal(mo$table$code_supplement, c(F, F))
-  expect_equal(mo$table$code_reuse, c(F, F))
+  expect_equal(mo$table$data, c(F, T))
+  expect_equal(mo$table$code, c(T, F))
+  expect_equal(mo$table$on_request, c(F, T))
 })
 
 
 test_that("open_practices only open data", {
-  skip_if_quick()
-
   # examples from https://authorservices.taylorandfrancis.com/data-sharing-policies/open-data/
   module <- "open_practices"
   paper <- test_paper("Data for all experiments have been made publicly available on OSF at https://osf.io/hk4yq/.")
   mo <- module_run(paper, module)
-  expect_equal(mo$table$data_open, TRUE)
-  expect_equal(mo$table$data_category, "general-purpose repository")
-  expect_equal(mo$table$data_reuse, FALSE)
-  expect_equal(mo$table$code_open, FALSE)
-  expect_equal(mo$table$code_supplement, FALSE)
-  expect_equal(mo$table$code_reuse, FALSE)
+  expect_equal(mo$table$data, TRUE)
 })
 
 test_that("open_practices only open code", {
-  skip_if_quick()
-
   statements <- c("The computer code for the analyses reported here can be accessed at the Open Science Framework (https://osf.io/geq9x/).",
                   "All analysis code for this study has been made publicly available via the Open Science Framework and can be accessed at https://osf.io/geq9x/.")
 
@@ -71,9 +46,11 @@ test_that("open_practices only open code", {
   module <- "open_practices"
   paper <- test_paper(statements)
   mo <- module_run(paper, module)
-  expect_equal(mo$table$data_open, FALSE)
-  expect_equal(mo$table$code_open, TRUE)
-  expect_equal(mo$table$code_statements, paste(statements, collapse = "\n\n"))
+  expect_equal(mo$table$data, c(F, F))
+  expect_equal(mo$table$code, c(T, T))
+  expect_equal(mo$table$text, statements)
+  expect_equal(mo$summary_table$data_open, F)
+  expect_equal(mo$summary_table$code_open, T)
 })
 
 test_that("open_practices both open data and code", {
@@ -81,11 +58,18 @@ test_that("open_practices both open data and code", {
   module <- "open_practices"
   paper <- test_paper("The data and code to reproduce the findings of this study are available at the Open Science Framework at https://osf.io/abcde.")
   mo <- module_run(paper, module)
-  expect_equal(mo$table$data_open, TRUE)
-  expect_equal(mo$table$data_category, "general-purpose repository")
-  expect_equal(mo$table$data_reuse, FALSE)
-  expect_equal(mo$table$code_open, TRUE)
-  expect_equal(mo$table$code_supplement, FALSE)
-  expect_equal(mo$table$code_reuse, FALSE)
+  expect_equal(mo$table$data, TRUE)
+  expect_equal(mo$table$code, TRUE)
+  expect_equal(mo$summary_table$data_open, T)
+  expect_equal(mo$summary_table$code_open, T)
 })
 
+
+test_that("error: argument is of length zero", {
+  module <- "open_practices"
+  paper <- psychsci$`0956797617714811`
+  mo <- module_run(paper, module)
+
+  expect_equal(nrow(mo$table), 0)
+  expect_equal(mo$summary_table$data_open, FALSE)
+})

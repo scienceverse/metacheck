@@ -1,7 +1,7 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.0.0.9102
-Date: 2026-05-15
+Version: 0.0.0.9103
+Date: 2026-05-24
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -68,17 +68,15 @@ Imports:
     base64enc,
     gitcreds, 
     roxygen2, 
-    oddpub,
     jpeg
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
 BugReports: https://github.com/scienceverse/metacheck/issues
 Depends: 
-    R (>= 4.2.0) 
+    R (>= 4.3.0) 
 LazyData: true
 LazyDataCompression: xz
 Config/Needs/website: rmarkdown
 Remotes:
-  quest-bih/oddpub,
   scienceverse/svutils
 Config/roxygen2/version: 8.0.0

@@ -15,7 +15,7 @@ test_that("convert_bibr selfhosted backend", {
   json_path <- convert_bibr(file_path, save_path, backend = "selfhosted")
   expect_match(json_path, "to_err_is_human\\.json")
   expect_true(file.exists(json_path) |> all())
-  pdf <- read_bibr(json_path)
+  pdf <- .read_bibr(json_path)
   expect_equal(pdf$info$file_name, file_name)
   expect_match(pdf$paper_id, "^[a-f0-9]{16}$")
 
@@ -26,7 +26,7 @@ test_that("convert_bibr selfhosted backend", {
   json_path <- convert_bibr(file_path, save_path, backend = "selfhosted")
   expect_true(file.exists(json_path) |> all())
   expect_match(json_path, "to_err_is_human\\.json")
-  docx <- read_bibr(json_path)
+  docx <- .read_bibr(json_path)
   expect_equal(docx$info$file_name, file_name)
   expect_match(docx$paper_id, "^[a-f0-9]{16}$")
 
@@ -37,7 +37,7 @@ test_that("convert_bibr selfhosted backend", {
   json_path <- convert_bibr(file_path, save_path, backend = "selfhosted")
   expect_true(file.exists(json_path) |> all())
   expect_match(json_path, "to_err_is_human\\.json")
-  doc <- read_bibr(json_path)
+  doc <- .read_bibr(json_path)
   expect_equal(doc$info$file_name, file_name)
   expect_match(doc$paper_id, "^[a-f0-9]{16}$")
 
@@ -131,7 +131,7 @@ test_that("convert_bibr scivrs backend", {
   json_path <- convert_bibr(file_path, save_path, backend = "scivrs")
   expect_match(json_path, "to_err_is_human\\.json")
   expect_true(file.exists(json_path) |> all())
-  pdf <- read_bibr(json_path)
+  pdf <- .read_bibr(json_path)
   expect_equal(pdf$info$file_name, basename(file_path))
   #expect_match(pdf$paper_id, "^[a-f0-9]{16}$")
 
@@ -141,7 +141,7 @@ test_that("convert_bibr scivrs backend", {
   json_path <- convert_bibr(file_path, save_path, backend = "scivrs")
   expect_true(file.exists(json_path) |> all())
   expect_match(json_path, "to_err_is_human\\.json")
-  docx <- read_bibr(json_path)
+  docx <- .read_bibr(json_path)
   expect_equal(docx$info$file_name, basename(file_path))
   #expect_match(docx$paper_id, "^[a-f0-9]{16}$")
 
@@ -151,7 +151,7 @@ test_that("convert_bibr scivrs backend", {
   json_path <- convert_bibr(file_path, save_path, backend = "scivrs")
   expect_true(file.exists(json_path) |> all())
   expect_match(json_path, "to_err_is_human\\.json")
-  doc <- read_bibr(json_path)
+  doc <- .read_bibr(json_path)
   expect_equal(doc$info$file_name, basename(file_path))
   #expect_match(doc$paper_id, "^[a-f0-9]{16}$")
 
@@ -309,15 +309,15 @@ test_that(".bibr_isalive", {
 })
 
 
-test_that("read_bibr", {
-  expect_true(is.function(metacheck::read_bibr))
-  expect_no_error(helplist <- help(read_bibr, metacheck))
+test_that(".read_bibr", {
+  expect_true(is.function(metacheck::.read_bibr))
+  expect_no_error(helplist <- help(.read_bibr, metacheck))
 
-  expect_error(read_bibr(bad_arg))
+  expect_error(.read_bibr(bad_arg))
 
   # single paper from json
   file_path <- demofile("json")
-  paper <- read_bibr(file_path)
+  paper <- .read_bibr(file_path)
 
   expect_true(paper_validate(paper))
   #expect_match(paper$paper_id, "^[a-f0-9]{14,16}$")

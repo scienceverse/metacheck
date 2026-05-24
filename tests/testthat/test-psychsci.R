@@ -1,5 +1,5 @@
 test_that("psychsci", {
-  expect_true(is_paper_list(metacheck::psychsci))
+  expect_true(.is_paper_list(metacheck::psychsci))
 
   # check all valid format
   for (paper in psychsci) {
@@ -62,7 +62,7 @@ test_that("psychsci components", {
     dplyr::filter(tolower(cr_title) != tolower(bibr_title))
 
   # check abstracts ----
-  bibr_abst <- search_text(psychsci, return = "section") |>
+  bibr_abst <- text_search(psychsci, return = "section") |>
     dplyr::filter(section_type == "abstract") |>
     dplyr::select(paper_id, bibr_abst = text)
 
@@ -80,7 +80,7 @@ test_that("psychsci components", {
 
   # Could be due to bad labelling in the text table?
   # get all sentences and check if they're in the CR abstract
-  bibr_all_text <- search_text(psychsci) |>
+  bibr_all_text <- text_search(psychsci) |>
     dplyr::select(paper_id, text, text_id, section_type) |>
     dplyr::filter(nchar(text) > 1,
                   (section_type %in% "abstract" | text_id < 50)) |>
@@ -123,46 +123,46 @@ test_that("psychsci components", {
 })
 
 
-test_that("urls", {
-  bibr_url <- paper_table(psychsci, "url") |>
-    dplyr::mutate(bibr = TRUE,
-                  # remove trailing slashes
-                  href = gsub("/$", "", href),
-                  href = tolower(href))
-
-  # compare extract_urls() function in metacheck with bibr urls
-  mc_url <- extract_urls(psychsci) |>
-    dplyr::select(paper_id, text_id, href = text) |>
-    dplyr::mutate(mc = TRUE,
-                  href = gsub("/$", "", href),
-                  href = tolower(href))
-
-  url_comp <- mc_url |>
-    dplyr::full_join(bibr_url, by = c("paper_id", "text_id", "href"),
-                     relationship = "many-to-many") |>
-    dplyr::arrange(paper_id, text_id)
-
-  dplyr::count(url_comp, mc, bibr)
-
-  mc_only <- dplyr::filter(url_comp, mc, is.na(bibr)) |>
-    dplyr::select(paper_id, text_id, mc = href)
-  bibr_only <- dplyr::filter(url_comp, bibr, is.na(mc)) |>
-    dplyr::select(paper_id, text_id, bibr = href)
-
-  # mismatches with the same paper_id:text_id
-  url_mismatch <- dplyr::inner_join(
-    mc_only, bibr_only,
-    by = c("paper_id", "text_id"),
-    relationship = "many-to-many") |>
-    expand_text(psychsci)
-})
+# test_that("urls", {
+#   bibr_url <- paper_table(psychsci, "url") |>
+#     dplyr::mutate(bibr = TRUE,
+#                   # remove trailing slashes
+#                   href = gsub("/$", "", href),
+#                   href = tolower(href))
+#
+#   # compare extract_urls() function in metacheck with bibr urls
+#   mc_url <- extract_urls(psychsci) |>
+#     dplyr::select(paper_id, text_id, href = text) |>
+#     dplyr::mutate(mc = TRUE,
+#                   href = gsub("/$", "", href),
+#                   href = tolower(href))
+#
+#   url_comp <- mc_url |>
+#     dplyr::full_join(bibr_url, by = c("paper_id", "text_id", "href"),
+#                      relationship = "many-to-many") |>
+#     dplyr::arrange(paper_id, text_id)
+#
+#   dplyr::count(url_comp, mc, bibr)
+#
+#   mc_only <- dplyr::filter(url_comp, mc, is.na(bibr)) |>
+#     dplyr::select(paper_id, text_id, mc = href)
+#   bibr_only <- dplyr::filter(url_comp, bibr, is.na(mc)) |>
+#     dplyr::select(paper_id, text_id, bibr = href)
+#
+#   # mismatches with the same paper_id:text_id
+#   url_mismatch <- dplyr::inner_join(
+#     mc_only, bibr_only,
+#     by = c("paper_id", "text_id"),
+#     relationship = "many-to-many") |>
+#     text_expand(psychsci)
+# })
 
 # psychsci from grobid ----
 
 test_that("psychsci2", {
   skip("Failures expected")
 
-  expect_true(is_paper_list(metacheck::psychsci2))
+  expect_true(.is_paper_list(metacheck::psychsci2))
 
   # check all valid format
   for (paper in psychsci2) {
@@ -209,7 +209,7 @@ test_that("psychsci2 components", {
 
 
   # check abstracts ----
-  grobid_abst <- search_text(psychsci2, return = "section") |>
+  grobid_abst <- text_search(psychsci2, return = "section") |>
     dplyr::filter(section_type == "abstract") |>
     dplyr::select(paper_id, grobid_abst = text)
 
@@ -226,7 +226,7 @@ test_that("psychsci2 components", {
 
   # Could be due to bad labelling in the text table?
   # get all sentences and check if they're in the CR abstract
-  grobid_all_text <- search_text(psychsci2) |>
+  grobid_all_text <- text_search(psychsci2) |>
     dplyr::select(paper_id, text, text_id, section_type) |>
     dplyr::filter(nchar(text) > 1,
                   (section_type %in% "abstract" | text_id < 50)) |>

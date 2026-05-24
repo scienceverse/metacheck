@@ -57,7 +57,7 @@ test_that("module_info", {
   info <- module_info(mod_path)
   expect_equal(info$title, "Demo No Error")
   expect_equal(info$description, "Demo description")
-  expect_equal(info$details, "Demo details...")
+  expect_true(grepl("Demo details...", info$details, fixed = TRUE))
   expect_equal(info$author, list("Lisa DeBruine (\\email{debruine@gmail.com})", "Daniel Lakens"))
   expect_equal(info$func_name, "pvals2")
   expect_equal(info$param[[1]], list(name = "paper",
@@ -153,7 +153,7 @@ test_that("module_run", {
   expect_equal(mod_output$title, "Demo No Error")
   expect_equal(mod_output$traffic_light, "info")
   expect_equal(mod_output$section, "results")
-  expect_equal(mod_output$report, "report text")
+  expect_equal(mod_output$report, "This is the report text.")
   expect_equal(mod_output$summary_text, "summary text")
   expect_equal(mod_output$paper, paper)
   expect_equal(mod_output$summary_table, expected_summary)

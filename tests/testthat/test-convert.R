@@ -59,7 +59,6 @@ test_that("XML-crossref", {
 })
 
 test_that("PDF-auto", {
-  skip_api(grobid_url)
   skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
               message = "grobid not available")
 
@@ -75,7 +74,6 @@ test_that("PDF-auto", {
 })
 
 test_that("PDF-grobid", {
-  skip_api(grobid_url)
   skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
               message = "grobid not available")
 
@@ -86,6 +84,47 @@ test_that("PDF-grobid", {
   obs <- convert(file_path, save_path, method, api_url = grobid_url)
   expect_match(obs, "\\.json$")
   expect_true(file.exists(obs))
+  # default saved XML
+  xml <- sub("\\.json", "\\.xml", obs)
+  expect_true(file.exists(xml))
+
+  paper <- read(obs)
+  expect_true(paper_validate(paper))
+})
+
+test_that("PDF-XML-grobid keep_xml = TRUE", {
+  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
+              message = "grobid not available")
+
+  file_path <- demofile("pdf")
+  save_path <- withr::local_tempdir()
+  method <- "grobid"
+
+  obs <- convert(file_path, save_path, method, api_url = grobid_url,
+                 keep_xml = TRUE)
+  expect_match(obs, "\\.json$")
+  expect_true(file.exists(obs))
+  xml <- sub("\\.json", "\\.xml", obs)
+  expect_true(file.exists(xml))
+
+  paper <- read(obs)
+  expect_true(paper_validate(paper))
+})
+
+test_that("PDF-XML-grobid keep_xml = FALSE", {
+  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
+              message = "grobid not available")
+
+  file_path <- demofile("pdf")
+  save_path <- withr::local_tempdir()
+  method <- "grobid"
+
+  obs <- convert(file_path, save_path, method, api_url = grobid_url,
+                 keep_xml = FALSE)
+  expect_match(obs, "\\.json$")
+  expect_true(file.exists(obs))
+  xml <- sub("\\.json", "\\.xml", obs)
+  expect_false(file.exists(xml))
 
   paper <- read(obs)
   expect_true(paper_validate(paper))
@@ -139,3 +178,4 @@ test_that("DOCX-auto", {
   paper <- read(obs)
   expect_true(paper_validate(paper))
 })
+

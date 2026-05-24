@@ -11,7 +11,7 @@
 #' stats(paper)
 stats <- function(text, ...) {
   # lines with stats must have at least one number
-  text <- search_text(text, "[0-9]")
+  text <- text_search(text, "[0-9]")
 
 
   n <- nrow(text)

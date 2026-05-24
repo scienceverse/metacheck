@@ -1,6 +1,6 @@
 osf_id <- "rcu92"
 osf_api_calls(0)
-info <- osf_info(osf_id)
+info <- .osf_info(osf_id)
 osf_api_calls() # 1
 
 
@@ -10,7 +10,7 @@ id_col = 1
 recursive = TRUE
 
 osf_api_calls(0)
-data <- osf_retrieve(osf_url, id_col, recursive)
+data <- osf_info(osf_url, id_col, recursive)
 osf_api_calls() # originally 39 w/ recursive (141 w find_project)
 # now 35/35
 
@@ -41,7 +41,7 @@ osf_files <- function(osf_id) {
                    paste(node_id_guid, collapse = ","))
     storage <- osf_get_all_pages(url, links = c("data", "embeds", "files"))
     f <- do.call(dplyr::bind_rows, storage$embeds$files$data %||% list())
-    obj_guid <- osf_file_data(f)
+    obj_guid <- .osf_file_data(f)
   } else {
     obj_guid <- NULL
   }
@@ -53,7 +53,7 @@ osf_files <- function(osf_id) {
     f <- lapply(urls, \(url) {
       osf_get_all_pages(url, links = c("data", "embeds", "files"))
     }) |> do.call(dplyr::bind_rows, args = _)
-    obj_wb <- osf_file_data(f)
+    obj_wb <- .osf_file_data(f)
   } else {
     obj_wb <- NULL
   }

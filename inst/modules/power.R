@@ -56,9 +56,9 @@ power <- function(paper, seed = 8675309) {
 
   # search for paragraphs with "power" and at least one power word
   potential_power <- paper |>
-    search_text(power_pattern, return = "paragraph") |>
-    search_text(power_words, return = "paragraph") |>
-    search_text(numeric_pattern, return = "paragraph", perl = TRUE)
+    text_search(power_pattern, return = "paragraph") |>
+    text_search(power_words, return = "paragraph") |>
+    text_search(numeric_pattern, return = "paragraph", perl = TRUE)
 
 
   # classify paragraphs ----

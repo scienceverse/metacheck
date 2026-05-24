@@ -20,7 +20,7 @@ traffic_light <- dplyr::case_when(
   tl_table$n > 0 ~ "red"
 )
 
-if (is_paper_list(paper)) {
+if (.is_paper_list(paper)) {
   names(traffic_light) <- names(paper)
 }
 

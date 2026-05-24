@@ -24,8 +24,8 @@ stat_effect_size <- function(paper) {
 
   # Narrow down to sentences that could contain stats
   stat_sentences <- paper |>
-    search_text("=") |> # sentences with an equal sign
-    search_text("[0-9]") # sentences with numbers
+    text_search("=") |> # sentences with an equal sign
+    text_search("[0-9]") # sentences with numbers
 
   # t-tests ----
 
@@ -37,7 +37,7 @@ stat_effect_size <- function(paper) {
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
   text_found_test <- stat_sentences |>
-    search_text(test_regex, perl = TRUE, ignore.case = FALSE) |>
+    text_search(test_regex, perl = TRUE, ignore.case = FALSE) |>
     dplyr::select(paper_id, text, section_id, paragraph_id, text_id)
 
   ## detect relevant effect sizes ----
@@ -58,7 +58,7 @@ stat_effect_size <- function(paper) {
   )
 
   by <- c("paper_id", "section_id", "paragraph_id", "text_id")
-  text_found_es <- search_text(text_found_test, es_regex,
+  text_found_es <- text_search(text_found_test, es_regex,
     return = "match", perl = FALSE
   ) |>
     dplyr::summarise(
@@ -67,7 +67,7 @@ stat_effect_size <- function(paper) {
     )
 
   ## add exact text ----
-  test_match <- search_text(text_found_test, test_regex,
+  test_match <- text_search(text_found_test, test_regex,
     return = "match",
     perl = TRUE, ignore.case = FALSE
   ) |>
@@ -92,7 +92,7 @@ stat_effect_size <- function(paper) {
 
   # sentences with a relevant test
   text_found_test <- stat_sentences |>
-    search_text(test_regex, perl = TRUE, ignore.case = FALSE) |>
+    text_search(test_regex, perl = TRUE, ignore.case = FALSE) |>
     dplyr::select(paper_id, text, section_id, paragraph_id, text_id)
 
   ## detect relevant effect sizes ----
@@ -120,7 +120,7 @@ stat_effect_size <- function(paper) {
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
 
-  text_found_es <- search_text(text_found_test, es_regex,
+  text_found_es <- text_search(text_found_test, es_regex,
     return = "match", perl = FALSE
   ) |>
     dplyr::summarise(
@@ -129,7 +129,7 @@ stat_effect_size <- function(paper) {
     )
 
   ## add exact text ----
-  test_match <- search_text(text_found_test, test_regex,
+  test_match <- text_search(text_found_test, test_regex,
     return = "match",
     perl = TRUE, ignore.case = FALSE
   ) |>

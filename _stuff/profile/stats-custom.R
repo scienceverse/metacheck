@@ -113,7 +113,7 @@ RGX_DF1_I_L <- "I|l"
 #' stats(study)
 stats <- function(text, ...) {
   if (!is.data.frame(text)) {
-    text <- search_text(text)
+    text <- text_search(text)
   }
 
   n <- nrow(text)
@@ -330,8 +330,7 @@ extract_stats <- function (txt, stat) {
                             Statistic = test_type, df1 = df_result$df1, df2 = df_result$df2,
                             Test.Comparison = test_stats$test_comp, Value = test_stats$test_value,
                             testdec = test_stats$test_dec, Reported.Comparison = pvals$p_comp,
-                            Reported.P.Value = pvals$p_value, dec = pvals$p_dec,
-                            stringsAsFactors = FALSE)
+                            Reported.P.Value = pvals$p_value, dec = pvals$p_dec)
   if (nrow(nhst_parsed) > 0) {
     nhst_parsed <- nhst_parsed[nhst_parsed$Reported.P.Value <=
                                  1 | is.na(nhst_parsed$Reported.P.Value), ]

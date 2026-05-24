@@ -21,7 +21,7 @@
 causal_claims <- function(paper) {
   # randomisation ----
 
-  random_sentences <- search_text(paper, "random")
+  random_sentences <- text_search(paper, "random")
 
   ## define match patterns ----
   include_re <- "(?ix)(
@@ -99,7 +99,7 @@ causal_claims <- function(paper) {
 
 
   # causal claims ----
-  table <- search_text(paper) |>
+  table <- text_search(paper) |>
     dplyr::filter(section_type == "abstract")
   causal_title <- causal_relations(paper$info$title)
   causal_abstract <- causal_relations(table$text)

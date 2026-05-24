@@ -7,6 +7,8 @@
 #' @param file_path Path to the document file, or a directory of documents
 #' @param save_path Path to a directory in which to save the JSON file
 #' @param method whether to use bibr, grobid, or grobid_to_bibr to convert a file (see Details)
+#' @param crossref_lookup whether to add the bib_match table from crossref
+#' @param keep_xml if the method is grobid, whether to keep intermediate XML files
 #' @param ... further arguments to pass to convert_bibr, convert_grobid, or grobid_to_bibr
 #'
 #' @returns the path to the JSON file
@@ -14,6 +16,8 @@
 convert <- function(file_path,
                     save_path = ".",
                     method = c("auto", "bibr", "grobid", "xml"),
+                    crossref_lookup = FALSE,
+                    keep_xml = TRUE,
                     ...) {
   args <- list(...)
 
@@ -93,15 +97,17 @@ convert <- function(file_path,
   # set up args
   args$file_path <- file_path
   args$save_path <- save_path
-  crossref_lookup <- args$crossref_lookup %||%
-    as.logical(args$consolidate_citations) %||% FALSE
 
   if (method == "xml") {
     # convert XML to bibr
     bib_path <- grobid_to_bibr(file_path, save_path, crossref_lookup)
   } else if (method == "grobid") {
-    tmp_xml <- tempfile(fileext = ".xml")
-    args$save_path <- tmp_xml
+    if (keep_xml) {
+      args$save_path <- sub("\\.json$", "\\.xml", save_path)
+    } else {
+      tmp_xml <- tempfile(fileext = ".xml")
+      args$save_path <- tmp_xml
+    }
 
     # convert PDF to XML
     grobid_args <- c("file_path", "save_path", "api_url", "start_page", "end_page")
@@ -110,7 +116,7 @@ convert <- function(file_path,
 
     # convert to bibr
     bib_path <- grobid_to_bibr(tmp_xml, save_path, crossref_lookup)
-    unlink(tmp_xml)
+    if (!keep_xml) unlink(tmp_xml)
   } else if (method == "bibr") {
     # convert PDF or DOC to bibr
     bibr_args <- formals(convert_bibr) |> names()

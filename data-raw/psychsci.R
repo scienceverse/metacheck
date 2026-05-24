@@ -4,7 +4,7 @@
 pdf <- "data-raw/psychsci/pdf"
 files <- list.files(pdf, full.names = T)
 bibr <- "data-raw/psychsci/bibr"
-file_paths <- convert_bibr(files[1], bibr, backend = "scivrs")
+file_paths <- convert(files[1:10], bibr)
 
 psychsci <- read(bibr, include_images = FALSE)
 
@@ -59,10 +59,10 @@ usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")
 psychsci_full <- read("data-raw/psychsci/bibr_from_grobid_0.9.0-full")
 psychsci_crf <- read("data-raw/psychsci/bibr_from_grobid_0.9.0-crf")
 
-abs_f <- search_text(psychsci_full) |>
+abs_f <- text_search(psychsci_full) |>
   dplyr::filter(section_type == "abstract") |>
   dplyr::select(paper_id, text, text_id)
-abs_c <- search_text(psychsci_crf) |>
+abs_c <- text_search(psychsci_crf) |>
   dplyr::filter(section_type == "abstract") |>
   dplyr::select(paper_id, text, text_id)
 

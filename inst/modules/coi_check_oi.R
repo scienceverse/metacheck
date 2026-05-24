@@ -40,11 +40,11 @@ coi_check <- function(paper) {
   pattern_exc <- c("financial disclosure")
 
   table <- paper |>
-    search_text(pattern_main, search_header = TRUE) |>
-    search_text(pattern_inc, search_header = TRUE) |>
-    search_text(pattern_exc, exclude = TRUE) |>
+    text_search(pattern_main, search_header = TRUE) |>
+    text_search(pattern_inc, search_header = TRUE) |>
+    text_search(pattern_exc, exclude = TRUE) |>
     # merge the text by section/id
-    search_text(return = "section")
+    text_search(return = "section")
 
 
   # summary_table ----

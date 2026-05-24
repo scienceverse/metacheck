@@ -16,7 +16,7 @@ test_that("repo_check offline", {
                     files_readme = NA,
                     files_zip = NA)
   expect_equal(mod_output$summary_table, exp)
-  exp <- "We found no links to repositories the Open Science Framework, Github, or ResearchBox."
+  exp <- "We found no links to repositories on the Open Science Framework, Github, ResearchBox, or Zenodo."
   expect_equal(mod_output$summary_text, exp)
   expect_equal(mod_output$report, exp)
 })
@@ -93,14 +93,63 @@ test_that("OSF, github and rb", {
   expect_gt(nrow(mod_output$table), 14)
   exp <- c("bad.R", "bad.Rmd", "Code/Study 1.r", "good-example.R")
   expect_contains(mod_output$table$file_name, exp)
+  expect_equal(mod_output$summary_table$paper_id, paper$paper_id)
+  expect_equal(mod_output$summary_table$repo_n, 3)
+  expect_equal(mod_output$summary_table$files_n, nrow(mod_output$table))
+  expect_gte(mod_output$summary_table$files_data, 1)
+  expect_gte(mod_output$summary_table$files_code, 1)
+  expect_gte(mod_output$summary_table$files_readme, 1)
+  expect_gte(mod_output$summary_table$files_zip, 1)
+})
 
-  exp <- data.frame(paper_id = paper$paper_id,
-                    repo_n = 3,
-                    files_n = 15,
-                    files_data = 6,
-                    files_code = 4,
-                    files_readme = 1,
-                    files_zip = 2)
+test_that("Zenodo", {
+  testthat::local_mocked_bindings(
+    zenodo_links = function(paper) {
+      data.frame(
+        paper_id = paper$paper_id,
+        href = "https://doi.org/10.5281/zenodo.12345"
+      )
+    },
+    zenodo_info = function(zenodo_url, id_col = 1, pb = NULL) {
+      data.frame(
+        zenodo_url = as.character(zenodo_url),
+        files = I(list(list(
+          list(key = "analysis.R", size = 100, links = list(self = "https://files.example/analysis.R")),
+          list(key = "dataset.csv", size = 200, links = list(self = "https://files.example/dataset.csv")),
+          list(key = "README.md", size = 50, links = list(self = "https://files.example/README.md")),
+          list(key = "archive.zip", size = 300, links = list(self = "https://files.example/archive.zip")),
+          list(key = "archive.7z", size = 400, links = list(self = "https://files.example/archive.7z"))
+        )))
+      )
+    }
+  )
+
+  module <- "repo_check"
+  paper <- test_paper()
+  paper$url <- data.frame(href = "https://doi.org/10.5281/zenodo.12345", text_id = 1)
+  mod_output <- module_run(paper, module)
+
+  expect_equal(mod_output$traffic_light, "yellow")
+  expect_equal(nrow(mod_output$table), 5)
+  expect_setequal(mod_output$table$file_name, c("analysis.R", "dataset.csv", "README.md", "archive.zip", "archive.7z"))
+  archive_rows <- mod_output$table[mod_output$table$file_name %in% c("archive.zip", "archive.7z"), ]
+  expect_equal(nrow(archive_rows), 2)
+  expect_true(all(archive_rows$file_type == "archive"))
+
+  report_text <- paste(mod_output$report, collapse = " ")
+  expect_true(grepl("archive\\.zip", report_text))
+  expect_true(grepl("archive\\.7z", report_text))
+  expect_false(grepl("archives:.*NA", report_text))
+
+  exp <- data.frame(
+    paper_id = paper$paper_id,
+    repo_n = 1,
+    files_n = 5,
+    files_data = 1,
+    files_code = 1,
+    files_readme = 1,
+    files_zip = 2
+  )
   expect_equal(mod_output$summary_table, exp)
 })
 

@@ -58,6 +58,12 @@ execute:
   .quarto-dark table strong { color: yellow; }
   summary { color: #333; }
   .quarto-dark summary { color: #CCC; }
+  .validation { display: block; 
+                border: 2px solid #15342A; 
+                border-radius: 1em; 
+                padding: 0.5em 1em 0; 
+                margin-bottom: 0.5em;
+                background-color: #15342A33;}
 </style>
 
 ::: {#info}
@@ -68,19 +74,22 @@ Report Created: {{< meta metacheck.report-created >}}
 
 [Metacheck](https://www.scienceverse.org/metacheck/) is a tool that screens scientific manuscripts and aims to identify potential issues for improvement, thereby guiding researchers towards best practices. Metacheck is developed to help researchers correctly and completely report statistical results, automatically retrieve possible relevant information about citations, and improve how researchers share data, code, and preregistrations.
 
-::: {.callout-tip title="Learn More" collapse="true"}
+Metacheck combines existing and new checks in a module-based tool. It mainly relies on text search or retrieving information from external sources through API’s or web-scraping, but some modules also incorporate tools that use machine learning classifiers or large language models. The use of LLM's is always optional and opt-in. The development of Metacheck is guided by our [values statement](https://www.scienceverse.org/metacheck/#our-values). 
 
-Metacheck combines existing and new checks in a module-based tool. It mainly relies on text search, retrieving information from external sources through API’s or web-scraping, but it also incorporates tool that use machine learning classifiers or large language models. The use of LLM’s is always optional. The development of Metacheck is guided by our [values statement](https://docs.google.com/document/d/1bbIkgUaiz3fpTXAeTF3h-gsfhqWEBN_n6OBcbFLfXjw/edit?tab=t.0). 
 
-Metacheck often needs to balance false positives against false negatives, and prioritizes preventing false negatives. Like a spelling checker, which often highlights words that are not spelled incorrectly, Metacheck modules will contain false positives. We hope their rate is acceptable, given opportunities for improvement that Metacheck identifies. Modules are currently primarily validated on the psychological literature.
+::: {.validation}
+Our modules are validated on sets of open-access papers. In each validated module, there will be a sentence explaining the prevalence of false positives (incorrect detection/classification) and false negatives (incorrect omission). For example, if a hypothetical module detects the inappropriate practice of "woozling", the sentence might read:
 
-Metacheck is under continuous development. Issues can be submitted [on Github](https://github.com/scienceverse/metacheck/issues), and suggestions for improvement or feedback can be sent to D.Lakens@tue.nl.
+> In a sample of 250 papers from the *Journal of X*, there were 350 instances of woozling. This module correctly detected 340 of them, and incorrectly identified 7. Therefore 3% of true instances are missed, and 2% of detections are false positives.
 
+There is an inherent tradeoff between false positives and false negatives. Many of our modules are designed like "smoke detectors", where they are more likely to detect a practice that needs attention, but also more likely to incorrectly flag something. Therefore, you need to check the output of each module, keeping the validated error rates in mind.
 :::
+
+Metacheck is under continuous development. Issues can be submitted [on Github](https://github.com/scienceverse/metacheck/issues), and suggestions for improvement or feedback can be sent to [metacheck@scienceverse.org](mailto:metacheck@scienceverse.org).
 
 <!-- Demo -->
 
-Everything below here is for test purposes and removed when using this template to create a report.
+<div style="color: red; margin-top: 3em;">Everything below here is for test purposes and removed when using this template to create a report.</div>
 
 ```{r}
 #| include: false
@@ -94,11 +103,15 @@ library(metacheck)
 - ⚠️ [Possible problems detected](#module-3){.red}: A possible poor practice detected.
 - ℹ️ [Informational only](#module-4){.info}: Info that isn't necessarily good/questionable/poor practice.
 - ⚪️ [Not applicable](#module-5){.na}: This check isn't relevant to this paper.
-- ☠️ [Check failed](#module-6){.fail}: This is usually when something goes wroing and there is an uncaught error in the module.
+- ☠️ [Check failed](#module-6){.fail}: This is usually when something goes wrong and there is an uncaught error in the module.
 
 ## General Modules
 
 ### ✅ Module 1 {.green}
+
+Detected evidence of good practice or no evidence of poor practice.
+
+<p class="validation">In a sample of 250 papers from *Psychological Science*, there were 350 instances of woozling. This module correctly detected 340 of them, and incorrectly identified 7. Therefore 3% of true instances are missed, and 2% of detections are false positives.</p>
 
 <details>
   <summary>View feedback</summary>
@@ -141,7 +154,21 @@ format_ref(marg_ref) |> cat()
   </div>
 </details>
 
+::: {.callout-note title="How It Works" collapse="true"}
+
+Demo description
+
+Demo details...
+
+This module was developed by Lisa DeBruine and Daniel Lakens
+
+:::
+
 ### 🔍 Module 2 {#module-2 .yellow}
+
+Detected something you should check.
+
+<p class="validation">In a sample of 100 papers from *PLoS One*, there were 10 papers with stapling. This module correctly detected 10 of them, and incorrectly identified 5. Therefore 0% of true instances are missed, and 33% of detections are false positives.</p>
 
 <details>
   <summary>View feedback</summary>
@@ -170,7 +197,21 @@ metacheck::report_table(table, "auto", 2, FALSE)
   </div>
 </details>
 
+::: {.callout-note title="How It Works" collapse="true"}
+
+Demo description
+
+Demo details...
+
+This module was developed by Lisa DeBruine and Daniel Lakens
+
+:::
+
 ### ⚠️ Module 3 {#module-3 .red}
+
+A possible poor practice detected.
+
+<p class="validation">In a sample of 100 papers from *PLoS One*, there were 10 instances of noodling. This module correctly detected 9 of them, and incorrectly identified 9. Therefore 10% of true instances are missed, and 50% of detections are false positives.</p>
 
 <details>
   <summary>View feedback</summary>
@@ -201,9 +242,23 @@ metacheck::report_table(table, "auto", 2, FALSE)
   </div>
 </details>
 
+::: {.callout-note title="How It Works" collapse="true"}
+
+Demo description
+
+Demo details...
+
+This module was developed by Lisa DeBruine and Daniel Lakens
+
+:::
+
 ## Introduction Modules
 
 ### ℹ️ Module 4 {#module-4 .info}
+
+Summary text...
+
+<p class="validation">Validation text...</p>
 
 <details>
   <summary>View feedback</summary>
@@ -213,11 +268,25 @@ metacheck::report_table(table, "auto", 2, FALSE)
 
   </div>
 </details>
+
+::: {.callout-note title="How It Works" collapse="true"}
+
+Demo description
+
+Demo details...
+
+This module was developed by Lisa DeBruine and Daniel Lakens
+
+:::
 
 ## Methods Modules
 
 ### ⚪️ Module 5 {#module-5 .na}
 
+This check isn't relevant to this paper.
+
+<p class="validation">Validation text...</p>
+
 <details>
   <summary>View feedback</summary>
   <div>
@@ -227,9 +296,23 @@ metacheck::report_table(table, "auto", 2, FALSE)
   </div>
 </details>
 
+::: {.callout-note title="How It Works" collapse="true"}
+
+Demo description
+
+Demo details...
+
+This module was developed by Lisa DeBruine and Daniel Lakens
+
+:::
+
 ## Results Modules
 
 ### ☠️ Module 6 {#module-6 .fail}
+
+This is usually when something goes wrong and there is an uncaught error in the module.
+
+<p class="validation">Validation text...</p>
 
 <details>
   <summary>View feedback</summary>
@@ -239,11 +322,25 @@ metacheck::report_table(table, "auto", 2, FALSE)
 
   </div>
 </details>
+
+::: {.callout-note title="How It Works" collapse="true"}
+
+Demo description
+
+Demo details...
+
+This module was developed by Lisa DeBruine and Daniel Lakens
+
+:::
 
 ## Discussion Modules
 
 ### ℹ️ Module 7 Has a Long Name {#module-7 .info}
 
+Summary text...
+
+<p class="validation">Validation text...</p>
+
 <details>
   <summary>View feedback</summary>
   <div>
@@ -252,11 +349,25 @@ metacheck::report_table(table, "auto", 2, FALSE)
 
   </div>
 </details>
+
+::: {.callout-note title="How It Works" collapse="true"}
+
+Demo description
+
+Demo details...
+
+This module was developed by Lisa DeBruine and Daniel Lakens
+
+:::
 
 ## References Modules
 
 ### ℹ️ Module 8 Has an Even Longer Name {#module-8 .info}
 
+Summary text...
+
+<p class="validation">Validation text...</p>
+
 <details>
   <summary>View feedback</summary>
   <div>
@@ -265,3 +376,13 @@ metacheck::report_table(table, "auto", 2, FALSE)
 
   </div>
 </details>
+
+::: {.callout-note title="How It Works" collapse="true"}
+
+Demo description
+
+Demo details...
+
+This module was developed by Lisa DeBruine and Daniel Lakens
+
+:::

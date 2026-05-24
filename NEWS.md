@@ -1,3 +1,13 @@
+# metacheck 0.0.0.9103
+
+* converting grobid xml to bibr json now saves the file after each conversion, instead of at the end, making it better for large batches (although slightly less efficient by potentially duplicating crossref lookups shared between papers)
+* `convert()` has new arguments `crossref_lookup` (default FALSE) and `keep_xml` (default TRUE). It also saves XML and/or JSON files as they are converted, rather than at the end, in case of breaking failure. 
+* Updated the "open_practices" module, which is much faster than the ODDPub version of this module (about 40x faster), also returns open materials and registrations, and has a lower false negative rate, but also a higher false positive rate. This removes the oddpub dependency.
+* Restructured file names (not function names) for functions so all archive helper (e.g., osf, github, zenodo) start with "archive-" and database helpers (e.g., pubpeer, retractionwatch) start with "db-".
+* Restructured text functions to start with text_, so `search_text()` is now `text_search()` and `expand_text()` is now `text_expand()`. The old names will exist as aliases. 
+* Internal functions now prefaced with . to make it clearer for developers.
+* All `{archive}_retrieve()` functions now renamed to `{archive}_info()` and the old `{archive}_info()` internal functions are now `.{archive}_info()`
+
 # metacheck 0.0.0.9102
 
 * Shiny app improvements: you can now view HTML reports in the browser

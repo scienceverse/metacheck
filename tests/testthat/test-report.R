@@ -128,7 +128,7 @@ test_that("render html", {
   paper_report <- report(paper, modules, output_file, output_format)
   save_path <- attr(paper_report, "save_path")
   expect_true(file.exists(save_path))
-  # browseURL(html)
+  # browseURL(save_path)
 })
 
 test_that("report pass args", {
@@ -255,6 +255,23 @@ test_that("module_report howitworks", {
 
   expect_true(grepl("^### \\S* Bad Report \\{#bad-report \\.info\\}", rep))
   expect_false(grepl("This module was developed by", rep))
+})
+
+
+test_that("module_report validation", {
+  paper <- demopaper()
+  v <- "<p class='validation'>"
+
+  module <- test_path("modules", "no_error.R")
+  module_output <- module_run(paper, module)
+  rep <- module_report(module_output)
+  expect_true(grepl(v, rep, fixed = TRUE))
+
+  # no validation
+  module <- "all_urls"
+  module_output <- module_run(paper, module)
+  rep <- module_report(module_output)
+  expect_false(grepl("<p class='validation'>", rep, fixed = TRUE))
 })
 
 

@@ -3,7 +3,7 @@
 
 # get OSF links
 found_urls <- module_run(paper, "all-urls")$table
-found_osf <- search_text(found_urls, "osf\\.io")
+found_osf <- text_search(found_urls, "osf\\.io")
 unique_urls <- unique(found_osf["text"])
 
 if (!online("osf.io")) {

@@ -21,10 +21,10 @@ detect_missing_effect_size_ttest <- function(paper, ...) {
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
   text_found_test <- paper |>
-    search_text("=") |> # sentences with equal signs
-    search_text("[0-9]") |> # sentences with numbers
+    text_search("=") |> # sentences with equal signs
+    text_search("[0-9]") |> # sentences with numbers
     # sentences with a relevant test
-    search_text(test_regex, perl = TRUE, ignore.case = FALSE)
+    text_search(test_regex, perl = TRUE, ignore.case = FALSE)
 
 
   # Regex to detect effect sizes
@@ -47,7 +47,7 @@ detect_missing_effect_size_ttest <- function(paper, ...) {
     "\\s*[=≈<>\u2264\u2265]{1,3}\\s*", # comparators
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
-  text_found_es <- search_text(text_found_test, es_regex, perl = FALSE)
+  text_found_es <- text_search(text_found_test, es_regex, perl = FALSE)
 
   # Identify t-tests without reported effect sizes
   es_not_reported <- dplyr::anti_join(
