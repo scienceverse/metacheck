@@ -1,0 +1,226 @@
+#' Open Practices Check
+#'
+#' @description
+#' This module searches for open data, code, materials, and registration statements.
+#'
+#' @details
+#' It is much faster than the previous ODDPub version of this module, and has a lower false negative rate, but also a higher false positive rate.
+#'
+#'
+#' @keywords general
+#'
+#' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
+#'
+#' @import dplyr
+#'
+#' @param paper a paper object or paperlist object
+#'
+#' @returns a list
+open_practices <- function(paper) {
+  # search for words associated with shared data, code, materials or reg
+
+  ## patterns ----
+  on_request <- "(on|by)\\s+(reasonable\\s+)?request"
+  availability <- c("\\bavailab",
+                    "\\bsupplement",
+                    "\\barchive",
+                    "\\baccess",
+                    "\\bshare",
+                    "\\bonline\\b",
+                    "\\bfound\\b",
+                    "\\bfind\\b",
+                    "\\bdetailed\\b",
+                    "\\bsee\\b")
+  repo_words <- c("http", # url
+                  "repository",
+                  "archive",
+                  #"\\b\\d{4}\\b", # year in a citations
+                  "\\bosf\\b",
+                  "open science framework",
+                  "researchbox",
+                  "zenodo",
+                  "github",
+                  "figshare",
+                  "datadryad",
+                  "kaggle",
+                  "mendeley",
+                  "ukbiobank",
+                  "ukdataservice",
+                  "dataverse",
+                  "clinicalstudydatarequest",
+                  "ourworldindata",
+                  on_request)
+
+  data_words <- c("data")
+  code_words <- c("\\bcode\\b",
+                  "\\bsoftware\\b",
+                  "\\bscript",
+                  "\\banaly",
+                  "\\bR\\b",
+                  "\\bpython\\b")
+  materials_words <- c("\\bmaterials?\\b",
+                       "\\bquestionnaires?\\b",
+                       "\\binstruments?\\b",
+                       "\\bfigures?\\b",
+                       "\\bplots?\\b")
+  # omit "supplemental material"?
+  prereg_words <- c("pre-?regist",
+                    "aspredicted")
+  data <- paper |>
+    text_search(data_words) |>
+    text_search(repo_words) |>
+    text_search(availability)
+  data$data <- TRUE
+
+  code <- paper |>
+    text_search(code_words) |>
+    text_search(repo_words) |>
+    text_search(availability)
+  code$code <- TRUE
+
+  materials <- paper |>
+    text_search(materials_words) |>
+    text_search(repo_words) |>
+    text_search(availability)
+  materials$materials <- TRUE
+
+  prereg <- paper |>
+    text_search(prereg_words) |>
+    text_search("non-?pre-?regist", exclude = TRUE) |>
+    text_search("not\\s+pre-?regist", exclude = TRUE) |>
+    text_search(repo_words)
+  prereg$prereg <- TRUE
+
+  # table ----
+  # put in a sensible naming scheme and order
+  by <- setdiff(names(code), "code")
+  table <- dplyr::full_join(data, code, by = by) |>
+    dplyr::full_join(materials, by = by) |>
+    dplyr::full_join(prereg, by = by)
+  # replace NAs with FALSE
+  table$data[is.na(table$data)] <- FALSE
+  table$code[is.na(table$code)] <- FALSE
+  table$materials[is.na(table$materials)] <- FALSE
+  table$prereg[is.na(table$prereg)] <- FALSE
+
+  # flag on_request
+  table$on_request <- grepl(on_request, table$text)
+
+  # re-order by paper_id (same as paper) and text_id (inc)
+  paper_ids <- paper_id(paper)$paper_id
+  table$paper_id <- factor(table$paper_id, paper_ids)
+  table <- dplyr::arrange(table, paper_id, text_id)
+  table$paper_id <- as.character(table$paper_id)
+
+  # summary_table ----
+  summary_table <- table |>
+    summarise(data_open = any(data),
+              code_open = any(code),
+              materials_open = any(materials),
+              prereg_open = any(prereg),
+              on_request = any(on_request),
+              data_statements = list(unique(text[data])),
+              code_statements = list(unique(text[code])),
+              materials_statements = list(unique(text[materials])),
+              prereg_statements = list(unique(text[prereg])),
+              .by = paper_id)
+  data_na <- sapply(summary_table$data_statements, length) == 0
+  summary_table$data_statements[data_na] <- NA_character_
+  code_na <- sapply(summary_table$code_statements, length) == 0
+  summary_table$code_statements[code_na] <- NA_character_
+  materials_na <- sapply(summary_table$materials_statements, length) == 0
+  summary_table$materials_statements[materials_na] <- NA_character_
+  prereg_na <- sapply(summary_table$prereg_statements, length) == 0
+  summary_table$prereg_statements[prereg_na] <- NA_character_
+
+  # traffic_light ----
+  # summary_text ----
+  if (nrow(summary_table) > 1) {
+    tl <- "info"
+    # summary for a paperlist
+    summary_text <- sprintf(
+      "%d papers shared both data and code, %d only data, %d only code, and %d neither.",
+      sum(summary_table$data_open & summary_table$code_open),
+      sum(summary_table$data_open & !summary_table$code_open),
+      sum(!summary_table$data_open & summary_table$code_open),
+      sum(!summary_table$data_open & !summary_table$code_open)
+    )
+  } else if (nrow(summary_table) == 0) {
+      summary_text <- "Neither shared data nor code detected. This is not good practice if there is data or code that you can share, and you can share data or code, this should be corrected."
+      tl <- "red"
+  } else {
+    # summary for a single paper
+    if (summary_table$data_open == TRUE &
+        summary_table$code_open == TRUE) {
+      summary_text <- "Shared data and code detected."
+      tl <- "green"
+    } else if (summary_table$data_open == TRUE &
+               summary_table$code_open == FALSE) {
+      summary_text <- "Shared data detected."
+      tl <- "yellow"
+    } else if (summary_table$data_open == FALSE &
+               summary_table$code_open == TRUE) {
+      summary_text <- "Shared code detected."
+      tl <- "yellow"
+    } else {
+      summary_text <- "Neither shared data nor code detected. This is not good practice if there is data or code that you can share, and if you can share data or code, this should be corrected."
+      tl <- "red"
+    }
+
+    if (summary_table$on_request) {
+      summary_text <- gsub("\\.$", ", but on request.", summary_text)
+      tl <- "red"
+    }
+  }
+
+  # report ----
+  data_report <- NULL
+  code_report <- NULL
+  on_request_report <- NULL
+
+  if (nrow(summary_table) == 1) {
+    # data_report
+    if (!summary_table$data_open) {
+      data_report <- "We did not detect open sharing of data, which could be because there is no data related to this article, or the repository is not recognized by our code. If there is data, not sharing it when this is possible is not best practice."
+    } else {
+      data_report <- sprintf(
+        "Data was openly shared for this article, based on the following text:\n\n> %s",
+        paste(table$text[table$data], collapse = "\n\n> ")
+      )
+    }
+
+    # code_report
+    if (!summary_table$code_open) {
+      code_report <- "We did not detect open sharing of code, which could be because there is no code related to this article, or the repository is not reconized by our code. This is not good practice if there is data or code that you can share, and if you can share data or code, this should be corrected."
+    } else {
+      code_report <- sprintf(
+        "Code was openly shared for this article, based on the following text:\n\n> %s",
+        paste(table$text[table$code], collapse = "\n\n> ")
+      )
+    }
+
+    # on_request
+    if (summary_table$on_request) {
+      on_request_report <- sprintf(
+        "Some materials are shared on request, which is not an acceptable method of sharing. This is based on the following text:\n\n> %s",
+        gsub("\n\n", "\n\n> ", table$text[table$on_request])
+      )
+    }
+  }
+
+  report <- c(
+    data_report,
+    code_report,
+    on_request_report
+  )
+
+  # return a list ----
+  list(
+    table = table,
+    summary_table = summary_table,
+    na_replace = list(data_open = FALSE, code_open = FALSE),
+    traffic_light = tl,
+    summary_text = summary_text,
+    report = report
+  )
+}
