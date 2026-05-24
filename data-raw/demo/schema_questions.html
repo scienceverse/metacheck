@@ -358,7 +358,7 @@ display: none;
 <div id="big-picture-questions" class="section level2">
 <h2>Big picture questions</h2>
 <p>What text should be in the text table so it’s easily searchable by
-search_text() and should there be ways to include/exclude some of that
+text_search() and should there be ways to include/exclude some of that
 by default or with arguments?</p>
 <p>The text categories are: body text, section headers, tables
 (captions), figures (captions), footnotes, references, and “backmatter”
@@ -553,12 +553,12 @@ tables?)</li>
 <li>other text classified into data (e.g., title, authors)</li>
 <li>section headers (currently only in the new sections table)</li>
 </ul>
-<p>The text table is what is searched by search_text(). So it might be
+<p>The text table is what is searched by text_search(). So it might be
 confusing to include reference text in it. We can search those table
-with search_text like:
-<code>paper$sections$header |&gt; search_text(&quot;text&quot;)</code> but it’s
+with text_search like:
+<code>paper$sections$header |&gt; text_search(&quot;text&quot;)</code> but it’s
 awkward.</p>
-<p>Or include a flag in search_text to by default only search the body
+<p>Or include a flag in text_search to by default only search the body
 text, but you can specify to include headers, fig-caps, tbl-caps, bib,
 footnotes, etc. This requires the text be labelled in either the section
 table (all text must have a section number then) or in the text

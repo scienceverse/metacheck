@@ -21,9 +21,9 @@ detect_missing_effect_size_ftest <- function(paper, ...) {
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
   text_found_test <- paper |>
-    search_text("=") |> # sentences with equal signs
-    search_text("[0-9]") |> # sentences with numbers
-    search_text(test_regex, perl = TRUE, ignore.case = FALSE) # sentences with a relevant test
+    text_search("=") |> # sentences with equal signs
+    text_search("[0-9]") |> # sentences with numbers
+    text_search(test_regex, perl = TRUE, ignore.case = FALSE) # sentences with a relevant test
 
   # Regex to detect tests with reported effect sizes
   potentials <- c(
@@ -42,7 +42,7 @@ detect_missing_effect_size_ftest <- function(paper, ...) {
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
 
-  text_found_es <- search_text(text_found_test, es_regex, perl = FALSE)
+  text_found_es <- text_search(text_found_test, es_regex, perl = FALSE)
 
   # Identify tests without reported effect sizes
   es_not_reported <- dplyr::anti_join(

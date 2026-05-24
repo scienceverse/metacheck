@@ -155,3 +155,31 @@ test_that("openai", {
 
 #httptest2::stop_capturing()
 httptest2::stop_mocking()
+
+
+test_that(".unnest_result", {
+  expect_true(is.function(metacheck:::.unnest_result))
+
+  expect_error(.unnest_result(bad_arg))
+
+  # Structured extraction
+  # llm_use(TRUE)
+  # chat <- ellmer::chat(
+  #   name = "groq/openai/gpt-oss-safeguard-20b",
+  #   system_prompt = "Classify the input.",
+  #   params = list(temperature = 0)
+  # )
+  #
+  # type <- ellmer::type_object(
+  #   n_letters = ellmer::type_integer("How many letters in the input"),
+  #   is_number = ellmer::type_boolean("Whether the input is a number")
+  # )
+  #
+  # result <- chat$chat_structured("hello", type = type)
+
+  result <- list(n_letters = 5L, is_number = FALSE)
+  df <- .unnest_result(result)
+  exp <- data.frame(n_letters = 5, is_number = FALSE)
+  expect_equal(df, exp)
+})
+

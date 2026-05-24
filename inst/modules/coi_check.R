@@ -25,7 +25,7 @@ coi_check <- function(paper) {
 
   # get text and send to rtransparent function (defined below)
   table <- paper |>
-    search_text() |>
+    text_search() |>
     dplyr::select(paper_id, text) |>
     dplyr::nest_by(paper_id) |>
     dplyr::rowwise() |>

@@ -19,7 +19,7 @@ text_tab <- tabItem(
                              selected = "ignore.case")
         ))
       ),
-      actionButton("search_text", "Search"),
+      actionButton("text_search", "Search"),
       actionButton("search_reset", "Reset"),
       actionButton("search_preset_p", "p-values"),
       actionButton("search_preset_n", "sample size")

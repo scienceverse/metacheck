@@ -67,28 +67,28 @@ open_practices <- function(paper) {
   prereg_words <- c("pre-?regist",
                     "aspredicted")
   data <- paper |>
-    search_text(data_words) |>
-    search_text(repo_words) |>
-    search_text(availability)
+    text_search(data_words) |>
+    text_search(repo_words) |>
+    text_search(availability)
   data$data <- TRUE
 
   code <- paper |>
-    search_text(code_words) |>
-    search_text(repo_words) |>
-    search_text(availability)
+    text_search(code_words) |>
+    text_search(repo_words) |>
+    text_search(availability)
   code$code <- TRUE
 
   materials <- paper |>
-    search_text(materials_words) |>
-    search_text(repo_words) |>
-    search_text(availability)
+    text_search(materials_words) |>
+    text_search(repo_words) |>
+    text_search(availability)
   materials$materials <- TRUE
 
   prereg <- paper |>
-    search_text(prereg_words) |>
-    search_text("non-?pre-?regist", exclude = TRUE) |>
-    search_text("not\\s+pre-?regist", exclude = TRUE) |>
-    search_text(repo_words)
+    text_search(prereg_words) |>
+    text_search("non-?pre-?regist", exclude = TRUE) |>
+    text_search("not\\s+pre-?regist", exclude = TRUE) |>
+    text_search(repo_words)
   prereg$prereg <- TRUE
 
   # table ----

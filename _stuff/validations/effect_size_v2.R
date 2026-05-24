@@ -16,8 +16,8 @@
 effect_size <- function(paper, ...) {
   # Narrow down to sentences that could contain stats
   stat_sentences <- paper |>
-    search_text("=") # sentences with an equal sign
-    search_text("[0-9]") # sentences with numbers
+    text_search("=") # sentences with an equal sign
+    text_search("[0-9]") # sentences with numbers
 
   # t-tests ----
 
@@ -29,7 +29,7 @@ effect_size <- function(paper, ...) {
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
   text_found_test <- stat_sentences |>
-    search_text(test_regex, perl = TRUE, ignore.case = FALSE) |>
+    text_search(test_regex, perl = TRUE, ignore.case = FALSE) |>
     dplyr::select(id, text, div, p, s)
 
   t_total_n <- nrow(text_found_test)
@@ -50,7 +50,7 @@ effect_size <- function(paper, ...) {
     "\\s*[=≈<>\u2264\u2265]{1,3}\\s*", # comparators
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
-  text_found_es <- search_text(text_found_test, es_regex, perl = FALSE)
+  text_found_es <- text_search(text_found_test, es_regex, perl = FALSE)
 
   # Identify t-tests without reported effect sizes
   es_not_reported <- dplyr::anti_join(
@@ -62,7 +62,7 @@ effect_size <- function(paper, ...) {
   es_not_reported$test <- "t-test"
 
   ## add exact text ----
-  test_match <- search_text(text_found_test, test_regex, return = "match",
+  test_match <- text_search(text_found_test, test_regex, return = "match",
                             perl = TRUE, ignore.case = FALSE) |>
     dplyr::summarise(test_text = paste(text, collapse = "; "),
                      .by = c("div", "p", "s", "id"))
@@ -96,7 +96,7 @@ effect_size <- function(paper, ...) {
 
   # sentences with a relevant test
   text_found_test <- stat_sentences |>
-    search_text(test_regex, perl = TRUE, ignore.case = FALSE) |>
+    text_search(test_regex, perl = TRUE, ignore.case = FALSE) |>
     dplyr::select(id, text, div, p, s)
 
   f_total_n <- nrow(text_found_test)
@@ -126,7 +126,7 @@ effect_size <- function(paper, ...) {
     "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
   )
 
-  text_found_es <- search_text(text_found_test, es_regex,
+  text_found_es <- text_search(text_found_test, es_regex,
                                perl = FALSE, ignore.case = FALSE)
 
   # Identify tests without reported effect sizes
@@ -139,7 +139,7 @@ effect_size <- function(paper, ...) {
   es_not_reported$test <- "F-test"
 
   ## add exact text ----
-  test_match <- search_text(text_found_test, test_regex, return = "match",
+  test_match <- text_search(text_found_test, test_regex, return = "match",
                             perl = TRUE, ignore.case = FALSE) |>
     dplyr::summarise(test_text = paste(text, collapse = "; "),
                      .by = c("div", "p", "s", "id"))

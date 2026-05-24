@@ -28,9 +28,9 @@ module_name <- function(paper, ...) {
   # create return items ----
 
   ## table ----
-  # detail your results in a format like the result of search_text()
+  # detail your results in a format like the result of text_search()
   # this is stored to use in later modules in a report or pipeline
-  table <- search_text(paper, pattern)
+  table <- text_search(paper, pattern)
 
   ## summary_table ----
   # must have id column as the id of each paper, one row per paper

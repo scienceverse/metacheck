@@ -107,11 +107,10 @@ test_that("Zenodo", {
     zenodo_links = function(paper) {
       data.frame(
         paper_id = paper$paper_id,
-        href = "https://doi.org/10.5281/zenodo.12345",
-        stringsAsFactors = FALSE
+        href = "https://doi.org/10.5281/zenodo.12345"
       )
     },
-    zenodo_retrieve = function(zenodo_url, id_col = 1, pb = NULL) {
+    zenodo_info = function(zenodo_url, id_col = 1, pb = NULL) {
       data.frame(
         zenodo_url = as.character(zenodo_url),
         files = I(list(list(
@@ -120,8 +119,7 @@ test_that("Zenodo", {
           list(key = "README.md", size = 50, links = list(self = "https://files.example/README.md")),
           list(key = "archive.zip", size = 300, links = list(self = "https://files.example/archive.zip")),
           list(key = "archive.7z", size = 400, links = list(self = "https://files.example/archive.7z"))
-        ))),
-        stringsAsFactors = FALSE
+        )))
       )
     }
   )

@@ -195,7 +195,7 @@ grobid_to_bibr <- function(xml_file,
 
     pb$tick(1, list(step = "", what = what))
 
-    if (!is_paper(p)) { # error
+    if (!.is_paper(p)) { # error
       if (is.null(save_path)) return(NULL)
       return(NA_character_)
     }
@@ -284,7 +284,7 @@ grobid_to_bibr <- function(xml_file,
 .grobid_to_bibr <- function(xml_file, pb = NULL) {
   header <- section_type <- NULL
 
-  schema <- paper_schema()
+  schema <- .paper_schema()
   m <- regexec("(?<=\\(v)[\\d\\.]+", schema$description, perl = TRUE)
   bibr_version = regmatches(schema$description, m)[[1]]
   what <- basename(xml_file)
@@ -343,10 +343,10 @@ grobid_to_bibr <- function(xml_file,
   )
 
   # author ----
-  paper$author <- tei_authors(xml)
+  paper$author <- .tei_authors(xml)
 
   # text ----
-  paper$text  <- tei_text(xml)
+  paper$text  <- .tei_text(xml)
 
   # section ----
   sec <- dplyr::count(paper$text, section_id, header, section_type)
@@ -391,7 +391,7 @@ grobid_to_bibr <- function(xml_file,
   }
 
   # bib ----
-  paper$bib <- tei_bib(xml)
+  paper$bib <- .tei_bib(xml)
 
   # append references to section and text and replace with text_id
   if (nrow(paper$bib) > 0) {
@@ -415,7 +415,7 @@ grobid_to_bibr <- function(xml_file,
   paper$bib$bib_text <- NULL
 
   # xref ----
-  paper$xref <- tei_xrefs(xml, text_table = paper$text)
+  paper$xref <- .tei_xrefs(xml, text_table = paper$text)
 
   # url ----
   #links <- extract_urls(paper)
@@ -446,7 +446,7 @@ grobid_to_bibr <- function(xml_file,
   paper$eq <- extract_equations(paper)
   paper$eq$paper_id <- NULL
 
-  paper <- paper_coerce(paper)
+  paper <- .paper_coerce(paper)
 
   return(paper)
 }
@@ -458,7 +458,7 @@ grobid_to_bibr <- function(xml_file,
 #'
 #' @returns a data frame
 #' @keywords internal
-process_full_text <- function(full_text) {
+.process_full_text <- function(full_text) {
   ## tokenize sentences ----
   # TODO: get tidytext to stop breaking sentences at "S.E. ="
   text <- NULL # hack to stop cmdcheck warning :(
@@ -551,8 +551,8 @@ process_full_text <- function(full_text) {
 #'
 #' @return a data frame with all text
 #' @keywords internal
-tei_text <- function(xml) {
-  div <- NULL # ugh cmdcheck
+.tei_text <- function(xml) {
+  div <- text <- NULL # ugh cmdcheck
 
   ## abstract ----
   abst_table <- data.frame(
@@ -662,7 +662,7 @@ tei_text <- function(xml) {
   ft$section[ft$section == "fig"] <- "figure"
 
   # split sentences and get rid of headers in text column
-  ft <- process_full_text(ft)
+  ft <- .process_full_text(ft)
   ft <- ft[ft$text != ft$header, ]
 
   full_text <- data.frame(
@@ -684,7 +684,7 @@ tei_text <- function(xml) {
 #'
 #' @return authors table
 #' @keywords internal
-tei_authors <- function(xml) {
+.tei_authors <- function(xml) {
   author_nodes <- xml2::xml_find_all(xml, "//sourceDesc //author[persName]")
   authors <- lapply(seq_along(author_nodes), function(i) {
     a <- author_nodes[[i]]
@@ -717,7 +717,7 @@ tei_authors <- function(xml) {
 #'
 #' @return xrefs table
 #' @keywords internal
-tei_xrefs <- function(xml, text_table) {
+.tei_xrefs <- function(xml, text_table) {
   text <- text_id <- xref_id <- xref_type <- NULL
   safe_html_text <- function(x) {
     out <- tryCatch(
@@ -813,11 +813,11 @@ tei_xrefs <- function(xml, text_table) {
 #'
 #' @return bib table
 #' @keywords internal
-tei_bib <- function(xml) {
+.tei_bib <- function(xml) {
   refs <- xml2::xml_find_all(xml, "//listBibl //biblStruct")
 
   if (length(refs) > 0) {
-    bib_table <- lapply(refs, xml2bib) |>
+    bib_table <- lapply(refs, .xml2bib) |>
       dplyr::bind_rows()
 
     bib_table$bib_id <- xml2::xml_attr(refs, "id") |>
@@ -857,7 +857,7 @@ tei_bib <- function(xml) {
 #' @returns a bibentry
 #' @export
 #' @keywords internal
-xml2bib <- function(ref) {
+.xml2bib <- function(ref) {
   b <- list(bib_type = "misc")
 
   b$doi <- xml_find1(ref, ".//idno[@type='DOI']")

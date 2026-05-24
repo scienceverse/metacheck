@@ -9,7 +9,7 @@
 #' @param paper a paper object or paperlist object
 all_p_values <- function(paper) {
   pattern <- "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?"
-  table <- search_text(paper, pattern, return = "match", "perl" = TRUE)
+  table <- text_search(paper, pattern, return = "match", "perl" = TRUE)
 
   list(
     table =

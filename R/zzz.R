@@ -52,7 +52,7 @@
   if (any(toset)) options(op.pkg[toset])
 
   # check OSF PAT
-  osf_pat_validate()
+  .osf_pat_validate()
 
   invisible()
 }

@@ -28,7 +28,7 @@ module_run <- function(paper, module, ...) {
     .__mc__prev_outputs <- prev$prev_outputs %||% list()
     prev$prev_outputs <- NULL
     .__mc__prev_outputs[[prev$module]] <- prev
-  } else if (is_paper_list(paper)) {
+  } else if (.is_paper_list(paper)) {
     summary_table <- data.frame(paper_id = names(paper))
   } else {
     summary_table <- data.frame(paper_id = paper$paper_id)

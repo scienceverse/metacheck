@@ -13,7 +13,7 @@
 #' @examples
 #' module_run(psychsci[[1]], "llm_summarise")
 llm_summarise <- function(paper, ...) {
-  sections <- search_text(paper, return = "section")
+  sections <- text_search(paper, return = "section")
   query <- "Summarise this section briefly, in one sentence. Do not include any preamble explaining what you are going to do, just give the sentence."
 
   table <- llm(sections, query, ...)

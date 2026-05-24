@@ -2,7 +2,7 @@ library(dplyr)
 library(metacheck)
 
 psychsci_all_urls <- module_run(psychsci, "all-urls")
-expanded_urls <- expand_text(psychsci_all_urls$table, psychsci) |>
+expanded_urls <- text_expand(psychsci_all_urls$table, psychsci) |>
   filter(!grepl("osf.io/tvyxz", expanded, fixed = TRUE),
          !grepl("content/by/supplemental", expanded, fixed = TRUE),
          !grepl("psychologicalscience.org/publications/badges", expanded, fixed = TRUE),

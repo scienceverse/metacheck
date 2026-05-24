@@ -50,7 +50,7 @@ prereg_check <- function(paper) {
 
   ## AsPredicted preregs ----
   table_ap <- suppressMessages(
-    aspredicted_retrieve(links_ap$href)
+    aspredicted_info(links_ap$href)
   )
   ap_schema_table <- ap_schema(table_ap)
 

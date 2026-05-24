@@ -405,7 +405,7 @@ get_refs <- function(xml) {
     # ref_table$doi <- xml2::xml_find_first(refs, ".//analytic //idno[@type='DOI']") |>
     #   xml2::xml_text()
 
-    bibs <- lapply(refs, xml2bib)
+    bibs <- lapply(refs, .xml2bib)
 
     ref_table$ref <- bibs |>
       sapply(format) |>

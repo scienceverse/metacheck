@@ -20,7 +20,7 @@ cat(abstracts$description[[1]])
 ```
 
 ```{r}
-search_text(psychsci[[4]], section = "abstract")
+text_search(psychsci[[4]], section = "abstract")
 ```
 
 
