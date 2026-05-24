@@ -22,7 +22,7 @@ links <- aspredicted_links(psychsci)
 
 ```{r}
 #| eval: false
-ap <- aspredicted_retrieve(links)
+ap <- aspredicted_info(links)
 saveRDS(ap, "aspredicted.Rds")
 ```
 

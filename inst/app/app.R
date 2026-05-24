@@ -108,7 +108,7 @@ server <- function(input, output, session) {
     paper <- my_paper()
 
     if (length(paper) > 0) {
-      text_table(search_text(paper))
+      text_table(text_search(paper))
 
       # reset search interface
       # c("search_pattern",
@@ -125,13 +125,13 @@ server <- function(input, output, session) {
 
   ### on text_table() change ----
   observe({
-    needs_text_table <- c("download_table", "llm_submit", "search_text",
+    needs_text_table <- c("download_table", "llm_submit", "text_search",
                           "run_statcheck", "check_p_values")
     if (nrow(text_table()) == 0) {
       lapply(needs_text_table, shinyjs::disable)
     } else {
       lapply(needs_text_table, shinyjs::enable)
-      #shinyjs::click("search_text") # trigger search
+      #shinyjs::click("text_search") # trigger search
     }
   })
 
@@ -286,7 +286,7 @@ server <- function(input, output, session) {
   })
   output$paper_desc <- renderUI({
     req(input$paper_name, my_paper())
-    abstract <- search_text(my_paper()[[input$paper_name]], return = "section") |>
+    abstract <- text_search(my_paper()[[input$paper_name]], return = "section") |>
       dplyr::filter(section_type == "abstract") |>
       _$text
     p(abstract)
@@ -317,9 +317,9 @@ server <- function(input, output, session) {
   options = dt_options
   )
 
-  ### search_text ----
-  observeEvent(input$search_text, {
-    debug_msg("search_text")
+  ### text_search ----
+  observeEvent(input$text_search, {
+    debug_msg("text_search")
 
     text <- text_table()
     if (!"table" %in% input$search_options | nrow(text) == 0) {
@@ -331,7 +331,7 @@ server <- function(input, output, session) {
       sec <- input$search_section
       if (sec == "all") sec <- NULL
 
-      tt <- search_text(text,
+      tt <- text_search(text,
                         pattern = input$search_pattern,
                         return = input$search_return,
                         ignore.case = "ignore.case" %in% input$search_options,
@@ -384,7 +384,7 @@ server <- function(input, output, session) {
     s <- my_paper()
 
     if (length(s) > 0) {
-      search_text(s) |> text_table()
+      text_search(s) |> text_table()
     }
   })
 
@@ -734,7 +734,7 @@ server <- function(input, output, session) {
         )
       ))
     } else {
-      subtext <- search_text(text, return = input$llm_group_by)
+      subtext <- text_search(text, return = input$llm_group_by)
       res <- llm(text = subtext,
                  system_prompt = input$llm_query)
       #

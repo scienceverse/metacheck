@@ -1,7 +1,7 @@
 #' Query an LLM
 #'
 #' Ask a large language model (LLM) any question you want about a vector of
-#' text or the text from a search_text(). When `type` is provided, uses
+#' text or the text from a text_search(). When `type` is provided, uses
 #' ellmer's structured output API to guarantee output conforming to the type
 #' spec; otherwise returns free-text responses in an `answer` column.
 #'
@@ -95,7 +95,7 @@ llm <- function(text, system_prompt,
 
         if (structured) {
           result <- chat$chat_structured(unique_text[i], type = type)
-          df <- unnest_result(result)
+          df <- .unnest_result(result)
           df$.join_key. <- unique_text[i]
           pb$tick()
           df
@@ -173,7 +173,7 @@ llm <- function(text, system_prompt,
 #' @param result a list from `chat$chat_structured()`
 #' @returns a data frame
 #' @keywords internal
-unnest_result <- function(result) {
+.unnest_result <- function(result) {
   if (is.data.frame(result)) return(result)
 
   # If result is a list with a single field containing an array of objects,
@@ -187,7 +187,7 @@ unnest_result <- function(result) {
       if (all(vapply(inner, is.list, logical(1)))) {
         return(dplyr::bind_rows(lapply(inner, function(item) {
           item[vapply(item, is.null, logical(1))] <- NA
-          as.data.frame(item, stringsAsFactors = FALSE)
+          as.data.frame(item)
         })))
       }
     }
@@ -197,7 +197,7 @@ unnest_result <- function(result) {
   if (is.list(result)) {
     result[vapply(result, is.null, logical(1))] <- NA
   }
-  as.data.frame(result, stringsAsFactors = FALSE)
+  as.data.frame(result)
 }
 
 #' List LLM Models

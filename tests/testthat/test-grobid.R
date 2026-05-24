@@ -179,19 +179,18 @@ test_that("both grobid xml and bibr", {
   expect_s3_class(obs, "scivrs_paperlist")
 })
 
-test_that("tei_xrefs handles URL refs with query strings", {
+test_that(".tei_xrefs handles URL refs with query strings", {
   xml <- xml2::read_xml(
     "<TEI><text><body><p>The gridded soil data are available at <ref type='url' target='https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2358'>ORNL DAAC</ref> for download.</p></body></text></TEI>"
   )
 
   text_table <- data.frame(
     text_id = 1,
-    text = "The gridded soil data are available at ORNL DAAC for download.",
-    stringsAsFactors = FALSE
+    text = "The gridded soil data are available at ORNL DAAC for download."
   )
 
   expect_no_error(
-    xrefs <- metacheck:::tei_xrefs(xml, text_table)
+    xrefs <- metacheck:::.tei_xrefs(xml, text_table)
   )
   expect_s3_class(xrefs, "data.frame")
 })
@@ -243,6 +242,9 @@ test_that("bad PDF", {
 })
 
 test_that("makes missing save directory - single", {
+  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
+              message = "grobid not available")
+
   newdir <- file.path(withr::local_tempdir(), "testnewdir")
 
   # single file, path with uncreated dir
@@ -255,6 +257,9 @@ test_that("makes missing save directory - single", {
 })
 
 test_that("makes missing save directory - multiple", {
+  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
+              message = "grobid not available")
+
   save_path <- file.path(withr::local_tempdir(), "testnewdir")
 
   # multiple files with uncreated dir
@@ -273,6 +278,9 @@ test_that("makes missing save directory - multiple", {
 })
 
 test_that("makes missing save directory - specific", {
+  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
+              message = "grobid not available")
+
   newdir <- file.path(withr::local_tempdir(), "testnewdir")
 
   # multiple files with uncreated dir and specific file names (no .xml)
@@ -289,6 +297,9 @@ test_that("makes missing save directory - specific", {
 })
 
 test_that("defaults", {
+  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
+              message = "grobid not available")
+
   pdf <- demofile("pdf")
   paper <- convert_grobid(pdf, NULL, api_url = grobid_url)
   expect_s3_class(paper, "scivrs_paper")
@@ -319,7 +330,8 @@ test_that("defaults", {
 })
 
 test_that("reference consolidation", {
-  skip("Buggy grobid tests")
+  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
+              message = "grobid not available")
 
   xml_file <- demofile("xml")
   xml_text <- readLines(xml_file, warn = FALSE) |>
@@ -329,41 +341,52 @@ test_that("reference consolidation", {
          x = _, fixed = TRUE
     )
   xml <- xml2::read_xml(xml_text)
-  ref <- tei_bib(xml)
+
+  pdf <- demofile("pdf")
   paper0 <- convert_grobid(pdf, NULL, api_url = grobid_url, consolidate_citations = 0)
   paper1 <- convert_grobid(pdf, NULL, api_url = grobid_url, consolidate_citations = 1)
   paper2 <- convert_grobid(pdf, NULL, api_url = grobid_url, consolidate_citations = 2)
 
   ref_n <- 4
-  wrongtitle <- "Equivalence testing for psychological research"
+  wrongtitle <- "Equivalence Testing for Psychological Research"
   righttitle <- "Equivalence Testing for Psychological Research: A Tutorial"
-  expect_equal(paper$bib$title[[ref_n]], wrongtitle)
   expect_equal(paper0$bib$title[[ref_n]], wrongtitle)
   expect_equal(paper1$bib$title[[ref_n]], righttitle)
   expect_equal(paper2$bib$title[[ref_n]], wrongtitle)
 
-  rightauthors <- "Daniël Lakens, Anne M Scheel, Peder M Isager"
-  wrongauthors <- "D Lakens"
-  expect_equal( ref$authors[[ref_n]], wrongauthors)
-  expect_equal(ref0$authors[[ref_n]], wrongauthors)
-  expect_equal(ref1$authors[[ref_n]], rightauthors)
-  expect_equal(ref2$authors[[ref_n]], wrongauthors)
+  rightauthors <- "Lakens, Daniël; Scheel, Anne M; Isager, Peder M"
+  wrongauthors <- "Lakens, Daniël"
+  expect_equal(paper0$bib$authors[[ref_n]], wrongauthors)
+  expect_equal(paper1$bib$authors[[ref_n]], rightauthors)
+  expect_equal(paper2$bib$authors[[ref_n]], wrongauthors)
+})
 
-  # change start and end pages
-  xml3 <- convert_grobid(filename, NULL, api_url = grobid_url, start = 2, end = 3)
-  body <- xml2::xml_find_all(xml3, "//body") |> xml2::xml_text()
-  expect_false(grepl(first_sentence, body))
-  expect_true(grepl("^\\s*Results", body))
-  expect_true(grepl(last_sentence, body))
+test_that("change start and end pages", {
+  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
+              message = "grobid not available")
 
-  xml4 <- convert_grobid(filename, NULL, api_url = grobid_url, start = 2, end = 2)
-  body <- xml2::xml_find_all(xml4, "//body") |> xml2::xml_text()
-  expect_false(grepl(first_sentence, body))
-  expect_true(grepl("^\\s*Results", body))
-  expect_false(grepl(last_sentence, body))
+  save_path <- withr::local_tempdir()
+  pdf <- demofile("pdf")
+  xml_path <- convert_grobid(pdf, save_path, api_url = grobid_url,
+                         start = 2, end = 3)
+  xml <- xml2::read_html(xml_path)
+  body <- xml2::xml_find_all(xml, "//body") |> xml2::xml_text()
+
+  p1 <- "Although intentional dishonesty might be a successful way to boost creativity"
+  p2 <- "We also asked researchers to rate how useful they found the checklist or app on a scale"
+  p3 <- "On average researchers in the experimental condition found the app marginally significantly more useful"
+  p4 <- "The authors declare a conflict of interest."
+
+  expect_false(grepl(p1, body, fixed = TRUE))
+  expect_true(grepl(p2, body, fixed = TRUE))
+  expect_true(grepl(p3, body, fixed = TRUE))
+  expect_false(grepl(p4, body, fixed = TRUE))
 })
 
 test_that("batch - directory", {
+  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
+              message = "grobid not available")
+
   grobid_dir <- test_path("fixtures", "debruine")
   save_path <- withr::local_tempdir()
 
@@ -374,6 +397,9 @@ test_that("batch - directory", {
 })
 
 test_that("batch - multiple filenames", {
+  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
+              message = "grobid not available")
+
   grobid_dir <- test_path("fixtures", "debruine")
   save_path <- withr::local_tempdir()
 

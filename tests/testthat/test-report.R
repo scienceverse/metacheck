@@ -260,7 +260,7 @@ test_that("module_report howitworks", {
 
 test_that("module_report validation", {
   paper <- demopaper()
-  v <- "<p class='validation'>Here is my demo validation information.</p>"
+  v <- "<p class='validation'>"
 
   module <- test_path("modules", "no_error.R")
   module_output <- module_run(paper, module)

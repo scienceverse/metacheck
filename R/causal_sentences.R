@@ -238,8 +238,7 @@ causal_relations <- function(sentence,
           sentence = as.character(original_sentence),
           causal = as.logical(causal_flag),
           cause = NA_character_,
-          effect = NA_character_,
-          stringsAsFactors = FALSE
+          effect = NA_character_
         )
         idx <- idx + 1L
       } else {
@@ -250,8 +249,7 @@ causal_relations <- function(sentence,
             sentence = as.character(original_sentence),
             causal = as.logical(causal_flag),
             cause = cause_val,
-            effect = effect_val,
-            stringsAsFactors = FALSE
+            effect = effect_val
           )
           idx <- idx + 1L
         }
@@ -262,8 +260,7 @@ causal_relations <- function(sentence,
         sentence = character(),
         causal = logical(),
         cause = character(),
-        effect = character(),
-        stringsAsFactors = FALSE
+        effect = character()
       )
     } else {
       df <- do.call(rbind, rows)
@@ -291,8 +288,7 @@ causal_relations <- function(sentence,
       sentence = character(),
       causal = logical(),
       cause = character(),
-      effect = character(),
-      stringsAsFactors = FALSE
+      effect = character()
     )
   } else {
     out <- do.call(rbind, all_rows)

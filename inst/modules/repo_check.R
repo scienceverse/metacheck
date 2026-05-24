@@ -66,16 +66,16 @@ repo_check <- function(paper) {
   if (length(osf_urls) > 0) {
     tryCatch({
       suppressWarnings({
-        osf_info <- lapply(osf_urls, \(x) {
-          osf_files <- osf_retrieve(x, recursive = TRUE, pb = pb)
+        .osf_info <- lapply(osf_urls, \(x) {
+          osf_files <- osf_info(x, recursive = TRUE, pb = pb)
           osf_files$repo_name <- x
           osf_files
         }) |> dplyr::bind_rows()
       })
 
       # "kind" only in table if there are files
-      if ("kind" %in% names(osf_info)) {
-        osf_file_list <- osf_info |>
+      if ("kind" %in% names(.osf_info)) {
+        osf_file_list <- .osf_info |>
           dplyr::filter(kind == "file", !isFALSE(public))
 
         osf_files_df <- data.frame(
@@ -89,13 +89,13 @@ repo_check <- function(paper) {
       }
 
       # remove e.g., registrations from repos list
-      osf_to_remove <- osf_info |>
+      osf_to_remove <- .osf_info |>
         dplyr::filter(!osf_type %in% c("nodes", "files", "private")) |>
         _$osf_url
       repos <- repos[!repos$repo_url %in% osf_to_remove, ]
 
       # note private repos
-      private_repos <- osf_info |>
+      private_repos <- .osf_info |>
         dplyr::filter(osf_type %in% "private") |>
         _$osf_url
       if (length(private_repos)) {
@@ -161,11 +161,11 @@ repo_check <- function(paper) {
   zenodo_files_df <- data.frame(repo_name = character(0))
   if (length(zenodo_urls) > 0) {
     tryCatch({
-      zenodo_info <- suppressMessages(zenodo_retrieve(zenodo_urls, pb = pb))
+      .zenodo_info <- suppressMessages(zenodo_info(zenodo_urls, pb = pb))
 
-      if (nrow(zenodo_info) > 0 && "files" %in% names(zenodo_info)) {
-        file_rows <- lapply(seq_len(nrow(zenodo_info)), function(i) {
-          files_i <- zenodo_info$files[[i]]
+      if (nrow(.zenodo_info) > 0 && "files" %in% names(.zenodo_info)) {
+        file_rows <- lapply(seq_len(nrow(.zenodo_info)), function(i) {
+          files_i <- .zenodo_info$files[[i]]
           if (is.null(files_i) || length(files_i) == 0) {
             return(NULL)
           }
@@ -177,12 +177,11 @@ repo_check <- function(paper) {
             }
 
             data.frame(
-              repo_url = as.character(zenodo_info$zenodo_url[[i]]),
+              repo_url = as.character(.zenodo_info$zenodo_url[[i]]),
               file_name = as.character(f$key %||% NA_character_),
               file_url = file_url,
               file_location = NA_character_,
-              file_size = as.numeric(f$size %||% NA_real_),
-              stringsAsFactors = FALSE
+              file_size = as.numeric(f$size %||% NA_real_)
             )
           })
 

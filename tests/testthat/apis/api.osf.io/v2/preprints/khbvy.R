@@ -1,6 +1,6 @@
 structure(list(method = "GET", url = "https://api.osf.io/v2/preprints/khbvy/", 
     status_code = 401L, headers = structure(list(server = "nginx", 
-        date = "Sat, 23 May 2026 11:59:06 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
+        date = "Sun, 24 May 2026 10:11:11 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
         `content-length` = "95", `www-authenticate` = "Documentation realm=\"api\"", 
         vary = "Accept, Cookie, origin", allow = "GET, PUT, PATCH, DELETE, HEAD, OPTIONS", 
         `x-content-type-options` = "nosniff", `referrer-policy` = "same-origin", 
@@ -16,5 +16,5 @@ structure(list(method = "GET", url = "https://api.osf.io/v2/preprints/khbvy/",
     0x7d, 0x5d, 0x2c, 0x22, 0x6d, 0x65, 0x74, 0x61, 0x22, 0x3a, 
     0x7b, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x22, 
     0x3a, 0x22, 0x32, 0x2e, 0x30, 0x22, 0x7d, 0x7d)), timing = c(redirect = 0, 
-    namelookup = 0, connect = 0, pretransfer = 0.000167, starttransfer = 0.280616, 
-    total = 0.280742), cache = new.env(parent = emptyenv())), class = "httr2_response")
+    namelookup = 0, connect = 0, pretransfer = 0.000171, starttransfer = 0.227856, 
+    total = 0.227968), cache = new.env(parent = emptyenv())), class = "httr2_response")

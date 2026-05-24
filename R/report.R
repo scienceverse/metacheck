@@ -58,10 +58,10 @@ report <- function(paper,
   mod_exists <- sapply(modules, module_find)
 
   # vectorise over papers ----
-  if (is_paper_list(paper) && length(paper) == 1) {
+  if (.is_paper_list(paper) && length(paper) == 1) {
     # treat length-1 paperlist like 1 paper
     paper <- paper[[1]]
-  } else if (is_paper_list(paper)) {
+  } else if (.is_paper_list(paper)) {
     ## set up progress bar ----
     pb <- pb(
       length(paper),

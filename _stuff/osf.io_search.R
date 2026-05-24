@@ -3,7 +3,7 @@ library(dplyr)
 
 urls <- module_run(psychsci, "all_urls")
 osf <- urls$table |>
-  search_text("osf")
+  text_search("osf")
 utable <- osf |>
   select(url = text) |>
   unique() |>
@@ -17,7 +17,7 @@ not_five <- utable |>
 
 
 osfio <- psychsci |>
-  search_text("\\bosf\\s*\\.\\s*io\\s*/\\s*[a-z0-9]{5}\\b", return = "match")
+  text_search("\\bosf\\s*\\.\\s*io\\s*/\\s*[a-z0-9]{5}\\b", return = "match")
 
 utableio <- osfio |>
   select(url = text) |>
@@ -37,6 +37,6 @@ not_fiveio$url |> paste(collapse = "\n") |> cat()
 
 OSF_RGX <- "\\bosf\\s*\\.\\s*io\\s*/\\s*[a-z0-9]{5}\\b"
 osfio <- psychsci |>
-  search_text(OSF_RGX, return = "match") |>
+  text_search(OSF_RGX, return = "match") |>
   mutate(osf_id = osf_check_id(text)) |>
   count(text, osf_id)

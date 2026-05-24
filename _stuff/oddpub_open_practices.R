@@ -27,7 +27,7 @@ open_practices <- function(paper) {
   # devtools::install_github("quest-bih/oddpub")
 
   # format text for oddpub as vectors of sentences for each paper
-  text <- search_text(paper)
+  text <- text_search(paper)
 
   # Check if text is NULL or empty, happens in correction notices.
   if (is.null(text) || nrow(text) == 0 || all(text$text == "")) {

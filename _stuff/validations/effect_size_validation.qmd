@@ -153,20 +153,20 @@ Run code from the module to get the full set of sentences with a t-test, and the
 ```{r}
 # Regex to detect all t-tests
 text_found_test <- paper |>
-  search_text("=") |> # sentences with equal signs
-  search_text("[0-9]") |> # sentences with numbers
+  text_search("=") |> # sentences with equal signs
+  text_search("[0-9]") |> # sentences with numbers
   # sentences with a relevant test
-  search_text(test_regex, perl = TRUE, ignore.case = FALSE) 
+  text_search(test_regex, perl = TRUE, ignore.case = FALSE) 
 
 # Regex to detect effect sizes
-text_found_es <- search_text(text_found_test, es_regex, perl = FALSE)
+text_found_es <- text_search(text_found_test, es_regex, perl = FALSE)
 ```
 
 Add in the exact matching text:
 
 ```{r}
 # get just t-test text
-text_found_test_match <- search_text(
+text_found_test_match <- text_search(
   text_found_test, test_regex, 
   perl = TRUE, return = "match") |>
   summarise(match_test = paste(text, collapse = "; "), 
@@ -176,7 +176,7 @@ text_found_test <- left_join(text_found_test, text_found_test_match,
                              by = c("div", "p", "s", "id"))
 
 # get just effect size text
-text_found_es_match <- search_text(
+text_found_es_match <- text_search(
   text_found_es, es_regex, 
   perl = FALSE, return = "match") |>
   summarise(match_es = paste(text, collapse = "; "), 
@@ -347,20 +347,20 @@ Run code from the module to get the full set of sentences with an F-test, and th
 ```{r}
 # Regex to detect all F-tests
 text_found_test <- paper |>
-  search_text("=") |> # sentences with equal signs
-  search_text("[0-9]") |> # sentences with numbers
+  text_search("=") |> # sentences with equal signs
+  text_search("[0-9]") |> # sentences with numbers
   # sentences with a relevant test
-  search_text(test_regex, perl = TRUE, ignore.case = FALSE) 
+  text_search(test_regex, perl = TRUE, ignore.case = FALSE) 
 
 # Regex to detect effect sizes
-text_found_es <- search_text(text_found_test, es_regex, perl = FALSE)
+text_found_es <- text_search(text_found_test, es_regex, perl = FALSE)
 ```
 
 Add in the exact matching text:
 
 ```{r}
 # get just F-test text
-text_found_test_match <- search_text(
+text_found_test_match <- text_search(
   text_found_test, test_regex, ignore.case = FALSE,
   perl = TRUE, return = "match") |>
   summarise(match_test = paste(text, collapse = "; "), 
@@ -370,7 +370,7 @@ text_found_test <- left_join(text_found_test, text_found_test_match,
                              by = c("div", "p", "s", "id"))
 
 # get just effect size text
-text_found_es_match <- search_text(
+text_found_es_match <- text_search(
   text_found_es, es_regex, 
   perl = FALSE, return = "match") |>
   summarise(match_es = paste(text, collapse = "; "), 

@@ -108,8 +108,8 @@ datacite_doi <- function(doi) {
 #'                     "monograph",
 #'                     NA,
 #'                     "unmatched-type")
-#' bibtype_convert(crossref_types)
-bibtype_convert <- function(type) {
+#' .bibtype_convert(crossref_types)
+.bibtype_convert <- function(type) {
   if (is.null(type)) return(NULL)
 
   # required <- list(
@@ -195,7 +195,7 @@ crossref_doi <- function(doi, select = c(
     return(data.frame(DOI = doi))
   }
 
-  if (is_paper(doi) || is_paper_list(doi)) {
+  if (.is_paper(doi) || .is_paper_list(doi)) {
     papers <- doi
     doi <- paper_table(papers, "info", "doi")$doi
   }
@@ -352,7 +352,7 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
                              "page",
                              "URL"
                            )) {
-  if (is_paper(ref)) {
+  if (.is_paper(ref)) {
     # pull the whole reference list
     paper <- ref
     ref <- paper$bib
@@ -551,7 +551,7 @@ add_bib_match <- function(paper, min_score = 50) {
     service          = "crossref",
     service_id       = NA_character_,
     score            = cr_data$score %||% NA_real_,
-    bib_type         = bibtype_convert(cr_data$type) %||% NA_character_,
+    bib_type         = .bibtype_convert(cr_data$type) %||% NA_character_,
     doi              = cr_data$DOI %||% NA_character_,
     title            = cr_data$title %||% NA_character_,
     authors          = NA,
@@ -579,10 +579,10 @@ add_bib_match <- function(paper, min_score = 50) {
     dplyr::arrange(paper_id, bib_id)
 
   # add bib_match table to paper object(s)
-  if (is_paper(paper)) {
+  if (.is_paper(paper)) {
     bib_match_table$paper_id <- NULL
     paper$bib_match <- bib_match_table
-  } else if (is_paper_list(paper)) {
+  } else if (.is_paper_list(paper)) {
     paper <- lapply(paper, \(p) {
       bib_match_i <- bib_match_table[bib_match_table$paper_id == p$paper_id, ]
       bib_match_i$paper_id <- NULL
@@ -677,7 +677,7 @@ openalex_doi <- function(doi, select = NULL) {
     return(list(DOI = doi))
   }
 
-  if (is_paper(doi) || is_paper_list(doi)) {
+  if (.is_paper(doi) || .is_paper_list(doi)) {
     papers <- doi
     doi <- paper_table(papers, "info", "doi")$doi
   }

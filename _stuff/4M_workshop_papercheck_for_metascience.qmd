@@ -27,11 +27,11 @@ psych_oa_xml <- psychsci
 
 If you check the environment you should see a large list 'psych_oa_xml' that contains 250 elements (or papers). The xml files contain the full text, and we can browse through the text from a single article. You can open the file in the RStudio environment, and browse through it.
 
-Papercheck has a 'search_text' function that allows you search the full text for a match, and return either the matched text, the sentence, or the paragraph. In the example below, we will search all 250 articles and return paragraphs that match word ending with 'power' or 'powered'.
+Papercheck has a 'text_search' function that allows you search the full text for a match, and return either the matched text, the sentence, or the paragraph. In the example below, we will search all 250 articles and return paragraphs that match word ending with 'power' or 'powered'.
 
 ```{r}
 regex_power <- "power(ed)?\\b"
-text_found_power <- search_text(psych_oa_xml, regex_power, return = "paragraph")
+text_found_power <- text_search(psych_oa_xml, regex_power, return = "paragraph")
 ```
 
 This search returns 440 observations. This means that in the 250 scientific articles we are analyzing the word 'power' or 'powered' occurs 440 times. We can scroll through the first paragraphs that is returned:
@@ -54,12 +54,12 @@ llm_answer$answer # print the answer
 
 In this workshop we will try to find scientific papers that interpret effect sizes in light of the 'small', 'medium', and 'large' benchmarks proposed by Jacob Cohen. These benchmarks are not very useful, and whenever they are used, researchers are not implementing best practices. Either they are using benchmarks in power analyses (e.g., designing a study to have power for a 'medium' effect size) when they should have performed a more meaningful sample size justification, or they are interpreting results tautologically, without adding anything meaningful (we observed an effect of d = 0.2, which is 'small').
 
-Step 1: Create regex to detect as many sentences as possible containing the information we want. Some useful information is that you can make matches case insensitive using (?i), you can search for a OR b through a\|b. So (?i)(small effect\|medium effect) would match any sentences that contains 'small effect' or 'medium effect', ignoring capitalization. Adjust the regex below, and see who can find the most matches! You can view the sentences you found in the dataframe returned by the 'search_text' function by viewing the dataframe.
+Step 1: Create regex to detect as many sentences as possible containing the information we want. Some useful information is that you can make matches case insensitive using (?i), you can search for a OR b through a\|b. So (?i)(small effect\|medium effect) would match any sentences that contains 'small effect' or 'medium effect', ignoring capitalization. Adjust the regex below, and see who can find the most matches! You can view the sentences you found in the dataframe returned by the 'text_search' function by viewing the dataframe.
 
 ```{r}
 
 regex_benchmark <- "medium effect size"
-text_found_benchmark <- search_text(psych_oa_xml, regex_benchmark, return = "sentence")
+text_found_benchmark <- text_search(psych_oa_xml, regex_benchmark, return = "sentence")
 View(text_found_benchmark)
 
 ```
@@ -68,9 +68,9 @@ Sometimes it can be easier to search for sentences iteratively, where you first 
 
 ```{r}
 regex_benchmark <- "effect"
-text_found_benchmark <- search_text(psych_oa_xml, regex_benchmark, return = "sentence")
+text_found_benchmark <- text_search(psych_oa_xml, regex_benchmark, return = "sentence")
 regex_benchmark <- "(?i)\\b(small|medium|large)\\b"
-text_found_benchmark <- search_text(text_found_benchmark, regex_benchmark, return = "sentence")
+text_found_benchmark <- text_search(text_found_benchmark, regex_benchmark, return = "sentence")
 
 ```
 

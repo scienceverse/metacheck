@@ -359,7 +359,7 @@ convert_bibr <- function(file_path,
 #' @export
 #'
 #' @keywords internal
-read_bibr <- function(file_path, include_images = FALSE) {
+.read_bibr <- function(file_path, include_images = FALSE) {
   # read JSON ----
   data <- jsonlite::read_json(file_path,
                               simplifyVector = TRUE,
@@ -447,7 +447,7 @@ read_bibr <- function(file_path, include_images = FALSE) {
 
   # ensure all expected columns exist and have correct types
   # (JSON may drop all-NA columns or read them back as logical)
-  paper <- paper_coerce(paper)
+  paper <- .paper_coerce(paper)
 
   # fix urls with . at end
   if (nrow(paper$url) > 0) {
@@ -479,7 +479,7 @@ read <- function(file_path, include_images = FALSE) {
     pb$tick(1, list(what = basename(fp)))
     tryCatch({
       if (grepl("\\.json$", fp, ignore.case = TRUE)) {
-        read_bibr(fp, include_images)
+        .read_bibr(fp, include_images)
       } else if (grepl("\\.xml$", fp, ignore.case = TRUE)) {
         .grobid_to_bibr(fp)
       }
@@ -554,7 +554,7 @@ format_bib_authors <- function(authors) {
       x[, intersect(c("given", "family"), names(x)), drop = FALSE]
     } else if (is.matrix(x)) {
       # legacy format: matrix with columns [given, family]
-      data.frame(given = x[, 1], family = x[, 2], stringsAsFactors = FALSE)
+      data.frame(given = x[, 1], family = x[, 2])
     } else if (is.character(x) && length(x) == 1) {
       .parse_author_string(x)
     } else {

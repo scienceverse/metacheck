@@ -15,7 +15,7 @@ extract_urls <- function(paper) {
   # simplified version without strict IPv4 validation or IPv6 support
   # these are very unlikely to be in papers
   pattern <- "\\b((doi:)?(https?://)?(([\\w.-]+\\.[a-z]{2,})|(\\d{1,3}(\\.\\d{1,3}){3}))(:\\d+)?(/[^\\s]*)?)\\b"
-  table <- search_text(paper, pattern, return = "match", "perl" = TRUE)
+  table <- text_search(paper, pattern, return = "match", "perl" = TRUE)
 
   return(table)
 }
@@ -26,7 +26,7 @@ extract_urls <- function(paper) {
 #' List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.
 #'
 #' @details
-#' Note that this will not catch p-values reported like "the p-value is 0.03" because that results in a ton of false positives when papers discuss p-value thresholds. If you need to detect text like that, use the `search_text()` function and a custom pattern.
+#' Note that this will not catch p-values reported like "the p-value is 0.03" because that results in a ton of false positives when papers discuss p-value thresholds. If you need to detect text like that, use the `text_search()` function and a custom pattern.
 #'
 #' This will catch most comparators like =<>~ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.
 #'
@@ -58,7 +58,7 @@ extract_p_values <- function(paper) {
     "(\\s*[x\\*]\\s*10\\s*\\^\\s*-\\d+)?"
   )
 
-  p <- search_text(paper, pattern,
+  p <- text_search(paper, pattern,
     return = "match",
     perl = TRUE, ignore.case = FALSE
   )
@@ -84,7 +84,7 @@ extract_p_values <- function(paper) {
 #' List all equations in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.
 #'
 #' @details
-#' Note that this will not catch p-values reported like "the p-value is 0.03" because that results in a ton of false positives when papers discuss p-value thresholds. If you need to detect text like that, use the `search_text()` function and a custom pattern.
+#' Note that this will not catch p-values reported like "the p-value is 0.03" because that results in a ton of false positives when papers discuss p-value thresholds. If you need to detect text like that, use the `text_search()` function and a custom pattern.
 #'
 #' This will catch most comparators like =<>~and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.
 #'
@@ -126,8 +126,8 @@ extract_equations <- function(paper) {
   )
 
   eq <- paper |>
-    search_text(operators) |>
-    search_text(pattern,
+    text_search(operators) |>
+    text_search(pattern,
                 return = "match",
                 perl = TRUE,
                 ignore.case = TRUE)

@@ -35,7 +35,7 @@ View(demopaper$section)
 # paper2$tables$contents <- list(paper2$table_1)
 # paper2$table_1 <- NULL
 #
-# paper2 <- paper_coerce(paper2)
+# paper2 <- .paper_coerce(paper2)
 #
 # paper_write(paper2, "ground_truth", "data-raw/demo")
 #

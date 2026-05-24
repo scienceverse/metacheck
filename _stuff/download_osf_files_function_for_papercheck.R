@@ -6,7 +6,7 @@ download_osf_project_files <- function(osf_project_id, max_folder_length = 40, i
   # If you set authentication, you can upload and download files to your repository. But strangely engough, the osfr package will say you do not have access to other public repositories. You have download, but not upload access. But we need to remove the authentication to prevent this error. Maybe there is a better way to authenticate that will fix this, with looking into.
   osf_auth("")
 
-  # Retry logic for osf_retrieve
+  # Retry logic for osf_info
   max_attempts <- 5
   attempt <- 1
   info <- NULL
@@ -14,7 +14,7 @@ download_osf_project_files <- function(osf_project_id, max_folder_length = 40, i
   while (is.null(info) && attempt <= max_attempts) {
     cat("Attempt", attempt, "to retrieve OSF project...\n")
     info <- tryCatch(
-      metacheck::osf_retrieve(osf_project_id, recursive = TRUE, find_project = TRUE),
+      metacheck::osf_info(osf_project_id, recursive = TRUE, find_project = TRUE),
       error = function(e) {
         cat("Error:", e$message, "\n")
         Sys.sleep(2 ^ attempt)
@@ -108,7 +108,7 @@ download_osf_project_files <- function(osf_project_id, max_folder_length = 40, i
   }
 
   # Track failures
-  failures <- data.frame(osf_id = character(), reason = character(), stringsAsFactors = FALSE)
+  failures <- data.frame(osf_id = character(), reason = character())
 
   # Download files
   for (file_id in info$osf_id) {
@@ -131,7 +131,7 @@ download_osf_project_files <- function(osf_project_id, max_folder_length = 40, i
       next
     })
 
-    file_on_osf <- tryCatch(osf_retrieve_file(file_id), error = function(e) NULL)
+    file_on_osf <- tryCatch(osf_info_file(file_id), error = function(e) NULL)
     if (is.null(file_on_osf)) {
       failures <- rbind(failures, data.frame(osf_id = file_id, reason = "Failed to retrieve file"))
       next
@@ -190,8 +190,7 @@ download_osf_project_files <- function(osf_project_id, max_folder_length = 40, i
       failures,
       data.frame(
         osf_id = missing_parents,
-        reason = "Missing parent folder (possibly private)",
-        stringsAsFactors = FALSE
+        reason = "Missing parent folder (possibly private)"
       )
     )
   }

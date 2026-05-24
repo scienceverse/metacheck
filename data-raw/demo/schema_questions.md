@@ -4,7 +4,7 @@
 
 ## Big picture questions
 
-What text should be in the text table so it's easily searchable by search_text() and should there be ways to include/exclude some of that by default or with arguments?
+What text should be in the text table so it's easily searchable by text_search() and should there be ways to include/exclude some of that by default or with arguments?
 
 The text categories are: body text, section headers, tables (captions), figures (captions), footnotes,  references, and "backmatter" (like page numbers and citation info in the header, the paper title, author lists and info). Also boxes?
 
@@ -56,9 +56,9 @@ Should the text table include:
 - other text classified into data (e.g., title, authors)
 - section headers (currently only in the new sections table)
 
-The text table is what is searched by search_text(). So it might be confusing to include reference text in it. We can search those table with search_text like: `paper$sections$header |> search_text("text")` but it's awkward.
+The text table is what is searched by text_search(). So it might be confusing to include reference text in it. We can search those table with text_search like: `paper$sections$header |> text_search("text")` but it's awkward.
 
-Or include a flag in search_text to by default only search the body text, but you can specify to include headers, fig-caps, tbl-caps, bib, footnotes, etc. This requires the text be labelled in either the section table (all text must have a section number then) or in the text table.
+Or include a flag in text_search to by default only search the body text, but you can specify to include headers, fig-caps, tbl-caps, bib, footnotes, etc. This requires the text be labelled in either the section table (all text must have a section number then) or in the text table.
 
 Including fig/tbl/foot gets a little tricky when trying to figure out the paragraph/section number, especially in formatted PDFs where, e.g., the text is 2-columns and the figure spans both columns and is just at the top or bottom of the page, not clearly at a specific point in the text flow. The could just get no paragraph_id?
 

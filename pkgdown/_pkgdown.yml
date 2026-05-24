@@ -63,15 +63,13 @@ reference:
   - '`psychsci`'
   - '`test_paper`'
   - '`paper_id`'
-  - '`paper_coerce`'
-  - '`paper_schema`'
   - '`paper_write`'
   - '`paper_validate`'
 - title: Search Papers
   desc: ~
   contents:
-  - '`search_text`'
-  - '`expand_text`'
+  - '`text_search`'
+  - '`text_expand`'
   - '`paper_table`'
   - '`ref_table`'
 - title: Module Functions
@@ -140,7 +138,7 @@ reference:
   - '`osf_get_all_pages`'
   - '`osf_links`'
   - '`osf_preprint_list`'
-  - '`osf_retrieve`'
+  - '`osf_info`'
   - '`osf_type`'
 - title: GitHub Functions
   desc: ~
@@ -156,9 +154,13 @@ reference:
   desc: ~
   contents:
   - '`aspredicted_links`'
-  - '`aspredicted_retrieve`'
+  - '`aspredicted_info`'
   - '`rbox_links`'
-  - '`rbox_retrieve`'
+  - '`rbox_info`'
+  - '`rbox_file_download`'
+  - '`zenodo_links`'
+  - '`zenodo_info`'
+  - '`zenodo_file_download`'
 - title: Integrations
   desc: ~
   contents:
