@@ -25,6 +25,32 @@ test_that("stat_p_exact", {
   expect_equal(mod_output$traffic_light, "red")
   expect_equal(nrow(mod_output$table), 11)
 
+  # zero p-values
+  paper <- test_paper(c(
+    "Significant result (p = .000)",
+    "Significant result (p = 0.000)",
+    "Significant result (p = 0.00)"
+  ))
+
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "red")
+  expect_equal(nrow(mod_output$table), 3)
+  expect_true(all(mod_output$table$zero))
+  expect_false(any(mod_output$table$imprecise))
+  expect_equal(mod_output$summary_table$n_zero, 3)
+
+  # imprecise and zero together
+  paper <- test_paper(c(
+    "Imprecise p-value example (p < .05)",
+    "Zero p-value example (p = .000)"
+  ))
+
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "red")
+  expect_equal(nrow(mod_output$table), 2)
+  expect_equal(sum(mod_output$table$imprecise), 1)
+  expect_equal(sum(mod_output$table$zero), 1)
+
   # iteration
   paper <- psychsci
   mod_output <- module_run(paper, module)
