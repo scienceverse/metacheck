@@ -1,0 +1,12 @@
+# \dontrun vs \donttest
+
+Use \dontrun, not \donttest
+
+#' @examples
+#' \dontrun{
+#' github_files("scienceverse/metacheck")
+#' }
+
+# Ifelse NULL
+
+Use `x$col %||% NA_character_`, not `ifelse(is.null(x$col), NA_character_, x$col)`

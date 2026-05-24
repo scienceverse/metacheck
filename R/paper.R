@@ -282,6 +282,7 @@ paper_validate <- function(paper) {
 #'
 #' @returns a paper object
 #' @export
+#' @keywords internal
 .paper_coerce <- function(paper) {
   if (.is_paper_list(paper)) {
     papers <- lapply(paper, .paper_coerce) |>
