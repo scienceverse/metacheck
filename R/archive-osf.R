@@ -375,13 +375,16 @@ osf_request <- function(url) {
 
   osf_api <- getOption("metacheck.osf.api")
 
-  # Separate 5-char GUIDs from 24-char waterbutler IDs
-  is_guid <- nchar(valid_ids) %in% 5
+  # Separate 5-char GUIDs (optionally versioned, e.g. cnx93_v3) from 24-char waterbutler IDs
+  is_guid <- grepl("^[a-z0-9]{5}(_v\\d+)?$", valid_ids)
   guid_ids <- valid_ids[is_guid]
   wb_ids <- valid_ids[!is_guid & !is.na(valid_ids)]
 
+  # Strip version suffix for the API call — /guids/ only accepts the base 5-char GUID
+  guid_api_ids <- sub("_v\\d+$", "", guid_ids)
+
   urls <- c(
-    sprintf("%s/guids/%s", osf_api, guid_ids),
+    sprintf("%s/guids/%s", osf_api, guid_api_ids),
     sprintf("%s/files/%s", osf_api, wb_ids)
   )
 

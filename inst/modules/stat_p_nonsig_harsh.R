@@ -59,7 +59,7 @@ stat_p_nonsig <- function(paper) {
     summary_text <- report
   } else {
     summary_text <- sprintf(
-      "We found %d non-significant p value%s that should be checked for appropriate interpretation. Too many researchers incorrectly interpret non-signiifcant results, so check if you have made any errors.",
+      "We found %d non-significant p value%s that should be checked for appropriate interpretation. Too many researchers incorrectly interpret non-significant results, so check if you have made any errors.",
       nrow(table), ifelse(nrow(table) == 1, "", "s")
     )
 

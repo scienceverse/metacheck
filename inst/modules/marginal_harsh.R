@@ -27,7 +27,7 @@ marginal <- function(paper) {
   tl <- ifelse(nrow(table), "red", "green")
 
   # summary_text ----
-  summary_text <- sprintf("You described %d effect%s with terms related to 'marginally significant'. This is not good practice and should be corrected.", nrow(table), ifelse(nrow(table) == 1, "", "s"))
+  summary_text <- sprintf("You described %d effect%s with terms related to 'marginally significant'. Any occurrances of terms related to 'marginal significance' should be corrected.", nrow(table), ifelse(nrow(table) == 1, "", "s"))
 
 
   # report ----
