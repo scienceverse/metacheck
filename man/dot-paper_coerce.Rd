@@ -15,3 +15,4 @@ a paper object
 \description{
 Convert columns to the correct type
 }
+\keyword{internal}

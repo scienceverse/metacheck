@@ -379,7 +379,7 @@ module_report <- function(module_output,
   }
 
   # set up report
-  summary <- module_output$summary_text
+  summary <- module_output$summary_text %||% "..."
   report <- module_output$report %||% module_output$summary_text
   if (all(report == "")) report <- NULL
 
@@ -387,10 +387,10 @@ module_report <- function(module_output,
   # how it works
   hiw <- tryCatch(
     {
+      validation <- NULL
       info <- module_info(module_output$module)
 
       # set up validation section if tagged
-      validation <- NULL
       m <- gregexpr("<validation>.*</validation>", info$details)
       if (m > -1) {
         validation <- regmatches(info$details, m) |>
