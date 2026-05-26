@@ -538,13 +538,13 @@ paper_table <- function(paper, table, cols = NULL) {
 #'
 #' @param paper a paper or paperlist
 #'
-#' @returns a table with paper_id column
+#' @returns a vector of paper_ids
 #' @export
 #'
 #' @examples
 #' paper_id(psychsci)
 paper_id <- function(paper) {
-  paper_table(paper, "info", "paper_id")
+  paper_table(paper, "info", "paper_id")$paper_id
 }
 
 #' Reference and DOI table

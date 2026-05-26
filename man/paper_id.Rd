@@ -10,7 +10,7 @@ paper_id(paper)
 \item{paper}{a paper or paperlist}
 }
 \value{
-a table with paper_id column
+a vector of paper_ids
 }
 \description{
 Get Paper IDs

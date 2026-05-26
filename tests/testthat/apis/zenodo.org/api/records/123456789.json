@@ -1,0 +1,112 @@
+{
+    "created": "2025-11-28T19:32:37.244756+00:00",
+    "modified": "2025-11-28T19:32:37.460472+00:00",
+    "id": 123456789,
+    "conceptrecid": "1234567894",
+    "doi": "10.5281/zenodo.123456789",
+    "conceptdoi": "10.5281/zenodo.1234567894",
+    "doi_url": "https://doi.org/10.5281/zenodo.123456789",
+    "metadata": {
+        "title": "Example title",
+        "doi": "10.5281/zenodo.123456789",
+        "publication_date": "2026-01-01",
+        "journal": "Journal",
+        "description": "Example description",
+        "access_right": "open",
+        "creators": [
+            {
+                "name": "Jane Doe",
+                "affiliation": "University of Glasgow"
+            }
+        ],
+        "resource_type": {
+            "title": "dataset",
+            "type": "dataset"
+        },
+        "license": {
+            "id": "cc-by-4.0"
+        },
+        "relations": {
+            "version": [
+                {
+                    "index": 0,
+                    "is_last": true,
+                    "parent": {
+                        "pid_type": "recid",
+                        "pid_value": "1234567894"
+                    }
+                }
+            ]
+        }
+    },
+    "title": "ResearchBox 4377, 'PaperCheck (private)', https://researchbox.org/4377",
+    "links": {
+        "self": "https://zenodo.org/api/records/123456789",
+        "self_html": "https://zenodo.org/records/123456789",
+        "preview_html": "https://zenodo.org/records/123456789?preview=1",
+        "doi": "https://doi.org/10.5281/zenodo.123456789",
+        "self_doi": "https://doi.org/10.5281/zenodo.123456789",
+        "self_doi_html": "https://zenodo.org/doi/10.5281/zenodo.123456789",
+        "reserve_doi": "https://zenodo.org/api/records/123456789/draft/pids/doi",
+        "parent": "https://zenodo.org/api/records/1234567894",
+        "parent_html": "https://zenodo.org/records/1234567894",
+        "parent_doi": "https://doi.org/10.5281/zenodo.1234567894",
+        "parent_doi_html": "https://zenodo.org/doi/10.5281/zenodo.1234567894",
+        "self_iiif_manifest": "https://zenodo.org/api/iiif/record:123456789/manifest",
+        "self_iiif_sequence": "https://zenodo.org/api/iiif/record:123456789/sequence/default",
+        "files": "https://zenodo.org/api/records/123456789/files",
+        "media_files": "https://zenodo.org/api/records/123456789/media-files",
+        "archive": "https://zenodo.org/api/records/123456789/files-archive",
+        "archive_media": "https://zenodo.org/api/records/123456789/media-files-archive",
+        "latest": "https://zenodo.org/api/records/123456789/versions/latest",
+        "latest_html": "https://zenodo.org/records/123456789/latest",
+        "versions": "https://zenodo.org/api/records/123456789/versions",
+        "draft": "https://zenodo.org/api/records/123456789/draft",
+        "access_links": "https://zenodo.org/api/records/123456789/access/links",
+        "access_grants": "https://zenodo.org/api/records/123456789/access/grants",
+        "access_users": "https://zenodo.org/api/records/123456789/access/users",
+        "access_request": "https://zenodo.org/api/records/123456789/access/request",
+        "access": "https://zenodo.org/api/records/123456789/access",
+        "communities": "https://zenodo.org/api/records/123456789/communities",
+        "communities-suggestions": "https://zenodo.org/api/records/123456789/communities-suggestions",
+        "request_deletion": "https://zenodo.org/api/records/123456789/request-deletion",
+        "file_modification": "https://zenodo.org/api/records/123456789/file-modification",
+        "quota_increase": "https://zenodo.org/api/records/123456789/quota-increase",
+        "requests": "https://zenodo.org/api/records/123456789/requests"
+    },
+    "updated": "2026-01-02T19:32:37.460472+00:00",
+    "recid": "123456789",
+    "revision": 2,
+    "files": [
+        {
+            "id": "f1",
+            "key": "data.csv",
+            "size": 101,
+            "checksum": "md5:abc",
+            "links": {
+                "self": "https://files.example/f1"
+            }
+        }
+    ],
+    "swh": {
+
+    },
+    "owners": [
+        {
+            "id": "1"
+        }
+    ],
+    "status": "published",
+    "stats": {
+        "downloads": 10,
+        "unique_downloads": 5,
+        "views": 20,
+        "unique_views": 15,
+        "version_downloads": 3,
+        "version_unique_downloads": 3,
+        "version_unique_views": 102,
+        "version_views": 121
+    },
+    "state": "done",
+    "submitted": true
+}

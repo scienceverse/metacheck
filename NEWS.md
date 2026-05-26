@@ -1,3 +1,9 @@
+# metacheck 0.0.0.9104
+
+* Updated `file_types` to fix a bug that prepended X to all extensions starting with a number.
+* `paper_id()` now returns a vector, not a table, fixing modules that used it that way
+
+
 # metacheck 0.0.0.9103
 
 * converting grobid xml to bibr json now saves the file after each conversion, instead of at the end, making it better for large batches (although slightly less efficient by potentially duplicating crossref lookups shared between papers)

@@ -216,12 +216,13 @@ test_that("paper_id", {
 
   paper <- demopaper()
   obs <- paper_id(paper)
-  exp <- dplyr::tibble(paper_id = paper$paper_id)
+  exp <- paper$paper_id
   expect_equal(obs, exp)
 
   paper <- psychsci
   obs <- paper_id(paper)
-  expect_equal(nrow(obs), length(paper))
+  expect_equal(length(obs), length(paper))
+  expect_equal(obs[[4]], names(paper[4]))
 })
 
 
