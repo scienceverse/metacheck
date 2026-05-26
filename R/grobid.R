@@ -464,25 +464,47 @@ grobid_to_bibr <- function(xml_file,
   text <- NULL # hack to stop cmdcheck warning :(
 
   if (!is.null(full_text) && nrow(full_text) > 0) {
+    # stop initials and abbreviations getting parsed as sentences
+    # full_text$text <- full_text$text |>
+    full_text$formatted <- full_text$formatted |>
+      gsub("(https?://)\\s+", "\\1", x = _) |>
+      gsub("(\\d\\.)\\s+(\\d)", "\\1\\2", x = _) |>
+      gsub("\\b[Ff]ig\\. (\\D?\\d)", "Fig \\1", x = _) |>
+      gsub("\\b[Ff]igure\\. (\\d)", "Figure \\1", x = _) |>
+      gsub("\\b[Tt]ab\\. (\\d)", "Tab \\1", x = _) |>
+      gsub("\\b[Tt]able\\. (\\d)", "Table \\1", x = _) |>
+      gsub("\\b([A-Z])\\.", "\\1$%", x = _) |> #initials (put back later)
+      gsub("^<p>", "", x = _) |>
+      gsub("</p>$", "", x = _) |>
+      gsub("^<figDesc>", "", x = _) |>
+      gsub("</figDesc>$", "", x = _) |>
+      trimws()
+
     ft <- full_text |>
-      # stop initials getting parsed as sentences
-      dplyr::mutate(text = gsub("\\b([A-Z])\\.", "\\1", text)) |>
-      tidytext::unnest_sentences(text, text, to_lower = FALSE) |>
-      dplyr::mutate(s = dplyr::row_number(), .by = c("div", "p"))
+      tidytext::unnest_sentences(formatted, formatted, to_lower = FALSE)
+    ft$text <- sapply(ft$formatted, \(x) {
+      tryCatch({
+        x |> paste("<p>", x = _, "<p>") |>
+          rvest::read_html() |>
+          rvest::html_text2()
+      }, error = \(e) {
+        return(x)
+      })
+    })
+
+    # return initials
+    ft$formatted <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$formatted)
+    ft$text <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$text)
+    ft$formatted[ft$formatted == ft$text] <- NA_character_
   } else {
     ft <- data.frame(
       header = character(0),
       text = character(0),
+      formatted = character(0),
       div = double(0),
-      p = double(0),
-      s = double(0)
+      p = double(0)
     )
   }
-
-  # convert link notation to <url>
-  ft$text <- ft$text |>
-    gsub("\\{\\{", "<", x = _) |>
-    gsub("\\}\\}", ">", x = _)
 
   # classify headers ----
   back <- !is.na(ft$section)
@@ -534,7 +556,7 @@ grobid_to_bibr <- function(xml_file,
     }
   }
 
-  colorder <- c("text", "section", "header", "div", "p", "s")
+  colorder <- c("text", "section", "header", "div", "p", "formatted")
 
   blank_divs <- grepl("\\[div-\\d+\\]", ft$text)
   # blank_divs <- ft$p == 0
@@ -555,13 +577,13 @@ grobid_to_bibr <- function(xml_file,
   div <- text <- NULL # ugh cmdcheck
 
   ## abstract ----
+  p <- xml2::xml_find_all(xml, ".//abstract //p")
   abst_table <- data.frame(
     header = "Abstract",
-    text = xml_find(xml, ".//abstract //p"),
-    #formatted = xml2::xml_find_all(xml, ".//abstract //p") |> as.character(),
+    text = xml2::xml_text(p),
+    formatted = as.character(p),
     div = 0
   )
-  abst_table$p <- seq_along(abst_table$text)
 
   ## body ----
   divs <- xml2::xml_find_all(xml, "//text //body //div")
@@ -569,12 +591,13 @@ grobid_to_bibr <- function(xml_file,
     div <- divs[[i]]
     header <- xml2::xml_find_first(div, ".//head") |> xml2::xml_text()
     if (is.na(header)) header <- sprintf("[div-%02d]", i)
-    paragraphs <- xml_find(div, ".//p")
+    p <- xml2::xml_find_all(div, ".//p")
+
     df <- data.frame(
       header = header,
-      text = c(header, paragraphs),
-      div = i,
-      p = c(0, seq_along(paragraphs))
+      text = xml2::xml_text(p),
+      formatted = as.character(p),
+      div = i
     )
   })
 
@@ -589,11 +612,12 @@ grobid_to_bibr <- function(xml_file,
       div <- divs[[i]]
       header <- xml_find1(div, ".//head")
       paragraphs <- xml_find(div, ".//p")
+      x <- xml2::xml_find_all(div, ".//p")
       df <- data.frame(
         header = header,
-        text = c(header, paragraphs),
+        text = xml2::xml_text(x),
+        formatted = as.character(x),
         div = NA,
-        p = c(0, seq_along(paragraphs)),
         section = t
       )
     })
@@ -614,13 +638,14 @@ grobid_to_bibr <- function(xml_file,
   figs <- xml2::xml_find_all(xml, "//figure")
   figtbl <- lapply(figs, \(fig) {
     figid <- xml2::xml_attr(fig, "id")
+    formatted <- xml2::xml_find_first(fig, ".//figDesc")
 
     data.frame(
       header = xml_find1(fig, ".//head"),
       text = xml_find1(fig, ".//figDesc"),
+      formatted = as.character(formatted),
       section = sub("_\\d+$", "", x = figid),
-      div = sub("^(fig|tab)_", "", x = figid) |> as.numeric(),
-      p = 1
+      div = sub("^(fig|tab)_", "", x = figid) |> as.numeric()
     ) |>
       dplyr::filter(trimws(text) != "")
   }) |> do.call(rbind, args = _)
@@ -633,6 +658,7 @@ grobid_to_bibr <- function(xml_file,
     data.frame(
       header = "",
       text = xml2::xml_text(note),
+      formatted = as.character(note),
       section = sub("_\\d+$", "", x = noteid),
       div = sub("^foot_", "", x = noteid) |> as.numeric()
     )
@@ -651,7 +677,7 @@ grobid_to_bibr <- function(xml_file,
   ft <- do.call(dplyr::bind_rows, all_tables)
 
   # re-number p and div
-  ft$p <- seq_along(ft$p)
+  ft$p <- seq_along(ft[, 1])
   figtab <- ft[ft$section %in% c("fig", "tab"), ]
   nofigtab <- ft[!ft$section %in% c("fig", "tab"), ]
   divmax <- ifelse(nrow(nofigtab), max(nofigtab$div, na.rm = TRUE), 0)
@@ -663,16 +689,17 @@ grobid_to_bibr <- function(xml_file,
 
   # split sentences and get rid of headers in text column
   ft <- .process_full_text(ft)
-  ft <- ft[ft$text != ft$header, ]
+  #ft <- ft[ft$text != ft$header, ]
 
   full_text <- data.frame(
+    text = ft$text,
     text_id = seq_along(ft$text),
     paragraph_id = ft$p,
     section_id = ft$div,
-    text = ft$text,
     page_number = rep(NA_integer_, nrow(ft)),
     header = ft$header,
-    section_type = ft$section
+    section_type = ft$section,
+    formatted = ft$formatted
   )
 
   return(full_text)

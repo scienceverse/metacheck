@@ -32,7 +32,7 @@ open_practices <- function(paper) {
                     "\\bdetailed\\b",
                     "\\bsee\\b")
   repo_words <- c("http", # url
-                  "repository",
+                  "repositor",
                   "archive",
                   #"\\b\\d{4}\\b", # year in a citations
                   "\\bosf\\b",
