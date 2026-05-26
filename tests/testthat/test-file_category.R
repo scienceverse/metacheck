@@ -7,22 +7,22 @@ test_that("file_category", {
   expect_equal(nrow(summary), 0)
 
   # as vector
-  contents <- c("a.csv", "b.R", "codebook.xlsx", "readme.txt", "ambiguous")
+  contents <- c("a.csv", "b.R", "codebook.xlsx", "readme.txt", "ambiguous", "file.json")
   summary <- file_category(contents)
   obs <- summary$file_category
-  exp <- c("data", "code", "codebook", "readme", NA)
+  exp <- c("data", "code", "codebook", "readme", NA, NA)
   expect_equal(obs, exp)
 
   # as data frame
   contents <- data.frame(
-    name = c("a.csv", "b.R", "codebook.xlsx", "readme.txt", "ambiguous"),
-    category = c("code", "data", "data", "code", "code"),
-    filetype = c("data", "code", "data", "text", "text")
+    name = c("a.csv", "b.R", "codebook.xlsx", "readme.txt", "ambiguous", "file.json"),
+    category = c("code", "data", "data", "code", "code", NA),
+    filetype = c("data", "code", "data", "text", "text", "code;data")
   )
   summary <- file_category(contents)
   obs <- summary$file_category
   # not currently categorising from category
-  exp <- c("data", "code", "codebook", "readme", NA)
+  exp <- c("data", "code", "codebook", "readme", NA, NA)
   expect_equal(obs, exp)
 })
 

@@ -5,7 +5,7 @@
 \alias{file_types}
 \title{File Types}
 \format{
-A data frame with 277 rows and 2 columns:
+A data frame with 387 rows and 2 columns:
 \describe{
 \item{ext}{File extension}
 \item{type}{Type of file}
@@ -18,6 +18,6 @@ A data frame with 277 rows and 2 columns:
 file_types
 }
 \description{
-File types from extension, c("archive", "audio", "book", "code", "config", data", "exec", "font", "image", "slide", "stats", text", "video", "web")
+File types from extension, c("3D", "archive", "audio", "book", "code", "config", data", "exec", "font", "image", "slide", "stats", text", "video", "web")
 }
 \keyword{internal}
