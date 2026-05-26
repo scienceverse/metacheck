@@ -460,19 +460,30 @@ convert_bibr <- function(file_path,
 
 #' Read in grobid XML or bibr JSON
 #'
-#' @param file_path path to a directory containing XML and/or JSON files, or a vector of paths
+#' @param file_path path to a single directory containing XML and/or JSON files, or a vector of XML/JSON paths
 #' @param include_images whether to include images in the figures table of the paper object (they make object size larger, only relevant to bibr imports)
+#' @param recursive whether to read files in subfolders (files should have unique paper_ids, or errors can occur)
 #'
 #' @returns a paper or paperlist
 #' @export
-read <- function(file_path, include_images = FALSE) {
+read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   # handle directory or multiple files ----
   if (length(file_path) == 1 && dir.exists(file_path)) {
     dir_path <- file_path
     file_path <- list.files(dir_path,
                             pattern = "\\.(json|xml)$",
+                            recursive = recursive,
                             full.names = TRUE)
   }
+  if (length(file_path) == 0) {
+    message("No JSON or XML files found.")
+    return(paperlist())
+  }
+
+  # remove XML where same JSON and XML found
+  json <- grep("\\.json$", file_path, value = TRUE)
+  xml_dupes <- gsub("\\.json$", "\\.xml", json)
+  file_path <- setdiff(file_path, xml_dupes)
 
   pb <- pb(length(file_path), "Loading :current/:total [:bar] (:what)")
   papers <- lapply(file_path, \(fp) {

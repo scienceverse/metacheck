@@ -4,12 +4,14 @@
 \alias{read}
 \title{Read in grobid XML or bibr JSON}
 \usage{
-read(file_path, include_images = FALSE)
+read(file_path, include_images = FALSE, recursive = FALSE)
 }
 \arguments{
-\item{file_path}{path to a directory containing XML and/or JSON files, or a vector of paths}
+\item{file_path}{path to a single directory containing XML and/or JSON files, or a vector of XML/JSON paths}
 
 \item{include_images}{whether to include images in the figures table of the paper object (they make object size larger, only relevant to bibr imports)}
+
+\item{recursive}{whether to read files in subfolders (files should have unique paper_ids, or errors can occur)}
 }
 \value{
 a paper or paperlist
