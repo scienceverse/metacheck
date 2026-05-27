@@ -1,6 +1,6 @@
 library(metacheck)
 
-# remotes::install_github("scienceverse/metacheck", ref = "dev")
+# remotes::install_github("scienceverse/metacheck", ref = "dev_report_project")
 
 llm_use(TRUE)
 
@@ -16,7 +16,7 @@ report_harsh(paper,
     "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/stat_p_exact_harsh.R",
     "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/stat_p_nonsig_harsh.R"
   ),
-  output_format = "html"
+  output_format = "qmd"
 )
 
 report_kind(paper,
@@ -29,5 +29,5 @@ report_kind(paper,
     "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/stat_p_exact_kind.R",
     "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/stat_p_nonsig_kind.R"
   ),
-  output_format = "html"
+  output_format = "qmd"
 )
