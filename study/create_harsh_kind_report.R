@@ -97,7 +97,6 @@ report_harsh(paper,
     "marginal_harsh.R",
     "power_harsh.R",
     "code_check_harsh.R",
-    "open_practices_harsh.R",
     "stat_p_exact_harsh.R",
     "stat_p_nonsig_harsh.R"
   ),
