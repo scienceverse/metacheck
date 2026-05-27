@@ -1,17 +1,18 @@
 library(httr)
 library(jsonlite)
 library(devtools)
-devtools::install_github("scienceverse/svutils")
+#devtools::install_github("scienceverse/svutils")
 library(svutils)
 # devtools::install_github(
 #   "scienceverse/metacheck",
 #   ref = "dev"
 # )
-library(metacheck)
+#library(metacheck)
+devtools::load_all(".")
 # devtools::install_github("omegahat/RDCOMClient")
 library(RDCOMClient)
 
-llm_use(TRUE)
+llm_use(FALSE)
 
 docx_to_pdf_word <- function(docx_path) {
   # Ensure path is in Windows format
@@ -40,6 +41,29 @@ docx_to_pdf_word <- function(docx_path) {
   return(pdf_path)
 }
 
+
+# new code ------
+devtools::load_all(".")
+
+# get manuscripts (can do multiple pages)
+osf_list <- osf_preprint_list(provider = "psyarxiv",
+                              page_start = 1, page_end = 1)
+
+# make download dir and dl files to it
+dl_dir <- "study/downloads"
+dir.create(dl_dir, showWarnings = FALSE)
+osf_file_download(osf_list$primary_file, dl_dir,
+                  ignore_folder_structure = TRUE,
+                  max_file_size = 20)
+
+# convert DOC files to PDF mac version ?
+
+
+
+
+
+
+# old code -------------
 page_i <- 1 # get which page (1 is latest)
 # The sort=-date_created with the - means we sort based on newest preprints.
 res <- GET(paste("https://api.osf.io/v2/preprints/?filter[provider]=psyarxiv&sort=-date_created&page=", page_i, sep = "")) # access page i
